@@ -13,6 +13,16 @@ class PaymentProvider with ChangeNotifier {
     return _payments.fold(0, (sum, payment) => sum + payment.monthlyCost);
   }
 
+  // Get the count of active payments
+  int get activePaymentsCount {
+    return _payments.length;
+  }
+
+  // Calculate total amount spent across all payments
+  double get totalAmountSpent {
+    return _payments.fold(0, (sum, payment) => sum + payment.totalAmountSpent);
+  }
+
   // Add a new payment
   void addPayment(String name, double price, bool isAnnual, {DateTime? paymentDate}) {
     final payment = Payment(
