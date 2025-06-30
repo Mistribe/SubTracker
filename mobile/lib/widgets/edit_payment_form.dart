@@ -18,8 +18,6 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
   late final TextEditingController _nameController;
   late final TextEditingController _priceController;
   late bool _isAnnual;
-  late DateTime _selectedDate;
-
   @override
   void initState() {
     super.initState();
@@ -27,7 +25,6 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
     _nameController = TextEditingController(text: widget.payment.name);
     _priceController = TextEditingController(text: widget.payment.price.toString());
     _isAnnual = widget.payment.isAnnual;
-    _selectedDate = widget.payment.paymentDate;
   }
 
   @override
@@ -37,20 +34,7 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
     super.dispose();
   }
 
-  // Show date picker
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
+  // Date picker method removed as payment date is now fixed
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
@@ -58,11 +42,12 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
       final price = double.parse(_priceController.text);
 
       // Create updated payment object
+      // Note: We're using the original payment date to ensure it remains fixed
       final updatedPayment = widget.payment.copyWith(
         name: name,
         price: price,
         isAnnual: _isAnnual,
-        paymentDate: _selectedDate,
+        // Original payment date is preserved (not editable)
       );
 
       // Update the payment using the provider
@@ -153,12 +138,12 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
               },
             ),
             const SizedBox(height: 16),
-            // Date picker
+            // Payment date (non-editable)
             ListTile(
               leading: const Icon(Icons.calendar_today),
-              title: const Text('Payment Date'),
-              subtitle: Text('${_selectedDate.month}/${_selectedDate.day}/${_selectedDate.year}'),
-              onTap: () => _selectDate(context),
+              title: const Text('Payment Date (Fixed)'),
+              subtitle: Text('${widget.payment.paymentDate.month}/${widget.payment.paymentDate.day}/${widget.payment.paymentDate.year}'),
+              // Date is fixed and non-editable
             ),
             const SizedBox(height: 16),
             SwitchListTile(
