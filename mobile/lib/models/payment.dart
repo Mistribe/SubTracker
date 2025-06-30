@@ -1,9 +1,34 @@
+class PriceChange {
+  final double price;
+  final DateTime endDate;
+
+  PriceChange({
+    required this.price,
+    required this.endDate,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'price': price,
+      'endDate': endDate.millisecondsSinceEpoch,
+    };
+  }
+
+  factory PriceChange.fromJson(Map<String, dynamic> json) {
+    return PriceChange(
+      price: json['price'],
+      endDate: DateTime.fromMillisecondsSinceEpoch(json['endDate']),
+    );
+  }
+}
+
 class Payment {
   final String id;
   final String name;
   final double price;
   final bool isAnnual;
   final DateTime paymentDate;
+  final List<PriceChange> priceHistory;
 
   Payment({
     required this.id,
@@ -11,10 +36,41 @@ class Payment {
     required this.price,
     required this.isAnnual,
     DateTime? paymentDate,
-  }) : this.paymentDate = paymentDate ?? DateTime.now();
+    List<PriceChange>? priceHistory,
+  }) : 
+    paymentDate = paymentDate ?? DateTime.now(),
+    priceHistory = priceHistory ?? [];
 
-  // Calculate the monthly cost
+  // Get price at a specific date, considering price history
+  double getPriceAtDate(DateTime date) {
+    // If the date is before the payment start date, return the initial price
+    if (date.isBefore(paymentDate)) {
+      return price;
+    }
+
+    // Sort price history by date (newest first)
+    final sortedHistory = List<PriceChange>.from(priceHistory)
+      ..sort((a, b) => b.endDate.compareTo(a.endDate));
+
+    // Find the most recent price change before or at the given date
+    for (var priceChange in sortedHistory) {
+      if (!date.isBefore(priceChange.endDate)) {
+        return priceChange.price;
+      }
+    }
+
+    // If no applicable price change found, return the current price
+    return price;
+  }
+
+  // Calculate the monthly cost based on current price
   double get monthlyCost => isAnnual ? price / 12 : price;
+
+  // Calculate the monthly cost at a specific date
+  double getMonthlyCostAtDate(DateTime date) {
+    final priceAtDate = getPriceAtDate(date);
+    return isAnnual ? priceAtDate / 12 : priceAtDate;
+  }
 
   // Calculate the next payment date
   DateTime get nextPaymentDate {
@@ -29,13 +85,10 @@ class Payment {
       }
       return nextDate;
     } else {
+      final currentDate = DateTime.now();
       // For monthly payments, add 1 month from the payment date
-      DateTime nextDate = DateTime(paymentDate.year, paymentDate.month + 1, paymentDate.day);
+      DateTime nextDate = DateTime(currentDate.year, currentDate.month + 1, paymentDate.day);
 
-      // If the next date is in the past, keep adding months until it's in the future
-      while (nextDate.isBefore(now)) {
-        nextDate = DateTime(nextDate.year, nextDate.month + 1, nextDate.day);
-      }
       return nextDate;
     }
   }
@@ -46,27 +99,39 @@ class Payment {
     return '${date.month}/${date.day}/${date.year}';
   }
 
-  // Calculate the total amount spent since the payment started
+  // Calculate the total amount spent since the payment started, considering price history
   double get totalAmountSpent {
     final now = DateTime.now();
     final startDate = paymentDate;
+    double total = 0.0;
 
     if (isAnnual) {
-      // Calculate years passed (including partial years)
-      int yearsPassed = now.year - startDate.year;
-      if (now.month < startDate.month || 
-          (now.month == startDate.month && now.day < startDate.day)) {
-        yearsPassed--;
+      // For annual payments, calculate each year's payment separately
+      DateTime currentDate = DateTime(startDate.year, startDate.month, startDate.day);
+
+      while (currentDate.isBefore(now)) {
+        // Get the price at this payment date
+        final priceAtDate = getPriceAtDate(currentDate);
+        total += priceAtDate;
+
+        // Move to next year
+        currentDate = DateTime(currentDate.year + 1, currentDate.month, currentDate.day);
       }
-      return yearsPassed > 0 ? price * yearsPassed : 0;
     } else {
-      // Calculate months passed
-      int monthsPassed = (now.year - startDate.year) * 12 + now.month - startDate.month;
-      if (now.day < startDate.day) {
-        monthsPassed--;
+      // For monthly payments, calculate each month's payment separately
+      DateTime currentDate = DateTime(startDate.year, startDate.month, startDate.day);
+
+      while (currentDate.isBefore(now)) {
+        // Get the price at this payment date
+        final priceAtDate = getPriceAtDate(currentDate);
+        total += priceAtDate;
+
+        // Move to next month
+        currentDate = DateTime(currentDate.year, currentDate.month + 1, currentDate.day);
       }
-      return monthsPassed > 0 ? price * monthsPassed : 0;
     }
+
+    return total;
   }
 
   // Format the total amount spent as a string
@@ -81,6 +146,7 @@ class Payment {
     double? price,
     bool? isAnnual,
     DateTime? paymentDate,
+    List<PriceChange>? priceHistory,
   }) {
     return Payment(
       id: id ?? this.id,
@@ -88,6 +154,7 @@ class Payment {
       price: price ?? this.price,
       isAnnual: isAnnual ?? this.isAnnual,
       paymentDate: paymentDate ?? this.paymentDate,
+      priceHistory: priceHistory ?? this.priceHistory,
     );
   }
 
@@ -99,6 +166,7 @@ class Payment {
       'price': price,
       'isAnnual': isAnnual,
       'paymentDate': paymentDate.millisecondsSinceEpoch,
+      'priceHistory': priceHistory.map((change) => change.toJson()).toList(),
     };
   }
 
@@ -109,6 +177,11 @@ class Payment {
       price: json['price'],
       isAnnual: json['isAnnual'],
       paymentDate: DateTime.fromMillisecondsSinceEpoch(json['paymentDate']),
+      priceHistory: json['priceHistory'] != null
+          ? (json['priceHistory'] as List)
+              .map((item) => PriceChange.fromJson(item))
+              .toList()
+          : [],
     );
   }
 }

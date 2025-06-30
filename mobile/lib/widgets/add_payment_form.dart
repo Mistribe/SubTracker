@@ -135,7 +135,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
             // Date picker
             ListTile(
               leading: const Icon(Icons.calendar_today),
-              title: const Text('Payment Date'),
+              title: const Text('First Payment Date'),
               subtitle: Text('${_selectedDate.month}/${_selectedDate.day}/${_selectedDate.year}'),
               onTap: () => _selectDate(context),
             ),

@@ -48,8 +48,91 @@ class PaymentProvider with ChangeNotifier {
     final index = _payments.indexWhere((payment) => payment.id == updatedPayment.id);
 
     if (index >= 0) {
+      final oldPayment = _payments[index];
+
+      // Check if price has changed
+      if (oldPayment.price != updatedPayment.price) {
+        // Create a copy of the price history
+        final newPriceHistory = List<PriceChange>.from(updatedPayment.priceHistory);
+
+        // Add the old price to the history with the current date
+        // This records when the price was changed
+        newPriceHistory.add(PriceChange(
+          price: oldPayment.price,
+          endDate: DateTime.now(),
+        ));
+
+        // Create a new payment with updated price history
+        updatedPayment = updatedPayment.copyWith(
+          priceHistory: newPriceHistory,
+        );
+      }
+
       _payments[index] = updatedPayment;
       notifyListeners();
+    }
+  }
+
+  // Add a price change at a specific date
+  void addPriceChange(String paymentId, double newPrice, DateTime effectiveDate) {
+    final index = _payments.indexWhere((payment) => payment.id == paymentId);
+
+    if (index >= 0) {
+      final payment = _payments[index];
+
+      // Create a copy of the price history
+      final newPriceHistory = List<PriceChange>.from(payment.priceHistory);
+
+      // Add the old price to the history with the effective date
+      // This records when the price was changed
+      newPriceHistory.add(PriceChange(
+        price: payment.price,
+        endDate: effectiveDate,
+      ));
+
+      // Sort price history by date (newest first)
+      newPriceHistory.sort((a, b) => b.endDate.compareTo(a.endDate));
+
+      // Create a new payment with updated price history and new current price
+      final updatedPayment = payment.copyWith(
+        price: newPrice,
+        priceHistory: newPriceHistory,
+      );
+
+      _payments[index] = updatedPayment;
+      notifyListeners();
+    }
+  }
+
+  // Update a price change at a specific index
+  void updatePriceChange(String paymentId, int priceChangeIndex, double newPrice, DateTime newDate) {
+    final index = _payments.indexWhere((payment) => payment.id == paymentId);
+
+    if (index >= 0) {
+      final payment = _payments[index];
+
+      // Make sure the index is valid
+      if (priceChangeIndex >= 0 && priceChangeIndex < payment.priceHistory.length) {
+        // Create a copy of the price history
+        final newPriceHistory = List<PriceChange>.from(payment.priceHistory);
+
+        // Update the price change at the specified index
+        newPriceHistory[priceChangeIndex] = PriceChange(
+          price: newPrice,
+          endDate: newDate,
+        );
+
+        // Sort price history by date (newest first)
+        newPriceHistory.sort((a, b) => b.endDate.compareTo(a.endDate));
+
+        // Create a new payment with updated price history
+        final updatedPayment = payment.copyWith(
+          priceHistory: newPriceHistory,
+        );
+
+        _payments[index] = updatedPayment;
+        notifyListeners();
+      }
     }
   }
 
