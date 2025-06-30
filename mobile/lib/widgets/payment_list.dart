@@ -232,7 +232,7 @@ class PaymentCard extends StatelessWidget {
                 ),
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert),
-                  onSelected: (value) {
+                  onSelected: (value) async {
                     if (value == 'edit') {
                       showModalBottomSheet(
                         context: context,
@@ -242,13 +242,35 @@ class PaymentCard extends StatelessWidget {
                     } else if (value == 'addPriceChange') {
                       _showAddPriceChangeDialog(context);
                     } else if (value == 'delete') {
-                      paymentProvider.removePayment(payment.id);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${payment.name} removed'),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
+                      try {
+                        // Show loading indicator
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Removing payment...'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+
+                        // Remove the payment
+                        await paymentProvider.removePayment(payment.id);
+
+                        // Show success message
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${payment.name} removed'),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      } catch (e) {
+                        // Show error message
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error removing payment: ${e.toString()}'),
+                            backgroundColor: Colors.red,
+                            duration: const Duration(seconds: 3),
+                          ),
+                        );
+                      }
                     }
                   },
                   itemBuilder: (context) => [

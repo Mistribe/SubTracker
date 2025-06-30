@@ -39,25 +39,44 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
     }
   }
 
-  void _submitForm() {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       final name = _nameController.text.trim();
       final price = double.parse(_priceController.text);
 
-      // Add the payment using the provider
-      Provider.of<PaymentProvider>(context, listen: false)
-          .addPayment(name, price, _isAnnual, paymentDate: _selectedDate);
+      try {
+        // Show loading indicator
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Adding payment...'),
+            duration: Duration(seconds: 1),
+          ),
+        );
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Payment added successfully'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+        // Add the payment using the provider
+        await Provider.of<PaymentProvider>(context, listen: false)
+            .addPayment(name, price, _isAnnual, paymentDate: _selectedDate);
 
-      // Close the form
-      Navigator.of(context).pop();
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Payment added successfully'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // Close the form
+        Navigator.of(context).pop();
+      } catch (e) {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error adding payment: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 

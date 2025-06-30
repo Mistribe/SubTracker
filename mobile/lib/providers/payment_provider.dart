@@ -1,9 +1,22 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../models/payment.dart';
+import '../repositories/payment_repository.dart';
 
 class PaymentProvider with ChangeNotifier {
-  final List<Payment> _payments = [];
+  final PaymentRepository paymentRepository;
+  List<Payment> _payments = [];
+
+  PaymentProvider({required this.paymentRepository}) {
+    // Load payments from repository
+    _loadPayments();
+  }
+
+  // Load payments from repository
+  Future<void> _loadPayments() async {
+    _payments = paymentRepository.getAllPayments();
+    notifyListeners();
+  }
 
   // Getter for the payments list
   List<Payment> get payments => List.unmodifiable(_payments);
@@ -24,7 +37,7 @@ class PaymentProvider with ChangeNotifier {
   }
 
   // Add a new payment
-  void addPayment(String name, double price, bool isAnnual, {DateTime? paymentDate}) {
+  Future<void> addPayment(String name, double price, bool isAnnual, {DateTime? paymentDate}) async {
     final payment = Payment(
       id: _generateId(),
       name: name,
@@ -33,18 +46,27 @@ class PaymentProvider with ChangeNotifier {
       paymentDate: paymentDate,
     );
 
+    // Add to local list
     _payments.add(payment);
+
+    // Persist to storage
+    await paymentRepository.addPayment(payment);
+
     notifyListeners();
   }
 
   // Remove a payment
-  void removePayment(String id) {
+  Future<void> removePayment(String id) async {
     _payments.removeWhere((payment) => payment.id == id);
+
+    // Remove from storage
+    await paymentRepository.deletePayment(id);
+
     notifyListeners();
   }
 
   // Update an existing payment
-  void updatePayment(Payment updatedPayment) {
+  Future<void> updatePayment(Payment updatedPayment) async {
     final index = _payments.indexWhere((payment) => payment.id == updatedPayment.id);
 
     if (index >= 0) {
@@ -68,13 +90,18 @@ class PaymentProvider with ChangeNotifier {
         );
       }
 
+      // Update local list
       _payments[index] = updatedPayment;
+
+      // Persist to storage
+      await paymentRepository.updatePayment(updatedPayment);
+
       notifyListeners();
     }
   }
 
   // Add a price change at a specific date
-  void addPriceChange(String paymentId, double newPrice, DateTime effectiveDate) {
+  Future<void> addPriceChange(String paymentId, double newPrice, DateTime effectiveDate) async {
     final index = _payments.indexWhere((payment) => payment.id == paymentId);
 
     if (index >= 0) {
@@ -99,13 +126,18 @@ class PaymentProvider with ChangeNotifier {
         priceHistory: newPriceHistory,
       );
 
+      // Update local list
       _payments[index] = updatedPayment;
+
+      // Persist to storage
+      await paymentRepository.updatePayment(updatedPayment);
+
       notifyListeners();
     }
   }
 
   // Update a price change at a specific index
-  void updatePriceChange(String paymentId, int priceChangeIndex, double newPrice, DateTime newDate) {
+  Future<void> updatePriceChange(String paymentId, int priceChangeIndex, double newPrice, DateTime newDate) async {
     final index = _payments.indexWhere((payment) => payment.id == paymentId);
 
     if (index >= 0) {
@@ -130,7 +162,12 @@ class PaymentProvider with ChangeNotifier {
           priceHistory: newPriceHistory,
         );
 
+        // Update local list
         _payments[index] = updatedPayment;
+
+        // Persist to storage
+        await paymentRepository.updatePayment(updatedPayment);
+
         notifyListeners();
       }
     }

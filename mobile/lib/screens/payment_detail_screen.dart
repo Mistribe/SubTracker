@@ -136,7 +136,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                 child: const Text('Cancel'),
               ),
               TextButton(
-                onPressed: () {
+                onPressed: () async {
                   if (priceController.text.isNotEmpty) {
                     try {
                       final newPrice = double.parse(priceController.text);
@@ -147,8 +147,16 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         return;
                       }
 
+                      // Show loading indicator
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Updating price change...'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+
                       // Update the price change using the provider
-                      Provider.of<PaymentProvider>(context, listen: false)
+                      await Provider.of<PaymentProvider>(context, listen: false)
                           .updatePriceChange(payment.id, priceChangeIndex, newPrice, selectedDate);
 
                       Navigator.of(context).pop();
@@ -162,7 +170,11 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       );
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please enter a valid number')),
+                        SnackBar(
+                          content: Text('Error: ${e.toString()}'),
+                          backgroundColor: Colors.red,
+                          duration: const Duration(seconds: 3),
+                        ),
                       );
                     }
                   } else {
@@ -293,7 +305,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                 child: const Text('Cancel'),
               ),
               TextButton(
-                onPressed: () {
+                onPressed: () async {
                   if (priceController.text.isNotEmpty) {
                     try {
                       final newPrice = double.parse(priceController.text);
@@ -304,8 +316,16 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         return;
                       }
 
+                      // Show loading indicator
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Adding price change...'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+
                       // Add the price change using the provider
-                      Provider.of<PaymentProvider>(context, listen: false)
+                      await Provider.of<PaymentProvider>(context, listen: false)
                           .addPriceChange(payment.id, newPrice, selectedDate);
 
                       Navigator.of(context).pop();
@@ -319,7 +339,11 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       );
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please enter a valid number')),
+                        SnackBar(
+                          content: Text('Error: ${e.toString()}'),
+                          backgroundColor: Colors.red,
+                          duration: const Duration(seconds: 3),
+                        ),
                       );
                     }
                   } else {

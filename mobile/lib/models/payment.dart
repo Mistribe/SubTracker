@@ -1,5 +1,13 @@
+import 'package:hive/hive.dart';
+
+part 'payment.g.dart';
+
+@HiveType(typeId: 1)
 class PriceChange {
+  @HiveField(0)
   final double price;
+
+  @HiveField(1)
   final DateTime endDate;
 
   PriceChange({
@@ -22,12 +30,24 @@ class PriceChange {
   }
 }
 
-class Payment {
+@HiveType(typeId: 0)
+class Payment extends HiveObject {
+  @HiveField(0)
   final String id;
+
+  @HiveField(1)
   final String name;
+
+  @HiveField(2)
   final double price;
+
+  @HiveField(3)
   final bool isAnnual;
+
+  @HiveField(4)
   final DateTime paymentDate;
+
+  @HiveField(5)
   final List<PriceChange> priceHistory;
 
   Payment({
@@ -104,6 +124,11 @@ class Payment {
     final now = DateTime.now();
     final startDate = paymentDate;
     double total = 0.0;
+
+    // If the payment starts today or in the future, return 0
+    if (!startDate.isBefore(DateTime(now.year, now.month, now.day))) {
+      return 0.0;
+    }
 
     if (isAnnual) {
       // For annual payments, calculate each year's payment separately

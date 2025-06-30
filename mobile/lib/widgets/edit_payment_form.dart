@@ -36,34 +36,53 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
 
   // Date picker method removed as payment date is now fixed
 
-  void _submitForm() {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       final name = _nameController.text.trim();
       final price = double.parse(_priceController.text);
 
-      // Create updated payment object
-      // Note: We're using the original payment date to ensure it remains fixed
-      final updatedPayment = widget.payment.copyWith(
-        name: name,
-        price: price,
-        isAnnual: _isAnnual,
-        // Original payment date is preserved (not editable)
-      );
+      try {
+        // Show loading indicator
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Updating payment...'),
+            duration: Duration(seconds: 1),
+          ),
+        );
 
-      // Update the payment using the provider
-      Provider.of<PaymentProvider>(context, listen: false)
-          .updatePayment(updatedPayment);
+        // Create updated payment object
+        // Note: We're using the original payment date to ensure it remains fixed
+        final updatedPayment = widget.payment.copyWith(
+          name: name,
+          price: price,
+          isAnnual: _isAnnual,
+          // Original payment date is preserved (not editable)
+        );
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Payment updated successfully'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+        // Update the payment using the provider
+        await Provider.of<PaymentProvider>(context, listen: false)
+            .updatePayment(updatedPayment);
 
-      // Close the form
-      Navigator.of(context).pop();
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Payment updated successfully'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // Close the form
+        Navigator.of(context).pop();
+      } catch (e) {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating payment: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 

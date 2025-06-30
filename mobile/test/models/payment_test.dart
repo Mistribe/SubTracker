@@ -1,7 +1,29 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:mobile/models/payment.dart';
+import 'dart:io';
+import 'package:path/path.dart' as path;
 
 void main() {
+  setUp(() async {
+    // Set up a temporary directory for Hive
+    final tempDir = await Directory.systemTemp.createTemp('hive_test');
+    Hive.init(tempDir.path);
+
+    // Register adapters
+    if (!Hive.isAdapterRegistered(0)) {
+      Hive.registerAdapter(PaymentAdapter());
+    }
+    if (!Hive.isAdapterRegistered(1)) {
+      Hive.registerAdapter(PriceChangeAdapter());
+    }
+  });
+
+  tearDown(() async {
+    // Clean up after each test
+    await Hive.close();
+  });
   group('Payment', () {
     test('totalAmountSpent for monthly payment', () {
       // Create a payment that started 3 months ago
