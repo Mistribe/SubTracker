@@ -1,14 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 class ThemeProvider with ChangeNotifier {
   bool _isDarkMode = false;
+  bool _useSystemTheme = true;
+
+  ThemeProvider() {
+    // Initialize with system theme
+    _initializeWithSystemTheme();
+  }
+
+  void _initializeWithSystemTheme() {
+    var brightness = SchedulerBinding.instance.platformDispatcher.platformBrightness;
+    _isDarkMode = brightness == Brightness.dark;
+  }
 
   bool get isDarkMode => _isDarkMode;
+  bool get useSystemTheme => _useSystemTheme;
 
-  ThemeMode get themeMode => _isDarkMode ? ThemeMode.dark : ThemeMode.light;
+  ThemeMode get themeMode {
+    if (_useSystemTheme) {
+      return ThemeMode.system;
+    }
+    return _isDarkMode ? ThemeMode.dark : ThemeMode.light;
+  }
 
   void toggleTheme() {
+    _useSystemTheme = false;
     _isDarkMode = !_isDarkMode;
+    notifyListeners();
+  }
+
+  void setSystemTheme() {
+    _useSystemTheme = true;
+    _initializeWithSystemTheme();
     notifyListeners();
   }
 

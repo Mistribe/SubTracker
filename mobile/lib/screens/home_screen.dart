@@ -4,6 +4,7 @@ import '../providers/payment_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/payment_list.dart';
 import '../widgets/add_payment_form.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -12,17 +13,20 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final paymentProvider = Provider.of<PaymentProvider>(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Recurrent Payment Tracker'),
         actions: [
           IconButton(
-            icon: Icon(
-              themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-            ),
-            onPressed: themeProvider.toggleTheme,
-            tooltip: 'Toggle theme',
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+            tooltip: 'Settings',
           ),
         ],
       ),
@@ -56,7 +60,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Payment list
           const Expanded(
             child: PaymentList(),
