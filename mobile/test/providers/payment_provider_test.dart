@@ -100,6 +100,60 @@ void main() {
       expect(provider.payments[0].name, 'Spotify');
     });
 
+    test('stopPayment and reactivatePayment work correctly', () async {
+      // Add a payment
+      await provider.addPayment('Netflix', 15.99, false);
+      final payments = provider.payments;
+      final paymentId = payments[0].id;
+
+      // Initially the payment should be active
+      expect(payments[0].isStopped, false);
+      expect(provider.activePaymentsCount, 1);
+
+      // Stop the payment with default stop date (last payment date)
+      await provider.stopPayment(paymentId);
+
+      // Verify that the payment is stopped
+      final stoppedPayments = provider.payments;
+      expect(stoppedPayments[0].isStopped, true);
+      expect(stoppedPayments[0].reactivationDate, null);
+      expect(stoppedPayments[0].stopDate, isNotNull); // Should have a stop date
+
+      // Verify that the payment is not counted in active payments
+      expect(provider.activePaymentsCount, 0);
+
+      // Reactivate the payment with a future date
+      final reactivationDate = DateTime.now().add(const Duration(days: 30));
+      await provider.reactivatePayment(paymentId, reactivationDate);
+
+      // Verify that the payment is still stopped but has a reactivation date
+      final reactivatedPayments = provider.payments;
+      expect(reactivatedPayments[0].isStopped, true);
+      expect(reactivatedPayments[0].reactivationDate, reactivationDate);
+      expect(reactivatedPayments[0].stopDate, isNotNull); // Should still have a stop date
+
+      // Verify that the payment is still not counted in active payments
+      expect(provider.activePaymentsCount, 0);
+    });
+
+    test('stopPayment with custom stop date works correctly', () async {
+      // Add a payment
+      await provider.addPayment('Netflix', 15.99, false);
+      final payments = provider.payments;
+      final paymentId = payments[0].id;
+
+      // Create a custom stop date
+      final customStopDate = DateTime.now().subtract(const Duration(days: 15));
+
+      // Stop the payment with custom stop date
+      await provider.stopPayment(paymentId, stopDate: customStopDate);
+
+      // Verify that the payment is stopped with the custom stop date
+      final stoppedPayments = provider.payments;
+      expect(stoppedPayments[0].isStopped, true);
+      expect(stoppedPayments[0].stopDate, customStopDate);
+    });
+
     test('totalAmountSpent calculates correctly', () async {
       // Create payment dates
       final threeMonthsAgo = DateTime.now().subtract(const Duration(days: 90));
@@ -127,6 +181,38 @@ void main() {
       await provider.addPayment('New Service', 9.99, false);
       // Total should still be the same as before
       expect(provider.totalAmountSpent, closeTo(expectedTotal, 0.01));
+    });
+
+    test('totalAmountSpent excludes stopped payments', () async {
+      // Create payment dates
+      final threeMonthsAgo = DateTime.now().subtract(const Duration(days: 90));
+
+      // Add a monthly payment that started 3 months ago
+      await provider.addPayment('Netflix', 15.99, false, paymentDate: threeMonthsAgo);
+      // Should have paid 3 times (once per month)
+      final initialTotal = 15.99 * 3;
+      expect(provider.totalAmountSpent, closeTo(initialTotal, 0.01));
+
+      // Stop the payment
+      final payments = provider.payments;
+      final paymentId = payments[0].id;
+      await provider.stopPayment(paymentId);
+
+      // Total amount spent should be 0 since the payment is stopped
+      expect(provider.totalAmountSpent, 0);
+
+      // Reactivate the payment with a future date
+      final reactivationDate = DateTime.now().add(const Duration(days: 30));
+      await provider.reactivatePayment(paymentId, reactivationDate);
+
+      // Total amount spent should still be 0 since the payment is still stopped
+      expect(provider.totalAmountSpent, 0);
+
+      // Add another active payment
+      await provider.addPayment('Spotify', 9.99, false, paymentDate: threeMonthsAgo);
+
+      // Total amount spent should only include the active payment
+      expect(provider.totalAmountSpent, closeTo(9.99 * 3, 0.01));
     });
   });
 }
