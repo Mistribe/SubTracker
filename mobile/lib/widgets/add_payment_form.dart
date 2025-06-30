@@ -54,8 +54,10 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
         );
 
         // Add the payment using the provider
-        await Provider.of<PaymentProvider>(context, listen: false)
-            .addPayment(name, price, _isAnnual, paymentDate: _selectedDate);
+        await Provider.of<PaymentProvider>(
+          context,
+          listen: false,
+        ).addPayment(name, price, _isAnnual ? 12 : 1, _selectedDate);
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
@@ -101,10 +103,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
           children: [
             const Text(
               'Add New Payment',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -131,7 +130,9 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
                 hintText: 'Enter the amount',
                 prefixIcon: Icon(Icons.attach_money),
               ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
               ],
@@ -155,13 +156,17 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
             ListTile(
               leading: const Icon(Icons.calendar_today),
               title: const Text('First Payment Date'),
-              subtitle: Text('${_selectedDate.month}/${_selectedDate.day}/${_selectedDate.year}'),
+              subtitle: Text(
+                '${_selectedDate.month}/${_selectedDate.day}/${_selectedDate.year}',
+              ),
               onTap: () => _selectDate(context),
             ),
             const SizedBox(height: 16),
             SwitchListTile(
               title: const Text('Annual Payment'),
-              subtitle: const Text('Toggle if this is paid yearly instead of monthly'),
+              subtitle: const Text(
+                'Toggle if this is paid yearly instead of monthly',
+              ),
               value: _isAnnual,
               onChanged: (value) {
                 setState(() {
@@ -175,10 +180,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              child: const Text(
-                'Add Payment',
-                style: TextStyle(fontSize: 16),
-              ),
+              child: const Text('Add Payment', style: TextStyle(fontSize: 16)),
             ),
           ],
         ),

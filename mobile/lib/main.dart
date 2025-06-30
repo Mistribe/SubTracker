@@ -16,7 +16,7 @@ void main() async {
 
   // Register Hive adapters
   Hive.registerAdapter(PaymentAdapter());
-  Hive.registerAdapter(PriceChangeAdapter());
+  Hive.registerAdapter(PaymentDetailAdapter());
 
   // Initialize repository
   final paymentRepository = PaymentRepository();
@@ -34,7 +34,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => PaymentProvider(paymentRepository: paymentRepository)),
+        ChangeNotifierProvider(
+          create: (_) => PaymentProvider(paymentRepository: paymentRepository),
+        ),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: Consumer<ThemeProvider>(

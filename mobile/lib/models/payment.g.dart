@@ -6,6 +6,52 @@ part of 'payment.dart';
 // TypeAdapterGenerator
 // **************************************************************************
 
+class PaymentDetailAdapter extends TypeAdapter<PaymentDetail> {
+  @override
+  final int typeId = 1;
+
+  @override
+  PaymentDetail read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return PaymentDetail(
+      id: fields[0] as String,
+      price: fields[1] as double,
+      startDate: fields[2] as DateTime,
+      endDate: fields[3] as DateTime?,
+      months: fields[4] as int,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, PaymentDetail obj) {
+    writer
+      ..writeByte(5)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.price)
+      ..writeByte(2)
+      ..write(obj.startDate)
+      ..writeByte(3)
+      ..write(obj.endDate)
+      ..writeByte(4)
+      ..write(obj.months);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PaymentDetailAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
 class PaymentAdapter extends TypeAdapter<Payment> {
   @override
   final int typeId = 0;
@@ -19,29 +65,20 @@ class PaymentAdapter extends TypeAdapter<Payment> {
     return Payment(
       id: fields[0] as String,
       name: fields[1] as String,
-      price: fields[2] as double,
-      isAnnual: fields[3] as bool,
-      paymentDate: fields[4] as DateTime,
-      priceHistory: (fields[5] as List?)?.cast<PriceChange>(),
+      paymentDetails: (fields[3] as List?)?.cast<PaymentDetail>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, Payment obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
       ..write(obj.name)
-      ..writeByte(2)
-      ..write(obj.price)
       ..writeByte(3)
-      ..write(obj.isAnnual)
-      ..writeByte(4)
-      ..write(obj.paymentDate)
-      ..writeByte(5)
-      ..write(obj.priceHistory);
+      ..write(obj.paymentDetails);
   }
 
   @override
@@ -51,43 +88,6 @@ class PaymentAdapter extends TypeAdapter<Payment> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is PaymentAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
-}
-
-class PriceChangeAdapter extends TypeAdapter<PriceChange> {
-  @override
-  final int typeId = 1;
-
-  @override
-  PriceChange read(BinaryReader reader) {
-    final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
-    return PriceChange(
-      price: fields[0] as double,
-      endDate: fields[1] as DateTime,
-    );
-  }
-
-  @override
-  void write(BinaryWriter writer, PriceChange obj) {
-    writer
-      ..writeByte(2)
-      ..writeByte(0)
-      ..write(obj.price)
-      ..writeByte(1)
-      ..write(obj.endDate);
-  }
-
-  @override
-  int get hashCode => typeId.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is PriceChangeAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

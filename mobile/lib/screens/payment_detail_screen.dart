@@ -23,175 +23,6 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
     payment = widget.payment;
   }
 
-  // Show dialog to edit a price change
-  void _showEditPriceChangeDialog(BuildContext context, int priceChangeIndex) {
-    final priceChange = payment.priceHistory[priceChangeIndex];
-    final priceController = TextEditingController(text: priceChange.price.toString());
-    DateTime selectedDate = priceChange.endDate;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Edit Price Change'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: priceController,
-                  decoration: const InputDecoration(
-                    labelText: 'Price',
-                    hintText: 'Enter the price',
-                    prefixIcon: Icon(Icons.attach_money),
-                  ),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                if (payment.isAnnual)
-                  // For yearly payments, only allow changing the year
-                  ListTile(
-                    leading: const Icon(Icons.calendar_today),
-                    title: const Text('Effective Year'),
-                    subtitle: Text('${selectedDate.year}'),
-                    onTap: () async {
-                      // Show a dialog to select only the year
-                      final int? selectedYear = await showDialog<int>(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Select Year'),
-                            content: SizedBox(
-                              height: 300,
-                              width: 300,
-                              child: ListView.builder(
-                                itemCount: 30, // Show 30 years from current year
-                                itemBuilder: (context, index) {
-                                  final int yearOption = DateTime.now().year + index;
-                                  return ListTile(
-                                    title: Text(yearOption.toString()),
-                                    onTap: () {
-                                      Navigator.of(context).pop(yearOption);
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                          );
-                        },
-                      );
-
-                      if (selectedYear != null) {
-                        setState(() {
-                          // Keep the same month and day, only change the year
-                          selectedDate = DateTime(
-                            selectedYear,
-                            selectedDate.month,
-                            selectedDate.day,
-                          );
-                        });
-                      }
-                    },
-                  )
-                else
-                  // For monthly payments, allow changing year and month
-                  ListTile(
-                    leading: const Icon(Icons.calendar_today),
-                    title: const Text('Effective Month/Year'),
-                    subtitle: Text('${selectedDate.month}/${selectedDate.year}'),
-                    onTap: () async {
-                      // Show a dialog to select month and year
-                      final DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: selectedDate,
-                        firstDate: payment.paymentDate,
-                        lastDate: DateTime(2101),
-                        selectableDayPredicate: (DateTime date) {
-                          // Only allow selecting the same day of the month as the payment date
-                          return date.day == payment.paymentDate.day;
-                        },
-                      );
-                      if (picked != null && picked != selectedDate) {
-                        setState(() {
-                          // Ensure we keep the same day as the payment date
-                          selectedDate = DateTime(
-                            picked.year,
-                            picked.month,
-                            payment.paymentDate.day,
-                          );
-                        });
-                      }
-                    },
-                  ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () async {
-                  if (priceController.text.isNotEmpty) {
-                    try {
-                      final newPrice = double.parse(priceController.text);
-                      if (newPrice <= 0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Price must be greater than zero')),
-                        );
-                        return;
-                      }
-
-                      // Show loading indicator
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Updating price change...'),
-                          duration: Duration(seconds: 1),
-                        ),
-                      );
-
-                      // Update the price change using the provider
-                      await Provider.of<PaymentProvider>(context, listen: false)
-                          .updatePriceChange(payment.id, priceChangeIndex, newPrice, selectedDate);
-
-                      Navigator.of(context).pop();
-
-                      // Show success message
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Price change updated successfully'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Error: ${e.toString()}'),
-                          backgroundColor: Colors.red,
-                          duration: const Duration(seconds: 3),
-                        ),
-                      );
-                    }
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please enter a price')),
-                    );
-                  }
-                },
-                child: const Text('Update'),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
   // Show dialog to stop a payment
   void _showStopPaymentDialog(BuildContext context) {
     // Default stop date is the current date
@@ -209,12 +40,14 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
               children: [
                 const Text(
                   'Are you sure you want to stop this payment? '
-                  'A stopped payment will not be counted in active or total payments.'
+                  'A stopped payment will not be counted in active or total payments.',
                 ),
                 const SizedBox(height: 16),
                 SwitchListTile(
                   title: const Text('Use last payment date'),
-                  subtitle: const Text('If enabled, the payment will be stopped at the last payment date'),
+                  subtitle: const Text(
+                    'If enabled, the payment will be stopped at the last payment date',
+                  ),
                   value: useLastPaymentDate,
                   onChanged: (value) {
                     setState(() {
@@ -226,12 +59,14 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                   ListTile(
                     leading: const Icon(Icons.calendar_today),
                     title: const Text('Stop Date'),
-                    subtitle: Text('${selectedDate.month}/${selectedDate.day}/${selectedDate.year}'),
+                    subtitle: Text(
+                      '${selectedDate.month}/${selectedDate.day}/${selectedDate.year}',
+                    ),
                     onTap: () async {
                       final DateTime? picked = await showDatePicker(
                         context: context,
                         initialDate: selectedDate,
-                        firstDate: payment.paymentDate,
+                        firstDate: payment.getLastPaymentDetail().startDate,
                         lastDate: DateTime.now(),
                       );
                       if (picked != null && picked != selectedDate) {
@@ -262,8 +97,13 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     );
 
                     // Stop the payment using the provider
-                    await Provider.of<PaymentProvider>(context, listen: false)
-                        .stopPayment(payment.id, stopDate: useLastPaymentDate ? null : selectedDate);
+                    await Provider.of<PaymentProvider>(
+                      context,
+                      listen: false,
+                    ).stopPayment(
+                      payment.id,
+                      stopDate: useLastPaymentDate ? null : selectedDate,
+                    );
 
                     Navigator.of(context).pop();
 
@@ -308,13 +148,15 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
               children: [
                 const Text(
                   'Select a date to reactivate this payment. '
-                  'The payment will be reactivated on this date.'
+                  'The payment will be reactivated on this date.',
                 ),
                 const SizedBox(height: 16),
                 ListTile(
                   leading: const Icon(Icons.calendar_today),
                   title: const Text('Reactivation Date'),
-                  subtitle: Text('${selectedDate.month}/${selectedDate.day}/${selectedDate.year}'),
+                  subtitle: Text(
+                    '${selectedDate.month}/${selectedDate.day}/${selectedDate.year}',
+                  ),
                   onTap: () async {
                     final DateTime? picked = await showDatePicker(
                       context: context,
@@ -350,15 +192,19 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     );
 
                     // Reactivate the payment using the provider
-                    await Provider.of<PaymentProvider>(context, listen: false)
-                        .reactivatePayment(payment.id, selectedDate);
+                    await Provider.of<PaymentProvider>(
+                      context,
+                      listen: false,
+                    ).reactivatePayment(payment.id, selectedDate);
 
                     Navigator.of(context).pop();
 
                     // Show success message
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Payment reactivation scheduled successfully'),
+                        content: Text(
+                          'Payment reactivation scheduled successfully',
+                        ),
                         duration: Duration(seconds: 2),
                       ),
                     );
@@ -381,8 +227,8 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
     );
   }
 
-  // Show dialog to add a price change
-  void _showAddPriceChangeDialog(BuildContext context) {
+  // Show dialog to add a payment history entry
+  void _showAddPaymentHistoryDialog(BuildContext context) {
     final priceController = TextEditingController();
     DateTime selectedDate = DateTime.now();
 
@@ -402,9 +248,13 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     hintText: 'Enter the new price',
                     prefixIcon: Icon(Icons.attach_money),
                   ),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d+\.?\d{0,2}'),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -426,9 +276,11 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                               height: 300,
                               width: 300,
                               child: ListView.builder(
-                                itemCount: 30, // Show 30 years from current year
+                                itemCount: 30,
+                                // Show 30 years from current year
                                 itemBuilder: (context, index) {
-                                  final int yearOption = DateTime.now().year + index;
+                                  final int yearOption =
+                                      DateTime.now().year + index;
                                   return ListTile(
                                     title: Text(yearOption.toString()),
                                     onTap: () {
@@ -459,7 +311,9 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                   ListTile(
                     leading: const Icon(Icons.calendar_today),
                     title: const Text('Effective Month/Year'),
-                    subtitle: Text('${selectedDate.month}/${selectedDate.year}'),
+                    subtitle: Text(
+                      '${selectedDate.month}/${selectedDate.year}',
+                    ),
                     onTap: () async {
                       // Show a dialog to select month and year
                       final DateTime? picked = await showDatePicker(
@@ -500,7 +354,9 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       final newPrice = double.parse(priceController.text);
                       if (newPrice <= 0) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Price must be greater than zero')),
+                          const SnackBar(
+                            content: Text('Price must be greater than zero'),
+                          ),
                         );
                         return;
                       }
@@ -513,9 +369,15 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         ),
                       );
 
-                      // Add the price change using the provider
-                      await Provider.of<PaymentProvider>(context, listen: false)
-                          .addPriceChange(payment.id, newPrice, selectedDate);
+                      // Add the payment history entry using the provider
+                      await Provider.of<PaymentProvider>(
+                        context,
+                        listen: false,
+                      ).addPaymentDetailEntry(
+                        payment.id,
+                        newPrice,
+                        selectedDate,
+                      );
 
                       Navigator.of(context).pop();
 
@@ -607,8 +469,8 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       isScrollControlled: true,
                       builder: (context) => EditPaymentForm(payment: payment),
                     );
-                  } else if (value == 'addPriceChange') {
-                    _showAddPriceChangeDialog(context);
+                  } else if (value == 'addPaymentHistory') {
+                    _showAddPaymentHistoryDialog(context);
                   } else if (value == 'stopPayment') {
                     _showStopPaymentDialog(context);
                   } else if (value == 'reactivatePayment') {
@@ -627,7 +489,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     ),
                   ),
                   const PopupMenuItem<String>(
-                    value: 'addPriceChange',
+                    value: 'addPaymentHistory',
                     child: Row(
                       children: [
                         Icon(Icons.price_change),
@@ -716,7 +578,9 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         buildInfoRow(
                           'Status:',
                           payment.isStopped ? 'Stopped' : 'Active',
-                          payment.isStopped ? Icons.stop_circle : Icons.check_circle,
+                          payment.isStopped
+                              ? Icons.stop_circle
+                              : Icons.check_circle,
                         ),
                         // Show stop date if payment is stopped and has a stop date
                         if (payment.isStopped && payment.stopDate != null)
@@ -726,7 +590,8 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                             Icons.stop_circle,
                           ),
                         // Show reactivation date if payment is stopped and has a reactivation date
-                        if (payment.isStopped && payment.reactivationDate != null)
+                        if (payment.isStopped &&
+                            payment.reactivationDate != null)
                           buildInfoRow(
                             'Reactivation Date:',
                             '${payment.reactivationDate!.month}/${payment.reactivationDate!.day}/${payment.reactivationDate!.year}',
@@ -739,74 +604,26 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
 
                 const SizedBox(height: 24),
 
-                // Price history section
+                // Payment History section
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Price History',
+                      'Payment History',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     ElevatedButton.icon(
                       icon: const Icon(Icons.add),
-                      label: const Text('Add Price Change'),
+                      label: const Text('Add Payment History'),
                       onPressed: () {
-                        _showAddPriceChangeDialog(context);
+                        _showAddPaymentHistoryDialog(context);
                       },
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
 
-                if (payment.priceHistory.isEmpty)
-                  const Card(
-                    child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Text(
-                        'No price changes recorded yet.',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  )
-                else
-                  Card(
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: payment.priceHistory.length,
-                      separatorBuilder: (context, index) => const Divider(),
-                      itemBuilder: (context, index) {
-                        final previousChangeDate = index == payment.priceHistory.length - 1
-                        ? payment.paymentDate : payment.priceHistory[index + 1].endDate;
-                        final priceChange = payment.priceHistory[index];
-                        return ListTile(
-                          leading: const Icon(Icons.history),
-                          title: Text('\$${priceChange.price.toStringAsFixed(2)}'),
-                          subtitle: Text(
-                            'from ${previousChangeDate.month}/${previousChangeDate.day}/${previousChangeDate.year} to ${priceChange.endDate.month}/${priceChange.endDate.day}/${priceChange.endDate.year}',
-                          ),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () {
-                              _showEditPriceChangeDialog(context, index);
-                            },
-                            tooltip: 'Edit Price Change',
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                const SizedBox(height: 24),
-
-                // Payment History section
-                Text(
-                  'Payment History',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-
-                if (payment.paymentHistory.isEmpty)
+                if (payment.paymentDetails.isEmpty)
                   const Card(
                     child: Padding(
                       padding: EdgeInsets.all(16.0),
@@ -821,13 +638,15 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     child: ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: payment.paymentHistory.length,
+                      itemCount: payment.paymentDetails.length,
                       separatorBuilder: (context, index) => const Divider(),
                       itemBuilder: (context, index) {
-                        final history = payment.paymentHistory[index];
+                        final history = payment.paymentDetails[index];
                         return ListTile(
                           leading: Icon(
-                            history.isActive ? Icons.check_circle : Icons.stop_circle,
+                            history.isActive
+                                ? Icons.check_circle
+                                : Icons.stop_circle,
                             color: history.isActive ? Colors.green : Colors.red,
                           ),
                           title: Text('\$${history.price.toStringAsFixed(2)}'),
@@ -837,7 +656,9 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                           trailing: Text(
                             history.isActive ? 'Active' : 'Stopped',
                             style: TextStyle(
-                              color: history.isActive ? Colors.green : Colors.red,
+                              color: history.isActive
+                                  ? Colors.green
+                                  : Colors.red,
                               fontWeight: FontWeight.bold,
                             ),
                           ),

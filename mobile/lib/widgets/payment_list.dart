@@ -60,21 +60,27 @@ class PaymentCard extends StatelessWidget {
                     hintText: 'Enter the new price',
                     prefixIcon: Icon(Icons.attach_money),
                   ),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d+\.?\d{0,2}'),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
                 ListTile(
                   leading: const Icon(Icons.calendar_today),
                   title: const Text('Effective Date'),
-                  subtitle: Text('${selectedDate.month}/${selectedDate.day}/${selectedDate.year}'),
+                  subtitle: Text(
+                    '${selectedDate.month}/${selectedDate.day}/${selectedDate.year}',
+                  ),
                   onTap: () async {
                     final DateTime? picked = await showDatePicker(
                       context: context,
                       initialDate: selectedDate,
-                      firstDate: payment.paymentDate,
+                      firstDate: payment.getLastPaymentDetail().startDate,
                       lastDate: DateTime(2101),
                     );
                     if (picked != null && picked != selectedDate) {
@@ -100,14 +106,22 @@ class PaymentCard extends StatelessWidget {
                       final newPrice = double.parse(priceController.text);
                       if (newPrice <= 0) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Price must be greater than zero')),
+                          const SnackBar(
+                            content: Text('Price must be greater than zero'),
+                          ),
                         );
                         return;
                       }
 
                       // Add the price change using the provider
-                      Provider.of<PaymentProvider>(context, listen: false)
-                          .addPriceChange(payment.id, newPrice, selectedDate);
+                      Provider.of<PaymentProvider>(
+                        context,
+                        listen: false,
+                      ).addPaymentDetailEntry(
+                        payment.id,
+                        newPrice,
+                        selectedDate,
+                      );
 
                       Navigator.of(context).pop();
 
@@ -120,7 +134,9 @@ class PaymentCard extends StatelessWidget {
                       );
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please enter a valid number')),
+                        const SnackBar(
+                          content: Text('Please enter a valid number'),
+                        ),
                       );
                     }
                   } else {
@@ -140,7 +156,10 @@ class PaymentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final paymentProvider = Provider.of<PaymentProvider>(context, listen: false);
+    final paymentProvider = Provider.of<PaymentProvider>(
+      context,
+      listen: false,
+    );
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -158,39 +177,28 @@ class PaymentCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    payment.name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      payment.name,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                Chip(
-                  label: Text(payment.isAnnual ? 'Annual' : 'Monthly'),
-                  backgroundColor: payment.isAnnual 
-                      ? Colors.amber.withOpacity(0.3) 
-                      : Colors.green.withOpacity(0.3),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Price: \$${payment.price.toStringAsFixed(2)}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    if (payment.isAnnual)
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
                         'Monthly: \$${payment.monthlyCost.toStringAsFixed(2)}',
                         style: const TextStyle(
@@ -198,117 +206,132 @@ class PaymentCard extends StatelessWidget {
                           color: Colors.grey,
                         ),
                       ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.event_available, size: 14, color: Colors.blue),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Next payment: ${payment.formattedNextPaymentDate}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                      Text(
+                        'Annually: \$${payment.annualCost.toStringAsFixed(2)}',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.event_available,
+                            size: 14,
                             color: Colors.blue,
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.monetization_on, size: 14, color: Colors.green),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Total spent: ${payment.formattedTotalAmountSpent}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                          const SizedBox(width: 4),
+                          Text(
+                            'Next payment: ${payment.formattedNextPaymentDate}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.monetization_on,
+                            size: 14,
                             color: Colors.green,
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert),
-                  onSelected: (value) async {
-                    if (value == 'edit') {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        builder: (context) => EditPaymentForm(payment: payment),
-                      );
-                    } else if (value == 'addPriceChange') {
-                      _showAddPriceChangeDialog(context);
-                    } else if (value == 'delete') {
-                      try {
-                        // Show loading indicator
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Removing payment...'),
-                            duration: Duration(seconds: 1),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Total spent: ${payment.formattedTotalAmountSpent}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.green,
+                            ),
                           ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert),
+                    onSelected: (value) async {
+                      if (value == 'edit') {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (context) =>
+                              EditPaymentForm(payment: payment),
                         );
+                      } else if (value == 'addPriceChange') {
+                        _showAddPriceChangeDialog(context);
+                      } else if (value == 'delete') {
+                        try {
+                          // Show loading indicator
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Removing payment...'),
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
 
-                        // Remove the payment
-                        await paymentProvider.removePayment(payment.id);
+                          // Remove the payment
+                          await paymentProvider.removePayment(payment.id);
 
-                        // Show success message
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${payment.name} removed'),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                      } catch (e) {
-                        // Show error message
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Error removing payment: ${e.toString()}'),
-                            backgroundColor: Colors.red,
-                            duration: const Duration(seconds: 3),
-                          ),
-                        );
+                          // Show success message
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${payment.name} removed'),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        } catch (e) {
+                          // Show error message
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Error removing payment: ${e.toString()}',
+                              ),
+                              backgroundColor: Colors.red,
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        }
                       }
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem<String>(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit, color: Colors.blue),
-                          SizedBox(width: 8),
-                          Text('Edit'),
-                        ],
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem<String>(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit, color: Colors.blue),
+                            SizedBox(width: 8),
+                            Text('Edit'),
+                          ],
+                        ),
                       ),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'addPriceChange',
-                      child: Row(
-                        children: [
-                          Icon(Icons.price_change, color: Colors.green),
-                          SizedBox(width: 8),
-                          Text('Add Price Change'),
-                        ],
+                      const PopupMenuItem<String>(
+                        value: 'addPriceChange',
+                        child: Row(
+                          children: [
+                            Icon(Icons.price_change, color: Colors.green),
+                            SizedBox(width: 8),
+                            Text('Add Price Change'),
+                          ],
+                        ),
                       ),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete, color: Colors.red),
-                          SizedBox(width: 8),
-                          Text('Delete'),
-                        ],
+                      const PopupMenuItem<String>(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Delete'),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
