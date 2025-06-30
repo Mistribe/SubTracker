@@ -51,24 +51,81 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                ListTile(
-                  leading: const Icon(Icons.calendar_today),
-                  title: const Text('Effective Date'),
-                  subtitle: Text('${selectedDate.month}/${selectedDate.day}/${selectedDate.year}'),
-                  onTap: () async {
-                    final DateTime? picked = await showDatePicker(
-                      context: context,
-                      initialDate: selectedDate,
-                      firstDate: payment.paymentDate,
-                      lastDate: DateTime(2101),
-                    );
-                    if (picked != null && picked != selectedDate) {
-                      setState(() {
-                        selectedDate = picked;
-                      });
-                    }
-                  },
-                ),
+                if (payment.isAnnual)
+                  // For yearly payments, only allow changing the year
+                  ListTile(
+                    leading: const Icon(Icons.calendar_today),
+                    title: const Text('Effective Year'),
+                    subtitle: Text('${selectedDate.year}'),
+                    onTap: () async {
+                      // Show a dialog to select only the year
+                      final int? selectedYear = await showDialog<int>(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Select Year'),
+                            content: SizedBox(
+                              height: 300,
+                              width: 300,
+                              child: ListView.builder(
+                                itemCount: 30, // Show 30 years from current year
+                                itemBuilder: (context, index) {
+                                  final int yearOption = DateTime.now().year + index;
+                                  return ListTile(
+                                    title: Text(yearOption.toString()),
+                                    onTap: () {
+                                      Navigator.of(context).pop(yearOption);
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      );
+
+                      if (selectedYear != null) {
+                        setState(() {
+                          // Keep the same month and day, only change the year
+                          selectedDate = DateTime(
+                            selectedYear,
+                            selectedDate.month,
+                            selectedDate.day,
+                          );
+                        });
+                      }
+                    },
+                  )
+                else
+                  // For monthly payments, allow changing year and month
+                  ListTile(
+                    leading: const Icon(Icons.calendar_today),
+                    title: const Text('Effective Month/Year'),
+                    subtitle: Text('${selectedDate.month}/${selectedDate.year}'),
+                    onTap: () async {
+                      // Show a dialog to select month and year
+                      final DateTime? picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: payment.paymentDate,
+                        lastDate: DateTime(2101),
+                        selectableDayPredicate: (DateTime date) {
+                          // Only allow selecting the same day of the month as the payment date
+                          return date.day == payment.paymentDate.day;
+                        },
+                      );
+                      if (picked != null && picked != selectedDate) {
+                        setState(() {
+                          // Ensure we keep the same day as the payment date
+                          selectedDate = DateTime(
+                            picked.year,
+                            picked.month,
+                            payment.paymentDate.day,
+                          );
+                        });
+                      }
+                    },
+                  ),
               ],
             ),
             actions: [
@@ -150,24 +207,82 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                ListTile(
-                  leading: const Icon(Icons.calendar_today),
-                  title: const Text('Effective Date'),
-                  subtitle: Text('${selectedDate.month}/${selectedDate.day}/${selectedDate.year}'),
-                  onTap: () async {
-                    final DateTime? picked = await showDatePicker(
-                      context: context,
-                      initialDate: selectedDate,
-                      firstDate: payment.paymentDate,
-                      lastDate: DateTime(2101),
-                    );
-                    if (picked != null && picked != selectedDate) {
-                      setState(() {
-                        selectedDate = picked;
-                      });
-                    }
-                  },
-                ),
+                if (payment.isAnnual)
+                  // For yearly payments, only allow changing the year
+                  ListTile(
+                    leading: const Icon(Icons.calendar_today),
+                    title: const Text('Effective Year'),
+                    subtitle: Text('${selectedDate.year}'),
+                    onTap: () async {
+                      // Show a dialog to select only the year
+                      final int? selectedYear = await showDialog<int>(
+                        context: context,
+                        builder: (BuildContext context) {
+                          int year = selectedDate.year;
+                          return AlertDialog(
+                            title: const Text('Select Year'),
+                            content: SizedBox(
+                              height: 300,
+                              width: 300,
+                              child: ListView.builder(
+                                itemCount: 30, // Show 30 years from current year
+                                itemBuilder: (context, index) {
+                                  final int yearOption = DateTime.now().year + index;
+                                  return ListTile(
+                                    title: Text(yearOption.toString()),
+                                    onTap: () {
+                                      Navigator.of(context).pop(yearOption);
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      );
+
+                      if (selectedYear != null) {
+                        setState(() {
+                          // Keep the same month and day, only change the year
+                          selectedDate = DateTime(
+                            selectedYear,
+                            selectedDate.month,
+                            selectedDate.day,
+                          );
+                        });
+                      }
+                    },
+                  )
+                else
+                  // For monthly payments, allow changing year and month
+                  ListTile(
+                    leading: const Icon(Icons.calendar_today),
+                    title: const Text('Effective Month/Year'),
+                    subtitle: Text('${selectedDate.month}/${selectedDate.year}'),
+                    onTap: () async {
+                      // Show a dialog to select month and year
+                      final DateTime? picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: payment.paymentDate,
+                        lastDate: DateTime(2101),
+                        selectableDayPredicate: (DateTime date) {
+                          // Only allow selecting the same day of the month as the payment date
+                          return date.day == payment.paymentDate.day;
+                        },
+                      );
+                      if (picked != null && picked != selectedDate) {
+                        setState(() {
+                          // Ensure we keep the same day as the payment date
+                          selectedDate = DateTime(
+                            picked.year,
+                            picked.month,
+                            payment.paymentDate.day,
+                          );
+                        });
+                      }
+                    },
+                  ),
               ],
             ),
             actions: [
@@ -232,12 +347,12 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
           (p) => p.id == payment.id,
           orElse: () => payment,
         );
-        
+
         // Update the local payment if it has changed
         if (updatedPayment != payment) {
           payment = updatedPayment;
         }
-        
+
         // Helper function to build info rows
         Widget buildInfoRow(String label, String value, IconData icon) {
           return Padding(
@@ -265,7 +380,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
             ),
           );
         }
-        
+
         return Scaffold(
           appBar: AppBar(
             title: Text(payment.name),
