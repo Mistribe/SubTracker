@@ -103,6 +103,21 @@ class PaymentCard extends StatelessWidget {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.monetization_on, size: 14, color: Colors.green),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Total spent: ${payment.formattedTotalAmountSpent}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
                 Row(

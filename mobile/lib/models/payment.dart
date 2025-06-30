@@ -46,6 +46,34 @@ class Payment {
     return '${date.month}/${date.day}/${date.year}';
   }
 
+  // Calculate the total amount spent since the payment started
+  double get totalAmountSpent {
+    final now = DateTime.now();
+    final startDate = paymentDate;
+
+    if (isAnnual) {
+      // Calculate years passed (including partial years)
+      int yearsPassed = now.year - startDate.year;
+      if (now.month < startDate.month || 
+          (now.month == startDate.month && now.day < startDate.day)) {
+        yearsPassed--;
+      }
+      return yearsPassed > 0 ? price * yearsPassed : 0;
+    } else {
+      // Calculate months passed
+      int monthsPassed = (now.year - startDate.year) * 12 + now.month - startDate.month;
+      if (now.day < startDate.day) {
+        monthsPassed--;
+      }
+      return monthsPassed > 0 ? price * monthsPassed : 0;
+    }
+  }
+
+  // Format the total amount spent as a string
+  String get formattedTotalAmountSpent {
+    return '\$${totalAmountSpent.toStringAsFixed(2)}';
+  }
+
   // Create a copy of this payment with updated fields
   Payment copyWith({
     String? id,
