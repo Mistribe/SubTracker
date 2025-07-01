@@ -25,118 +25,6 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
     subscription = widget.subscription;
   }
 
-  // Show dialog to stop a subscription
-  void _showStopPaymentDialog(BuildContext context) {
-    // Default stop date is the current date
-    DateTime selectedDate = DateTime.now();
-    bool useLastPaymentDate = true;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Stop Payment'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Are you sure you want to stop this subscription? '
-                  'A stopped subscription will not be counted in active or total subscriptions.',
-                ),
-                const SizedBox(height: 16),
-                SwitchListTile(
-                  title: const Text('Use last subscription date'),
-                  subtitle: const Text(
-                    'If enabled, the subscription will be stopped at the last subscription date',
-                  ),
-                  value: useLastPaymentDate,
-                  onChanged: (value) {
-                    setState(() {
-                      useLastPaymentDate = value;
-                    });
-                  },
-                ),
-                if (!useLastPaymentDate)
-                  ListTile(
-                    leading: const Icon(Icons.calendar_today),
-                    title: const Text('Stop Date'),
-                    subtitle: Text(
-                      '${selectedDate.month}/${selectedDate.day}/${selectedDate.year}',
-                    ),
-                    onTap: () async {
-                      final DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: selectedDate,
-                        firstDate: subscription
-                            .getLastPaymentDetail()
-                            .startDate,
-                        lastDate: DateTime.now(),
-                      );
-                      if (picked != null && picked != selectedDate) {
-                        setState(() {
-                          selectedDate = picked;
-                        });
-                      }
-                    },
-                  ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () async {
-                  try {
-                    // Show loading indicator
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Stopping subscription...'),
-                        duration: Duration(seconds: 1),
-                      ),
-                    );
-
-                    // Stop the subscription using the provider
-                    await Provider.of<SubscriptionProvider>(
-                      context,
-                      listen: false,
-                    ).cancelCurrentSubscription(
-                      subscription.id,
-                      stopDate: useLastPaymentDate ? null : selectedDate,
-                    );
-
-                    Navigator.of(context).pop();
-
-                    // Show success message
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Payment stopped successfully'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error: ${e.toString()}'),
-                        backgroundColor: Colors.red,
-                        duration: const Duration(seconds: 3),
-                      ),
-                    );
-                  }
-                },
-                child: const Text('Stop Payment'),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
   // Show dialog to reactivate a subscription
   void _showReactivatePaymentDialog(BuildContext context) {
     DateTime selectedDate = DateTime.now();
@@ -333,20 +221,21 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       children: [
                         Icon(Icons.edit),
                         SizedBox(width: 8),
-                        Text('Edit Payment'),
+                        Text('Edit'),
                       ],
                     ),
                   ),
-                  const PopupMenuItem<String>(
-                    value: 'addPaymentHistory',
-                    child: Row(
-                      children: [
-                        Icon(Icons.price_change),
-                        SizedBox(width: 8),
-                        Text('Add Price Change'),
-                      ],
+                  if (subscription.isActive)
+                    const PopupMenuItem<String>(
+                      value: 'addPaymentHistory',
+                      child: Row(
+                        children: [
+                          Icon(Icons.price_change),
+                          SizedBox(width: 8),
+                          Text('Price Change'),
+                        ],
+                      ),
                     ),
-                  ),
                   // Show stop subscription option if subscription is active
                   if (subscription.isActive)
                     const PopupMenuItem<String>(
@@ -355,7 +244,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         children: [
                           Icon(Icons.stop_circle),
                           SizedBox(width: 8),
-                          Text('Stop Payment'),
+                          Text('Cancel'),
                         ],
                       ),
                     ),
