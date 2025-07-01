@@ -140,6 +140,27 @@ class _EditSubscriptionFormState extends State<EditSubscriptionForm> {
         }
       }
 
+      // Validate that if end date is provided, it's not shorter than the subscription recurrence
+      if (_endDate != null) {
+        // Calculate the minimum end date based on start date and months
+        final minEndDate = DateTime(
+          _startDate.year + (_months ~/ 12),
+          _startDate.month + (_months % 12),
+          _startDate.day,
+        );
+
+        if (_endDate!.isBefore(minEndDate)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('End date must be at least $_months months after start date'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+          return;
+        }
+      }
+
       try {
         // Show loading indicator
         ScaffoldMessenger.of(context).showSnackBar(
