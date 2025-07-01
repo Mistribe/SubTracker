@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../providers/payment_provider.dart';
-import '../models/payment.dart';
+import '../providers/subscription_provider.dart';
+import '../models/subscription.dart';
 
-class EditPaymentForm extends StatefulWidget {
-  final Payment payment;
+class EditSubscriptionForm extends StatefulWidget {
+  final Subscription subscription;
 
-  const EditPaymentForm({super.key, required this.payment});
+  const EditSubscriptionForm({super.key, required this.subscription});
 
   @override
-  State<EditPaymentForm> createState() => _EditPaymentFormState();
+  State<EditSubscriptionForm> createState() => _EditSubscriptionFormState();
 }
 
-class _EditPaymentFormState extends State<EditPaymentForm> {
+class _EditSubscriptionFormState extends State<EditSubscriptionForm> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _priceController;
@@ -26,17 +26,17 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with existing payment data
-    _nameController = TextEditingController(text: widget.payment.name);
+    // Initialize controllers with existing subscription data
+    _nameController = TextEditingController(text: widget.subscription.name);
 
-    // Get the current payment detail
-    final currentDetail = widget.payment.getLastPaymentDetail();
+    // Get the current subscription detail
+    final currentDetail = widget.subscription.getLastPaymentDetail();
     _priceController = TextEditingController(
       text: currentDetail.price.toString(),
     );
     _customMonthsController = TextEditingController();
 
-    // Initialize months from payment detail
+    // Initialize months from subscription detail
     _months = currentDetail.months;
     _startDate = currentDetail.startDate;
     _endDate = currentDetail.endDate;
@@ -144,24 +144,24 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
         // Show loading indicator
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Updating payment...'),
+            content: Text('Updating subscription...'),
             duration: Duration(seconds: 1),
           ),
         );
 
-        // Update the payment name
-        await Provider.of<PaymentProvider>(
+        // Update the subscription name
+        await Provider.of<SubscriptionProvider>(
           context,
           listen: false,
-        ).updatePayment(widget.payment.id, name);
+        ).updatePayment(widget.subscription.id, name);
 
-        // Update the payment detail
-        final currentDetail = widget.payment.getLastPaymentDetail();
-        await Provider.of<PaymentProvider>(
+        // Update the subscription detail
+        final currentDetail = widget.subscription.getLastPaymentDetail();
+        await Provider.of<SubscriptionProvider>(
           context,
           listen: false,
         ).updatePaymentDetailEntry(
-          widget.payment.id,
+          widget.subscription.id,
           currentDetail.id,
           price,
           _months,
@@ -183,7 +183,7 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error updating payment: ${e.toString()}'),
+            content: Text('Error updating subscription: ${e.toString()}'),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
@@ -197,9 +197,6 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
     // Get the keyboard height to adjust the bottom padding
     final mediaQuery = MediaQuery.of(context);
     final keyboardHeight = mediaQuery.viewInsets.bottom;
-
-    // Get the current payment detail for display
-    final currentDetail = widget.payment.getLastPaymentDetail();
 
     return Padding(
       padding: EdgeInsets.only(
@@ -216,7 +213,7 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'Edit Payment',
+                'Edit Subscription',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
@@ -224,7 +221,7 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
-                  labelText: 'Payment Name',
+                  labelText: 'Subscription Name',
                   hintText: 'e.g., Netflix, Gym Membership',
                   prefixIcon: Icon(Icons.payment),
                 ),
@@ -244,7 +241,9 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
                   hintText: 'Enter the price',
                   prefixIcon: Icon(Icons.attach_money),
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
                 ],
@@ -263,14 +262,11 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
               DropdownButtonFormField<String>(
                 value: _selectedDuration,
                 decoration: const InputDecoration(
-                  labelText: 'Payment Recurrence',
+                  labelText: 'Subscription Recurrence',
                   prefixIcon: Icon(Icons.repeat),
                 ),
                 items: const [
-                  DropdownMenuItem(
-                    value: '1 month',
-                    child: Text('Monthly'),
-                  ),
+                  DropdownMenuItem(value: '1 month', child: Text('Monthly')),
                   DropdownMenuItem(
                     value: '3 months',
                     child: Text('Quarterly (3 months)'),
@@ -283,10 +279,7 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
                     value: '12 months',
                     child: Text('Annual (12 months)'),
                   ),
-                  DropdownMenuItem(
-                    value: 'Custom',
-                    child: Text('Custom'),
-                  ),
+                  DropdownMenuItem(value: 'Custom', child: Text('Custom')),
                 ],
                 onChanged: _handleDurationChange,
               ),
@@ -301,9 +294,7 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
                       prefixIcon: Icon(Icons.calendar_today),
                     ),
                     keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     validator: (value) {
                       if (_selectedDuration == 'Custom') {
                         if (value == null || value.isEmpty) {

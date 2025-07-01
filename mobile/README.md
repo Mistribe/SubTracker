@@ -1,27 +1,27 @@
-# Recurrent Payment Tracker
+# Subscription Tracker
 
-A Flutter application to track recurring payments and their history.
+A Flutter application to track subscriptions and their history.
 
 ## Features
 
-- Add, edit, and delete recurring payments
-- Track payment history and price changes over time
+- Add, edit, and delete subscriptions
+- Track subscription history and price changes over time
 - Calculate monthly and annual costs
-- Persistent storage of payment data
+- Persistent storage of subscription data
 
 ## Persistence Implementation
 
-This application uses Hive for local data persistence. Hive is a lightweight, fast NoSQL database that works well with Flutter and is suitable for storing structured data like payment records.
+This application uses Hive for local data persistence. Hive is a lightweight, fast NoSQL database that works well with Flutter and is suitable for storing structured data like subscription records.
 
 ### Architecture
 
 The persistence layer follows a repository pattern to abstract the data access:
 
-1. **Models**: The `Payment` and `PriceChange` classes in `lib/models/payment.dart` are annotated with Hive annotations for serialization.
+1. **Models**: The `Subscription` and `PriceChange` classes in `lib/models/subscription.dart` are annotated with Hive annotations for serialization.
 
-2. **Repository**: The `PaymentRepository` class in `lib/repositories/payment_repository.dart` handles all interactions with the Hive database.
+2. **Repository**: The `SubscriptionRepository` class in `lib/repositories/subscription_repository.dart` handles all interactions with the Hive database.
 
-3. **Provider**: The `PaymentProvider` class in `lib/providers/payment_provider.dart` uses the repository to load, save, update, and delete payments.
+3. **Provider**: The `SubscriptionProvider` class in `lib/providers/subscription_provider.dart` uses the repository to load, save, update, and delete subscriptions.
 
 ### Future API Integration
 
@@ -29,32 +29,32 @@ The current architecture is designed to make it easy to switch from local storag
 
 1. **Create an API Service**:
    ```dart
-   class PaymentApiService {
+   class SubscriptionApiService {
      final String baseUrl;
      final http.Client client;
 
-     PaymentApiService({required this.baseUrl, http.Client? client})
+     SubscriptionApiService({required this.baseUrl, http.Client? client})
          : client = client ?? http.Client();
 
-     Future<List<Payment>> getPayments() async {
-       final response = await client.get(Uri.parse('$baseUrl/payments'));
+     Future<List<Subscription>> getSubscriptions() async {
+       final response = await client.get(Uri.parse('$baseUrl/subscriptions'));
        if (response.statusCode == 200) {
          final List<dynamic> data = json.decode(response.body);
-         return data.map((json) => Payment.fromJson(json)).toList();
+         return data.map((json) => Subscription.fromJson(json)).toList();
        } else {
-         throw Exception('Failed to load payments');
+         throw Exception('Failed to load subscriptions');
        }
      }
 
-     Future<Payment> addPayment(Payment payment) async {
+     Future<Subscription> addSubscription(Subscription subscription) async {
        // Implementation
      }
 
-     Future<Payment> updatePayment(Payment payment) async {
+     Future<Subscription> updateSubscription(Subscription subscription) async {
        // Implementation
      }
 
-     Future<void> deletePayment(String id) async {
+     Future<void> deleteSubscription(String id) async {
        // Implementation
      }
    }
@@ -62,10 +62,10 @@ The current architecture is designed to make it easy to switch from local storag
 
 2. **Create a New Repository Implementation**:
    ```dart
-   class ApiPaymentRepository implements PaymentRepository {
-     final PaymentApiService apiService;
+   class ApiSubscriptionRepository implements SubscriptionRepository {
+     final SubscriptionApiService apiService;
 
-     ApiPaymentRepository({required this.apiService});
+     ApiSubscriptionRepository({required this.apiService});
 
      @override
      Future<void> initialize() async {
@@ -73,23 +73,23 @@ The current architecture is designed to make it easy to switch from local storag
      }
 
      @override
-     List<Payment> getAllPayments() async {
-       return await apiService.getPayments();
+     List<Subscription> getAllSubscriptions() async {
+       return await apiService.getSubscriptions();
      }
 
      @override
-     Future<void> addPayment(Payment payment) async {
-       await apiService.addPayment(payment);
+     Future<void> addSubscription(Subscription subscription) async {
+       await apiService.addSubscription(subscription);
      }
 
      @override
-     Future<void> updatePayment(Payment payment) async {
-       await apiService.updatePayment(payment);
+     Future<void> updateSubscription(Subscription subscription) async {
+       await apiService.updateSubscription(subscription);
      }
 
      @override
-     Future<void> deletePayment(String id) async {
-       await apiService.deletePayment(id);
+     Future<void> deleteSubscription(String id) async {
+       await apiService.deleteSubscription(id);
      }
    }
    ```

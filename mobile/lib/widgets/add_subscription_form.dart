@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../providers/payment_provider.dart';
+import '../providers/subscription_provider.dart';
 
-class AddPaymentForm extends StatefulWidget {
-  const AddPaymentForm({super.key});
+class AddSubscriptionForm extends StatefulWidget {
+  const AddSubscriptionForm({super.key});
 
   @override
-  State<AddPaymentForm> createState() => _AddPaymentFormState();
+  State<AddSubscriptionForm> createState() => _AddSubscriptionFormState();
 }
 
-class _AddPaymentFormState extends State<AddPaymentForm> {
+class _AddSubscriptionFormState extends State<AddSubscriptionForm> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
@@ -65,13 +65,13 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
         // Show loading indicator
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Adding payment...'),
+            content: Text('Adding subscription...'),
             duration: Duration(seconds: 1),
           ),
         );
 
-        // Add the payment using the provider
-        await Provider.of<PaymentProvider>(
+        // Add the subscription using the provider
+        await Provider.of<SubscriptionProvider>(
           context,
           listen: false,
         ).addPayment(name, price, months, _selectedDate);
@@ -79,7 +79,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Payment added successfully'),
+            content: Text('Subscription added successfully'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -90,7 +90,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error adding payment: ${e.toString()}'),
+            content: Text('Error adding subscription: ${e.toString()}'),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
@@ -119,7 +119,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'Add New Payment',
+              'Add New Subscription',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
@@ -127,7 +127,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(
-                labelText: 'Payment Name',
+                labelText: 'Subscription Name',
                 hintText: 'e.g., Netflix, Gym Membership',
                 prefixIcon: Icon(Icons.payment),
               ),
@@ -172,7 +172,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
             // Date picker
             ListTile(
               leading: const Icon(Icons.calendar_today),
-              title: const Text('First Payment Date'),
+              title: const Text('First Subscription Date'),
               subtitle: Text(
                 '${_selectedDate.month}/${_selectedDate.day}/${_selectedDate.year}',
               ),
@@ -182,23 +182,19 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
             // Duration selector
             DropdownButtonFormField<String>(
               decoration: const InputDecoration(
-                labelText: 'Payment Duration',
-                hintText: 'Select payment duration',
+                labelText: 'Subscription Duration',
+                hintText: 'Select subscription duration',
                 prefixIcon: Icon(Icons.calendar_today),
               ),
               value: _selectedDuration,
-              items: [
-                '1 month',
-                '3 months',
-                '6 months',
-                '12 months',
-                'Custom',
-              ].map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
+              items: ['1 month', '3 months', '6 months', '12 months', 'Custom']
+                  .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  })
+                  .toList(),
               onChanged: (String? newValue) {
                 setState(() {
                   _selectedDuration = newValue!;
@@ -217,9 +213,7 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
                     prefixIcon: Icon(Icons.calendar_month),
                   ),
                   keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (value) {
                     if (_selectedDuration == 'Custom') {
                       if (value == null || value.isEmpty) {
@@ -244,7 +238,10 @@ class _AddPaymentFormState extends State<AddPaymentForm> {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              child: const Text('Add Payment', style: TextStyle(fontSize: 16)),
+              child: const Text(
+                'Add Subscription',
+                style: TextStyle(fontSize: 16),
+              ),
             ),
           ],
         ),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
-import 'models/payment.dart';
-import 'providers/payment_provider.dart';
+import 'package:subscription_tracker/models/subscription_payment.dart';
+import 'models/subscription.dart';
+import 'providers/subscription_provider.dart';
 import 'providers/theme_provider.dart';
-import 'repositories/payment_repository.dart';
+import 'repositories/subscription_repository.dart';
 import 'screens/home_screen.dart';
 
 void main() async {
@@ -15,34 +16,36 @@ void main() async {
   await Hive.initFlutter();
 
   // Register Hive adapters
-  Hive.registerAdapter(PaymentAdapter());
-  Hive.registerAdapter(PaymentDetailAdapter());
+  Hive.registerAdapter(SubscriptionAdapter());
+  Hive.registerAdapter(SubscriptionPaymentAdapter());
 
   // Initialize repository
-  final paymentRepository = PaymentRepository();
+  final paymentRepository = SubscriptionRepository();
   await paymentRepository.initialize();
 
-  runApp(MyApp(paymentRepository: paymentRepository));
+  runApp(MyApp(subscriptionRepository: paymentRepository));
 }
 
 class MyApp extends StatelessWidget {
-  final PaymentRepository paymentRepository;
+  final SubscriptionRepository subscriptionRepository;
 
-  const MyApp({super.key, required this.paymentRepository});
+  const MyApp({super.key, required this.subscriptionRepository});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => PaymentProvider(paymentRepository: paymentRepository),
+          create: (_) => SubscriptionProvider(
+            subscriptionRepository: subscriptionRepository,
+          ),
         ),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
           return MaterialApp(
-            title: 'Recurrent Payment Tracker',
+            title: 'Subscription Tracker',
             debugShowCheckedModeBanner: false,
             themeMode: themeProvider.themeMode,
             theme: themeProvider.lightTheme,

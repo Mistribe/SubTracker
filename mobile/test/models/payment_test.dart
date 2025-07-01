@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:mobile/models/payment.dart';
+import 'package:mobile/models/subscription.dart';
 import 'dart:io';
 import 'package:path/path.dart' as path;
 
@@ -81,7 +81,10 @@ void main() {
       );
 
       // Should have paid 2 times and format correctly
-      expect(payment.formattedTotalAmountSpent, '\$${(9.99 * 2).toStringAsFixed(2)}');
+      expect(
+        payment.formattedTotalAmountSpent,
+        '\$${(9.99 * 2).toStringAsFixed(2)}',
+      );
     });
   });
 }

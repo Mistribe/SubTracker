@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/payment_provider.dart';
+import '../providers/subscription_provider.dart';
 import '../providers/theme_provider.dart';
-import '../widgets/payment_list.dart';
-import '../widgets/add_payment_form.dart';
+import '../widgets/subscription_list.dart';
+import '../widgets/add_subscription_form.dart';
 import 'settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -11,12 +11,12 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final paymentProvider = Provider.of<PaymentProvider>(context);
+    final paymentProvider = Provider.of<SubscriptionProvider>(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Recurrent Payment Tracker'),
+        title: const Text('Subscription Tracker'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -103,7 +103,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
 
-                    // Active payments count
+                    // Active subscriptions count
                     Column(
                       children: [
                         const Text(
@@ -129,10 +129,8 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
-          // Payment list
-          const Expanded(
-            child: PaymentList(),
-          ),
+          // Subscription list
+          const Expanded(child: SubscriptionList()),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -140,10 +138,10 @@ class HomeScreen extends StatelessWidget {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
-            builder: (context) => const AddPaymentForm(),
+            builder: (context) => const AddSubscriptionForm(),
           );
         },
-        tooltip: 'Add Payment',
+        tooltip: 'Add Subscription',
         child: const Icon(Icons.add),
       ),
     );

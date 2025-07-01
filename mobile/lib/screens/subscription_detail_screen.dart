@@ -1,29 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../models/payment.dart';
-import '../providers/payment_provider.dart';
+import '../models/subscription.dart';
+import '../providers/subscription_provider.dart';
 import '../widgets/edit_payment_form.dart';
 
 class PaymentDetailScreen extends StatefulWidget {
-  final Payment payment;
+  final Subscription subscription;
 
-  const PaymentDetailScreen({super.key, required this.payment});
+  const PaymentDetailScreen({super.key, required this.subscription});
 
   @override
   State<PaymentDetailScreen> createState() => _PaymentDetailScreenState();
 }
 
 class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
-  late Payment payment;
+  late Subscription subscription;
 
   @override
   void initState() {
     super.initState();
-    payment = widget.payment;
+    subscription = widget.subscription;
   }
 
-  // Show dialog to stop a payment
+  // Show dialog to stop a subscription
   void _showStopPaymentDialog(BuildContext context) {
     // Default stop date is the current date
     DateTime selectedDate = DateTime.now();
@@ -39,14 +39,14 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'Are you sure you want to stop this payment? '
-                  'A stopped payment will not be counted in active or total payments.',
+                  'Are you sure you want to stop this subscription? '
+                  'A stopped subscription will not be counted in active or total subscriptions.',
                 ),
                 const SizedBox(height: 16),
                 SwitchListTile(
-                  title: const Text('Use last payment date'),
+                  title: const Text('Use last subscription date'),
                   subtitle: const Text(
-                    'If enabled, the payment will be stopped at the last payment date',
+                    'If enabled, the subscription will be stopped at the last subscription date',
                   ),
                   value: useLastPaymentDate,
                   onChanged: (value) {
@@ -66,7 +66,9 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       final DateTime? picked = await showDatePicker(
                         context: context,
                         initialDate: selectedDate,
-                        firstDate: payment.getLastPaymentDetail().startDate,
+                        firstDate: subscription
+                            .getLastPaymentDetail()
+                            .startDate,
                         lastDate: DateTime.now(),
                       );
                       if (picked != null && picked != selectedDate) {
@@ -91,17 +93,17 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     // Show loading indicator
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Stopping payment...'),
+                        content: Text('Stopping subscription...'),
                         duration: Duration(seconds: 1),
                       ),
                     );
 
-                    // Stop the payment using the provider
-                    await Provider.of<PaymentProvider>(
+                    // Stop the subscription using the provider
+                    await Provider.of<SubscriptionProvider>(
                       context,
                       listen: false,
                     ).stopPayment(
-                      payment.id,
+                      subscription.id,
                       stopDate: useLastPaymentDate ? null : selectedDate,
                     );
 
@@ -133,7 +135,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
     );
   }
 
-  // Show dialog to reactivate a payment
+  // Show dialog to reactivate a subscription
   void _showReactivatePaymentDialog(BuildContext context) {
     DateTime selectedDate = DateTime.now();
 
@@ -147,8 +149,8 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'Select a date to reactivate this payment. '
-                  'The payment will be reactivated on this date.',
+                  'Select a date to reactivate this subscription. '
+                  'The subscription will be reactivated on this date.',
                 ),
                 const SizedBox(height: 16),
                 ListTile(
@@ -191,11 +193,11 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       ),
                     );
 
-                    // Reactivate the payment using the provider
-                    await Provider.of<PaymentProvider>(
+                    // Reactivate the subscription using the provider
+                    await Provider.of<SubscriptionProvider>(
                       context,
                       listen: false,
-                    ).reactivatePayment(payment.id, selectedDate);
+                    ).reactivatePayment(subscription.id, selectedDate);
 
                     Navigator.of(context).pop();
 
@@ -227,11 +229,11 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
     );
   }
 
-  // Show dialog to add a payment history entry
+  // Show dialog to add a subscription history entry
   void _showAddPaymentHistoryDialog(BuildContext context) {
     final priceController = TextEditingController();
     DateTime selectedDate = DateTime.now();
-    final currentDetail = payment.getLastPaymentDetail();
+    final currentDetail = subscription.getLastPaymentDetail();
 
     showDialog(
       context: context,
@@ -260,7 +262,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                 ),
                 const SizedBox(height: 16),
                 if (currentDetail.months == 12)
-                  // For yearly payments, only allow changing the year
+                  // For yearly subscriptions, only allow changing the year
                   ListTile(
                     leading: const Icon(Icons.calendar_today),
                     title: const Text('Effective Year'),
@@ -308,7 +310,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     },
                   )
                 else
-                  // For non-yearly payments, allow changing year and month
+                  // For non-yearly subscriptions, allow changing year and month
                   ListTile(
                     leading: const Icon(Icons.calendar_today),
                     title: const Text('Effective Month/Year'),
@@ -323,13 +325,13 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         firstDate: currentDetail.startDate,
                         lastDate: DateTime(2101),
                         selectableDayPredicate: (DateTime date) {
-                          // Only allow selecting the same day of the month as the payment date
+                          // Only allow selecting the same day of the month as the subscription date
                           return date.day == currentDetail.startDate.day;
                         },
                       );
                       if (picked != null && picked != selectedDate) {
                         setState(() {
-                          // Ensure we keep the same day as the payment date
+                          // Ensure we keep the same day as the subscription date
                           selectedDate = DateTime(
                             picked.year,
                             picked.month,
@@ -370,12 +372,12 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         ),
                       );
 
-                      // Add the payment history entry using the provider
-                      await Provider.of<PaymentProvider>(
+                      // Add the subscription history entry using the provider
+                      await Provider.of<SubscriptionProvider>(
                         context,
                         listen: false,
                       ).addPaymentDetailEntry(
-                        payment.id,
+                        subscription.id,
                         newPrice,
                         selectedDate,
                       );
@@ -416,17 +418,17 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
   @override
   Widget build(BuildContext context) {
     // Use Consumer to listen for changes in the PaymentProvider
-    return Consumer<PaymentProvider>(
-      builder: (context, paymentProvider, child) {
-        // Get the updated payment from the provider
-        final updatedPayment = paymentProvider.payments.firstWhere(
-          (p) => p.id == payment.id,
-          orElse: () => payment,
+    return Consumer<SubscriptionProvider>(
+      builder: (context, subscriptionProvider, child) {
+        // Get the updated subscription from the provider
+        final updatedPayment = subscriptionProvider.subscriptions.firstWhere(
+          (p) => p.id == subscription.id,
+          orElse: () => subscription,
         );
 
-        // Update the local payment if it has changed
-        if (updatedPayment != payment) {
-          payment = updatedPayment;
+        // Update the local subscription if it has changed
+        if (updatedPayment != subscription) {
+          subscription = updatedPayment;
         }
 
         // Helper function to build info rows
@@ -457,26 +459,26 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
           );
         }
 
-        // Get the current payment detail
-        final currentDetail = payment.getLastPaymentDetail();
+        // Get the current subscription detail
+        final currentDetail = subscription.getLastPaymentDetail();
 
-        // Determine payment type based on months
-        String paymentType;
+        // Determine subscription type based on months
+        String subscriptionType;
         if (currentDetail.months == 1) {
-          paymentType = 'Monthly';
+          subscriptionType = 'Monthly';
         } else if (currentDetail.months == 3) {
-          paymentType = 'Quarterly';
+          subscriptionType = 'Quarterly';
         } else if (currentDetail.months == 6) {
-          paymentType = 'Semi-Annual';
+          subscriptionType = 'Semi-Annual';
         } else if (currentDetail.months == 12) {
-          paymentType = 'Annual';
+          subscriptionType = 'Annual';
         } else {
-          paymentType = 'Custom (${currentDetail.months} months)';
+          subscriptionType = 'Custom (${currentDetail.months} months)';
         }
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(payment.name),
+            title: Text(subscription.name),
             actions: [
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert),
@@ -485,7 +487,8 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
-                      builder: (context) => EditPaymentForm(payment: payment),
+                      builder: (context) =>
+                          EditSubscriptionForm(subscription: subscription),
                     );
                   } else if (value == 'addPaymentHistory') {
                     _showAddPaymentHistoryDialog(context);
@@ -516,8 +519,8 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       ],
                     ),
                   ),
-                  // Show stop payment option if payment is active
-                  if (payment.isActive)
+                  // Show stop subscription option if subscription is active
+                  if (subscription.isActive)
                     const PopupMenuItem<String>(
                       value: 'stopPayment',
                       child: Row(
@@ -528,8 +531,8 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         ],
                       ),
                     ),
-                  // Show reactivate payment option if payment is not active
-                  if (!payment.isActive)
+                  // Show reactivate subscription option if subscription is not active
+                  if (!subscription.isActive)
                     const PopupMenuItem<String>(
                       value: 'reactivatePayment',
                       child: Row(
@@ -557,7 +560,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Payment Summary',
+                          'Subscription Summary',
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 16),
@@ -568,14 +571,14 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         ),
                         buildInfoRow(
                           'Payment Type:',
-                          paymentType,
+                          subscriptionType,
                           Icons.calendar_today,
                         ),
-                        // Always show monthly cost for non-monthly payments
+                        // Always show monthly cost for non-monthly subscriptions
                         if (currentDetail.months > 1)
                           buildInfoRow(
                             'Monthly Cost:',
-                            '\$${payment.monthlyCost.toStringAsFixed(2)}',
+                            '\$${subscription.monthlyCost.toStringAsFixed(2)}',
                             Icons.calculate,
                           ),
                         buildInfoRow(
@@ -585,24 +588,25 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         ),
                         buildInfoRow(
                           'Next Payment:',
-                          payment.formattedNextPaymentDate,
+                          subscription.formattedNextPaymentDate,
                           Icons.event_available,
                         ),
                         buildInfoRow(
                           'Total Spent:',
-                          payment.formattedTotalAmountSpent,
+                          subscription.formattedTotalAmountSpent,
                           Icons.monetization_on,
                         ),
-                        // Show payment status (active or stopped)
+                        // Show subscription status (active or stopped)
                         buildInfoRow(
                           'Status:',
-                          payment.isActive ? 'Active' : 'Stopped',
-                          payment.isActive
+                          subscription.isActive ? 'Active' : 'Stopped',
+                          subscription.isActive
                               ? Icons.check_circle
                               : Icons.stop_circle,
                         ),
-                        // Show end date if payment is not active and has an end date
-                        if (!payment.isActive && currentDetail.endDate != null)
+                        // Show end date if subscription is not active and has an end date
+                        if (!subscription.isActive &&
+                            currentDetail.endDate != null)
                           buildInfoRow(
                             'Stop Date:',
                             '${currentDetail.endDate!.month}/${currentDetail.endDate!.day}/${currentDetail.endDate!.year}',
@@ -627,12 +631,12 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                if (payment.paymentDetails.isEmpty)
+                if (subscription.subscriptionPayments.isEmpty)
                   const Card(
                     child: Padding(
                       padding: EdgeInsets.all(16.0),
                       child: Text(
-                        'No payment history recorded yet.',
+                        'No subscription history recorded yet.',
                         style: TextStyle(fontSize: 16),
                       ),
                     ),
@@ -642,10 +646,11 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     child: ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: payment.paymentDetails.length,
+                      itemCount: subscription.subscriptionPayments.length,
                       separatorBuilder: (context, index) => const Divider(),
                       itemBuilder: (context, index) {
-                        final history = payment.paymentDetails[index];
+                        final history =
+                            subscription.subscriptionPayments[index];
                         return ListTile(
                           leading: Icon(
                             history.isActive

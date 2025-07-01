@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../providers/payment_provider.dart';
-import '../models/payment.dart';
-import '../screens/payment_detail_screen.dart';
+import '../providers/subscription_provider.dart';
+import '../models/subscription.dart';
+import '../screens/subscription_detail_screen.dart';
 import 'edit_payment_form.dart';
 
-class PaymentList extends StatelessWidget {
-  const PaymentList({super.key});
+class SubscriptionList extends StatelessWidget {
+  const SubscriptionList({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final paymentProvider = Provider.of<PaymentProvider>(context);
-    final payments = paymentProvider.payments;
+    final subscriptionProvider = Provider.of<SubscriptionProvider>(context);
+    final subscriptions = subscriptionProvider.subscriptions;
 
-    if (payments.isEmpty) {
+    if (subscriptions.isEmpty) {
       return const Center(
         child: Text(
-          'No payments yet. Add your first payment!',
+          'No subscriptions yet. Add your first subscription!',
           style: TextStyle(fontSize: 16),
         ),
       );
@@ -25,19 +25,19 @@ class PaymentList extends StatelessWidget {
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: payments.length,
+      itemCount: subscriptions.length,
       itemBuilder: (context, index) {
-        final payment = payments[index];
-        return PaymentCard(payment: payment);
+        final subscription = subscriptions[index];
+        return SubscriptionCard(subscription: subscription);
       },
     );
   }
 }
 
-class PaymentCard extends StatelessWidget {
-  final Payment payment;
+class SubscriptionCard extends StatelessWidget {
+  final Subscription subscription;
 
-  const PaymentCard({super.key, required this.payment});
+  const SubscriptionCard({super.key, required this.subscription});
 
   // Show dialog to add a price change
   void _showAddPriceChangeDialog(BuildContext context) {
@@ -80,7 +80,7 @@ class PaymentCard extends StatelessWidget {
                     final DateTime? picked = await showDatePicker(
                       context: context,
                       initialDate: selectedDate,
-                      firstDate: payment.getLastPaymentDetail().startDate,
+                      firstDate: subscription.getLastPaymentDetail().startDate,
                       lastDate: DateTime(2101),
                     );
                     if (picked != null && picked != selectedDate) {
@@ -114,11 +114,11 @@ class PaymentCard extends StatelessWidget {
                       }
 
                       // Add the price change using the provider
-                      Provider.of<PaymentProvider>(
+                      Provider.of<SubscriptionProvider>(
                         context,
                         listen: false,
                       ).addPaymentDetailEntry(
-                        payment.id,
+                        subscription.id,
                         newPrice,
                         selectedDate,
                       );
@@ -156,7 +156,7 @@ class PaymentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final paymentProvider = Provider.of<PaymentProvider>(
+    final subscriptionProvider = Provider.of<SubscriptionProvider>(
       context,
       listen: false,
     );
@@ -168,7 +168,8 @@ class PaymentCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PaymentDetailScreen(payment: payment),
+              builder: (context) =>
+                  PaymentDetailScreen(subscription: subscription),
             ),
           );
         },
@@ -182,7 +183,7 @@ class PaymentCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      payment.name,
+                      subscription.name,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -200,14 +201,14 @@ class PaymentCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Monthly: \$${payment.monthlyCost.toStringAsFixed(2)}',
+                        'Monthly: \$${subscription.monthlyCost.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
                         ),
                       ),
                       Text(
-                        'Annually: \$${payment.annualCost.toStringAsFixed(2)}',
+                        'Annually: \$${subscription.annualCost.toStringAsFixed(2)}',
                         style: const TextStyle(fontSize: 16),
                       ),
                       const SizedBox(height: 4),
@@ -220,7 +221,7 @@ class PaymentCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Next payment: ${payment.formattedNextPaymentDate}',
+                            'Next payment: ${subscription.formattedNextPaymentDate}',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -239,7 +240,7 @@ class PaymentCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Total spent: ${payment.formattedTotalAmountSpent}',
+                            'Total spent: ${subscription.formattedTotalAmountSpent}',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -258,7 +259,7 @@ class PaymentCard extends StatelessWidget {
                           context: context,
                           isScrollControlled: true,
                           builder: (context) =>
-                              EditPaymentForm(payment: payment),
+                              EditSubscriptionForm(subscription: subscription),
                         );
                       } else if (value == 'addPriceChange') {
                         _showAddPriceChangeDialog(context);
@@ -267,18 +268,20 @@ class PaymentCard extends StatelessWidget {
                           // Show loading indicator
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Removing payment...'),
+                              content: Text('Removing subscription...'),
                               duration: Duration(seconds: 1),
                             ),
                           );
 
-                          // Remove the payment
-                          await paymentProvider.removePayment(payment.id);
+                          // Remove the subscription
+                          await subscriptionProvider.removePayment(
+                            subscription.id,
+                          );
 
                           // Show success message
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('${payment.name} removed'),
+                              content: Text('${subscription.name} removed'),
                               duration: const Duration(seconds: 2),
                             ),
                           );
@@ -287,7 +290,7 @@ class PaymentCard extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                'Error removing payment: ${e.toString()}',
+                                'Error removing subscription: ${e.toString()}',
                               ),
                               backgroundColor: Colors.red,
                               duration: const Duration(seconds: 3),

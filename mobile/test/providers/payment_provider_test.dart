@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:mobile/models/payment.dart';
-import 'package:mobile/providers/payment_provider.dart';
-import 'package:mobile/repositories/payment_repository.dart';
+import 'package:mobile/models/subscription.dart';
+import 'package:mobile/providers/subscription_provider.dart';
+import 'package:mobile/repositories/subscription_repository.dart';
 import 'dart:io';
 
 // Mock repository for testing
@@ -17,7 +17,9 @@ class MockPaymentRepository implements PaymentRepository {
 
   @override
   List<Payment> getAllPayments() {
-    return List.from(_payments); // Return a copy to avoid unintended modifications
+    return List.from(
+      _payments,
+    ); // Return a copy to avoid unintended modifications
   }
 
   @override
@@ -70,7 +72,7 @@ void main() {
 
     setUp(() async {
       mockRepository = MockPaymentRepository();
-      provider = PaymentProvider(paymentRepository: mockRepository);
+      provider = PaymentProvider(subscriptionRepository: mockRepository);
 
       // Wait for the provider to initialize
       await Future.delayed(Duration.zero);
@@ -81,11 +83,11 @@ void main() {
       expect(provider.activePaymentsCount, 0);
 
       // Add a payment
-      await provider.addPayment('Netflix', 15.99, false);
+      await provider.add('Netflix', 15.99, false);
       expect(provider.activePaymentsCount, 1);
 
       // Add another payment
-      await provider.addPayment('Spotify', 9.99, false);
+      await provider.add('Spotify', 9.99, false);
       expect(provider.activePaymentsCount, 2);
 
       // Remove a payment
@@ -102,7 +104,7 @@ void main() {
 
     test('stopPayment and reactivatePayment work correctly', () async {
       // Add a payment
-      await provider.addPayment('Netflix', 15.99, false);
+      await provider.add('Netflix', 15.99, false);
       final payments = provider.payments;
       final paymentId = payments[0].id;
 
@@ -130,7 +132,10 @@ void main() {
       final reactivatedPayments = provider.payments;
       expect(reactivatedPayments[0].isStopped, true);
       expect(reactivatedPayments[0].reactivationDate, reactivationDate);
-      expect(reactivatedPayments[0].stopDate, isNotNull); // Should still have a stop date
+      expect(
+        reactivatedPayments[0].stopDate,
+        isNotNull,
+      ); // Should still have a stop date
 
       // Verify that the payment is still not counted in active payments
       expect(provider.activePaymentsCount, 0);
@@ -138,7 +143,7 @@ void main() {
 
     test('stopPayment with custom stop date works correctly', () async {
       // Add a payment
-      await provider.addPayment('Netflix', 15.99, false);
+      await provider.add('Netflix', 15.99, false);
       final payments = provider.payments;
       final paymentId = payments[0].id;
 
@@ -163,7 +168,7 @@ void main() {
       expect(provider.totalAmountSpent, 0);
 
       // Add a monthly payment that started 3 months ago
-      await provider.addPayment('Netflix', 15.99, false, paymentDate: threeMonthsAgo);
+      await provider.add('Netflix', 15.99, false, paymentDate: threeMonthsAgo);
       // Should have paid 3 times (once per month)
       expect(provider.totalAmountSpent, closeTo(15.99 * 3, 0.01));
 
@@ -171,14 +176,19 @@ void main() {
       final firstTotal = provider.totalAmountSpent;
 
       // Add an annual payment that started 2 years ago
-      await provider.addPayment('Amazon Prime', 119.99, true, paymentDate: twoYearsAgo);
+      await provider.add(
+        'Amazon Prime',
+        119.99,
+        true,
+        paymentDate: twoYearsAgo,
+      );
       // Should have paid 2 times (once per year)
       // Total should be firstTotal + (119.99 * 2)
       final expectedTotal = firstTotal + (119.99 * 2);
       expect(provider.totalAmountSpent, closeTo(expectedTotal, 0.01));
 
       // Add a new payment (should not contribute to total spent yet)
-      await provider.addPayment('New Service', 9.99, false);
+      await provider.add('New Service', 9.99, false);
       // Total should still be the same as before
       expect(provider.totalAmountSpent, closeTo(expectedTotal, 0.01));
     });
@@ -188,7 +198,7 @@ void main() {
       final threeMonthsAgo = DateTime.now().subtract(const Duration(days: 90));
 
       // Add a monthly payment that started 3 months ago
-      await provider.addPayment('Netflix', 15.99, false, paymentDate: threeMonthsAgo);
+      await provider.add('Netflix', 15.99, false, paymentDate: threeMonthsAgo);
       // Should have paid 3 times (once per month)
       final initialTotal = 15.99 * 3;
       expect(provider.totalAmountSpent, closeTo(initialTotal, 0.01));
@@ -209,7 +219,7 @@ void main() {
       expect(provider.totalAmountSpent, 0);
 
       // Add another active payment
-      await provider.addPayment('Spotify', 9.99, false, paymentDate: threeMonthsAgo);
+      await provider.add('Spotify', 9.99, false, paymentDate: threeMonthsAgo);
 
       // Total amount spent should only include the active payment
       expect(provider.totalAmountSpent, closeTo(9.99 * 3, 0.01));
