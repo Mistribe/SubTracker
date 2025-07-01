@@ -4,17 +4,32 @@ import 'package:flutter/foundation.dart';
 import '../models/subscription.dart';
 import '../models/subscription_payment.dart';
 import '../repositories/subscription_repository.dart';
+import '../repositories/settings_repository.dart';
 import '../services/currency_converter.dart';
 
 var uuid = Uuid();
 
 class SubscriptionProvider with ChangeNotifier {
   final SubscriptionRepository subscriptionRepository;
+  final SettingsRepository? settingsRepository;
   List<Subscription> _subscriptions = [];
 
-  SubscriptionProvider({required this.subscriptionRepository}) {
+  SubscriptionProvider({
+    required this.subscriptionRepository,
+    this.settingsRepository,
+  }) {
     // Load subscriptions from repository
     _loadPayments();
+    // Load settings if repository is provided
+    if (settingsRepository != null) {
+      _loadSettings();
+    }
+  }
+
+  // Load settings from repository
+  void _loadSettings() {
+    final settings = settingsRepository!.getSettings();
+    _defaultCurrency = settings.defaultCurrency;
   }
 
   // Load subscriptions from repository
@@ -96,6 +111,12 @@ class SubscriptionProvider with ChangeNotifier {
   // Setter for default currency
   set defaultCurrency(String currency) {
     _defaultCurrency = currency;
+
+    // Persist settings if repository is available
+    if (settingsRepository != null) {
+      settingsRepository!.updateDefaultCurrency(currency);
+    }
+
     notifyListeners();
   }
 
