@@ -12,13 +12,13 @@ class AddSubscriptionForm extends StatefulWidget {
 
 class _AddSubscriptionFormState extends State<AddSubscriptionForm> {
   final _formKey = GlobalKey<FormState>();
-  late int _months;
+  late int _months = 1;
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final _customMonthsController = TextEditingController();
   String _selectedDuration = '1 month'; // Default value
-  DateTime _selectedDate = DateTime.now();
-  DateTime? _endDate;
+  DateTime _selectedStartDate = DateTime.now();
+  DateTime? _selectedEndDate;
 
   @override
   void dispose() {
@@ -29,16 +29,16 @@ class _AddSubscriptionFormState extends State<AddSubscriptionForm> {
   }
 
   // Show date picker
-  Future<void> _selectDate(BuildContext context) async {
+  Future<void> _selectStartDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate,
+      initialDate: _selectedStartDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != _selectedDate) {
+    if (picked != null && picked != _selectedStartDate) {
       setState(() {
-        _selectedDate = picked;
+        _selectedStartDate = picked;
       });
     }
   }
@@ -47,13 +47,22 @@ class _AddSubscriptionFormState extends State<AddSubscriptionForm> {
   Future<void> _selectEndDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _endDate ?? DateTime.now(),
+      initialDate: _selectedEndDate ?? DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != _endDate) {
+    if (picked != null && picked != _selectedEndDate) {
       setState(() {
-        _endDate = picked;
+        if (picked.isBefore(_selectedStartDate)) {
+          final year = (_months / 12).truncate();
+          final month = _months % 12;
+          _selectedStartDate = DateTime(
+            picked.year - year,
+            picked.month - month,
+            picked.day,
+          );
+        }
+        _selectedEndDate = picked;
       });
     }
   }
@@ -117,7 +126,13 @@ class _AddSubscriptionFormState extends State<AddSubscriptionForm> {
         await Provider.of<SubscriptionProvider>(
           context,
           listen: false,
-        ).addPayment(name, price, _months, _selectedDate, endDate: _endDate);
+        ).addPayment(
+          name,
+          price,
+          _months,
+          _selectedStartDate,
+          endDate: _selectedEndDate,
+        );
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
@@ -269,25 +284,25 @@ class _AddSubscriptionFormState extends State<AddSubscriptionForm> {
               leading: const Icon(Icons.calendar_today),
               title: const Text('Start Date'),
               subtitle: Text(
-                '${_selectedDate.month}/${_selectedDate.day}/${_selectedDate.year}',
+                '${_selectedStartDate.month}/${_selectedStartDate.day}/${_selectedStartDate.year}',
               ),
-              onTap: () => _selectDate(context),
+              onTap: () => _selectStartDate(context),
             ),
             const SizedBox(height: 8),
             ListTile(
               leading: const Icon(Icons.event_busy),
               title: const Text('End Date (Optional)'),
               subtitle: Text(
-                _endDate != null
-                    ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
+                _selectedEndDate != null
+                    ? '${_selectedEndDate!.month}/${_selectedEndDate!.day}/${_selectedEndDate!.year}'
                     : 'No end date',
               ),
-              trailing: _endDate != null
+              trailing: _selectedEndDate != null
                   ? IconButton(
                       icon: const Icon(Icons.clear),
                       onPressed: () {
                         setState(() {
-                          _endDate = null;
+                          _selectedEndDate = null;
                         });
                       },
                     )
