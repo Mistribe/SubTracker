@@ -92,7 +92,7 @@ class SubscriptionProvider with ChangeNotifier {
   }
 
   // Update an existing subscription
-  Future<void> updatePayment(String id, String name) async {
+  Future<void> updateSubscription(String id, String name) async {
     final index = _subscriptions.indexWhere(
       (subscription) => subscription.id == id,
     );
@@ -146,7 +146,7 @@ class SubscriptionProvider with ChangeNotifier {
   }
 
   // Update a subscription history entry
-  Future<void> updatePaymentDetailEntry(
+  Future<void> updateSubscriptionPayment(
     String subscriptionId,
     String subscriptionDetailId,
     double newPrice,
@@ -179,7 +179,10 @@ class SubscriptionProvider with ChangeNotifier {
   }
 
   // Stop a subscription
-  Future<void> stopPayment(String subscriptionId, {DateTime? stopDate}) async {
+  Future<void> cancelCurrentSubscription(
+    String subscriptionId, {
+    DateTime? stopDate,
+  }) async {
     final index = _subscriptions.indexWhere(
       (subscription) => subscription.id == subscriptionId,
     );

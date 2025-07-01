@@ -113,7 +113,7 @@ void main() {
       expect(provider.activePaymentsCount, 1);
 
       // Stop the payment with default stop date (last payment date)
-      await provider.stopPayment(paymentId);
+      await provider.cancelCurrentSubscription(paymentId);
 
       // Verify that the payment is stopped
       final stoppedPayments = provider.payments;
@@ -151,7 +151,10 @@ void main() {
       final customStopDate = DateTime.now().subtract(const Duration(days: 15));
 
       // Stop the payment with custom stop date
-      await provider.stopPayment(paymentId, stopDate: customStopDate);
+      await provider.cancelCurrentSubscription(
+        paymentId,
+        stopDate: customStopDate,
+      );
 
       // Verify that the payment is stopped with the custom stop date
       final stoppedPayments = provider.payments;
@@ -206,7 +209,7 @@ void main() {
       // Stop the payment
       final payments = provider.payments;
       final paymentId = payments[0].id;
-      await provider.stopPayment(paymentId);
+      await provider.cancelCurrentSubscription(paymentId);
 
       // Total amount spent should be 0 since the payment is stopped
       expect(provider.totalAmountSpent, 0);

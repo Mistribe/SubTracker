@@ -105,9 +105,7 @@ class Subscription extends HiveObject {
   }
 
   void setPaymentDetail(SubscriptionPayment detail) {
-    final idx = subscriptionPayments.indexWhere(
-      (detail) => detail.id == detail.id,
-    );
+    final idx = subscriptionPayments.indexWhere((d) => d.id == detail.id);
     if (idx < 0) {
       throw StateError('No payment details available');
     }

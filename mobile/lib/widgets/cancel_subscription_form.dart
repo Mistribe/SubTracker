@@ -1,84 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../models/subscription.dart';
 import '../providers/subscription_provider.dart';
 
-class PriceChangeForm extends StatefulWidget {
+class StopSubscriptionForm extends StatefulWidget {
   final Subscription subscription;
 
-  const PriceChangeForm({super.key, required this.subscription});
+  const StopSubscriptionForm({super.key, required this.subscription});
 
   @override
-  State<PriceChangeForm> createState() => _PriceChangeFormState();
+  State<StopSubscriptionForm> createState() => _CancelSubscriptionFormState();
 }
 
-class _PriceChangeFormState extends State<PriceChangeForm> {
+class _CancelSubscriptionFormState extends State<StopSubscriptionForm> {
   final _formKey = GlobalKey<FormState>();
-  late final _priceController;
   DateTime _selectedDate = DateTime.now();
-
-  @override
-  void dispose() {
-    _priceController.dispose();
-    super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    final currentDetail = widget.subscription.getLastPaymentDetail();
-    _priceController = TextEditingController(
-      text: currentDetail.price.toString(),
-    );
-  }
-
-  Future<void> _selectEffectiveDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: widget.subscription.getLastPaymentDetail().startDate,
-      lastDate: DateTime(2101),
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
+  bool _useLastPaymentDate = true;
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      final price = double.tryParse(_priceController.text) ?? 0.0;
-
       try {
         // Show loading indicator
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Updating subscription...'),
+            content: Text('Canceling subscription...'),
             duration: Duration(seconds: 1),
           ),
         );
 
         // Update the subscription detail
-        final currentDetail = widget.subscription.getLastPaymentDetail();
         await Provider.of<SubscriptionProvider>(
           context,
           listen: false,
-        ).addPaymentDetailEntry(
+        ).cancelCurrentSubscription(
           widget.subscription.id,
-          price,
-          _selectedDate,
-          endDate: null,
-          months: currentDetail.months,
+          stopDate: _selectedDate,
         );
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Price updated successfully'),
+            content: Text('Subscription successfully cancelled'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -89,7 +52,7 @@ class _PriceChangeFormState extends State<PriceChangeForm> {
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error updating subscription: ${e.toString()}'),
+            content: Text('Error canceling subscription: ${e.toString()}'),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
@@ -118,35 +81,52 @@ class _PriceChangeFormState extends State<PriceChangeForm> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Add a change of price',
+              Text(
+                'Cancelling ${widget.subscription.name}',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _priceController,
-                decoration: const InputDecoration(
-                  labelText: 'New Price',
-                  hintText: 'Enter the new price',
-                  prefixIcon: Icon(Icons.attach_money),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-                ],
+              const Text(
+                'Are you sure you want to stop this subscription? '
+                'A stopped subscription will not be counted in active or total subscriptions.',
               ),
               const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(Icons.calendar_today),
-                title: const Text('Effective Date'),
-                subtitle: Text(
-                  '${_selectedDate.month}/${_selectedDate.day}/${_selectedDate.year}',
+              SwitchListTile(
+                title: const Text('Use last subscription date'),
+                subtitle: const Text(
+                  'If enabled, the subscription will be stopped at the last subscription date',
                 ),
-                onTap: () => _selectEffectiveDate(context),
+                value: _useLastPaymentDate,
+                onChanged: (value) {
+                  setState(() {
+                    _useLastPaymentDate = value;
+                  });
+                },
               ),
+              if (!_useLastPaymentDate)
+                ListTile(
+                  leading: const Icon(Icons.calendar_today),
+                  title: const Text('Stop Date'),
+                  subtitle: Text(
+                    '${_selectedDate.month}/${_selectedDate.day}/${_selectedDate.year}',
+                  ),
+                  onTap: () async {
+                    final DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate: _selectedDate,
+                      firstDate: widget.subscription
+                          .getLastPaymentDetail()
+                          .startDate,
+                      lastDate: DateTime(DateTime.now().year + 100),
+                    );
+                    if (picked != null && picked != _selectedDate) {
+                      setState(() {
+                        _selectedDate = picked;
+                      });
+                    }
+                  },
+                ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _submitForm,
@@ -154,7 +134,7 @@ class _PriceChangeFormState extends State<PriceChangeForm> {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
                 child: const Text(
-                  'Update Payment',
+                  'Cancel subscription',
                   style: TextStyle(fontSize: 16),
                 ),
               ),

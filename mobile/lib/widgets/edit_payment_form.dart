@@ -153,14 +153,14 @@ class _EditSubscriptionFormState extends State<EditSubscriptionForm> {
         await Provider.of<SubscriptionProvider>(
           context,
           listen: false,
-        ).updatePayment(widget.subscription.id, name);
+        ).updateSubscription(widget.subscription.id, name);
 
         // Update the subscription detail
         final currentDetail = widget.subscription.getLastPaymentDetail();
         await Provider.of<SubscriptionProvider>(
           context,
           listen: false,
-        ).updatePaymentDetailEntry(
+        ).updateSubscriptionPayment(
           widget.subscription.id,
           currentDetail.id,
           price,

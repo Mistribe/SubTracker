@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:subscription_tracker/widgets/cancel_subscription_form.dart';
 import '../models/subscription.dart';
 import '../providers/subscription_provider.dart';
 import '../widgets/edit_payment_form.dart';
+import '../widgets/price_change_form.dart';
 
 class PaymentDetailScreen extends StatefulWidget {
   final Subscription subscription;
@@ -102,7 +104,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     await Provider.of<SubscriptionProvider>(
                       context,
                       listen: false,
-                    ).stopPayment(
+                    ).cancelCurrentSubscription(
                       subscription.id,
                       stopDate: useLastPaymentDate ? null : selectedDate,
                     );
@@ -163,7 +165,9 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     final DateTime? picked = await showDatePicker(
                       context: context,
                       initialDate: selectedDate,
-                      firstDate: DateTime.now(),
+                      firstDate:
+                          subscription.getLastPaymentDetail().endDate ??
+                          DateTime.now(),
                       lastDate: DateTime(2101),
                     );
                     if (picked != null && picked != selectedDate) {
@@ -221,192 +225,6 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                   }
                 },
                 child: const Text('Reactivate'),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  // Show dialog to add a subscription history entry
-  void _showAddPaymentHistoryDialog(BuildContext context) {
-    final priceController = TextEditingController();
-    DateTime selectedDate = DateTime.now();
-    final currentDetail = subscription.getLastPaymentDetail();
-
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Add Price Change'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: priceController,
-                  decoration: const InputDecoration(
-                    labelText: 'New Price',
-                    hintText: 'Enter the new price',
-                    prefixIcon: Icon(Icons.attach_money),
-                  ),
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(
-                      RegExp(r'^\d+\.?\d{0,2}'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                if (currentDetail.months == 12)
-                  // For yearly subscriptions, only allow changing the year
-                  ListTile(
-                    leading: const Icon(Icons.calendar_today),
-                    title: const Text('Effective Year'),
-                    subtitle: Text('${selectedDate.year}'),
-                    onTap: () async {
-                      // Show a dialog to select only the year
-                      final int? selectedYear = await showDialog<int>(
-                        context: context,
-                        builder: (BuildContext context) {
-                          int year = selectedDate.year;
-                          return AlertDialog(
-                            title: const Text('Select Year'),
-                            content: SizedBox(
-                              height: 300,
-                              width: 300,
-                              child: ListView.builder(
-                                itemCount: 30,
-                                // Show 30 years from current year
-                                itemBuilder: (context, index) {
-                                  final int yearOption =
-                                      DateTime.now().year + index;
-                                  return ListTile(
-                                    title: Text(yearOption.toString()),
-                                    onTap: () {
-                                      Navigator.of(context).pop(yearOption);
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                          );
-                        },
-                      );
-
-                      if (selectedYear != null) {
-                        setState(() {
-                          // Keep the same month and day, only change the year
-                          selectedDate = DateTime(
-                            selectedYear,
-                            selectedDate.month,
-                            selectedDate.day,
-                          );
-                        });
-                      }
-                    },
-                  )
-                else
-                  // For non-yearly subscriptions, allow changing year and month
-                  ListTile(
-                    leading: const Icon(Icons.calendar_today),
-                    title: const Text('Effective Month/Year'),
-                    subtitle: Text(
-                      '${selectedDate.month}/${selectedDate.year}',
-                    ),
-                    onTap: () async {
-                      // Show a dialog to select month and year
-                      final DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: selectedDate,
-                        firstDate: currentDetail.startDate,
-                        lastDate: DateTime(2101),
-                        selectableDayPredicate: (DateTime date) {
-                          // Only allow selecting the same day of the month as the subscription date
-                          return date.day == currentDetail.startDate.day;
-                        },
-                      );
-                      if (picked != null && picked != selectedDate) {
-                        setState(() {
-                          // Ensure we keep the same day as the subscription date
-                          selectedDate = DateTime(
-                            picked.year,
-                            picked.month,
-                            currentDetail.startDate.day,
-                          );
-                        });
-                      }
-                    },
-                  ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () async {
-                  if (priceController.text.isNotEmpty) {
-                    try {
-                      final newPrice = double.parse(priceController.text);
-                      if (newPrice <= 0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Price must be greater than zero'),
-                          ),
-                        );
-                        return;
-                      }
-
-                      // Show loading indicator
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Adding price change...'),
-                          duration: Duration(seconds: 1),
-                        ),
-                      );
-
-                      // Add the subscription history entry using the provider
-                      await Provider.of<SubscriptionProvider>(
-                        context,
-                        listen: false,
-                      ).addPaymentDetailEntry(
-                        subscription.id,
-                        newPrice,
-                        selectedDate,
-                      );
-
-                      Navigator.of(context).pop();
-
-                      // Show success message
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Price change added successfully'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Error: ${e.toString()}'),
-                          backgroundColor: Colors.red,
-                          duration: const Duration(seconds: 3),
-                        ),
-                      );
-                    }
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please enter a price')),
-                    );
-                  }
-                },
-                child: const Text('Add'),
               ),
             ],
           );
@@ -491,9 +309,19 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                           EditSubscriptionForm(subscription: subscription),
                     );
                   } else if (value == 'addPaymentHistory') {
-                    _showAddPaymentHistoryDialog(context);
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (context) =>
+                          PriceChangeForm(subscription: subscription),
+                    );
                   } else if (value == 'stopPayment') {
-                    _showStopPaymentDialog(context);
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (context) =>
+                          StopSubscriptionForm(subscription: subscription),
+                    );
                   } else if (value == 'reactivatePayment') {
                     _showReactivatePaymentDialog(context);
                   }
@@ -560,7 +388,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Subscription Summary',
+                          'Summary',
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 16),
@@ -624,7 +452,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Payment History',
+                      'History',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ],
@@ -650,7 +478,11 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       separatorBuilder: (context, index) => const Divider(),
                       itemBuilder: (context, index) {
                         final history =
-                            subscription.subscriptionPayments[index];
+                            subscription.subscriptionPayments[subscription
+                                    .subscriptionPayments
+                                    .length -
+                                1 -
+                                index];
                         return ListTile(
                           leading: Icon(
                             history.isActive
@@ -660,16 +492,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                           ),
                           title: Text('\$${history.price.toStringAsFixed(2)}'),
                           subtitle: Text(
-                            'from ${history.startDate.month}/${history.startDate.day}/${history.startDate.year} to ${history.endDate == null ? "now" : "${history.endDate!.month}/${history.endDate!.day}/${history.endDate!.year}"}',
-                          ),
-                          trailing: Text(
-                            history.isActive ? 'Active' : 'Stopped',
-                            style: TextStyle(
-                              color: history.isActive
-                                  ? Colors.green
-                                  : Colors.red,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            'From ${history.startDate.month}/${history.startDate.day}/${history.startDate.year} to ${history.endDate == null ? "now" : "${history.endDate!.month}/${history.endDate!.day}/${history.endDate!.year}"}',
                           ),
                         );
                       },
