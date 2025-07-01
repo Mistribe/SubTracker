@@ -4,7 +4,7 @@ import 'package:subscription_tracker/widgets/price_change_form.dart';
 import '../providers/subscription_provider.dart';
 import '../models/subscription.dart';
 import '../screens/subscription_detail_screen.dart';
-import 'edit_subscription_form.dart';
+import '../screens/edit_subscription_screen.dart';
 
 class SubscriptionList extends StatelessWidget {
   const SubscriptionList({super.key});
@@ -146,11 +146,11 @@ class SubscriptionCard extends StatelessWidget {
                     icon: const Icon(Icons.more_vert),
                     onSelected: (value) async {
                       if (value == 'edit') {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          builder: (context) =>
-                              EditSubscriptionForm(subscription: subscription),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditSubscriptionScreen(subscription: subscription),
+                          ),
                         );
                       } else if (value == 'addPriceChange') {
                         showModalBottomSheet(
@@ -160,38 +160,61 @@ class SubscriptionCard extends StatelessWidget {
                               PriceChangeForm(subscription: subscription),
                         );
                       } else if (value == 'delete') {
-                        try {
-                          // Show loading indicator
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Removing subscription...'),
-                              duration: Duration(seconds: 1),
+                        // Show confirmation dialog
+                        final shouldDelete = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Delete Subscription'),
+                            content: const Text(
+                              'Are you sure you want to delete this subscription? This action is irreversible and cannot be undone.',
                             ),
-                          );
-
-                          // Remove the subscription
-                          await subscriptionProvider.removePayment(
-                            subscription.id,
-                          );
-
-                          // Show success message
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${subscription.name} removed'),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        } catch (e) {
-                          // Show error message
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Error removing subscription: ${e.toString()}',
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(false),
+                                child: const Text('Cancel'),
                               ),
-                              backgroundColor: Colors.red,
-                              duration: const Duration(seconds: 3),
-                            ),
-                          );
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(true),
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          ),
+                        ) ?? false;
+
+                        if (shouldDelete) {
+                          try {
+                            // Show loading indicator
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Removing subscription...'),
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+
+                            // Remove the subscription
+                            await subscriptionProvider.removePayment(
+                              subscription.id,
+                            );
+
+                            // Show success message
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('${subscription.name} removed'),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          } catch (e) {
+                            // Show error message
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Error removing subscription: ${e.toString()}',
+                                ),
+                                backgroundColor: Colors.red,
+                                duration: const Duration(seconds: 3),
+                              ),
+                            );
+                          }
                         }
                       }
                     },

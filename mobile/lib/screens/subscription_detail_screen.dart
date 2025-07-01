@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import '../models/subscription.dart';
 import '../providers/subscription_provider.dart';
 import '../widgets/cancel_subscription_form.dart';
-import '../widgets/edit_subscription_form.dart';
-import '../widgets/edit_subscription_payment_form.dart';
+import 'edit_subscription_screen.dart';
+import 'edit_subscription_payment_screen.dart';
 import '../widgets/price_change_form.dart';
 import '../widgets/reactivate_subscription_form.dart';
 
@@ -95,11 +95,11 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                 icon: const Icon(Icons.more_vert),
                 onSelected: (value) {
                   if (value == 'edit') {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (context) =>
-                          EditSubscriptionForm(subscription: subscription),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditSubscriptionScreen(subscription: subscription),
+                      ),
                     );
                   } else if (value == 'addPaymentHistory') {
                     showModalBottomSheet(
@@ -294,12 +294,13 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                             icon: const Icon(Icons.more_vert),
                             onSelected: (value) async {
                               if (value == 'edit') {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  builder: (context) => EditSubscriptionPaymentForm(
-                                    subscription: subscription,
-                                    paymentHistory: history,
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditSubscriptionPaymentScreen(
+                                      subscription: subscription,
+                                      paymentHistory: history,
+                                    ),
                                   ),
                                 );
                               } else if (value == 'remove') {

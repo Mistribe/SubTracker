@@ -33,7 +33,17 @@ class _EditSubscriptionPaymentFormState
   late String _selectedCurrency;
 
   // List of common currencies
-  final List<String> _currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR'];
+  final List<String> _currencies = [
+    'USD',
+    'EUR',
+    'GBP',
+    'JPY',
+    'CAD',
+    'AUD',
+    'CHF',
+    'CNY',
+    'INR',
+  ];
 
   @override
   void initState() {
@@ -160,7 +170,9 @@ class _EditSubscriptionPaymentFormState
         if (_endDate!.isBefore(minEndDate)) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('End date must be at least $_months months after start date'),
+              content: Text(
+                'End date must be at least $_months months after start date',
+              ),
               backgroundColor: Colors.red,
               duration: const Duration(seconds: 3),
             ),
@@ -217,182 +229,175 @@ class _EditSubscriptionPaymentFormState
 
   @override
   Widget build(BuildContext context) {
-    // Get the keyboard height to adjust the bottom padding
-    final mediaQuery = MediaQuery.of(context);
-    final keyboardHeight = mediaQuery.viewInsets.bottom;
-
-    return Padding(
-      padding: EdgeInsets.only(
-        top: 16,
-        left: 16,
-        right: 16,
-        bottom: keyboardHeight + 16,
-      ),
-      child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Edit Subscription History',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 7,
-                    child: TextFormField(
-                      controller: _priceController,
-                      decoration: InputDecoration(
-                        labelText: 'Price',
-                        hintText: 'Enter the price',
-                        prefixIcon: Icon(_selectedCurrency == 'USD' ? Icons.attach_money : Icons.currency_exchange),
-                      ),
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-                      ],
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a price';
-                        }
-                        final price = double.tryParse(value);
-                        if (price == null || price <= 0) {
-                          return 'Please enter a valid price';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 3,
-                    child: DropdownButtonFormField<String>(
-                      value: _selectedCurrency,
-                      decoration: const InputDecoration(
-                        labelText: 'Currency',
-                        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-                      ),
-                      items: _currencies.map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        if (newValue != null) {
-                          setState(() {
-                            _selectedCurrency = newValue;
-                          });
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedDuration,
-                decoration: const InputDecoration(
-                  labelText: 'Subscription Recurrence',
-                  prefixIcon: Icon(Icons.repeat),
-                ),
-                items: const [
-                  DropdownMenuItem(value: '1 month', child: Text('Monthly')),
-                  DropdownMenuItem(
-                    value: '3 months',
-                    child: Text('Quarterly (3 months)'),
-                  ),
-                  DropdownMenuItem(
-                    value: '6 months',
-                    child: Text('Semi-Annual (6 months)'),
-                  ),
-                  DropdownMenuItem(
-                    value: '12 months',
-                    child: Text('Annual (12 months)'),
-                  ),
-                  DropdownMenuItem(value: 'Custom', child: Text('Custom')),
-                ],
-                onChanged: _handleDurationChange,
-              ),
-              if (_selectedDuration == 'Custom')
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0),
+    return SingleChildScrollView(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  flex: 7,
                   child: TextFormField(
-                    controller: _customMonthsController,
-                    decoration: const InputDecoration(
-                      labelText: 'Custom Months',
-                      hintText: 'Enter number of months',
-                      prefixIcon: Icon(Icons.calendar_today),
+                    controller: _priceController,
+                    decoration: InputDecoration(
+                      labelText: 'Price',
+                      hintText: 'Enter the price',
+                      prefixIcon: Icon(
+                        _selectedCurrency == 'USD'
+                            ? Icons.attach_money
+                            : Icons.currency_exchange,
+                      ),
                     ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d+\.?\d{0,2}'),
+                      ),
+                    ],
                     validator: (value) {
-                      if (_selectedDuration == 'Custom') {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter number of months';
-                        }
-                        final months = int.tryParse(value);
-                        if (months == null || months <= 0) {
-                          return 'Please enter a valid number';
-                        }
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a price';
+                      }
+                      final price = double.tryParse(value);
+                      if (price == null || price <= 0) {
+                        return 'Please enter a valid price';
                       }
                       return null;
                     },
-                    onChanged: _handleCustomMonthsChange,
                   ),
                 ),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(Icons.calendar_today),
-                title: const Text('Start Date'),
-                subtitle: Text(
-                  '${_startDate.month}/${_startDate.day}/${_startDate.year}',
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 3,
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedCurrency,
+                    decoration: const InputDecoration(
+                      labelText: 'Currency',
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 15,
+                      ),
+                    ),
+                    items: _currencies.map<DropdownMenuItem<String>>((
+                      String value,
+                    ) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _selectedCurrency = newValue;
+                        });
+                      }
+                    },
+                  ),
                 ),
-                onTap: () => _selectStartDate(context),
+              ],
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: _selectedDuration,
+              decoration: const InputDecoration(
+                labelText: 'Subscription Recurrence',
+                prefixIcon: Icon(Icons.repeat),
               ),
-              const SizedBox(height: 8),
-              ListTile(
-                leading: const Icon(Icons.event_busy),
-                title: Text(
-                  _mandatoryEndDate ? 'End Date' : 'End Date (Optional)',
+              items: const [
+                DropdownMenuItem(value: '1 month', child: Text('Monthly')),
+                DropdownMenuItem(
+                  value: '3 months',
+                  child: Text('Quarterly (3 months)'),
                 ),
-                subtitle: Text(
-                  _endDate != null
-                      ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
-                      : 'No end date',
+                DropdownMenuItem(
+                  value: '6 months',
+                  child: Text('Semi-Annual (6 months)'),
                 ),
-                trailing: !_mandatoryEndDate
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          setState(() {
-                            _endDate = null;
-                          });
-                        },
-                      )
-                    : null,
-                onTap: () => _selectEndDate(context),
+                DropdownMenuItem(
+                  value: '12 months',
+                  child: Text('Annual (12 months)'),
+                ),
+                DropdownMenuItem(value: 'Custom', child: Text('Custom')),
+              ],
+              onChanged: _handleDurationChange,
+            ),
+            if (_selectedDuration == 'Custom')
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: TextFormField(
+                  controller: _customMonthsController,
+                  decoration: const InputDecoration(
+                    labelText: 'Custom Months',
+                    hintText: 'Enter number of months',
+                    prefixIcon: Icon(Icons.calendar_today),
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  validator: (value) {
+                    if (_selectedDuration == 'Custom') {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter number of months';
+                      }
+                      final months = int.tryParse(value);
+                      if (months == null || months <= 0) {
+                        return 'Please enter a valid number';
+                      }
+                    }
+                    return null;
+                  },
+                  onChanged: _handleCustomMonthsChange,
+                ),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _submitForm,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text(
-                  'Update Payment History',
-                  style: TextStyle(fontSize: 16),
-                ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.calendar_today),
+              title: const Text('Start Date'),
+              subtitle: Text(
+                '${_startDate.month}/${_startDate.day}/${_startDate.year}',
               ),
-            ],
-          ),
+              onTap: () => _selectStartDate(context),
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              leading: const Icon(Icons.event_busy),
+              title: Text(
+                _mandatoryEndDate ? 'End Date' : 'End Date (Optional)',
+              ),
+              subtitle: Text(
+                _endDate != null
+                    ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
+                    : 'No end date',
+              ),
+              trailing: !_mandatoryEndDate
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        setState(() {
+                          _endDate = null;
+                        });
+                      },
+                    )
+                  : null,
+              onTap: () => _selectEndDate(context),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _submitForm,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: const Text(
+                'Update Payment History',
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+          ],
         ),
       ),
     );
