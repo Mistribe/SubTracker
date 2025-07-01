@@ -6,6 +6,7 @@ import '../models/subscription.dart';
 import '../providers/subscription_provider.dart';
 import '../widgets/edit_payment_form.dart';
 import '../widgets/price_change_form.dart';
+import '../widgets/reactivate_subscription_form.dart';
 
 class PaymentDetailScreen extends StatefulWidget {
   final Subscription subscription;
@@ -23,102 +24,6 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
   void initState() {
     super.initState();
     subscription = widget.subscription;
-  }
-
-  // Show dialog to reactivate a subscription
-  void _showReactivatePaymentDialog(BuildContext context) {
-    DateTime selectedDate = DateTime.now();
-
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Reactivate Payment'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Select a date to reactivate this subscription. '
-                  'The subscription will be reactivated on this date.',
-                ),
-                const SizedBox(height: 16),
-                ListTile(
-                  leading: const Icon(Icons.calendar_today),
-                  title: const Text('Reactivation Date'),
-                  subtitle: Text(
-                    '${selectedDate.month}/${selectedDate.day}/${selectedDate.year}',
-                  ),
-                  onTap: () async {
-                    final DateTime? picked = await showDatePicker(
-                      context: context,
-                      initialDate: selectedDate,
-                      firstDate:
-                          subscription.getLastPaymentDetail().endDate ??
-                          DateTime.now(),
-                      lastDate: DateTime(2101),
-                    );
-                    if (picked != null && picked != selectedDate) {
-                      setState(() {
-                        selectedDate = picked;
-                      });
-                    }
-                  },
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () async {
-                  try {
-                    // Show loading indicator
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Scheduling reactivation...'),
-                        duration: Duration(seconds: 1),
-                      ),
-                    );
-
-                    // Reactivate the subscription using the provider
-                    await Provider.of<SubscriptionProvider>(
-                      context,
-                      listen: false,
-                    ).reactivatePayment(subscription.id, selectedDate);
-
-                    Navigator.of(context).pop();
-
-                    // Show success message
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Payment reactivation scheduled successfully',
-                        ),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error: ${e.toString()}'),
-                        backgroundColor: Colors.red,
-                        duration: const Duration(seconds: 3),
-                      ),
-                    );
-                  }
-                },
-                child: const Text('Reactivate'),
-              ),
-            ],
-          );
-        },
-      ),
-    );
   }
 
   @override
@@ -211,7 +116,13 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                           StopSubscriptionForm(subscription: subscription),
                     );
                   } else if (value == 'reactivatePayment') {
-                    _showReactivatePaymentDialog(context);
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (context) => ReactivateSubscriptionForm(
+                        subscription: subscription,
+                      ),
+                    );
                   }
                 },
                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
