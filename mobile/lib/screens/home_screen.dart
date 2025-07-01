@@ -32,102 +32,100 @@ class HomeScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Summary cards
+          // Summary card - more concise with monthly and annual costs
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                // Monthly total card
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    // Monthly cost
+                    Column(
                       children: [
                         const Text(
-                          'Total Monthly Payments',
+                          'Monthly',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
                         Text(
                           '\$${paymentProvider.totalMonthlyCost.toStringAsFixed(2)}',
                           style: const TextStyle(
-                            fontSize: 24,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ),
 
-                const SizedBox(height: 8),
+                    // Vertical divider
+                    const SizedBox(
+                      height: 50,
+                      child: VerticalDivider(
+                        thickness: 1,
+                        width: 20,
+                        color: Colors.grey,
+                      ),
+                    ),
 
-                // Active payments and total spent card
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    // Annual cost
+                    Column(
                       children: [
-                        // Active payments count
-                        Column(
-                          children: [
-                            const Text(
-                              'Active Payments',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${paymentProvider.activePaymentsCount}',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        // Vertical divider
-                        const SizedBox(
-                          height: 50,
-                          child: VerticalDivider(
-                            thickness: 1,
-                            width: 20,
-                            color: Colors.grey,
+                        const Text(
+                          'Annually',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-
-                        // Total amount spent
-                        Column(
-                          children: [
-                            const Text(
-                              'Total Spent',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '\$${paymentProvider.totalAmountSpent.toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        const SizedBox(height: 4),
+                        Text(
+                          '\$${(paymentProvider.totalMonthlyCost * 12).toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
-                  ),
+
+                    // Vertical divider
+                    const SizedBox(
+                      height: 50,
+                      child: VerticalDivider(
+                        thickness: 1,
+                        width: 20,
+                        color: Colors.grey,
+                      ),
+                    ),
+
+                    // Active payments count
+                    Column(
+                      children: [
+                        const Text(
+                          'Active',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${paymentProvider.activePaymentsCount}',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
 

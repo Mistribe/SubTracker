@@ -459,7 +459,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
 
         // Get the current payment detail
         final currentDetail = payment.getLastPaymentDetail();
-        
+
         // Determine payment type based on months
         String paymentType;
         if (currentDetail.months == 1) {
@@ -622,13 +622,6 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     Text(
                       'Payment History',
                       style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add Payment History'),
-                      onPressed: () {
-                        _showAddPaymentHistoryDialog(context);
-                      },
                     ),
                   ],
                 ),
