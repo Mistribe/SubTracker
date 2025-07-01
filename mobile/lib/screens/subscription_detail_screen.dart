@@ -290,16 +290,102 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                           subtitle: Text(
                             'From ${history.startDate.month}/${history.startDate.day}/${history.startDate.year} to ${history.endDate == null ? "now" : "${history.endDate!.month}/${history.endDate!.day}/${history.endDate!.year}"}',
                           ),
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              builder: (context) => EditSubscriptionPaymentForm(
-                                subscription: subscription,
-                                paymentHistory: history,
+                          trailing: PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert),
+                            onSelected: (value) async {
+                              if (value == 'edit') {
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  builder: (context) => EditSubscriptionPaymentForm(
+                                    subscription: subscription,
+                                    paymentHistory: history,
+                                  ),
+                                );
+                              } else if (value == 'remove') {
+                                // Show confirmation dialog
+                                final shouldRemove = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Remove Payment History'),
+                                    content: const Text(
+                                      'Are you sure you want to remove this payment history? This action cannot be undone.',
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.of(context).pop(false),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Navigator.of(context).pop(true),
+                                        child: const Text('Remove'),
+                                      ),
+                                    ],
+                                  ),
+                                ) ?? false;
+
+                                if (shouldRemove) {
+                                  try {
+                                    // Show loading indicator
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Removing payment history...'),
+                                        duration: Duration(seconds: 1),
+                                      ),
+                                    );
+
+                                    // Remove the payment history
+                                    await Provider.of<SubscriptionProvider>(
+                                      context,
+                                      listen: false,
+                                    ).removeSubscriptionPayment(
+                                      subscription.id,
+                                      history.id,
+                                    );
+
+                                    // Show success message
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Payment history removed successfully'),
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    // Show error message
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Error removing payment history: ${e.toString()}'),
+                                        backgroundColor: Colors.red,
+                                        duration: const Duration(seconds: 3),
+                                      ),
+                                    );
+                                  }
+                                }
+                              }
+                            },
+                            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                              const PopupMenuItem<String>(
+                                value: 'edit',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.edit),
+                                    SizedBox(width: 8),
+                                    Text('Edit'),
+                                  ],
+                                ),
                               ),
-                            );
-                          },
+                              const PopupMenuItem<String>(
+                                value: 'remove',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.delete),
+                                    SizedBox(width: 8),
+                                    Text('Remove'),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         );
                       },
                     ),

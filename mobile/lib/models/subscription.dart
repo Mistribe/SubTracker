@@ -196,4 +196,18 @@ class Subscription extends HiveObject {
     final currentDetail = getLastPaymentDetail();
     setPaymentDetail(currentDetail.copyWith(endDate: endDate));
   }
+
+  // Remove a payment detail by ID
+  void removePaymentDetail(String paymentDetailId) {
+    final index = subscriptionPayments.indexWhere(
+      (detail) => detail.id == paymentDetailId,
+    );
+
+    if (index < 0) {
+      throw StateError('Payment detail not found');
+    }
+
+    // Remove the payment detail
+    subscriptionPayments.removeAt(index);
+  }
 }

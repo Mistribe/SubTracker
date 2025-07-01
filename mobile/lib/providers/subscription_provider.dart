@@ -235,6 +235,28 @@ class SubscriptionProvider with ChangeNotifier {
     }
   }
 
+  // Remove a specific subscription payment
+  Future<void> removeSubscriptionPayment(
+    String subscriptionId,
+    String paymentId,
+  ) async {
+    final index = _subscriptions.indexWhere(
+      (subscription) => subscription.id == subscriptionId,
+    );
+
+    if (index >= 0) {
+      final subscription = _subscriptions[index];
+
+      // Remove the payment from the subscription
+      subscription.removePaymentDetail(paymentId);
+
+      // Persist to storage
+      await subscriptionRepository.update(subscription);
+
+      notifyListeners();
+    }
+  }
+
   // Generate a unique ID for a new subscription
   String _generateId() {
     return uuid.v7();
