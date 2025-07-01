@@ -12,11 +12,13 @@ class AddSubscriptionForm extends StatefulWidget {
 
 class _AddSubscriptionFormState extends State<AddSubscriptionForm> {
   final _formKey = GlobalKey<FormState>();
+  late int _months;
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final _customMonthsController = TextEditingController();
   String _selectedDuration = '1 month'; // Default value
   DateTime _selectedDate = DateTime.now();
+  DateTime? _endDate;
 
   @override
   void dispose() {
@@ -41,24 +43,65 @@ class _AddSubscriptionFormState extends State<AddSubscriptionForm> {
     }
   }
 
+  // Date picker for end date
+  Future<void> _selectEndDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _endDate ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != _endDate) {
+      setState(() {
+        _endDate = picked;
+      });
+    }
+  }
+
+  // Handle duration selection
+  void _handleDurationChange(String? value) {
+    if (value == null) return;
+
+    setState(() {
+      _selectedDuration = value;
+
+      // Update months based on selection
+      if (value == '1 month') {
+        _months = 1;
+      } else if (value == '3 months') {
+        _months = 3;
+      } else if (value == '6 months') {
+        _months = 6;
+      } else if (value == '12 months') {
+        _months = 12;
+      }
+      // For custom, we'll use the value from the text field
+    });
+  }
+
+  // Handle custom months change
+  void _handleCustomMonthsChange(String value) {
+    if (value.isEmpty) return;
+
+    final parsedValue = int.tryParse(value);
+    if (parsedValue != null && parsedValue > 0) {
+      setState(() {
+        _months = parsedValue;
+      });
+    }
+  }
+
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       final name = _nameController.text.trim();
       final price = double.parse(_priceController.text);
 
-      // Determine the months value based on selected duration
-      int months;
-      if (_selectedDuration == '1 month') {
-        months = 1;
-      } else if (_selectedDuration == '3 months') {
-        months = 3;
-      } else if (_selectedDuration == '6 months') {
-        months = 6;
-      } else if (_selectedDuration == '12 months') {
-        months = 12;
-      } else {
-        // Custom duration
-        months = int.parse(_customMonthsController.text);
+      // For custom duration, get months from text field
+      if (_selectedDuration == 'Custom') {
+        final customMonths = int.tryParse(_customMonthsController.text);
+        if (customMonths != null && customMonths > 0) {
+          _months = customMonths;
+        }
       }
 
       try {
@@ -74,7 +117,7 @@ class _AddSubscriptionFormState extends State<AddSubscriptionForm> {
         await Provider.of<SubscriptionProvider>(
           context,
           listen: false,
-        ).addPayment(name, price, months, _selectedDate);
+        ).addPayment(name, price, _months, _selectedDate, endDate: _endDate);
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
@@ -169,69 +212,88 @@ class _AddSubscriptionFormState extends State<AddSubscriptionForm> {
               },
             ),
             const SizedBox(height: 16),
-            // Date picker
-            ListTile(
-              leading: const Icon(Icons.calendar_today),
-              title: const Text('First Subscription Date'),
-              subtitle: Text(
-                '${_selectedDate.month}/${_selectedDate.day}/${_selectedDate.year}',
-              ),
-              onTap: () => _selectDate(context),
-            ),
-            const SizedBox(height: 16),
-            // Duration selector
             DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                labelText: 'Subscription Duration',
-                hintText: 'Select subscription duration',
-                prefixIcon: Icon(Icons.calendar_today),
-              ),
               value: _selectedDuration,
-              items: ['1 month', '3 months', '6 months', '12 months', 'Custom']
-                  .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  })
-                  .toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedDuration = newValue!;
-                });
-              },
+              decoration: const InputDecoration(
+                labelText: 'Subscription Recurrence',
+                prefixIcon: Icon(Icons.repeat),
+              ),
+              items: const [
+                DropdownMenuItem(value: '1 month', child: Text('Monthly')),
+                DropdownMenuItem(
+                  value: '3 months',
+                  child: Text('Quarterly (3 months)'),
+                ),
+                DropdownMenuItem(
+                  value: '6 months',
+                  child: Text('Semi-Annual (6 months)'),
+                ),
+                DropdownMenuItem(
+                  value: '12 months',
+                  child: Text('Annual (12 months)'),
+                ),
+                DropdownMenuItem(value: 'Custom', child: Text('Custom')),
+              ],
+              onChanged: _handleDurationChange,
             ),
-            // Show custom months input if 'Custom' is selected
             if (_selectedDuration == 'Custom')
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),
                 child: TextFormField(
                   controller: _customMonthsController,
                   decoration: const InputDecoration(
-                    labelText: 'Number of Months',
-                    hintText: 'Enter the number of months',
-                    prefixIcon: Icon(Icons.calendar_month),
+                    labelText: 'Custom Months',
+                    hintText: 'Enter number of months',
+                    prefixIcon: Icon(Icons.calendar_today),
                   ),
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (value) {
                     if (_selectedDuration == 'Custom') {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter the number of months';
+                        return 'Please enter number of months';
                       }
-                      try {
-                        final months = int.parse(value);
-                        if (months <= 0) {
-                          return 'Number of months must be greater than zero';
-                        }
-                      } catch (e) {
+                      final months = int.tryParse(value);
+                      if (months == null || months <= 0) {
                         return 'Please enter a valid number';
                       }
                     }
                     return null;
                   },
+                  onChanged: _handleCustomMonthsChange,
                 ),
               ),
+
+            // Date picker
+            ListTile(
+              leading: const Icon(Icons.calendar_today),
+              title: const Text('Start Date'),
+              subtitle: Text(
+                '${_selectedDate.month}/${_selectedDate.day}/${_selectedDate.year}',
+              ),
+              onTap: () => _selectDate(context),
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              leading: const Icon(Icons.event_busy),
+              title: const Text('End Date (Optional)'),
+              subtitle: Text(
+                _endDate != null
+                    ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
+                    : 'No end date',
+              ),
+              trailing: _endDate != null
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        setState(() {
+                          _endDate = null;
+                        });
+                      },
+                    )
+                  : null,
+              onTap: () => _selectEndDate(context),
+            ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _submitForm,
