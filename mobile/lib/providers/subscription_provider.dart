@@ -204,8 +204,11 @@ class SubscriptionProvider with ChangeNotifier {
   // Reactivate a subscription at a specific date
   Future<void> reactivatePayment(
     String subscriptionId,
-    DateTime reactivationDate,
-  ) async {
+    DateTime reactivationDate, {
+    double? price,
+    int? months,
+    DateTime? endDate,
+  }) async {
     final index = _subscriptions.indexWhere(
       (subscription) => subscription.id == subscriptionId,
     );
@@ -218,10 +221,10 @@ class SubscriptionProvider with ChangeNotifier {
       subscription.addPaymentDetail(
         SubscriptionPayment(
           id: _generateId(),
-          price: previousDetail.price,
+          price: price ?? previousDetail.price,
           startDate: reactivationDate,
-          endDate: null,
-          months: previousDetail.months,
+          endDate: endDate,
+          months: months ?? previousDetail.months,
         ),
       );
 

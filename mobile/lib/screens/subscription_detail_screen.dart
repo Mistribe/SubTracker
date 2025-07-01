@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:subscription_tracker/widgets/cancel_subscription_form.dart';
 import '../models/subscription.dart';
@@ -167,7 +166,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         children: [
                           Icon(Icons.play_circle),
                           SizedBox(width: 8),
-                          Text('Reactivate Payment'),
+                          Text('Reactivate'),
                         ],
                       ),
                     ),
@@ -209,16 +208,12 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                             '\$${subscription.monthlyCost.toStringAsFixed(2)}',
                             Icons.calculate,
                           ),
-                        buildInfoRow(
-                          'Start Date:',
-                          '${currentDetail.startDate.month}/${currentDetail.startDate.day}/${currentDetail.startDate.year}',
-                          Icons.date_range,
-                        ),
-                        buildInfoRow(
-                          'Next Payment:',
-                          subscription.formattedNextPaymentDate,
-                          Icons.event_available,
-                        ),
+                        if (subscription.isActive)
+                          buildInfoRow(
+                            'Next Payment:',
+                            subscription.formattedNextPaymentDate,
+                            Icons.event_available,
+                          ),
                         buildInfoRow(
                           'Total Spent:',
                           subscription.formattedTotalAmountSpent,

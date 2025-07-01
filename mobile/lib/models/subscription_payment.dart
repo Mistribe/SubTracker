@@ -74,6 +74,10 @@ class SubscriptionPayment {
       return DateTime(9999, 12, 31); // Far future date if no reactivation date
     }
 
+    if (startDate.isAfter(now)) {
+      return startDate;
+    }
+
     final year = (months / 12).truncate();
     final month = (months % 12);
     DateTime nextDate = DateTime(

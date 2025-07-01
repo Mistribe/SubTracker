@@ -233,113 +233,128 @@ class _EditSubscriptionFormState extends State<EditSubscriptionForm> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _priceController,
-                decoration: const InputDecoration(
-                  labelText: 'Price',
-                  hintText: 'Enter the price',
-                  prefixIcon: Icon(Icons.attach_money),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-                ],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a price';
-                  }
-                  final price = double.tryParse(value);
-                  if (price == null || price <= 0) {
-                    return 'Please enter a valid price';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedDuration,
-                decoration: const InputDecoration(
-                  labelText: 'Subscription Recurrence',
-                  prefixIcon: Icon(Icons.repeat),
-                ),
-                items: const [
-                  DropdownMenuItem(value: '1 month', child: Text('Monthly')),
-                  DropdownMenuItem(
-                    value: '3 months',
-                    child: Text('Quarterly (3 months)'),
-                  ),
-                  DropdownMenuItem(
-                    value: '6 months',
-                    child: Text('Semi-Annual (6 months)'),
-                  ),
-                  DropdownMenuItem(
-                    value: '12 months',
-                    child: Text('Annual (12 months)'),
-                  ),
-                  DropdownMenuItem(value: 'Custom', child: Text('Custom')),
-                ],
-                onChanged: _handleDurationChange,
-              ),
-              if (_selectedDuration == 'Custom')
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0),
-                  child: TextFormField(
-                    controller: _customMonthsController,
-                    decoration: const InputDecoration(
-                      labelText: 'Custom Months',
-                      hintText: 'Enter number of months',
-                      prefixIcon: Icon(Icons.calendar_today),
-                    ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    validator: (value) {
-                      if (_selectedDuration == 'Custom') {
+              if (widget.subscription.isActive)
+                Column(
+                  children: [
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _priceController,
+                      decoration: const InputDecoration(
+                        labelText: 'Price',
+                        hintText: 'Enter the price',
+                        prefixIcon: Icon(Icons.attach_money),
+                      ),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d+\.?\d{0,2}'),
+                        ),
+                      ],
+                      validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter number of months';
+                          return 'Please enter a price';
                         }
-                        final months = int.tryParse(value);
-                        if (months == null || months <= 0) {
-                          return 'Please enter a valid number';
+                        final price = double.tryParse(value);
+                        if (price == null || price <= 0) {
+                          return 'Please enter a valid price';
                         }
-                      }
-                      return null;
-                    },
-                    onChanged: _handleCustomMonthsChange,
-                  ),
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: _selectedDuration,
+                      decoration: const InputDecoration(
+                        labelText: 'Subscription Recurrence',
+                        prefixIcon: Icon(Icons.repeat),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: '1 month',
+                          child: Text('Monthly'),
+                        ),
+                        DropdownMenuItem(
+                          value: '3 months',
+                          child: Text('Quarterly (3 months)'),
+                        ),
+                        DropdownMenuItem(
+                          value: '6 months',
+                          child: Text('Semi-Annual (6 months)'),
+                        ),
+                        DropdownMenuItem(
+                          value: '12 months',
+                          child: Text('Annual (12 months)'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Custom',
+                          child: Text('Custom'),
+                        ),
+                      ],
+                      onChanged: _handleDurationChange,
+                    ),
+                    if (_selectedDuration == 'Custom')
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: TextFormField(
+                          controller: _customMonthsController,
+                          decoration: const InputDecoration(
+                            labelText: 'Custom Months',
+                            hintText: 'Enter number of months',
+                            prefixIcon: Icon(Icons.calendar_today),
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          validator: (value) {
+                            if (_selectedDuration == 'Custom') {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter number of months';
+                              }
+                              final months = int.tryParse(value);
+                              if (months == null || months <= 0) {
+                                return 'Please enter a valid number';
+                              }
+                            }
+                            return null;
+                          },
+                          onChanged: _handleCustomMonthsChange,
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    ListTile(
+                      leading: const Icon(Icons.calendar_today),
+                      title: const Text('Start Date'),
+                      subtitle: Text(
+                        '${_startDate.month}/${_startDate.day}/${_startDate.year}',
+                      ),
+                      onTap: () => _selectStartDate(context),
+                    ),
+                    const SizedBox(height: 8),
+                    ListTile(
+                      leading: const Icon(Icons.event_busy),
+                      title: const Text('End Date (Optional)'),
+                      subtitle: Text(
+                        _endDate != null
+                            ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
+                            : 'No end date',
+                      ),
+                      trailing: _endDate != null
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                setState(() {
+                                  _endDate = null;
+                                });
+                              },
+                            )
+                          : null,
+                      onTap: () => _selectEndDate(context),
+                    ),
+                  ],
                 ),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(Icons.calendar_today),
-                title: const Text('Start Date'),
-                subtitle: Text(
-                  '${_startDate.month}/${_startDate.day}/${_startDate.year}',
-                ),
-                onTap: () => _selectStartDate(context),
-              ),
-              const SizedBox(height: 8),
-              ListTile(
-                leading: const Icon(Icons.event_busy),
-                title: const Text('End Date (Optional)'),
-                subtitle: Text(
-                  _endDate != null
-                      ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
-                      : 'No end date',
-                ),
-                trailing: _endDate != null
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          setState(() {
-                            _endDate = null;
-                          });
-                        },
-                      )
-                    : null,
-                onTap: () => _selectEndDate(context),
-              ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _submitForm,
