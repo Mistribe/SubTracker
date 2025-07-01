@@ -6,6 +6,7 @@ part 'subscription_payment.g.dart';
 class SubscriptionPayment {
   @HiveField(0)
   final String id;
+
   @HiveField(1)
   final double price;
 

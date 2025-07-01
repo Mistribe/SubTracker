@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:subscription_tracker/widgets/cancel_subscription_form.dart';
 import '../models/subscription.dart';
 import '../providers/subscription_provider.dart';
-import '../widgets/edit_payment_form.dart';
+import '../widgets/cancel_subscription_form.dart';
+import '../widgets/edit_subscription_form.dart';
+import '../widgets/edit_subscription_payment_form.dart';
 import '../widgets/price_change_form.dart';
 import '../widgets/reactivate_subscription_form.dart';
 
@@ -289,6 +290,16 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                           subtitle: Text(
                             'From ${history.startDate.month}/${history.startDate.day}/${history.startDate.year} to ${history.endDate == null ? "now" : "${history.endDate!.month}/${history.endDate!.day}/${history.endDate!.year}"}',
                           ),
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (context) => EditSubscriptionPaymentForm(
+                                subscription: subscription,
+                                paymentHistory: history,
+                              ),
+                            );
+                          },
                         );
                       },
                     ),

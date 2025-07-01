@@ -4,7 +4,7 @@ import 'package:subscription_tracker/widgets/price_change_form.dart';
 import '../providers/subscription_provider.dart';
 import '../models/subscription.dart';
 import '../screens/subscription_detail_screen.dart';
-import 'edit_payment_form.dart';
+import 'edit_subscription_form.dart';
 
 class SubscriptionList extends StatelessWidget {
   const SubscriptionList({super.key});
@@ -85,36 +85,42 @@ class SubscriptionCard extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Monthly: \$${subscription.monthlyCost.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      Text(
-                        'Annually: \$${subscription.annualCost.toStringAsFixed(2)}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.event_available,
-                            size: 14,
-                            color: Colors.blue,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Next payment: ${subscription.formattedNextPaymentDate}',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.blue,
+                      if (subscription.isActive)
+                        Column(
+                          children: [
+                            Text(
+                              'Monthly: \$${subscription.monthlyCost.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                            Text(
+                              'Annually: \$${subscription.annualCost.toStringAsFixed(2)}',
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.event_available,
+                                  size: 14,
+                                  color: Colors.blue,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Next payment: ${subscription.formattedNextPaymentDate}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      if (!subscription.isActive) Text("Cancelled"),
                       const SizedBox(height: 4),
                       Row(
                         children: [

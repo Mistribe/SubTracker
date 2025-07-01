@@ -111,6 +111,7 @@ class Subscription extends HiveObject {
     }
 
     subscriptionPayments[idx] = detail;
+    subscriptionPayments.sort((a, b) => a.startDate.compareTo(b.startDate));
   }
 
   void setEndDateToCurrentPaymentDetail(DateTime effectiveDate) {
@@ -120,6 +121,7 @@ class Subscription extends HiveObject {
 
   void addPaymentDetail(SubscriptionPayment paymentDetail) {
     subscriptionPayments.add(paymentDetail);
+    subscriptionPayments.sort((a, b) => a.startDate.compareTo(b.startDate));
   }
 
   // Format the next payment date as a string
