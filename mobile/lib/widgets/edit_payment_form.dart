@@ -17,20 +17,44 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _priceController;
-  late bool _isAnnual;
+  late final TextEditingController _customMonthsController;
+  late int _months;
+  String _selectedDuration = '1 month'; // Default value
+
   @override
   void initState() {
     super.initState();
     // Initialize controllers with existing payment data
     _nameController = TextEditingController(text: widget.payment.name);
-    _priceController = TextEditingController(text: widget.payment.price.toString());
-    _isAnnual = widget.payment.isAnnual;
+
+    // Get the current payment detail
+    final currentDetail = widget.payment.getLastPaymentDetail();
+    _priceController = TextEditingController(text: currentDetail.price.toString());
+    _customMonthsController = TextEditingController();
+
+    // Initialize months from payment detail
+    _months = currentDetail.months;
+
+    // Set the selected duration based on months
+    if (_months == 1) {
+      _selectedDuration = '1 month';
+    } else if (_months == 3) {
+      _selectedDuration = '3 months';
+    } else if (_months == 6) {
+      _selectedDuration = '6 months';
+    } else if (_months == 12) {
+      _selectedDuration = '12 months';
+    } else {
+      _selectedDuration = 'Custom';
+      _customMonthsController.text = _months.toString();
+    }
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
+    _customMonthsController.dispose();
     super.dispose();
   }
 
@@ -41,6 +65,21 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
       final name = _nameController.text.trim();
       final price = double.parse(_priceController.text);
 
+      // Determine the months value based on selected duration
+      int months;
+      if (_selectedDuration == '1 month') {
+        months = 1;
+      } else if (_selectedDuration == '3 months') {
+        months = 3;
+      } else if (_selectedDuration == '6 months') {
+        months = 6;
+      } else if (_selectedDuration == '12 months') {
+        months = 12;
+      } else {
+        // Custom duration
+        months = int.parse(_customMonthsController.text);
+      }
+
       try {
         // Show loading indicator
         ScaffoldMessenger.of(context).showSnackBar(
@@ -50,18 +89,18 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
           ),
         );
 
-        // Create updated payment object
-        // Note: We're using the original payment date to ensure it remains fixed
-        final updatedPayment = widget.payment.copyWith(
-          name: name,
-          price: price,
-          isAnnual: _isAnnual,
-          // Original payment date is preserved (not editable)
-        );
-
-        // Update the payment using the provider
+        // Update the payment name
         await Provider.of<PaymentProvider>(context, listen: false)
-            .updatePayment(updatedPayment);
+            .updatePayment(widget.payment.id, name);
+
+        // Add a new payment detail entry with the updated price and months
+        await Provider.of<PaymentProvider>(context, listen: false)
+            .addPaymentDetailEntry(
+              widget.payment.id,
+              price,
+              DateTime.now(),
+              months: months,
+            );
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
@@ -161,20 +200,69 @@ class _EditPaymentFormState extends State<EditPaymentForm> {
             ListTile(
               leading: const Icon(Icons.calendar_today),
               title: const Text('Payment Date (Fixed)'),
-              subtitle: Text('${widget.payment.paymentDate.month}/${widget.payment.paymentDate.day}/${widget.payment.paymentDate.year}'),
+              subtitle: Text('${widget.payment.getLastPaymentDetail().startDate.month}/${widget.payment.getLastPaymentDetail().startDate.day}/${widget.payment.getLastPaymentDetail().startDate.year}'),
               // Date is fixed and non-editable
             ),
             const SizedBox(height: 16),
-            SwitchListTile(
-              title: const Text('Annual Payment'),
-              subtitle: const Text('Toggle if this is paid yearly instead of monthly'),
-              value: _isAnnual,
-              onChanged: (value) {
+            // Duration selector
+            DropdownButtonFormField<String>(
+              decoration: const InputDecoration(
+                labelText: 'Payment Duration',
+                hintText: 'Select payment duration',
+                prefixIcon: Icon(Icons.calendar_today),
+              ),
+              value: _selectedDuration,
+              items: [
+                '1 month',
+                '3 months',
+                '6 months',
+                '12 months',
+                'Custom',
+              ].map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
                 setState(() {
-                  _isAnnual = value;
+                  _selectedDuration = newValue!;
                 });
               },
             ),
+            // Show custom months input if 'Custom' is selected
+            if (_selectedDuration == 'Custom')
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: TextFormField(
+                  controller: _customMonthsController,
+                  decoration: const InputDecoration(
+                    labelText: 'Number of Months',
+                    hintText: 'Enter the number of months',
+                    prefixIcon: Icon(Icons.calendar_month),
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                  validator: (value) {
+                    if (_selectedDuration == 'Custom') {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter the number of months';
+                      }
+                      try {
+                        final months = int.parse(value);
+                        if (months <= 0) {
+                          return 'Number of months must be greater than zero';
+                        }
+                      } catch (e) {
+                        return 'Please enter a valid number';
+                      }
+                    }
+                    return null;
+                  },
+                ),
+              ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _submitForm,

@@ -231,6 +231,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
   void _showAddPaymentHistoryDialog(BuildContext context) {
     final priceController = TextEditingController();
     DateTime selectedDate = DateTime.now();
+    final currentDetail = payment.getLastPaymentDetail();
 
     showDialog(
       context: context,
@@ -258,7 +259,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                if (payment.isAnnual)
+                if (currentDetail.months == 12)
                   // For yearly payments, only allow changing the year
                   ListTile(
                     leading: const Icon(Icons.calendar_today),
@@ -307,7 +308,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     },
                   )
                 else
-                  // For monthly payments, allow changing year and month
+                  // For non-yearly payments, allow changing year and month
                   ListTile(
                     leading: const Icon(Icons.calendar_today),
                     title: const Text('Effective Month/Year'),
@@ -319,11 +320,11 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       final DateTime? picked = await showDatePicker(
                         context: context,
                         initialDate: selectedDate,
-                        firstDate: payment.paymentDate,
+                        firstDate: currentDetail.startDate,
                         lastDate: DateTime(2101),
                         selectableDayPredicate: (DateTime date) {
                           // Only allow selecting the same day of the month as the payment date
-                          return date.day == payment.paymentDate.day;
+                          return date.day == currentDetail.startDate.day;
                         },
                       );
                       if (picked != null && picked != selectedDate) {
@@ -332,7 +333,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                           selectedDate = DateTime(
                             picked.year,
                             picked.month,
-                            payment.paymentDate.day,
+                            currentDetail.startDate.day,
                           );
                         });
                       }
@@ -456,6 +457,23 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
           );
         }
 
+        // Get the current payment detail
+        final currentDetail = payment.getLastPaymentDetail();
+        
+        // Determine payment type based on months
+        String paymentType;
+        if (currentDetail.months == 1) {
+          paymentType = 'Monthly';
+        } else if (currentDetail.months == 3) {
+          paymentType = 'Quarterly';
+        } else if (currentDetail.months == 6) {
+          paymentType = 'Semi-Annual';
+        } else if (currentDetail.months == 12) {
+          paymentType = 'Annual';
+        } else {
+          paymentType = 'Custom (${currentDetail.months} months)';
+        }
+
         return Scaffold(
           appBar: AppBar(
             title: Text(payment.name),
@@ -498,8 +516,8 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       ],
                     ),
                   ),
-                  // Show stop payment option if payment is not stopped
-                  if (!payment.isStopped)
+                  // Show stop payment option if payment is active
+                  if (payment.isActive)
                     const PopupMenuItem<String>(
                       value: 'stopPayment',
                       child: Row(
@@ -510,8 +528,8 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         ],
                       ),
                     ),
-                  // Show reactivate payment option if payment is stopped
-                  if (payment.isStopped)
+                  // Show reactivate payment option if payment is not active
+                  if (!payment.isActive)
                     const PopupMenuItem<String>(
                       value: 'reactivatePayment',
                       child: Row(
@@ -545,15 +563,16 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         const SizedBox(height: 16),
                         buildInfoRow(
                           'Current Price:',
-                          '\$${payment.price.toStringAsFixed(2)}',
+                          '\$${currentDetail.price.toStringAsFixed(2)}',
                           Icons.attach_money,
                         ),
                         buildInfoRow(
                           'Payment Type:',
-                          payment.isAnnual ? 'Annual' : 'Monthly',
+                          paymentType,
                           Icons.calendar_today,
                         ),
-                        if (payment.isAnnual)
+                        // Always show monthly cost for non-monthly payments
+                        if (currentDetail.months > 1)
                           buildInfoRow(
                             'Monthly Cost:',
                             '\$${payment.monthlyCost.toStringAsFixed(2)}',
@@ -561,7 +580,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                           ),
                         buildInfoRow(
                           'Start Date:',
-                          '${payment.paymentDate.month}/${payment.paymentDate.day}/${payment.paymentDate.year}',
+                          '${currentDetail.startDate.month}/${currentDetail.startDate.day}/${currentDetail.startDate.year}',
                           Icons.date_range,
                         ),
                         buildInfoRow(
@@ -577,25 +596,17 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         // Show payment status (active or stopped)
                         buildInfoRow(
                           'Status:',
-                          payment.isStopped ? 'Stopped' : 'Active',
-                          payment.isStopped
-                              ? Icons.stop_circle
-                              : Icons.check_circle,
+                          payment.isActive ? 'Active' : 'Stopped',
+                          payment.isActive
+                              ? Icons.check_circle
+                              : Icons.stop_circle,
                         ),
-                        // Show stop date if payment is stopped and has a stop date
-                        if (payment.isStopped && payment.stopDate != null)
+                        // Show end date if payment is not active and has an end date
+                        if (!payment.isActive && currentDetail.endDate != null)
                           buildInfoRow(
                             'Stop Date:',
-                            '${payment.stopDate!.month}/${payment.stopDate!.day}/${payment.stopDate!.year}',
+                            '${currentDetail.endDate!.month}/${currentDetail.endDate!.day}/${currentDetail.endDate!.year}',
                             Icons.stop_circle,
-                          ),
-                        // Show reactivation date if payment is stopped and has a reactivation date
-                        if (payment.isStopped &&
-                            payment.reactivationDate != null)
-                          buildInfoRow(
-                            'Reactivation Date:',
-                            '${payment.reactivationDate!.month}/${payment.reactivationDate!.day}/${payment.reactivationDate!.year}',
-                            Icons.event_available,
                           ),
                       ],
                     ),
@@ -651,7 +662,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                           ),
                           title: Text('\$${history.price.toStringAsFixed(2)}'),
                           subtitle: Text(
-                            'from ${history.startDate.month}/${history.startDate.day}/${history.startDate.year} to ${history.endDate.year == 9999 ? "now" : "${history.endDate.month}/${history.endDate.day}/${history.endDate.year}"}',
+                            'from ${history.startDate.month}/${history.startDate.day}/${history.startDate.year} to ${history.endDate == null ? "now" : "${history.endDate!.month}/${history.endDate!.day}/${history.endDate!.year}"}',
                           ),
                           trailing: Text(
                             history.isActive ? 'Active' : 'Stopped',

@@ -15,7 +15,10 @@ class PaymentDetail {
   @HiveField(3)
   final DateTime? endDate;
 
-  // The number of month cover by the price before the next payment
+  // The number of month cover by the price before the next payment.
+  // If 1 this is a monthly subscription
+  // If 3, the subscription is renew every 3 months and the price cover 3 months. To have the monthly price we should make price / 3
+  // If 12, the subscription is annually.
   // todo rename in frequency ?
   @HiveField(4)
   final int months;
@@ -29,7 +32,10 @@ class PaymentDetail {
   });
 
   bool get isActive {
-    return endDate != null;
+    if (endDate == null) {
+      return true;
+    }
+    return endDate!.isAfter(DateTime.now());
   }
 
   int get totalMonthElapsed {
@@ -64,7 +70,7 @@ class PaymentDetail {
     final now = DateTime.now();
 
     // If payment is stopped, the next payment date is the reactivation date or far future if none
-    if (!isActive) {
+    if (isActive == false) {
       return DateTime(9999, 12, 31); // Far future date if no reactivation date
     }
 
