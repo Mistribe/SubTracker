@@ -19,6 +19,22 @@ class _AddSubscriptionFormState extends State<AddSubscriptionForm> {
   String _selectedDuration = '1 month'; // Default value
   DateTime _selectedStartDate = DateTime.now();
   DateTime? _selectedEndDate;
+  String _selectedCurrency = 'USD'; // Default currency
+
+  // List of common currencies
+  final List<String> _currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR'];
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with the default currency from the provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<SubscriptionProvider>(context, listen: false);
+      setState(() {
+        _selectedCurrency = provider.defaultCurrency;
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -153,6 +169,7 @@ class _AddSubscriptionFormState extends State<AddSubscriptionForm> {
           _months,
           _selectedStartDate,
           endDate: _selectedEndDate,
+          currency: _selectedCurrency,
         );
 
         // Show success message
@@ -219,33 +236,64 @@ class _AddSubscriptionFormState extends State<AddSubscriptionForm> {
               },
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _priceController,
-              decoration: const InputDecoration(
-                labelText: 'Price',
-                hintText: 'Enter the amount',
-                prefixIcon: Icon(Icons.attach_money),
-              ),
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+            Row(
+              children: [
+                Expanded(
+                  flex: 7,
+                  child: TextFormField(
+                    controller: _priceController,
+                    decoration: InputDecoration(
+                      labelText: 'Price',
+                      hintText: 'Enter the amount',
+                      prefixIcon: Icon(_selectedCurrency == 'USD' ? Icons.attach_money : Icons.currency_exchange),
+                    ),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                    ],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a price';
+                      }
+                      try {
+                        final price = double.parse(value);
+                        if (price <= 0) {
+                          return 'Price must be greater than zero';
+                        }
+                      } catch (e) {
+                        return 'Please enter a valid number';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 3,
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedCurrency,
+                    decoration: const InputDecoration(
+                      labelText: 'Currency',
+                      contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                    ),
+                    items: _currencies.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _selectedCurrency = newValue;
+                        });
+                      }
+                    },
+                  ),
+                ),
               ],
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a price';
-                }
-                try {
-                  final price = double.parse(value);
-                  if (price <= 0) {
-                    return 'Price must be greater than zero';
-                  }
-                } catch (e) {
-                  return 'Please enter a valid number';
-                }
-                return null;
-              },
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(

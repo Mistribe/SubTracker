@@ -22,6 +22,10 @@ class _EditSubscriptionFormState extends State<EditSubscriptionForm> {
   String _selectedDuration = '1 month'; // Default value
   late DateTime _startDate;
   DateTime? _endDate;
+  late String _selectedCurrency;
+
+  // List of common currencies
+  final List<String> _currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR'];
 
   @override
   void initState() {
@@ -40,6 +44,7 @@ class _EditSubscriptionFormState extends State<EditSubscriptionForm> {
     _months = currentDetail.months;
     _startDate = currentDetail.startDate;
     _endDate = currentDetail.endDate;
+    _selectedCurrency = currentDetail.currency;
 
     // Set the selected duration based on months
     if (_months == 1) {
@@ -188,6 +193,7 @@ class _EditSubscriptionFormState extends State<EditSubscriptionForm> {
           _months,
           _startDate,
           endDate: _endDate,
+          currency: _selectedCurrency,
         );
 
         // Show success message
@@ -258,31 +264,62 @@ class _EditSubscriptionFormState extends State<EditSubscriptionForm> {
                 Column(
                   children: [
                     const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _priceController,
-                      decoration: const InputDecoration(
-                        labelText: 'Price',
-                        hintText: 'Enter the price',
-                        prefixIcon: Icon(Icons.attach_money),
-                      ),
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d+\.?\d{0,2}'),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 7,
+                          child: TextFormField(
+                            controller: _priceController,
+                            decoration: InputDecoration(
+                              labelText: 'Price',
+                              hintText: 'Enter the price',
+                              prefixIcon: Icon(_selectedCurrency == 'USD' ? Icons.attach_money : Icons.currency_exchange),
+                            ),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'^\d+\.?\d{0,2}'),
+                              ),
+                            ],
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a price';
+                              }
+                              final price = double.tryParse(value);
+                              if (price == null || price <= 0) {
+                                return 'Please enter a valid price';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          flex: 3,
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedCurrency,
+                            decoration: const InputDecoration(
+                              labelText: 'Currency',
+                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                            ),
+                            items: _currencies.map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              if (newValue != null) {
+                                setState(() {
+                                  _selectedCurrency = newValue;
+                                });
+                              }
+                            },
+                          ),
                         ),
                       ],
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a price';
-                        }
-                        final price = double.tryParse(value);
-                        if (price == null || price <= 0) {
-                          return 'Please enter a valid price';
-                        }
-                        return null;
-                      },
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(

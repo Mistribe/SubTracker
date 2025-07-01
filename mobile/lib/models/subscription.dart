@@ -153,7 +153,10 @@ class Subscription extends HiveObject {
 
   // Format the total amount spent as a string
   String get formattedTotalAmountSpent {
-    return '\$${totalAmountSpent.toStringAsFixed(2)}';
+    final currency = subscriptionPayments.isNotEmpty 
+        ? subscriptionPayments.last.currency 
+        : 'USD';
+    return '${currency == 'USD' ? '\$' : currency} ${totalAmountSpent.toStringAsFixed(2)}';
   }
 
   // Create a copy of this payment with updated fields

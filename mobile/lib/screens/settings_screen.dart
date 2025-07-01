@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/subscription_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -8,6 +9,10 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final subscriptionProvider = Provider.of<SubscriptionProvider>(context);
+
+    // List of common currencies
+    final List<String> currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR'];
 
     return Scaffold(
       appBar: AppBar(
@@ -44,6 +49,30 @@ class SettingsScreen extends StatelessWidget {
             ),
             value: themeProvider.isDarkMode,
             onChanged: themeProvider.useSystemTheme ? null : (_) => themeProvider.toggleTheme(),
+          ),
+          const Divider(),
+          ListTile(
+            title: const Text('Payment Settings'),
+            leading: const Icon(Icons.payments),
+          ),
+          ListTile(
+            title: const Text('Default Currency'),
+            subtitle: Text('Currency used for new subscriptions'),
+            leading: const Icon(Icons.currency_exchange),
+            trailing: DropdownButton<String>(
+              value: subscriptionProvider.defaultCurrency,
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  subscriptionProvider.defaultCurrency = newValue;
+                }
+              },
+              items: currencies.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
           ),
           const Divider(),
           // Additional settings can be added here in the future

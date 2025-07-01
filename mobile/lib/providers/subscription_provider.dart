@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../models/subscription.dart';
 import '../models/subscription_payment.dart';
 import '../repositories/subscription_repository.dart';
+import '../services/currency_converter.dart';
 
 var uuid = Uuid();
 
@@ -25,11 +26,52 @@ class SubscriptionProvider with ChangeNotifier {
   // Getter for the subscriptions list
   List<Subscription> get subscriptions => List.unmodifiable(_subscriptions);
 
-  // Calculate total monthly cost
+  // Calculate total monthly cost in the default currency (USD)
   double get totalMonthlyCost {
     return _subscriptions.fold(
       0,
       (sum, subscription) => sum + subscription.monthlyCost,
+    );
+  }
+
+  // Calculate total monthly cost in the selected currency
+  double get totalMonthlyCostInSelectedCurrency {
+    return _subscriptions.fold(
+      0.0,
+      (sum, subscription) {
+        final detail = subscription.getLastPaymentDetail();
+        if (!detail.isActive) return sum;
+
+        // Convert the monthly cost from the subscription's currency to the selected currency
+        double convertedCost = CurrencyConverter.convert(
+          subscription.monthlyCost,
+          detail.currency,
+          _defaultCurrency
+        );
+
+        return sum + convertedCost;
+      },
+    );
+  }
+
+  // Calculate total annual cost in the selected currency
+  double get totalAnnualCostInSelectedCurrency {
+    return totalMonthlyCostInSelectedCurrency * 12;
+  }
+
+  // Format the monthly cost with the selected currency symbol
+  String get formattedMonthlyCost {
+    return CurrencyConverter.formatAmountWithCurrency(
+      totalMonthlyCostInSelectedCurrency,
+      _defaultCurrency
+    );
+  }
+
+  // Format the annual cost with the selected currency symbol
+  String get formattedAnnualCost {
+    return CurrencyConverter.formatAmountWithCurrency(
+      totalAnnualCostInSelectedCurrency,
+      _defaultCurrency
     );
   }
 
@@ -46,6 +88,17 @@ class SubscriptionProvider with ChangeNotifier {
     );
   }
 
+  String _defaultCurrency = 'USD';
+
+  // Getter for default currency
+  String get defaultCurrency => _defaultCurrency;
+
+  // Setter for default currency
+  set defaultCurrency(String currency) {
+    _defaultCurrency = currency;
+    notifyListeners();
+  }
+
   // Add a new subscription
   Future<void> addPayment(
     String name,
@@ -53,6 +106,7 @@ class SubscriptionProvider with ChangeNotifier {
     int months,
     DateTime startDate, {
     DateTime? endDate,
+    String? currency,
   }) async {
     // Create initial subscription history entry
     final initialSubscriptionPayment = [
@@ -63,6 +117,7 @@ class SubscriptionProvider with ChangeNotifier {
         endDate: endDate,
         // Far future date
         months: months,
+        currency: currency ?? _defaultCurrency,
       ),
     ];
 
@@ -116,6 +171,7 @@ class SubscriptionProvider with ChangeNotifier {
     DateTime effectiveDate, {
     DateTime? endDate,
     int? months,
+    String? currency,
   }) async {
     final index = _subscriptions.indexWhere(
       (subscription) => subscription.id == subscriptionId,
@@ -135,6 +191,7 @@ class SubscriptionProvider with ChangeNotifier {
           startDate: effectiveDate,
           endDate: endDate,
           months: months ?? previousDetail.months,
+          currency: currency ?? previousDetail.currency,
         ),
       );
 
@@ -153,6 +210,7 @@ class SubscriptionProvider with ChangeNotifier {
     int months,
     DateTime startDate, {
     DateTime? endDate,
+    String? currency,
   }) async {
     final index = _subscriptions.indexWhere(
       (subscription) => subscription.id == subscriptionId,
@@ -161,6 +219,10 @@ class SubscriptionProvider with ChangeNotifier {
     if (index >= 0) {
       final subscription = _subscriptions[index];
 
+      // Get the existing payment detail to preserve the currency if not provided
+      final existingDetail = subscription.findDetailById(subscriptionDetailId);
+      final detailCurrency = currency ?? (existingDetail?.currency ?? _defaultCurrency);
+
       subscription.setPaymentDetail(
         SubscriptionPayment(
           id: subscriptionDetailId,
@@ -168,6 +230,7 @@ class SubscriptionProvider with ChangeNotifier {
           startDate: startDate,
           endDate: endDate,
           months: months,
+          currency: detailCurrency,
         ),
       );
 
@@ -208,6 +271,7 @@ class SubscriptionProvider with ChangeNotifier {
     double? price,
     int? months,
     DateTime? endDate,
+    String? currency,
   }) async {
     final index = _subscriptions.indexWhere(
       (subscription) => subscription.id == subscriptionId,
@@ -225,6 +289,7 @@ class SubscriptionProvider with ChangeNotifier {
           startDate: reactivationDate,
           endDate: endDate,
           months: months ?? previousDetail.months,
+          currency: currency ?? previousDetail.currency,
         ),
       );
 

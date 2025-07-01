@@ -53,7 +53,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '\$${paymentProvider.totalMonthlyCost.toStringAsFixed(2)}',
+                          paymentProvider.formattedMonthlyCost,
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -84,7 +84,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '\$${(paymentProvider.totalMonthlyCost * 12).toStringAsFixed(2)}',
+                          paymentProvider.formattedAnnualCost,
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,

@@ -18,6 +18,10 @@ class _PriceChangeFormState extends State<PriceChangeForm> {
   final _formKey = GlobalKey<FormState>();
   late final _priceController;
   DateTime _selectedDate = DateTime.now();
+  late String _selectedCurrency;
+
+  // List of common currencies
+  final List<String> _currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR'];
 
   @override
   void dispose() {
@@ -33,6 +37,7 @@ class _PriceChangeFormState extends State<PriceChangeForm> {
     _priceController = TextEditingController(
       text: currentDetail.price.toString(),
     );
+    _selectedCurrency = currentDetail.currency;
   }
 
   Future<void> _selectEffectiveDate(BuildContext context) async {
@@ -124,18 +129,49 @@ class _PriceChangeFormState extends State<PriceChangeForm> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _priceController,
-                decoration: const InputDecoration(
-                  labelText: 'New Price',
-                  hintText: 'Enter the new price',
-                  prefixIcon: Icon(Icons.attach_money),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 7,
+                    child: TextFormField(
+                      controller: _priceController,
+                      decoration: InputDecoration(
+                        labelText: 'New Price',
+                        hintText: 'Enter the new price',
+                        prefixIcon: Icon(_selectedCurrency == 'USD' ? Icons.attach_money : Icons.currency_exchange),
+                      ),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    flex: 3,
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedCurrency,
+                      decoration: const InputDecoration(
+                        labelText: 'Currency',
+                        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                      ),
+                      items: _currencies.map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            _selectedCurrency = newValue;
+                          });
+                        }
+                      },
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),

@@ -24,12 +24,16 @@ class SubscriptionPayment {
   @HiveField(4)
   final int months;
 
+  @HiveField(5)
+  final String currency;
+
   SubscriptionPayment({
     required this.id,
     required this.price,
     required this.startDate,
     required this.endDate,
     required this.months,
+    this.currency = 'USD',
   });
 
   bool get isActive {
@@ -96,6 +100,7 @@ class SubscriptionPayment {
     DateTime? startDate,
     DateTime? endDate,
     int? months,
+    String? currency,
   }) {
     return SubscriptionPayment(
       id: id ?? this.id,
@@ -103,6 +108,7 @@ class SubscriptionPayment {
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       months: months ?? this.months,
+      currency: currency ?? this.currency,
     );
   }
 
@@ -113,6 +119,7 @@ class SubscriptionPayment {
       'startDate': startDate.millisecondsSinceEpoch,
       'endDate': endDate?.millisecondsSinceEpoch,
       'months': months,
+      'currency': currency,
     };
   }
 
@@ -125,6 +132,7 @@ class SubscriptionPayment {
           ? DateTime.fromMillisecondsSinceEpoch(json['endDate'])
           : null,
       months: json['months'],
+      currency: json['currency'] ?? 'USD', // Default to USD for backward compatibility
     );
   }
 }
