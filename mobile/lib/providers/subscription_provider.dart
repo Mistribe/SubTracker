@@ -12,12 +12,24 @@ import '../services/currency_converter.dart';
 
 var uuid = Uuid();
 
+// Enum for subscription sorting options
+enum SubscriptionSortOption {
+  none,
+  nameAsc,
+  nameDesc,
+  nextPaymentAsc,
+  nextPaymentDesc,
+}
+
 class SubscriptionProvider with ChangeNotifier {
   final SubscriptionRepository subscriptionRepository;
   final SettingsRepository? settingsRepository;
   final LabelRepository labelRepository;
   List<Subscription> _subscriptions = [];
   List<Label> _labels = [];
+  bool _showInactiveSubscriptions = false;
+  SubscriptionSortOption _sortOption = SubscriptionSortOption.none;
+  List<String> _selectedLabelIds = [];
 
   SubscriptionProvider({
     required this.subscriptionRepository,
@@ -55,6 +67,86 @@ class SubscriptionProvider with ChangeNotifier {
   // Getter for the subscriptions list
   List<Subscription> get subscriptions => List.unmodifiable(_subscriptions);
 
+  // Getter for filtered subscriptions with optimized implementation
+  List<Subscription> get filteredSubscriptions {
+    // Apply all filters in a single pass
+    final filtered = _subscriptions.where((subscription) {
+      // Filter by active status
+      if (!_showInactiveSubscriptions && !subscription.isActive) {
+        return false;
+      }
+
+      // Filter by selected labels
+      if (_selectedLabelIds.isNotEmpty && 
+          !subscription.labels.any((label) => _selectedLabelIds.contains(label.id))) {
+        return false;
+      }
+
+      return true;
+    }).toList();
+
+    // Apply sorting
+    if (_sortOption != SubscriptionSortOption.none) {
+      _applySorting(filtered);
+    }
+
+    return List.unmodifiable(filtered);
+  }
+
+  // Helper method to apply sorting
+  void _applySorting(List<Subscription> subscriptions) {
+    switch (_sortOption) {
+      case SubscriptionSortOption.nameAsc:
+        subscriptions.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        break;
+      case SubscriptionSortOption.nameDesc:
+        subscriptions.sort((a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()));
+        break;
+      case SubscriptionSortOption.nextPaymentAsc:
+        subscriptions.sort((a, b) {
+          if (!a.isActive && !b.isActive) return 0;
+          if (!a.isActive) return 1;
+          if (!b.isActive) return -1;
+          return a.nextPaymentDate.compareTo(b.nextPaymentDate);
+        });
+        break;
+      case SubscriptionSortOption.nextPaymentDesc:
+        subscriptions.sort((a, b) {
+          if (!a.isActive && !b.isActive) return 0;
+          if (!a.isActive) return 1;
+          if (!b.isActive) return -1;
+          return b.nextPaymentDate.compareTo(a.nextPaymentDate);
+        });
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Getter for the show inactive subscriptions setting
+  bool get showInactiveSubscriptions => _showInactiveSubscriptions;
+
+  // Setter for the show inactive subscriptions setting
+  set showInactiveSubscriptions(bool value) {
+    _showInactiveSubscriptions = value;
+    notifyListeners();
+  }
+
+  // Toggle the show inactive subscriptions setting
+  void toggleShowInactiveSubscriptions() {
+    _showInactiveSubscriptions = !_showInactiveSubscriptions;
+    notifyListeners();
+  }
+
+  // Getter for the current sort option
+  SubscriptionSortOption get sortOption => _sortOption;
+
+  // Setter for the sort option
+  set sortOption(SubscriptionSortOption option) {
+    _sortOption = option;
+    notifyListeners();
+  }
+
   // Getter for all labels
   List<Label> get labels => List.unmodifiable(_labels);
 
@@ -65,6 +157,34 @@ class SubscriptionProvider with ChangeNotifier {
   // Getter for custom labels
   List<Label> get customLabels =>
       _labels.where((label) => !label.isDefault).toList();
+
+  // Getter for selected label IDs
+  List<String> get selectedLabelIds => List.unmodifiable(_selectedLabelIds);
+
+  // Getter for selected labels (Label objects)
+  List<Label> get selectedLabels => 
+      _labels.where((label) => _selectedLabelIds.contains(label.id)).toList();
+
+  // Toggle a label in the filter (add if not present, remove if present)
+  void toggleLabelFilter(String labelId) {
+    final isSelected = _selectedLabelIds.contains(labelId);
+
+    if (isSelected) {
+      _selectedLabelIds.remove(labelId);
+    } else {
+      _selectedLabelIds.add(labelId);
+    }
+
+    notifyListeners();
+  }
+
+  // Clear all label filters
+  void clearLabelFilters() {
+    if (_selectedLabelIds.isNotEmpty) {
+      _selectedLabelIds.clear();
+      notifyListeners();
+    }
+  }
 
   // Calculate total monthly cost in the default currency (USD)
   double get totalMonthlyCost {

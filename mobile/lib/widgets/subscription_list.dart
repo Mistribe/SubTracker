@@ -15,21 +15,29 @@ class SubscriptionList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final subscriptionProvider = Provider.of<SubscriptionProvider>(context);
-    final subscriptions = subscriptionProvider.subscriptions;
+    final subscriptions = subscriptionProvider.filteredSubscriptions;
 
     if (subscriptions.isEmpty) {
+      // Check if we have subscriptions but they're filtered out
+      final hasSubscriptions = subscriptionProvider.subscriptions.isNotEmpty;
+      final isFiltered = !subscriptionProvider.showInactiveSubscriptions;
+
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.subscriptions_outlined,
+              hasSubscriptions && isFiltered 
+                ? Icons.filter_alt_outlined 
+                : Icons.subscriptions_outlined,
               size: 64,
               color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
             ),
             const SizedBox(height: 16),
             Text(
-              'No subscriptions yet',
+              hasSubscriptions && isFiltered
+                ? 'No active subscriptions'
+                : 'No subscriptions yet',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -38,7 +46,9 @@ class SubscriptionList extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Add your first subscription!',
+              hasSubscriptions && isFiltered
+                ? 'Toggle the filter to show inactive subscriptions'
+                : 'Add your first subscription!',
               style: TextStyle(
                 fontSize: 16,
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),

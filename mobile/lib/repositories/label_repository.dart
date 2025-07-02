@@ -14,7 +14,6 @@ class LabelRepository {
 
   // Default labels
   static const List<Map<String, dynamic>> _defaultLabels = [
-    {'name': 'VOD', 'color': '#E57373'},
     {'name': 'Music', 'color': '#81C784'},
     {'name': 'Internet', 'color': '#64B5F6'},
     {'name': 'Mobile', 'color': '#FFD54F'},
@@ -30,7 +29,7 @@ class LabelRepository {
   Future<void> initialize() async {
     // Open the Hive box for labels
     _box = await Hive.openBox<Label>(_boxName);
-    
+
     // Create default labels if the box is empty
     if (_box.isEmpty) {
       await _createDefaultLabels();

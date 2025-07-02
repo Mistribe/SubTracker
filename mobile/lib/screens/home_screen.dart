@@ -59,7 +59,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  
+
                   // Cards row
                   Row(
                     children: [
@@ -74,7 +74,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      
+
                       // Annual cost card
                       Expanded(
                         child: _buildSummaryCard(
@@ -86,7 +86,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      
+
                       // Active subscriptions card
                       Expanded(
                         child: _buildSummaryCard(
@@ -106,22 +106,125 @@ class HomeScreen extends StatelessWidget {
             // Subscriptions section title
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
                 children: [
-                  Text(
-                    'Your Subscriptions',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Your Subscriptions',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      Text(
+                        '${paymentProvider.filteredSubscriptions.length} of ${paymentProvider.subscriptions.length}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(
-                    '${paymentProvider.subscriptions.length} total',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  const SizedBox(height: 8),
+                  // Compact filter bar
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        // Sort button
+                        PopupMenuButton<SubscriptionSortOption>(
+                          tooltip: 'Sort',
+                          icon: Icon(
+                            Icons.sort,
+                            color: Theme.of(context).colorScheme.primary,
+                            size: 20,
+                          ),
+                          onSelected: (SubscriptionSortOption newValue) {
+                            paymentProvider.sortOption = newValue;
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: SubscriptionSortOption.none,
+                              child: Text('Default order'),
+                            ),
+                            const PopupMenuItem(
+                              value: SubscriptionSortOption.nameAsc,
+                              child: Text('Name (A-Z)'),
+                            ),
+                            const PopupMenuItem(
+                              value: SubscriptionSortOption.nameDesc,
+                              child: Text('Name (Z-A)'),
+                            ),
+                            const PopupMenuItem(
+                              value: SubscriptionSortOption.nextPaymentAsc,
+                              child: Text('Next payment (earliest)'),
+                            ),
+                            const PopupMenuItem(
+                              value: SubscriptionSortOption.nextPaymentDesc,
+                              child: Text('Next payment (latest)'),
+                            ),
+                          ],
+                        ),
+
+                        // Label filter chips
+                        if (paymentProvider.labels.isNotEmpty) ...[
+                          const SizedBox(width: 8),
+                          InkWell(
+                            onTap: () {
+                              _showLabelFilterBottomSheet(context, paymentProvider);
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Chip(
+                              label: Text(
+                                'Labels ${paymentProvider.selectedLabelIds.isNotEmpty ? "(${paymentProvider.selectedLabelIds.length})" : ""}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: paymentProvider.selectedLabelIds.isNotEmpty
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.onSurface,
+                                ),
+                              ),
+                              avatar: Icon(
+                                Icons.label_outline,
+                                size: 16,
+                                color: paymentProvider.selectedLabelIds.isNotEmpty
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.onSurface,
+                              ),
+                              backgroundColor: Theme.of(context).colorScheme.surface,
+                              side: BorderSide(
+                                color: paymentProvider.selectedLabelIds.isNotEmpty
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                              ),
+                            ),
+                          ),
+                        ],
+
+                        // Show inactive filter
+                        const SizedBox(width: 8),
+                        FilterChip(
+                          label: const Text(
+                            'Show Inactive',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                          selected: paymentProvider.showInactiveSubscriptions,
+                          onSelected: (value) {
+                            paymentProvider.showInactiveSubscriptions = value;
+                          },
+                          checkmarkColor: Colors.white,
+                          selectedColor: Theme.of(context).colorScheme.primary,
+                          backgroundColor: Theme.of(context).colorScheme.surface,
+                          side: BorderSide(
+                            color: paymentProvider.showInactiveSubscriptions
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -150,6 +253,95 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  // Show bottom sheet for label filtering - simplified implementation
+  void _showLabelFilterBottomSheet(BuildContext context, SubscriptionProvider provider) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final allLabels = provider.labels;
+            final selectedLabelIds = provider.selectedLabelIds;
+
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header with clear button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Filter by Label',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        if (selectedLabelIds.isNotEmpty)
+                          TextButton(
+                            onPressed: () {
+                              provider.clearLabelFilters();
+                              setState(() {});
+                            },
+                            child: const Text('Clear'),
+                          ),
+                      ],
+                    ),
+
+                    const Divider(),
+
+                    // Label chips
+                    if (allLabels.isEmpty)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Text('No labels available'),
+                        ),
+                      )
+                    else
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: allLabels.map((label) {
+                          final isSelected = selectedLabelIds.contains(label.id);
+                          final labelColor = Color(
+                            int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000,
+                          );
+
+                          return FilterChip(
+                            selected: isSelected,
+                            label: Text(label.name),
+                            onSelected: (_) {
+                              provider.toggleLabelFilter(label.id);
+                              setState(() {});
+                            },
+                            selectedColor: labelColor,
+                            checkmarkColor: Colors.white,
+                          );
+                        }).toList(),
+                      ),
+
+                    const SizedBox(height: 16),
+
+                    // Done button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Done'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildSummaryCard(
     BuildContext context,
     String title,
@@ -158,7 +350,7 @@ class HomeScreen extends StatelessWidget {
     Color iconColor,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
