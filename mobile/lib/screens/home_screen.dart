@@ -114,11 +114,27 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          '${paymentProvider.activePaymentsCount}',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: '${paymentProvider.activePaymentsCount}',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: null, // Use default text color
+                                ),
+                              ),
+                              if (paymentProvider.notStartedPaymentsCount > 0)
+                                TextSpan(
+                                  text: ' (${paymentProvider.notStartedPaymentsCount})',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontStyle: FontStyle.italic,
+                                    color: null, // Use default text color
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                       ],

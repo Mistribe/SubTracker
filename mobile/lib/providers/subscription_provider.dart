@@ -121,6 +121,15 @@ class SubscriptionProvider with ChangeNotifier {
         .length;
   }
 
+  // Get the count of active subscriptions that have not started yet
+  int get notStartedPaymentsCount {
+    return _subscriptions
+        .where(
+          (subscription) => subscription.isActive && !subscription.isStarted,
+        )
+        .length;
+  }
+
   // Calculate total amount spent across all subscriptions
   double get totalAmountSpent {
     return _subscriptions.fold(

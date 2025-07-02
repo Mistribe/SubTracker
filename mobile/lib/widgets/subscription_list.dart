@@ -42,6 +42,52 @@ class SubscriptionCard extends StatelessWidget {
 
   const SubscriptionCard({super.key, required this.subscription});
 
+  Widget _buildFrequencyBadge(Subscription subscription) {
+    if (!subscription.isActive || subscription.subscriptionPayments.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final lastPayment = subscription.getLastPaymentDetail();
+    final months = lastPayment.months;
+
+    String frequencyText;
+    Color badgeColor;
+
+    if (months == 1) {
+      frequencyText = 'Monthly';
+      badgeColor = Colors.blue;
+    } else if (months == 3) {
+      frequencyText = 'Quarterly';
+      badgeColor = Colors.green;
+    } else if (months == 6) {
+      frequencyText = 'Bi-annually';
+      badgeColor = Colors.orange;
+    } else if (months == 12) {
+      frequencyText = 'Annually';
+      badgeColor = Colors.purple;
+    } else {
+      frequencyText = '$months months';
+      badgeColor = Colors.teal;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: badgeColor.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: badgeColor, width: 1),
+      ),
+      child: Text(
+        frequencyText,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: badgeColor,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final subscriptionProvider = Provider.of<SubscriptionProvider>(
@@ -103,13 +149,21 @@ class SubscriptionCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Text(
-                      subscription.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            subscription.name,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildFrequencyBadge(subscription),
+                      ],
                     ),
                   ),
                 ],
