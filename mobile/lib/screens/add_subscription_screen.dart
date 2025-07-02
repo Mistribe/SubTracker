@@ -18,11 +18,14 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final _customMonthsController = TextEditingController();
+  final _recurrenceCountController = TextEditingController(text: '1');
   String _selectedDuration = '1 month'; // Default value
   DateTime _selectedStartDate = DateTime.now();
   DateTime? _selectedEndDate;
   String _selectedCurrency = Currency.USD.code; // Default currency
   final List<Label> _selectedLabels = [];
+  bool _useRecurrenceCount = false;
+  bool _isLabelsExpanded = false; // Track if labels section is expanded
 
   // Get currencies from the Currency enum
   final List<String> _currencies = Currency.codes;
@@ -32,7 +35,10 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
     super.initState();
     // Initialize with the default currency from the provider
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<SubscriptionProvider>(context, listen: false);
+      final provider = Provider.of<SubscriptionProvider>(
+        context,
+        listen: false,
+      );
       setState(() {
         _selectedCurrency = provider.defaultCurrency;
       });
@@ -44,6 +50,7 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
     _nameController.dispose();
     _priceController.dispose();
     _customMonthsController.dispose();
+    _recurrenceCountController.dispose();
     super.dispose();
   }
 
@@ -58,30 +65,6 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
     if (picked != null && picked != _selectedStartDate) {
       setState(() {
         _selectedStartDate = picked;
-      });
-    }
-  }
-
-  // Date picker for end date
-  Future<void> _selectEndDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedEndDate ?? DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2101),
-    );
-    if (picked != null && picked != _selectedEndDate) {
-      setState(() {
-        if (picked.isBefore(_selectedStartDate)) {
-          final year = (_months / 12).truncate();
-          final month = _months % 12;
-          _selectedStartDate = DateTime(
-            picked.year - year,
-            picked.month - month,
-            picked.day,
-          );
-        }
-        _selectedEndDate = picked;
       });
     }
   }
@@ -107,6 +90,34 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
     });
   }
 
+  // Get the appropriate label for the duration
+  String _getDurationLabel() {
+    switch (_selectedDuration) {
+      case '1 month':
+        return 'months';
+      case '3 months':
+        return 'quarters';
+      case '6 months':
+        return 'half-years';
+      case '12 months':
+        return 'years';
+      case 'Custom':
+        final customMonths =
+            int.tryParse(_customMonthsController.text) ?? _months;
+        if (customMonths == 12) {
+          return 'years';
+        } else if (customMonths == 6) {
+          return 'half-years';
+        } else if (customMonths == 3) {
+          return 'quarters';
+        } else {
+          return 'periods of $customMonths months';
+        }
+      default:
+        return 'recurrences';
+    }
+  }
+
   // Handle custom months change
   void _handleCustomMonthsChange(String value) {
     if (value.isEmpty) return;
@@ -117,6 +128,19 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
         _months = parsedValue;
       });
     }
+  }
+
+  // Calculate end date based on start date, months, and recurrence count
+  DateTime _calculateEndDate() {
+    final recurrenceCount = int.tryParse(_recurrenceCountController.text) ?? 1;
+    final year = (_months / 12).truncate();
+    final month = _months % 12;
+
+    return DateTime(
+      _selectedStartDate.year + (year * recurrenceCount),
+      _selectedStartDate.month + (month * recurrenceCount),
+      _selectedStartDate.day,
+    );
   }
 
   Future<void> _submitForm() async {
@@ -132,25 +156,17 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
         }
       }
 
-      // Validate that if end date is provided, it's not shorter than the subscription recurrence
-      if (_selectedEndDate != null) {
-        // Calculate the minimum end date based on start date and months
-        final minEndDate = DateTime(
-          _selectedStartDate.year + (_months ~/ 12),
-          _selectedStartDate.month + (_months % 12),
-          _selectedStartDate.day,
-        );
-
-        if (_selectedEndDate!.isBefore(minEndDate)) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('End date must be at least $_months months after start date'),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-          return;
+      // Calculate the end date based on recurrence count if toggle is on
+      if (_useRecurrenceCount) {
+        final recurrenceCount =
+            int.tryParse(_recurrenceCountController.text) ?? 1;
+        if (recurrenceCount > 0) {
+          _selectedEndDate = _calculateEndDate();
         }
+      } else {
+        // If toggle is off, use a single recurrence
+        _recurrenceCountController.text = '1';
+        _selectedEndDate = _calculateEndDate();
       }
 
       try {
@@ -205,7 +221,9 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
     final allLabels = provider.labels;
 
     return allLabels.map((label) {
-      final isSelected = _selectedLabels.any((selectedLabel) => selectedLabel.id == label.id);
+      final isSelected = _selectedLabels.any(
+        (selectedLabel) => selectedLabel.id == label.id,
+      );
       return FilterChip(
         label: Text(label.name),
         selected: isSelected,
@@ -214,12 +232,18 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
             if (selected) {
               _selectedLabels.add(label);
             } else {
-              _selectedLabels.removeWhere((selectedLabel) => selectedLabel.id == label.id);
+              _selectedLabels.removeWhere(
+                (selectedLabel) => selectedLabel.id == label.id,
+              );
             }
           });
         },
-        backgroundColor: Color(int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.2),
-        selectedColor: Color(int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.7),
+        backgroundColor: Color(
+          int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000,
+        ).withOpacity(0.2),
+        selectedColor: Color(
+          int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000,
+        ).withOpacity(0.7),
         checkmarkColor: Colors.white,
       );
     }).toList();
@@ -282,10 +306,12 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
             onPressed: () {
               final name = nameController.text.trim();
               if (name.isNotEmpty) {
-                final colorHex = '#${selectedColor.value.value.toRadixString(16).substring(2)}';
-                Provider.of<SubscriptionProvider>(context, listen: false)
-                    .addLabel(name, colorHex)
-                    .then((_) {
+                final colorHex =
+                    '#${selectedColor.value.value.toRadixString(16).substring(2)}';
+                Provider.of<SubscriptionProvider>(
+                  context,
+                  listen: false,
+                ).addLabel(name, colorHex).then((_) {
                   Navigator.of(context).pop();
                 });
               }
@@ -317,7 +343,12 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
                 width: 2,
               ),
               boxShadow: isSelected
-                  ? [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 4)]
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 4,
+                      ),
+                    ]
                   : null,
             ),
           ),
@@ -332,10 +363,7 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
       appBar: AppBar(
         title: const Text(
           'Add Subscription',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         elevation: 0,
         leading: IconButton(
@@ -400,13 +428,20 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
                                 decoration: InputDecoration(
                                   labelText: 'Price',
                                   hintText: 'Enter the amount',
-                                  prefixIcon: Icon(_selectedCurrency == Currency.USD.code ? Icons.attach_money : Icons.currency_exchange),
+                                  prefixIcon: Icon(
+                                    _selectedCurrency == Currency.USD.code
+                                        ? Icons.attach_money
+                                        : Icons.currency_exchange,
+                                  ),
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(
-                                  decimal: true,
-                                ),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                 inputFormatters: [
-                                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d+\.?\d{0,2}'),
+                                  ),
                                 ],
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
@@ -431,14 +466,21 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
                                 value: _selectedCurrency,
                                 decoration: const InputDecoration(
                                   labelText: 'Currency',
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 15,
+                                  ),
                                 ),
-                                items: _currencies.map<DropdownMenuItem<String>>((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(value),
-                                  );
-                                }).toList(),
+                                items: _currencies
+                                    .map<DropdownMenuItem<String>>((
+                                      String value,
+                                    ) {
+                                      return DropdownMenuItem<String>(
+                                        value: value,
+                                        child: Text(value),
+                                      );
+                                    })
+                                    .toList(),
                                 onChanged: (String? newValue) {
                                   if (newValue != null) {
                                     setState(() {
@@ -487,7 +529,10 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
                             prefixIcon: Icon(Icons.repeat),
                           ),
                           items: const [
-                            DropdownMenuItem(value: '1 month', child: Text('Monthly')),
+                            DropdownMenuItem(
+                              value: '1 month',
+                              child: Text('Monthly'),
+                            ),
                             DropdownMenuItem(
                               value: '3 months',
                               child: Text('Quarterly (3 months)'),
@@ -500,7 +545,10 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
                               value: '12 months',
                               child: Text('Annual (12 months)'),
                             ),
-                            DropdownMenuItem(value: 'Custom', child: Text('Custom')),
+                            DropdownMenuItem(
+                              value: 'Custom',
+                              child: Text('Custom'),
+                            ),
                           ],
                           onChanged: _handleDurationChange,
                         ),
@@ -515,7 +563,9 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
                                 prefixIcon: Icon(Icons.calendar_today),
                               ),
                               keyboardType: TextInputType.number,
-                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
                               validator: (value) {
                                 if (_selectedDuration == 'Custom') {
                                   if (value == null || value.isEmpty) {
@@ -539,13 +589,19 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Theme.of(context).dividerColor.withOpacity(0.5),
+                              color: Theme.of(
+                                context,
+                              ).dividerColor.withOpacity(0.5),
                             ),
                           ),
                           child: ListTile(
                             leading: Icon(
                               Icons.calendar_today,
-                              color: Colors.blue.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.8 : 1.0),
+                              color: Colors.blue.withOpacity(
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? 0.8
+                                    : 1.0,
+                              ),
                             ),
                             title: const Text('Start Date'),
                             subtitle: Text(
@@ -557,37 +613,65 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
 
                         const SizedBox(height: 16),
 
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Theme.of(context).dividerColor.withOpacity(0.5),
+                        // Toggle for recurrence count
+                        Row(
+                          children: [
+                            Switch(
+                              value: _useRecurrenceCount,
+                              onChanged: (value) {
+                                setState(() {
+                                  _useRecurrenceCount = value;
+                                  if (!value) {
+                                    _recurrenceCountController.text = '1';
+                                  }
+                                });
+                              },
                             ),
-                          ),
-                          child: ListTile(
-                            leading: Icon(
-                              Icons.event_busy,
-                              color: Colors.orange.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.8 : 1.0),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Specify number of recurrences',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Theme.of(
+                                  context,
+                                ).textTheme.bodyLarge?.color,
+                              ),
                             ),
-                            title: const Text('End Date (Optional)'),
-                            subtitle: Text(
-                              _selectedEndDate != null
-                                  ? '${_selectedEndDate!.month}/${_selectedEndDate!.day}/${_selectedEndDate!.year}'
-                                  : 'No end date',
-                            ),
-                            trailing: _selectedEndDate != null
-                                ? IconButton(
-                                    icon: const Icon(Icons.clear),
-                                    onPressed: () {
-                                      setState(() {
-                                        _selectedEndDate = null;
-                                      });
-                                    },
-                                  )
-                                : null,
-                            onTap: () => _selectEndDate(context),
-                          ),
+                          ],
                         ),
+
+                        // Recurrence count input (shown only if toggle is on)
+                        if (_useRecurrenceCount)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: 8.0,
+                              top: 8.0,
+                            ),
+                            child: TextFormField(
+                              controller: _recurrenceCountController,
+                              decoration: InputDecoration(
+                                labelText: 'Number of ${_getDurationLabel()}',
+                                hintText: 'Enter number of recurrences',
+                                prefixIcon: const Icon(Icons.repeat),
+                              ),
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                              validator: (value) {
+                                if (_useRecurrenceCount) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter number of recurrences';
+                                  }
+                                  final count = int.tryParse(value);
+                                  if (count == null || count <= 0) {
+                                    return 'Please enter a valid number';
+                                  }
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -595,53 +679,88 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
 
                 const SizedBox(height: 24),
 
-                // Labels Section Title
-                Padding(
-                  padding: const EdgeInsets.only(left: 4, bottom: 12),
-                  child: Text(
-                    'Labels',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ),
-
-                // Labels Card
+                // Labels Section
                 Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Categorize your subscription',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
+                  child: Column(
+                    children: [
+                      // Collapsible header
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            _isLabelsExpanded = !_isLabelsExpanded;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Labels',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                              Icon(
+                                _isLabelsExpanded
+                                    ? Icons.keyboard_arrow_up
+                                    : Icons.keyboard_arrow_down,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        Wrap(
-                          spacing: 8.0,
-                          runSpacing: 8.0,
-                          children: _buildLabelChips(),
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton.icon(
-                            icon: const Icon(Icons.add),
-                            label: const Text('Add Custom Label'),
-                            onPressed: _showAddLabelDialog,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+
+                      // Collapsible content
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        height: _isLabelsExpanded ? null : 0,
+                        child: _isLabelsExpanded
+                            ? Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  16.0,
+                                  0,
+                                  16.0,
+                                  16.0,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Divider(),
+                                    const Text(
+                                      'Categorize your subscription',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Wrap(
+                                      spacing: 8.0,
+                                      runSpacing: 8.0,
+                                      children: _buildLabelChips(),
+                                    ),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: TextButton.icon(
+                                        icon: const Icon(Icons.add),
+                                        label: const Text('Add Custom Label'),
+                                        onPressed: _showAddLabelDialog,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
                   ),
                 ),
 

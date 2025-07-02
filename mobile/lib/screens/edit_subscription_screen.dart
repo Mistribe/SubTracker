@@ -26,6 +26,7 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
   DateTime? _endDate;
   late String _selectedCurrency;
   late List<Label> _selectedLabels;
+  bool _isLabelsExpanded = false; // Track if labels section is expanded
 
   // Get currencies from the Currency enum
   final List<String> _currencies = Currency.codes;
@@ -627,53 +628,83 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
 
                 const SizedBox(height: 24),
 
-                // Labels Section Title
-                Padding(
-                  padding: const EdgeInsets.only(left: 4, bottom: 12),
-                  child: Text(
-                    'Labels',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ),
-
-                // Labels Card
+                // Labels Section
                 Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Categorize your subscription',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
+                  child: Column(
+                    children: [
+                      // Collapsible header
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            _isLabelsExpanded = !_isLabelsExpanded;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Labels',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                              Icon(
+                                _isLabelsExpanded
+                                    ? Icons.keyboard_arrow_up
+                                    : Icons.keyboard_arrow_down,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        Wrap(
-                          spacing: 8.0,
-                          runSpacing: 8.0,
-                          children: _buildLabelChips(),
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton.icon(
-                            icon: const Icon(Icons.add),
-                            label: const Text('Add Custom Label'),
-                            onPressed: _showAddLabelDialog,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+
+                      // Collapsible content
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        height: _isLabelsExpanded ? null : 0,
+                        child: _isLabelsExpanded
+                            ? Padding(
+                                padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Divider(),
+                                    const Text(
+                                      'Categorize your subscription',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Wrap(
+                                      spacing: 8.0,
+                                      runSpacing: 8.0,
+                                      children: _buildLabelChips(),
+                                    ),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: TextButton.icon(
+                                        icon: const Icon(Icons.add),
+                                        label: const Text('Add Custom Label'),
+                                        onPressed: _showAddLabelDialog,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
                   ),
                 ),
 
