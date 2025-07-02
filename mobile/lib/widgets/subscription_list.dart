@@ -140,6 +140,30 @@ class SubscriptionCard extends StatelessWidget {
                           ),
                         ],
                       ),
+                      // Display labels if there are any
+                      if (subscription.labels.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Wrap(
+                            spacing: 4,
+                            runSpacing: 4,
+                            children: subscription.labels.map((label) {
+                              return Chip(
+                                label: Text(
+                                  label.name,
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                backgroundColor: Color(int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000),
+                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                padding: const EdgeInsets.symmetric(horizontal: 2),
+                                labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+                              );
+                            }).toList(),
+                          ),
+                        ),
                     ],
                   ),
                   PopupMenuButton<String>(

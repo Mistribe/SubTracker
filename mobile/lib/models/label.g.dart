@@ -1,38 +1,41 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'settings.dart';
+part of 'label.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class SettingsAdapter extends TypeAdapter<Settings> {
+class LabelAdapter extends TypeAdapter<Label> {
   @override
-  final int typeId = 2;
+  final int typeId = 3;
 
   @override
-  Settings read(BinaryReader reader) {
+  Label read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Settings(
-      isDarkMode: fields[0] as bool,
-      useSystemTheme: fields[1] as bool,
-      defaultCurrency: fields[2] as String,
+    return Label(
+      id: fields[0] as String,
+      name: fields[1] as String,
+      isDefault: fields[2] as bool,
+      color: fields[3] as String,
     );
   }
 
   @override
-  void write(BinaryWriter writer, Settings obj) {
+  void write(BinaryWriter writer, Label obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
-      ..write(obj.isDarkMode)
+      ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.useSystemTheme)
+      ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.defaultCurrency);
+      ..write(obj.isDefault)
+      ..writeByte(3)
+      ..write(obj.color);
   }
 
   @override
@@ -41,7 +44,7 @@ class SettingsAdapter extends TypeAdapter<Settings> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is SettingsAdapter &&
+      other is LabelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

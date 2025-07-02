@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/subscription_provider.dart';
+import '../models/label.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});

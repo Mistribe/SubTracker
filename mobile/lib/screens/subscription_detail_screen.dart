@@ -236,6 +236,46 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                             '${currentDetail.endDate!.month}/${currentDetail.endDate!.day}/${currentDetail.endDate!.year}',
                             Icons.stop_circle,
                           ),
+                        // Show labels if there are any
+                        if (subscription.labels.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Row(
+                              children: [
+                                Icon(Icons.label, size: 20, color: Theme.of(context).primaryColor),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Labels:',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Wrap(
+                                    spacing: 4,
+                                    runSpacing: 4,
+                                    alignment: WrapAlignment.end,
+                                    children: subscription.labels.map((label) {
+                                      return Chip(
+                                        label: Text(
+                                          label.name,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        backgroundColor: Color(int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000),
+                                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                       ],
                     ),
                   ),

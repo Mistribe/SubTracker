@@ -3,8 +3,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import '../models/subscription.dart';
 import '../models/subscription_payment.dart';
+import '../models/label.dart';
 import '../repositories/subscription_repository.dart';
 import '../repositories/settings_repository.dart';
+import '../repositories/label_repository.dart';
 import '../services/currency_converter.dart';
 
 var uuid = Uuid();
@@ -12,18 +14,29 @@ var uuid = Uuid();
 class SubscriptionProvider with ChangeNotifier {
   final SubscriptionRepository subscriptionRepository;
   final SettingsRepository? settingsRepository;
+  final LabelRepository labelRepository;
   List<Subscription> _subscriptions = [];
+  List<Label> _labels = [];
 
   SubscriptionProvider({
     required this.subscriptionRepository,
+    required this.labelRepository,
     this.settingsRepository,
   }) {
     // Load subscriptions from repository
     _loadPayments();
+    // Load labels from repository
+    _loadLabels();
     // Load settings if repository is provided
     if (settingsRepository != null) {
       _loadSettings();
     }
+  }
+
+  // Load labels from repository
+  Future<void> _loadLabels() async {
+    _labels = labelRepository.getAll();
+    notifyListeners();
   }
 
   // Load settings from repository
@@ -40,6 +53,15 @@ class SubscriptionProvider with ChangeNotifier {
 
   // Getter for the subscriptions list
   List<Subscription> get subscriptions => List.unmodifiable(_subscriptions);
+
+  // Getter for all labels
+  List<Label> get labels => List.unmodifiable(_labels);
+
+  // Getter for default labels
+  List<Label> get defaultLabels => _labels.where((label) => label.isDefault).toList();
+
+  // Getter for custom labels
+  List<Label> get customLabels => _labels.where((label) => !label.isDefault).toList();
 
   // Calculate total monthly cost in the default currency (USD)
   double get totalMonthlyCost {
@@ -128,6 +150,7 @@ class SubscriptionProvider with ChangeNotifier {
     DateTime startDate, {
     DateTime? endDate,
     String? currency,
+    List<Label>? labels,
   }) async {
     // Create initial subscription history entry
     final initialSubscriptionPayment = [
@@ -146,6 +169,7 @@ class SubscriptionProvider with ChangeNotifier {
       id: _generateId(),
       name: name,
       subscriptionPayments: initialSubscriptionPayment,
+      labels: labels ?? [],
     );
 
     // Add to local list
@@ -346,5 +370,79 @@ class SubscriptionProvider with ChangeNotifier {
   // Generate a unique ID for a new subscription
   String _generateId() {
     return uuid.v7();
+  }
+
+  // Label management methods
+
+  // Add a new custom label
+  Future<void> addLabel(String name, String color) async {
+    final label = await labelRepository.add(name, color);
+    _labels.add(label);
+    notifyListeners();
+  }
+
+  // Update an existing label
+  Future<void> updateLabel(Label label) async {
+    await labelRepository.update(label);
+    final index = _labels.indexWhere((l) => l.id == label.id);
+    if (index >= 0) {
+      _labels[index] = label;
+
+      // Update all subscriptions that use this label
+      for (var subscription in _subscriptions) {
+        final labelIndex = subscription.labels.indexWhere((l) => l.id == label.id);
+        if (labelIndex >= 0) {
+          final updatedLabels = List<Label>.from(subscription.labels);
+          updatedLabels[labelIndex] = label;
+
+          final updatedSubscription = subscription.copyWith(labels: updatedLabels);
+          await subscriptionRepository.update(updatedSubscription);
+
+          final subscriptionIndex = _subscriptions.indexWhere((s) => s.id == subscription.id);
+          if (subscriptionIndex >= 0) {
+            _subscriptions[subscriptionIndex] = updatedSubscription;
+          }
+        }
+      }
+
+      notifyListeners();
+    }
+  }
+
+  // Delete a custom label
+  Future<void> deleteLabel(String id) async {
+    await labelRepository.delete(id);
+    _labels.removeWhere((label) => label.id == id);
+
+    // Remove the label from all subscriptions
+    for (var subscription in _subscriptions) {
+      final hasLabel = subscription.labels.any((label) => label.id == id);
+      if (hasLabel) {
+        final updatedLabels = subscription.labels.where((label) => label.id != id).toList();
+        final updatedSubscription = subscription.copyWith(labels: updatedLabels);
+        await subscriptionRepository.update(updatedSubscription);
+
+        final index = _subscriptions.indexWhere((s) => s.id == subscription.id);
+        if (index >= 0) {
+          _subscriptions[index] = updatedSubscription;
+        }
+      }
+    }
+
+    notifyListeners();
+  }
+
+  // Update subscription labels
+  Future<void> updateSubscriptionLabels(String subscriptionId, List<Label> labels) async {
+    final index = _subscriptions.indexWhere((s) => s.id == subscriptionId);
+    if (index >= 0) {
+      final subscription = _subscriptions[index];
+      final updatedSubscription = subscription.copyWith(labels: labels);
+
+      _subscriptions[index] = updatedSubscription;
+      await subscriptionRepository.update(updatedSubscription);
+
+      notifyListeners();
+    }
   }
 }

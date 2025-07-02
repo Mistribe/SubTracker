@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/subscription_provider.dart';
 import '../models/subscription.dart';
+import '../models/label.dart';
 
 class EditSubscriptionScreen extends StatefulWidget {
   final Subscription subscription;
@@ -23,6 +24,7 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
   late DateTime _startDate;
   DateTime? _endDate;
   late String _selectedCurrency;
+  late List<Label> _selectedLabels;
 
   // List of common currencies
   final List<String> _currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR'];
@@ -45,6 +47,7 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
     _startDate = currentDetail.startDate;
     _endDate = currentDetail.endDate;
     _selectedCurrency = currentDetail.currency;
+    _selectedLabels = List<Label>.from(widget.subscription.labels);
 
     // Set the selected duration based on months
     if (_months == 1) {
@@ -175,11 +178,17 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
           ),
         );
 
-        // Update the subscription name
+        // Update the subscription name and labels
         await Provider.of<SubscriptionProvider>(
           context,
           listen: false,
         ).updateSubscription(widget.subscription.id, name);
+
+        // Update the subscription labels
+        await Provider.of<SubscriptionProvider>(
+          context,
+          listen: false,
+        ).updateSubscriptionLabels(widget.subscription.id, _selectedLabels);
 
         // Update the subscription detail
         final currentDetail = widget.subscription.getLastPaymentDetail();
@@ -217,6 +226,133 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
         );
       }
     }
+  }
+
+  // Build label chips for selection
+  List<Widget> _buildLabelChips() {
+    final provider = Provider.of<SubscriptionProvider>(context);
+    final allLabels = provider.labels;
+
+    return allLabels.map((label) {
+      final isSelected = _selectedLabels.any((selectedLabel) => selectedLabel.id == label.id);
+      return FilterChip(
+        label: Text(label.name),
+        selected: isSelected,
+        onSelected: (selected) {
+          setState(() {
+            if (selected) {
+              _selectedLabels.add(label);
+            } else {
+              _selectedLabels.removeWhere((selectedLabel) => selectedLabel.id == label.id);
+            }
+          });
+        },
+        backgroundColor: Color(int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.2),
+        selectedColor: Color(int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.7),
+        checkmarkColor: Colors.white,
+      );
+    }).toList();
+  }
+
+  // Show dialog for adding a custom label
+  void _showAddLabelDialog() {
+    final nameController = TextEditingController();
+    final selectedColor = ValueNotifier<Color>(Colors.blue);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Custom Label'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: 'Label Name',
+                hintText: 'Enter a name for your label',
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('Select Color:'),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: [
+                _buildColorOption(selectedColor, Colors.red),
+                _buildColorOption(selectedColor, Colors.pink),
+                _buildColorOption(selectedColor, Colors.purple),
+                _buildColorOption(selectedColor, Colors.deepPurple),
+                _buildColorOption(selectedColor, Colors.indigo),
+                _buildColorOption(selectedColor, Colors.blue),
+                _buildColorOption(selectedColor, Colors.lightBlue),
+                _buildColorOption(selectedColor, Colors.cyan),
+                _buildColorOption(selectedColor, Colors.teal),
+                _buildColorOption(selectedColor, Colors.green),
+                _buildColorOption(selectedColor, Colors.lightGreen),
+                _buildColorOption(selectedColor, Colors.lime),
+                _buildColorOption(selectedColor, Colors.yellow),
+                _buildColorOption(selectedColor, Colors.amber),
+                _buildColorOption(selectedColor, Colors.orange),
+                _buildColorOption(selectedColor, Colors.deepOrange),
+                _buildColorOption(selectedColor, Colors.brown),
+                _buildColorOption(selectedColor, Colors.grey),
+                _buildColorOption(selectedColor, Colors.blueGrey),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final name = nameController.text.trim();
+              if (name.isNotEmpty) {
+                final colorHex = '#${selectedColor.value.value.toRadixString(16).substring(2)}';
+                Provider.of<SubscriptionProvider>(context, listen: false)
+                    .addLabel(name, colorHex)
+                    .then((_) {
+                  Navigator.of(context).pop();
+                });
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build a color selection option
+  Widget _buildColorOption(ValueNotifier<Color> selectedColor, Color color) {
+    return ValueListenableBuilder<Color>(
+      valueListenable: selectedColor,
+      builder: (context, value, child) {
+        final isSelected = value == color;
+        return GestureDetector(
+          onTap: () => selectedColor.value = color,
+          child: Container(
+            width: 30,
+            height: 30,
+            margin: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isSelected ? Colors.white : Colors.transparent,
+                width: 2,
+              ),
+              boxShadow: isSelected
+                  ? [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 4)]
+                  : null,
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -401,6 +537,25 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
                       ),
                     ],
                   ),
+                const SizedBox(height: 16),
+                const Divider(),
+                const ListTile(
+                  title: Text('Labels'),
+                  subtitle: Text('Categorize your subscription'),
+                  leading: Icon(Icons.label),
+                ),
+                Wrap(
+                  spacing: 8.0,
+                  children: _buildLabelChips(),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Custom Label'),
+                    onPressed: _showAddLabelDialog,
+                  ),
+                ),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _submitForm,

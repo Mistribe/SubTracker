@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:subscription_tracker/models/subscription_payment.dart';
+import 'package:subscription_tracker/models/label.dart';
 
 part 'subscription.g.dart';
 
@@ -14,11 +15,17 @@ class Subscription extends HiveObject {
   @HiveField(3)
   final List<SubscriptionPayment> subscriptionPayments;
 
+  @HiveField(4)
+  final List<Label> labels;
+
   Subscription({
     required this.id,
     required this.name,
     List<SubscriptionPayment>? subscriptionPayments,
-  }) : subscriptionPayments = subscriptionPayments ?? [];
+    List<Label>? labels,
+  }) : 
+    subscriptionPayments = subscriptionPayments ?? [],
+    labels = labels ?? [];
 
   SubscriptionPayment getLastPaymentDetail() {
     final sortedHistory = List<SubscriptionPayment>.from(subscriptionPayments)
@@ -164,11 +171,13 @@ class Subscription extends HiveObject {
     String? id,
     String? name,
     List<SubscriptionPayment>? subscriptionPayments,
+    List<Label>? labels,
   }) {
     return Subscription(
       id: id ?? this.id,
       name: name ?? this.name,
       subscriptionPayments: subscriptionPayments ?? this.subscriptionPayments,
+      labels: labels ?? this.labels,
     );
   }
 
@@ -180,6 +189,9 @@ class Subscription extends HiveObject {
       'paymentDetails': subscriptionPayments
           .map((detail) => detail.toJson())
           .toList(),
+      'labels': labels
+          .map((label) => label.toJson())
+          .toList(),
     };
   }
 
@@ -190,6 +202,11 @@ class Subscription extends HiveObject {
       subscriptionPayments: json['paymentDetails'] != null
           ? (json['paymentDetails'] as List)
                 .map((item) => SubscriptionPayment.fromJson(item))
+                .toList()
+          : [],
+      labels: json['labels'] != null
+          ? (json['labels'] as List)
+                .map((item) => Label.fromJson(item))
                 .toList()
           : [],
     );
