@@ -29,7 +29,6 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
   String _selectedDuration = '1 month'; // Default value
   late DateTime _startDate;
   DateTime? _endDate;
-  bool _mandatoryEndDate = false;
   bool _useRecurrenceCount = false;
   late String _selectedCurrency;
 
@@ -60,7 +59,7 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
       _startDate.day,
     );
   }
-  
+
   // Get the appropriate label for the duration
   String _getDurationLabel() {
     switch (_selectedDuration) {
@@ -103,19 +102,24 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
     _months = widget.paymentHistory.months;
     _startDate = widget.paymentHistory.startDate;
     _endDate = widget.paymentHistory.endDate;
-    _mandatoryEndDate = _endDate != null;
     _selectedCurrency = widget.paymentHistory.currency;
 
-    // Initialize recurrence count if end date is provided
+    // Always enable recurrence count
     if (_endDate != null) {
+      // If end date is provided, calculate recurrence count
       int recurrenceCount = _calculateRecurrenceCount(
         _startDate,
         _endDate!,
         _months,
       );
       _recurrenceCountController.text = recurrenceCount.toString();
-      _useRecurrenceCount = true;
+    } else {
+      // Default to 1 recurrence
+      _recurrenceCountController.text = '1';
     }
+
+    // Always enable recurrence count as it's the only way to set end date
+    _useRecurrenceCount = true;
 
     // Set the selected duration based on months
     if (_months == 1) {
@@ -155,21 +159,6 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
     }
   }
 
-  // Date picker for end date
-  Future<void> _selectEndDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _endDate ?? DateTime.now(),
-      firstDate: _startDate,
-      lastDate: DateTime(2101),
-    );
-    if (picked != null && picked != _endDate) {
-      setState(() {
-        _endDate = picked;
-        _useRecurrenceCount = false; // Disable recurrence count when manually selecting end date
-      });
-    }
-  }
 
   // Handle duration selection
   void _handleDurationChange(String? value) {
@@ -216,35 +205,15 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
         }
       }
 
-      // Calculate the end date based on recurrence count if toggle is on
+      // Calculate the end date based on recurrence count
       if (_useRecurrenceCount) {
         final recurrenceCount = int.tryParse(_recurrenceCountController.text) ?? 1;
         if (recurrenceCount > 0) {
           _endDate = _calculateEndDate();
         }
-      }
-
-      // Validate that if end date is provided, it's not shorter than the subscription recurrence
-      if (_endDate != null) {
-        // Calculate the minimum end date based on start date and months
-        final minEndDate = DateTime(
-          _startDate.year + (_months ~/ 12),
-          _startDate.month + (_months % 12),
-          _startDate.day,
-        );
-
-        if (_endDate!.isBefore(minEndDate)) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'End date must be at least $_months months after start date',
-              ),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-          return;
-        }
+      } else {
+        // If recurrence count is not used, set end date to null
+        _endDate = null;
       }
 
       try {
@@ -495,18 +464,25 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
                                   _useRecurrenceCount = value;
                                   if (!value) {
                                     _recurrenceCountController.text = '1';
+                                    _endDate = null;
+                                  } else {
+                                    // Calculate end date when toggle is turned on
+                                    final recurrenceCount = int.tryParse(_recurrenceCountController.text) ?? 1;
+                                    if (recurrenceCount > 0) {
+                                      _endDate = _calculateEndDate();
+                                    }
                                   }
                                 });
                               },
                             ),
                             const SizedBox(width: 8),
-                            Text(
-                              'Specify number of recurrences',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Theme.of(
-                                  context,
-                                ).textTheme.bodyLarge?.color,
+                            Expanded(
+                              child: Text(
+                                'Set end date by specifying number of recurrences',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                                ),
                               ),
                             ),
                           ],
@@ -545,40 +521,6 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
                             ),
                           ),
 
-                        if (!_useRecurrenceCount)
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Theme.of(context).dividerColor.withOpacity(0.5),
-                              ),
-                            ),
-                            child: ListTile(
-                              leading: Icon(
-                                Icons.event_busy,
-                                color: Colors.orange.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.8 : 1.0),
-                              ),
-                              title: Text(
-                                _mandatoryEndDate ? 'End Date' : 'End Date (Optional)',
-                              ),
-                              subtitle: Text(
-                                _endDate != null
-                                    ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
-                                    : 'No end date',
-                              ),
-                              trailing: !_mandatoryEndDate
-                                  ? IconButton(
-                                      icon: const Icon(Icons.clear),
-                                      onPressed: () {
-                                        setState(() {
-                                          _endDate = null;
-                                        });
-                                      },
-                                    )
-                                  : null,
-                              onTap: () => _selectEndDate(context),
-                            ),
-                          ),
                       ],
                     ),
                   ),
