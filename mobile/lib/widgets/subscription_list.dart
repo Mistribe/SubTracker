@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:subscription_tracker/widgets/price_change_form.dart';
 import '../providers/subscription_provider.dart';
 import '../models/subscription.dart';
+import '../models/currency.dart';
+import '../services/currency_converter.dart';
 import '../screens/subscription_detail_screen.dart';
 import '../screens/edit_subscription_screen.dart';
 import '../widgets/delete_subscription_dialog.dart';
@@ -46,6 +48,39 @@ class SubscriptionCard extends StatelessWidget {
       context,
       listen: false,
     );
+
+    // Get currencies
+    final defaultCurrency = subscriptionProvider.defaultCurrencyEnum;
+    final subscriptionCurrency = Currency.fromCode(
+      subscription.subscriptionPayments.isNotEmpty
+          ? subscription.getLastPaymentDetail().currency
+          : Currency.defaultCode
+    );
+
+    // Convert costs to default currency
+    final monthlyCostInDefaultCurrency = CurrencyConverter.convert(
+      subscription.monthlyCost,
+      subscriptionCurrency.code,
+      defaultCurrency.code,
+    );
+    final annualCostInDefaultCurrency = monthlyCostInDefaultCurrency * 12;
+    final totalSpentInDefaultCurrency = CurrencyConverter.convert(
+      subscription.totalAmountSpent,
+      subscriptionCurrency.code,
+      defaultCurrency.code,
+    );
+
+    // Format the cost texts
+    String monthlyText = 'Monthly: ${defaultCurrency.formatAmount(monthlyCostInDefaultCurrency)}';
+    String annualText = 'Annually: ${defaultCurrency.formatAmount(annualCostInDefaultCurrency)}';
+    String totalSpentText = 'Total spent: ${defaultCurrency.formatAmount(totalSpentInDefaultCurrency)}';
+
+    // Add original amounts in parentheses if currencies differ
+    if (subscriptionCurrency.code != defaultCurrency.code) {
+      monthlyText += ' (${subscriptionCurrency.formatAmount(subscription.monthlyCost)})';
+      annualText += ' (${subscriptionCurrency.formatAmount(subscription.annualCost)})';
+      totalSpentText += ' (${subscriptionCurrency.formatAmount(subscription.totalAmountSpent)})';
+    }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -91,14 +126,14 @@ class SubscriptionCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Monthly: \$${subscription.monthlyCost.toStringAsFixed(2)}',
+                              monthlyText,
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey,
                               ),
                             ),
                             Text(
-                              'Annually: \$${subscription.annualCost.toStringAsFixed(2)}',
+                              annualText,
                               style: const TextStyle(fontSize: 16),
                             ),
                             const SizedBox(height: 4),
@@ -133,7 +168,7 @@ class SubscriptionCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Total spent: ${subscription.formattedTotalAmountSpent}',
+                            totalSpentText,
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
