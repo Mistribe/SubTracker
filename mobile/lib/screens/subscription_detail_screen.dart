@@ -47,24 +47,52 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
 
         // Helper function to build info rows
         Widget buildInfoRow(String label, String value, IconData icon) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12.0),
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final iconColor = {
+            Icons.attach_money: Colors.green,
+            Icons.calendar_today: Colors.blue,
+            Icons.calculate: Colors.purple,
+            Icons.event_available: Colors.orange,
+            Icons.monetization_on: Colors.amber,
+            Icons.check_circle: Colors.green,
+            Icons.stop_circle: Colors.red,
+          }[icon] ?? Theme.of(context).colorScheme.primary;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12.0),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).dividerColor.withOpacity(0.5),
+                width: 1,
+              ),
+            ),
             child: Row(
               children: [
-                Icon(icon, size: 20, color: Theme.of(context).primaryColor),
-                const SizedBox(width: 8),
+                Icon(
+                  icon, 
+                  size: 20, 
+                  color: iconColor.withOpacity(isDark ? 0.8 : 1.0),
+                ),
+                const SizedBox(width: 12),
                 Text(
                   label,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 15,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     value,
-                    style: const TextStyle(fontSize: 16),
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                     textAlign: TextAlign.end,
                   ),
                 ),
@@ -92,7 +120,14 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(subscription.name),
+            title: Text(
+              subscription.name,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            elevation: 0,
             actions: [
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert),
@@ -202,6 +237,10 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
               children: [
                 // Payment summary card
                 Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -209,7 +248,11 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       children: [
                         Text(
                           'Summary',
-                          style: Theme.of(context).textTheme.titleLarge,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         buildInfoRow(
@@ -288,6 +331,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                           style: const TextStyle(
                                             fontSize: 12,
                                             color: Colors.white,
+                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                         backgroundColor: Color(
@@ -300,7 +344,11 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                         materialTapTargetSize:
                                             MaterialTapTargetSize.shrinkWrap,
                                         padding: const EdgeInsets.symmetric(
-                                          horizontal: 4,
+                                          horizontal: 8,
+                                          vertical: 0,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16),
                                         ),
                                       );
                                     }).toList(),
@@ -317,20 +365,38 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                 const SizedBox(height: 24),
 
                 // Payment History section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'History',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'History',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      Text(
+                        '${subscription.subscriptionPayments.length} entries',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 if (subscription.subscriptionPayments.isEmpty)
-                  const Card(
-                    child: Padding(
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Padding(
                       padding: EdgeInsets.all(16.0),
                       child: Text(
                         'No subscription history recorded yet.',
@@ -340,6 +406,10 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                   )
                 else
                   Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     child: ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),

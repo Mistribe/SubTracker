@@ -220,180 +220,246 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Payment History'),
+        title: const Text(
+          'Edit Payment History',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Form(
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 7,
-                      child: TextFormField(
-                        controller: _priceController,
-                        decoration: InputDecoration(
-                          labelText: 'Price',
-                          hintText: 'Enter the price',
-                          prefixIcon: Icon(
-                            _selectedCurrency == Currency.USD.code
-                                ? Icons.attach_money
-                                : Icons.currency_exchange,
+                // Payment Details Section Title
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, bottom: 12),
+                  child: Text(
+                    'Payment Details',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+
+                // Payment Details Card
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 7,
+                              child: TextFormField(
+                                controller: _priceController,
+                                decoration: InputDecoration(
+                                  labelText: 'Price',
+                                  hintText: 'Enter the price',
+                                  prefixIcon: Icon(
+                                    _selectedCurrency == Currency.USD.code
+                                        ? Icons.attach_money
+                                        : Icons.currency_exchange,
+                                  ),
+                                ),
+                                keyboardType: const TextInputType.numberWithOptions(
+                                  decimal: true,
+                                ),
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d+\.?\d{0,2}'),
+                                  ),
+                                ],
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a price';
+                                  }
+                                  final price = double.tryParse(value);
+                                  if (price == null || price <= 0) {
+                                    return 'Please enter a valid price';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              flex: 3,
+                              child: DropdownButtonFormField<String>(
+                                value: _selectedCurrency,
+                                decoration: const InputDecoration(
+                                  labelText: 'Currency',
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 15,
+                                  ),
+                                ),
+                                items: _currencies.map<DropdownMenuItem<String>>((
+                                  String value,
+                                ) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                                onChanged: (String? newValue) {
+                                  if (newValue != null) {
+                                    setState(() {
+                                      _selectedCurrency = newValue;
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          value: _selectedDuration,
+                          decoration: const InputDecoration(
+                            labelText: 'Subscription Recurrence',
+                            prefixIcon: Icon(Icons.repeat),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: '1 month', child: Text('Monthly')),
+                            DropdownMenuItem(
+                              value: '3 months',
+                              child: Text('Quarterly (3 months)'),
+                            ),
+                            DropdownMenuItem(
+                              value: '6 months',
+                              child: Text('Semi-Annual (6 months)'),
+                            ),
+                            DropdownMenuItem(
+                              value: '12 months',
+                              child: Text('Annual (12 months)'),
+                            ),
+                            DropdownMenuItem(value: 'Custom', child: Text('Custom')),
+                          ],
+                          onChanged: _handleDurationChange,
+                        ),
+                        if (_selectedDuration == 'Custom')
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16.0),
+                            child: TextFormField(
+                              controller: _customMonthsController,
+                              decoration: const InputDecoration(
+                                labelText: 'Custom Months',
+                                hintText: 'Enter number of months',
+                                prefixIcon: Icon(Icons.calendar_today),
+                              ),
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                              validator: (value) {
+                                if (_selectedDuration == 'Custom') {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter number of months';
+                                  }
+                                  final months = int.tryParse(value);
+                                  if (months == null || months <= 0) {
+                                    return 'Please enter a valid number';
+                                  }
+                                }
+                                return null;
+                              },
+                              onChanged: _handleCustomMonthsChange,
+                            ),
+                          ),
+                        const SizedBox(height: 16),
+
+                        // Date pickers with modern styling
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Theme.of(context).dividerColor.withOpacity(0.5),
+                            ),
+                          ),
+                          child: ListTile(
+                            leading: Icon(
+                              Icons.calendar_today,
+                              color: Colors.blue.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.8 : 1.0),
+                            ),
+                            title: const Text('Start Date'),
+                            subtitle: Text(
+                              '${_startDate.month}/${_startDate.day}/${_startDate.year}',
+                            ),
+                            onTap: () => _selectStartDate(context),
                           ),
                         ),
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d+\.?\d{0,2}'),
+
+                        const SizedBox(height: 16),
+
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Theme.of(context).dividerColor.withOpacity(0.5),
+                            ),
                           ),
-                        ],
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a price';
-                          }
-                          final price = double.tryParse(value);
-                          if (price == null || price <= 0) {
-                            return 'Please enter a valid price';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      flex: 3,
-                      child: DropdownButtonFormField<String>(
-                        value: _selectedCurrency,
-                        decoration: const InputDecoration(
-                          labelText: 'Currency',
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 15,
+                          child: ListTile(
+                            leading: Icon(
+                              Icons.event_busy,
+                              color: Colors.orange.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.8 : 1.0),
+                            ),
+                            title: Text(
+                              _mandatoryEndDate ? 'End Date' : 'End Date (Optional)',
+                            ),
+                            subtitle: Text(
+                              _endDate != null
+                                  ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
+                                  : 'No end date',
+                            ),
+                            trailing: !_mandatoryEndDate
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () {
+                                      setState(() {
+                                        _endDate = null;
+                                      });
+                                    },
+                                  )
+                                : null,
+                            onTap: () => _selectEndDate(context),
                           ),
                         ),
-                        items: _currencies.map<DropdownMenuItem<String>>((
-                          String value,
-                        ) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              _selectedCurrency = newValue;
-                            });
-                          }
-                        },
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: _selectedDuration,
-                  decoration: const InputDecoration(
-                    labelText: 'Subscription Recurrence',
-                    prefixIcon: Icon(Icons.repeat),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: '1 month', child: Text('Monthly')),
-                    DropdownMenuItem(
-                      value: '3 months',
-                      child: Text('Quarterly (3 months)'),
-                    ),
-                    DropdownMenuItem(
-                      value: '6 months',
-                      child: Text('Semi-Annual (6 months)'),
-                    ),
-                    DropdownMenuItem(
-                      value: '12 months',
-                      child: Text('Annual (12 months)'),
-                    ),
-                    DropdownMenuItem(value: 'Custom', child: Text('Custom')),
-                  ],
-                  onChanged: _handleDurationChange,
-                ),
-                if (_selectedDuration == 'Custom')
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16.0),
-                    child: TextFormField(
-                      controller: _customMonthsController,
-                      decoration: const InputDecoration(
-                        labelText: 'Custom Months',
-                        hintText: 'Enter number of months',
-                        prefixIcon: Icon(Icons.calendar_today),
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      validator: (value) {
-                        if (_selectedDuration == 'Custom') {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter number of months';
-                          }
-                          final months = int.tryParse(value);
-                          if (months == null || months <= 0) {
-                            return 'Please enter a valid number';
-                          }
-                        }
-                        return null;
-                      },
-                      onChanged: _handleCustomMonthsChange,
-                    ),
-                  ),
-                const SizedBox(height: 16),
-                ListTile(
-                  leading: const Icon(Icons.calendar_today),
-                  title: const Text('Start Date'),
-                  subtitle: Text(
-                    '${_startDate.month}/${_startDate.day}/${_startDate.year}',
-                  ),
-                  onTap: () => _selectStartDate(context),
-                ),
-                const SizedBox(height: 8),
-                ListTile(
-                  leading: const Icon(Icons.event_busy),
-                  title: Text(
-                    _mandatoryEndDate ? 'End Date' : 'End Date (Optional)',
-                  ),
-                  subtitle: Text(
-                    _endDate != null
-                        ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
-                        : 'No end date',
-                  ),
-                  trailing: !_mandatoryEndDate
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            setState(() {
-                              _endDate = null;
-                            });
-                          },
-                        )
-                      : null,
-                  onTap: () => _selectEndDate(context),
-                ),
+
                 const SizedBox(height: 24),
+
+                // Submit Button
                 ElevatedButton(
                   onPressed: _submitForm,
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: const Text(
                     'Update Payment History',
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
