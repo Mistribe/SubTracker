@@ -34,6 +34,17 @@ enum Currency {
 
   // Format an amount with the currency symbol
   String formatAmount(double amount) {
-    return '$symbol ${amount.toStringAsFixed(2)}';
+    // For dollars (USD, CAD, AUD), the symbol is before the amount
+    if (code == 'USD' || code == 'CAD' || code == 'AUD') {
+      return '$symbol${amount.toStringAsFixed(2)}';
+    }
+    // For euros (EUR), the symbol is after the amount
+    else if (code == 'EUR') {
+      return '${amount.toStringAsFixed(2)} $symbol';
+    }
+    // For other currencies, use a default format (symbol before amount)
+    else {
+      return '$symbol${amount.toStringAsFixed(2)}';
+    }
   }
 }

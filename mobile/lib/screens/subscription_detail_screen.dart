@@ -9,6 +9,7 @@ import '../widgets/price_change_form.dart';
 import '../widgets/reactivate_subscription_form.dart';
 import '../widgets/delete_subscription_dialog.dart';
 import '../widgets/delete_payment_history_dialog.dart';
+import '../services/currency_converter.dart';
 
 class PaymentDetailScreen extends StatefulWidget {
   final Subscription subscription;
@@ -213,7 +214,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         const SizedBox(height: 16),
                         buildInfoRow(
                           'Current Price:',
-                          '\$${currentDetail.price.toStringAsFixed(2)}',
+                          CurrencyConverter.formatAmountWithCurrency(currentDetail.price, currentDetail.currency),
                           Icons.attach_money,
                         ),
                         buildInfoRow(
@@ -225,7 +226,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         if (currentDetail.months > 1)
                           buildInfoRow(
                             'Monthly Cost:',
-                            '\$${subscription.monthlyCost.toStringAsFixed(2)}',
+                            CurrencyConverter.formatAmountWithCurrency(subscription.monthlyCost, currentDetail.currency),
                             Icons.calculate,
                           ),
                         if (subscription.isActive)
@@ -364,7 +365,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                 ? Colors.green
                                 : Colors.red,
                           ),
-                          title: Text('\$${history.price.toStringAsFixed(2)}'),
+                          title: Text(CurrencyConverter.formatAmountWithCurrency(history.price, history.currency)),
                           subtitle: Text(
                             !history.isStarted
                                 ? 'Start at ${history.startDate.month}/${history.startDate.day}/${history.startDate.year}'

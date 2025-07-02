@@ -169,7 +169,7 @@ class Subscription extends HiveObject {
         ? subscriptionPayments.last.currency
         : Currency.USD.code;
     final currency = Currency.fromCode(currencyCode);
-    return '${currency.symbol} ${totalAmountSpent.toStringAsFixed(2)}';
+    return currency.formatAmount(totalAmountSpent);
   }
 
   // Create a copy of this payment with updated fields
