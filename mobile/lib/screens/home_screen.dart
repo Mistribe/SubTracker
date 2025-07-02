@@ -13,10 +13,18 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final paymentProvider = Provider.of<SubscriptionProvider>(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Subscription Tracker'),
+        title: const Text(
+          'Subscription Tracker',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -30,126 +38,104 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Summary card - more concise with monthly and annual costs
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    // Monthly cost
-                    Column(
-                      children: [
-                        const Text(
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Summary cards with modern design
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title for the summary section
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 12),
+                    child: Text(
+                      'Summary',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                  
+                  // Cards row
+                  Row(
+                    children: [
+                      // Monthly cost card
+                      Expanded(
+                        child: _buildSummaryCard(
+                          context,
                           'Monthly',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
                           paymentProvider.formattedMonthlyCost,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          Icons.calendar_today,
+                          Colors.blue,
                         ),
-                      ],
-                    ),
-
-                    // Vertical divider
-                    const SizedBox(
-                      height: 50,
-                      child: VerticalDivider(
-                        thickness: 1,
-                        width: 20,
-                        color: Colors.grey,
                       ),
-                    ),
-
-                    // Annual cost
-                    Column(
-                      children: [
-                        const Text(
+                      const SizedBox(width: 12),
+                      
+                      // Annual cost card
+                      Expanded(
+                        child: _buildSummaryCard(
+                          context,
                           'Annually',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
                           paymentProvider.formattedAnnualCost,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          Icons.calendar_month,
+                          Colors.purple,
                         ),
-                      ],
-                    ),
-
-                    // Vertical divider
-                    const SizedBox(
-                      height: 50,
-                      child: VerticalDivider(
-                        thickness: 1,
-                        width: 20,
-                        color: Colors.grey,
                       ),
-                    ),
-
-                    // Active subscriptions count
-                    Column(
-                      children: [
-                        const Text(
+                      const SizedBox(width: 12),
+                      
+                      // Active subscriptions card
+                      Expanded(
+                        child: _buildSummaryCard(
+                          context,
                           'Active',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          '${paymentProvider.activePaymentsCount}${paymentProvider.notStartedPaymentsCount > 0 ? ' (${paymentProvider.notStartedPaymentsCount})' : ''}',
+                          Icons.check_circle,
+                          Colors.green,
                         ),
-                        const SizedBox(height: 4),
-                        RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text: '${paymentProvider.activePaymentsCount}',
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: null, // Use default text color
-                                ),
-                              ),
-                              if (paymentProvider.notStartedPaymentsCount > 0)
-                                TextSpan(
-                                  text: ' (${paymentProvider.notStartedPaymentsCount})',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontStyle: FontStyle.italic,
-                                    color: null, // Use default text color
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ),
 
-          // Subscription list
-          const Expanded(child: SubscriptionList()),
-        ],
+            // Subscriptions section title
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Your Subscriptions',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  Text(
+                    '${paymentProvider.subscriptions.length} total',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Subscription list
+            const Expanded(child: SubscriptionList()),
+          ],
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
@@ -157,7 +143,61 @@ class HomeScreen extends StatelessWidget {
           );
         },
         tooltip: 'Add Subscription',
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Add', style: TextStyle(fontSize: 16)),
+        elevation: 4,
+      ),
+    );
+  }
+
+  Widget _buildSummaryCard(
+    BuildContext context,
+    String title,
+    String value,
+    IconData icon,
+    Color iconColor,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  size: 16,
+                  color: iconColor.withOpacity(isDark ? 0.8 : 1.0),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

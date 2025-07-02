@@ -18,16 +18,39 @@ class SubscriptionList extends StatelessWidget {
     final subscriptions = subscriptionProvider.subscriptions;
 
     if (subscriptions.isEmpty) {
-      return const Center(
-        child: Text(
-          'No subscriptions yet. Add your first subscription!',
-          style: TextStyle(fontSize: 16),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.subscriptions_outlined,
+              size: 64,
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No subscriptions yet',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Add your first subscription!',
+              style: TextStyle(
+                fontSize: 16,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
+            ),
+          ],
         ),
       );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: subscriptions.length,
       itemBuilder: (context, index) {
         final subscription = subscriptions[index];
@@ -94,6 +117,7 @@ class SubscriptionCard extends StatelessWidget {
       context,
       listen: false,
     );
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Get currencies
     final defaultCurrency = subscriptionProvider.defaultCurrencyEnum;
@@ -117,9 +141,9 @@ class SubscriptionCard extends StatelessWidget {
     );
 
     // Format the cost texts
-    String monthlyText = 'Monthly: ${defaultCurrency.formatAmount(monthlyCostInDefaultCurrency)}';
-    String annualText = 'Annually: ${defaultCurrency.formatAmount(annualCostInDefaultCurrency)}';
-    String totalSpentText = 'Total spent: ${defaultCurrency.formatAmount(totalSpentInDefaultCurrency)}';
+    String monthlyText = '${defaultCurrency.formatAmount(monthlyCostInDefaultCurrency)}';
+    String annualText = '${defaultCurrency.formatAmount(annualCostInDefaultCurrency)}';
+    String totalSpentText = '${defaultCurrency.formatAmount(totalSpentInDefaultCurrency)}';
 
     // Add original amounts in parentheses if currencies differ
     if (subscriptionCurrency.code != defaultCurrency.code) {
@@ -130,7 +154,12 @@ class SubscriptionCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: InkWell(
+        borderRadius: BorderRadius.circular(16),
         onTap: () {
           Navigator.push(
             context,
@@ -145,20 +174,55 @@ class SubscriptionCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header with name and status badge
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Row(
                       children: [
+                        // Subscription icon based on status
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: subscription.isActive 
+                              ? Colors.green.withOpacity(0.1) 
+                              : Colors.red.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            subscription.isActive 
+                              ? Icons.check_circle_outline 
+                              : Icons.cancel_outlined,
+                            color: subscription.isActive ? Colors.green : Colors.red,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Subscription name
                         Expanded(
-                          child: Text(
-                            subscription.name,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                subscription.name,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (!subscription.isActive)
+                                Text(
+                                  "Cancelled",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.red.shade700,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -166,110 +230,16 @@ class SubscriptionCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (subscription.isActive)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              monthlyText,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            Text(
-                              annualText,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.event_available,
-                                  size: 14,
-                                  color: Colors.blue,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Next payment: ${subscription.formattedNextPaymentDate}',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      if (!subscription.isActive) Text("Cancelled"),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.monetization_on,
-                            size: 14,
-                            color: Colors.green,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            totalSpentText,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.green,
-                            ),
-                          ),
-                        ],
-                      ),
-                      // Display labels if there are any
-                      if (subscription.labels.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Wrap(
-                            spacing: 4,
-                            runSpacing: 4,
-                            children: subscription.labels.map((label) {
-                              return Chip(
-                                label: Text(
-                                  label.name,
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                backgroundColor: Color(
-                                  int.parse(
-                                        label.color.substring(1, 7),
-                                        radix: 16,
-                                      ) +
-                                      0xFF000000,
-                                ),
-                                materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 2,
-                                ),
-                                labelPadding: const EdgeInsets.symmetric(
-                                  horizontal: 2,
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                    ],
-                  ),
+
+                  // Menu button
                   PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert),
+                    icon: Icon(
+                      Icons.more_vert,
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     onSelected: (value) async {
                       if (value == 'edit') {
                         Navigator.push(
@@ -295,33 +265,33 @@ class SubscriptionCard extends StatelessWidget {
                       }
                     },
                     itemBuilder: (context) => [
-                      const PopupMenuItem<String>(
+                      PopupMenuItem<String>(
                         value: 'edit',
                         child: Row(
                           children: [
-                            Icon(Icons.edit, color: Colors.blue),
-                            SizedBox(width: 8),
-                            Text('Edit'),
+                            Icon(Icons.edit, color: Theme.of(context).colorScheme.primary),
+                            const SizedBox(width: 8),
+                            const Text('Edit'),
                           ],
                         ),
                       ),
-                      const PopupMenuItem<String>(
+                      PopupMenuItem<String>(
                         value: 'addPriceChange',
                         child: Row(
                           children: [
-                            Icon(Icons.price_change, color: Colors.green),
-                            SizedBox(width: 8),
-                            Text('Add Price Change'),
+                            Icon(Icons.price_change, color: Colors.green.shade600),
+                            const SizedBox(width: 8),
+                            const Text('Add Price Change'),
                           ],
                         ),
                       ),
-                      const PopupMenuItem<String>(
+                      PopupMenuItem<String>(
                         value: 'delete',
                         child: Row(
                           children: [
-                            Icon(Icons.delete, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text('Delete'),
+                            Icon(Icons.delete, color: Colors.red.shade600),
+                            const SizedBox(width: 8),
+                            const Text('Delete'),
                           ],
                         ),
                       ),
@@ -329,6 +299,171 @@ class SubscriptionCard extends StatelessWidget {
                   ),
                 ],
               ),
+
+              const Divider(height: 24),
+
+              // Cost information
+              if (subscription.isActive)
+                Row(
+                  children: [
+                    // Monthly cost
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.calendar_today,
+                                size: 14,
+                                color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                              ),
+                              const SizedBox(width: 4),
+                              const Text(
+                                'Monthly',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            monthlyText,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Annual cost
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.calendar_month,
+                                size: 14,
+                                color: Colors.purple.withOpacity(0.7),
+                              ),
+                              const SizedBox(width: 4),
+                              const Text(
+                                'Annually',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            annualText,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+              // Next payment date
+              if (subscription.isActive)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.event_available,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Next payment: ${subscription.formattedNextPaymentDate}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+              // Total spent
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.monetization_on,
+                      size: 16,
+                      color: Colors.green.shade600,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Total spent: $totalSpentText',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.green.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Labels
+              if (subscription.labels.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: subscription.labels.map((label) {
+                      final labelColor = Color(
+                        int.parse(
+                          label.color.substring(1, 7),
+                          radix: 16,
+                        ) + 0xFF000000,
+                      );
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: labelColor.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: labelColor,
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          label.name,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: labelColor,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
             ],
           ),
         ),
