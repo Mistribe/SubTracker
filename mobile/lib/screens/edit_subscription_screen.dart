@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/subscription_provider.dart';
 import '../models/subscription.dart';
 import '../models/label.dart';
+import '../models/currency.dart';
 
 class EditSubscriptionScreen extends StatefulWidget {
   final Subscription subscription;
@@ -26,8 +27,8 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
   late String _selectedCurrency;
   late List<Label> _selectedLabels;
 
-  // List of common currencies
-  final List<String> _currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR'];
+  // Get currencies from the Currency enum
+  final List<String> _currencies = Currency.codes;
 
   @override
   void initState() {
@@ -397,7 +398,7 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
                               decoration: InputDecoration(
                                 labelText: 'Price',
                                 hintText: 'Enter the price',
-                                prefixIcon: Icon(_selectedCurrency == 'USD' ? Icons.attach_money : Icons.currency_exchange),
+                                prefixIcon: Icon(_selectedCurrency == Currency.USD.code ? Icons.attach_money : Icons.currency_exchange),
                               ),
                               keyboardType: const TextInputType.numberWithOptions(
                                 decimal: true,

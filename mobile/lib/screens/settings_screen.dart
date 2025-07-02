@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/currency.dart';
 import '../providers/theme_provider.dart';
 import '../providers/subscription_provider.dart';
 
@@ -11,8 +12,8 @@ class SettingsScreen extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final subscriptionProvider = Provider.of<SubscriptionProvider>(context);
 
-    // List of common currencies
-    final List<String> currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR'];
+    // Get currencies from the Currency enum
+    final List<String> currencies = Currency.codes;
 
     return Scaffold(
       appBar: AppBar(

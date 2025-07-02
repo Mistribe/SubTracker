@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../models/subscription.dart';
 import '../models/subscription_payment.dart';
 import '../models/label.dart';
+import '../models/currency.dart';
 import '../repositories/subscription_repository.dart';
 import '../repositories/settings_repository.dart';
 import '../repositories/label_repository.dart';
@@ -128,7 +129,7 @@ class SubscriptionProvider with ChangeNotifier {
     );
   }
 
-  String _defaultCurrency = 'USD';
+  String _defaultCurrency = Currency.USD.code;
 
   // Getter for default currency
   String get defaultCurrency => _defaultCurrency;
@@ -143,6 +144,14 @@ class SubscriptionProvider with ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  // Get the default currency as a Currency enum
+  Currency get defaultCurrencyEnum => Currency.fromCode(_defaultCurrency);
+
+  // Set the default currency using a Currency enum
+  set defaultCurrencyEnum(Currency currency) {
+    defaultCurrency = currency.code;
   }
 
   // Add a new subscription

@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'currency.dart';
 
 part 'subscription_payment.g.dart';
 
@@ -33,7 +34,7 @@ class SubscriptionPayment {
     required this.startDate,
     required this.endDate,
     required this.months,
-    this.currency = 'USD',
+    required this.currency,
   });
 
   bool get isStarted {
@@ -138,7 +139,7 @@ class SubscriptionPayment {
       months: json['months'],
       currency:
           json['currency'] ??
-          'USD', // Default to USD for backward compatibility
+          Currency.USD.code, // Default to USD for backward compatibility
     );
   }
 }

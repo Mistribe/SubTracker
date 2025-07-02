@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'currency.dart';
 
 part 'settings.g.dart';
 
@@ -16,18 +17,23 @@ class Settings {
   Settings({
     this.isDarkMode = false,
     this.useSystemTheme = true,
-    this.defaultCurrency = 'USD',
+    this.defaultCurrency = Currency.defaultCode,
   });
+
+  // Get the default currency as a Currency enum
+  Currency get defaultCurrencyEnum => Currency.fromCode(defaultCurrency);
 
   Settings copyWith({
     bool? isDarkMode,
     bool? useSystemTheme,
     String? defaultCurrency,
+    Currency? defaultCurrencyEnum,
   }) {
     return Settings(
       isDarkMode: isDarkMode ?? this.isDarkMode,
       useSystemTheme: useSystemTheme ?? this.useSystemTheme,
-      defaultCurrency: defaultCurrency ?? this.defaultCurrency,
+      defaultCurrency:
+          defaultCurrencyEnum?.code ?? defaultCurrency ?? this.defaultCurrency,
     );
   }
 }

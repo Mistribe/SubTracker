@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../models/subscription.dart';
+import '../models/currency.dart';
 import '../providers/subscription_provider.dart';
 
 class PriceChangeForm extends StatefulWidget {
@@ -20,8 +21,8 @@ class _PriceChangeFormState extends State<PriceChangeForm> {
   DateTime _selectedDate = DateTime.now();
   late String _selectedCurrency;
 
-  // List of common currencies
-  final List<String> _currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR'];
+  // Get currencies from the Currency enum
+  final List<String> _currencies = Currency.codes;
 
   @override
   void dispose() {

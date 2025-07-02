@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 import 'package:subscription_tracker/models/subscription_payment.dart';
 import 'package:subscription_tracker/models/label.dart';
+import 'package:subscription_tracker/models/currency.dart';
 
 part 'subscription.g.dart';
 
@@ -164,10 +165,11 @@ class Subscription extends HiveObject {
 
   // Format the total amount spent as a string
   String get formattedTotalAmountSpent {
-    final currency = subscriptionPayments.isNotEmpty
+    final currencyCode = subscriptionPayments.isNotEmpty
         ? subscriptionPayments.last.currency
-        : 'USD';
-    return '${currency == 'USD' ? '\$' : currency} ${totalAmountSpent.toStringAsFixed(2)}';
+        : Currency.USD.code;
+    final currency = Currency.fromCode(currencyCode);
+    return '${currency.symbol} ${totalAmountSpent.toStringAsFixed(2)}';
   }
 
   // Create a copy of this payment with updated fields

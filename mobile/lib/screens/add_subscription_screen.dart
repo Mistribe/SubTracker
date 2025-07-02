@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/subscription_provider.dart';
 import '../models/label.dart';
+import '../models/currency.dart';
 
 class AddSubscriptionScreen extends StatefulWidget {
   const AddSubscriptionScreen({super.key});
@@ -20,11 +21,11 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
   String _selectedDuration = '1 month'; // Default value
   DateTime _selectedStartDate = DateTime.now();
   DateTime? _selectedEndDate;
-  String _selectedCurrency = 'USD'; // Default currency
+  String _selectedCurrency = Currency.USD.code; // Default currency
   final List<Label> _selectedLabels = [];
 
-  // List of common currencies
-  final List<String> _currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR'];
+  // Get currencies from the Currency enum
+  final List<String> _currencies = Currency.codes;
 
   @override
   void initState() {
@@ -369,7 +370,7 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
                         decoration: InputDecoration(
                           labelText: 'Price',
                           hintText: 'Enter the amount',
-                          prefixIcon: Icon(_selectedCurrency == 'USD' ? Icons.attach_money : Icons.currency_exchange),
+                          prefixIcon: Icon(_selectedCurrency == Currency.USD.code ? Icons.attach_money : Icons.currency_exchange),
                         ),
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,

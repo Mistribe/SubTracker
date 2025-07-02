@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/subscription.dart';
 import '../models/subscription_payment.dart';
+import '../models/currency.dart';
 import '../providers/subscription_provider.dart';
 
 class EditSubscriptionPaymentScreen extends StatefulWidget {
@@ -30,18 +31,8 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
   bool _mandatoryEndDate = false;
   late String _selectedCurrency;
 
-  // List of common currencies
-  final List<String> _currencies = [
-    'USD',
-    'EUR',
-    'GBP',
-    'JPY',
-    'CAD',
-    'AUD',
-    'CHF',
-    'CNY',
-    'INR',
-  ];
+  // Get currencies from the Currency enum
+  final List<String> _currencies = Currency.codes;
 
   @override
   void initState() {
@@ -254,7 +245,7 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
                           labelText: 'Price',
                           hintText: 'Enter the price',
                           prefixIcon: Icon(
-                            _selectedCurrency == 'USD'
+                            _selectedCurrency == Currency.USD.code
                                 ? Icons.attach_money
                                 : Icons.currency_exchange,
                           ),
