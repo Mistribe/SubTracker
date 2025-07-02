@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/subscription_list.dart';
-import 'add_subscription_screen.dart';
+import 'subscription_form_screen.dart';
 import 'settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -242,7 +242,7 @@ class HomeScreen extends StatelessWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AddSubscriptionScreen()),
+            MaterialPageRoute(builder: (context) => const SubscriptionFormScreen()),
           );
         },
         tooltip: 'Add Subscription',

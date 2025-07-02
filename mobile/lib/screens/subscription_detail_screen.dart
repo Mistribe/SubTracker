@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/subscription.dart';
 import '../providers/subscription_provider.dart';
 import '../widgets/cancel_subscription_form.dart';
-import 'edit_subscription_screen.dart';
+import 'subscription_form_screen.dart';
 import 'edit_subscription_payment_screen.dart';
 import '../widgets/price_change_form.dart';
 import '../widgets/reactivate_subscription_form.dart';
@@ -137,7 +137,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            EditSubscriptionScreen(subscription: subscription),
+                            SubscriptionFormScreen(subscription: subscription),
                       ),
                     );
                   } else if (value == 'addPaymentHistory') {

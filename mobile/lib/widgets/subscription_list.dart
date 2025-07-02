@@ -6,7 +6,7 @@ import '../models/subscription.dart';
 import '../models/currency.dart';
 import '../services/currency_converter.dart';
 import '../screens/subscription_detail_screen.dart';
-import '../screens/edit_subscription_screen.dart';
+import '../screens/subscription_form_screen.dart';
 import '../widgets/delete_subscription_dialog.dart';
 
 class SubscriptionList extends StatelessWidget {
@@ -255,7 +255,7 @@ class SubscriptionCard extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EditSubscriptionScreen(
+                            builder: (context) => SubscriptionFormScreen(
                               subscription: subscription,
                             ),
                           ),

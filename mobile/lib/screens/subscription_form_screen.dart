@@ -6,20 +6,21 @@ import '../models/subscription.dart';
 import '../models/label.dart';
 import '../models/currency.dart';
 
-class EditSubscriptionScreen extends StatefulWidget {
-  final Subscription subscription;
+class SubscriptionFormScreen extends StatefulWidget {
+  final Subscription? subscription;
 
-  const EditSubscriptionScreen({super.key, required this.subscription});
+  const SubscriptionFormScreen({super.key, this.subscription});
 
   @override
-  State<EditSubscriptionScreen> createState() => _EditSubscriptionScreenState();
+  State<SubscriptionFormScreen> createState() => _SubscriptionFormScreenState();
 }
 
-class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
+class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _priceController;
   late final TextEditingController _customMonthsController;
+  late final TextEditingController _recurrenceCountController;
   late int _months;
   String _selectedDuration = '1 month'; // Default value
   late DateTime _startDate;
@@ -27,6 +28,9 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
   late String _selectedCurrency;
   late List<Label> _selectedLabels;
   bool _isLabelsExpanded = false; // Track if labels section is expanded
+  bool _useRecurrenceCount = false;
+  bool _isEditMode = false;
+  bool _isActiveSubscription = true;
 
   // Get currencies from the Currency enum
   final List<String> _currencies = Currency.codes;
@@ -34,35 +38,79 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with existing subscription data
-    _nameController = TextEditingController(text: widget.subscription.name);
+    _isEditMode = widget.subscription != null;
 
-    // Get the current subscription detail
-    final currentDetail = widget.subscription.getLastPaymentDetail();
-    _priceController = TextEditingController(
-      text: currentDetail.price.toString(),
-    );
-    _customMonthsController = TextEditingController();
+    if (_isEditMode) {
+      // Edit mode - initialize with subscription data
+      final subscription = widget.subscription!;
+      _isActiveSubscription = subscription.isActive;
 
-    // Initialize months from subscription detail
-    _months = currentDetail.months;
-    _startDate = currentDetail.startDate;
-    _endDate = currentDetail.endDate;
-    _selectedCurrency = currentDetail.currency;
-    _selectedLabels = List<Label>.from(widget.subscription.labels);
+      _nameController = TextEditingController(text: subscription.name);
 
-    // Set the selected duration based on months
-    if (_months == 1) {
-      _selectedDuration = '1 month';
-    } else if (_months == 3) {
-      _selectedDuration = '3 months';
-    } else if (_months == 6) {
-      _selectedDuration = '6 months';
-    } else if (_months == 12) {
-      _selectedDuration = '12 months';
+      // Get the current subscription detail
+      final currentDetail = subscription.getLastPaymentDetail();
+      _priceController = TextEditingController(
+        text: currentDetail.price.toString(),
+      );
+
+      _months = currentDetail.months;
+      _startDate = currentDetail.startDate;
+      _endDate = currentDetail.endDate;
+      if (_endDate != null) {
+        int recurrenceCount = _calculateRecurrenceCount(
+          currentDetail.startDate,
+          currentDetail.endDate!,
+          currentDetail.months,
+        );
+        _recurrenceCountController = TextEditingController(
+          text: recurrenceCount.toString(),
+        );
+        _useRecurrenceCount = true;
+      } else {
+        _recurrenceCountController = TextEditingController(text: '1');
+      }
+      _selectedCurrency = currentDetail.currency;
+      _selectedLabels = List<Label>.from(subscription.labels);
+
+      // Set the selected duration based on months
+      if (_months == 1) {
+        _selectedDuration = '1 month';
+      } else if (_months == 3) {
+        _selectedDuration = '3 months';
+      } else if (_months == 6) {
+        _selectedDuration = '6 months';
+      } else if (_months == 12) {
+        _selectedDuration = '12 months';
+      } else {
+        _selectedDuration = 'Custom';
+      }
+
+      _customMonthsController = TextEditingController(
+        text: _selectedDuration == 'Custom' ? _months.toString() : '',
+      );
     } else {
-      _selectedDuration = 'Custom';
-      _customMonthsController.text = _months.toString();
+      // Add mode - initialize with default values
+      _nameController = TextEditingController();
+      _priceController = TextEditingController();
+      _customMonthsController = TextEditingController();
+      _recurrenceCountController = TextEditingController(text: '1');
+      _months = 1;
+      _startDate = DateTime.now();
+      _selectedLabels = [];
+
+      // Initialize with the default currency from the provider
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final provider = Provider.of<SubscriptionProvider>(
+          context,
+          listen: false,
+        );
+        setState(() {
+          _selectedCurrency = provider.defaultCurrency;
+        });
+      });
+
+      // Default currency until provider loads
+      _selectedCurrency = Currency.USD.code;
     }
   }
 
@@ -71,11 +119,15 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
     _nameController.dispose();
     _priceController.dispose();
     _customMonthsController.dispose();
+    _recurrenceCountController.dispose();
     super.dispose();
   }
 
   // Date picker for start date
   Future<void> _selectStartDate(BuildContext context) async {
+    // Don't allow editing start date for inactive subscriptions in edit mode
+    if (_isEditMode && !_isActiveSubscription) return;
+
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _startDate,
@@ -89,23 +141,11 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
     }
   }
 
-  // Date picker for end date
-  Future<void> _selectEndDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _endDate ?? DateTime.now(),
-      firstDate: _startDate,
-      lastDate: DateTime(2101),
-    );
-    if (picked != null && picked != _endDate) {
-      setState(() {
-        _endDate = picked;
-      });
-    }
-  }
-
   // Handle duration selection
   void _handleDurationChange(String? value) {
+    // Don't allow editing recurrence for inactive subscriptions in edit mode
+    if (_isEditMode && !_isActiveSubscription) return;
+
     if (value == null) return;
 
     setState(() {
@@ -125,8 +165,39 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
     });
   }
 
+  // Get the appropriate label for the duration
+  String _getDurationLabel() {
+    switch (_selectedDuration) {
+      case '1 month':
+        return 'months';
+      case '3 months':
+        return 'quarters';
+      case '6 months':
+        return 'half-years';
+      case '12 months':
+        return 'years';
+      case 'Custom':
+        final customMonths =
+            int.tryParse(_customMonthsController.text) ?? _months;
+        if (customMonths == 12) {
+          return 'years';
+        } else if (customMonths == 6) {
+          return 'half-years';
+        } else if (customMonths == 3) {
+          return 'quarters';
+        } else {
+          return 'periods of $customMonths months';
+        }
+      default:
+        return 'recurrences';
+    }
+  }
+
   // Handle custom months change
   void _handleCustomMonthsChange(String value) {
+    // Don't allow editing recurrence for inactive subscriptions in edit mode
+    if (_isEditMode && !_isActiveSubscription) return;
+
     if (value.isEmpty) return;
 
     final parsedValue = int.tryParse(value);
@@ -135,6 +206,30 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
         _months = parsedValue;
       });
     }
+  }
+
+  int _calculateRecurrenceCount(
+    DateTime startDate,
+    DateTime endDate,
+    int months,
+  ) {
+    int yearDifference = endDate.year - startDate.year;
+    int monthDifference = endDate.month - startDate.month;
+
+    return ((monthDifference + (yearDifference * 12)) / months).truncate();
+  }
+
+  // Calculate end date based on start date, months, and recurrence count
+  DateTime _calculateEndDate() {
+    final recurrenceCount = int.tryParse(_recurrenceCountController.text) ?? 1;
+    final year = (_months / 12).truncate();
+    final month = _months % 12;
+
+    return DateTime(
+      _startDate.year + (year * recurrenceCount),
+      _startDate.month + (month * recurrenceCount),
+      _startDate.day,
+    );
   }
 
   Future<void> _submitForm() async {
@@ -150,68 +245,81 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
         }
       }
 
-      // Validate that if end date is provided, it's not shorter than the subscription recurrence
-      if (_endDate != null) {
-        // Calculate the minimum end date based on start date and months
-        final minEndDate = DateTime(
-          _startDate.year + (_months ~/ 12),
-          _startDate.month + (_months % 12),
-          _startDate.day,
-        );
-
-        if (_endDate!.isBefore(minEndDate)) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('End date must be at least $_months months after start date'),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-          return;
+      // Calculate the end date based on recurrence count if toggle is on (only in add mode)
+      if (!_isEditMode && _useRecurrenceCount) {
+        final recurrenceCount =
+            int.tryParse(_recurrenceCountController.text) ?? 1;
+        if (recurrenceCount > 0) {
+          _endDate = _calculateEndDate();
         }
       }
 
       try {
         // Show loading indicator
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Updating subscription...'),
-            duration: Duration(seconds: 1),
+          SnackBar(
+            content: Text(
+              _isEditMode
+                  ? 'Updating subscription...'
+                  : 'Adding subscription...',
+            ),
+            duration: const Duration(seconds: 1),
           ),
         );
 
-        // Update the subscription name and labels
-        await Provider.of<SubscriptionProvider>(
+        final provider = Provider.of<SubscriptionProvider>(
           context,
           listen: false,
-        ).updateSubscription(widget.subscription.id, name);
-
-        // Update the subscription labels
-        await Provider.of<SubscriptionProvider>(
-          context,
-          listen: false,
-        ).updateSubscriptionLabels(widget.subscription.id, _selectedLabels);
-
-        // Update the subscription detail
-        final currentDetail = widget.subscription.getLastPaymentDetail();
-        await Provider.of<SubscriptionProvider>(
-          context,
-          listen: false,
-        ).updateSubscriptionPayment(
-          widget.subscription.id,
-          currentDetail.id,
-          price,
-          _months,
-          _startDate,
-          endDate: _endDate,
-          currency: _selectedCurrency,
         );
+
+        if (_isEditMode) {
+          // Update mode
+          final subscription = widget.subscription!;
+
+          // Update the subscription name and labels
+          await provider.updateSubscription(subscription.id, name);
+
+          // Update the subscription labels
+          await provider.updateSubscriptionLabels(
+            subscription.id,
+            _selectedLabels,
+          );
+
+          // Update the subscription detail if it's active
+          if (_isActiveSubscription) {
+            final currentDetail = subscription.getLastPaymentDetail();
+            await provider.updateSubscriptionPayment(
+              subscription.id,
+              currentDetail.id,
+              price,
+              _months,
+              _startDate,
+              endDate: _endDate,
+              currency: _selectedCurrency,
+            );
+          }
+        } else {
+          // Add mode
+          await provider.addPayment(
+            name,
+            price,
+            _months,
+            _startDate,
+            endDate: _endDate,
+            currency: _selectedCurrency,
+            labels: _selectedLabels,
+          );
+        }
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Payment updated successfully'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(
+              _isEditMode
+                  ? 'Subscription updated successfully'
+                  : 'Subscription added successfully',
+            ),
+            duration: const Duration(seconds: 2),
           ),
         );
 
@@ -221,7 +329,9 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error updating subscription: ${e.toString()}'),
+            content: Text(
+              'Error ${_isEditMode ? 'updating' : 'adding'} subscription: ${e.toString()}',
+            ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
@@ -236,7 +346,9 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
     final allLabels = provider.labels;
 
     return allLabels.map((label) {
-      final isSelected = _selectedLabels.any((selectedLabel) => selectedLabel.id == label.id);
+      final isSelected = _selectedLabels.any(
+        (selectedLabel) => selectedLabel.id == label.id,
+      );
       return FilterChip(
         label: Text(label.name),
         selected: isSelected,
@@ -245,12 +357,18 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
             if (selected) {
               _selectedLabels.add(label);
             } else {
-              _selectedLabels.removeWhere((selectedLabel) => selectedLabel.id == label.id);
+              _selectedLabels.removeWhere(
+                (selectedLabel) => selectedLabel.id == label.id,
+              );
             }
           });
         },
-        backgroundColor: Color(int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.2),
-        selectedColor: Color(int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000).withOpacity(0.7),
+        backgroundColor: Color(
+          int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000,
+        ).withOpacity(0.2),
+        selectedColor: Color(
+          int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000,
+        ).withOpacity(0.7),
         checkmarkColor: Colors.white,
       );
     }).toList();
@@ -313,10 +431,12 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
             onPressed: () {
               final name = nameController.text.trim();
               if (name.isNotEmpty) {
-                final colorHex = '#${selectedColor.value.value.toRadixString(16).substring(2)}';
-                Provider.of<SubscriptionProvider>(context, listen: false)
-                    .addLabel(name, colorHex)
-                    .then((_) {
+                final colorHex =
+                    '#${selectedColor.value.value.toRadixString(16).substring(2)}';
+                Provider.of<SubscriptionProvider>(
+                  context,
+                  listen: false,
+                ).addLabel(name, colorHex).then((_) {
                   Navigator.of(context).pop();
                 });
               }
@@ -348,7 +468,12 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
                 width: 2,
               ),
               boxShadow: isSelected
-                  ? [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 4)]
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 4,
+                      ),
+                    ]
                   : null,
             ),
           ),
@@ -361,12 +486,9 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Edit Subscription',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+        title: Text(
+          _isEditMode ? 'Edit Subscription' : 'Add Subscription',
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         elevation: 0,
       ),
@@ -416,12 +538,97 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
                             return null;
                           },
                         ),
+                        if (!_isEditMode ||
+                            (_isEditMode && _isActiveSubscription))
+                          const SizedBox(height: 16),
+                        if (!_isEditMode ||
+                            (_isEditMode && _isActiveSubscription))
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 7,
+                                child: TextFormField(
+                                  controller: _priceController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Price',
+                                    hintText: 'Enter the amount',
+                                    prefixIcon: Icon(
+                                      _selectedCurrency == Currency.USD.code
+                                          ? Icons.attach_money
+                                          : Icons.currency_exchange,
+                                    ),
+                                  ),
+                                  enabled:
+                                      !_isEditMode ||
+                                      (_isEditMode && _isActiveSubscription),
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                        decimal: true,
+                                      ),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(r'^\d+\.?\d{0,2}'),
+                                    ),
+                                  ],
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter a price';
+                                    }
+                                    try {
+                                      final price = double.parse(value);
+                                      if (price <= 0) {
+                                        return 'Price must be greater than zero';
+                                      }
+                                    } catch (e) {
+                                      return 'Please enter a valid number';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                flex: 3,
+                                child: DropdownButtonFormField<String>(
+                                  value: _selectedCurrency,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Currency',
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 15,
+                                    ),
+                                  ),
+                                  items: _currencies
+                                      .map<DropdownMenuItem<String>>((
+                                        String value,
+                                      ) {
+                                        return DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Text(value),
+                                        );
+                                      })
+                                      .toList(),
+                                  onChanged:
+                                      !_isEditMode ||
+                                          (_isEditMode && _isActiveSubscription)
+                                      ? (String? newValue) {
+                                          if (newValue != null) {
+                                            setState(() {
+                                              _selectedCurrency = newValue;
+                                            });
+                                          }
+                                        }
+                                      : null,
+                                ),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
                   ),
                 ),
 
-                if (widget.subscription.isActive) ...[
+                if (!_isEditMode || (_isEditMode && _isActiveSubscription)) ...[
                   const SizedBox(height: 24),
 
                   // Subscription Details Section Title
@@ -447,64 +654,6 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 7,
-                                child: TextFormField(
-                                  controller: _priceController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Price',
-                                    hintText: 'Enter the price',
-                                    prefixIcon: Icon(_selectedCurrency == Currency.USD.code ? Icons.attach_money : Icons.currency_exchange),
-                                  ),
-                                  keyboardType: const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d+\.?\d{0,2}'),
-                                    ),
-                                  ],
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter a price';
-                                    }
-                                    final price = double.tryParse(value);
-                                    if (price == null || price <= 0) {
-                                      return 'Please enter a valid price';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                flex: 3,
-                                child: DropdownButtonFormField<String>(
-                                  value: _selectedCurrency,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Currency',
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-                                  ),
-                                  items: _currencies.map<DropdownMenuItem<String>>((String value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(value),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? newValue) {
-                                    if (newValue != null) {
-                                      setState(() {
-                                        _selectedCurrency = newValue;
-                                      });
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
                           DropdownButtonFormField<String>(
                             value: _selectedDuration,
                             decoration: const InputDecoration(
@@ -564,20 +713,28 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
                                 onChanged: _handleCustomMonthsChange,
                               ),
                             ),
+
                           const SizedBox(height: 16),
 
-                          // Date pickers with modern styling
+                          // Date picker
                           Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: Theme.of(context).dividerColor.withOpacity(0.5),
+                                color: Theme.of(
+                                  context,
+                                ).dividerColor.withOpacity(0.5),
                               ),
                             ),
                             child: ListTile(
                               leading: Icon(
                                 Icons.calendar_today,
-                                color: Colors.blue.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.8 : 1.0),
+                                color: Colors.blue.withOpacity(
+                                  Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? 0.8
+                                      : 1.0,
+                                ),
                               ),
                               title: const Text('Start Date'),
                               subtitle: Text(
@@ -586,40 +743,66 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
                               onTap: () => _selectStartDate(context),
                             ),
                           ),
-
                           const SizedBox(height: 16),
-
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Theme.of(context).dividerColor.withOpacity(0.5),
+                          // Toggle for recurrence count (only in add mode)
+                          Row(
+                            children: [
+                              Switch(
+                                value: _useRecurrenceCount,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _useRecurrenceCount = value;
+                                    if (!value) {
+                                      _recurrenceCountController.text = '1';
+                                    }
+                                  });
+                                },
                               ),
-                            ),
-                            child: ListTile(
-                              leading: Icon(
-                                Icons.event_busy,
-                                color: Colors.orange.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.8 : 1.0),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Specify number of recurrences',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge?.color,
+                                ),
                               ),
-                              title: const Text('End Date (Optional)'),
-                              subtitle: Text(
-                                _endDate != null
-                                    ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
-                                    : 'No end date',
-                              ),
-                              trailing: _endDate != null
-                                  ? IconButton(
-                                      icon: const Icon(Icons.clear),
-                                      onPressed: () {
-                                        setState(() {
-                                          _endDate = null;
-                                        });
-                                      },
-                                    )
-                                  : null,
-                              onTap: () => _selectEndDate(context),
-                            ),
+                            ],
                           ),
+
+                          // Recurrence count input (shown only if toggle is on)
+                          if (_useRecurrenceCount)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: 8.0,
+                                top: 8.0,
+                              ),
+                              child: TextFormField(
+                                controller: _recurrenceCountController,
+                                decoration: InputDecoration(
+                                  labelText: 'Number of ${_getDurationLabel()}',
+                                  hintText: 'Enter number of recurrences',
+                                  prefixIcon: const Icon(Icons.repeat),
+                                ),
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                validator: (value) {
+                                  if (_useRecurrenceCount) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter number of recurrences';
+                                    }
+                                    final count = int.tryParse(value);
+                                    if (count == null || count <= 0) {
+                                      return 'Please enter a valid number';
+                                    }
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -673,7 +856,12 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
                         height: _isLabelsExpanded ? null : 0,
                         child: _isLabelsExpanded
                             ? Padding(
-                                padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+                                padding: const EdgeInsets.fromLTRB(
+                                  16.0,
+                                  0,
+                                  16.0,
+                                  16.0,
+                                ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -719,9 +907,12 @@ class _EditSubscriptionScreenState extends State<EditSubscriptionScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Update Subscription',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  child: Text(
+                    _isEditMode ? 'Update Subscription' : 'Add Subscription',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
