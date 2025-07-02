@@ -1,0 +1,930 @@
+import 'dart:io';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:hive/hive.dart';
+import 'package:subscription_tracker/models/subscription.dart';
+import 'package:subscription_tracker/models/subscription_payment.dart';
+import 'package:subscription_tracker/models/label.dart';
+import 'package:subscription_tracker/models/currency.dart';
+
+void main() {
+  group('Subscription', () {
+    setUpAll(() async {
+      // Set up a temporary directory for Hive
+      final tempDir = await Directory.systemTemp.createTemp('hive_test');
+      Hive.init(tempDir.path);
+
+      // Register adapters
+      if (!Hive.isAdapterRegistered(0)) {
+        Hive.registerAdapter(SubscriptionAdapter());
+      }
+      if (!Hive.isAdapterRegistered(1)) {
+        Hive.registerAdapter(SubscriptionPaymentAdapter());
+      }
+      if (!Hive.isAdapterRegistered(3)) {
+        Hive.registerAdapter(LabelAdapter());
+      }
+    });
+
+    tearDownAll(() async {
+      // Clean up after all tests
+      await Hive.close();
+    });
+
+    // Helper function to create a subscription with default values
+    Subscription createSubscription({
+      String id = '1',
+      String name = 'Netflix',
+      List<SubscriptionPayment>? subscriptionPayments,
+      List<Label>? labels,
+    }) {
+      return Subscription(
+        id: id,
+        name: name,
+        subscriptionPayments: subscriptionPayments,
+        labels: labels,
+      );
+    }
+
+    // Helper function to create a payment with default values
+    SubscriptionPayment createPayment({
+      String id = '1',
+      double price = 9.99,
+      DateTime? startDate,
+      DateTime? endDate,
+      int months = 1,
+      String currency = 'USD',
+    }) {
+      return SubscriptionPayment(
+        id: id,
+        price: price,
+        startDate: startDate ?? DateTime(2023, 1, 1),
+        endDate: endDate,
+        months: months,
+        currency: currency,
+      );
+    }
+
+    // Helper function to create a label with default values
+    Label createLabel({
+      String id = '1',
+      String name = 'Entertainment',
+      bool isDefault = false,
+      String color = '#FF0000',
+    }) {
+      return Label(
+        id: id,
+        name: name,
+        isDefault: isDefault,
+        color: color,
+      );
+    }
+
+    test('constructor creates subscription with correct values', () {
+      final payment = createPayment();
+      final label = createLabel();
+      
+      final subscription = Subscription(
+        id: '1',
+        name: 'Netflix',
+        subscriptionPayments: [payment],
+        labels: [label],
+      );
+
+      expect(subscription.id, equals('1'));
+      expect(subscription.name, equals('Netflix'));
+      expect(subscription.subscriptionPayments, hasLength(1));
+      expect(subscription.subscriptionPayments.first, equals(payment));
+      expect(subscription.labels, hasLength(1));
+      expect(subscription.labels.first, equals(label));
+    });
+
+    test('constructor creates subscription with empty lists if not provided', () {
+      final subscription = Subscription(
+        id: '1',
+        name: 'Netflix',
+      );
+
+      expect(subscription.subscriptionPayments, isEmpty);
+      expect(subscription.labels, isEmpty);
+    });
+
+    group('getLastPaymentDetail', () {
+      test('returns the most recent payment detail', () {
+        final payment1 = createPayment(
+          id: '1',
+          startDate: DateTime(2023, 1, 1),
+        );
+        final payment2 = createPayment(
+          id: '2',
+          startDate: DateTime(2023, 2, 1),
+        );
+        final payment3 = createPayment(
+          id: '3',
+          startDate: DateTime(2023, 3, 1),
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment1, payment2, payment3],
+        );
+
+        expect(subscription.getLastPaymentDetail(), equals(payment3));
+      });
+
+      test('returns the most recent payment detail even if out of order', () {
+        final payment1 = createPayment(
+          id: '1',
+          startDate: DateTime(2023, 1, 1),
+        );
+        final payment2 = createPayment(
+          id: '2',
+          startDate: DateTime(2023, 3, 1),
+        );
+        final payment3 = createPayment(
+          id: '3',
+          startDate: DateTime(2023, 2, 1),
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment1, payment2, payment3],
+        );
+
+        expect(subscription.getLastPaymentDetail(), equals(payment2));
+      });
+    });
+
+    group('getPaymentDetailAtDate', () {
+      test('returns the payment detail that covers the given date', () {
+        final payment1 = createPayment(
+          id: '1',
+          startDate: DateTime(2023, 1, 1),
+          endDate: DateTime(2023, 2, 1),
+        );
+        final payment2 = createPayment(
+          id: '2',
+          startDate: DateTime(2023, 2, 1),
+          endDate: DateTime(2023, 3, 1),
+        );
+        final payment3 = createPayment(
+          id: '3',
+          startDate: DateTime(2023, 3, 1),
+          endDate: null,
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment1, payment2, payment3],
+        );
+
+        expect(
+          subscription.getPaymentDetailAtDate(DateTime(2023, 1, 15)),
+          equals(payment1),
+        );
+        expect(
+          subscription.getPaymentDetailAtDate(DateTime(2023, 2, 15)),
+          equals(payment2),
+        );
+        expect(
+          subscription.getPaymentDetailAtDate(DateTime(2023, 3, 15)),
+          equals(payment3),
+        );
+      });
+
+      test('throws StateError if no payment detail covers the given date', () {
+        final payment1 = createPayment(
+          id: '1',
+          startDate: DateTime(2023, 2, 1),
+          endDate: DateTime(2023, 3, 1),
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment1],
+        );
+
+        expect(
+          () => subscription.getPaymentDetailAtDate(DateTime(2023, 1, 15)),
+          throwsStateError,
+        );
+      });
+
+      test('throws StateError if no payment details are available', () {
+        final subscription = createSubscription();
+
+        expect(
+          () => subscription.getPaymentDetailAtDate(DateTime(2023, 1, 15)),
+          throwsStateError,
+        );
+      });
+    });
+
+    test('getPriceAtDate returns the price at the given date', () {
+      final payment1 = createPayment(
+        id: '1',
+        startDate: DateTime(2023, 1, 1),
+        endDate: DateTime(2023, 2, 1),
+        price: 9.99,
+      );
+      final payment2 = createPayment(
+        id: '2',
+        startDate: DateTime(2023, 2, 1),
+        endDate: DateTime(2023, 3, 1),
+        price: 12.99,
+      );
+      
+      final subscription = createSubscription(
+        subscriptionPayments: [payment1, payment2],
+      );
+
+      expect(
+        subscription.getPriceAtDate(DateTime(2023, 1, 15)),
+        equals(9.99),
+      );
+      expect(
+        subscription.getPriceAtDate(DateTime(2023, 2, 15)),
+        equals(12.99),
+      );
+    });
+
+    group('isActive', () {
+      test('returns true if the last payment detail is active', () {
+        final payment = createPayment(
+          startDate: DateTime(2023, 1, 1),
+          endDate: null,
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment],
+        );
+
+        expect(subscription.isActive, isTrue);
+      });
+
+      test('returns false if the last payment detail is not active', () {
+        final payment = createPayment(
+          startDate: DateTime(2023, 1, 1),
+          endDate: DateTime(2023, 2, 1),
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment],
+        );
+
+        // Mock DateTime.now() to ensure the test is not time-dependent
+        final originalNow = DateTime.now;
+        DateTime.now = () => DateTime(2023, 3, 1);
+        
+        try {
+          expect(subscription.isActive, isFalse);
+        } finally {
+          // Restore original DateTime.now
+          DateTime.now = originalNow;
+        }
+      });
+    });
+
+    group('isStarted', () {
+      test('returns true if the last payment detail is started', () {
+        final payment = createPayment(
+          startDate: DateTime(2023, 1, 1),
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment],
+        );
+
+        // Mock DateTime.now() to ensure the test is not time-dependent
+        final originalNow = DateTime.now;
+        DateTime.now = () => DateTime(2023, 3, 1);
+        
+        try {
+          expect(subscription.isStarted, isTrue);
+        } finally {
+          // Restore original DateTime.now
+          DateTime.now = originalNow;
+        }
+      });
+
+      test('returns false if the last payment detail is not started', () {
+        final payment = createPayment(
+          startDate: DateTime(2023, 4, 1),
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment],
+        );
+
+        // Mock DateTime.now() to ensure the test is not time-dependent
+        final originalNow = DateTime.now;
+        DateTime.now = () => DateTime(2023, 3, 1);
+        
+        try {
+          expect(subscription.isStarted, isFalse);
+        } finally {
+          // Restore original DateTime.now
+          DateTime.now = originalNow;
+        }
+      });
+    });
+
+    group('monthlyCost', () {
+      test('returns the monthly cost of the last payment detail if active', () {
+        final payment = createPayment(
+          price: 12.0,
+          months: 3,
+          startDate: DateTime(2023, 1, 1),
+          endDate: null,
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment],
+        );
+
+        expect(subscription.monthlyCost, equals(4.0)); // 12 / 3 = 4
+      });
+
+      test('returns 0 if the last payment detail is not active', () {
+        final payment = createPayment(
+          price: 12.0,
+          months: 3,
+          startDate: DateTime(2023, 1, 1),
+          endDate: DateTime(2023, 2, 1),
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment],
+        );
+
+        // Mock DateTime.now() to ensure the test is not time-dependent
+        final originalNow = DateTime.now;
+        DateTime.now = () => DateTime(2023, 3, 1);
+        
+        try {
+          expect(subscription.monthlyCost, equals(0.0));
+        } finally {
+          // Restore original DateTime.now
+          DateTime.now = originalNow;
+        }
+      });
+    });
+
+    test('annualCost returns 12 times the monthly cost', () {
+      final payment = createPayment(
+        price: 12.0,
+        months: 3,
+        startDate: DateTime(2023, 1, 1),
+        endDate: null,
+      );
+      
+      final subscription = createSubscription(
+        subscriptionPayments: [payment],
+      );
+
+      expect(subscription.annualCost, equals(48.0)); // 4 * 12 = 48
+    });
+
+    group('getMonthlyCostAtDate', () {
+      test('returns the monthly cost at the given date if active', () {
+        final payment1 = createPayment(
+          id: '1',
+          price: 9.99,
+          months: 1,
+          startDate: DateTime(2023, 1, 1),
+          endDate: DateTime(2023, 2, 1),
+        );
+        final payment2 = createPayment(
+          id: '2',
+          price: 30.0,
+          months: 3,
+          startDate: DateTime(2023, 2, 1),
+          endDate: null,
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment1, payment2],
+        );
+
+        expect(
+          subscription.getMonthlyCostAtDate(DateTime(2023, 1, 15)),
+          equals(9.99),
+        );
+        expect(
+          subscription.getMonthlyCostAtDate(DateTime(2023, 2, 15)),
+          equals(10.0), // 30 / 3 = 10
+        );
+      });
+
+      test('returns 0 if the payment detail at the given date is not active', () {
+        final payment = createPayment(
+          price: 12.0,
+          months: 3,
+          startDate: DateTime(2023, 1, 1),
+          endDate: DateTime(2023, 2, 1),
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment],
+        );
+
+        // Mock DateTime.now() to ensure the test is not time-dependent
+        final originalNow = DateTime.now;
+        DateTime.now = () => DateTime(2023, 3, 1);
+        
+        try {
+          expect(
+            subscription.getMonthlyCostAtDate(DateTime(2023, 3, 15)),
+            equals(0.0),
+          );
+        } finally {
+          // Restore original DateTime.now
+          DateTime.now = originalNow;
+        }
+      });
+    });
+
+    test('nextPaymentDate returns the next payment date of the last payment detail', () {
+      final payment = createPayment(
+        startDate: DateTime(2023, 1, 1),
+        months: 1,
+      );
+      
+      final subscription = createSubscription(
+        subscriptionPayments: [payment],
+      );
+
+      // Mock DateTime.now() to ensure the test is not time-dependent
+      final originalNow = DateTime.now;
+      DateTime.now = () => DateTime(2023, 5, 15);
+      
+      try {
+        expect(subscription.nextPaymentDate, equals(DateTime(2023, 6, 1)));
+      } finally {
+        // Restore original DateTime.now
+        DateTime.now = originalNow;
+      }
+    });
+
+    test('lastPaymentDate returns the last occurrence paid of the last payment detail', () {
+      final payment = createPayment(
+        startDate: DateTime(2023, 1, 1),
+        months: 1,
+      );
+      
+      final subscription = createSubscription(
+        subscriptionPayments: [payment],
+      );
+
+      // Mock DateTime.now() to ensure the test is not time-dependent
+      final originalNow = DateTime.now;
+      DateTime.now = () => DateTime(2023, 5, 15);
+      
+      try {
+        expect(subscription.lastPaymentDate, equals(DateTime(2023, 5, 1)));
+      } finally {
+        // Restore original DateTime.now
+        DateTime.now = originalNow;
+      }
+    });
+
+    group('findDetailById', () {
+      test('returns the payment detail with the given ID', () {
+        final payment1 = createPayment(id: '1');
+        final payment2 = createPayment(id: '2');
+        final payment3 = createPayment(id: '3');
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment1, payment2, payment3],
+        );
+
+        expect(subscription.findDetailById('2'), equals(payment2));
+      });
+
+      test('returns null if no payment detail has the given ID', () {
+        final payment1 = createPayment(id: '1');
+        final payment2 = createPayment(id: '2');
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment1, payment2],
+        );
+
+        expect(subscription.findDetailById('3'), isNull);
+      });
+    });
+
+    group('setPaymentDetail', () {
+      test('updates the payment detail with the given ID', () {
+        final payment1 = createPayment(
+          id: '1',
+          price: 9.99,
+        );
+        final payment2 = createPayment(
+          id: '2',
+          price: 12.99,
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment1, payment2],
+        );
+
+        final updatedPayment = payment2.copyWith(price: 14.99);
+        subscription.setPaymentDetail(updatedPayment);
+
+        expect(subscription.subscriptionPayments[1].price, equals(14.99));
+      });
+
+      test('throws StateError if no payment detail has the given ID', () {
+        final payment = createPayment(id: '1');
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment],
+        );
+
+        final nonExistentPayment = createPayment(id: '2');
+
+        expect(
+          () => subscription.setPaymentDetail(nonExistentPayment),
+          throwsStateError,
+        );
+      });
+
+      test('sorts payment details by start date after update', () {
+        final payment1 = createPayment(
+          id: '1',
+          startDate: DateTime(2023, 2, 1),
+        );
+        final payment2 = createPayment(
+          id: '2',
+          startDate: DateTime(2023, 3, 1),
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment1, payment2],
+        );
+
+        final updatedPayment = payment2.copyWith(
+          startDate: DateTime(2023, 1, 1),
+        );
+        subscription.setPaymentDetail(updatedPayment);
+
+        expect(subscription.subscriptionPayments[0].id, equals('2'));
+        expect(subscription.subscriptionPayments[1].id, equals('1'));
+      });
+    });
+
+    test('setEndDateToCurrentPaymentDetail sets the end date of the last payment detail', () {
+      final payment = createPayment(
+        startDate: DateTime(2023, 1, 1),
+        endDate: null,
+      );
+      
+      final subscription = createSubscription(
+        subscriptionPayments: [payment],
+      );
+
+      final endDate = DateTime(2023, 3, 1);
+      subscription.setEndDateToCurrentPaymentDetail(endDate);
+
+      expect(subscription.getLastPaymentDetail().endDate, equals(endDate));
+    });
+
+    group('addPaymentDetail', () {
+      test('adds a new payment detail', () {
+        final payment1 = createPayment(id: '1');
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment1],
+        );
+
+        final payment2 = createPayment(id: '2');
+        subscription.addPaymentDetail(payment2);
+
+        expect(subscription.subscriptionPayments, hasLength(2));
+        expect(subscription.subscriptionPayments[1], equals(payment2));
+      });
+
+      test('sorts payment details by start date after adding', () {
+        final payment1 = createPayment(
+          id: '1',
+          startDate: DateTime(2023, 2, 1),
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment1],
+        );
+
+        final payment2 = createPayment(
+          id: '2',
+          startDate: DateTime(2023, 1, 1),
+        );
+        subscription.addPaymentDetail(payment2);
+
+        expect(subscription.subscriptionPayments[0].id, equals('2'));
+        expect(subscription.subscriptionPayments[1].id, equals('1'));
+      });
+    });
+
+    test('formattedNextPaymentDate formats the next payment date correctly', () {
+      final payment = createPayment(
+        startDate: DateTime(2023, 1, 1),
+        months: 1,
+      );
+      
+      final subscription = createSubscription(
+        subscriptionPayments: [payment],
+      );
+
+      // Mock DateTime.now() to ensure the test is not time-dependent
+      final originalNow = DateTime.now;
+      DateTime.now = () => DateTime(2023, 5, 15);
+      
+      try {
+        expect(subscription.formattedNextPaymentDate, equals('6/1/2023'));
+      } finally {
+        // Restore original DateTime.now
+        DateTime.now = originalNow;
+      }
+    });
+
+    group('totalAmountSpent', () {
+      test('calculates total amount spent for monthly subscription', () {
+        // Create a subscription that started 3 months ago
+        final now = DateTime.now();
+        final startDate = DateTime(now.year, now.month - 3, 1);
+        
+        final payment = createPayment(
+          startDate: startDate,
+          price: 9.99,
+          months: 1,
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment],
+        );
+
+        // Expected: 3 months * 9.99 = 29.97
+        expect(subscription.totalAmountSpent, closeTo(29.97, 0.01));
+      });
+
+      test('calculates total amount spent for annual subscription', () {
+        // Create a subscription that started 15 months ago
+        final now = DateTime.now();
+        final startDate = DateTime(now.year - 1, now.month - 3, 1);
+        
+        final payment = createPayment(
+          startDate: startDate,
+          price: 120.0,
+          months: 12, // Annual subscription
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment],
+        );
+
+        // Expected: 15 months * (120/12) = 15 * 10 = 150.0
+        expect(subscription.totalAmountSpent, closeTo(150.0, 0.01));
+      });
+
+      test('calculates total amount spent with price changes', () {
+        final now = DateTime.now();
+        
+        // Payment 1: Started 6 months ago, ended 3 months ago
+        final payment1 = createPayment(
+          id: '1',
+          startDate: DateTime(now.year, now.month - 6, 1),
+          endDate: DateTime(now.year, now.month - 3, 1),
+          price: 9.99,
+          months: 1,
+        );
+        
+        // Payment 2: Started 3 months ago, still active
+        final payment2 = createPayment(
+          id: '2',
+          startDate: DateTime(now.year, now.month - 3, 1),
+          price: 12.99,
+          months: 1,
+        );
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment1, payment2],
+        );
+
+        // Expected: (3 months * 9.99) + (3 months * 12.99) = 29.97 + 38.97 = 68.94
+        expect(subscription.totalAmountSpent, closeTo(68.94, 0.01));
+      });
+
+      test('returns 0 for a subscription that has not started yet', () {
+        final futureDate = DateTime.now().add(const Duration(days: 10));
+        final payment = createPayment(startDate: futureDate);
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment],
+        );
+
+        expect(subscription.totalAmountSpent, equals(0.0));
+      });
+
+      test('returns 0 for a subscription with no payment details', () {
+        final subscription = createSubscription();
+
+        expect(subscription.totalAmountSpent, equals(0.0));
+      });
+    });
+
+    test('formattedTotalAmountSpent formats the total amount spent correctly', () {
+      // Mock a subscription with a known total amount spent
+      final payment = createPayment(
+        startDate: DateTime(2023, 1, 1),
+        price: 30.0,
+        months: 3,
+        currency: 'USD',
+      );
+      
+      final subscription = createSubscription(
+        subscriptionPayments: [payment],
+      );
+
+      // Mock totalAmountSpent to return a fixed value
+      final originalTotalAmountSpent = subscription.totalAmountSpent;
+      
+      // Create a subclass to override the getter
+      final testSubscription = _TestSubscription(
+        id: subscription.id,
+        name: subscription.name,
+        subscriptionPayments: subscription.subscriptionPayments,
+        labels: subscription.labels,
+        mockTotalAmountSpent: 99.99,
+      );
+
+      expect(testSubscription.formattedTotalAmountSpent, equals('\$99.99'));
+    });
+
+    test('copyWith creates a new subscription with updated values', () {
+      final payment = createPayment();
+      final label = createLabel();
+      
+      final subscription = Subscription(
+        id: '1',
+        name: 'Netflix',
+        subscriptionPayments: [payment],
+        labels: [label],
+      );
+
+      final newPayment = createPayment(id: '2');
+      final newLabel = createLabel(id: '2', name: 'Movies');
+      
+      final updatedSubscription = subscription.copyWith(
+        name: 'Disney+',
+        subscriptionPayments: [newPayment],
+        labels: [newLabel],
+      );
+
+      // Original subscription should be unchanged
+      expect(subscription.id, equals('1'));
+      expect(subscription.name, equals('Netflix'));
+      expect(subscription.subscriptionPayments, hasLength(1));
+      expect(subscription.subscriptionPayments.first, equals(payment));
+      expect(subscription.labels, hasLength(1));
+      expect(subscription.labels.first, equals(label));
+
+      // Updated subscription should have new values
+      expect(updatedSubscription.id, equals('1')); // ID should remain the same
+      expect(updatedSubscription.name, equals('Disney+'));
+      expect(updatedSubscription.subscriptionPayments, hasLength(1));
+      expect(updatedSubscription.subscriptionPayments.first, equals(newPayment));
+      expect(updatedSubscription.labels, hasLength(1));
+      expect(updatedSubscription.labels.first, equals(newLabel));
+    });
+
+    test('toJson converts subscription to JSON correctly', () {
+      final payment = createPayment();
+      final label = createLabel();
+      
+      final subscription = Subscription(
+        id: '1',
+        name: 'Netflix',
+        subscriptionPayments: [payment],
+        labels: [label],
+      );
+
+      final json = subscription.toJson();
+
+      expect(json['id'], equals('1'));
+      expect(json['name'], equals('Netflix'));
+      expect(json['paymentDetails'], hasLength(1));
+      expect(json['labels'], hasLength(1));
+    });
+
+    test('fromJson creates subscription from JSON correctly', () {
+      final paymentJson = {
+        'id': '1',
+        'price': 9.99,
+        'startDate': DateTime(2023, 1, 1).millisecondsSinceEpoch,
+        'endDate': null,
+        'months': 1,
+        'currency': 'USD',
+      };
+      
+      final labelJson = {
+        'id': '1',
+        'name': 'Entertainment',
+        'isDefault': false,
+        'color': '#FF0000',
+      };
+      
+      final json = {
+        'id': '1',
+        'name': 'Netflix',
+        'paymentDetails': [paymentJson],
+        'labels': [labelJson],
+      };
+
+      final subscription = Subscription.fromJson(json);
+
+      expect(subscription.id, equals('1'));
+      expect(subscription.name, equals('Netflix'));
+      expect(subscription.subscriptionPayments, hasLength(1));
+      expect(subscription.subscriptionPayments.first.id, equals('1'));
+      expect(subscription.labels, hasLength(1));
+      expect(subscription.labels.first.id, equals('1'));
+    });
+
+    test('fromJson handles empty or null lists', () {
+      final json = {
+        'id': '1',
+        'name': 'Netflix',
+      };
+
+      final subscription = Subscription.fromJson(json);
+
+      expect(subscription.id, equals('1'));
+      expect(subscription.name, equals('Netflix'));
+      expect(subscription.subscriptionPayments, isEmpty);
+      expect(subscription.labels, isEmpty);
+    });
+
+    test('endCurrentPaymentDetail sets the end date of the last payment detail', () {
+      final payment = createPayment(
+        startDate: DateTime(2023, 1, 1),
+        endDate: null,
+      );
+      
+      final subscription = createSubscription(
+        subscriptionPayments: [payment],
+      );
+
+      final endDate = DateTime(2023, 3, 1);
+      subscription.endCurrentPaymentDetail(endDate);
+
+      expect(subscription.getLastPaymentDetail().endDate, equals(endDate));
+    });
+
+    group('removePaymentDetail', () {
+      test('removes the payment detail with the given ID', () {
+        final payment1 = createPayment(id: '1');
+        final payment2 = createPayment(id: '2');
+        final payment3 = createPayment(id: '3');
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment1, payment2, payment3],
+        );
+
+        subscription.removePaymentDetail('2');
+
+        expect(subscription.subscriptionPayments, hasLength(2));
+        expect(subscription.subscriptionPayments[0].id, equals('1'));
+        expect(subscription.subscriptionPayments[1].id, equals('3'));
+      });
+
+      test('throws StateError if no payment detail has the given ID', () {
+        final payment = createPayment(id: '1');
+        
+        final subscription = createSubscription(
+          subscriptionPayments: [payment],
+        );
+
+        expect(
+          () => subscription.removePaymentDetail('2'),
+          throwsStateError,
+        );
+      });
+    });
+  });
+}
+
+// Helper class to test formattedTotalAmountSpent
+class _TestSubscription extends Subscription {
+  final double mockTotalAmountSpent;
+
+  _TestSubscription({
+    required String id,
+    required String name,
+    List<SubscriptionPayment>? subscriptionPayments,
+    List<Label>? labels,
+    required this.mockTotalAmountSpent,
+  }) : super(
+          id: id,
+          name: name,
+          subscriptionPayments: subscriptionPayments,
+          labels: labels,
+        );
+
+  @override
+  double get totalAmountSpent => mockTotalAmountSpent;
+}
