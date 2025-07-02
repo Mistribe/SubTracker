@@ -24,15 +24,70 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _priceController;
   late final TextEditingController _customMonthsController;
+  late final TextEditingController _recurrenceCountController;
   late int _months;
   String _selectedDuration = '1 month'; // Default value
   late DateTime _startDate;
   DateTime? _endDate;
   bool _mandatoryEndDate = false;
+  bool _useRecurrenceCount = false;
   late String _selectedCurrency;
 
   // Get currencies from the Currency enum
   final List<String> _currencies = Currency.codes;
+
+  // Calculate recurrence count based on start date, end date, and months
+  int _calculateRecurrenceCount(
+    DateTime startDate,
+    DateTime endDate,
+    int months,
+  ) {
+    int yearDifference = endDate.year - startDate.year;
+    int monthDifference = endDate.month - startDate.month;
+
+    return ((monthDifference + (yearDifference * 12)) / months).truncate();
+  }
+
+  // Calculate end date based on start date, months, and recurrence count
+  DateTime _calculateEndDate() {
+    final recurrenceCount = int.tryParse(_recurrenceCountController.text) ?? 1;
+    final year = (_months / 12).truncate();
+    final month = _months % 12;
+
+    return DateTime(
+      _startDate.year + (year * recurrenceCount),
+      _startDate.month + (month * recurrenceCount),
+      _startDate.day,
+    );
+  }
+  
+  // Get the appropriate label for the duration
+  String _getDurationLabel() {
+    switch (_selectedDuration) {
+      case '1 month':
+        return 'months';
+      case '3 months':
+        return 'quarters';
+      case '6 months':
+        return 'half-years';
+      case '12 months':
+        return 'years';
+      case 'Custom':
+        final customMonths =
+            int.tryParse(_customMonthsController.text) ?? _months;
+        if (customMonths == 12) {
+          return 'years';
+        } else if (customMonths == 6) {
+          return 'half-years';
+        } else if (customMonths == 3) {
+          return 'quarters';
+        } else {
+          return 'periods of $customMonths months';
+        }
+      default:
+        return 'recurrences';
+    }
+  }
 
   @override
   void initState() {
@@ -42,6 +97,7 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
       text: widget.paymentHistory.price.toString(),
     );
     _customMonthsController = TextEditingController();
+    _recurrenceCountController = TextEditingController(text: '1');
 
     // Initialize months from payment history
     _months = widget.paymentHistory.months;
@@ -49,6 +105,17 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
     _endDate = widget.paymentHistory.endDate;
     _mandatoryEndDate = _endDate != null;
     _selectedCurrency = widget.paymentHistory.currency;
+
+    // Initialize recurrence count if end date is provided
+    if (_endDate != null) {
+      int recurrenceCount = _calculateRecurrenceCount(
+        _startDate,
+        _endDate!,
+        _months,
+      );
+      _recurrenceCountController.text = recurrenceCount.toString();
+      _useRecurrenceCount = true;
+    }
 
     // Set the selected duration based on months
     if (_months == 1) {
@@ -69,6 +136,7 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
   void dispose() {
     _priceController.dispose();
     _customMonthsController.dispose();
+    _recurrenceCountController.dispose();
     super.dispose();
   }
 
@@ -98,6 +166,7 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
     if (picked != null && picked != _endDate) {
       setState(() {
         _endDate = picked;
+        _useRecurrenceCount = false; // Disable recurrence count when manually selecting end date
       });
     }
   }
@@ -144,6 +213,14 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
         final customMonths = int.tryParse(_customMonthsController.text);
         if (customMonths != null && customMonths > 0) {
           _months = customMonths;
+        }
+      }
+
+      // Calculate the end date based on recurrence count if toggle is on
+      if (_useRecurrenceCount) {
+        final recurrenceCount = int.tryParse(_recurrenceCountController.text) ?? 1;
+        if (recurrenceCount > 0) {
+          _endDate = _calculateEndDate();
         }
       }
 
@@ -408,39 +485,100 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
 
                         const SizedBox(height: 16),
 
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Theme.of(context).dividerColor.withOpacity(0.5),
+                        // Toggle for recurrence count
+                        Row(
+                          children: [
+                            Switch(
+                              value: _useRecurrenceCount,
+                              onChanged: (value) {
+                                setState(() {
+                                  _useRecurrenceCount = value;
+                                  if (!value) {
+                                    _recurrenceCountController.text = '1';
+                                  }
+                                });
+                              },
                             ),
-                          ),
-                          child: ListTile(
-                            leading: Icon(
-                              Icons.event_busy,
-                              color: Colors.orange.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.8 : 1.0),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Specify number of recurrences',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Theme.of(
+                                  context,
+                                ).textTheme.bodyLarge?.color,
+                              ),
                             ),
-                            title: Text(
-                              _mandatoryEndDate ? 'End Date' : 'End Date (Optional)',
-                            ),
-                            subtitle: Text(
-                              _endDate != null
-                                  ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
-                                  : 'No end date',
-                            ),
-                            trailing: !_mandatoryEndDate
-                                ? IconButton(
-                                    icon: const Icon(Icons.clear),
-                                    onPressed: () {
-                                      setState(() {
-                                        _endDate = null;
-                                      });
-                                    },
-                                  )
-                                : null,
-                            onTap: () => _selectEndDate(context),
-                          ),
+                          ],
                         ),
+
+                        // Recurrence count input (shown only if toggle is on)
+                        if (_useRecurrenceCount)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: 8.0,
+                              top: 8.0,
+                            ),
+                            child: TextFormField(
+                              controller: _recurrenceCountController,
+                              decoration: InputDecoration(
+                                labelText: 'Number of ${_getDurationLabel()}',
+                                hintText: 'Enter number of recurrences',
+                                prefixIcon: const Icon(Icons.repeat),
+                              ),
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                              validator: (value) {
+                                if (_useRecurrenceCount) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter number of recurrences';
+                                  }
+                                  final count = int.tryParse(value);
+                                  if (count == null || count <= 0) {
+                                    return 'Please enter a valid number';
+                                  }
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+
+                        if (!_useRecurrenceCount)
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Theme.of(context).dividerColor.withOpacity(0.5),
+                              ),
+                            ),
+                            child: ListTile(
+                              leading: Icon(
+                                Icons.event_busy,
+                                color: Colors.orange.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.8 : 1.0),
+                              ),
+                              title: Text(
+                                _mandatoryEndDate ? 'End Date' : 'End Date (Optional)',
+                              ),
+                              subtitle: Text(
+                                _endDate != null
+                                    ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
+                                    : 'No end date',
+                              ),
+                              trailing: !_mandatoryEndDate
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear),
+                                      onPressed: () {
+                                        setState(() {
+                                          _endDate = null;
+                                        });
+                                      },
+                                    )
+                                  : null,
+                              onTap: () => _selectEndDate(context),
+                            ),
+                          ),
                       ],
                     ),
                   ),
