@@ -141,9 +141,9 @@ class SubscriptionCard extends StatelessWidget {
     );
 
     // Format the cost texts
-    String monthlyText = '${defaultCurrency.formatAmount(monthlyCostInDefaultCurrency)}';
-    String annualText = '${defaultCurrency.formatAmount(annualCostInDefaultCurrency)}';
-    String totalSpentText = '${defaultCurrency.formatAmount(totalSpentInDefaultCurrency)}';
+    String monthlyText = defaultCurrency.formatAmount(monthlyCostInDefaultCurrency);
+    String annualText = defaultCurrency.formatAmount(annualCostInDefaultCurrency);
+    String totalSpentText = defaultCurrency.formatAmount(totalSpentInDefaultCurrency);
 
     // Add original amounts in parentheses if currencies differ
     if (subscriptionCurrency.code != defaultCurrency.code) {
