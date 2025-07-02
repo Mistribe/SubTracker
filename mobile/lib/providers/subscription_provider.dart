@@ -58,10 +58,12 @@ class SubscriptionProvider with ChangeNotifier {
   List<Label> get labels => List.unmodifiable(_labels);
 
   // Getter for default labels
-  List<Label> get defaultLabels => _labels.where((label) => label.isDefault).toList();
+  List<Label> get defaultLabels =>
+      _labels.where((label) => label.isDefault).toList();
 
   // Getter for custom labels
-  List<Label> get customLabels => _labels.where((label) => !label.isDefault).toList();
+  List<Label> get customLabels =>
+      _labels.where((label) => !label.isDefault).toList();
 
   // Calculate total monthly cost in the default currency (USD)
   double get totalMonthlyCost {
@@ -73,22 +75,19 @@ class SubscriptionProvider with ChangeNotifier {
 
   // Calculate total monthly cost in the selected currency
   double get totalMonthlyCostInSelectedCurrency {
-    return _subscriptions.fold(
-      0.0,
-      (sum, subscription) {
-        final detail = subscription.getLastPaymentDetail();
-        if (!detail.isActive) return sum;
+    return _subscriptions.fold(0.0, (sum, subscription) {
+      final detail = subscription.getLastPaymentDetail();
+      if (!detail.isActive || !detail.isStarted) return sum;
 
-        // Convert the monthly cost from the subscription's currency to the selected currency
-        double convertedCost = CurrencyConverter.convert(
-          subscription.monthlyCost,
-          detail.currency,
-          _defaultCurrency
-        );
+      // Convert the monthly cost from the subscription's currency to the selected currency
+      double convertedCost = CurrencyConverter.convert(
+        subscription.monthlyCost,
+        detail.currency,
+        _defaultCurrency,
+      );
 
-        return sum + convertedCost;
-      },
-    );
+      return sum + convertedCost;
+    });
   }
 
   // Calculate total annual cost in the selected currency
@@ -100,7 +99,7 @@ class SubscriptionProvider with ChangeNotifier {
   String get formattedMonthlyCost {
     return CurrencyConverter.formatAmountWithCurrency(
       totalMonthlyCostInSelectedCurrency,
-      _defaultCurrency
+      _defaultCurrency,
     );
   }
 
@@ -108,13 +107,17 @@ class SubscriptionProvider with ChangeNotifier {
   String get formattedAnnualCost {
     return CurrencyConverter.formatAmountWithCurrency(
       totalAnnualCostInSelectedCurrency,
-      _defaultCurrency
+      _defaultCurrency,
     );
   }
 
   // Get the count of active subscriptions (excluding stopped subscriptions)
   int get activePaymentsCount {
-    return _subscriptions.where((subscription) => subscription.isActive).length;
+    return _subscriptions
+        .where(
+          (subscription) => subscription.isActive && subscription.isStarted,
+        )
+        .length;
   }
 
   // Calculate total amount spent across all subscriptions
@@ -266,7 +269,8 @@ class SubscriptionProvider with ChangeNotifier {
 
       // Get the existing payment detail to preserve the currency if not provided
       final existingDetail = subscription.findDetailById(subscriptionDetailId);
-      final detailCurrency = currency ?? (existingDetail?.currency ?? _defaultCurrency);
+      final detailCurrency =
+          currency ?? (existingDetail?.currency ?? _defaultCurrency);
 
       subscription.setPaymentDetail(
         SubscriptionPayment(
@@ -390,15 +394,21 @@ class SubscriptionProvider with ChangeNotifier {
 
       // Update all subscriptions that use this label
       for (var subscription in _subscriptions) {
-        final labelIndex = subscription.labels.indexWhere((l) => l.id == label.id);
+        final labelIndex = subscription.labels.indexWhere(
+          (l) => l.id == label.id,
+        );
         if (labelIndex >= 0) {
           final updatedLabels = List<Label>.from(subscription.labels);
           updatedLabels[labelIndex] = label;
 
-          final updatedSubscription = subscription.copyWith(labels: updatedLabels);
+          final updatedSubscription = subscription.copyWith(
+            labels: updatedLabels,
+          );
           await subscriptionRepository.update(updatedSubscription);
 
-          final subscriptionIndex = _subscriptions.indexWhere((s) => s.id == subscription.id);
+          final subscriptionIndex = _subscriptions.indexWhere(
+            (s) => s.id == subscription.id,
+          );
           if (subscriptionIndex >= 0) {
             _subscriptions[subscriptionIndex] = updatedSubscription;
           }
@@ -418,8 +428,12 @@ class SubscriptionProvider with ChangeNotifier {
     for (var subscription in _subscriptions) {
       final hasLabel = subscription.labels.any((label) => label.id == id);
       if (hasLabel) {
-        final updatedLabels = subscription.labels.where((label) => label.id != id).toList();
-        final updatedSubscription = subscription.copyWith(labels: updatedLabels);
+        final updatedLabels = subscription.labels
+            .where((label) => label.id != id)
+            .toList();
+        final updatedSubscription = subscription.copyWith(
+          labels: updatedLabels,
+        );
         await subscriptionRepository.update(updatedSubscription);
 
         final index = _subscriptions.indexWhere((s) => s.id == subscription.id);
@@ -433,7 +447,10 @@ class SubscriptionProvider with ChangeNotifier {
   }
 
   // Update subscription labels
-  Future<void> updateSubscriptionLabels(String subscriptionId, List<Label> labels) async {
+  Future<void> updateSubscriptionLabels(
+    String subscriptionId,
+    List<Label> labels,
+  ) async {
     final index = _subscriptions.indexWhere((s) => s.id == subscriptionId);
     if (index >= 0) {
       final subscription = _subscriptions[index];

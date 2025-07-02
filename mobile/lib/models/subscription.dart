@@ -23,9 +23,8 @@ class Subscription extends HiveObject {
     required this.name,
     List<SubscriptionPayment>? subscriptionPayments,
     List<Label>? labels,
-  }) : 
-    subscriptionPayments = subscriptionPayments ?? [],
-    labels = labels ?? [];
+  }) : subscriptionPayments = subscriptionPayments ?? [],
+       labels = labels ?? [];
 
   SubscriptionPayment getLastPaymentDetail() {
     final sortedHistory = List<SubscriptionPayment>.from(subscriptionPayments)
@@ -63,6 +62,11 @@ class Subscription extends HiveObject {
   bool get isActive {
     final detail = getLastPaymentDetail();
     return detail.isActive;
+  }
+
+  bool get isStarted {
+    final detail = getLastPaymentDetail();
+    return detail.isStarted;
   }
 
   // Calculate the monthly cost based on current price
@@ -160,8 +164,8 @@ class Subscription extends HiveObject {
 
   // Format the total amount spent as a string
   String get formattedTotalAmountSpent {
-    final currency = subscriptionPayments.isNotEmpty 
-        ? subscriptionPayments.last.currency 
+    final currency = subscriptionPayments.isNotEmpty
+        ? subscriptionPayments.last.currency
         : 'USD';
     return '${currency == 'USD' ? '\$' : currency} ${totalAmountSpent.toStringAsFixed(2)}';
   }
@@ -189,9 +193,7 @@ class Subscription extends HiveObject {
       'paymentDetails': subscriptionPayments
           .map((detail) => detail.toJson())
           .toList(),
-      'labels': labels
-          .map((label) => label.toJson())
-          .toList(),
+      'labels': labels.map((label) => label.toJson()).toList(),
     };
   }
 

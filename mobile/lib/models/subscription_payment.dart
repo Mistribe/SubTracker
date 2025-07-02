@@ -36,6 +36,10 @@ class SubscriptionPayment {
     this.currency = 'USD',
   });
 
+  bool get isStarted {
+    return startDate.isBefore(DateTime.now());
+  }
+
   bool get isActive {
     if (endDate == null) {
       return true;
@@ -132,7 +136,9 @@ class SubscriptionPayment {
           ? DateTime.fromMillisecondsSinceEpoch(json['endDate'])
           : null,
       months: json['months'],
-      currency: json['currency'] ?? 'USD', // Default to USD for backward compatibility
+      currency:
+          json['currency'] ??
+          'USD', // Default to USD for backward compatibility
     );
   }
 }

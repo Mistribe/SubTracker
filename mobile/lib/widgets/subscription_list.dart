@@ -5,6 +5,7 @@ import '../providers/subscription_provider.dart';
 import '../models/subscription.dart';
 import '../screens/subscription_detail_screen.dart';
 import '../screens/edit_subscription_screen.dart';
+import '../widgets/delete_subscription_dialog.dart';
 
 class SubscriptionList extends StatelessWidget {
   const SubscriptionList({super.key});
@@ -87,6 +88,7 @@ class SubscriptionCard extends StatelessWidget {
                     children: [
                       if (subscription.isActive)
                         Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Monthly: \$${subscription.monthlyCost.toStringAsFixed(2)}',
@@ -156,10 +158,21 @@ class SubscriptionCard extends StatelessWidget {
                                     color: Colors.white,
                                   ),
                                 ),
-                                backgroundColor: Color(int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000),
-                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                padding: const EdgeInsets.symmetric(horizontal: 2),
-                                labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+                                backgroundColor: Color(
+                                  int.parse(
+                                        label.color.substring(1, 7),
+                                        radix: 16,
+                                      ) +
+                                      0xFF000000,
+                                ),
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 2,
+                                ),
+                                labelPadding: const EdgeInsets.symmetric(
+                                  horizontal: 2,
+                                ),
                               );
                             }).toList(),
                           ),
@@ -173,7 +186,9 @@ class SubscriptionCard extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EditSubscriptionScreen(subscription: subscription),
+                            builder: (context) => EditSubscriptionScreen(
+                              subscription: subscription,
+                            ),
                           ),
                         );
                       } else if (value == 'addPriceChange') {
@@ -184,62 +199,10 @@ class SubscriptionCard extends StatelessWidget {
                               PriceChangeForm(subscription: subscription),
                         );
                       } else if (value == 'delete') {
-                        // Show confirmation dialog
-                        final shouldDelete = await showDialog<bool>(
+                        await DeleteSubscriptionDialog.show(
                           context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Delete Subscription'),
-                            content: const Text(
-                              'Are you sure you want to delete this subscription? This action is irreversible and cannot be undone.',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(false),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(true),
-                                child: const Text('Delete'),
-                              ),
-                            ],
-                          ),
-                        ) ?? false;
-
-                        if (shouldDelete) {
-                          try {
-                            // Show loading indicator
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Removing subscription...'),
-                                duration: Duration(seconds: 1),
-                              ),
-                            );
-
-                            // Remove the subscription
-                            await subscriptionProvider.removePayment(
-                              subscription.id,
-                            );
-
-                            // Show success message
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${subscription.name} removed'),
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
-                          } catch (e) {
-                            // Show error message
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Error removing subscription: ${e.toString()}',
-                                ),
-                                backgroundColor: Colors.red,
-                                duration: const Duration(seconds: 3),
-                              ),
-                            );
-                          }
-                        }
+                          subscription: subscription,
+                        );
                       }
                     },
                     itemBuilder: (context) => [

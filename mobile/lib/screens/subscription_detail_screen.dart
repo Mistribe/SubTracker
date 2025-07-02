@@ -7,6 +7,8 @@ import 'edit_subscription_screen.dart';
 import 'edit_subscription_payment_screen.dart';
 import '../widgets/price_change_form.dart';
 import '../widgets/reactivate_subscription_form.dart';
+import '../widgets/delete_subscription_dialog.dart';
+import '../widgets/delete_payment_history_dialog.dart';
 
 class PaymentDetailScreen extends StatefulWidget {
   final Subscription subscription;
@@ -93,12 +95,13 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
             actions: [
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert),
-                onSelected: (value) {
+                onSelected: (value) async {
                   if (value == 'edit') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => EditSubscriptionScreen(subscription: subscription),
+                        builder: (context) =>
+                            EditSubscriptionScreen(subscription: subscription),
                       ),
                     );
                   } else if (value == 'addPaymentHistory') {
@@ -123,6 +126,12 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         subscription: subscription,
                       ),
                     );
+                  } else if (value == 'delete') {
+                    await DeleteSubscriptionDialog.show(
+                      context: context,
+                      subscription: subscription,
+                      navigateBack: true,
+                    );
                   }
                 },
                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -136,7 +145,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       ],
                     ),
                   ),
-                  if (subscription.isActive)
+                  if (subscription.isActive && subscription.isStarted)
                     const PopupMenuItem<String>(
                       value: 'addPaymentHistory',
                       child: Row(
@@ -148,7 +157,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       ),
                     ),
                   // Show stop subscription option if subscription is active
-                  if (subscription.isActive)
+                  if (subscription.isActive && subscription.isStarted)
                     const PopupMenuItem<String>(
                       value: 'stopPayment',
                       child: Row(
@@ -171,6 +180,16 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         ],
                       ),
                     ),
+                  const PopupMenuItem<String>(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_forever),
+                        SizedBox(width: 8),
+                        Text('Delete'),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -242,7 +261,11 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                             padding: const EdgeInsets.only(top: 8.0),
                             child: Row(
                               children: [
-                                Icon(Icons.label, size: 20, color: Theme.of(context).primaryColor),
+                                Icon(
+                                  Icons.label,
+                                  size: 20,
+                                  color: Theme.of(context).primaryColor,
+                                ),
                                 const SizedBox(width: 8),
                                 const Text(
                                   'Labels:',
@@ -266,9 +289,18 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                             color: Colors.white,
                                           ),
                                         ),
-                                        backgroundColor: Color(int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000),
-                                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                                        backgroundColor: Color(
+                                          int.parse(
+                                                label.color.substring(1, 7),
+                                                radix: 16,
+                                              ) +
+                                              0xFF000000,
+                                        ),
+                                        materialTapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 4,
+                                        ),
                                       );
                                     }).toList(),
                                   ),
@@ -321,14 +353,22 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                 index];
                         return ListTile(
                           leading: Icon(
-                            history.isActive
+                            !history.isStarted
+                                ? Icons.schedule
+                                : history.isActive
                                 ? Icons.check_circle
                                 : Icons.stop_circle,
-                            color: history.isActive ? Colors.green : Colors.red,
+                            color: !history.isStarted
+                                ? Colors.orange
+                                : history.isActive
+                                ? Colors.green
+                                : Colors.red,
                           ),
                           title: Text('\$${history.price.toStringAsFixed(2)}'),
                           subtitle: Text(
-                            'From ${history.startDate.month}/${history.startDate.day}/${history.startDate.year} to ${history.endDate == null ? "now" : "${history.endDate!.month}/${history.endDate!.day}/${history.endDate!.year}"}',
+                            !history.isStarted
+                                ? 'Start at ${history.startDate.month}/${history.startDate.day}/${history.startDate.year}'
+                                : 'From ${history.startDate.month}/${history.startDate.day}/${history.startDate.year} to ${history.endDate == null ? "now" : "${history.endDate!.month}/${history.endDate!.day}/${history.endDate!.year}"}',
                           ),
                           trailing: PopupMenuButton<String>(
                             icon: const Icon(Icons.more_vert),
@@ -337,95 +377,46 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => EditSubscriptionPaymentScreen(
-                                      subscription: subscription,
-                                      paymentHistory: history,
-                                    ),
+                                    builder: (context) =>
+                                        EditSubscriptionPaymentScreen(
+                                          subscription: subscription,
+                                          paymentHistory: history,
+                                        ),
                                   ),
                                 );
                               } else if (value == 'remove') {
-                                // Show confirmation dialog
-                                final shouldRemove = await showDialog<bool>(
+                                await DeletePaymentHistoryDialog.show(
                                   context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: const Text('Remove Payment History'),
-                                    content: const Text(
-                                      'Are you sure you want to remove this payment history? This action cannot be undone.',
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.of(context).pop(false),
-                                        child: const Text('Cancel'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () => Navigator.of(context).pop(true),
-                                        child: const Text('Remove'),
-                                      ),
-                                    ],
-                                  ),
-                                ) ?? false;
-
-                                if (shouldRemove) {
-                                  try {
-                                    // Show loading indicator
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Removing payment history...'),
-                                        duration: Duration(seconds: 1),
-                                      ),
-                                    );
-
-                                    // Remove the payment history
-                                    await Provider.of<SubscriptionProvider>(
-                                      context,
-                                      listen: false,
-                                    ).removeSubscriptionPayment(
-                                      subscription.id,
-                                      history.id,
-                                    );
-
-                                    // Show success message
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Payment history removed successfully'),
-                                        duration: Duration(seconds: 2),
-                                      ),
-                                    );
-                                  } catch (e) {
-                                    // Show error message
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Error removing payment history: ${e.toString()}'),
-                                        backgroundColor: Colors.red,
-                                        duration: const Duration(seconds: 3),
-                                      ),
-                                    );
-                                  }
-                                }
+                                  subscription: subscription,
+                                  paymentHistory: history,
+                                );
                               }
                             },
-                            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                              const PopupMenuItem<String>(
-                                value: 'edit',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.edit),
-                                    SizedBox(width: 8),
-                                    Text('Edit'),
-                                  ],
-                                ),
-                              ),
-                              const PopupMenuItem<String>(
-                                value: 'remove',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.delete),
-                                    SizedBox(width: 8),
-                                    Text('Remove'),
-                                  ],
-                                ),
-                              ),
-                            ],
+                            itemBuilder: (BuildContext context) =>
+                                <PopupMenuEntry<String>>[
+                                  const PopupMenuItem<String>(
+                                    value: 'edit',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.edit),
+                                        SizedBox(width: 8),
+                                        Text('Edit'),
+                                      ],
+                                    ),
+                                  ),
+                                  if (subscription.subscriptionPayments.length >
+                                      1)
+                                    const PopupMenuItem<String>(
+                                      value: 'remove',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.delete),
+                                          SizedBox(width: 8),
+                                          Text('Remove'),
+                                        ],
+                                      ),
+                                    ),
+                                ],
                           ),
                         );
                       },
