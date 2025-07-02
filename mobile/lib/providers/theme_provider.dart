@@ -52,7 +52,7 @@ class ThemeProvider with ChangeNotifier {
 
     // Persist settings if repository is available
     if (_settingsRepository != null) {
-      await _settingsRepository!.updateThemeSettings(
+      await _settingsRepository.updateThemeSettings(
         isDarkMode: _isDarkMode,
         useSystemTheme: _useSystemTheme,
       );
@@ -67,7 +67,7 @@ class ThemeProvider with ChangeNotifier {
 
     // Persist settings if repository is available
     if (_settingsRepository != null) {
-      await _settingsRepository!.updateThemeSettings(
+      await _settingsRepository.updateThemeSettings(
         isDarkMode: _isDarkMode,
         useSystemTheme: _useSystemTheme,
       );

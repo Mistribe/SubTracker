@@ -21,7 +21,7 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
   DateTime _selectedStartDate = DateTime.now();
   DateTime? _selectedEndDate;
   String _selectedCurrency = 'USD'; // Default currency
-  List<Label> _selectedLabels = [];
+  final List<Label> _selectedLabels = [];
 
   // List of common currencies
   final List<String> _currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR'];
