@@ -19,10 +19,7 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Subscription Tracker',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         elevation: 0,
         actions: [
@@ -119,12 +116,131 @@ class HomeScreen extends StatelessWidget {
                           color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
-                      Text(
-                        '${paymentProvider.filteredSubscriptions.length} of ${paymentProvider.subscriptions.length}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            '${paymentProvider.filteredSubscriptions.length} of ${paymentProvider.subscriptions.length}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.6),
+                            ),
+                          ),
+                          // Filter buttons
+                          PopupMenuButton<SubscriptionFilterOption>(
+                            tooltip: 'Filter',
+                            icon: Icon(
+                              Icons.filter_alt,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 20,
+                            ),
+                            onSelected: (SubscriptionFilterOption newValue) {
+                              switch (newValue) {
+                                case SubscriptionFilterOption.labels:
+                                  _showLabelFilterBottomSheet(
+                                    context,
+                                    paymentProvider,
+                                  );
+                                  break;
+                                case SubscriptionFilterOption.showInactive:
+                                  paymentProvider.showInactiveSubscriptions =
+                                      true;
+                                  break;
+                                case SubscriptionFilterOption.hideInactive:
+                                  paymentProvider.showInactiveSubscriptions =
+                                      false;
+                                  break;
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              if (paymentProvider.labels.isNotEmpty)
+                                PopupMenuItem(
+                                  value: SubscriptionFilterOption.labels,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.label_outline,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Labels ${paymentProvider.selectedLabelIds.isNotEmpty ? "(${paymentProvider.selectedLabelIds.length})" : ""}',
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              if (paymentProvider.showInactiveSubscriptions)
+                                PopupMenuItem(
+                                  value: SubscriptionFilterOption.hideInactive,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.play_disabled,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Text('Hide Inactive'),
+                                    ],
+                                  ),
+                                )
+                              else
+                                PopupMenuItem(
+                                  value: SubscriptionFilterOption.showInactive,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.play_arrow,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Text('Show Inactive'),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                          // Sort buttons
+                          PopupMenuButton<SubscriptionSortOption>(
+                            tooltip: 'Sort',
+                            icon: Icon(
+                              Icons.sort,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 20,
+                            ),
+                            onSelected: (SubscriptionSortOption newValue) {
+                              paymentProvider.sortOption = newValue;
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: SubscriptionSortOption.none,
+                                child: Text('Default order'),
+                              ),
+                              const PopupMenuItem(
+                                value: SubscriptionSortOption.nameAsc,
+                                child: Text('Name (A-Z)'),
+                              ),
+                              const PopupMenuItem(
+                                value: SubscriptionSortOption.nameDesc,
+                                child: Text('Name (Z-A)'),
+                              ),
+                              const PopupMenuItem(
+                                value: SubscriptionSortOption.nextPaymentAsc,
+                                child: Text('Next payment (earliest)'),
+                              ),
+                              const PopupMenuItem(
+                                value: SubscriptionSortOption.nextPaymentDesc,
+                                child: Text('Next payment (latest)'),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -132,100 +248,7 @@ class HomeScreen extends StatelessWidget {
                   // Compact filter bar
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        // Sort button
-                        PopupMenuButton<SubscriptionSortOption>(
-                          tooltip: 'Sort',
-                          icon: Icon(
-                            Icons.sort,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 20,
-                          ),
-                          onSelected: (SubscriptionSortOption newValue) {
-                            paymentProvider.sortOption = newValue;
-                          },
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: SubscriptionSortOption.none,
-                              child: Text('Default order'),
-                            ),
-                            const PopupMenuItem(
-                              value: SubscriptionSortOption.nameAsc,
-                              child: Text('Name (A-Z)'),
-                            ),
-                            const PopupMenuItem(
-                              value: SubscriptionSortOption.nameDesc,
-                              child: Text('Name (Z-A)'),
-                            ),
-                            const PopupMenuItem(
-                              value: SubscriptionSortOption.nextPaymentAsc,
-                              child: Text('Next payment (earliest)'),
-                            ),
-                            const PopupMenuItem(
-                              value: SubscriptionSortOption.nextPaymentDesc,
-                              child: Text('Next payment (latest)'),
-                            ),
-                          ],
-                        ),
-
-                        // Label filter chips
-                        if (paymentProvider.labels.isNotEmpty) ...[
-                          const SizedBox(width: 8),
-                          InkWell(
-                            onTap: () {
-                              _showLabelFilterBottomSheet(context, paymentProvider);
-                            },
-                            borderRadius: BorderRadius.circular(16),
-                            child: Chip(
-                              label: Text(
-                                'Labels ${paymentProvider.selectedLabelIds.isNotEmpty ? "(${paymentProvider.selectedLabelIds.length})" : ""}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: paymentProvider.selectedLabelIds.isNotEmpty
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context).colorScheme.onSurface,
-                                ),
-                              ),
-                              avatar: Icon(
-                                Icons.label_outline,
-                                size: 16,
-                                color: paymentProvider.selectedLabelIds.isNotEmpty
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.onSurface,
-                              ),
-                              backgroundColor: Theme.of(context).colorScheme.surface,
-                              side: BorderSide(
-                                color: paymentProvider.selectedLabelIds.isNotEmpty
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                              ),
-                            ),
-                          ),
-                        ],
-
-                        // Show inactive filter
-                        const SizedBox(width: 8),
-                        FilterChip(
-                          label: const Text(
-                            'Show Inactive',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                          selected: paymentProvider.showInactiveSubscriptions,
-                          onSelected: (value) {
-                            paymentProvider.showInactiveSubscriptions = value;
-                          },
-                          checkmarkColor: Colors.white,
-                          selectedColor: Theme.of(context).colorScheme.primary,
-                          backgroundColor: Theme.of(context).colorScheme.surface,
-                          side: BorderSide(
-                            color: paymentProvider.showInactiveSubscriptions
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: Row(children: []),
                   ),
                 ],
               ),
@@ -242,7 +265,9 @@ class HomeScreen extends StatelessWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const SubscriptionFormScreen()),
+            MaterialPageRoute(
+              builder: (context) => const SubscriptionFormScreen(),
+            ),
           );
         },
         tooltip: 'Add Subscription',
@@ -254,7 +279,10 @@ class HomeScreen extends StatelessWidget {
   }
 
   // Show bottom sheet for label filtering - simplified implementation
-  void _showLabelFilterBottomSheet(BuildContext context, SubscriptionProvider provider) {
+  void _showLabelFilterBottomSheet(
+    BuildContext context,
+    SubscriptionProvider provider,
+  ) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -265,7 +293,10 @@ class HomeScreen extends StatelessWidget {
 
             return SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -304,9 +335,12 @@ class HomeScreen extends StatelessWidget {
                         spacing: 8,
                         runSpacing: 8,
                         children: allLabels.map((label) {
-                          final isSelected = selectedLabelIds.contains(label.id);
+                          final isSelected = selectedLabelIds.contains(
+                            label.id,
+                          );
                           final labelColor = Color(
-                            int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000,
+                            int.parse(label.color.substring(1, 7), radix: 16) +
+                                0xFF000000,
                           );
 
                           return FilterChip(
@@ -353,9 +387,7 @@ class HomeScreen extends StatelessWidget {
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         child: Column(
@@ -374,7 +406,9 @@ class HomeScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
               ],
@@ -382,10 +416,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               value,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
           ],

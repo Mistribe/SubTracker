@@ -21,6 +21,8 @@ enum SubscriptionSortOption {
   nextPaymentDesc,
 }
 
+enum SubscriptionFilterOption { labels, showInactive, hideInactive }
+
 class SubscriptionProvider with ChangeNotifier {
   final SubscriptionRepository subscriptionRepository;
   final SettingsRepository? settingsRepository;
@@ -77,8 +79,10 @@ class SubscriptionProvider with ChangeNotifier {
       }
 
       // Filter by selected labels
-      if (_selectedLabelIds.isNotEmpty && 
-          !subscription.labels.any((label) => _selectedLabelIds.contains(label.id))) {
+      if (_selectedLabelIds.isNotEmpty &&
+          !subscription.labels.any(
+            (label) => _selectedLabelIds.contains(label.id),
+          )) {
         return false;
       }
 
@@ -97,10 +101,14 @@ class SubscriptionProvider with ChangeNotifier {
   void _applySorting(List<Subscription> subscriptions) {
     switch (_sortOption) {
       case SubscriptionSortOption.nameAsc:
-        subscriptions.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        subscriptions.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
         break;
       case SubscriptionSortOption.nameDesc:
-        subscriptions.sort((a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()));
+        subscriptions.sort(
+          (a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()),
+        );
         break;
       case SubscriptionSortOption.nextPaymentAsc:
         subscriptions.sort((a, b) {
@@ -162,7 +170,7 @@ class SubscriptionProvider with ChangeNotifier {
   List<String> get selectedLabelIds => List.unmodifiable(_selectedLabelIds);
 
   // Getter for selected labels (Label objects)
-  List<Label> get selectedLabels => 
+  List<Label> get selectedLabels =>
       _labels.where((label) => _selectedLabelIds.contains(label.id)).toList();
 
   // Toggle a label in the filter (add if not present, remove if present)
