@@ -40,7 +40,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             // Summary cards with modern design
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -57,7 +57,7 @@ class HomeScreen extends StatelessWidget {
                           Colors.blue,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
 
                       // Annual cost card
                       Expanded(
@@ -69,7 +69,7 @@ class HomeScreen extends StatelessWidget {
                           Colors.purple,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
 
                       // Active subscriptions card
                       Expanded(
@@ -231,7 +231,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 2),
                   // Compact filter bar
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -241,7 +241,6 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 8),
 
             // Subscription list
             const Expanded(child: SubscriptionList()),
@@ -373,7 +372,7 @@ class HomeScreen extends StatelessWidget {
 
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         child: Column(
@@ -390,7 +389,7 @@ class HomeScreen extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: Theme.of(
                       context,
@@ -399,7 +398,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               value,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

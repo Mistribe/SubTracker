@@ -104,7 +104,7 @@ class SubscriptionCard extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
         color: badgeColor.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
@@ -180,7 +180,7 @@ class SubscriptionCard extends StatelessWidget {
           );
         },
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.only(left:16,right: 16,bottom: 16, top:8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -310,7 +310,10 @@ class SubscriptionCard extends StatelessWidget {
                 ],
               ),
 
-              const Divider(height: 24),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: const Divider(height: 10),
+              ),
 
               // Cost information
               if (subscription.isActive)
@@ -414,7 +417,7 @@ class SubscriptionCard extends StatelessWidget {
 
               // Total spent
               Padding(
-                padding: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.only(top: 6),
                 child: Row(
                   children: [
                     Icon(
