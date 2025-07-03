@@ -450,7 +450,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                       Icon(
                                         Icons.monetization_on,
                                         size: 14,
-                                        color: Colors.yellow.withOpacity(0.7),
+                                        color: Colors.lime.withOpacity(0.7),
                                       ),
                                       const SizedBox(width: 4),
                                       const Text(
@@ -468,7 +468,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.yellow,
+                                      color: Colors.lime,
                                     ),
                                   ),
                                 ],
