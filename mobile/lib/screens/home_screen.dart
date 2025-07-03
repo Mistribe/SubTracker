@@ -261,7 +261,7 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
@@ -271,9 +271,8 @@ class HomeScreen extends StatelessWidget {
           );
         },
         tooltip: 'Add Subscription',
-        icon: const Icon(Icons.add),
-        label: const Text('Add', style: TextStyle(fontSize: 16)),
         elevation: 4,
+        child: const Icon(Icons.add),
       ),
     );
   }
