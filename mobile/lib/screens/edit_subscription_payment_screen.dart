@@ -281,6 +281,13 @@ class _EditSubscriptionPaymentScreenState
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.check),
+            onPressed: _submitForm,
+            tooltip: 'Update Payment History',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -550,23 +557,6 @@ class _EditSubscriptionPaymentScreenState
                           ),
                       ],
                     ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Submit Button
-                ElevatedButton(
-                  onPressed: _submitForm,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Update Payment History',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],

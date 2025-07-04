@@ -123,14 +123,14 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
       // Default currency until provider loads
       _selectedCurrency = Currency.USD.code;
     }
-    
+
     // Add listeners to controllers to detect changes
     _nameController.addListener(_onFormChanged);
     _priceController.addListener(_onFormChanged);
     _customMonthsController.addListener(_onFormChanged);
     _recurrenceCountController.addListener(_onFormChanged);
   }
-  
+
   // Called when any form field changes
   void _onFormChanged() {
     if (!_isFormModified) {
@@ -574,10 +574,13 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Unsaved Changes'),
-        content: const Text('You have unsaved changes. What would you like to do?'),
+        content: const Text(
+          'You have unsaved changes. What would you like to do?',
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop('cancel'), // Don't discard changes
+            onPressed: () => Navigator.of(context).pop('cancel'),
+            // Don't discard changes
             child: const Text('Cancel'),
           ),
           TextButton(
@@ -617,6 +620,13 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: _showUnsavedChangesDialog,
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.check),
+            onPressed: _submitForm,
+            tooltip: _isEditMode ? 'Update Subscription' : 'Add Subscription',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -1197,26 +1207,6 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                             : const SizedBox.shrink(),
                       ),
                     ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Submit Button
-                ElevatedButton(
-                  onPressed: _submitForm,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    _isEditMode ? 'Update Subscription' : 'Add Subscription',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
                   ),
                 ),
               ],
