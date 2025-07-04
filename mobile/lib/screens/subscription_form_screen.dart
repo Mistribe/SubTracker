@@ -519,7 +519,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 4,
                       ),
                     ]
@@ -772,14 +772,15 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                               border: Border.all(
                                 color: Theme.of(
                                   context,
-                                ).dividerColor.withOpacity(0.5),
+                                ).dividerColor.withValues(alpha: 0.5),
                               ),
                             ),
                             child: ListTile(
                               leading: Icon(
                                 Icons.calendar_today,
-                                color: Colors.blue.withOpacity(
-                                  Theme.of(context).brightness ==
+                                color: Colors.blue.withValues(
+                                  alpha:
+                                      Theme.of(context).brightness ==
                                           Brightness.dark
                                       ? 0.8
                                       : 1.0,
@@ -998,8 +999,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                                     value: member.id,
                                                     child: Text(member.name),
                                                   );
-                                                })
-                                                ,
+                                                }),
                                           ],
                                           onChanged: (String? value) {
                                             setState(() {

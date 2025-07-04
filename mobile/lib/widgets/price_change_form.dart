@@ -17,7 +17,7 @@ class PriceChangeForm extends StatefulWidget {
 
 class _PriceChangeFormState extends State<PriceChangeForm> {
   final _formKey = GlobalKey<FormState>();
-  late final _priceController;
+  late final TextEditingController _priceController;
   DateTime _selectedDate = DateTime.now();
   late String _selectedCurrency;
 
@@ -139,13 +139,19 @@ class _PriceChangeFormState extends State<PriceChangeForm> {
                       decoration: InputDecoration(
                         labelText: 'New Price',
                         hintText: 'Enter the new price',
-                        prefixIcon: Icon(_selectedCurrency == 'USD' ? Icons.attach_money : Icons.currency_exchange),
+                        prefixIcon: Icon(
+                          _selectedCurrency == 'USD'
+                              ? Icons.attach_money
+                              : Icons.currency_exchange,
+                        ),
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d+\.?\d{0,2}'),
+                        ),
                       ],
                     ),
                   ),
@@ -156,9 +162,14 @@ class _PriceChangeFormState extends State<PriceChangeForm> {
                       value: _selectedCurrency,
                       decoration: const InputDecoration(
                         labelText: 'Currency',
-                        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 15,
+                        ),
                       ),
-                      items: _currencies.map<DropdownMenuItem<String>>((String value) {
+                      items: _currencies.map<DropdownMenuItem<String>>((
+                        String value,
+                      ) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
