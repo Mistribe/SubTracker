@@ -10,19 +10,25 @@ class FamilyMember extends HiveObject {
   @HiveField(1)
   final String name;
 
+  @HiveField(2)
+  final bool isKid;
+
   FamilyMember({
     required this.id,
     required this.name,
+    this.isKid = false,
   });
 
   // Create a copy of this family member with updated fields
   FamilyMember copyWith({
     String? id,
     String? name,
+    bool? isKid,
   }) {
     return FamilyMember(
       id: id ?? this.id,
       name: name ?? this.name,
+      isKid: isKid ?? this.isKid,
     );
   }
 
@@ -31,6 +37,7 @@ class FamilyMember extends HiveObject {
     return {
       'id': id,
       'name': name,
+      'isKid': isKid,
     };
   }
 
@@ -38,6 +45,7 @@ class FamilyMember extends HiveObject {
     return FamilyMember(
       id: json['id'],
       name: json['name'],
+      isKid: json['isKid'] ?? false,
     );
   }
 }

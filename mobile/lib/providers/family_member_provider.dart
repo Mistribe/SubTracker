@@ -26,24 +26,27 @@ class FamilyMemberProvider with ChangeNotifier {
   bool get hasFamilyMembers => _familyMembers.isNotEmpty;
 
   // Add a new family member
-  Future<void> addFamilyMember(String name) async {
-    final familyMember = await familyMemberRepository.add(name);
+  Future<void> addFamilyMember(String name, {bool isKid = false}) async {
+    final familyMember = await familyMemberRepository.add(name, isKid: isKid);
     _familyMembers.add(familyMember);
     notifyListeners();
   }
 
   // Update an existing family member
-  Future<void> updateFamilyMember(String id, String name) async {
+  Future<void> updateFamilyMember(String id, String name, {bool? isKid}) async {
     final index = _familyMembers.indexWhere(
       (familyMember) => familyMember.id == id,
     );
 
     if (index >= 0) {
       final familyMember = _familyMembers[index];
-      final updatedFamilyMember = familyMember.copyWith(name: name);
-      
+      final updatedFamilyMember = familyMember.copyWith(
+        name: name,
+        isKid: isKid,
+      );
+
       await familyMemberRepository.update(updatedFamilyMember);
-      
+
       _familyMembers[index] = updatedFamilyMember;
       notifyListeners();
     }
@@ -52,25 +55,25 @@ class FamilyMemberProvider with ChangeNotifier {
   // Remove a family member
   Future<void> removeFamilyMember(String id) async {
     _familyMembers.removeWhere((familyMember) => familyMember.id == id);
-    
+
     // Remove from storage
     await familyMemberRepository.delete(id);
-    
+
     notifyListeners();
   }
 
   // Get a family member by ID
   FamilyMember? getFamilyMemberById(String? id) {
     if (id == null) return null;
-    
+
     final index = _familyMembers.indexWhere(
       (familyMember) => familyMember.id == id,
     );
-    
+
     if (index >= 0) {
       return _familyMembers[index];
     }
-    
+
     return null;
   }
 }

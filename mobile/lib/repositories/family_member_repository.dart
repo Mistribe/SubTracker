@@ -26,10 +26,11 @@ class FamilyMemberRepository {
   }
 
   // Add a new family member
-  Future<FamilyMember> add(String name) async {
+  Future<FamilyMember> add(String name, {bool isKid = false}) async {
     final familyMember = FamilyMember(
       id: _uuid.v7(),
       name: name,
+      isKid: isKid,
     );
     await _box.put(familyMember.id, familyMember);
     return familyMember;

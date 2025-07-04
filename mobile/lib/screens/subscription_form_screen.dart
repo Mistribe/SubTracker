@@ -970,7 +970,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                               value: 'family',
                                               child: Text('Family (common account)'),
                                             ),
-                                            ...familyMembers.map((member) {
+                                            ...familyMembers.where((member) => !member.isKid).map((member) {
                                               return DropdownMenuItem<String?>(
                                                 value: member.id,
                                                 child: Text(member.name),

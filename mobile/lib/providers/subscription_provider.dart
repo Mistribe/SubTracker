@@ -372,6 +372,11 @@ class SubscriptionProvider with ChangeNotifier {
     List<FamilyMember>? userFamilyMembers,
     FamilyMember? payerFamilyMember,
   }) async {
+    // Validate that a kid is not set as a payer
+    if (payerFamilyMember != null && payerFamilyMember.isKid) {
+      throw Exception('A kid cannot be set as a payer for a subscription');
+    }
+
     // Create initial subscription history entry
     final initialSubscriptionPayment = [
       SubscriptionPayment(
@@ -688,6 +693,11 @@ class SubscriptionProvider with ChangeNotifier {
     List<FamilyMember>? userFamilyMembers,
     FamilyMember? payerFamilyMember,
   }) async {
+    // Validate that a kid is not set as a payer
+    if (payerFamilyMember != null && payerFamilyMember.isKid) {
+      throw Exception('A kid cannot be set as a payer for a subscription');
+    }
+
     final index = _subscriptions.indexWhere((s) => s.id == subscriptionId);
     if (index >= 0) {
       final subscription = _subscriptions[index];
