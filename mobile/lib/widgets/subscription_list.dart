@@ -32,7 +32,9 @@ class SubscriptionList extends StatelessWidget {
                   ? Icons.filter_alt_outlined
                   : Icons.subscriptions_outlined,
               size: 64,
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
@@ -52,7 +54,9 @@ class SubscriptionList extends StatelessWidget {
                   : 'Add your first subscription!',
               style: TextStyle(
                 fontSize: 16,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
           ],
@@ -108,7 +112,7 @@ class SubscriptionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: badgeColor.withOpacity(0.2),
+        color: badgeColor.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: badgeColor, width: 1),
       ),
@@ -210,8 +214,8 @@ class SubscriptionCard extends StatelessWidget {
                           decoration: BoxDecoration(
                             color:
                                 subscription.state == SubscriptionState.active
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.red.withOpacity(0.1),
+                                ? Colors.green.withValues(alpha: 0.1)
+                                : Colors.red.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
@@ -280,7 +284,7 @@ class SubscriptionCard extends StatelessWidget {
                       Icons.more_vert,
                       color: Theme.of(
                         context,
-                      ).colorScheme.onSurface.withOpacity(0.7),
+                      ).colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -372,7 +376,7 @@ class SubscriptionCard extends StatelessWidget {
                                 size: 14,
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.primary.withOpacity(0.7),
+                                ).colorScheme.primary.withValues(alpha: 0.7),
                               ),
                               const SizedBox(width: 4),
                               const Text(
@@ -412,7 +416,7 @@ class SubscriptionCard extends StatelessWidget {
                               Icon(
                                 Icons.calendar_month,
                                 size: 14,
-                                color: Colors.purple.withOpacity(0.7),
+                                color: Colors.purple.withValues(alpha: 0.7),
                               ),
                               const SizedBox(width: 4),
                               const Text(
@@ -510,7 +514,7 @@ class SubscriptionCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: labelColor.withOpacity(0.2),
+                          color: labelColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: labelColor, width: 1),
                         ),
