@@ -76,6 +76,7 @@ class Subscription extends HiveObject {
     return detail.state;
   }
 
+
   // Calculate the monthly cost based on current price
   double get monthlyCost {
     var currentDetail = getLastPaymentDetail();

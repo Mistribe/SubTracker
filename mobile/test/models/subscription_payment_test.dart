@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:subscription_tracker/models/subscription_payment.dart';
+import 'package:subscription_tracker/models/subscription_state.dart';
 
 void main() {
   group('SubscriptionPayment', () {
@@ -43,7 +44,7 @@ void main() {
     test('constructor creates payment with correct values', () {
       final startDate = DateTime(2023, 1, 1);
       final endDate = DateTime(2023, 12, 31);
-      
+
       final payment = SubscriptionPayment(
         id: '1',
         price: 9.99,
@@ -61,41 +62,41 @@ void main() {
       expect(payment.currency, equals('USD'));
     });
 
-    group('isStarted', () {
-      test('returns true if startDate is in the past', () {
+    group('state - notStarted', () {
+      test('returns active if startDate is in the past', () {
         final pastDate = DateTime.now().subtract(const Duration(days: 10));
         final payment = createPayment(startDate: pastDate);
-        
-        expect(payment.isStarted, isTrue);
+
+        expect(payment.state, SubscriptionState.active);
       });
 
-      test('returns false if startDate is in the future', () {
+      test('returns notStarted if startDate is in the future', () {
         final futureDate = DateTime.now().add(const Duration(days: 10));
         final payment = createPayment(startDate: futureDate);
-        
-        expect(payment.isStarted, isFalse);
+
+        expect(payment.state, SubscriptionState.notStarted);
       });
     });
 
-    group('isActive', () {
-      test('returns true if endDate is null', () {
+    group('state - active', () {
+      test('returns active if endDate is null', () {
         final payment = createPayment(endDate: null);
-        
-        expect(payment.isActive, isTrue);
+
+        expect(payment.state, SubscriptionState.active);
       });
 
-      test('returns true if endDate is in the future', () {
+      test('returns active if endDate is in the future', () {
         final futureDate = DateTime.now().add(const Duration(days: 10));
         final payment = createPayment(endDate: futureDate);
-        
-        expect(payment.isActive, isTrue);
+
+        expect(payment.state, SubscriptionState.active);
       });
 
-      test('returns false if endDate is in the past', () {
+      test('returns ended if endDate is in the past', () {
         final pastDate = DateTime.now().subtract(const Duration(days: 10));
         final payment = createPayment(endDate: pastDate);
-        
-        expect(payment.isActive, isFalse);
+
+        expect(payment.state, SubscriptionState.ended);
       });
     });
 
@@ -104,31 +105,42 @@ void main() {
         final startDate = DateTime(2023, 1, 1);
         final endDate = DateTime(2023, 6, 1); // 5 months difference
         final payment = createPayment(startDate: startDate, endDate: endDate);
-        
+
         expect(payment.totalMonthElapsed, equals(5));
       });
 
-      test('calculates months between startDate and now if endDate is null', () {
-        // This test is time-dependent, so we need to be careful
-        final now = DateTime.now();
-        final startDate = DateTime(now.year, now.month - 3, now.day); // 3 months ago
-        final payment = createPayment(startDate: startDate, endDate: null);
-        
-        expect(payment.totalMonthElapsed, equals(3));
-      });
+      test(
+        'calculates months between startDate and now if endDate is null',
+        () {
+          // This test is time-dependent, so we need to be careful
+          final now = DateTime.now();
+          final startDate = DateTime(
+            now.year,
+            now.month - 3,
+            now.day,
+          ); // 3 months ago
+          final payment = createPayment(startDate: startDate, endDate: null);
+
+          expect(payment.totalMonthElapsed, equals(3));
+        },
+      );
 
       test('handles year boundaries correctly', () {
         final startDate = DateTime(2022, 11, 1);
-        final endDate = DateTime(2023, 2, 1); // 3 months difference across year boundary
+        final endDate = DateTime(
+          2023,
+          2,
+          1,
+        ); // 3 months difference across year boundary
         final payment = createPayment(startDate: startDate, endDate: endDate);
-        
+
         expect(payment.totalMonthElapsed, equals(3));
       });
     });
 
     test('monthlyCost calculates correctly', () {
       final payment = createPayment(price: 12.0, months: 3);
-      
+
       expect(payment.monthlyCost, equals(4.0)); // 12 / 3 = 4
     });
 
@@ -141,7 +153,7 @@ void main() {
         price: 30.0,
         months: 3, // Monthly cost is 10.0
       );
-      
+
       expect(payment.totalAmountSpent, equals(30.0)); // 3 months * 10.0 = 30.0
     });
 
@@ -149,7 +161,7 @@ void main() {
       test('returns startDate if it is in the future', () {
         final futureDate = DateTime.now().add(const Duration(days: 10));
         final payment = createPayment(startDate: futureDate);
-        
+
         expect(payment.nextPaymentDate, equals(futureDate));
       });
 
@@ -159,7 +171,7 @@ void main() {
           startDate: DateTime(2023, 1, 1),
           endDate: pastDate,
         );
-        
+
         expect(payment.nextPaymentDate, equals(DateTime(9999, 12, 31)));
       });
 
@@ -168,11 +180,11 @@ void main() {
         final now = DateTime(2023, 5, 15);
         final startDate = DateTime(2023, 1, 1);
         final payment = createPayment(startDate: startDate, months: 1);
-        
+
         // Mock DateTime.now() for this test
         final originalNow = DateTime.now;
         DateTime.now = () => now;
-        
+
         try {
           // Next payment should be on June 1, 2023
           expect(payment.nextPaymentDate, equals(DateTime(2023, 6, 1)));
@@ -187,11 +199,11 @@ void main() {
         final now = DateTime(2023, 5, 15);
         final startDate = DateTime(2023, 1, 1);
         final payment = createPayment(startDate: startDate, months: 3);
-        
+
         // Mock DateTime.now() for this test
         final originalNow = DateTime.now;
         DateTime.now = () => now;
-        
+
         try {
           // Next payment should be on August 1, 2023
           expect(payment.nextPaymentDate, equals(DateTime(2023, 8, 1)));
@@ -206,11 +218,11 @@ void main() {
         final now = DateTime(2023, 5, 15);
         final startDate = DateTime(2023, 1, 1);
         final payment = createPayment(startDate: startDate, months: 12);
-        
+
         // Mock DateTime.now() for this test
         final originalNow = DateTime.now;
         DateTime.now = () => now;
-        
+
         try {
           // Next payment should be on January 1, 2024
           expect(payment.nextPaymentDate, equals(DateTime(2024, 1, 1)));
@@ -226,11 +238,11 @@ void main() {
       final now = DateTime(2023, 5, 15);
       final startDate = DateTime(2023, 1, 1);
       final payment = createPayment(startDate: startDate, months: 3);
-      
+
       // Mock DateTime.now() for this test
       final originalNow = DateTime.now;
       DateTime.now = () => now;
-      
+
       try {
         // Next payment is August 1, 2023, so last payment was May 1, 2023
         expect(payment.lastOccurrencePaid, equals(DateTime(2023, 5, 1)));
@@ -339,20 +351,23 @@ void main() {
       expect(payment.endDate, isNull);
     });
 
-    test('fromJson uses USD as default currency for backward compatibility', () {
-      final startDate = DateTime(2023, 1, 1);
-      final json = {
-        'id': '1',
-        'price': 9.99,
-        'startDate': startDate.millisecondsSinceEpoch,
-        'endDate': null,
-        'months': 1,
-        // No currency field
-      };
+    test(
+      'fromJson uses USD as default currency for backward compatibility',
+      () {
+        final startDate = DateTime(2023, 1, 1);
+        final json = {
+          'id': '1',
+          'price': 9.99,
+          'startDate': startDate.millisecondsSinceEpoch,
+          'endDate': null,
+          'months': 1,
+          // No currency field
+        };
 
-      final payment = SubscriptionPayment.fromJson(json);
+        final payment = SubscriptionPayment.fromJson(json);
 
-      expect(payment.currency, equals('USD'));
-    });
+        expect(payment.currency, equals('USD'));
+      },
+    );
   });
 }

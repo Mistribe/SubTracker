@@ -135,7 +135,7 @@ class ThemeProvider with ChangeNotifier {
       appBarTheme: AppBarTheme(
         centerTitle: true,
         elevation: 0,
-        backgroundColor: const Color(0xFF1A73E8).withValues(alpha: 0.8),
+        backgroundColor: const Color(0xFF1A73E8).withOpacity(0.8),
         foregroundColor: Colors.white,
         titleTextStyle: GoogleFonts.inter(
           fontSize: 20,
