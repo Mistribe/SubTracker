@@ -47,64 +47,6 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
           subscription = updatedPayment;
         }
 
-        // Helper function to build info rows
-        Widget buildInfoRow(String label, String value, IconData icon) {
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          final iconColor =
-              {
-                Icons.attach_money: Colors.green,
-                Icons.calendar_today: Colors.blue,
-                Icons.calculate: Colors.purple,
-                Icons.event_available: Colors.orange,
-                Icons.monetization_on: Colors.amber,
-                Icons.check_circle: Colors.green,
-                Icons.stop_circle: Colors.red,
-              }[icon] ??
-              Theme.of(context).colorScheme.primary;
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12.0),
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  icon,
-                  size: 20,
-                  color: iconColor.withValues(alpha: isDark ? 0.8 : 1.0),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 15,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    textAlign: TextAlign.end,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-
         // Get the current subscription detail
         final currentDetail = subscription.getLastPaymentDetail();
 
@@ -146,9 +88,6 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
         String annualText = defaultCurrency.formatAmount(
           annualCostInDefaultCurrency,
         );
-        String totalSpentText = defaultCurrency.formatAmount(
-          totalSpentInDefaultCurrency,
-        );
 
         // Add original amounts in parentheses if currencies differ
         if (subscriptionCurrency.code != defaultCurrency.code) {
@@ -156,8 +95,6 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
               ' (${subscriptionCurrency.formatAmount(subscription.monthlyCost)})';
           annualText +=
               ' (${subscriptionCurrency.formatAmount(subscription.annualCost)})';
-          totalSpentText +=
-              ' (${subscriptionCurrency.formatAmount(subscription.totalAmountSpent)})';
         }
 
         return Scaffold(

@@ -111,7 +111,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
       // Initialize with the default currency from the provider
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final provider = Provider.of<SubscriptionProvider>(
-          currentContext,
+          context,
           listen: false,
         );
         setState(() {
