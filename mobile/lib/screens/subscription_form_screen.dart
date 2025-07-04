@@ -564,8 +564,9 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
 
   // Show confirmation dialog when trying to go back with unsaved changes
   Future<void> _showUnsavedChangesDialog() async {
+    final navigator = Navigator.of(context);
     if (!_isFormModified) {
-      Navigator.of(context).pop(); // No changes, just go back
+      navigator.pop(); // No changes, just go back
       return;
     }
 
@@ -600,7 +601,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
     );
 
     if (result == 'discard') {
-      Navigator.of(context).pop(); // Go back without saving
+      navigator.pop(); // Go back without saving
     } else if (result == 'save') {
       _submitForm(); // Save changes
     }
