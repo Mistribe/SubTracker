@@ -76,11 +76,6 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
           defaultCurrency.code,
         );
         final annualCostInDefaultCurrency = monthlyCostInDefaultCurrency * 12;
-        final totalSpentInDefaultCurrency = CurrencyConverter.convert(
-          subscription.totalAmountSpent,
-          subscriptionCurrency.code,
-          defaultCurrency.code,
-        );
         // Format the cost texts
         String monthlyText = defaultCurrency.formatAmount(
           monthlyCostInDefaultCurrency,

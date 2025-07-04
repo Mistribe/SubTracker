@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/subscription_provider.dart';
-import '../providers/theme_provider.dart';
 import '../providers/family_member_provider.dart';
 import '../widgets/subscription_list.dart';
 import 'subscription_form_screen.dart';
