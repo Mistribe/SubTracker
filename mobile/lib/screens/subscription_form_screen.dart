@@ -999,7 +999,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                                     child: Text(member.name),
                                                   );
                                                 })
-                                                .toList(),
+                                                ,
                                           ],
                                           onChanged: (String? value) {
                                             setState(() {

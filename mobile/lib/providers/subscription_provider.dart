@@ -38,11 +38,11 @@ class SubscriptionProvider with ChangeNotifier {
   final SubscriptionRepository subscriptionRepository;
   final SettingsRepository? settingsRepository;
   final LabelRepository labelRepository;
+  final List<String> _selectedLabelIds = [];
   List<Subscription> _subscriptions = [];
   List<Label> _labels = [];
   bool _showInactiveSubscriptions = false;
   SubscriptionSortOption _sortOption = SubscriptionSortOption.none;
-  List<String> _selectedLabelIds = [];
   String? _selectedFamilyMemberId;
   String? _selectedPayerFamilyMemberId;
 
@@ -150,8 +150,9 @@ class SubscriptionProvider with ChangeNotifier {
       case SubscriptionSortOption.nextPaymentAsc:
         subscriptions.sort((a, b) {
           if (a.state != SubscriptionState.active &&
-              b.state != SubscriptionState.active)
+              b.state != SubscriptionState.active) {
             return 0;
+          }
           if (a.state != SubscriptionState.active) return 1;
           if (b.state != SubscriptionState.active) return -1;
           return a.nextPaymentDate.compareTo(b.nextPaymentDate);
@@ -160,8 +161,9 @@ class SubscriptionProvider with ChangeNotifier {
       case SubscriptionSortOption.nextPaymentDesc:
         subscriptions.sort((a, b) {
           if (a.state != SubscriptionState.active &&
-              b.state != SubscriptionState.active)
+              b.state != SubscriptionState.active) {
             return 0;
+          }
           if (a.state != SubscriptionState.active) return 1;
           if (b.state != SubscriptionState.active) return -1;
           return b.nextPaymentDate.compareTo(a.nextPaymentDate);

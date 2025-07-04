@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/currency.dart';
 import '../models/subscription.dart';
-import '../models/family_member.dart';
 import '../models/subscription_state.dart';
 import '../providers/subscription_provider.dart';
 import '../widgets/cancel_subscription_form.dart';
@@ -627,7 +626,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                           ),
                                           dense: true,
                                         ),
-                                      ).toList(),
+                                      ),
                                     ],
                                   ),
                                 if (subscription.payerFamilyMember != null)

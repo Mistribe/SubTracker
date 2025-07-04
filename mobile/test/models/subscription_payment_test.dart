@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:subscription_tracker/models/subscription_payment.dart';
-import 'package:subscription_tracker/models/currency.dart';
 
 void main() {
   group('SubscriptionPayment', () {

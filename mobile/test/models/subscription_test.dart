@@ -4,7 +4,6 @@ import 'package:hive/hive.dart';
 import 'package:subscription_tracker/models/subscription.dart';
 import 'package:subscription_tracker/models/subscription_payment.dart';
 import 'package:subscription_tracker/models/label.dart';
-import 'package:subscription_tracker/models/currency.dart';
 
 void main() {
   group('Subscription', () {
@@ -913,17 +912,12 @@ class _TestSubscription extends Subscription {
   final double mockTotalAmountSpent;
 
   _TestSubscription({
-    required String id,
-    required String name,
-    List<SubscriptionPayment>? subscriptionPayments,
-    List<Label>? labels,
+    required super.id,
+    required super.name,
+    super.subscriptionPayments,
+    super.labels,
     required this.mockTotalAmountSpent,
-  }) : super(
-          id: id,
-          name: name,
-          subscriptionPayments: subscriptionPayments,
-          labels: labels,
-        );
+  });
 
   @override
   double get totalAmountSpent => mockTotalAmountSpent;
