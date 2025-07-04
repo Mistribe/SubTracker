@@ -203,10 +203,7 @@ class _PriceChangeFormState extends State<PriceChangeForm> {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                child: const Text(
-                  'Update Payment',
-                  style: TextStyle(fontSize: 16),
-                ),
+                child: const Text('Update', style: TextStyle(fontSize: 16)),
               ),
             ],
           ),

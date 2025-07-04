@@ -185,7 +185,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       ),
                     ),
                   // Show reactivate subscription option if subscription is not active
-                  if (subscription.state != SubscriptionState.active)
+                  if (subscription.state == SubscriptionState.ended)
                     PopupMenuItem<String>(
                       value: 'reactivatePayment',
                       child: Row(
