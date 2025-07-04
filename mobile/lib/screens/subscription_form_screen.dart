@@ -37,6 +37,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
   bool _isActiveSubscription = true;
   List<FamilyMember> _userFamilyMembers = [];
   FamilyMember? _payerFamilyMember;
+  bool _isFormModified = false; // Track if form has been modified
 
   // Get currencies from the Currency enum
   final List<String> _currencies = Currency.codes;
@@ -122,6 +123,21 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
       // Default currency until provider loads
       _selectedCurrency = Currency.USD.code;
     }
+    
+    // Add listeners to controllers to detect changes
+    _nameController.addListener(_onFormChanged);
+    _priceController.addListener(_onFormChanged);
+    _customMonthsController.addListener(_onFormChanged);
+    _recurrenceCountController.addListener(_onFormChanged);
+  }
+  
+  // Called when any form field changes
+  void _onFormChanged() {
+    if (!_isFormModified) {
+      setState(() {
+        _isFormModified = true;
+      });
+    }
   }
 
   @override
@@ -147,6 +163,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
     if (picked != null && picked != _startDate) {
       setState(() {
         _startDate = picked;
+        _isFormModified = true;
       });
     }
   }
@@ -160,6 +177,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
 
     setState(() {
       _selectedDuration = value;
+      _isFormModified = true;
 
       // Update months based on selection
       if (value == '1 month') {
@@ -214,6 +232,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
     if (parsedValue != null && parsedValue > 0) {
       setState(() {
         _months = parsedValue;
+        _isFormModified = true;
       });
     }
   }
@@ -346,6 +365,9 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
           ),
         );
 
+        // Reset form modified flag
+        _isFormModified = false;
+
         // Close the form
         navigator.pop();
       } catch (e) {
@@ -384,6 +406,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                 (selectedLabel) => selectedLabel.id == label.id,
               );
             }
+            _isFormModified = true;
           });
         },
         backgroundColor: Color(
@@ -418,6 +441,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                 (selectedMember) => selectedMember.id == member.id,
               );
             }
+            _isFormModified = true;
           });
         },
         backgroundColor: Theme.of(context).chipTheme.backgroundColor,
@@ -538,6 +562,48 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
     );
   }
 
+  // Show confirmation dialog when trying to go back with unsaved changes
+  Future<void> _showUnsavedChangesDialog() async {
+    if (!_isFormModified) {
+      Navigator.of(context).pop(); // No changes, just go back
+      return;
+    }
+
+    // Show confirmation dialog
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Unsaved Changes'),
+        content: const Text('You have unsaved changes. What would you like to do?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop('cancel'), // Don't discard changes
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop('discard'); // Discard changes
+            },
+            child: const Text('Discard modification'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop('save'); // Save changes
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == 'discard') {
+      Navigator.of(context).pop(); // Go back without saving
+    } else if (result == 'save') {
+      _submitForm(); // Save changes
+    }
+    // If result is 'cancel' or null, do nothing and stay on the form
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -547,6 +613,10 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _showUnsavedChangesDialog,
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -671,6 +741,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                           if (newValue != null) {
                                             setState(() {
                                               _selectedCurrency = newValue;
+                                              _isFormModified = true;
                                             });
                                           }
                                         }
@@ -809,6 +880,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                 onChanged: (value) {
                                   setState(() {
                                     _useRecurrenceCount = value;
+                                    _isFormModified = true;
                                     if (!value) {
                                       _recurrenceCountController.text = '1';
                                     }
@@ -1026,6 +1098,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                                             value,
                                                           );
                                               }
+                                              _isFormModified = true;
                                             });
                                           },
                                         ),
