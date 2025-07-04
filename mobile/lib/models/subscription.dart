@@ -2,6 +2,7 @@ import 'package:hive/hive.dart';
 import 'package:subscription_tracker/models/subscription_payment.dart';
 import 'package:subscription_tracker/models/label.dart';
 import 'package:subscription_tracker/models/currency.dart';
+import 'package:subscription_tracker/models/family_member.dart';
 
 part 'subscription.g.dart';
 
@@ -19,13 +20,22 @@ class Subscription extends HiveObject {
   @HiveField(4)
   final List<Label> labels;
 
+  @HiveField(5)
+  final List<FamilyMember> userFamilyMembers;
+
+  @HiveField(6)
+  final FamilyMember? payerFamilyMember;
+
   Subscription({
     required this.id,
     required this.name,
     List<SubscriptionPayment>? subscriptionPayments,
     List<Label>? labels,
+    List<FamilyMember>? userFamilyMembers,
+    this.payerFamilyMember,
   }) : subscriptionPayments = subscriptionPayments ?? [],
-       labels = labels ?? [];
+       labels = labels ?? [],
+       userFamilyMembers = userFamilyMembers ?? [];
 
   SubscriptionPayment getLastPaymentDetail() {
     final sortedHistory = List<SubscriptionPayment>.from(subscriptionPayments)
@@ -178,12 +188,16 @@ class Subscription extends HiveObject {
     String? name,
     List<SubscriptionPayment>? subscriptionPayments,
     List<Label>? labels,
+    List<FamilyMember>? userFamilyMembers,
+    FamilyMember? payerFamilyMember,
   }) {
     return Subscription(
       id: id ?? this.id,
       name: name ?? this.name,
       subscriptionPayments: subscriptionPayments ?? this.subscriptionPayments,
       labels: labels ?? this.labels,
+      userFamilyMembers: userFamilyMembers ?? this.userFamilyMembers,
+      payerFamilyMember: payerFamilyMember ?? this.payerFamilyMember,
     );
   }
 
@@ -196,6 +210,8 @@ class Subscription extends HiveObject {
           .map((detail) => detail.toJson())
           .toList(),
       'labels': labels.map((label) => label.toJson()).toList(),
+      'userFamilyMembers': userFamilyMembers.map((member) => member.toJson()).toList(),
+      'payerFamilyMember': payerFamilyMember?.toJson(),
     };
   }
 
@@ -213,6 +229,14 @@ class Subscription extends HiveObject {
                 .map((item) => Label.fromJson(item))
                 .toList()
           : [],
+      userFamilyMembers: json['userFamilyMembers'] != null
+          ? (json['userFamilyMembers'] as List)
+                .map((item) => FamilyMember.fromJson(item))
+                .toList()
+          : [],
+      payerFamilyMember: json['payerFamilyMember'] != null
+          ? FamilyMember.fromJson(json['payerFamilyMember'])
+          : null,
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import '../models/family_member.dart';
 import '../models/subscription.dart';
 import '../models/subscription_payment.dart';
 import '../models/label.dart';
@@ -21,7 +22,10 @@ enum SubscriptionSortOption {
   nextPaymentDesc,
 }
 
-enum SubscriptionFilterOption { labels, showInactive, hideInactive }
+enum SubscriptionFilterOption { labels, showInactive, hideInactive, familyMembers, payer }
+
+// Special value for family common account in payer filter
+const String kFamilyCommonAccountId = 'family_common_account';
 
 class SubscriptionProvider with ChangeNotifier {
   final SubscriptionRepository subscriptionRepository;
@@ -32,6 +36,8 @@ class SubscriptionProvider with ChangeNotifier {
   bool _showInactiveSubscriptions = false;
   SubscriptionSortOption _sortOption = SubscriptionSortOption.none;
   List<String> _selectedLabelIds = [];
+  String? _selectedFamilyMemberId;
+  String? _selectedPayerFamilyMemberId;
 
   SubscriptionProvider({
     required this.subscriptionRepository,
@@ -84,6 +90,28 @@ class SubscriptionProvider with ChangeNotifier {
             (label) => _selectedLabelIds.contains(label.id),
           )) {
         return false;
+      }
+
+      // Filter by selected family member
+      if (_selectedFamilyMemberId != null &&
+          !subscription.userFamilyMembers.any(
+            (member) => member.id == _selectedFamilyMemberId,
+          )) {
+        return false;
+      }
+
+      // Filter by selected payer
+      if (_selectedPayerFamilyMemberId != null) {
+        // Special case for "Family (common account)"
+        if (_selectedPayerFamilyMemberId == kFamilyCommonAccountId) {
+          // Show subscriptions with no specific payer
+          if (subscription.payerFamilyMember != null) {
+            return false;
+          }
+        } else if (subscription.payerFamilyMember == null ||
+                  subscription.payerFamilyMember!.id != _selectedPayerFamilyMemberId) {
+          return false;
+        }
       }
 
       return true;
@@ -194,6 +222,47 @@ class SubscriptionProvider with ChangeNotifier {
     }
   }
 
+  // Getter for selected family member ID
+  String? get selectedFamilyMemberId => _selectedFamilyMemberId;
+
+  // Setter for selected family member ID
+  set selectedFamilyMemberId(String? familyMemberId) {
+    _selectedFamilyMemberId = familyMemberId;
+    notifyListeners();
+  }
+
+  // Clear family member filter
+  void clearFamilyMemberFilter() {
+    if (_selectedFamilyMemberId != null) {
+      _selectedFamilyMemberId = null;
+      notifyListeners();
+    }
+  }
+
+  // Getter for selected payer family member ID
+  String? get selectedPayerFamilyMemberId => _selectedPayerFamilyMemberId;
+
+  // Setter for selected payer family member ID
+  set selectedPayerFamilyMemberId(String? payerFamilyMemberId) {
+    _selectedPayerFamilyMemberId = payerFamilyMemberId;
+    notifyListeners();
+  }
+
+  // Clear payer family member filter
+  void clearPayerFamilyMemberFilter() {
+    if (_selectedPayerFamilyMemberId != null) {
+      _selectedPayerFamilyMemberId = null;
+      notifyListeners();
+    }
+  }
+
+  // Clear all filters
+  void clearAllFilters() {
+    clearLabelFilters();
+    clearFamilyMemberFilter();
+    clearPayerFamilyMemberFilter();
+  }
+
   // Calculate total monthly cost in the default currency (USD)
   double get totalMonthlyCost {
     return _subscriptions.fold(
@@ -300,6 +369,8 @@ class SubscriptionProvider with ChangeNotifier {
     DateTime? endDate,
     String? currency,
     List<Label>? labels,
+    List<FamilyMember>? userFamilyMembers,
+    FamilyMember? payerFamilyMember,
   }) async {
     // Create initial subscription history entry
     final initialSubscriptionPayment = [
@@ -319,6 +390,8 @@ class SubscriptionProvider with ChangeNotifier {
       name: name,
       subscriptionPayments: initialSubscriptionPayment,
       labels: labels ?? [],
+      userFamilyMembers: userFamilyMembers,
+      payerFamilyMember: payerFamilyMember,
     );
 
     // Add to local list
@@ -601,6 +674,27 @@ class SubscriptionProvider with ChangeNotifier {
     if (index >= 0) {
       final subscription = _subscriptions[index];
       final updatedSubscription = subscription.copyWith(labels: labels);
+
+      _subscriptions[index] = updatedSubscription;
+      await subscriptionRepository.update(updatedSubscription);
+
+      notifyListeners();
+    }
+  }
+
+  // Update subscription family members
+  Future<void> updateSubscriptionFamilyMembers(
+    String subscriptionId, {
+    List<FamilyMember>? userFamilyMembers,
+    FamilyMember? payerFamilyMember,
+  }) async {
+    final index = _subscriptions.indexWhere((s) => s.id == subscriptionId);
+    if (index >= 0) {
+      final subscription = _subscriptions[index];
+      final updatedSubscription = subscription.copyWith(
+        userFamilyMembers: userFamilyMembers,
+        payerFamilyMember: payerFamilyMember,
+      );
 
       _subscriptions[index] = updatedSubscription;
       await subscriptionRepository.update(updatedSubscription);

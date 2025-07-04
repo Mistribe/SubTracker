@@ -5,11 +5,14 @@ import 'package:subscription_tracker/models/subscription_payment.dart';
 import 'models/subscription.dart';
 import 'models/settings.dart';
 import 'models/label.dart';
+import 'models/family_member.dart';
 import 'providers/subscription_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/family_member_provider.dart';
 import 'repositories/subscription_repository.dart';
 import 'repositories/settings_repository.dart';
 import 'repositories/label_repository.dart';
+import 'repositories/family_member_repository.dart';
 import 'screens/home_screen.dart';
 
 void main() async {
@@ -24,6 +27,7 @@ void main() async {
   Hive.registerAdapter(SubscriptionPaymentAdapter());
   Hive.registerAdapter(SettingsAdapter());
   Hive.registerAdapter(LabelAdapter());
+  Hive.registerAdapter(FamilyMemberAdapter());
 
   // Initialize repositories
   final paymentRepository = SubscriptionRepository();
@@ -35,10 +39,13 @@ void main() async {
   final labelRepository = LabelRepository();
   await labelRepository.initialize();
 
+  final familyMemberRepository = await FamilyMemberRepository.initialize();
+
   runApp(MyApp(
     subscriptionRepository: paymentRepository,
     settingsRepository: settingsRepository,
     labelRepository: labelRepository,
+    familyMemberRepository: familyMemberRepository,
   ));
 }
 
@@ -46,12 +53,14 @@ class MyApp extends StatelessWidget {
   final SubscriptionRepository subscriptionRepository;
   final SettingsRepository settingsRepository;
   final LabelRepository labelRepository;
+  final FamilyMemberRepository familyMemberRepository;
 
   const MyApp({
     super.key, 
     required this.subscriptionRepository,
     required this.settingsRepository,
     required this.labelRepository,
+    required this.familyMemberRepository,
   });
 
   @override
@@ -68,6 +77,11 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => ThemeProvider(
             settingsRepository: settingsRepository,
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => FamilyMemberProvider(
+            familyMemberRepository: familyMemberRepository,
           ),
         ),
       ],

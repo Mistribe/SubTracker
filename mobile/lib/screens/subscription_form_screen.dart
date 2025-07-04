@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/subscription_provider.dart';
+import '../providers/family_member_provider.dart';
 import '../models/subscription.dart';
 import '../models/label.dart';
 import '../models/currency.dart';
+import '../models/family_member.dart';
 
 class SubscriptionFormScreen extends StatefulWidget {
   final Subscription? subscription;
@@ -28,9 +30,12 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
   late String _selectedCurrency;
   late List<Label> _selectedLabels;
   bool _isLabelsExpanded = false; // Track if labels section is expanded
+  bool _isFamilyExpanded = false; // Track if family section is expanded
   bool _useRecurrenceCount = false;
   bool _isEditMode = false;
   bool _isActiveSubscription = true;
+  List<FamilyMember> _userFamilyMembers = [];
+  FamilyMember? _payerFamilyMember;
 
   // Get currencies from the Currency enum
   final List<String> _currencies = Currency.codes;
@@ -71,6 +76,8 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
       }
       _selectedCurrency = currentDetail.currency;
       _selectedLabels = List<Label>.from(subscription.labels);
+      _userFamilyMembers = List<FamilyMember>.from(subscription.userFamilyMembers);
+      _payerFamilyMember = subscription.payerFamilyMember;
 
       // Set the selected duration based on months
       if (_months == 1) {
@@ -285,6 +292,13 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
             _selectedLabels,
           );
 
+          // Update the subscription family members
+          await provider.updateSubscriptionFamilyMembers(
+            subscription.id,
+            userFamilyMembers: _userFamilyMembers,
+            payerFamilyMember: _payerFamilyMember,
+          );
+
           // Update the subscription detail if it's active
           if (_isActiveSubscription) {
             final currentDetail = subscription.getLastPaymentDetail();
@@ -308,6 +322,8 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
             endDate: _endDate,
             currency: _selectedCurrency,
             labels: _selectedLabels,
+            userFamilyMembers: _userFamilyMembers,
+            payerFamilyMember: _payerFamilyMember,
           );
         }
 
@@ -369,6 +385,36 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
         selectedColor: Color(
           int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000,
         ).withOpacity(0.7),
+        checkmarkColor: Colors.white,
+      );
+    }).toList();
+  }
+
+  // Build family member chips for selection
+  List<Widget> _buildFamilyMemberChips() {
+    final familyMemberProvider = Provider.of<FamilyMemberProvider>(context);
+    final allFamilyMembers = familyMemberProvider.familyMembers;
+
+    return allFamilyMembers.map((member) {
+      final isSelected = _userFamilyMembers.any(
+        (selectedMember) => selectedMember.id == member.id,
+      );
+      return FilterChip(
+        label: Text(member.name),
+        selected: isSelected,
+        onSelected: (selected) {
+          setState(() {
+            if (selected) {
+              _userFamilyMembers.add(member);
+            } else {
+              _userFamilyMembers.removeWhere(
+                (selectedMember) => selectedMember.id == member.id,
+              );
+            }
+          });
+        },
+        backgroundColor: Theme.of(context).chipTheme.backgroundColor,
+        selectedColor: Theme.of(context).colorScheme.primary.withOpacity(0.7),
         checkmarkColor: Colors.white,
       );
     }).toList();
@@ -808,6 +854,155 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                     ),
                   ),
                 ],
+
+                const SizedBox(height: 24),
+
+                // Family Section
+                Consumer<FamilyMemberProvider>(
+                  builder: (context, familyMemberProvider, _) {
+                    final hasFamilyMembers = familyMemberProvider.hasFamilyMembers;
+
+                    // If no family members, don't show the section
+                    if (!hasFamilyMembers) {
+                      return const SizedBox.shrink();
+                    }
+
+                    final familyMembers = familyMemberProvider.familyMembers;
+
+                    return Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          // Collapsible header
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                _isFamilyExpanded = !_isFamilyExpanded;
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Family',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+                                  Icon(
+                                    _isFamilyExpanded
+                                        ? Icons.keyboard_arrow_up
+                                        : Icons.keyboard_arrow_down,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // Collapsible content
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            height: _isFamilyExpanded ? null : 0,
+                            child: _isFamilyExpanded
+                                ? Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16.0,
+                                      0,
+                                      16.0,
+                                      16.0,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Divider(),
+                                        const Text(
+                                          'Link family members to this subscription',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+
+                                        // Who uses this subscription
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Who uses this subscription',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Wrap(
+                                              spacing: 8.0,
+                                              runSpacing: 8.0,
+                                              children: _buildFamilyMemberChips(),
+                                            ),
+                                          ],
+                                        ),
+
+                                        const SizedBox(height: 16),
+
+                                        // Who pays for this subscription
+                                        DropdownButtonFormField<String?>(
+                                          value: _payerFamilyMember?.id,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Who pays for this subscription',
+                                            prefixIcon: Icon(Icons.account_balance_wallet),
+                                          ),
+                                          items: [
+                                            const DropdownMenuItem<String?>(
+                                              value: null,
+                                              child: Text('None'),
+                                            ),
+                                            const DropdownMenuItem<String?>(
+                                              value: 'family',
+                                              child: Text('Family (common account)'),
+                                            ),
+                                            ...familyMembers.map((member) {
+                                              return DropdownMenuItem<String?>(
+                                                value: member.id,
+                                                child: Text(member.name),
+                                              );
+                                            }).toList(),
+                                          ],
+                                          onChanged: (String? value) {
+                                            setState(() {
+                                              if (value == 'family') {
+                                                // Create a special FamilyMember object for "Family"
+                                                _payerFamilyMember = FamilyMember(
+                                                  id: 'family',
+                                                  name: 'Family (common account)',
+                                                );
+                                              } else {
+                                                _payerFamilyMember = value == null
+                                                    ? null
+                                                    : familyMemberProvider.getFamilyMemberById(value);
+                                              }
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
 
                 const SizedBox(height: 24),
 

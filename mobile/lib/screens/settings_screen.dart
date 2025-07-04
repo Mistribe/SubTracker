@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/currency.dart';
 import '../providers/theme_provider.dart';
 import '../providers/subscription_provider.dart';
+import 'family_management_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -74,6 +75,24 @@ class SettingsScreen extends StatelessWidget {
                 );
               }).toList(),
             ),
+          ),
+          const Divider(),
+          ListTile(
+            title: const Text('Family Management'),
+            leading: const Icon(Icons.family_restroom),
+          ),
+          ListTile(
+            title: const Text('Manage Family Members'),
+            subtitle: const Text('Add, edit, or remove family members'),
+            leading: const Icon(Icons.people),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const FamilyManagementScreen(),
+                ),
+              );
+            },
           ),
           const Divider(),
           // Additional settings can be added here in the future

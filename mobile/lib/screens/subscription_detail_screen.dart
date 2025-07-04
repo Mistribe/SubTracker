@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/currency.dart';
 import '../models/subscription.dart';
+import '../models/family_member.dart';
 import '../providers/subscription_provider.dart';
 import '../widgets/cancel_subscription_form.dart';
 import 'subscription_form_screen.dart';
@@ -565,6 +566,91 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                               ),
                             );
                           }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                // Show family members if any are assigned
+                if (subscription.userFamilyMembers.isNotEmpty || subscription.payerFamilyMember != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4, bottom: 12),
+                          child: Text(
+                            'Family',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                        Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              children: [
+                                if (subscription.userFamilyMembers.isNotEmpty)
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.only(left: 16, top: 8, bottom: 8),
+                                        child: Text(
+                                          'Used by',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                      ...subscription.userFamilyMembers.map((member) => 
+                                        ListTile(
+                                          leading: const CircleAvatar(
+                                            child: Icon(Icons.person),
+                                          ),
+                                          title: Text(
+                                            member.name,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(context).colorScheme.primary,
+                                            ),
+                                          ),
+                                          dense: true,
+                                        ),
+                                      ).toList(),
+                                    ],
+                                  ),
+                                if (subscription.payerFamilyMember != null)
+                                  ListTile(
+                                    leading: CircleAvatar(
+                                      child: Icon(
+                                        subscription.payerFamilyMember!.id == 'family'
+                                            ? Icons.group
+                                            : Icons.account_balance_wallet,
+                                      ),
+                                    ),
+                                    title: const Text('Paid by'),
+                                    subtitle: Text(
+                                      subscription.payerFamilyMember!.name,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
+                                    ),
+                                    dense: true,
+                                  ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),

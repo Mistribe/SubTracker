@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/family_member_provider.dart';
 import '../widgets/subscription_list.dart';
 import 'subscription_form_screen.dart';
 import 'settings_screen.dart';
@@ -123,21 +124,25 @@ class HomeScreen extends StatelessWidget {
                               size: 20,
                             ),
                             onSelected: (SubscriptionFilterOption newValue) {
-                              switch (newValue) {
-                                case SubscriptionFilterOption.labels:
-                                  _showLabelFilterBottomSheet(
-                                    context,
-                                    paymentProvider,
-                                  );
-                                  break;
-                                case SubscriptionFilterOption.showInactive:
-                                  paymentProvider.showInactiveSubscriptions =
-                                      true;
-                                  break;
-                                case SubscriptionFilterOption.hideInactive:
-                                  paymentProvider.showInactiveSubscriptions =
-                                      false;
-                                  break;
+                              if (newValue == SubscriptionFilterOption.labels) {
+                                _showLabelFilterBottomSheet(
+                                  context,
+                                  paymentProvider,
+                                );
+                              } else if (newValue == SubscriptionFilterOption.showInactive) {
+                                paymentProvider.showInactiveSubscriptions = true;
+                              } else if (newValue == SubscriptionFilterOption.hideInactive) {
+                                paymentProvider.showInactiveSubscriptions = false;
+                              } else if (newValue == SubscriptionFilterOption.familyMembers) {
+                                _showFamilyMemberFilterBottomSheet(
+                                  context,
+                                  paymentProvider,
+                                );
+                              } else if (newValue == SubscriptionFilterOption.payer) {
+                                _showPayerFilterBottomSheet(
+                                  context,
+                                  paymentProvider,
+                                );
                               }
                             },
                             itemBuilder: (context) => [
@@ -155,6 +160,44 @@ class HomeScreen extends StatelessWidget {
                                       const SizedBox(width: 8),
                                       Text(
                                         'Labels ${paymentProvider.selectedLabelIds.isNotEmpty ? "(${paymentProvider.selectedLabelIds.length})" : ""}',
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              // Family member filter option
+                              if (Provider.of<FamilyMemberProvider>(context, listen: false).hasFamilyMembers)
+                                PopupMenuItem(
+                                  value: SubscriptionFilterOption.familyMembers,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.people_outline,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Family Member ${paymentProvider.selectedFamilyMemberId != null ? "(1)" : ""}',
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              // Payer filter option
+                              if (Provider.of<FamilyMemberProvider>(context, listen: false).hasFamilyMembers)
+                                PopupMenuItem(
+                                  value: SubscriptionFilterOption.payer,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.account_balance_wallet_outlined,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Payer ${paymentProvider.selectedPayerFamilyMemberId != null ? "(1)" : ""}',
                                       ),
                                     ],
                                   ),
@@ -260,6 +303,219 @@ class HomeScreen extends StatelessWidget {
         elevation: 4,
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  // Show bottom sheet for family member filtering
+  void _showFamilyMemberFilterBottomSheet(
+    BuildContext context,
+    SubscriptionProvider provider,
+  ) {
+    final familyMemberProvider = Provider.of<FamilyMemberProvider>(context, listen: false);
+
+    if (!familyMemberProvider.hasFamilyMembers) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No family members available. Add family members in settings.'),
+        ),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final familyMembers = familyMemberProvider.familyMembers;
+            final selectedFamilyMemberId = provider.selectedFamilyMemberId;
+
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header with clear button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Filter by Family Member',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        if (selectedFamilyMemberId != null)
+                          TextButton(
+                            onPressed: () {
+                              provider.clearFamilyMemberFilter();
+                              setState(() {});
+                            },
+                            child: const Text('Clear'),
+                          ),
+                      ],
+                    ),
+
+                    const Divider(),
+
+                    // Family member list
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: familyMembers.length,
+                      itemBuilder: (context, index) {
+                        final familyMember = familyMembers[index];
+                        final isSelected = selectedFamilyMemberId == familyMember.id;
+
+                        return RadioListTile<String>(
+                          title: Text(familyMember.name),
+                          value: familyMember.id,
+                          groupValue: selectedFamilyMemberId,
+                          onChanged: (value) {
+                            provider.selectedFamilyMemberId = value;
+                            setState(() {});
+                          },
+                          selected: isSelected,
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Done button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Done'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Show bottom sheet for payer filtering
+  void _showPayerFilterBottomSheet(
+    BuildContext context,
+    SubscriptionProvider provider,
+  ) {
+    final familyMemberProvider = Provider.of<FamilyMemberProvider>(context, listen: false);
+
+    if (!familyMemberProvider.hasFamilyMembers) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No family members available. Add family members in settings.'),
+        ),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final familyMembers = familyMemberProvider.familyMembers;
+            final selectedPayerFamilyMemberId = provider.selectedPayerFamilyMemberId;
+
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header with clear button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Filter by Payer',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        if (selectedPayerFamilyMemberId != null)
+                          TextButton(
+                            onPressed: () {
+                              provider.clearPayerFamilyMemberFilter();
+                              setState(() {});
+                            },
+                            child: const Text('Clear'),
+                          ),
+                      ],
+                    ),
+
+                    const Divider(),
+
+                    // Payer list with Family (common account) option
+                    Column(
+                      children: [
+                        // Family (common account) option
+                        RadioListTile<String>(
+                          title: const Text('Family (common account)'),
+                          subtitle: const Text('Subscriptions with no specific payer'),
+                          value: kFamilyCommonAccountId,
+                          groupValue: selectedPayerFamilyMemberId,
+                          onChanged: (value) {
+                            provider.selectedPayerFamilyMemberId = value;
+                            setState(() {});
+                          },
+                          selected: selectedPayerFamilyMemberId == kFamilyCommonAccountId,
+                        ),
+
+                        const Divider(),
+
+                        // Individual family members
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: familyMembers.length,
+                          itemBuilder: (context, index) {
+                            final familyMember = familyMembers[index];
+                            final isSelected = selectedPayerFamilyMemberId == familyMember.id;
+
+                            return RadioListTile<String>(
+                              title: Text(familyMember.name),
+                              value: familyMember.id,
+                              groupValue: selectedPayerFamilyMemberId,
+                              onChanged: (value) {
+                                provider.selectedPayerFamilyMemberId = value;
+                                setState(() {});
+                              },
+                              selected: isSelected,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Done button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Done'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
