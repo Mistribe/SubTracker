@@ -4,6 +4,7 @@ import 'package:subscription_tracker/widgets/price_change_form.dart';
 import '../providers/subscription_provider.dart';
 import '../models/subscription.dart';
 import '../models/currency.dart';
+import '../models/subscription_state.dart';
 import '../services/currency_converter.dart';
 import '../screens/subscription_detail_screen.dart';
 import '../screens/subscription_form_screen.dart';
@@ -27,17 +28,17 @@ class SubscriptionList extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              hasSubscriptions && isFiltered 
-                ? Icons.filter_alt_outlined 
-                : Icons.subscriptions_outlined,
+              hasSubscriptions && isFiltered
+                  ? Icons.filter_alt_outlined
+                  : Icons.subscriptions_outlined,
               size: 64,
               color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
             ),
             const SizedBox(height: 16),
             Text(
               hasSubscriptions && isFiltered
-                ? 'No active subscriptions'
-                : 'No subscriptions yet',
+                  ? 'No active subscriptions'
+                  : 'No subscriptions yet',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -47,8 +48,8 @@ class SubscriptionList extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               hasSubscriptions && isFiltered
-                ? 'Toggle the filter to show inactive subscriptions'
-                : 'Add your first subscription!',
+                  ? 'Toggle the filter to show inactive subscriptions'
+                  : 'Add your first subscription!',
               style: TextStyle(
                 fontSize: 16,
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
@@ -76,7 +77,8 @@ class SubscriptionCard extends StatelessWidget {
   const SubscriptionCard({super.key, required this.subscription});
 
   Widget _buildFrequencyBadge(Subscription subscription) {
-    if (!subscription.isActive || subscription.subscriptionPayments.isEmpty) {
+    if (subscription.state != SubscriptionState.active ||
+        subscription.subscriptionPayments.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -127,14 +129,13 @@ class SubscriptionCard extends StatelessWidget {
       context,
       listen: false,
     );
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Get currencies
     final defaultCurrency = subscriptionProvider.defaultCurrencyEnum;
     final subscriptionCurrency = Currency.fromCode(
       subscription.subscriptionPayments.isNotEmpty
           ? subscription.getLastPaymentDetail().currency
-          : Currency.defaultCode
+          : Currency.defaultCode,
     );
 
     // Convert costs to default currency
@@ -151,23 +152,30 @@ class SubscriptionCard extends StatelessWidget {
     );
 
     // Format the cost texts
-    String monthlyText = defaultCurrency.formatAmount(monthlyCostInDefaultCurrency);
-    String annualText = defaultCurrency.formatAmount(annualCostInDefaultCurrency);
-    String totalSpentText = defaultCurrency.formatAmount(totalSpentInDefaultCurrency);
+    String monthlyText = defaultCurrency.formatAmount(
+      monthlyCostInDefaultCurrency,
+    );
+    String annualText = defaultCurrency.formatAmount(
+      annualCostInDefaultCurrency,
+    );
+    String totalSpentText = defaultCurrency.formatAmount(
+      totalSpentInDefaultCurrency,
+    );
 
     // Add original amounts in parentheses if currencies differ
     if (subscriptionCurrency.code != defaultCurrency.code) {
-      monthlyText += ' (${subscriptionCurrency.formatAmount(subscription.monthlyCost)})';
-      annualText += ' (${subscriptionCurrency.formatAmount(subscription.annualCost)})';
-      totalSpentText += ' (${subscriptionCurrency.formatAmount(subscription.totalAmountSpent)})';
+      monthlyText +=
+          ' (${subscriptionCurrency.formatAmount(subscription.monthlyCost)})';
+      annualText +=
+          ' (${subscriptionCurrency.formatAmount(subscription.annualCost)})';
+      totalSpentText +=
+          ' (${subscriptionCurrency.formatAmount(subscription.totalAmountSpent)})';
     }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () {
@@ -180,7 +188,12 @@ class SubscriptionCard extends StatelessWidget {
           );
         },
         child: Padding(
-          padding: const EdgeInsets.only(left:16,right: 16,bottom: 16, top:8),
+          padding: const EdgeInsets.only(
+            left: 16,
+            right: 16,
+            bottom: 16,
+            top: 8,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -195,16 +208,26 @@ class SubscriptionCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: subscription.isActive 
-                              ? Colors.green.withOpacity(0.1) 
-                              : Colors.red.withOpacity(0.1),
+                            color:
+                                subscription.state == SubscriptionState.active
+                                ? Colors.green.withOpacity(0.1)
+                                : Colors.red.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
-                            subscription.isActive 
-                              ? Icons.check_circle_outline 
-                              : Icons.cancel_outlined,
-                            color: subscription.isActive ? Colors.green : Colors.red,
+                            subscription.state == SubscriptionState.active
+                                ? Icons.check_circle_outline
+                                : (subscription.state ==
+                                          SubscriptionState.notStarted
+                                      ? Icons.schedule
+                                      : Icons.cancel_outlined),
+                            color:
+                                subscription.state == SubscriptionState.active
+                                ? Colors.green
+                                : (subscription.state ==
+                                          SubscriptionState.notStarted
+                                      ? Colors.orange
+                                      : Colors.red),
                             size: 20,
                           ),
                         ),
@@ -223,12 +246,22 @@ class SubscriptionCard extends StatelessWidget {
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              if (!subscription.isActive)
+                              if (subscription.state == SubscriptionState.ended)
                                 Text(
                                   "Cancelled",
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.red.shade700,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              if (subscription.state ==
+                                  SubscriptionState.notStarted)
+                                Text(
+                                  "Coming",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.orange.shade700,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -245,7 +278,9 @@ class SubscriptionCard extends StatelessWidget {
                   PopupMenuButton<String>(
                     icon: Icon(
                       Icons.more_vert,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.7),
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -279,7 +314,10 @@ class SubscriptionCard extends StatelessWidget {
                         value: 'edit',
                         child: Row(
                           children: [
-                            Icon(Icons.edit, color: Theme.of(context).colorScheme.primary),
+                            Icon(
+                              Icons.edit,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                             const SizedBox(width: 8),
                             const Text('Edit'),
                           ],
@@ -289,7 +327,10 @@ class SubscriptionCard extends StatelessWidget {
                         value: 'addPriceChange',
                         child: Row(
                           children: [
-                            Icon(Icons.price_change, color: Colors.green.shade600),
+                            Icon(
+                              Icons.price_change,
+                              color: Colors.green.shade600,
+                            ),
                             const SizedBox(width: 8),
                             const Text('Add Price Change'),
                           ],
@@ -316,7 +357,7 @@ class SubscriptionCard extends StatelessWidget {
               ),
 
               // Cost information
-              if (subscription.isActive)
+              if (subscription.state != SubscriptionState.ended)
                 Row(
                   children: [
                     // Monthly cost
@@ -329,7 +370,9 @@ class SubscriptionCard extends StatelessWidget {
                               Icon(
                                 Icons.calendar_today,
                                 size: 14,
-                                color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withOpacity(0.7),
                               ),
                               const SizedBox(width: 4),
                               const Text(
@@ -348,6 +391,11 @@ class SubscriptionCard extends StatelessWidget {
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).colorScheme.primary,
+                              fontStyle:
+                                  subscription.state ==
+                                      SubscriptionState.notStarted
+                                  ? FontStyle.italic
+                                  : null,
                             ),
                           ),
                         ],
@@ -383,6 +431,11 @@ class SubscriptionCard extends StatelessWidget {
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.purple,
+                              fontStyle:
+                                  subscription.state ==
+                                      SubscriptionState.notStarted
+                                  ? FontStyle.italic
+                                  : null,
                             ),
                           ),
                         ],
@@ -392,7 +445,7 @@ class SubscriptionCard extends StatelessWidget {
                 ),
 
               // Next payment date
-              if (subscription.isActive)
+              if (subscription.state != SubscriptionState.ended)
                 Padding(
                   padding: const EdgeInsets.only(top: 16),
                   child: Row(
@@ -415,28 +468,29 @@ class SubscriptionCard extends StatelessWidget {
                   ),
                 ),
 
-              // Total spent
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.monetization_on,
-                      size: 16,
-                      color: Colors.green.shade600,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Total spent: $totalSpentText',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+              if (subscription.totalAmountSpent > 0)
+                // Total spent
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.monetization_on,
+                        size: 16,
                         color: Colors.green.shade600,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Text(
+                        'Total spent: $totalSpentText',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.green.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
               // Labels
               if (subscription.labels.isNotEmpty)
@@ -447,10 +501,8 @@ class SubscriptionCard extends StatelessWidget {
                     runSpacing: 6,
                     children: subscription.labels.map((label) {
                       final labelColor = Color(
-                        int.parse(
-                          label.color.substring(1, 7),
-                          radix: 16,
-                        ) + 0xFF000000,
+                        int.parse(label.color.substring(1, 7), radix: 16) +
+                            0xFF000000,
                       );
                       return Container(
                         padding: const EdgeInsets.symmetric(
@@ -460,10 +512,7 @@ class SubscriptionCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: labelColor.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: labelColor,
-                            width: 1,
-                          ),
+                          border: Border.all(color: labelColor, width: 1),
                         ),
                         child: Text(
                           label.name,

@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:subscription_tracker/models/subscription_state.dart';
 import 'currency.dart';
 
 part 'subscription_payment.g.dart';
@@ -37,15 +38,14 @@ class SubscriptionPayment {
     required this.currency,
   });
 
-  bool get isStarted {
-    return startDate.isBefore(DateTime.now());
-  }
-
-  bool get isActive {
-    if (endDate == null) {
-      return true;
+  SubscriptionState get state {
+    if (startDate.isAfter(DateTime.now())) {
+      return SubscriptionState.notStarted;
     }
-    return endDate!.isAfter(DateTime.now());
+    if (endDate == null || endDate!.isAfter(DateTime.now())) {
+      return SubscriptionState.active;
+    }
+    return SubscriptionState.ended;
   }
 
   int get totalMonthElapsed {
@@ -80,7 +80,7 @@ class SubscriptionPayment {
     final now = DateTime.now();
 
     // If payment is stopped, the next payment date is the reactivation date or far future if none
-    if (isActive == false) {
+    if (state == SubscriptionState.ended) {
       return DateTime(9999, 12, 31); // Far future date if no reactivation date
     }
 

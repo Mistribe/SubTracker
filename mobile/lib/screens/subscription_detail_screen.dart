@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/currency.dart';
 import '../models/subscription.dart';
 import '../models/family_member.dart';
+import '../models/subscription_state.dart';
 import '../providers/subscription_provider.dart';
 import '../widgets/cancel_subscription_form.dart';
 import 'subscription_form_screen.dart';
@@ -220,7 +221,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       ],
                     ),
                   ),
-                  if (subscription.isActive && subscription.isStarted)
+                  if (subscription.state == SubscriptionState.active)
                     const PopupMenuItem<String>(
                       value: 'addPaymentHistory',
                       child: Row(
@@ -232,7 +233,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       ),
                     ),
                   // Show stop subscription option if subscription is active
-                  if (subscription.isActive && subscription.isStarted)
+                  if (subscription.state == SubscriptionState.active)
                     const PopupMenuItem<String>(
                       value: 'stopPayment',
                       child: Row(
@@ -244,7 +245,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                       ),
                     ),
                   // Show reactivate subscription option if subscription is not active
-                  if (!subscription.isActive)
+                  if (subscription.state != SubscriptionState.active)
                     const PopupMenuItem<String>(
                       value: 'reactivatePayment',
                       child: Row(
@@ -720,14 +721,14 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                 index];
                         return ListTile(
                           leading: Icon(
-                            !history.isStarted
+                            history.state == SubscriptionState.notStarted
                                 ? Icons.schedule
-                                : history.isActive
+                                : history.state == SubscriptionState.active
                                 ? Icons.check_circle
                                 : Icons.stop_circle,
-                            color: !history.isStarted
+                            color: history.state == SubscriptionState.notStarted
                                 ? Colors.orange
-                                : history.isActive
+                                : history.state == SubscriptionState.active
                                 ? Colors.green
                                 : Colors.red,
                           ),
@@ -738,7 +739,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                             ),
                           ),
                           subtitle: Text(
-                            !history.isStarted
+                            history.state == SubscriptionState.notStarted
                                 ? 'Start at ${history.startDate.month}/${history.startDate.day}/${history.startDate.year}'
                                 : 'From ${history.startDate.month}/${history.startDate.day}/${history.startDate.year} to ${history.endDate == null ? "now" : "${history.endDate!.month}/${history.endDate!.day}/${history.endDate!.year}"}',
                           ),

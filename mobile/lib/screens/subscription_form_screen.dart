@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:subscription_tracker/models/subscription_state.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/family_member_provider.dart';
 import '../models/subscription.dart';
@@ -48,7 +49,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
     if (_isEditMode) {
       // Edit mode - initialize with subscription data
       final subscription = widget.subscription!;
-      _isActiveSubscription = subscription.isActive;
+      _isActiveSubscription = subscription.state == SubscriptionState.active;
 
       _nameController = TextEditingController(text: subscription.name);
 
@@ -76,7 +77,9 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
       }
       _selectedCurrency = currentDetail.currency;
       _selectedLabels = List<Label>.from(subscription.labels);
-      _userFamilyMembers = List<FamilyMember>.from(subscription.userFamilyMembers);
+      _userFamilyMembers = List<FamilyMember>.from(
+        subscription.userFamilyMembers,
+      );
       _payerFamilyMember = subscription.payerFamilyMember;
 
       // Set the selected duration based on months
@@ -860,7 +863,8 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                 // Family Section
                 Consumer<FamilyMemberProvider>(
                   builder: (context, familyMemberProvider, _) {
-                    final hasFamilyMembers = familyMemberProvider.hasFamilyMembers;
+                    final hasFamilyMembers =
+                        familyMemberProvider.hasFamilyMembers;
 
                     // If no family members, don't show the section
                     if (!hasFamilyMembers) {
@@ -886,21 +890,26 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                             child: Padding(
                               padding: const EdgeInsets.all(16.0),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     'Family',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
-                                      color: Theme.of(context).colorScheme.primary,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
                                     ),
                                   ),
                                   Icon(
                                     _isFamilyExpanded
                                         ? Icons.keyboard_arrow_up
                                         : Icons.keyboard_arrow_down,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                   ),
                                 ],
                               ),
@@ -920,7 +929,8 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                       16.0,
                                     ),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         const Divider(),
                                         const Text(
@@ -934,7 +944,8 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
 
                                         // Who uses this subscription
                                         Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             const Text(
                                               'Who uses this subscription',
@@ -947,7 +958,8 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                             Wrap(
                                               spacing: 8.0,
                                               runSpacing: 8.0,
-                                              children: _buildFamilyMemberChips(),
+                                              children:
+                                                  _buildFamilyMemberChips(),
                                             ),
                                           ],
                                         ),
@@ -958,8 +970,11 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                         DropdownButtonFormField<String?>(
                                           value: _payerFamilyMember?.id,
                                           decoration: const InputDecoration(
-                                            labelText: 'Who pays for this subscription',
-                                            prefixIcon: Icon(Icons.account_balance_wallet),
+                                            labelText:
+                                                'Who pays for this subscription',
+                                            prefixIcon: Icon(
+                                              Icons.account_balance_wallet,
+                                            ),
                                           ),
                                           items: [
                                             const DropdownMenuItem<String?>(
@@ -968,14 +983,23 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                             ),
                                             const DropdownMenuItem<String?>(
                                               value: 'family',
-                                              child: Text('Family (common account)'),
+                                              child: Text(
+                                                'Family (common account)',
+                                              ),
                                             ),
-                                            ...familyMembers.where((member) => !member.isKid).map((member) {
-                                              return DropdownMenuItem<String?>(
-                                                value: member.id,
-                                                child: Text(member.name),
-                                              );
-                                            }).toList(),
+                                            ...familyMembers
+                                                .where(
+                                                  (member) => !member.isKid,
+                                                )
+                                                .map((member) {
+                                                  return DropdownMenuItem<
+                                                    String?
+                                                  >(
+                                                    value: member.id,
+                                                    child: Text(member.name),
+                                                  );
+                                                })
+                                                .toList(),
                                           ],
                                           onChanged: (String? value) {
                                             setState(() {
@@ -983,12 +1007,17 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                                 // Create a special FamilyMember object for "Family"
                                                 _payerFamilyMember = FamilyMember(
                                                   id: 'family',
-                                                  name: 'Family (common account)',
+                                                  name:
+                                                      'Family (common account)',
                                                 );
                                               } else {
-                                                _payerFamilyMember = value == null
+                                                _payerFamilyMember =
+                                                    value == null
                                                     ? null
-                                                    : familyMemberProvider.getFamilyMemberById(value);
+                                                    : familyMemberProvider
+                                                          .getFamilyMemberById(
+                                                            value,
+                                                          );
                                               }
                                             });
                                           },

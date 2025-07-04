@@ -3,6 +3,7 @@ import 'package:subscription_tracker/models/subscription_payment.dart';
 import 'package:subscription_tracker/models/label.dart';
 import 'package:subscription_tracker/models/currency.dart';
 import 'package:subscription_tracker/models/family_member.dart';
+import 'package:subscription_tracker/models/subscription_state.dart';
 
 part 'subscription.g.dart';
 
@@ -69,22 +70,17 @@ class Subscription extends HiveObject {
     return getPaymentDetailAtDate(date).price;
   }
 
-  // Get if the subscription is active
-  bool get isActive {
+  // Get the subscription state
+  SubscriptionState get state {
     final detail = getLastPaymentDetail();
-    return detail.isActive;
-  }
-
-  bool get isStarted {
-    final detail = getLastPaymentDetail();
-    return detail.isStarted;
+    return detail.state;
   }
 
   // Calculate the monthly cost based on current price
   double get monthlyCost {
     var currentDetail = getLastPaymentDetail();
 
-    if (!currentDetail.isActive) {
+    if (currentDetail.state == SubscriptionState.ended) {
       return 0;
     }
     return currentDetail.monthlyCost;
@@ -98,7 +94,7 @@ class Subscription extends HiveObject {
   double getMonthlyCostAtDate(DateTime date) {
     final detail = getPaymentDetailAtDate(date);
     // If payment is stopped and the date is before reactivation date, return 0
-    if (!detail.isActive) {
+    if (detail.state != SubscriptionState.active) {
       return 0;
     }
     return detail.monthlyCost;
@@ -210,7 +206,9 @@ class Subscription extends HiveObject {
           .map((detail) => detail.toJson())
           .toList(),
       'labels': labels.map((label) => label.toJson()).toList(),
-      'userFamilyMembers': userFamilyMembers.map((member) => member.toJson()).toList(),
+      'userFamilyMembers': userFamilyMembers
+          .map((member) => member.toJson())
+          .toList(),
       'payerFamilyMember': payerFamilyMember?.toJson(),
     };
   }

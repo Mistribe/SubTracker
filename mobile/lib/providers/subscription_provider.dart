@@ -6,6 +6,7 @@ import '../models/subscription.dart';
 import '../models/subscription_payment.dart';
 import '../models/label.dart';
 import '../models/currency.dart';
+import '../models/subscription_state.dart';
 import '../repositories/subscription_repository.dart';
 import '../repositories/settings_repository.dart';
 import '../repositories/label_repository.dart';
@@ -22,7 +23,13 @@ enum SubscriptionSortOption {
   nextPaymentDesc,
 }
 
-enum SubscriptionFilterOption { labels, showInactive, hideInactive, familyMembers, payer }
+enum SubscriptionFilterOption {
+  labels,
+  showInactive,
+  hideInactive,
+  familyMembers,
+  payer,
+}
 
 // Special value for family common account in payer filter
 const String kFamilyCommonAccountId = 'family_common_account';
@@ -80,7 +87,8 @@ class SubscriptionProvider with ChangeNotifier {
     // Apply all filters in a single pass
     final filtered = _subscriptions.where((subscription) {
       // Filter by active status
-      if (!_showInactiveSubscriptions && !subscription.isActive) {
+      if (!_showInactiveSubscriptions &&
+          subscription.state == SubscriptionState.ended) {
         return false;
       }
 
@@ -109,7 +117,8 @@ class SubscriptionProvider with ChangeNotifier {
             return false;
           }
         } else if (subscription.payerFamilyMember == null ||
-                  subscription.payerFamilyMember!.id != _selectedPayerFamilyMemberId) {
+            subscription.payerFamilyMember!.id !=
+                _selectedPayerFamilyMemberId) {
           return false;
         }
       }
@@ -140,17 +149,21 @@ class SubscriptionProvider with ChangeNotifier {
         break;
       case SubscriptionSortOption.nextPaymentAsc:
         subscriptions.sort((a, b) {
-          if (!a.isActive && !b.isActive) return 0;
-          if (!a.isActive) return 1;
-          if (!b.isActive) return -1;
+          if (a.state != SubscriptionState.active &&
+              b.state != SubscriptionState.active)
+            return 0;
+          if (a.state != SubscriptionState.active) return 1;
+          if (b.state != SubscriptionState.active) return -1;
           return a.nextPaymentDate.compareTo(b.nextPaymentDate);
         });
         break;
       case SubscriptionSortOption.nextPaymentDesc:
         subscriptions.sort((a, b) {
-          if (!a.isActive && !b.isActive) return 0;
-          if (!a.isActive) return 1;
-          if (!b.isActive) return -1;
+          if (a.state != SubscriptionState.active &&
+              b.state != SubscriptionState.active)
+            return 0;
+          if (a.state != SubscriptionState.active) return 1;
+          if (b.state != SubscriptionState.active) return -1;
           return b.nextPaymentDate.compareTo(a.nextPaymentDate);
         });
         break;
@@ -275,7 +288,7 @@ class SubscriptionProvider with ChangeNotifier {
   double get totalMonthlyCostInSelectedCurrency {
     return _subscriptions.fold(0.0, (sum, subscription) {
       final detail = subscription.getLastPaymentDetail();
-      if (!detail.isActive || !detail.isStarted) return sum;
+      if (detail.state != SubscriptionState.active) return sum;
 
       // Convert the monthly cost from the subscription's currency to the selected currency
       double convertedCost = CurrencyConverter.convert(
@@ -312,9 +325,7 @@ class SubscriptionProvider with ChangeNotifier {
   // Get the count of active subscriptions (excluding stopped subscriptions)
   int get activePaymentsCount {
     return _subscriptions
-        .where(
-          (subscription) => subscription.isActive && subscription.isStarted,
-        )
+        .where((subscription) => subscription.state == SubscriptionState.active)
         .length;
   }
 
@@ -322,7 +333,7 @@ class SubscriptionProvider with ChangeNotifier {
   int get notStartedPaymentsCount {
     return _subscriptions
         .where(
-          (subscription) => subscription.isActive && !subscription.isStarted,
+          (subscription) => subscription.state == SubscriptionState.notStarted,
         )
         .length;
   }
