@@ -85,8 +85,8 @@ class FamilyManagementScreen extends StatelessWidget {
                                 ),
                                 decoration: BoxDecoration(
                                   color: familyMember.isKid
-                                      ? Colors.blue.withOpacity(0.2)
-                                      : Colors.green.withOpacity(0.2),
+                                      ? Colors.blue.withValues(alpha: 0.2)
+                                      : Colors.green.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12.0),
                                 ),
                                 child: Text(

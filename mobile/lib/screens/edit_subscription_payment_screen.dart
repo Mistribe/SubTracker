@@ -17,10 +17,12 @@ class EditSubscriptionPaymentScreen extends StatefulWidget {
   });
 
   @override
-  State<EditSubscriptionPaymentScreen> createState() => _EditSubscriptionPaymentScreenState();
+  State<EditSubscriptionPaymentScreen> createState() =>
+      _EditSubscriptionPaymentScreenState();
 }
 
-class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentScreen> {
+class _EditSubscriptionPaymentScreenState
+    extends State<EditSubscriptionPaymentScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _priceController;
   late final TextEditingController _customMonthsController;
@@ -159,7 +161,6 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
     }
   }
 
-
   // Handle duration selection
   void _handleDurationChange(String? value) {
     if (value == null) return;
@@ -207,7 +208,8 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
 
       // Calculate the end date based on recurrence count
       if (_useRecurrenceCount) {
-        final recurrenceCount = int.tryParse(_recurrenceCountController.text) ?? 1;
+        final recurrenceCount =
+            int.tryParse(_recurrenceCountController.text) ?? 1;
         if (recurrenceCount > 0) {
           _endDate = _calculateEndDate();
         }
@@ -268,10 +270,7 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
       appBar: AppBar(
         title: const Text(
           'Edit Payment History',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         elevation: 0,
         leading: IconButton(
@@ -326,9 +325,10 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
                                         : Icons.currency_exchange,
                                   ),
                                 ),
-                                keyboardType: const TextInputType.numberWithOptions(
-                                  decimal: true,
-                                ),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
                                     RegExp(r'^\d+\.?\d{0,2}'),
@@ -358,14 +358,16 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
                                     vertical: 15,
                                   ),
                                 ),
-                                items: _currencies.map<DropdownMenuItem<String>>((
-                                  String value,
-                                ) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(value),
-                                  );
-                                }).toList(),
+                                items: _currencies
+                                    .map<DropdownMenuItem<String>>((
+                                      String value,
+                                    ) {
+                                      return DropdownMenuItem<String>(
+                                        value: value,
+                                        child: Text(value),
+                                      );
+                                    })
+                                    .toList(),
                                 onChanged: (String? newValue) {
                                   if (newValue != null) {
                                     setState(() {
@@ -385,7 +387,10 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
                             prefixIcon: Icon(Icons.repeat),
                           ),
                           items: const [
-                            DropdownMenuItem(value: '1 month', child: Text('Monthly')),
+                            DropdownMenuItem(
+                              value: '1 month',
+                              child: Text('Monthly'),
+                            ),
                             DropdownMenuItem(
                               value: '3 months',
                               child: Text('Quarterly (3 months)'),
@@ -398,7 +403,10 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
                               value: '12 months',
                               child: Text('Annual (12 months)'),
                             ),
-                            DropdownMenuItem(value: 'Custom', child: Text('Custom')),
+                            DropdownMenuItem(
+                              value: 'Custom',
+                              child: Text('Custom'),
+                            ),
                           ],
                           onChanged: _handleDurationChange,
                         ),
@@ -413,7 +421,9 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
                                 prefixIcon: Icon(Icons.calendar_today),
                               ),
                               keyboardType: TextInputType.number,
-                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
                               validator: (value) {
                                 if (_selectedDuration == 'Custom') {
                                   if (value == null || value.isEmpty) {
@@ -436,13 +446,21 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Theme.of(context).dividerColor.withOpacity(0.5),
+                              color: Theme.of(
+                                context,
+                              ).dividerColor.withValues(alpha: 0.5),
                             ),
                           ),
                           child: ListTile(
                             leading: Icon(
                               Icons.calendar_today,
-                              color: Colors.blue.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.8 : 1.0),
+                              color: Colors.blue.withValues(
+                                alpha:
+                                    Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? 0.8
+                                    : 1.0,
+                              ),
                             ),
                             title: const Text('Start Date'),
                             subtitle: Text(
@@ -467,7 +485,11 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
                                     _endDate = null;
                                   } else {
                                     // Calculate end date when toggle is turned on
-                                    final recurrenceCount = int.tryParse(_recurrenceCountController.text) ?? 1;
+                                    final recurrenceCount =
+                                        int.tryParse(
+                                          _recurrenceCountController.text,
+                                        ) ??
+                                        1;
                                     if (recurrenceCount > 0) {
                                       _endDate = _calculateEndDate();
                                     }
@@ -481,7 +503,9 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
                                 'Set end date by specifying number of recurrences',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge?.color,
                                 ),
                               ),
                             ),
@@ -520,7 +544,6 @@ class _EditSubscriptionPaymentScreenState extends State<EditSubscriptionPaymentS
                               },
                             ),
                           ),
-
                       ],
                     ),
                   ),

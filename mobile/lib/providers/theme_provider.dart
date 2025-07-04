@@ -8,8 +8,8 @@ class ThemeProvider with ChangeNotifier {
   bool _useSystemTheme = true;
   final SettingsRepository? _settingsRepository;
 
-  ThemeProvider({SettingsRepository? settingsRepository}) 
-      : _settingsRepository = settingsRepository {
+  ThemeProvider({SettingsRepository? settingsRepository})
+    : _settingsRepository = settingsRepository {
     // Load settings if repository is provided
     if (_settingsRepository != null) {
       _loadSettings();
@@ -33,11 +33,13 @@ class ThemeProvider with ChangeNotifier {
   }
 
   void _initializeWithSystemTheme() {
-    var brightness = SchedulerBinding.instance.platformDispatcher.platformBrightness;
+    var brightness =
+        SchedulerBinding.instance.platformDispatcher.platformBrightness;
     _isDarkMode = brightness == Brightness.dark;
   }
 
   bool get isDarkMode => _isDarkMode;
+
   bool get useSystemTheme => _useSystemTheme;
 
   ThemeMode get themeMode {
@@ -98,11 +100,12 @@ class ThemeProvider with ChangeNotifier {
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -116,10 +119,7 @@ class ThemeProvider with ChangeNotifier {
         backgroundColor: Color(0xFF1A73E8),
         foregroundColor: Colors.white,
       ),
-      dividerTheme: const DividerThemeData(
-        space: 20,
-        thickness: 1,
-      ),
+      dividerTheme: const DividerThemeData(space: 20, thickness: 1),
     );
   }
 
@@ -135,7 +135,7 @@ class ThemeProvider with ChangeNotifier {
       appBarTheme: AppBarTheme(
         centerTitle: true,
         elevation: 0,
-        backgroundColor: const Color(0xFF1A73E8).withOpacity(0.8),
+        backgroundColor: const Color(0xFF1A73E8).withValues(alpha: 0.8),
         foregroundColor: Colors.white,
         titleTextStyle: GoogleFonts.inter(
           fontSize: 20,
@@ -144,11 +144,12 @@ class ThemeProvider with ChangeNotifier {
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -162,10 +163,7 @@ class ThemeProvider with ChangeNotifier {
         backgroundColor: Color(0xFF1A73E8),
         foregroundColor: Colors.white,
       ),
-      dividerTheme: const DividerThemeData(
-        space: 20,
-        thickness: 1,
-      ),
+      dividerTheme: const DividerThemeData(space: 20, thickness: 1),
     );
   }
 }

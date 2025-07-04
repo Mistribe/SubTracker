@@ -384,10 +384,10 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
         },
         backgroundColor: Color(
           int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000,
-        ).withOpacity(0.2),
+        ).withValues(alpha: 0.2),
         selectedColor: Color(
           int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000,
-        ).withOpacity(0.7),
+        ).withValues(alpha: 0.7),
         checkmarkColor: Colors.white,
       );
     }).toList();
@@ -417,7 +417,9 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
           });
         },
         backgroundColor: Theme.of(context).chipTheme.backgroundColor,
-        selectedColor: Theme.of(context).colorScheme.primary.withOpacity(0.7),
+        selectedColor: Theme.of(
+          context,
+        ).colorScheme.primary.withValues(alpha: 0.7),
         checkmarkColor: Colors.white,
       );
     }).toList();
@@ -481,7 +483,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
               final name = nameController.text.trim();
               if (name.isNotEmpty) {
                 final colorHex =
-                    '#${selectedColor.value.value.toRadixString(16).substring(2)}';
+                    '#${selectedColor.value.toARGB32().toRadixString(16).substring(2)}';
                 Provider.of<SubscriptionProvider>(
                   context,
                   listen: false,

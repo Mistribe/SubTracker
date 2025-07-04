@@ -112,7 +112,7 @@ class HomeScreen extends StatelessWidget {
                               fontSize: 14,
                               color: Theme.of(
                                 context,
-                              ).colorScheme.onSurface.withOpacity(0.6),
+                              ).colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                           // Filter buttons
@@ -129,16 +129,22 @@ class HomeScreen extends StatelessWidget {
                                   context,
                                   paymentProvider,
                                 );
-                              } else if (newValue == SubscriptionFilterOption.showInactive) {
-                                paymentProvider.showInactiveSubscriptions = true;
-                              } else if (newValue == SubscriptionFilterOption.hideInactive) {
-                                paymentProvider.showInactiveSubscriptions = false;
-                              } else if (newValue == SubscriptionFilterOption.familyMembers) {
+                              } else if (newValue ==
+                                  SubscriptionFilterOption.showInactive) {
+                                paymentProvider.showInactiveSubscriptions =
+                                    true;
+                              } else if (newValue ==
+                                  SubscriptionFilterOption.hideInactive) {
+                                paymentProvider.showInactiveSubscriptions =
+                                    false;
+                              } else if (newValue ==
+                                  SubscriptionFilterOption.familyMembers) {
                                 _showFamilyMemberFilterBottomSheet(
                                   context,
                                   paymentProvider,
                                 );
-                              } else if (newValue == SubscriptionFilterOption.payer) {
+                              } else if (newValue ==
+                                  SubscriptionFilterOption.payer) {
                                 _showPayerFilterBottomSheet(
                                   context,
                                   paymentProvider,
@@ -165,7 +171,10 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 ),
                               // Family member filter option
-                              if (Provider.of<FamilyMemberProvider>(context, listen: false).hasFamilyMembers)
+                              if (Provider.of<FamilyMemberProvider>(
+                                context,
+                                listen: false,
+                              ).hasFamilyMembers)
                                 PopupMenuItem(
                                   value: SubscriptionFilterOption.familyMembers,
                                   child: Row(
@@ -184,7 +193,10 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 ),
                               // Payer filter option
-                              if (Provider.of<FamilyMemberProvider>(context, listen: false).hasFamilyMembers)
+                              if (Provider.of<FamilyMemberProvider>(
+                                context,
+                                listen: false,
+                              ).hasFamilyMembers)
                                 PopupMenuItem(
                                   value: SubscriptionFilterOption.payer,
                                   child: Row(
@@ -284,7 +296,6 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
 
-
             // Subscription list
             const Expanded(child: SubscriptionList()),
           ],
@@ -311,12 +322,17 @@ class HomeScreen extends StatelessWidget {
     BuildContext context,
     SubscriptionProvider provider,
   ) {
-    final familyMemberProvider = Provider.of<FamilyMemberProvider>(context, listen: false);
+    final familyMemberProvider = Provider.of<FamilyMemberProvider>(
+      context,
+      listen: false,
+    );
 
     if (!familyMemberProvider.hasFamilyMembers) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('No family members available. Add family members in settings.'),
+          content: Text(
+            'No family members available. Add family members in settings.',
+          ),
         ),
       );
       return;
@@ -367,7 +383,8 @@ class HomeScreen extends StatelessWidget {
                       itemCount: familyMembers.length,
                       itemBuilder: (context, index) {
                         final familyMember = familyMembers[index];
-                        final isSelected = selectedFamilyMemberId == familyMember.id;
+                        final isSelected =
+                            selectedFamilyMemberId == familyMember.id;
 
                         return RadioListTile<String>(
                           title: Text(familyMember.name),
@@ -407,12 +424,17 @@ class HomeScreen extends StatelessWidget {
     BuildContext context,
     SubscriptionProvider provider,
   ) {
-    final familyMemberProvider = Provider.of<FamilyMemberProvider>(context, listen: false);
+    final familyMemberProvider = Provider.of<FamilyMemberProvider>(
+      context,
+      listen: false,
+    );
 
     if (!familyMemberProvider.hasFamilyMembers) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('No family members available. Add family members in settings.'),
+          content: Text(
+            'No family members available. Add family members in settings.',
+          ),
         ),
       );
       return;
@@ -424,7 +446,8 @@ class HomeScreen extends StatelessWidget {
         return StatefulBuilder(
           builder: (context, setState) {
             final familyMembers = familyMemberProvider.familyMembers;
-            final selectedPayerFamilyMemberId = provider.selectedPayerFamilyMemberId;
+            final selectedPayerFamilyMemberId =
+                provider.selectedPayerFamilyMemberId;
 
             return SafeArea(
               child: Padding(
@@ -463,14 +486,18 @@ class HomeScreen extends StatelessWidget {
                         // Family (common account) option
                         RadioListTile<String>(
                           title: const Text('Family (common account)'),
-                          subtitle: const Text('Subscriptions with no specific payer'),
+                          subtitle: const Text(
+                            'Subscriptions with no specific payer',
+                          ),
                           value: kFamilyCommonAccountId,
                           groupValue: selectedPayerFamilyMemberId,
                           onChanged: (value) {
                             provider.selectedPayerFamilyMemberId = value;
                             setState(() {});
                           },
-                          selected: selectedPayerFamilyMemberId == kFamilyCommonAccountId,
+                          selected:
+                              selectedPayerFamilyMemberId ==
+                              kFamilyCommonAccountId,
                         ),
 
                         const Divider(),
@@ -482,7 +509,8 @@ class HomeScreen extends StatelessWidget {
                           itemCount: familyMembers.length,
                           itemBuilder: (context, index) {
                             final familyMember = familyMembers[index];
-                            final isSelected = selectedPayerFamilyMemberId == familyMember.id;
+                            final isSelected =
+                                selectedPayerFamilyMemberId == familyMember.id;
 
                             return RadioListTile<String>(
                               title: Text(familyMember.name),
@@ -639,7 +667,7 @@ class HomeScreen extends StatelessWidget {
                 Icon(
                   icon,
                   size: 16,
-                  color: iconColor.withOpacity(isDark ? 0.8 : 1.0),
+                  color: iconColor.withValues(alpha: isDark ? 0.8 : 1.0),
                 ),
                 const SizedBox(width: 6),
                 Text(
@@ -649,7 +677,7 @@ class HomeScreen extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurface.withOpacity(0.7),
+                    ).colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                 ),
               ],

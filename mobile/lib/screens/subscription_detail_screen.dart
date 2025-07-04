@@ -69,7 +69,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Theme.of(context).dividerColor.withOpacity(0.5),
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
                 width: 1,
               ),
             ),
@@ -78,7 +78,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                 Icon(
                   icon,
                   size: 20,
-                  color: iconColor.withOpacity(isDark ? 0.8 : 1.0),
+                  color: iconColor.withValues(alpha: isDark ? 0.8 : 1.0),
                 ),
                 const SizedBox(width: 12),
                 Text(
@@ -296,9 +296,10 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                       Icon(
                                         Icons.calendar_today,
                                         size: 14,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary.withOpacity(0.7),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary
+                                            .withValues(alpha: 0.7),
                                       ),
                                       const SizedBox(width: 4),
                                       const Text(
@@ -335,7 +336,9 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                       Icon(
                                         Icons.calendar_month,
                                         size: 14,
-                                        color: Colors.purple.withOpacity(0.7),
+                                        color: Colors.purple.withValues(
+                                          alpha: 0.7,
+                                        ),
                                       ),
                                       const SizedBox(width: 4),
                                       const Text(
@@ -374,7 +377,9 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                       Icon(
                                         Icons.attach_money,
                                         size: 14,
-                                        color: Colors.green.withOpacity(0.7),
+                                        color: Colors.green.withValues(
+                                          alpha: 0.7,
+                                        ),
                                       ),
                                       const SizedBox(width: 4),
                                       const Text(
@@ -412,7 +417,9 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                       Icon(
                                         Icons.calendar_month,
                                         size: 14,
-                                        color: Colors.blue.withOpacity(0.7),
+                                        color: Colors.blue.withValues(
+                                          alpha: 0.7,
+                                        ),
                                       ),
                                       const SizedBox(width: 4),
                                       const Text(
@@ -451,7 +458,9 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                       Icon(
                                         Icons.monetization_on,
                                         size: 14,
-                                        color: Colors.lime.withOpacity(0.7),
+                                        color: Colors.lime.withValues(
+                                          alpha: 0.7,
+                                        ),
                                       ),
                                       const SizedBox(width: 4),
                                       const Text(
@@ -486,7 +495,9 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                       Icon(
                                         Icons.calendar_month,
                                         size: 14,
-                                        color: Colors.orange.withOpacity(0.7),
+                                        color: Colors.orange.withValues(
+                                          alpha: 0.7,
+                                        ),
                                       ),
                                       const SizedBox(width: 4),
                                       const Text(
@@ -572,7 +583,8 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                   ),
 
                 // Show family members if any are assigned
-                if (subscription.userFamilyMembers.isNotEmpty || subscription.payerFamilyMember != null)
+                if (subscription.userFamilyMembers.isNotEmpty ||
+                    subscription.payerFamilyMember != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Column(
@@ -600,10 +612,15 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                               children: [
                                 if (subscription.userFamilyMembers.isNotEmpty)
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Padding(
-                                        padding: EdgeInsets.only(left: 16, top: 8, bottom: 8),
+                                        padding: EdgeInsets.only(
+                                          left: 16,
+                                          top: 8,
+                                          bottom: 8,
+                                        ),
                                         child: Text(
                                           'Used by',
                                           style: TextStyle(
@@ -612,8 +629,8 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                           ),
                                         ),
                                       ),
-                                      ...subscription.userFamilyMembers.map((member) => 
-                                        ListTile(
+                                      ...subscription.userFamilyMembers.map(
+                                        (member) => ListTile(
                                           leading: const CircleAvatar(
                                             child: Icon(Icons.person),
                                           ),
@@ -621,7 +638,9 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                             member.name,
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
-                                              color: Theme.of(context).colorScheme.primary,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
                                             ),
                                           ),
                                           dense: true,
@@ -633,7 +652,8 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                   ListTile(
                                     leading: CircleAvatar(
                                       child: Icon(
-                                        subscription.payerFamilyMember!.id == 'family'
+                                        subscription.payerFamilyMember!.id ==
+                                                'family'
                                             ? Icons.group
                                             : Icons.account_balance_wallet,
                                       ),
@@ -643,7 +663,9 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                       subscription.payerFamilyMember!.name,
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).colorScheme.primary,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
                                       ),
                                     ),
                                     dense: true,
@@ -678,7 +700,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                           fontSize: 14,
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withOpacity(0.6),
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
