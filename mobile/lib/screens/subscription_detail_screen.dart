@@ -142,22 +142,28 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                   }
                 },
                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                  const PopupMenuItem<String>(
+                  PopupMenuItem<String>(
                     value: 'edit',
                     child: Row(
                       children: [
-                        Icon(Icons.edit),
+                        Icon(
+                          Icons.edit,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                         SizedBox(width: 8),
                         Text('Edit'),
                       ],
                     ),
                   ),
                   if (subscription.state == SubscriptionState.active)
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
                       value: 'addPaymentHistory',
                       child: Row(
                         children: [
-                          Icon(Icons.price_change),
+                          Icon(
+                            Icons.price_change,
+                            color: Colors.green.shade600,
+                          ),
                           SizedBox(width: 8),
                           Text('Price Change'),
                         ],
@@ -165,11 +171,14 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     ),
                   // Show stop subscription option if subscription is active
                   if (subscription.state == SubscriptionState.active)
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
                       value: 'stopPayment',
                       child: Row(
                         children: [
-                          Icon(Icons.stop_circle),
+                          Icon(
+                            Icons.stop_circle,
+                            color: Colors.orange.shade600,
+                          ),
                           SizedBox(width: 8),
                           Text('Cancel'),
                         ],
@@ -177,21 +186,21 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     ),
                   // Show reactivate subscription option if subscription is not active
                   if (subscription.state != SubscriptionState.active)
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
                       value: 'reactivatePayment',
                       child: Row(
                         children: [
-                          Icon(Icons.play_circle),
+                          Icon(Icons.play_circle, color: Colors.green.shade600),
                           SizedBox(width: 8),
                           Text('Reactivate'),
                         ],
                       ),
                     ),
-                  const PopupMenuItem<String>(
+                  PopupMenuItem<String>(
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete_forever),
+                        Icon(Icons.delete_forever, color: Colors.red.shade600),
                         SizedBox(width: 8),
                         Text('Delete'),
                       ],
