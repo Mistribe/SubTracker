@@ -27,6 +27,12 @@ class Subscription extends HiveObject {
   @HiveField(6)
   final FamilyMember? payerFamilyMember;
 
+  @HiveField(7)
+  final DateTime createdAt;
+
+  @HiveField(8)
+  final DateTime updatedAt;
+
   Subscription({
     required this.id,
     required this.name,
@@ -34,9 +40,13 @@ class Subscription extends HiveObject {
     List<Label>? labels,
     List<FamilyMember>? userFamilyMembers,
     this.payerFamilyMember,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) : subscriptionPayments = subscriptionPayments ?? [],
        labels = labels ?? [],
-       userFamilyMembers = userFamilyMembers ?? [];
+       userFamilyMembers = userFamilyMembers ?? [],
+       createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
 
   SubscriptionPayment getLastPaymentDetail() {
     final sortedHistory = List<SubscriptionPayment>.from(subscriptionPayments)
@@ -187,6 +197,8 @@ class Subscription extends HiveObject {
     List<Label>? labels,
     List<FamilyMember>? userFamilyMembers,
     FamilyMember? payerFamilyMember,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return Subscription(
       id: id ?? this.id,
@@ -195,6 +207,8 @@ class Subscription extends HiveObject {
       labels: labels ?? this.labels,
       userFamilyMembers: userFamilyMembers ?? this.userFamilyMembers,
       payerFamilyMember: payerFamilyMember ?? this.payerFamilyMember,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? DateTime.now(), // Always update the updatedAt field
     );
   }
 
@@ -211,6 +225,8 @@ class Subscription extends HiveObject {
           .map((member) => member.toJson())
           .toList(),
       'payerFamilyMember': payerFamilyMember?.toJson(),
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
     };
   }
 
@@ -235,6 +251,12 @@ class Subscription extends HiveObject {
           : [],
       payerFamilyMember: json['payerFamilyMember'] != null
           ? FamilyMember.fromJson(json['payerFamilyMember'])
+          : null,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : null,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
           : null,
     );
   }

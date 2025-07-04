@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/subscription.dart';
+import '../providers/sync_provider.dart';
 
 /// Repository for handling subscription data persistence
 ///
@@ -9,6 +10,7 @@ import '../models/subscription.dart';
 class SubscriptionRepository {
   static const String _boxName = 'subscriptions';
   late Box<Subscription> _box;
+  SyncProvider? _syncProvider;
 
   /// Initialize the repository
   ///
@@ -18,6 +20,11 @@ class SubscriptionRepository {
     _box = await Hive.openBox<Subscription>(_boxName);
   }
 
+  /// Set the sync provider
+  void setSyncProvider(SyncProvider syncProvider) {
+    _syncProvider = syncProvider;
+  }
+
   /// Get all subscriptions
   List<Subscription> getAll() {
     return _box.values.toList();
@@ -25,21 +32,50 @@ class SubscriptionRepository {
 
   /// Add a new subscription
   Future<void> add(Subscription subscription) async {
+    // Save to local storage
     await _box.put(subscription.id, subscription);
+
+    // Queue for sync if provider is available
+    if (_syncProvider != null) {
+      await _syncProvider!.queueCreate(subscription);
+    }
   }
 
   /// Update an existing subscription
   Future<void> update(Subscription subscription) async {
+    // Save to local storage
     await _box.put(subscription.id, subscription);
+
+    // Queue for sync if provider is available
+    if (_syncProvider != null) {
+      await _syncProvider!.queueUpdate(subscription);
+    }
   }
 
   /// Delete a subscription
   Future<void> delete(String id) async {
+    // Delete from local storage
     await _box.delete(id);
+
+    // Queue for sync if provider is available
+    if (_syncProvider != null) {
+      await _syncProvider!.queueDelete(id);
+    }
   }
 
   /// Clear all subscriptions
   Future<void> clearAll() async {
+    // Get all IDs before clearing
+    final ids = _box.keys.cast<String>().toList();
+
+    // Clear local storage
     await _box.clear();
+
+    // Queue deletes for sync if provider is available
+    if (_syncProvider != null) {
+      for (final id in ids) {
+        await _syncProvider!.queueDelete(id);
+      }
+    }
   }
 }

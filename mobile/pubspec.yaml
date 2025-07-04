@@ -49,6 +49,11 @@ dependencies:
   flutter_screenutil: ^5.9.0
   flutter_animate: ^4.5.0
 
+  # Network and Sync
+  http: ^1.2.0
+  connectivity_plus: ^5.0.2
+  shared_preferences: ^2.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

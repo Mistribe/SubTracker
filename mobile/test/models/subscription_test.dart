@@ -36,12 +36,16 @@ void main() {
       String name = 'Netflix',
       List<SubscriptionPayment>? subscriptionPayments,
       List<Label>? labels,
+      DateTime? createdAt,
+      DateTime? updatedAt,
     }) {
       return Subscription(
         id: id,
         name: name,
         subscriptionPayments: subscriptionPayments,
         labels: labels,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
       );
     }
 
@@ -53,6 +57,8 @@ void main() {
       DateTime? endDate,
       int months = 1,
       String currency = 'USD',
+      DateTime? createdAt,
+      DateTime? updatedAt,
     }) {
       return SubscriptionPayment(
         id: id,
@@ -61,6 +67,8 @@ void main() {
         endDate: endDate,
         months: months,
         currency: currency,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
       );
     }
 
@@ -70,19 +78,32 @@ void main() {
       String name = 'Entertainment',
       bool isDefault = false,
       String color = '#FF0000',
+      DateTime? createdAt,
+      DateTime? updatedAt,
     }) {
-      return Label(id: id, name: name, isDefault: isDefault, color: color);
+      return Label(
+        id: id,
+        name: name,
+        isDefault: isDefault,
+        color: color,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
     }
 
     test('constructor creates subscription with correct values', () {
       final payment = createPayment();
       final label = createLabel();
+      final createdAt = DateTime(2023, 1, 1);
+      final updatedAt = DateTime(2023, 1, 2);
 
       final subscription = Subscription(
         id: '1',
         name: 'Netflix',
         subscriptionPayments: [payment],
         labels: [label],
+        createdAt: createdAt,
+        updatedAt: updatedAt,
       );
 
       expect(subscription.id, equals('1'));
@@ -91,6 +112,8 @@ void main() {
       expect(subscription.subscriptionPayments.first, equals(payment));
       expect(subscription.labels, hasLength(1));
       expect(subscription.labels.first, equals(label));
+      expect(subscription.createdAt, equals(createdAt));
+      expect(subscription.updatedAt, equals(updatedAt));
     });
 
     test(
@@ -696,21 +719,27 @@ void main() {
     test('copyWith creates a new subscription with updated values', () {
       final payment = createPayment();
       final label = createLabel();
+      final createdAt = DateTime(2023, 1, 1);
+      final updatedAt = DateTime(2023, 1, 2);
 
       final subscription = Subscription(
         id: '1',
         name: 'Netflix',
         subscriptionPayments: [payment],
         labels: [label],
+        createdAt: createdAt,
+        updatedAt: updatedAt,
       );
 
       final newPayment = createPayment(id: '2');
       final newLabel = createLabel(id: '2', name: 'Movies');
+      final newUpdatedAt = DateTime(2023, 1, 3);
 
       final updatedSubscription = subscription.copyWith(
         name: 'Disney+',
         subscriptionPayments: [newPayment],
         labels: [newLabel],
+        updatedAt: newUpdatedAt,
       );
 
       // Original subscription should be unchanged
@@ -720,6 +749,8 @@ void main() {
       expect(subscription.subscriptionPayments.first, equals(payment));
       expect(subscription.labels, hasLength(1));
       expect(subscription.labels.first, equals(label));
+      expect(subscription.createdAt, equals(createdAt));
+      expect(subscription.updatedAt, equals(updatedAt));
 
       // Updated subscription should have new values
       expect(updatedSubscription.id, equals('1')); // ID should remain the same
@@ -731,17 +762,23 @@ void main() {
       );
       expect(updatedSubscription.labels, hasLength(1));
       expect(updatedSubscription.labels.first, equals(newLabel));
+      expect(updatedSubscription.createdAt, equals(createdAt)); // createdAt should remain the same
+      expect(updatedSubscription.updatedAt, equals(newUpdatedAt)); // updatedAt should be updated
     });
 
     test('toJson converts subscription to JSON correctly', () {
       final payment = createPayment();
       final label = createLabel();
+      final createdAt = DateTime(2023, 1, 1);
+      final updatedAt = DateTime(2023, 1, 2);
 
       final subscription = Subscription(
         id: '1',
         name: 'Netflix',
         subscriptionPayments: [payment],
         labels: [label],
+        createdAt: createdAt,
+        updatedAt: updatedAt,
       );
 
       final json = subscription.toJson();
@@ -750,6 +787,8 @@ void main() {
       expect(json['name'], equals('Netflix'));
       expect(json['paymentDetails'], hasLength(1));
       expect(json['labels'], hasLength(1));
+      expect(json['createdAt'], equals(createdAt.toIso8601String()));
+      expect(json['updatedAt'], equals(updatedAt.toIso8601String()));
     });
 
     test('fromJson creates subscription from JSON correctly', () {
@@ -769,11 +808,16 @@ void main() {
         'color': '#FF0000',
       };
 
+      final createdAt = DateTime(2023, 1, 1);
+      final updatedAt = DateTime(2023, 1, 2);
+
       final json = {
         'id': '1',
         'name': 'Netflix',
         'paymentDetails': [paymentJson],
         'labels': [labelJson],
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt.toIso8601String(),
       };
 
       final subscription = Subscription.fromJson(json);
@@ -784,6 +828,8 @@ void main() {
       expect(subscription.subscriptionPayments.first.id, equals('1'));
       expect(subscription.labels, hasLength(1));
       expect(subscription.labels.first.id, equals('1'));
+      expect(subscription.createdAt, equals(createdAt));
+      expect(subscription.updatedAt, equals(updatedAt));
     });
 
     test('fromJson handles empty or null lists', () {
@@ -857,6 +903,8 @@ class _TestSubscription extends Subscription {
     super.labels,
     super.userFamilyMembers,
     super.payerFamilyMember,
+    super.createdAt,
+    super.updatedAt,
     this.mockTotalAmountSpent = 0.0,
     this.mockState,
   });
@@ -878,6 +926,8 @@ class _TestPayment extends SubscriptionPayment {
     required super.endDate,
     required super.months,
     required super.currency,
+    super.createdAt,
+    super.updatedAt,
     required this.mockState,
   });
 

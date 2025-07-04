@@ -9,6 +9,7 @@ import 'models/family_member.dart';
 import 'providers/subscription_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/family_member_provider.dart';
+import 'providers/sync_provider.dart';
 import 'repositories/subscription_repository.dart';
 import 'repositories/settings_repository.dart';
 import 'repositories/label_repository.dart';
@@ -67,6 +68,17 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        // SyncProvider must be created before SubscriptionProvider
+        ChangeNotifierProvider(
+          create: (_) {
+            final syncProvider = SyncProvider(
+              subscriptionRepository: subscriptionRepository,
+            );
+            // Set the sync provider in the repository
+            subscriptionRepository.setSyncProvider(syncProvider);
+            return syncProvider;
+          },
+        ),
         ChangeNotifierProvider(
           create: (_) => SubscriptionProvider(
             subscriptionRepository: subscriptionRepository,

@@ -29,6 +29,12 @@ class SubscriptionPayment {
   @HiveField(5)
   final String currency;
 
+  @HiveField(6)
+  final DateTime createdAt;
+
+  @HiveField(7)
+  final DateTime updatedAt;
+
   SubscriptionPayment({
     required this.id,
     required this.price,
@@ -36,7 +42,10 @@ class SubscriptionPayment {
     required this.endDate,
     required this.months,
     required this.currency,
-  });
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) : createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
 
   SubscriptionState get state {
     if (startDate.isAfter(DateTime.now())) {
@@ -106,6 +115,8 @@ class SubscriptionPayment {
     DateTime? endDate,
     int? months,
     String? currency,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return SubscriptionPayment(
       id: id ?? this.id,
@@ -114,6 +125,8 @@ class SubscriptionPayment {
       endDate: endDate ?? this.endDate,
       months: months ?? this.months,
       currency: currency ?? this.currency,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? DateTime.now(), // Always update the updatedAt field
     );
   }
 
@@ -125,6 +138,8 @@ class SubscriptionPayment {
       'endDate': endDate?.millisecondsSinceEpoch,
       'months': months,
       'currency': currency,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
     };
   }
 
@@ -140,6 +155,12 @@ class SubscriptionPayment {
       currency:
           json['currency'] ??
           Currency.USD.code, // Default to USD for backward compatibility
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : null,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
+          : null,
     );
   }
 }
