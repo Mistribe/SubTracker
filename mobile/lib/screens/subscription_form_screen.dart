@@ -111,7 +111,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
       // Initialize with the default currency from the provider
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final provider = Provider.of<SubscriptionProvider>(
-          context,
+          currentContext,
           listen: false,
         );
         setState(() {
@@ -244,6 +244,11 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      // Store context in local variables before async operations
+      final currentContext = context;
+      final messenger = ScaffoldMessenger.of(currentContext);
+      final navigator = Navigator.of(currentContext);
+
       final name = _nameController.text.trim();
       final price = double.tryParse(_priceController.text) ?? 0.0;
 
@@ -263,10 +268,9 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
           _endDate = _calculateEndDate();
         }
       }
-
       try {
         // Show loading indicator
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text(
               _isEditMode
@@ -331,7 +335,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
         }
 
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text(
               _isEditMode
@@ -343,10 +347,10 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
         );
 
         // Close the form
-        Navigator.of(context).pop();
+        navigator.pop();
       } catch (e) {
         // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text(
               'Error ${_isEditMode ? 'updating' : 'adding'} subscription: ${e.toString()}',
@@ -429,6 +433,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
   void _showAddLabelDialog() {
     final nameController = TextEditingController();
     final selectedColor = ValueNotifier<Color>(Colors.blue);
+    final navigator = Navigator.of(context);
 
     showDialog(
       context: context,
@@ -488,7 +493,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                   context,
                   listen: false,
                 ).addLabel(name, colorHex).then((_) {
-                  Navigator.of(context).pop();
+                  navigator.pop();
                 });
               }
             },

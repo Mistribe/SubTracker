@@ -58,6 +58,8 @@ class _PriceChangeFormState extends State<PriceChangeForm> {
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       final price = double.tryParse(_priceController.text) ?? 0.0;
+      final messenger = ScaffoldMessenger.of(context);
+      final navigator = Navigator.of(context);
 
       try {
         // Show loading indicator
@@ -82,7 +84,7 @@ class _PriceChangeFormState extends State<PriceChangeForm> {
         );
 
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(
             content: Text('Price updated successfully'),
             duration: Duration(seconds: 2),
@@ -90,10 +92,10 @@ class _PriceChangeFormState extends State<PriceChangeForm> {
         );
 
         // Close the form
-        Navigator.of(context).pop();
+        navigator.pop();
       } catch (e) {
         // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Error updating subscription: ${e.toString()}'),
             backgroundColor: Colors.red,

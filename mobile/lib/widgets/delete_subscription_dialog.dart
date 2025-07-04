@@ -11,31 +11,40 @@ class DeleteSubscriptionDialog {
     required Subscription subscription,
     bool navigateBack = false,
   }) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final subscriptionProvider = Provider.of<SubscriptionProvider>(
+      context,
+      listen: false,
+    );
+
     // Show confirmation dialog
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Subscription'),
-        content: const Text(
-          'Are you sure you want to delete this subscription? This action is irreversible and cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+    final shouldDelete =
+        await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Delete Subscription'),
+            content: const Text(
+              'Are you sure you want to delete this subscription? This action is irreversible and cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
 
     if (shouldDelete) {
       try {
         // Show loading indicator
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(
             content: Text('Removing subscription...'),
             duration: Duration(seconds: 1),
@@ -43,15 +52,10 @@ class DeleteSubscriptionDialog {
         );
 
         // Remove the subscription
-        await Provider.of<SubscriptionProvider>(
-          context,
-          listen: false,
-        ).removePayment(
-          subscription.id,
-        );
+        await subscriptionProvider.removePayment(subscription.id);
 
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('${subscription.name} removed'),
             duration: const Duration(seconds: 2),
@@ -60,17 +64,15 @@ class DeleteSubscriptionDialog {
 
         // Navigate back if requested (for detail screen)
         if (navigateBack) {
-          Navigator.of(context).pop();
+          navigator.pop();
         }
 
         return true;
       } catch (e) {
         // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
-            content: Text(
-              'Error removing subscription: ${e.toString()}',
-            ),
+            content: Text('Error removing subscription: ${e.toString()}'),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
@@ -78,7 +80,7 @@ class DeleteSubscriptionDialog {
         return false;
       }
     }
-    
+
     return false;
   }
 }

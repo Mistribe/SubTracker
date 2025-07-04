@@ -19,10 +19,17 @@ class _CancelSubscriptionFormState extends State<StopSubscriptionForm> {
   bool _useLastPaymentDate = true;
 
   Future<void> _submitForm() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final subscriptionProvider = Provider.of<SubscriptionProvider>(
+      context,
+      listen: false,
+    );
+
     if (_formKey.currentState!.validate()) {
       try {
         // Show loading indicator
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(
             content: Text('Canceling subscription...'),
             duration: Duration(seconds: 1),
@@ -30,16 +37,13 @@ class _CancelSubscriptionFormState extends State<StopSubscriptionForm> {
         );
 
         // Update the subscription detail
-        await Provider.of<SubscriptionProvider>(
-          context,
-          listen: false,
-        ).cancelCurrentSubscription(
+        await subscriptionProvider.cancelCurrentSubscription(
           widget.subscription.id,
           stopDate: _selectedDate,
         );
 
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(
             content: Text('Subscription successfully cancelled'),
             duration: Duration(seconds: 2),
@@ -47,10 +51,10 @@ class _CancelSubscriptionFormState extends State<StopSubscriptionForm> {
         );
 
         // Close the form
-        Navigator.of(context).pop();
+        navigator.pop();
       } catch (e) {
         // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Error canceling subscription: ${e.toString()}'),
             backgroundColor: Colors.red,

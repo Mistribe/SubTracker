@@ -27,7 +27,17 @@ class _ReactivateSubscriptionFormState
   late String _selectedCurrency;
 
   // List of common currencies
-  final List<String> _currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR'];
+  final List<String> _currencies = [
+    'USD',
+    'EUR',
+    'GBP',
+    'JPY',
+    'CAD',
+    'AUD',
+    'CHF',
+    'CNY',
+    'INR',
+  ];
 
   @override
   void initState() {
@@ -72,7 +82,8 @@ class _ReactivateSubscriptionFormState
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _startDate,
-      firstDate: widget.subscription.getLastPaymentDetail().endDate ?? DateTime.now(),
+      firstDate:
+          widget.subscription.getLastPaymentDetail().endDate ?? DateTime.now(),
       lastDate: DateTime(2101),
     );
     if (picked != null && picked != _startDate) {
@@ -154,7 +165,9 @@ class _ReactivateSubscriptionFormState
         if (_endDate!.isBefore(minEndDate)) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('End date must be at least $_months months after start date'),
+              content: Text(
+                'End date must be at least $_months months after start date',
+              ),
               backgroundColor: Colors.red,
               duration: const Duration(seconds: 3),
             ),
@@ -162,6 +175,9 @@ class _ReactivateSubscriptionFormState
           return;
         }
       }
+
+      final messenger = ScaffoldMessenger.of(context);
+      final navigator = Navigator.of(context);
 
       try {
         // Show loading indicator
@@ -177,7 +193,7 @@ class _ReactivateSubscriptionFormState
           context,
           listen: false,
         ).reactivatePayment(
-          widget.subscription.id, 
+          widget.subscription.id,
           _startDate,
           price: price,
           months: _months,
@@ -186,7 +202,7 @@ class _ReactivateSubscriptionFormState
         );
 
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(
             content: Text('Payment reactivation scheduled successfully'),
             duration: Duration(seconds: 2),
@@ -194,9 +210,9 @@ class _ReactivateSubscriptionFormState
         );
 
         // Close the form
-        Navigator.of(context).pop();
+        navigator.pop();
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Error: ${e.toString()}'),
             backgroundColor: Colors.red,
@@ -246,13 +262,19 @@ class _ReactivateSubscriptionFormState
                       decoration: InputDecoration(
                         labelText: 'Price',
                         hintText: 'Enter the price',
-                        prefixIcon: Icon(_selectedCurrency == 'USD' ? Icons.attach_money : Icons.currency_exchange),
+                        prefixIcon: Icon(
+                          _selectedCurrency == 'USD'
+                              ? Icons.attach_money
+                              : Icons.currency_exchange,
+                        ),
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d+\.?\d{0,2}'),
+                        ),
                       ],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -273,9 +295,14 @@ class _ReactivateSubscriptionFormState
                       value: _selectedCurrency,
                       decoration: const InputDecoration(
                         labelText: 'Currency',
-                        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 15,
+                        ),
                       ),
-                      items: _currencies.map<DropdownMenuItem<String>>((String value) {
+                      items: _currencies.map<DropdownMenuItem<String>>((
+                        String value,
+                      ) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),

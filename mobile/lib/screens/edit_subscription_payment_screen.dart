@@ -195,6 +195,13 @@ class _EditSubscriptionPaymentScreenState
   }
 
   Future<void> _submitForm() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final subscriptionProvider = Provider.of<SubscriptionProvider>(
+      context,
+      listen: false,
+    );
+
     if (_formKey.currentState!.validate()) {
       final price = double.tryParse(_priceController.text) ?? 0.0;
 
@@ -220,7 +227,7 @@ class _EditSubscriptionPaymentScreenState
 
       try {
         // Show loading indicator
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(
             content: Text('Updating payment history...'),
             duration: Duration(seconds: 1),
@@ -228,10 +235,7 @@ class _EditSubscriptionPaymentScreenState
         );
 
         // Update the payment history
-        await Provider.of<SubscriptionProvider>(
-          context,
-          listen: false,
-        ).updateSubscriptionPayment(
+        await subscriptionProvider.updateSubscriptionPayment(
           widget.subscription.id,
           widget.paymentHistory.id,
           price,
@@ -242,7 +246,7 @@ class _EditSubscriptionPaymentScreenState
         );
 
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(
             content: Text('Payment history updated successfully'),
             duration: Duration(seconds: 2),
@@ -250,10 +254,10 @@ class _EditSubscriptionPaymentScreenState
         );
 
         // Close the form
-        Navigator.of(context).pop();
+        navigator.pop();
       } catch (e) {
         // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Error updating payment history: ${e.toString()}'),
             backgroundColor: Colors.red,
