@@ -9,7 +9,7 @@ import (
 )
 
 type SubscriptionGetEndpoint struct {
-	handler core.QueryHandler[query.FindQuery, subscription.Subscription]
+	handler core.QueryHandler[query.FindOneQuery, subscription.Subscription]
 }
 
 func (s SubscriptionGetEndpoint) Handle(c *gin.Context) {
@@ -19,7 +19,7 @@ func (s SubscriptionGetEndpoint) Handle(c *gin.Context) {
 			Message: err.Error(),
 		})
 	}
-	q := query.NewFindQuery(id)
+	q := query.NewFindOneQuery(id)
 	r := s.handler.Handle(c, q)
 	handleResponse(c, r)
 }

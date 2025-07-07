@@ -8,7 +8,7 @@ import (
 func BuildApplicationModule() fx.Option {
 	return fx.Module("application",
 		fx.Provide(
-			subQuery.NewFindQueryHandler,
+			subQuery.NewFindOneQueryHandler,
 		),
 	)
 }

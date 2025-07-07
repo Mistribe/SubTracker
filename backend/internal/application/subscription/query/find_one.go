@@ -8,24 +8,24 @@ import (
     "github.com/oleexo/subtracker/internal/domain/subscription"
 )
 
-type FindQuery struct {
+type FindOneQuery struct {
     id uuid.UUID
 }
 
-func NewFindQuery(id uuid.UUID) FindQuery {
-    return FindQuery{id: id}
+func NewFindOneQuery(id uuid.UUID) FindOneQuery {
+    return FindOneQuery{id: id}
 }
 
-type FindQueryHandler struct {
-    respository subscription.Repository
+type FindOneQueryHandler struct {
+    repository subscription.Repository
 }
 
-func NewFindQueryHandler(respository subscription.Repository) *FindQueryHandler {
-    return &FindQueryHandler{respository: respository}
+func NewFindOneQueryHandler(respository subscription.Repository) *FindOneQueryHandler {
+    return &FindOneQueryHandler{repository: respository}
 }
 
-func (h FindQueryHandler) Handle(ctx context.Context, query FindQuery) result.Result[subscription.Subscription] {
-    subOpt, err := h.respository.Get(ctx, query.id)
+func (h FindOneQueryHandler) Handle(ctx context.Context, query FindOneQuery) result.Result[subscription.Subscription] {
+    subOpt, err := h.repository.Get(ctx, query.id)
     if err != nil {
         return result.Fail[subscription.Subscription](err)
     }
