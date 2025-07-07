@@ -901,10 +901,6 @@ class _TestSubscription extends Subscription {
     required super.name,
     super.subscriptionPayments,
     super.labels,
-    super.userFamilyMembers,
-    super.payerFamilyMember,
-    super.createdAt,
-    super.updatedAt,
     this.mockTotalAmountSpent = 0.0,
     this.mockState,
   });
@@ -926,8 +922,6 @@ class _TestPayment extends SubscriptionPayment {
     required super.endDate,
     required super.months,
     required super.currency,
-    super.createdAt,
-    super.updatedAt,
     required this.mockState,
   });
 

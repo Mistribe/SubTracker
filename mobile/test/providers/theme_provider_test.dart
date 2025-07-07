@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:subscription_tracker/models/settings.dart';
 import 'package:subscription_tracker/providers/theme_provider.dart';

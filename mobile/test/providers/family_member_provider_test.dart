@@ -5,7 +5,7 @@ import 'package:subscription_tracker/repositories/family_member_repository.dart'
 
 // Mock implementation of FamilyMemberRepository
 class MockFamilyMemberRepository implements FamilyMemberRepository {
-  List<FamilyMember> _familyMembers = [];
+  final List<FamilyMember> _familyMembers = [];
 
   @override
   List<FamilyMember> getAll() {

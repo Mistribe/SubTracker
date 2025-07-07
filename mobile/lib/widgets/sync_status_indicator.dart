@@ -4,7 +4,7 @@ import '../providers/sync_provider.dart';
 
 /// A widget that displays the current synchronization status
 class SyncStatusIndicator extends StatelessWidget {
-  const SyncStatusIndicator({Key? key}) : super(key: key);
+  const SyncStatusIndicator({super.key});
 
   @override
   Widget build(BuildContext context) {
