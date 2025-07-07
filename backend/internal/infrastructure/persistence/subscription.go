@@ -3,6 +3,7 @@ package persistence
 import (
     "context"
     "github.com/google/uuid"
+    "github.com/oleexo/subtracker/internal/application/core/option"
     "github.com/oleexo/subtracker/internal/domain/subscription"
 )
 
@@ -13,7 +14,7 @@ func NewSubsriptionRepository() subscription.Repository {
     return &SubsriptionRepository{}
 }
 
-func (s SubsriptionRepository) Get(ctx context.Context, id uuid.UUID) (*subscription.Subscription, error) {
+func (s SubsriptionRepository) Get(ctx context.Context, id uuid.UUID) (option.Option[subscription.Subscription], error) {
     //TODO implement me
     panic("implement me")
 }

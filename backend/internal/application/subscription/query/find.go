@@ -3,6 +3,7 @@ package query
 import (
     "context"
     "github.com/google/uuid"
+    "github.com/oleexo/subtracker/internal/application/core/option"
     "github.com/oleexo/subtracker/internal/application/core/result"
     "github.com/oleexo/subtracker/internal/domain/subscription"
 )
@@ -24,5 +25,16 @@ func NewFindQueryHandler(respository subscription.Repository) *FindQueryHandler 
 }
 
 func (h FindQueryHandler) Handle(ctx context.Context, query FindQuery) result.Result[subscription.Subscription] {
+    subOpt, err := h.respository.Get(ctx, query.id)
+    if err != nil {
+        return result.Fail[subscription.Subscription](err)
+    }
 
+    return option.Match[subscription.Subscription, result.Result[subscription.Subscription]](subOpt,
+        func(value subscription.Subscription) result.Result[subscription.Subscription] {
+            return result.Success(value)
+        },
+        func() result.Result[subscription.Subscription] {
+            return result.Fail[subscription.Subscription](subscription.ErrSubscriptionNotFound)
+        })
 }
