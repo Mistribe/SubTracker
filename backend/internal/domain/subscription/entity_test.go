@@ -1,11 +1,12 @@
 package subscription_test
 
 import (
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/oleexo/subtracker/internal/application/core/option"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -54,4 +55,5 @@ func TestAddPayment(t *testing.T) {
 		assert.NotNil(t, originalPayment)
 		assert.NotNil(t, originalPayment.EndDate().Value())
 	})
+
 }

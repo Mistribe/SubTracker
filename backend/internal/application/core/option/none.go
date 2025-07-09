@@ -33,3 +33,7 @@ func (n none[TValue]) Value() *TValue {
 func (n none[TValue]) ValueWithDefault(value TValue) TValue {
 	return value
 }
+
+func (n none[TValue]) Transform(f func(TValue) TValue) Option[TValue] {
+	return n
+}

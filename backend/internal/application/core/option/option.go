@@ -11,6 +11,7 @@ type Option[TValue any] interface {
 
 	Value() *TValue
 	ValueWithDefault(defaultValue TValue) TValue
+	Transform(func(TValue) TValue) Option[TValue]
 }
 
 func New[T any](in *T) Option[T] {

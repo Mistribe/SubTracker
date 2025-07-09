@@ -36,3 +36,7 @@ func (s some[TValue]) Value() *TValue {
 func (s some[TValue]) ValueWithDefault(_ TValue) TValue {
 	return s.value
 }
+
+func (s some[TValue]) Transform(f func(TValue) TValue) Option[TValue] {
+	return Some(f(s.value))
+}

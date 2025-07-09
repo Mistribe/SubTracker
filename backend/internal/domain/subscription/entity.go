@@ -1,9 +1,10 @@
 package subscription
 
 import (
-	"github.com/oleexo/subtracker/internal/application/core/result"
 	"sort"
 	"time"
+
+	"github.com/oleexo/subtracker/internal/application/core/result"
 
 	"github.com/google/uuid"
 	"github.com/oleexo/subtracker/internal/application/core/option"
@@ -108,8 +109,13 @@ func (s *Subscription) AddPayment(newPayment Payment) {
 		//	next = &payments[idx+1]
 		//}
 
-		if previous != nil && current.endDate == nil {
-			current.endDate = &previous.startDate
+		if previous != nil {
+			if current.endDate == nil {
+				current.endDate = &previous.startDate
+			}
+			if current.endDate.After(previous.startDate) {
+				current.endDate = &previous.startDate
+			}
 		}
 
 		payments[idx] = *current
@@ -239,11 +245,13 @@ func NewPaymentWithoutValidation(id uuid.UUID,
 	return Payment{
 		id:        id,
 		price:     price,
-		startDate: startDate,
-		endDate:   endDate.Value(),
+		startDate: startDate.UTC().Truncate(24 * time.Hour),
+		endDate: endDate.Transform(func(v time.Time) time.Time {
+			return v.UTC().Truncate(24 * time.Hour)
+		}).Value(),
 		months:    months,
 		currency:  currency,
-		createdAt: createdAt,
+		createdAt: createdAt.UTC().Truncate(24 * time.Hour),
 		updatedAt: updatedAt,
 		isDirty:   true,
 	}
