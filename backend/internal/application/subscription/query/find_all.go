@@ -2,6 +2,7 @@ package query
 
 import (
 	"context"
+
 	"github.com/oleexo/subtracker/internal/application/core/result"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 )
@@ -21,6 +22,11 @@ func NewFindAllQueryHandler(repository subscription.Repository) *FindAllQueryHan
 	return &FindAllQueryHandler{repository: repository}
 }
 
-func (h FindAllQueryHandler) Handle(ctx context.Context, query FindAllQuery) result.Result[[]subscription.Repository] {
-	
+func (h FindAllQueryHandler) Handle(ctx context.Context, query FindAllQuery) result.Result[[]subscription.Subscription] {
+	subs, err := h.repository.GetAll(ctx)
+	if err != nil {
+		return result.Fail[[]subscription.Subscription](err)
+	}
+
+	return result.Success(subs)
 }

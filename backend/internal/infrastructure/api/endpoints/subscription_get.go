@@ -21,7 +21,11 @@ func (s SubscriptionGetEndpoint) Handle(c *gin.Context) {
 	}
 	q := query.NewFindOneQuery(id)
 	r := s.handler.Handle(c, q)
-	handleResponse(c, r)
+	handleResponse(c,
+		r,
+		withMapping[subscription.Subscription](func(sub subscription.Subscription) any {
+			return newSubscriptionModel(sub)
+		}))
 }
 
 func (s SubscriptionGetEndpoint) Pattern() []string {

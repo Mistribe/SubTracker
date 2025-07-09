@@ -5,7 +5,6 @@ func None[TValue any]() Option[TValue] {
 }
 
 type none[TValue any] struct {
-
 }
 
 func (n none[TValue]) getValue() TValue {
@@ -25,4 +24,8 @@ func (n none[TValue]) IfSome(_ func(TValue)) {
 
 func (n none[TValue]) IfNone(action func()) {
 	action()
+}
+
+func (s none[TValue]) Value() *TValue {
+	return nil
 }

@@ -2,7 +2,7 @@ package option
 
 func Some[TValue any](value TValue) Option[TValue] {
 	return some[TValue]{
-value: value,
+		value: value,
 	}
 }
 
@@ -27,4 +27,8 @@ func (s some[TValue]) IfSome(action func(TValue)) {
 }
 
 func (s some[TValue]) IfNone(_ func()) {
+}
+
+func (s some[TValue]) Value() *TValue {
+	return &s.value
 }

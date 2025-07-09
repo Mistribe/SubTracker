@@ -1,0 +1,47 @@
+package endpoints
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/oleexo/subtracker/internal/application/core"
+	"github.com/oleexo/subtracker/internal/application/subscription/query"
+	"github.com/oleexo/subtracker/internal/domain/subscription"
+	"github.com/oleexo/subtracker/pkg/ext"
+	"net/http"
+)
+
+type SubscriptionGetAllEndpoint struct {
+	handler core.QueryHandler[query.FindAllQuery, []subscription.Subscription]
+}
+
+func (s SubscriptionGetAllEndpoint) Handle(c *gin.Context) {
+	q := query.NewFindAllQuery()
+	r := s.handler.Handle(c, q)
+	handleResponse(c,
+		r,
+		withMapping[[]subscription.Subscription](func(subs []subscription.Subscription) any {
+			return ext.Map[subscription.Subscription, subscriptionModel](
+				subs,
+				func(sub subscription.Subscription) subscriptionModel {
+					return newSubscriptionModel(sub)
+				},
+			)
+		}))
+}
+
+func (s SubscriptionGetAllEndpoint) Pattern() []string {
+	return []string{
+		"/:id",
+	}
+}
+
+func (s SubscriptionGetAllEndpoint) Method() string {
+	return http.MethodGet
+}
+
+func (s SubscriptionGetAllEndpoint) Middlewares() []gin.HandlerFunc {
+	return nil
+}
+
+func NewSubscriptionGetAllEndpoint() *SubscriptionGetAllEndpoint {
+	return &SubscriptionGetAllEndpoint{}
+}
