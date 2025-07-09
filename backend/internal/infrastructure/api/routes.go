@@ -11,6 +11,7 @@ func BuildRoutesModule() fx.Option {
 		fx.Provide(
 			endpoints.NewSubscriptionGetEndpoint,
 			endpoints.NewSubscriptionGetAllEndpoint,
+			endpoints.NewSubscriptionCreateEndpoint,
 			ginfx.AsRouteGroup(endpoints.NewSubscriptionEndpointGroup),
 		),
 	)

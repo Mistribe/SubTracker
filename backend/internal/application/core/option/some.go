@@ -32,3 +32,7 @@ func (s some[TValue]) IfNone(_ func()) {
 func (s some[TValue]) Value() *TValue {
 	return &s.value
 }
+
+func (s some[TValue]) ValueWithDefault(_ TValue) TValue {
+	return s.value
+}

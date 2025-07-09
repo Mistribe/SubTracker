@@ -10,6 +10,27 @@ type Option[TValue any] interface {
 	IfNone(action func())
 
 	Value() *TValue
+	ValueWithDefault(defaultValue TValue) TValue
+}
+
+func New[T any](in *T) Option[T] {
+	if in == nil {
+		return None[T]()
+	}
+	return Some(*in)
+}
+
+func ParseNew[TIn any, TOut any](in *TIn, f func(TIn) (TOut, error)) (Option[TOut], error) {
+	if in == nil {
+		return None[TOut](), nil
+	}
+
+	out, err := f(*in)
+	if err != nil {
+		return None[TOut](), err
+	}
+
+	return Some(out), nil
 }
 
 func Bind[TIn any, TOut any](option Option[TIn],

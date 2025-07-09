@@ -26,6 +26,10 @@ func (n none[TValue]) IfNone(action func()) {
 	action()
 }
 
-func (s none[TValue]) Value() *TValue {
+func (n none[TValue]) Value() *TValue {
 	return nil
+}
+
+func (n none[TValue]) ValueWithDefault(value TValue) TValue {
+	return value
 }
