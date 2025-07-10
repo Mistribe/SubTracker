@@ -1,11 +1,17 @@
 package label
 
 import (
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/application/core/result"
+)
+
+var (
+	hexColorRegex = regexp.MustCompile(`^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$`)
 )
 
 type Label struct {
@@ -18,9 +24,13 @@ type Label struct {
 	isDirty   bool
 }
 
-func NewLabel(id uuid.UUID, name string, isDefault bool, color string, createdAt time.Time,
-	updatedAt time.Time) result.Result[Label] {
-	lbl := Label{
+func NewLabelWithoutValidation(id uuid.UUID,
+	name string,
+	isDefault bool,
+	color string,
+	createdAt time.Time,
+	updatedAt time.Time) Label {
+	return Label{
 		id:        id,
 		name:      name,
 		isDefault: isDefault,
@@ -29,6 +39,11 @@ func NewLabel(id uuid.UUID, name string, isDefault bool, color string, createdAt
 		updatedAt: updatedAt,
 		isDirty:   true,
 	}
+}
+
+func NewLabel(id uuid.UUID, name string, isDefault bool, color string, createdAt time.Time,
+	updatedAt time.Time) result.Result[Label] {
+	lbl := NewLabelWithoutValidation(id, name, isDefault, color, createdAt, updatedAt)
 
 	if err := lbl.Validate(); err != nil {
 		return result.Fail[Label](err)
@@ -62,7 +77,36 @@ func (l *Label) UpdatedAt() time.Time {
 }
 
 func (l *Label) Validate() error {
-	// todo
+	if err := l.validateName(); err != nil {
+		return err
+	}
+
+	if err := l.validateColor(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (l *Label) validateName() error {
+	name := strings.TrimSpace(l.name)
+	if name == "" {
+		return ErrLabelNameEmpty
+	}
+
+	if len(name) > 100 {
+		return ErrLabelNameTooLong
+	}
+
+	return nil
+}
+
+func (l *Label) validateColor() error {
+	color := strings.TrimSpace(l.color)
+	if color == "" || !hexColorRegex.MatchString(color) {
+		return ErrLabelColorInvalid
+	}
+
 	return nil
 }
 

@@ -1,0 +1,6 @@
+packages:
+  github.com/oleexo/subtracker/internal/domain/label:
+    config:
+      dir: ./internal/domain/label/mocks
+    interfaces:
+      Repository:
