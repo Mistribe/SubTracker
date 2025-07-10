@@ -11,20 +11,20 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/family"
 )
 
-// FamilyMemberGetEndpoint
-// @Summary     Get family member by ID
-// @Description Get family member by ID
-// @Tags        family
-// @Produce     json
-// @Param       id   path      uuid.UUID  true  "Family member ID"
-// @Success     200  {object}  familyMemberModel
-// @Failure     400  {object}  httpError
-// @Failure     404  {object}  httpError
-// @Router      /families/members/{id} [get]
 type FamilyMemberGetEndpoint struct {
 	handler core.QueryHandler[query.FindOneQuery, family.Member]
 }
 
+// Handle godoc
+// @Summary		Get family member by ID
+// @Description	Get family member by ID
+// @Tags			family
+// @Produce		json
+// @Param			id	path		uuid.UUID	true	"Family member ID"
+// @Success		200	{object}	familyMemberModel
+// @Failure		400	{object}	httpError
+// @Failure		404	{object}	httpError
+// @Router			/families/members/{id} [get]
 func (f FamilyMemberGetEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")
 	if idParam == "" {

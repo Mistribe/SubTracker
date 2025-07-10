@@ -1,4 +1,4 @@
-package api
+package main
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	"github.com/oleexo/subtracker/internal/infrastructure/api/ginfx"
+	ginfx2 "github.com/oleexo/subtracker/cmd/api/ginfx"
 )
 
 const (
@@ -25,12 +25,12 @@ type EchoServerParams struct {
 
 	Lifecycle   fx.Lifecycle
 	Logger      *slog.Logger
-	Routes      []ginfx.Route      `group:"routes"`
-	RouteGroups []ginfx.RouteGroup `group:"route_groups"`
+	Routes      []ginfx2.Route      `group:"routes"`
+	RouteGroups []ginfx2.RouteGroup `group:"route_groups"`
 	Config      cfg.Configuration
 }
 
-func registerRouteGroups(e *gin.Engine, routeGroups []ginfx.RouteGroup) {
+func registerRouteGroups(e *gin.Engine, routeGroups []ginfx2.RouteGroup) {
 	for _, group := range routeGroups {
 		routeGroup := e.Group(group.Prefix())
 		for _, m := range group.Middlewares() {
@@ -40,7 +40,7 @@ func registerRouteGroups(e *gin.Engine, routeGroups []ginfx.RouteGroup) {
 	}
 }
 
-func registerRoutes(e *gin.RouterGroup, routes []ginfx.Route) {
+func registerRoutes(e *gin.RouterGroup, routes []ginfx2.Route) {
 	for _, route := range routes {
 		for _, pattern := range route.Pattern() {
 			var handlers []gin.HandlerFunc

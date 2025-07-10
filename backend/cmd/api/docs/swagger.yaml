@@ -1,16 +1,56 @@
-basePath: /api/v1
-host: localhost:8080
+basePath: /
+definitions:
+  endpoints.familyMemberModel:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      is_kid:
+        type: boolean
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  endpoints.httpError:
+    properties:
+      message:
+        type: string
+    type: object
+host: api.subtracker.mistribe.com
 info:
   contact:
-    email: support@swagger.io
+    email: support@mistribe.com
     name: API Support
-    url: http://www.swagger.io/support
+    url: http://subtracker.mistribe.com/support
   description: This api provide HTTPRest endpoints for the application SubTracker.
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
+  termsOfService: http://subtracker.mistribe.com/terms/
   title: SubTracker API
   version: "1.0"
-paths: {}
+paths:
+  /families/members/{id}:
+    get:
+      description: Get family member by ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoints.familyMemberModel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Get family member by ID
+      tags:
+      - family
 swagger: "2.0"
