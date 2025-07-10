@@ -75,7 +75,7 @@ func (h UpdatePaymentCommandHandler) updatePayment(ctx context.Context,
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	if err := h.repository.Save(ctx, &sub); err != nil {
+	if err := h.repository.Save(ctx, sub); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 

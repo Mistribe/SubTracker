@@ -32,7 +32,7 @@ func (h CreatePaymentCommandHandler) Handle(ctx context.Context,
 	}
 
 	return option.Match(subOpt, func(sub subscription.Subscription) result.Result[subscription.Subscription] {
-		return h.createPayment(ctx, command.Payment, &sub)
+		return h.createPayment(ctx, command.Payment, sub)
 	},
 		func() result.Result[subscription.Subscription] {
 			return result.Fail[subscription.Subscription](subscription.ErrSubscriptionNotFound)
@@ -42,7 +42,7 @@ func (h CreatePaymentCommandHandler) Handle(ctx context.Context,
 
 func (h CreatePaymentCommandHandler) createPayment(ctx context.Context,
 	payment subscription.Payment,
-	sub *subscription.Subscription) result.Result[subscription.Subscription] {
+	sub subscription.Subscription) result.Result[subscription.Subscription] {
 
 	if err := payment.Validate(); err != nil {
 		return result.Fail[subscription.Subscription](err)
@@ -60,5 +60,5 @@ func (h CreatePaymentCommandHandler) createPayment(ctx context.Context,
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	return result.Success(*sub)
+	return result.Success(sub)
 }

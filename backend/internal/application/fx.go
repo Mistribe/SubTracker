@@ -20,6 +20,7 @@ func BuildApplicationModule() fx.Option {
 			subCommand.NewUpdateSubscriptionCommandHandler,
 			subCommand.NewDeleteSubscriptionCommandHandler,
 			subCommand.NewCreatePaymentCommandHandler,
+			subCommand.NewUpdatePaymentCommandHandler,
 			lblQuery.NewFindAllQueryHandler,
 			lblQuery.NewFindOneQueryHandler,
 			lblCommand.NewCreateLabelCommandHandler,

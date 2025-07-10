@@ -45,7 +45,7 @@ func (h UpdateSubscriptionCommandHandler) Handle(ctx context.Context,
 		return result.Fail[subscription.Subscription](err)
 	}
 	return option.Match(subOpt, func(sub subscription.Subscription) result.Result[subscription.Subscription] {
-		return h.updateSubscription(ctx, command, &sub)
+		return h.updateSubscription(ctx, command, sub)
 	}, func() result.Result[subscription.Subscription] {
 		return result.Fail[subscription.Subscription](subscription.ErrSubscriptionNotFound)
 	})
@@ -53,7 +53,7 @@ func (h UpdateSubscriptionCommandHandler) Handle(ctx context.Context,
 
 func (h UpdateSubscriptionCommandHandler) updateSubscription(ctx context.Context,
 	command UpdateSubscriptionCommand,
-	sub *subscription.Subscription) result.Result[subscription.Subscription] {
+	sub subscription.Subscription) result.Result[subscription.Subscription] {
 	if err := h.ensureLabelsExists(ctx, command.Labels); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
@@ -82,7 +82,7 @@ func (h UpdateSubscriptionCommandHandler) updateSubscription(ctx context.Context
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	return result.Success(*sub)
+	return result.Success(sub)
 }
 
 func (h UpdateSubscriptionCommandHandler) ensureFamilyMemberExists(ctx context.Context,

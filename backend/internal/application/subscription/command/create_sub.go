@@ -43,7 +43,7 @@ func (h CreateSubscriptionCommandHandler) Handle(ctx context.Context,
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	if err := h.subscriptionRepository.Save(ctx, &command.Subscription); err != nil {
+	if err := h.subscriptionRepository.Save(ctx, command.Subscription); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 
