@@ -1,7 +1,6 @@
 package subscription
 
 import (
-	"sort"
 	"time"
 
 	"github.com/oleexo/subtracker/internal/application/core/result"
@@ -93,35 +92,31 @@ func (s *Subscription) Payments() []Payment {
 
 func (s *Subscription) AddPayment(newPayment Payment) {
 	payments := append(s.payments, newPayment)
-	sort.Slice(payments, func(i, j int) bool {
-		return payments[i].startDate.After(payments[j].startDate)
-	})
+	sortPayments(payments)
+	s.payments = payments
+}
 
-	var previous *Payment
-	//var next *Payment
-	for idx := 0; idx < len(payments); idx++ {
-		current := &payments[idx]
-		if idx == 0 {
-			previous = nil
-		} else {
-			previous = &payments[idx-1]
+func (s *Subscription) RemovePayment(paymentId uuid.UUID) {
+	var payments []Payment
+	for _, p := range s.payments {
+		if p.id != paymentId {
+			payments = append(payments, p)
 		}
-		//if idx+1 < len(payments) {
-		//	next = &payments[idx+1]
-		//}
-
-		if previous != nil {
-			if current.endDate == nil {
-				current.endDate = &previous.startDate
-			}
-			if current.endDate.After(previous.startDate) {
-				current.endDate = &previous.startDate
-			}
-		}
-
-		payments[idx] = *current
 	}
+	sortPayments(payments)
+	s.payments = payments
+}
 
+func (s *Subscription) UpdatePayment(payment Payment) {
+	var payments []Payment
+	for i, p := range s.payments {
+		if p.id == payment.id {
+			payments[i] = payment
+		} else {
+			payments[i] = p
+		}
+	}
+	sortPayments(payments)
 	s.payments = payments
 }
 
@@ -192,11 +187,11 @@ func (s *Subscription) Validate() error {
 	}
 
 	if len(s.labels) > MaxLabelCount {
-		return ErrSubscriptionLabelExcedeed
+		return ErrSubscriptionLabelExceeded
 	}
 
 	if len(s.familyMembers) > MaxFamilyMemberCount {
-		return ErrSubscriptionFamilyMemberExcedeed
+		return ErrSubscriptionFamilyMemberExceeded
 	}
 
 	for _, payment := range s.payments {
@@ -306,4 +301,36 @@ func (p *Payment) IsDirty() bool {
 
 func (p *Payment) Clean() {
 	p.isDirty = false
+}
+
+func (p *Payment) SetPrice(price float64) {
+	p.price = price
+	p.isDirty = true
+}
+
+func (p *Payment) SetStartDate(date time.Time) {
+	p.startDate = date.UTC().Truncate(24 * time.Hour)
+	p.isDirty = true
+}
+
+func (p *Payment) SetEndDate(date option.Option[time.Time]) {
+	p.endDate = date.Transform(func(v time.Time) time.Time {
+		return v.UTC().Truncate(24 * time.Hour)
+	}).Value()
+	p.isDirty = true
+}
+
+func (p *Payment) SetMonths(months int) {
+	p.months = months
+	p.isDirty = true
+}
+
+func (p *Payment) SetCurrency(currency string) {
+	p.currency = currency
+	p.isDirty = true
+}
+
+func (p *Payment) SetUpdatedAt(updatedAt time.Time) {
+	p.updatedAt = updatedAt
+	p.isDirty = true
 }
