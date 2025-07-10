@@ -20,6 +20,12 @@ func BuildRoutesModule() fx.Option {
 			endpoints.NewLabelUpdateEndpoint,
 			endpoints.NewLabelDeleteEndpoint,
 			ginfx.AsRouteGroup(endpoints.NewLabelEndpointGroup),
+			endpoints.NewFamilyMemberGetAllEndpoint,
+			endpoints.NewFamilyMemberGetEndpoint,
+			endpoints.NewFamilyMemberCreateEndpoint,
+			endpoints.NewFamilyMemberUpdateEndpoint,
+			endpoints.NewFamilyMemberDeleteEndpoint,
+			ginfx.AsRouteGroup(endpoints.NewFamilyEndpointGroup),
 		),
 	)
 }
