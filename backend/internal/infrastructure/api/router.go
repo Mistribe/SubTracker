@@ -9,6 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
 	"github.com/oleexo/subtracker/internal/infrastructure/api/ginfx"
 )
 
@@ -58,6 +61,8 @@ func registerRoutes(e *gin.RouterGroup, routes []ginfx.Route) {
 func newGinEngine(parameters EchoServerParams) *gin.Engine {
 	e := gin.Default()
 
+	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	registerRouteGroups(e, parameters.RouteGroups)
 	registerRoutes(&e.RouterGroup, parameters.Routes)
 
@@ -69,7 +74,8 @@ func newGinEngine(parameters EchoServerParams) *gin.Engine {
 	return e
 }
 
-func newHttpServer(router *gin.Engine,
+func newHttpServer(
+	router *gin.Engine,
 	lifecycle fx.Lifecycle) *http.Server {
 	srv := &http.Server{
 		Addr:    ":8080",
