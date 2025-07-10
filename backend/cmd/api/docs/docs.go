@@ -24,6 +24,73 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/families/members": {
+            "get": {
+                "description": "Get all family members",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "family"
+                ],
+                "summary": "Get all family members",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/endpoints.familyMemberModel"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new family member",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "family"
+                ],
+                "summary": "Create a new family member",
+                "parameters": [
+                    {
+                        "description": "Family member data",
+                        "name": "member",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.createFamilyMemberModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.familyMemberModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    }
+                }
+            }
+        },
         "/families/members/{id}": {
             "get": {
                 "description": "Get family member by ID",
@@ -54,10 +121,387 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "description": "Update family member by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "family"
+                ],
+                "summary": "Update family member by ID",
+                "parameters": [
+                    {
+                        "description": "Family member data",
+                        "name": "member",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.updateFamilyMemberModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.familyMemberModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete family member by ID",
+                "tags": [
+                    "family"
+                ],
+                "summary": "Delete family member by ID",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    }
+                }
+            }
+        },
+        "/labels": {
+            "get": {
+                "description": "Get all labels",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Get all labels",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/endpoints.labelModel"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    }
+                }
+            }
+        },
+        "/labels/{id}": {
+            "get": {
+                "description": "Get label by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Get label by ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.labelModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update label by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Update label by ID",
+                "parameters": [
+                    {
+                        "description": "Label data",
+                        "name": "label",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.updateLabelModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.labelModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete label by ID",
+                "tags": [
+                    "label"
+                ],
+                "summary": "Delete label by ID",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    }
+                }
+            }
+        },
+        "/subscriptions": {
+            "get": {
+                "description": "Get all subscriptions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscription"
+                ],
+                "summary": "Get all subscriptions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/endpoints.subscriptionModel"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new subscription",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscription"
+                ],
+                "summary": "Create a new subscription",
+                "parameters": [
+                    {
+                        "description": "Subscription data",
+                        "name": "subscription",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.createSubscriptionModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.subscriptionModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    }
+                }
+            }
+        },
+        "/subscriptions/{id}": {
+            "get": {
+                "description": "Get subscription by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscription"
+                ],
+                "summary": "Get subscription by ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.subscriptionModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    }
+                }
             }
         }
     },
     "definitions": {
+        "endpoints.createFamilyMemberModel": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_kid": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoints.createPaymentModel": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "months": {
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "start_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoints.createSubscriptionModel": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "family_members": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "labels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "payer": {
+                    "type": "string"
+                },
+                "payments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/endpoints.createPaymentModel"
+                    }
+                }
+            }
+        },
         "endpoints.familyMemberModel": {
             "type": "object",
             "properties": {
@@ -82,6 +526,130 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoints.labelModel": {
+            "type": "object",
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_default": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoints.paymentModel": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "months": {
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoints.subscriptionModel": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "family_members": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "labels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "payer": {
+                    "type": "string"
+                },
+                "payments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/endpoints.paymentModel"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoints.updateFamilyMemberModel": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id_kid": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoints.updateLabelModel": {
+            "type": "object",
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "is_default": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }

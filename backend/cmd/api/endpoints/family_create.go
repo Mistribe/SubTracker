@@ -62,6 +62,16 @@ func (m createFamilyMemberModel) Command() result.Result[command.CreateFamilyMem
 		})
 }
 
+// Handle godoc
+// @Summary		Create a new family member
+// @Description	Create a new family member
+// @Tags			family
+// @Accept			json
+// @Produce		json
+// @Param			member	body		createFamilyMemberModel	true	"Family member data"
+// @Success		201		{object}	familyMemberModel
+// @Failure		400		{object}	httpError
+// @Router			/families/members [post]
 func (f FamilyMemberCreateEndpoint) Handle(c *gin.Context) {
 	var model createFamilyMemberModel
 	if err := c.ShouldBindJSON(&model); err != nil {

@@ -105,3 +105,14 @@ func NewLabelCreateEndpoint(handler core.CommandHandler[command.CreateLabelComma
 		handler: handler,
 	}
 }
+
+// Handle godoc
+// @Summary		Create a new label
+// @Description	Create a new label
+// @Tags			label
+// @Accept			json
+// @Produce		json
+// @Param			label	body		createLabelModel	true	"Label data"
+// @Success		201		{object}	labelModel
+// @Failure		400		{object}	httpError
+// @Router			/labels [post]

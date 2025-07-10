@@ -14,6 +14,16 @@ type FamilyMemberDeleteEndpoint struct {
 	handler core.CommandHandler[command.DeleteFamilyMemberCommand, bool]
 }
 
+// Handle godoc
+//
+//	@Summary		Delete family member by ID
+//	@Description	Delete family member by ID
+//	@Tags			family
+//	@Param			id	path	uuid.UUID	true	"Family member ID"
+//	@Success		204	"No Content"
+//	@Failure		400	{object}	httpError
+//	@Failure		404	{object}	httpError
+//	@Router			/families/members/{id} [delete]
 func (f FamilyMemberDeleteEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")
 	if idParam == "" {

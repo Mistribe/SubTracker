@@ -117,6 +117,17 @@ func (m createSubscriptionModel) Command() result.Result[command.CreateSubscript
 		})
 }
 
+// Handle godoc
+//
+//	@Summary		Create a new subscription
+//	@Description	Create a new subscription
+//	@Tags			subscription
+//	@Accept			json
+//	@Produce		json
+//	@Param			subscription	body		createSubscriptionModel	true	"Subscription data"
+//	@Success		201				{object}	subscriptionModel
+//	@Failure		400				{object}	httpError
+//	@Router			/subscriptions [post]
 func (s SubscriptionCreateEndpoint) Handle(c *gin.Context) {
 	var model createSubscriptionModel
 	if err := c.ShouldBindJSON(&model); err != nil {

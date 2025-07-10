@@ -42,6 +42,16 @@ func (l LabelDeleteEndpoint) Handle(c *gin.Context) {
 	}))
 }
 
+// Handle godoc
+//
+//	@Summary		Delete label by ID
+//	@Description	Delete label by ID
+//	@Tags			label
+//	@Param			id	path	uuid.UUID	true	"Label ID"
+//	@Success		204	"No Content"
+//	@Failure		400	{object}	httpError
+//	@Failure		404	{object}	httpError
+//	@Router			/labels/{id} [delete]
 func (l LabelDeleteEndpoint) Pattern() []string {
 	return []string{
 		"/:id",

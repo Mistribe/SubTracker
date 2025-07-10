@@ -45,6 +45,18 @@ func (m updateFamilyMemberModel) Command(id uuid.UUID) result.Result[command.Upd
 	})
 }
 
+// Handle godoc
+// @Summary		Update family member by ID
+// @Description	Update family member by ID
+// @Tags			family
+// @Accept			json
+// @Produce		json
+// @Param			id		path		uuid.UUID				true	"Family member ID"
+// @Param			member	body		updateFamilyMemberModel	true	"Family member data"
+// @Success		200		{object}	familyMemberModel
+// @Failure		400		{object}	httpError
+// @Failure		404		{object}	httpError
+// @Router			/families/members/{id} [put]
 func (f FamilyMemberUpdateEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")
 	if idParam == "" {

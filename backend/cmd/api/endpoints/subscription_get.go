@@ -14,6 +14,16 @@ type SubscriptionGetEndpoint struct {
 	handler core.QueryHandler[query.FindOneQuery, subscription.Subscription]
 }
 
+// Handle godoc
+// @Summary		Get subscription by ID
+// @Description	Get subscription by ID
+// @Tags			subscription
+// @Produce		json
+// @Param			id	path		uuid.UUID	true	"Subscription ID"
+// @Success		200	{object}	subscriptionModel
+// @Failure		400	{object}	httpError
+// @Failure		404	{object}	httpError
+// @Router			/subscriptions/{id} [get]
 func (s SubscriptionGetEndpoint) Handle(c *gin.Context) {
 	id, err := paramAsUuid(c, "id")
 	if err != nil {

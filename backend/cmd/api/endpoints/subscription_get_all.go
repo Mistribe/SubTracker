@@ -15,6 +15,14 @@ type SubscriptionGetAllEndpoint struct {
 	handler core.QueryHandler[query.FindAllQuery, []subscription.Subscription]
 }
 
+// Handle godoc
+// @Summary		Get all subscriptions
+// @Description	Get all subscriptions
+// @Tags			subscription
+// @Produce		json
+// @Success		200	{array}		subscriptionModel
+// @Failure		400	{object}	httpError
+// @Router			/subscriptions [get]
 func (s SubscriptionGetAllEndpoint) Handle(c *gin.Context) {
 	q := query.NewFindAllQuery()
 	r := s.handler.Handle(c, q)

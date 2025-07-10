@@ -14,6 +14,16 @@ type LabelGetEndpoint struct {
 	handler core.QueryHandler[query.FindOneQuery, label.Label]
 }
 
+// Handle godoc
+// @Summary		Get label by ID
+// @Description	Get label by ID
+// @Tags			label
+// @Produce		json
+// @Param			id	path		uuid.UUID	true	"Label ID"
+// @Success		200	{object}	labelModel
+// @Failure		400	{object}	httpError
+// @Failure		404	{object}	httpError
+// @Router			/labels/{id} [get]
 func (s LabelGetEndpoint) Handle(c *gin.Context) {
 	id, err := paramAsUuid(c, "id")
 	if err != nil {

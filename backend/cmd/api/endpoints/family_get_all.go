@@ -14,6 +14,14 @@ type FamilyMemberGetAllEndpoint struct {
 	handler core.QueryHandler[query.FindAllQuery, []family.Member]
 }
 
+// Handle godoc
+// @Summary		Get all family members
+// @Description	Get all family members
+// @Tags			family
+// @Produce		json
+// @Success		200	{array}		familyMemberModel
+// @Failure		400	{object}	httpError
+// @Router			/families/members [get]
 func (f FamilyMemberGetAllEndpoint) Handle(c *gin.Context) {
 	q := query.FindAllQuery{}
 

@@ -15,6 +15,14 @@ type LabelGetAllEndpoint struct {
 	handler core.QueryHandler[query.FindAllQuery, []label.Label]
 }
 
+// Handle godoc
+// @Summary		Get all labels
+// @Description	Get all labels
+// @Tags			label
+// @Produce		json
+// @Success		200	{array}		labelModel
+// @Failure		400	{object}	httpError
+// @Router			/labels [get]
 func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, []label.Label]) *LabelGetAllEndpoint {
 	return &LabelGetAllEndpoint{handler: handler}
 }

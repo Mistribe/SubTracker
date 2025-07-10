@@ -1,5 +1,58 @@
 basePath: /
 definitions:
+  endpoints.createFamilyMemberModel:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      is_kid:
+        type: boolean
+      name:
+        type: string
+    type: object
+  endpoints.createPaymentModel:
+    properties:
+      created_at:
+        type: string
+      currency:
+        type: string
+      end_date:
+        type: string
+      id:
+        type: string
+      months:
+        type: integer
+      price:
+        type: number
+      start_date:
+        type: string
+    type: object
+  endpoints.createSubscriptionModel:
+    properties:
+      created_at:
+        type: string
+      family_members:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      labels:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      payer:
+        type: string
+      payments:
+        items:
+          $ref: '#/definitions/endpoints.createPaymentModel'
+        type: array
+    type: object
   endpoints.familyMemberModel:
     properties:
       created_at:
@@ -18,6 +71,87 @@ definitions:
       message:
         type: string
     type: object
+  endpoints.labelModel:
+    properties:
+      color:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      is_default:
+        type: boolean
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  endpoints.paymentModel:
+    properties:
+      created_at:
+        type: string
+      currency:
+        type: string
+      end_date:
+        type: string
+      id:
+        type: string
+      months:
+        type: integer
+      price:
+        type: number
+      start_date:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  endpoints.subscriptionModel:
+    properties:
+      created_at:
+        type: string
+      family_members:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      labels:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      payer:
+        type: string
+      payments:
+        items:
+          $ref: '#/definitions/endpoints.paymentModel'
+        type: array
+      updated_at:
+        type: string
+    type: object
+  endpoints.updateFamilyMemberModel:
+    properties:
+      email:
+        type: string
+      id_kid:
+        type: boolean
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  endpoints.updateLabelModel:
+    properties:
+      color:
+        type: string
+      is_default:
+        type: boolean
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
 host: api.subtracker.mistribe.com
 info:
   contact:
@@ -32,7 +166,67 @@ info:
   title: SubTracker API
   version: "1.0"
 paths:
+  /families/members:
+    get:
+      description: Get all family members
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/endpoints.familyMemberModel'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Get all family members
+      tags:
+      - family
+    post:
+      consumes:
+      - application/json
+      description: Create a new family member
+      parameters:
+      - description: Family member data
+        in: body
+        name: member
+        required: true
+        schema:
+          $ref: '#/definitions/endpoints.createFamilyMemberModel'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/endpoints.familyMemberModel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Create a new family member
+      tags:
+      - family
   /families/members/{id}:
+    delete:
+      description: Delete family member by ID
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Delete family member by ID
+      tags:
+      - family
     get:
       description: Get family member by ID
       produces:
@@ -53,4 +247,183 @@ paths:
       summary: Get family member by ID
       tags:
       - family
+    put:
+      consumes:
+      - application/json
+      description: Update family member by ID
+      parameters:
+      - description: Family member data
+        in: body
+        name: member
+        required: true
+        schema:
+          $ref: '#/definitions/endpoints.updateFamilyMemberModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoints.familyMemberModel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Update family member by ID
+      tags:
+      - family
+  /labels:
+    get:
+      description: Get all labels
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/endpoints.labelModel'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Get all labels
+      tags:
+      - label
+  /labels/{id}:
+    delete:
+      description: Delete label by ID
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Delete label by ID
+      tags:
+      - label
+    get:
+      description: Get label by ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoints.labelModel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Get label by ID
+      tags:
+      - label
+    put:
+      consumes:
+      - application/json
+      description: Update label by ID
+      parameters:
+      - description: Label data
+        in: body
+        name: label
+        required: true
+        schema:
+          $ref: '#/definitions/endpoints.updateLabelModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoints.labelModel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Update label by ID
+      tags:
+      - label
+  /subscriptions:
+    get:
+      description: Get all subscriptions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/endpoints.subscriptionModel'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Get all subscriptions
+      tags:
+      - subscription
+    post:
+      consumes:
+      - application/json
+      description: Create a new subscription
+      parameters:
+      - description: Subscription data
+        in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/endpoints.createSubscriptionModel'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/endpoints.subscriptionModel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Create a new subscription
+      tags:
+      - subscription
+  /subscriptions/{id}:
+    get:
+      description: Get subscription by ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoints.subscriptionModel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Get subscription by ID
+      tags:
+      - subscription
 swagger: "2.0"
