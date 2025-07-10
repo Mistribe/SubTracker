@@ -4,3 +4,13 @@ packages:
       dir: ./internal/domain/label/mocks
     interfaces:
       Repository:
+  github.com/oleexo/subtracker/internal/domain/family:
+    config:
+      dir: ./internal/domain/family/mocks
+    interfaces:
+      Repository:
+  github.com/oleexo/subtracker/internal/domain/subscription:
+    config:
+      dir: ./internal/domain/subscription/mocks
+    interfaces:
+      Repository:
