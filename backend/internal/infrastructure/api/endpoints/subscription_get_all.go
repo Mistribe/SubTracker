@@ -32,7 +32,7 @@ func (s SubscriptionGetAllEndpoint) Handle(c *gin.Context) {
 
 func (s SubscriptionGetAllEndpoint) Pattern() []string {
 	return []string{
-		"/:id",
+		"",
 	}
 }
 
