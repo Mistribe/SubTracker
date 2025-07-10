@@ -3,6 +3,8 @@ package application
 import (
 	"go.uber.org/fx"
 
+	fmlyCommand "github.com/oleexo/subtracker/internal/application/family/command"
+	fmlyQuery "github.com/oleexo/subtracker/internal/application/family/query"
 	lblCommand "github.com/oleexo/subtracker/internal/application/label/command"
 	lblQuery "github.com/oleexo/subtracker/internal/application/label/query"
 	subCommand "github.com/oleexo/subtracker/internal/application/subscription/command"
@@ -23,6 +25,11 @@ func BuildApplicationModule() fx.Option {
 			lblCommand.NewCreateLabelCommandHandler,
 			lblCommand.NewUpdateLabelCommandHandler,
 			lblCommand.NewDeleteLabelCommandHandler,
+			fmlyQuery.NewFindAllQueryHandler,
+			fmlyQuery.NewFindOneQueryHandler,
+			fmlyCommand.NewCreateFamilyMemberCommandHandler,
+			fmlyCommand.NewUpdateFamilyMemberCommandHandler,
+			fmlyCommand.NewDeleteFamilyMemberCommandHandler,
 		),
 	)
 }
