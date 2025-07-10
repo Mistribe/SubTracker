@@ -13,15 +13,18 @@ type LabelEndpointGroup struct {
 	routes []ginfx.Route
 }
 
-func NewLabelEndpointGroup(createEndpoint *LabelCreateEndpoint,
+func NewLabelEndpointGroup(
+	createEndpoint *LabelCreateEndpoint,
 	updateEndpoint *LabelUpdateEndpoint,
 	deleteEndpoint *LabelDeleteEndpoint,
+	getEndpoint *LabelGetEndpoint,
 	getAllEndpoint *LabelGetAllEndpoint) *LabelEndpointGroup {
 	return &LabelEndpointGroup{
 		routes: []ginfx.Route{
 			createEndpoint,
 			updateEndpoint,
 			deleteEndpoint,
+			getEndpoint,
 			getAllEndpoint,
 		},
 	}
