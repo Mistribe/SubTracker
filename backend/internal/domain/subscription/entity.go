@@ -7,6 +7,7 @@ import (
 	"github.com/oleexo/subtracker/internal/application/core/result"
 
 	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/application/core/option"
 )
 

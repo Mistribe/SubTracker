@@ -1,9 +1,10 @@
 package application
 
 import (
+	"go.uber.org/fx"
+
 	subCommand "github.com/oleexo/subtracker/internal/application/subscription/command"
 	subQuery "github.com/oleexo/subtracker/internal/application/subscription/query"
-	"go.uber.org/fx"
 )
 
 func BuildApplicationModule() fx.Option {

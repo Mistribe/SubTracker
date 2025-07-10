@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/application/core/option"
 	"github.com/oleexo/subtracker/internal/application/core/result"
 	"github.com/oleexo/subtracker/internal/domain/family"
@@ -37,7 +38,8 @@ func NewUpdateSubscriptionCommandHandler(subscriptionRepository subscription.Rep
 	}
 }
 
-func (h UpdateSubscriptionCommandHandler) Handle(ctx context.Context, command UpdateSubscriptionCommand) result.Result[subscription.Subscription] {
+func (h UpdateSubscriptionCommandHandler) Handle(ctx context.Context,
+	command UpdateSubscriptionCommand) result.Result[subscription.Subscription] {
 	subOpt, err := h.subscriptionRepository.Get(ctx, command.Id)
 	if err != nil {
 		return result.Fail[subscription.Subscription](err)
@@ -83,7 +85,8 @@ func (h UpdateSubscriptionCommandHandler) updateSubscription(ctx context.Context
 	return result.Success(*sub)
 }
 
-func (h UpdateSubscriptionCommandHandler) ensureFamilyMemberExists(ctx context.Context, familyMembers []uuid.UUID) error {
+func (h UpdateSubscriptionCommandHandler) ensureFamilyMemberExists(ctx context.Context,
+	familyMembers []uuid.UUID) error {
 	if len(familyMembers) == 0 {
 		return nil
 	}

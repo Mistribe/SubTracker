@@ -1,12 +1,15 @@
 package endpoints
 
 import (
-	"github.com/google/uuid"
-	"github.com/oleexo/subtracker/internal/application/core/option"
-	"github.com/oleexo/subtracker/pkg/ext"
 	"time"
 
+	"github.com/google/uuid"
+
+	"github.com/oleexo/subtracker/internal/application/core/option"
+	"github.com/oleexo/subtracker/pkg/ext"
+
 	"github.com/gin-gonic/gin"
+
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 	"github.com/oleexo/subtracker/internal/infrastructure/api/ginfx"
 )

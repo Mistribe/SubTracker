@@ -4,11 +4,12 @@ import (
 	"github.com/Oleexo/config-go/dotenv"
 	"github.com/Oleexo/config-go/envs"
 	configfx "github.com/Oleexo/config-go/fx"
+	"go.uber.org/fx"
+
 	"github.com/oleexo/subtracker/internal/application"
 	"github.com/oleexo/subtracker/internal/infrastructure/api"
 	"github.com/oleexo/subtracker/internal/infrastructure/logfx"
 	"github.com/oleexo/subtracker/internal/infrastructure/persistence"
-	"go.uber.org/fx"
 )
 
 func main() {

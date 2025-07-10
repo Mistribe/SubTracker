@@ -2,7 +2,9 @@ package command
 
 import (
 	"context"
+
 	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/application/core/option"
 	"github.com/oleexo/subtracker/internal/application/core/result"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
@@ -20,7 +22,8 @@ func NewDeleteSubscriptionCommandHandler(subscriptionRepository subscription.Rep
 	return &DeleteSubscriptionCommandHandler{subscriptionRepository: subscriptionRepository}
 }
 
-func (h DeleteSubscriptionCommandHandler) Handle(ctx context.Context, command DeleteSubscriptionCommand) result.Result[result.Unit] {
+func (h DeleteSubscriptionCommandHandler) Handle(ctx context.Context,
+	command DeleteSubscriptionCommand) result.Result[result.Unit] {
 	subOpt, err := h.subscriptionRepository.Get(ctx, command.Id)
 	if err != nil {
 		return result.Fail[result.Unit](err)

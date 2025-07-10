@@ -2,11 +2,13 @@ package command
 
 import (
 	"context"
+	"time"
+
 	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/application/core/option"
 	"github.com/oleexo/subtracker/internal/application/core/result"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"time"
 )
 
 type CreatePaymentCommand struct {
@@ -22,7 +24,8 @@ func NewCreatePaymentCommandHandler(subscriptionRepository subscription.Reposito
 	return &CreatePaymentCommandHandler{subscriptionRepository: subscriptionRepository}
 }
 
-func (h CreatePaymentCommandHandler) Handle(ctx context.Context, command CreatePaymentCommand) result.Result[subscription.Subscription] {
+func (h CreatePaymentCommandHandler) Handle(ctx context.Context,
+	command CreatePaymentCommand) result.Result[subscription.Subscription] {
 	subOpt, err := h.subscriptionRepository.Get(ctx, command.SubscriptionId)
 	if err != nil {
 		return result.Fail[subscription.Subscription](err)

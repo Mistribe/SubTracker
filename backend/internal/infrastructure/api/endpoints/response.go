@@ -1,9 +1,11 @@
 package endpoints
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/oleexo/subtracker/internal/application/core/result"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+
+	"github.com/oleexo/subtracker/internal/application/core/result"
 )
 
 type handleResponseOptions[TValue any] struct {

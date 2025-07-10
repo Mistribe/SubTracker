@@ -1,10 +1,11 @@
 package logfx
 
 import (
-	cfg "github.com/Oleexo/config-go"
-	"go.uber.org/fx"
 	"log/slog"
 	"os"
+
+	cfg "github.com/Oleexo/config-go"
+	"go.uber.org/fx"
 )
 
 const (

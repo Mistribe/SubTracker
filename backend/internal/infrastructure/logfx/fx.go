@@ -1,9 +1,10 @@
 package logfx
 
 import (
-	"go.uber.org/fx/fxevent"
 	"log/slog"
 	"strings"
+
+	"go.uber.org/fx/fxevent"
 )
 
 type slogFxLogger struct {

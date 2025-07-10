@@ -1,9 +1,10 @@
 package api
 
 import (
+	"go.uber.org/fx"
+
 	"github.com/oleexo/subtracker/internal/infrastructure/api/endpoints"
 	"github.com/oleexo/subtracker/internal/infrastructure/api/ginfx"
-	"go.uber.org/fx"
 )
 
 func BuildRoutesModule() fx.Option {

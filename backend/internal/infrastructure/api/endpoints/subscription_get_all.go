@@ -1,12 +1,14 @@
 package endpoints
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
+
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/subscription/query"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 	"github.com/oleexo/subtracker/pkg/ext"
-	"net/http"
 )
 
 type SubscriptionGetAllEndpoint struct {

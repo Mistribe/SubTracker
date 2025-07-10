@@ -2,12 +2,14 @@ package api
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	"github.com/oleexo/subtracker/internal/infrastructure/api/ginfx"
-	cfg "github.com/Oleexo/config-go"
-	"go.uber.org/fx"
 	"log/slog"
 	"net/http"
+
+	cfg "github.com/Oleexo/config-go"
+	"github.com/gin-gonic/gin"
+	"go.uber.org/fx"
+
+	"github.com/oleexo/subtracker/internal/infrastructure/api/ginfx"
 )
 
 const (

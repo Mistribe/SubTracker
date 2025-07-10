@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/application/core/option"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 
