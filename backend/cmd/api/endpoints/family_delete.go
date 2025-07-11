@@ -7,11 +7,12 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/application/core"
+	"github.com/oleexo/subtracker/internal/application/core/result"
 	"github.com/oleexo/subtracker/internal/application/family/command"
 )
 
 type FamilyMemberDeleteEndpoint struct {
-	handler core.CommandHandler[command.DeleteFamilyMemberCommand, bool]
+	handler core.CommandHandler[command.DeleteFamilyMemberCommand, result.Unit]
 }
 
 // Handle godoc
@@ -46,9 +47,7 @@ func (f FamilyMemberDeleteEndpoint) Handle(c *gin.Context) {
 	}
 
 	r := f.handler.Handle(c, cmd)
-	handleResponse(c, r, withMapping[bool](func(success bool) any {
-		return map[string]bool{"success": success}
-	}))
+	handleResponse(c, r, withNoContent[result.Unit]())
 }
 
 func (f FamilyMemberDeleteEndpoint) Pattern() []string {
@@ -65,7 +64,7 @@ func (f FamilyMemberDeleteEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewFamilyMemberDeleteEndpoint(handler core.CommandHandler[command.DeleteFamilyMemberCommand, bool]) *FamilyMemberDeleteEndpoint {
+func NewFamilyMemberDeleteEndpoint(handler core.CommandHandler[command.DeleteFamilyMemberCommand, result.Unit]) *FamilyMemberDeleteEndpoint {
 	return &FamilyMemberDeleteEndpoint{
 		handler: handler,
 	}

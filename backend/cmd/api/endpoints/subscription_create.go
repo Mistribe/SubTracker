@@ -163,7 +163,7 @@ func (s SubscriptionCreateEndpoint) Pattern() []string {
 }
 
 func (s SubscriptionCreateEndpoint) Method() string {
-	return http.MethodGet
+	return http.MethodPost
 }
 
 func (s SubscriptionCreateEndpoint) Middlewares() []gin.HandlerFunc {

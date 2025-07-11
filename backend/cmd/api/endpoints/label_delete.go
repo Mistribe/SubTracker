@@ -7,13 +7,24 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/application/core"
+	"github.com/oleexo/subtracker/internal/application/core/result"
 	"github.com/oleexo/subtracker/internal/application/label/command"
 )
 
 type LabelDeleteEndpoint struct {
-	handler core.CommandHandler[command.DeleteLabelCommand, bool]
+	handler core.CommandHandler[command.DeleteLabelCommand, result.Unit]
 }
 
+// Handle godoc
+//
+//	@Summary		Delete label by ID
+//	@Description	Delete label by ID
+//	@Tags			label
+//	@Param			id	path	uuid.UUID	true	"Label ID"
+//	@Success		204	"No Content"
+//	@Failure		400	{object}	httpError
+//	@Failure		404	{object}	httpError
+//	@Router			/labels/{id} [delete]
 func (l LabelDeleteEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")
 	if idParam == "" {
@@ -36,22 +47,9 @@ func (l LabelDeleteEndpoint) Handle(c *gin.Context) {
 	}
 
 	r := l.handler.Handle(c, cmd)
-	handleResponse(c, r, withMapping[bool](func(success bool) any {
-		// todo find better model
-		return map[string]bool{"success": success}
-	}))
+	handleResponse(c, r, withNoContent[result.Unit]())
 }
 
-// Handle godoc
-//
-//	@Summary		Delete label by ID
-//	@Description	Delete label by ID
-//	@Tags			label
-//	@Param			id	path	uuid.UUID	true	"Label ID"
-//	@Success		204	"No Content"
-//	@Failure		400	{object}	httpError
-//	@Failure		404	{object}	httpError
-//	@Router			/labels/{id} [delete]
 func (l LabelDeleteEndpoint) Pattern() []string {
 	return []string{
 		"/:id",
@@ -66,7 +64,7 @@ func (l LabelDeleteEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewLabelDeleteEndpoint(handler core.CommandHandler[command.DeleteLabelCommand, bool]) *LabelDeleteEndpoint {
+func NewLabelDeleteEndpoint(handler core.CommandHandler[command.DeleteLabelCommand, result.Unit]) *LabelDeleteEndpoint {
 	return &LabelDeleteEndpoint{
 		handler: handler,
 	}
