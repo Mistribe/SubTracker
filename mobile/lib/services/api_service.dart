@@ -245,9 +245,10 @@ class ApiService {
     try {
       // Create family member payload according to createFamilyMemberModel in swagger
       final memberPayload = {
+        'id': member.id,
         'name': member.name,
         'is_kid': member.isKid,
-        'created_at': DateTime.now().toIso8601String(),
+        'created_at': member.createdAt.toUtc().toIso8601String(),
       };
 
       final response = await _httpClient.post(

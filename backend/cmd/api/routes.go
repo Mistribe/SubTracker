@@ -31,6 +31,7 @@ func BuildRoutesModule() fx.Option {
 			endpoints.NewFamilyMemberUpdateEndpoint,
 			endpoints.NewFamilyMemberDeleteEndpoint,
 			ginfx.AsRouteGroup(endpoints.NewFamilyEndpointGroup),
+			ginfx.AsRoute(endpoints.NewHealthCheckLiveEndpoint),
 		),
 	)
 }

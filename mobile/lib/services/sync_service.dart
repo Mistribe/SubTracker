@@ -306,6 +306,8 @@ class SyncService {
     try {
       // Process pending operations
       final pendingOperations = await _getPendingOperations();
+      print('Processing ${pendingOperations.length} pending operations');
+
       final successfulOperations = <PendingSyncOperation>[];
 
       for (final operation in pendingOperations) {

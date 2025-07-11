@@ -41,7 +41,7 @@ class SyncProvider extends ChangeNotifier {
     if (_isInitialized) return;
 
     // Initialize API service
-    _apiService = ApiService(baseUrl: 'http://localhost:5042/api');
+    _apiService = ApiService(baseUrl: 'http://10.0.2.2:8080');
 
     // Initialize shared preferences
     final prefs = SharedPreferencesAsync();

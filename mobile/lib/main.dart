@@ -80,6 +80,8 @@ class MyApp extends StatelessWidget {
             );
             // Set the sync provider in the repository
             subscriptionRepository.setSyncProvider(syncProvider);
+            familyMemberRepository.setSyncProvider(syncProvider);
+            labelRepository.setSyncProvider(syncProvider);
             return syncProvider;
           },
         ),
