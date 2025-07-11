@@ -100,6 +100,8 @@ class MyApp extends StatelessWidget {
             familyMemberRepository: familyMemberRepository,
           ),
         ),
+        // Provide direct access to repositories
+        Provider<LabelRepository>.value(value: labelRepository),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {

@@ -4,6 +4,7 @@ import '../models/currency.dart';
 import '../providers/theme_provider.dart';
 import '../providers/subscription_provider.dart';
 import 'family_management_screen.dart';
+import 'label_management_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -90,6 +91,24 @@ class SettingsScreen extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const FamilyManagementScreen(),
+                ),
+              );
+            },
+          ),
+          const Divider(),
+          ListTile(
+            title: const Text('Label Management'),
+            leading: const Icon(Icons.label),
+          ),
+          ListTile(
+            title: const Text('Manage Labels'),
+            subtitle: const Text('Add, edit, or remove labels'),
+            leading: const Icon(Icons.label_outline),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const LabelManagementScreen(),
                 ),
               );
             },

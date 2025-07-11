@@ -74,6 +74,12 @@ class LabelRepository {
 
   /// Update an existing label
   Future<void> update(Label label, {bool withSync = true}) async {
+    // Check if the label is a default label
+    final existingLabel = get(label.id);
+    if (existingLabel != null && existingLabel.isDefault) {
+      throw Exception('Default labels cannot be edited');
+    }
+
     // Save to local storage
     await _box.put(label.id, label);
 
@@ -85,6 +91,12 @@ class LabelRepository {
 
   /// Delete a label
   Future<void> delete(String id) async {
+    // Check if the label is a default label
+    final existingLabel = get(id);
+    if (existingLabel != null && existingLabel.isDefault) {
+      throw Exception('Default labels cannot be removed');
+    }
+
     // Delete from local storage
     await _box.delete(id);
 
