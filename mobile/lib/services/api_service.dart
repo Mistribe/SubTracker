@@ -466,6 +466,38 @@ class ApiService {
     }
   }
 
+  /// Create a new label
+  /// POST /labels
+  Future<Label> createLabel(Label label) async {
+    try {
+      // Create label payload according to createLabelModel in swagger
+      final labelPayload = {
+        'name': label.name,
+        'color': label.color,
+        'is_default': label.isDefault,
+        'created_at': DateTime.now().toIso8601String(),
+      };
+
+      final response = await _httpClient.post(
+        Uri.parse('$baseUrl/labels'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(labelPayload),
+      );
+
+      if (response.statusCode == 201) {
+        return Label.fromJson(json.decode(response.body));
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to create label: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
   /// Close the HTTP client when done
   void dispose() {
     _httpClient.close();
