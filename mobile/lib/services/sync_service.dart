@@ -399,9 +399,53 @@ class SyncService {
 
       // Fetch latest data from backend
       final remoteSubscriptions = await _apiService.getSubscriptions();
+      final remoteLabels = await _apiService.getLabels();
+      final remoteFamilyMembers = await _apiService.getFamilyMembers();
+
       final localSubscriptions = _subscriptionRepository.getAll();
+      final localLabels = _labelRepository.getAll();
+      final localFamilyMembers = _familyMemberRepository.getAll();
 
       // Update local storage with remote data
+      for (final remoteSubscription in remoteSubscriptions) {
+        final localSubscription = localSubscriptions.firstWhere(
+          (s) => s.id == remoteSubscription.id,
+          orElse: () => remoteSubscription,
+        );
+
+        // If the remote subscription is newer, update local
+        if (localSubscription != remoteSubscription) {
+          await _subscriptionRepository.update(remoteSubscription);
+        }
+      }
+
+      // Update local storage with remote labels
+      for (final remoteLabel in remoteLabels) {
+        final localLabel = localLabels.firstWhere(
+          (l) => l.id == remoteLabel.id,
+          orElse: () => remoteLabel,
+        );
+
+        // If the remote label is newer, update local
+        if (localLabel != remoteLabel) {
+          await _labelRepository.update(remoteLabel);
+        }
+      }
+
+      // Update local storage with remote family members
+      for (final remoteMember in remoteFamilyMembers) {
+        final localMember = localFamilyMembers.firstWhere(
+          (m) => m.id == remoteMember.id,
+          orElse: () => remoteMember,
+        );
+
+        // If the remote member is newer, update local
+        if (localMember != remoteMember) {
+          await _familyMemberRepository.update(remoteMember);
+        }
+      }
+
+      // Update last sync time
       for (final remoteSubscription in remoteSubscriptions) {
         final localSubscription = localSubscriptions.firstWhere(
           (s) => s.id == remoteSubscription.id,
