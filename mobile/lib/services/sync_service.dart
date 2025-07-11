@@ -7,11 +7,7 @@ import '../repositories/subscription_repository.dart';
 import 'api_service.dart';
 
 /// Type of sync operation
-enum SyncOperationType {
-  create,
-  update,
-  delete,
-}
+enum SyncOperationType { create, update, delete }
 
 /// Pending sync operation
 class PendingSyncOperation {
@@ -53,16 +49,17 @@ class SyncService {
   final ApiService _apiService;
   final SubscriptionRepository _subscriptionRepository;
   final Connectivity _connectivity;
-  final SharedPreferences _prefs;
-  
+  final SharedPreferencesAsync _prefs;
+
   bool _isInitialized = false;
   bool _isSyncing = false;
   bool _isOnline = false;
-  
+
   StreamSubscription<ConnectivityResult>? _connectivitySubscription;
   Timer? _syncTimer;
-  
+
   static const String _pendingOperationsKey = 'pending_sync_operations';
+  static const String _syncHistoryKey = 'sync_history_operations';
   static const String _lastSyncTimeKey = 'last_sync_time';
   static const Duration _syncInterval = Duration(minutes: 15);
 
@@ -70,72 +67,141 @@ class SyncService {
     required ApiService apiService,
     required SubscriptionRepository subscriptionRepository,
     required Connectivity connectivity,
-    required SharedPreferences prefs,
-  })  : _apiService = apiService,
-        _subscriptionRepository = subscriptionRepository,
-        _connectivity = connectivity,
-        _prefs = prefs;
+    required SharedPreferencesAsync prefs,
+  }) : _apiService = apiService,
+       _subscriptionRepository = subscriptionRepository,
+       _connectivity = connectivity,
+       _prefs = prefs;
 
   /// Initialize the sync service
   Future<void> initialize() async {
     if (_isInitialized) return;
-    
+
     // Check initial connectivity
     final connectivityResult = await _connectivity.checkConnectivity();
     _isOnline = connectivityResult != ConnectivityResult.none;
-    
+
     // Listen for connectivity changes
-    _connectivitySubscription = _connectivity.onConnectivityChanged.listen((result) {
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen((
+      result,
+    ) {
       final wasOnline = _isOnline;
       _isOnline = result != ConnectivityResult.none;
-      
+
       // If we just came online, trigger a sync
       if (!wasOnline && _isOnline) {
         sync();
       }
     });
-    
+
     // Set up periodic sync
     _syncTimer = Timer.periodic(_syncInterval, (_) {
       if (_isOnline) {
         sync();
       }
     });
-    
+
     _isInitialized = true;
-    
+
+    // Check if we need to replay operations from history
+    await _replayOperationsIfNeeded();
+
     // Perform initial sync if online
     if (_isOnline) {
       sync();
     }
   }
 
+  /// Replay operations from history if needed
+  Future<void> _replayOperationsIfNeeded() async {
+    // Get pending operations
+    final pendingOperations = await _getPendingOperations();
+
+    // If there are already pending operations, no need to replay
+    if (pendingOperations.isNotEmpty) {
+      return;
+    }
+
+    // Get sync history
+    final syncHistory = await _getSyncHistory();
+
+    // If there's no history, nothing to replay
+    if (syncHistory.isEmpty) {
+      return;
+    }
+
+    // Add all operations from history to pending operations
+    // This will allow them to be processed on the next sync
+    await _savePendingOperations(syncHistory);
+
+    print('Replayed ${syncHistory.length} operations from sync history');
+  }
+
   /// Get pending operations from shared preferences
-  List<PendingSyncOperation> _getPendingOperations() {
-    final pendingOperationsJson = _prefs.getStringList(_pendingOperationsKey) ?? [];
+  Future<List<PendingSyncOperation>> _getPendingOperations() async {
+    final pendingOperationsJson =
+        await _prefs.getStringList(_pendingOperationsKey) ?? [];
     return pendingOperationsJson
         .map((json) => PendingSyncOperation.fromJson(jsonDecode(json)))
         .toList();
   }
 
   /// Save pending operations to shared preferences
-  Future<void> _savePendingOperations(List<PendingSyncOperation> operations) async {
+  Future<void> _savePendingOperations(
+    List<PendingSyncOperation> operations,
+  ) async {
     final operationsJson = operations
         .map((op) => jsonEncode(op.toJson()))
         .toList();
     await _prefs.setStringList(_pendingOperationsKey, operationsJson);
   }
 
+  /// Get sync history operations from shared preferences
+  Future<List<PendingSyncOperation>> _getSyncHistory() async {
+    final syncHistoryJson = await _prefs.getStringList(_syncHistoryKey) ?? [];
+    return syncHistoryJson
+        .map((json) => PendingSyncOperation.fromJson(jsonDecode(json)))
+        .toList();
+  }
+
+  /// Save sync history operations to shared preferences
+  Future<void> _saveSyncHistory(List<PendingSyncOperation> operations) async {
+    final operationsJson = operations
+        .map((op) => jsonEncode(op.toJson()))
+        .toList();
+    await _prefs.setStringList(_syncHistoryKey, operationsJson);
+  }
+
+  /// Add operations to sync history
+  Future<void> _addToSyncHistory(List<PendingSyncOperation> operations) async {
+    if (operations.isEmpty) return;
+
+    final history = await _getSyncHistory();
+
+    // Add all operations to history
+    history.addAll(operations);
+
+    // Save the updated history
+    await _saveSyncHistory(history);
+  }
+
+  /// Clear the sync history
+  Future<void> _clearSyncHistory() async {
+    await _prefs.setStringList(_syncHistoryKey, []);
+  }
+
   /// Add a pending operation
   Future<void> _addPendingOperation(PendingSyncOperation operation) async {
-    final operations = _getPendingOperations();
-    
+    final operations = await _getPendingOperations();
+
     // Remove any existing operations for the same ID
-    operations.removeWhere((op) => op.id == operation.id && op.type == operation.type);
-    
+    operations.removeWhere(
+      (op) => op.id == operation.id && op.type == operation.type,
+    );
+
     // Add the new operation
     operations.add(operation);
-    
+
     // Save the updated list
     await _savePendingOperations(operations);
   }
@@ -149,7 +215,7 @@ class SyncService {
         data: subscription.toJson(),
       ),
     );
-    
+
     // Try to sync immediately if online
     if (_isOnline) {
       sync();
@@ -165,7 +231,7 @@ class SyncService {
         data: subscription.toJson(),
       ),
     );
-    
+
     // Try to sync immediately if online
     if (_isOnline) {
       sync();
@@ -175,12 +241,9 @@ class SyncService {
   /// Queue a delete operation
   Future<void> queueDelete(String id) async {
     await _addPendingOperation(
-      PendingSyncOperation(
-        id: id,
-        type: SyncOperationType.delete,
-      ),
+      PendingSyncOperation(id: id, type: SyncOperationType.delete),
     );
-    
+
     // Try to sync immediately if online
     if (_isOnline) {
       sync();
@@ -191,14 +254,14 @@ class SyncService {
   Future<void> sync() async {
     // Prevent multiple syncs from running simultaneously
     if (_isSyncing || !_isOnline) return;
-    
+
     _isSyncing = true;
-    
+
     try {
       // Process pending operations
-      final pendingOperations = _getPendingOperations();
+      final pendingOperations = await _getPendingOperations();
       final successfulOperations = <PendingSyncOperation>[];
-      
+
       for (final operation in pendingOperations) {
         try {
           switch (operation.type) {
@@ -222,38 +285,52 @@ class SyncService {
               break;
           }
         } catch (e) {
-          print('Error processing operation ${operation.type} for ${operation.id}: $e');
+          print(
+            'Error processing operation ${operation.type} for ${operation.id}: $e',
+          );
           // We'll retry this operation on the next sync
         }
       }
-      
-      // Remove successful operations from the pending list
+
+      // Add successful operations to sync history
       if (successfulOperations.isNotEmpty) {
+        await _addToSyncHistory(successfulOperations);
+
+        // Remove successful operations from the pending list
         final remainingOperations = pendingOperations
             .where((op) => !successfulOperations.contains(op))
             .toList();
         await _savePendingOperations(remainingOperations);
       }
-      
+
       // Fetch latest data from backend
       final remoteSubscriptions = await _apiService.getSubscriptions();
       final localSubscriptions = _subscriptionRepository.getAll();
-      
+
       // Update local storage with remote data
       for (final remoteSubscription in remoteSubscriptions) {
         final localSubscription = localSubscriptions.firstWhere(
           (s) => s.id == remoteSubscription.id,
           orElse: () => remoteSubscription,
         );
-        
+
         // If the remote subscription is newer, update local
         if (localSubscription != remoteSubscription) {
           await _subscriptionRepository.update(remoteSubscription);
         }
       }
-      
+
       // Update last sync time
-      await _prefs.setString(_lastSyncTimeKey, DateTime.now().toIso8601String());
+      await _prefs.setString(
+        _lastSyncTimeKey,
+        DateTime.now().toIso8601String(),
+      );
+
+      // If there are no pending operations left, we can clear the sync history
+      // as all operations have been successfully processed
+      if ((await _getPendingOperations()).isEmpty) {
+        await _clearSyncHistory();
+      }
     } catch (e) {
       print('Sync error: $e');
     } finally {
@@ -262,10 +339,10 @@ class SyncService {
   }
 
   /// Get the last sync time
-  DateTime? getLastSyncTime() {
-    final lastSyncTimeStr = _prefs.getString(_lastSyncTimeKey);
+  Future<DateTime?> getLastSyncTime() async {
+    final lastSyncTimeStr = await _prefs.getString(_lastSyncTimeKey);
     if (lastSyncTimeStr == null) return null;
-    
+
     try {
       return DateTime.parse(lastSyncTimeStr);
     } catch (_) {
@@ -274,8 +351,13 @@ class SyncService {
   }
 
   /// Check if there are pending operations
-  bool hasPendingOperations() {
-    return _getPendingOperations().isNotEmpty;
+  Future<bool> hasPendingOperations() async {
+    return (await _getPendingOperations()).isNotEmpty;
+  }
+
+  /// Check if there are operations in the sync history
+  Future<bool> hasSyncHistory() async {
+    return (await _getSyncHistory()).isNotEmpty;
   }
 
   /// Dispose resources

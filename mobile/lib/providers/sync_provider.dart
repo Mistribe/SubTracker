@@ -14,6 +14,7 @@ class SyncProvider extends ChangeNotifier {
   bool _isSyncing = false;
   DateTime? _lastSyncTime;
   bool _hasPendingOperations = false;
+  bool _hasSyncHistory = false;
 
   SyncProvider({required SubscriptionRepository subscriptionRepository}) {
     _initialize(subscriptionRepository);
@@ -29,7 +30,7 @@ class SyncProvider extends ChangeNotifier {
     _apiService = ApiService(baseUrl: 'http://localhost:5042/api');
 
     // Initialize shared preferences
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = SharedPreferencesAsync();
 
     // Initialize sync service
     _syncService = SyncService(
@@ -43,8 +44,9 @@ class SyncProvider extends ChangeNotifier {
     await _syncService.initialize();
 
     // Update state
-    _lastSyncTime = _syncService.getLastSyncTime();
-    _hasPendingOperations = _syncService.hasPendingOperations();
+    _lastSyncTime = await _syncService.getLastSyncTime();
+    _hasPendingOperations = await _syncService.hasPendingOperations();
+    _hasSyncHistory = await _syncService.hasSyncHistory();
     _isInitialized = true;
 
     notifyListeners();
@@ -62,6 +64,9 @@ class SyncProvider extends ChangeNotifier {
   /// Get whether there are pending operations
   bool get hasPendingOperations => _hasPendingOperations;
 
+  /// Get whether there are operations in the sync history
+  bool get hasSyncHistory => _hasSyncHistory;
+
   /// Trigger a manual sync
   Future<void> sync() async {
     if (_isSyncing || !_isInitialized) return;
@@ -71,8 +76,9 @@ class SyncProvider extends ChangeNotifier {
 
     try {
       await _syncService.sync();
-      _lastSyncTime = _syncService.getLastSyncTime();
-      _hasPendingOperations = _syncService.hasPendingOperations();
+      _lastSyncTime = await _syncService.getLastSyncTime();
+      _hasPendingOperations = await _syncService.hasPendingOperations();
+      _hasSyncHistory = await _syncService.hasSyncHistory();
     } finally {
       _isSyncing = false;
       notifyListeners();
@@ -84,7 +90,8 @@ class SyncProvider extends ChangeNotifier {
     if (!_isInitialized) return;
 
     await _syncService.queueCreate(subscription);
-    _hasPendingOperations = _syncService.hasPendingOperations();
+    _hasPendingOperations = await _syncService.hasPendingOperations();
+    _hasSyncHistory = await _syncService.hasSyncHistory();
     notifyListeners();
   }
 
@@ -93,7 +100,8 @@ class SyncProvider extends ChangeNotifier {
     if (!_isInitialized) return;
 
     await _syncService.queueUpdate(subscription);
-    _hasPendingOperations = _syncService.hasPendingOperations();
+    _hasPendingOperations = await _syncService.hasPendingOperations();
+    _hasSyncHistory = await _syncService.hasSyncHistory();
     notifyListeners();
   }
 
@@ -102,7 +110,8 @@ class SyncProvider extends ChangeNotifier {
     if (!_isInitialized) return;
 
     await _syncService.queueDelete(id);
-    _hasPendingOperations = _syncService.hasPendingOperations();
+    _hasPendingOperations = await _syncService.hasPendingOperations();
+    _hasSyncHistory = await _syncService.hasSyncHistory();
     notifyListeners();
   }
 
