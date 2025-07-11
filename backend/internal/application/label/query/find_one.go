@@ -28,11 +28,15 @@ func NewFindOneQueryHandler(repository label.Repository) *FindOneQueryHandler {
 	return &FindOneQueryHandler{repository: repository}
 }
 
-func (h FindOneQueryHandler) Handle(ctx context.Context, query FindOneQuery) result.Result[option.Option[label.Label]] {
+func (h FindOneQueryHandler) Handle(ctx context.Context, query FindOneQuery) result.Result[label.Label] {
 	lb, err := h.repository.Get(ctx, query.ID)
 	if err != nil {
-		return result.Fail[option.Option[label.Label]](err)
+		return result.Fail[label.Label](err)
 	}
 
-	return result.Success(lb)
+	return option.Match(lb, func(lb label.Label) result.Result[label.Label] {
+		return result.Success(lb)
+	}, func() result.Result[label.Label] {
+		return result.Fail[label.Label](label.ErrLabelNotFound)
+	})
 }

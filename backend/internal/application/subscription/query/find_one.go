@@ -22,8 +22,8 @@ type FindOneQueryHandler struct {
 	repository subscription.Repository
 }
 
-func NewFindOneQueryHandler(respository subscription.Repository) *FindOneQueryHandler {
-	return &FindOneQueryHandler{repository: respository}
+func NewFindOneQueryHandler(repository subscription.Repository) *FindOneQueryHandler {
+	return &FindOneQueryHandler{repository: repository}
 }
 
 func (h FindOneQueryHandler) Handle(ctx context.Context, query FindOneQuery) result.Result[subscription.Subscription] {

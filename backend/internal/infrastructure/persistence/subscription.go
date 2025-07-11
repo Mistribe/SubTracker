@@ -9,25 +9,31 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 )
 
-type SubsriptionRepository struct {
+type SubscriptionRepository struct {
 }
 
-func NewSubsriptionRepository() subscription.Repository {
-	return &SubsriptionRepository{}
+func NewSubscriptionRepository() *SubscriptionRepository {
+	return &SubscriptionRepository{}
 }
 
-func (s SubsriptionRepository) Get(ctx context.Context, id uuid.UUID) (option.Option[subscription.Subscription],
+func (r SubscriptionRepository) Get(ctx context.Context, id uuid.UUID) (
+	option.Option[subscription.Subscription],
 	error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (s SubsriptionRepository) GetAll(ctx context.Context) ([]subscription.Subscription, error) {
+func (r SubscriptionRepository) GetAll(ctx context.Context) ([]subscription.Subscription, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (s SubsriptionRepository) Save(ctx context.Context, subscription subscription.Subscription) error {
+func (r SubscriptionRepository) Save(ctx context.Context, subscription subscription.Subscription) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	//TODO implement me
 	panic("implement me")
 }

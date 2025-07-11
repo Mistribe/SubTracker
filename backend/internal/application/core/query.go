@@ -8,6 +8,6 @@ import (
 
 type Query interface{}
 
-type QueryHandler[Q Query, R any] interface {
-	Handle(context.Context, Q) result.Result[R]
+type QueryHandler[TQuery Query, TResult any] interface {
+	Handle(context.Context, TQuery) result.Result[TResult]
 }

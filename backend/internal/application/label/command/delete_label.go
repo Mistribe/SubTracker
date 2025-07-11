@@ -21,18 +21,18 @@ func NewDeleteLabelCommandHandler(repository label.Repository) *DeleteLabelComma
 	return &DeleteLabelCommandHandler{repository: repository}
 }
 
-func (h DeleteLabelCommandHandler) Handle(ctx context.Context, command DeleteLabelCommand) result.Result[bool] {
+func (h DeleteLabelCommandHandler) Handle(ctx context.Context, command DeleteLabelCommand) result.Result[result.Unit] {
 	existingLabel, err := h.repository.Get(ctx, command.Id)
 	if err != nil {
-		return result.Fail[bool](err)
+		return result.Fail[result.Unit](err)
 	}
 	if existingLabel == nil {
-		return result.Fail[bool](label.ErrLabelNotFound)
+		return result.Fail[result.Unit](label.ErrLabelNotFound)
 	}
 
 	if err := h.repository.Delete(ctx, command.Id); err != nil {
-		return result.Fail[bool](err)
+		return result.Fail[result.Unit](err)
 	}
 
-	return result.Success(true)
+	return result.Void()
 }

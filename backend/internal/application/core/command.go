@@ -8,6 +8,6 @@ import (
 
 type Command interface{}
 
-type CommandHandler[C Command, R any] interface {
-	Handle(context.Context, C) result.Result[R]
+type CommandHandler[TCommand Command, TResult any] interface {
+	Handle(context.Context, TCommand) result.Result[TResult]
 }
