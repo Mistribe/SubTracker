@@ -1,18 +1,21 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/subscription.dart';
+import '../models/family_member.dart';
+import '../models/label.dart';
+import '../models/subscription_payment.dart';
 
 /// Service for handling API requests to the backend
+/// API implementation based on the SubTracker swagger specification
 class ApiService {
   final String baseUrl;
   final http.Client _httpClient;
 
-  ApiService({
-    required this.baseUrl,
-    http.Client? httpClient,
-  }) : _httpClient = httpClient ?? http.Client();
+  ApiService({required this.baseUrl, http.Client? httpClient})
+    : _httpClient = httpClient ?? http.Client();
 
   /// Get all subscriptions from the backend
+  /// GET /subscriptions
   Future<List<Subscription>> getSubscriptions() async {
     try {
       final response = await _httpClient.get(
@@ -24,7 +27,37 @@ class ApiService {
         final List<dynamic> data = json.decode(response.body);
         return data.map((json) => Subscription.fromJson(json)).toList();
       } else {
-        throw Exception('Failed to load subscriptions: ${response.statusCode}');
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to load subscriptions: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
+  /// Get subscription by ID
+  /// GET /subscriptions/{id}
+  Future<Subscription> getSubscription(String id) async {
+    try {
+      final response = await _httpClient.get(
+        Uri.parse('$baseUrl/subscriptions/$id'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        return Subscription.fromJson(json.decode(response.body));
+      } else if (response.statusCode == 404) {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Subscription not found');
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to get subscription: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Failed to connect to the server: $e');
@@ -32,6 +65,7 @@ class ApiService {
   }
 
   /// Create a new subscription on the backend
+  /// POST /subscriptions
   Future<Subscription> createSubscription(Subscription subscription) async {
     try {
       final response = await _httpClient.post(
@@ -43,7 +77,11 @@ class ApiService {
       if (response.statusCode == 201) {
         return Subscription.fromJson(json.decode(response.body));
       } else {
-        throw Exception('Failed to create subscription: ${response.statusCode}');
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to create subscription: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Failed to connect to the server: $e');
@@ -51,18 +89,37 @@ class ApiService {
   }
 
   /// Update an existing subscription on the backend
+  /// PUT /subscriptions/{id}
   Future<Subscription> updateSubscription(Subscription subscription) async {
     try {
+      // Prepare the update payload according to swagger updateSubscriptionModel
+      final updatePayload = {
+        'name': subscription.name,
+        'payer': subscription.payerFamilyMember?.id,
+        'family_members': subscription.userFamilyMembers
+            .map((member) => member.id)
+            .toList(),
+        'labels': subscription.labels.map((label) => label.id).toList(),
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
       final response = await _httpClient.put(
         Uri.parse('$baseUrl/subscriptions/${subscription.id}'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode(subscription.toJson()),
+        body: json.encode(updatePayload),
       );
 
       if (response.statusCode == 200) {
         return Subscription.fromJson(json.decode(response.body));
+      } else if (response.statusCode == 404) {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Subscription not found');
       } else {
-        throw Exception('Failed to update subscription: ${response.statusCode}');
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to update subscription: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Failed to connect to the server: $e');
@@ -70,6 +127,7 @@ class ApiService {
   }
 
   /// Delete a subscription from the backend
+  /// DELETE /subscriptions/{id}
   Future<void> deleteSubscription(String id) async {
     try {
       final response = await _httpClient.delete(
@@ -77,8 +135,331 @@ class ApiService {
         headers: {'Content-Type': 'application/json'},
       );
 
-      if (response.statusCode != 204 && response.statusCode != 200) {
-        throw Exception('Failed to delete subscription: ${response.statusCode}');
+      if (response.statusCode == 204) {
+        return; // Success with no content
+      } else if (response.statusCode == 404) {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Subscription not found');
+      } else if (response.statusCode != 200) {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to delete subscription: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
+  /// Add a new payment to a subscription
+  /// POST /subscriptions/{subscription_id}/payments
+  Future<Subscription> addSubscriptionPayment(
+    String subscriptionId,
+    SubscriptionPayment payment,
+  ) async {
+    try {
+      // Create payment payload according to createSubscriptionPaymentModel in swagger
+      final paymentPayload = {
+        'price': payment.price,
+        'currency': payment.currency,
+        'months': payment.months,
+        'start_date': payment.startDate.toIso8601String(),
+        'end_date': payment.endDate?.toIso8601String(),
+        'created_at': DateTime.now().toIso8601String(),
+      };
+
+      final response = await _httpClient.post(
+        Uri.parse('$baseUrl/subscriptions/$subscriptionId/payments'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(paymentPayload),
+      );
+
+      if (response.statusCode == 201) {
+        return Subscription.fromJson(json.decode(response.body));
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to add subscription payment: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
+  /// Delete a payment from a subscription
+  /// DELETE /subscriptions/{id}/payments/{paymentId}
+  Future<void> deleteSubscriptionPayment(
+    String subscriptionId,
+    String paymentId,
+  ) async {
+    try {
+      final response = await _httpClient.delete(
+        Uri.parse('$baseUrl/subscriptions/$subscriptionId/payments/$paymentId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 204) {
+        return; // Success with no content
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to delete subscription payment: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
+  /// Get all family members
+  /// GET /families/members
+  Future<List<FamilyMember>> getFamilyMembers() async {
+    try {
+      final response = await _httpClient.get(
+        Uri.parse('$baseUrl/families/members'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((json) => FamilyMember.fromJson(json)).toList();
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to load family members: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
+  /// Create a new family member
+  /// POST /families/members
+  Future<FamilyMember> createFamilyMember(FamilyMember member) async {
+    try {
+      // Create family member payload according to createFamilyMemberModel in swagger
+      final memberPayload = {
+        'name': member.name,
+        'is_kid': member.isKid,
+        'created_at': DateTime.now().toIso8601String(),
+      };
+
+      final response = await _httpClient.post(
+        Uri.parse('$baseUrl/families/members'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(memberPayload),
+      );
+
+      if (response.statusCode == 201) {
+        return FamilyMember.fromJson(json.decode(response.body));
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to create family member: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
+  /// Get family member by ID
+  /// GET /families/members/{id}
+  Future<FamilyMember> getFamilyMember(String id) async {
+    try {
+      final response = await _httpClient.get(
+        Uri.parse('$baseUrl/families/members/$id'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        return FamilyMember.fromJson(json.decode(response.body));
+      } else if (response.statusCode == 404) {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Family member not found');
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to get family member: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
+  /// Update family member by ID
+  /// PUT /families/members/{id}
+  Future<FamilyMember> updateFamilyMember(FamilyMember member) async {
+    try {
+      // Update family member payload according to updateFamilyMemberModel in swagger
+      final updatePayload = {
+        'name': member.name,
+        'id_kid': member.isKid, // Note: field is id_kid in the API, not is_kid
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      final response = await _httpClient.put(
+        Uri.parse('$baseUrl/families/members/${member.id}'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(updatePayload),
+      );
+
+      if (response.statusCode == 200) {
+        return FamilyMember.fromJson(json.decode(response.body));
+      } else if (response.statusCode == 404) {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Family member not found');
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to update family member: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
+  /// Delete family member by ID
+  /// DELETE /families/members/{id}
+  Future<void> deleteFamilyMember(String id) async {
+    try {
+      final response = await _httpClient.delete(
+        Uri.parse('$baseUrl/families/members/$id'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 204) {
+        return; // Success with no content
+      } else if (response.statusCode == 404) {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Family member not found');
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to delete family member: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
+  /// Get all labels
+  /// GET /labels
+  Future<List<Label>> getLabels() async {
+    try {
+      final response = await _httpClient.get(
+        Uri.parse('$baseUrl/labels'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((json) => Label.fromJson(json)).toList();
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to load labels: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
+  /// Get label by ID
+  /// GET /labels/{id}
+  Future<Label> getLabel(String id) async {
+    try {
+      final response = await _httpClient.get(
+        Uri.parse('$baseUrl/labels/$id'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        return Label.fromJson(json.decode(response.body));
+      } else if (response.statusCode == 404) {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Label not found');
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ?? 'Failed to get label: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
+  /// Update label by ID
+  /// PUT /labels/{id}
+  Future<Label> updateLabel(Label label) async {
+    try {
+      // Update label payload according to updateLabelModel in swagger
+      final updatePayload = {
+        'name': label.name,
+        'color': label.color,
+        'is_default': label.isDefault,
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      final response = await _httpClient.put(
+        Uri.parse('$baseUrl/labels/${label.id}'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(updatePayload),
+      );
+
+      if (response.statusCode == 200) {
+        return Label.fromJson(json.decode(response.body));
+      } else if (response.statusCode == 404) {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Label not found');
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to update label: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
+  /// Delete label by ID
+  /// DELETE /labels/{id}
+  Future<void> deleteLabel(String id) async {
+    try {
+      final response = await _httpClient.delete(
+        Uri.parse('$baseUrl/labels/$id'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 204) {
+        return; // Success with no content
+      } else if (response.statusCode == 404) {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Label not found');
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to delete label: ${response.statusCode}',
+        );
       }
     } catch (e) {
       throw Exception('Failed to connect to the server: $e');
