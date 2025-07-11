@@ -212,6 +212,44 @@
                         }
                     }
                 }
+            },
+            "post": {
+                "description": "Create a new label",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Create a new label",
+                "parameters": [
+                    {
+                        "description": "Label data",
+                        "name": "label",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.createLabelModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.labelModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    }
+                }
             }
         },
         "/labels/{id}": {
@@ -589,6 +627,26 @@
                     "type": "string"
                 },
                 "is_kid": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoints.createLabelModel": {
+            "type": "object",
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_default": {
                     "type": "boolean"
                 },
                 "name": {

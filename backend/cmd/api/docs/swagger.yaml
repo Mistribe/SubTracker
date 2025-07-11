@@ -13,6 +13,19 @@ definitions:
       name:
         type: string
     type: object
+  endpoints.createLabelModel:
+    properties:
+      color:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      is_default:
+        type: boolean
+      name:
+        type: string
+    type: object
   endpoints.createPaymentModel:
     properties:
       created_at:
@@ -327,6 +340,31 @@ paths:
           schema:
             $ref: '#/definitions/endpoints.httpError'
       summary: Get all labels
+      tags:
+      - label
+    post:
+      consumes:
+      - application/json
+      description: Create a new label
+      parameters:
+      - description: Label data
+        in: body
+        name: label
+        required: true
+        schema:
+          $ref: '#/definitions/endpoints.createLabelModel'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/endpoints.labelModel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Create a new label
       tags:
       - label
   /labels/{id}:
