@@ -296,6 +296,181 @@ class SyncService {
     }
   }
 
+  /// Process pending operations and return successful operations
+  Future<List<PendingSyncOperation>> _processPendingOperations() async {
+    final pendingOperations = await _getPendingOperations();
+    print('Processing ${pendingOperations.length} pending operations');
+
+    final successfulOperations = <PendingSyncOperation>[];
+
+    for (final operation in pendingOperations) {
+      try {
+        switch (operation.type) {
+          case SyncOperationType.create:
+            if (operation.data != null) {
+              switch (operation.dataType) {
+                case SyncDataType.subscription:
+                  final subscription = Subscription.fromJson(operation.data!);
+                  await _apiService.createSubscription(subscription);
+                  successfulOperations.add(operation);
+                  break;
+                case SyncDataType.label:
+                  final label = Label.fromJson(operation.data!);
+                  await _apiService.createLabel(label);
+                  successfulOperations.add(operation);
+                  break;
+                case SyncDataType.familyMember:
+                  final familyMember = FamilyMember.fromJson(operation.data!);
+                  await _apiService.createFamilyMember(familyMember);
+                  successfulOperations.add(operation);
+                  break;
+              }
+            }
+            break;
+          case SyncOperationType.update:
+            if (operation.data != null) {
+              // Determine the entity type based on the data
+              switch (operation.dataType) {
+                case SyncDataType.subscription:
+                  // This is a Subscription
+                  final subscription = Subscription.fromJson(operation.data!);
+                  await _apiService.updateSubscription(subscription);
+                  successfulOperations.add(operation);
+                  break;
+                case SyncDataType.label:
+                  // This is a Label
+                  final label = Label.fromJson(operation.data!);
+                  await _apiService.updateLabel(label);
+                  successfulOperations.add(operation);
+                  break;
+                case SyncDataType.familyMember:
+                  // This is a FamilyMember
+                  final familyMember = FamilyMember.fromJson(operation.data!);
+                  await _apiService.updateFamilyMember(familyMember);
+                  successfulOperations.add(operation);
+                  break;
+              }
+            }
+            break;
+          case SyncOperationType.delete:
+            // We need to determine the entity type for delete operations
+            // This could be done by adding a 'type' field to the operation
+            // or by checking if the ID exists in each repository
+            switch (operation.dataType) {
+              case SyncDataType.subscription:
+                await _apiService.deleteSubscription(operation.id);
+                successfulOperations.add(operation);
+                break;
+              case SyncDataType.label:
+                await _apiService.deleteLabel(operation.id);
+                successfulOperations.add(operation);
+                break;
+              case SyncDataType.familyMember:
+                await _apiService.deleteFamilyMember(operation.id);
+                successfulOperations.add(operation);
+                break;
+            }
+        }
+      } catch (e) {
+        print(
+          'Error processing operation ${operation.type} for ${operation.id}: $e',
+        );
+        // We'll retry this operation on the next sync
+      }
+    }
+
+    // Add successful operations to sync history
+    if (successfulOperations.isNotEmpty) {
+      await _addToSyncHistory(successfulOperations);
+
+      // Remove successful operations from the pending list
+      final remainingOperations = pendingOperations
+          .where((op) => !successfulOperations.contains(op))
+          .toList();
+      await _savePendingOperations(remainingOperations);
+    }
+
+    return successfulOperations;
+  }
+
+  /// Fetch latest data from backend
+  Future<Map<String, dynamic>> _fetchRemoteData() async {
+    final remoteSubscriptions = await _apiService.getSubscriptions();
+    final remoteLabels = await _apiService.getLabels();
+    final remoteFamilyMembers = await _apiService.getFamilyMembers();
+
+    return {
+      'subscriptions': remoteSubscriptions,
+      'labels': remoteLabels,
+      'familyMembers': remoteFamilyMembers,
+    };
+  }
+
+  /// Update local storage with remote data
+  Future<void> _updateLocalStorage(Map<String, dynamic> remoteData) async {
+    final remoteSubscriptions = remoteData['subscriptions'] as List<Subscription>;
+    final remoteLabels = remoteData['labels'] as List<Label>;
+    final remoteFamilyMembers = remoteData['familyMembers'] as List<FamilyMember>;
+
+    final localSubscriptions = _subscriptionRepository.getAll();
+    final localLabels = _labelRepository.getAll();
+    final localFamilyMembers = _familyMemberRepository.getAll();
+
+    // Update local storage with remote subscriptions
+    for (final remoteSubscription in remoteSubscriptions) {
+      final localSubscription = localSubscriptions.firstWhere(
+        (s) => s.id == remoteSubscription.id,
+        orElse: () => remoteSubscription,
+      );
+
+      // If the remote subscription is newer, update local
+      if (localSubscription != remoteSubscription) {
+        await _subscriptionRepository.update(remoteSubscription);
+      }
+    }
+
+    // Update local storage with remote labels
+    for (final remoteLabel in remoteLabels) {
+      final localLabel = localLabels.firstWhere(
+        (l) => l.id == remoteLabel.id,
+        orElse: () => remoteLabel,
+      );
+
+      // If the remote label is newer, update local
+      if (localLabel != remoteLabel) {
+        await _labelRepository.update(remoteLabel);
+      }
+    }
+
+    // Update local storage with remote family members
+    for (final remoteMember in remoteFamilyMembers) {
+      final localMember = localFamilyMembers.firstWhere(
+        (m) => m.id == remoteMember.id,
+        orElse: () => remoteMember,
+      );
+
+      // If the remote member is newer, update local
+      if (localMember != remoteMember) {
+        await _familyMemberRepository.update(remoteMember);
+      }
+    }
+  }
+
+  /// Update last sync time and clean up
+  Future<void> _updateSyncTimeAndCleanup() async {
+    // Update last sync time
+    await _prefs.setString(
+      _lastSyncTimeKey,
+      DateTime.now().toIso8601String(),
+    );
+
+    // If there are no pending operations left, we can clear the sync history
+    // as all operations have been successfully processed
+    if ((await _getPendingOperations()).isEmpty) {
+      await _clearSyncHistory();
+    }
+  }
+
   /// Synchronize data with the backend
   Future<void> sync() async {
     // Prevent multiple syncs from running simultaneously
@@ -305,170 +480,16 @@ class SyncService {
 
     try {
       // Process pending operations
-      final pendingOperations = await _getPendingOperations();
-      print('Processing ${pendingOperations.length} pending operations');
-
-      final successfulOperations = <PendingSyncOperation>[];
-
-      for (final operation in pendingOperations) {
-        try {
-          switch (operation.type) {
-            case SyncOperationType.create:
-              if (operation.data != null) {
-                switch (operation.dataType) {
-                  case SyncDataType.subscription:
-                    final subscription = Subscription.fromJson(operation.data!);
-                    await _apiService.createSubscription(subscription);
-                    successfulOperations.add(operation);
-                    break;
-                  case SyncDataType.label:
-                    final label = Label.fromJson(operation.data!);
-                    await _apiService.createLabel(label);
-                    successfulOperations.add(operation);
-                    break;
-                  case SyncDataType.familyMember:
-                    final familyMember = FamilyMember.fromJson(operation.data!);
-                    await _apiService.createFamilyMember(familyMember);
-                    successfulOperations.add(operation);
-                    break;
-                }
-              }
-              break;
-            case SyncOperationType.update:
-              if (operation.data != null) {
-                // Determine the entity type based on the data
-                switch (operation.dataType) {
-                  case SyncDataType.subscription:
-                    // This is a Subscription
-                    final subscription = Subscription.fromJson(operation.data!);
-                    await _apiService.updateSubscription(subscription);
-                    successfulOperations.add(operation);
-                    break;
-                  case SyncDataType.label:
-                    // This is a Label
-                    final label = Label.fromJson(operation.data!);
-                    await _apiService.updateLabel(label);
-                    successfulOperations.add(operation);
-                    break;
-                  case SyncDataType.familyMember:
-                    // This is a FamilyMember
-                    final familyMember = FamilyMember.fromJson(operation.data!);
-                    await _apiService.updateFamilyMember(familyMember);
-                    successfulOperations.add(operation);
-                    break;
-                }
-              }
-              break;
-            case SyncOperationType.delete:
-              // We need to determine the entity type for delete operations
-              // This could be done by adding a 'type' field to the operation
-              // or by checking if the ID exists in each repository
-              switch (operation.dataType) {
-                case SyncDataType.subscription:
-                  await _apiService.deleteSubscription(operation.id);
-                  successfulOperations.add(operation);
-                  break;
-                case SyncDataType.label:
-                  await _apiService.deleteLabel(operation.id);
-                  successfulOperations.add(operation);
-                  break;
-                case SyncDataType.familyMember:
-                  await _apiService.deleteFamilyMember(operation.id);
-                  successfulOperations.add(operation);
-                  break;
-              }
-          }
-        } catch (e) {
-          print(
-            'Error processing operation ${operation.type} for ${operation.id}: $e',
-          );
-          // We'll retry this operation on the next sync
-        }
-      }
-
-      // Add successful operations to sync history
-      if (successfulOperations.isNotEmpty) {
-        await _addToSyncHistory(successfulOperations);
-
-        // Remove successful operations from the pending list
-        final remainingOperations = pendingOperations
-            .where((op) => !successfulOperations.contains(op))
-            .toList();
-        await _savePendingOperations(remainingOperations);
-      }
+      await _processPendingOperations();
 
       // Fetch latest data from backend
-      final remoteSubscriptions = await _apiService.getSubscriptions();
-      final remoteLabels = await _apiService.getLabels();
-      final remoteFamilyMembers = await _apiService.getFamilyMembers();
-
-      final localSubscriptions = _subscriptionRepository.getAll();
-      final localLabels = _labelRepository.getAll();
-      final localFamilyMembers = _familyMemberRepository.getAll();
+      final remoteData = await _fetchRemoteData();
 
       // Update local storage with remote data
-      for (final remoteSubscription in remoteSubscriptions) {
-        final localSubscription = localSubscriptions.firstWhere(
-          (s) => s.id == remoteSubscription.id,
-          orElse: () => remoteSubscription,
-        );
+      await _updateLocalStorage(remoteData);
 
-        // If the remote subscription is newer, update local
-        if (localSubscription != remoteSubscription) {
-          await _subscriptionRepository.update(remoteSubscription);
-        }
-      }
-
-      // Update local storage with remote labels
-      for (final remoteLabel in remoteLabels) {
-        final localLabel = localLabels.firstWhere(
-          (l) => l.id == remoteLabel.id,
-          orElse: () => remoteLabel,
-        );
-
-        // If the remote label is newer, update local
-        if (localLabel != remoteLabel) {
-          await _labelRepository.update(remoteLabel);
-        }
-      }
-
-      // Update local storage with remote family members
-      for (final remoteMember in remoteFamilyMembers) {
-        final localMember = localFamilyMembers.firstWhere(
-          (m) => m.id == remoteMember.id,
-          orElse: () => remoteMember,
-        );
-
-        // If the remote member is newer, update local
-        if (localMember != remoteMember) {
-          await _familyMemberRepository.update(remoteMember);
-        }
-      }
-
-      // Update last sync time
-      for (final remoteSubscription in remoteSubscriptions) {
-        final localSubscription = localSubscriptions.firstWhere(
-          (s) => s.id == remoteSubscription.id,
-          orElse: () => remoteSubscription,
-        );
-
-        // If the remote subscription is newer, update local
-        if (localSubscription != remoteSubscription) {
-          await _subscriptionRepository.update(remoteSubscription);
-        }
-      }
-
-      // Update last sync time
-      await _prefs.setString(
-        _lastSyncTimeKey,
-        DateTime.now().toIso8601String(),
-      );
-
-      // If there are no pending operations left, we can clear the sync history
-      // as all operations have been successfully processed
-      if ((await _getPendingOperations()).isEmpty) {
-        await _clearSyncHistory();
-      }
+      // Update last sync time and clean up
+      await _updateSyncTimeAndCleanup();
     } catch (e) {
       print('Sync error: $e');
     } finally {
