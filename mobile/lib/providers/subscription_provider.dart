@@ -11,6 +11,7 @@ import '../repositories/subscription_repository.dart';
 import '../repositories/settings_repository.dart';
 import '../repositories/label_repository.dart';
 import '../services/currency_converter.dart';
+import '../providers/sync_provider.dart';
 
 var uuid = Uuid();
 
@@ -38,6 +39,7 @@ class SubscriptionProvider with ChangeNotifier {
   final SubscriptionRepository subscriptionRepository;
   final SettingsRepository? settingsRepository;
   final LabelRepository labelRepository;
+  final SyncProvider? syncProvider;
   final List<String> _selectedLabelIds = [];
   List<Subscription> _subscriptions = [];
   List<Label> _labels = [];
@@ -50,6 +52,7 @@ class SubscriptionProvider with ChangeNotifier {
     required this.subscriptionRepository,
     required this.labelRepository,
     this.settingsRepository,
+    this.syncProvider,
   }) {
     // Load subscriptions from repository
     _loadPayments();
@@ -468,20 +471,27 @@ class SubscriptionProvider with ChangeNotifier {
       final previousDetail = subscription.getLastPaymentDetail();
       // Update the current subscription detail with end date
       subscription.setEndDateToCurrentPaymentDetail(effectiveDate);
-      // Add new subscription detail
-      subscription.addPaymentDetail(
-        SubscriptionPayment(
-          id: _generateId(),
-          price: newPrice,
-          startDate: effectiveDate,
-          endDate: endDate,
-          months: months ?? previousDetail.months,
-          currency: currency ?? previousDetail.currency,
-        ),
+
+      // Create new subscription payment
+      final newPayment = SubscriptionPayment(
+        id: _generateId(),
+        price: newPrice,
+        startDate: effectiveDate,
+        endDate: endDate,
+        months: months ?? previousDetail.months,
+        currency: currency ?? previousDetail.currency,
       );
+
+      // Add new subscription detail
+      subscription.addPaymentDetail(newPayment);
 
       // Persist to storage
       await subscriptionRepository.update(subscription);
+
+      // Queue for sync if provider is available
+      if (syncProvider != null) {
+        await syncProvider!.queueCreateSubscriptionPayment(newPayment, subscriptionId);
+      }
 
       notifyListeners();
     }
@@ -509,19 +519,26 @@ class SubscriptionProvider with ChangeNotifier {
       final detailCurrency =
           currency ?? (existingDetail?.currency ?? _defaultCurrency);
 
-      subscription.setPaymentDetail(
-        SubscriptionPayment(
-          id: subscriptionDetailId,
-          price: newPrice,
-          startDate: startDate,
-          endDate: endDate,
-          months: months,
-          currency: detailCurrency,
-        ),
+      // Create updated payment
+      final updatedPayment = SubscriptionPayment(
+        id: subscriptionDetailId,
+        price: newPrice,
+        startDate: startDate,
+        endDate: endDate,
+        months: months,
+        currency: detailCurrency,
       );
+
+      // Update the subscription
+      subscription.setPaymentDetail(updatedPayment);
 
       // Persist to storage
       await subscriptionRepository.update(subscription);
+
+      // Queue for sync if provider is available
+      if (syncProvider != null) {
+        await syncProvider!.queueUpdateSubscriptionPayment(updatedPayment, subscriptionId);
+      }
 
       notifyListeners();
     }
@@ -541,10 +558,23 @@ class SubscriptionProvider with ChangeNotifier {
 
       // If stopDate is not provided, use the last subscription date
       final effectiveStopDate = stopDate ?? subscription.lastPaymentDate;
+
+      // Get the current payment detail before updating it
+      final currentDetail = subscription.getLastPaymentDetail();
+
+      // Update the subscription
       subscription.endCurrentPaymentDetail(effectiveStopDate);
+
+      // Get the updated payment detail
+      final updatedDetail = subscription.getLastPaymentDetail();
 
       // Persist to storage
       await subscriptionRepository.update(subscription);
+
+      // Queue for sync if provider is available
+      if (syncProvider != null && currentDetail.id == updatedDetail.id) {
+        await syncProvider!.queueUpdateSubscriptionPayment(updatedDetail, subscriptionId);
+      }
 
       notifyListeners();
     }
@@ -568,19 +598,26 @@ class SubscriptionProvider with ChangeNotifier {
 
       final previousDetail = subscription.getLastPaymentDetail();
 
-      subscription.addPaymentDetail(
-        SubscriptionPayment(
-          id: _generateId(),
-          price: price ?? previousDetail.price,
-          startDate: reactivationDate,
-          endDate: endDate,
-          months: months ?? previousDetail.months,
-          currency: currency ?? previousDetail.currency,
-        ),
+      // Create new subscription payment
+      final newPayment = SubscriptionPayment(
+        id: _generateId(),
+        price: price ?? previousDetail.price,
+        startDate: reactivationDate,
+        endDate: endDate,
+        months: months ?? previousDetail.months,
+        currency: currency ?? previousDetail.currency,
       );
+
+      // Add to subscription
+      subscription.addPaymentDetail(newPayment);
 
       // Persist to storage
       await subscriptionRepository.update(subscription);
+
+      // Queue for sync if provider is available
+      if (syncProvider != null) {
+        await syncProvider!.queueCreateSubscriptionPayment(newPayment, subscriptionId);
+      }
 
       notifyListeners();
     }
@@ -603,6 +640,11 @@ class SubscriptionProvider with ChangeNotifier {
 
       // Persist to storage
       await subscriptionRepository.update(subscription);
+
+      // Queue for sync if provider is available
+      if (syncProvider != null) {
+        await syncProvider!.queueDeleteSubscriptionPayment(paymentId, subscriptionId);
+      }
 
       notifyListeners();
     }

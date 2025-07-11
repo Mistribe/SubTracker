@@ -71,7 +71,29 @@ class ApiService {
       final response = await _httpClient.post(
         Uri.parse('$baseUrl/subscriptions'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode(subscription.toJson()),
+        body: json.encode({
+          'id': subscription.id,
+          'name': subscription.name,
+          'payments': subscription.subscriptionPayments
+              .map(
+                (p) => {
+                  'id': p.id,
+                  'price': p.price,
+                  'start_date': p.startDate.toUtc().toIso8601String(),
+                  'end_date': p.endDate?.toUtc().toIso8601String(),
+                  'months': p.months,
+                  'currency': p.currency,
+                  'created_at': p.createdAt.toUtc().toIso8601String(),
+                },
+              )
+              .toList(),
+          'labels': subscription.labels.map((l) => l.id).toList(),
+          'family_members': subscription.userFamilyMembers
+              .map((f) => f.id)
+              .toList(),
+          'payer': subscription.payerFamilyMember?.id,
+          'created_at': subscription.createdAt.toUtc().toIso8601String(),
+        }),
       );
 
       if (response.statusCode == 201) {
@@ -152,43 +174,6 @@ class ApiService {
     }
   }
 
-  /// Add a new payment to a subscription
-  /// POST /subscriptions/{subscription_id}/payments
-  Future<Subscription> addSubscriptionPayment(
-    String subscriptionId,
-    SubscriptionPayment payment,
-  ) async {
-    try {
-      // Create payment payload according to createSubscriptionPaymentModel in swagger
-      final paymentPayload = {
-        'price': payment.price,
-        'currency': payment.currency,
-        'months': payment.months,
-        'start_date': payment.startDate.toIso8601String(),
-        'end_date': payment.endDate?.toIso8601String(),
-        'created_at': DateTime.now().toIso8601String(),
-      };
-
-      final response = await _httpClient.post(
-        Uri.parse('$baseUrl/subscriptions/$subscriptionId/payments'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(paymentPayload),
-      );
-
-      if (response.statusCode == 201) {
-        return Subscription.fromJson(json.decode(response.body));
-      } else {
-        final errorData = json.decode(response.body);
-        throw Exception(
-          errorData['message'] ??
-              'Failed to add subscription payment: ${response.statusCode}',
-        );
-      }
-    } catch (e) {
-      throw Exception('Failed to connect to the server: $e');
-    }
-  }
-
   /// Delete a payment from a subscription
   /// DELETE /subscriptions/{id}/payments/{paymentId}
   Future<void> deleteSubscriptionPayment(
@@ -208,6 +193,95 @@ class ApiService {
         throw Exception(
           errorData['message'] ??
               'Failed to delete subscription payment: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
+  /// Add a new payment to a subscription
+  /// POST /subscriptions/{subscription_id}/payments
+  Future<SubscriptionPayment> createSubscriptionPayment(
+    String subscriptionId,
+    SubscriptionPayment payment,
+  ) async {
+    try {
+      // Create payment payload according to createSubscriptionPaymentModel in swagger
+      final paymentPayload = {
+        'price': payment.price,
+        'currency': payment.currency,
+        'months': payment.months,
+        'start_date': payment.startDate.toIso8601String(),
+        'end_date': payment.endDate?.toIso8601String(),
+        'created_at': payment.createdAt.toIso8601String(),
+      };
+
+      final response = await _httpClient.post(
+        Uri.parse('$baseUrl/subscriptions/$subscriptionId/payments'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(paymentPayload),
+      );
+
+      if (response.statusCode == 201) {
+        // The API returns the updated subscription, but we need to extract the payment
+        final subscription = Subscription.fromJson(json.decode(response.body));
+        // Find the payment with the same ID or the most recently added payment
+        final createdPayment = subscription.subscriptionPayments.firstWhere(
+          (p) => p.id == payment.id,
+          orElse: () => subscription.getLastPaymentDetail(),
+        );
+        return createdPayment;
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to create subscription payment: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
+  /// Update a subscription payment
+  /// This method is used for synchronization purposes
+  Future<SubscriptionPayment> updateSubscriptionPayment(
+    String subscriptionId,
+    SubscriptionPayment payment,
+  ) async {
+    try {
+      // Update payment payload
+      final paymentPayload = {
+        'price': payment.price,
+        'currency': payment.currency,
+        'months': payment.months,
+        'start_date': payment.startDate.toIso8601String(),
+        'end_date': payment.endDate?.toIso8601String(),
+        'updated_at': payment.updatedAt.toIso8601String(),
+      };
+
+      final response = await _httpClient.put(
+        Uri.parse(
+          '$baseUrl/subscriptions/$subscriptionId/payments/${payment.id}',
+        ),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(paymentPayload),
+      );
+
+      if (response.statusCode == 200) {
+        // The API returns the updated subscription, but we need to extract the payment
+        final subscription = Subscription.fromJson(json.decode(response.body));
+        // Find the payment with the same ID
+        final updatedPayment = subscription.subscriptionPayments.firstWhere(
+          (p) => p.id == payment.id,
+        );
+        return updatedPayment;
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to update subscription payment: ${response.statusCode}',
         );
       }
     } catch (e) {
@@ -359,10 +433,10 @@ class ApiService {
 
   /// Get all labels
   /// GET /labels
-  Future<List<Label>> getLabels() async {
+  Future<List<Label>> getLabels({bool withDefault = true}) async {
     try {
       final response = await _httpClient.get(
-        Uri.parse('$baseUrl/labels'),
+        Uri.parse('$baseUrl/labels?with_default=$withDefault'),
         headers: {'Content-Type': 'application/json'},
       );
 

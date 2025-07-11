@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
 
 part 'label.g.dart';
 
@@ -47,7 +48,8 @@ class Label extends HiveObject {
       isDefault: isDefault ?? this.isDefault,
       color: color ?? this.color,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? DateTime.now(), // Always update the updatedAt field
+      updatedAt:
+          updatedAt ?? DateTime.now(), // Always update the updatedAt field
     );
   }
 
@@ -56,10 +58,10 @@ class Label extends HiveObject {
     return {
       'id': id,
       'name': name,
-      'isDefault': isDefault,
+      'is_default': isDefault,
       'color': color,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
     };
   }
 
@@ -67,14 +69,26 @@ class Label extends HiveObject {
     return Label(
       id: json['id'],
       name: json['name'],
-      isDefault: json['isDefault'] ?? false,
+      isDefault: json['is_default'] ?? false,
       color: json['color'],
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
           : null,
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'])
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'])
           : null,
+    );
+  }
+
+  factory Label.empty() {
+    const uuid = Uuid();
+    return Label(
+      id: uuid.v7(),
+      name: '',
+      isDefault: false,
+      color: '#000000',
+      createdAt: DateTime.fromMillisecondsSinceEpoch(0),
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(0),
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/subscription.dart';
 import '../models/label.dart';
 import '../models/family_member.dart';
+import '../models/subscription_payment.dart';
 import '../repositories/subscription_repository.dart';
 import '../repositories/label_repository.dart';
 import '../repositories/family_member_repository.dart';
@@ -13,7 +14,7 @@ import 'api_service.dart';
 /// Type of sync operation
 enum SyncOperationType { create, update, delete }
 
-enum SyncDataType { label, subscription, familyMember }
+enum SyncDataType { label, subscription, familyMember, subscriptionPayment }
 
 /// Pending sync operation
 class PendingSyncOperation {
@@ -229,20 +230,37 @@ class SyncService {
       return SyncDataType.subscription;
     } else if (entity is Label) {
       return SyncDataType.label;
+    } else if (entity is SubscriptionPayment) {
+      return SyncDataType.subscriptionPayment;
     } else {
       return SyncDataType.familyMember;
     }
   }
 
   /// Queue a create operation for a subscription
-  Future<void> queueCreate(dynamic entity) async {
-    if (entity is Subscription || entity is Label || entity is FamilyMember) {
+  Future<void> queueCreate(dynamic entity, {String? subscriptionId}) async {
+    if (entity is Subscription ||
+        entity is Label ||
+        entity is FamilyMember ||
+        entity is SubscriptionPayment) {
+      final data = entity.toJson();
+
+      // For SubscriptionPayment, we need to store the subscription ID
+      if (entity is SubscriptionPayment) {
+        if (subscriptionId == null) {
+          throw ArgumentError(
+            'Subscription ID is required for SubscriptionPayment operations',
+          );
+        }
+        data['subscriptionId'] = subscriptionId;
+      }
+
       await _addPendingOperation(
         PendingSyncOperation(
           id: entity.id,
           type: SyncOperationType.create,
           dataType: getDataTypeFromEntity(entity),
-          data: entity.toJson(),
+          data: data,
         ),
       );
 
@@ -252,20 +270,35 @@ class SyncService {
       }
     } else {
       throw ArgumentError(
-        'Entity must be a Subscription, Label, or FamilyMember',
+        'Entity must be a Subscription, Label, FamilyMember, or SubscriptionPayment',
       );
     }
   }
 
   /// Queue an update operation for a subscription
-  Future<void> queueUpdate(dynamic entity) async {
-    if (entity is Subscription || entity is Label || entity is FamilyMember) {
+  Future<void> queueUpdate(dynamic entity, {String? subscriptionId}) async {
+    if (entity is Subscription ||
+        entity is Label ||
+        entity is FamilyMember ||
+        entity is SubscriptionPayment) {
+      final data = entity.toJson();
+
+      // For SubscriptionPayment, we need to store the subscription ID
+      if (entity is SubscriptionPayment) {
+        if (subscriptionId == null) {
+          throw ArgumentError(
+            'Subscription ID is required for SubscriptionPayment operations',
+          );
+        }
+        data['subscriptionId'] = subscriptionId;
+      }
+
       await _addPendingOperation(
         PendingSyncOperation(
           id: entity.id,
           type: SyncOperationType.update,
           dataType: getDataTypeFromEntity(entity),
-          data: entity.toJson(),
+          data: data,
         ),
       );
 
@@ -275,18 +308,34 @@ class SyncService {
       }
     } else {
       throw ArgumentError(
-        'Entity must be a Subscription, Label, or FamilyMember',
+        'Entity must be a Subscription, Label, FamilyMember, or SubscriptionPayment',
       );
     }
   }
 
   /// Queue a delete operation
-  Future<void> queueDelete(String id, SyncDataType dataType) async {
+  Future<void> queueDelete(
+    String id,
+    SyncDataType dataType, {
+    String? subscriptionId,
+  }) async {
+    // For SubscriptionPayment, we need the subscription ID
+    Map<String, dynamic>? data;
+    if (dataType == SyncDataType.subscriptionPayment) {
+      if (subscriptionId == null) {
+        throw ArgumentError(
+          'Subscription ID is required for SubscriptionPayment delete operations',
+        );
+      }
+      data = {'subscriptionId': subscriptionId};
+    }
+
     await _addPendingOperation(
       PendingSyncOperation(
         id: id,
         type: SyncOperationType.delete,
         dataType: dataType,
+        data: data,
       ),
     );
 
@@ -324,6 +373,21 @@ class SyncService {
                   await _apiService.createFamilyMember(familyMember);
                   successfulOperations.add(operation);
                   break;
+                case SyncDataType.subscriptionPayment:
+                  final payment = SubscriptionPayment.fromJson(operation.data!);
+                  // We need the subscription ID for this operation
+                  final subscriptionId = operation.data!['subscriptionId'];
+                  if (subscriptionId == null) {
+                    throw Exception(
+                      'Subscription ID is required for subscription payment operations',
+                    );
+                  }
+                  await _apiService.createSubscriptionPayment(
+                    subscriptionId,
+                    payment,
+                  );
+                  successfulOperations.add(operation);
+                  break;
               }
             }
             break;
@@ -349,6 +413,22 @@ class SyncService {
                   await _apiService.updateFamilyMember(familyMember);
                   successfulOperations.add(operation);
                   break;
+                case SyncDataType.subscriptionPayment:
+                  // This is a SubscriptionPayment
+                  final payment = SubscriptionPayment.fromJson(operation.data!);
+                  // We need the subscription ID for this operation
+                  final subscriptionId = operation.data!['subscriptionId'];
+                  if (subscriptionId == null) {
+                    throw Exception(
+                      'Subscription ID is required for subscription payment operations',
+                    );
+                  }
+                  await _apiService.updateSubscriptionPayment(
+                    subscriptionId,
+                    payment,
+                  );
+                  successfulOperations.add(operation);
+                  break;
               }
             }
             break;
@@ -367,6 +447,21 @@ class SyncService {
                 break;
               case SyncDataType.familyMember:
                 await _apiService.deleteFamilyMember(operation.id);
+                successfulOperations.add(operation);
+                break;
+              case SyncDataType.subscriptionPayment:
+                // For subscription payment, we need both the subscription ID and the payment ID
+                // The subscription ID should be stored in the metadata
+                final subscriptionId = operation.data?['subscriptionId'];
+                if (subscriptionId == null) {
+                  throw Exception(
+                    'Subscription ID is required for subscription payment operations',
+                  );
+                }
+                await _apiService.deleteSubscriptionPayment(
+                  subscriptionId,
+                  operation.id,
+                );
                 successfulOperations.add(operation);
                 break;
             }
@@ -396,7 +491,7 @@ class SyncService {
   /// Fetch latest data from backend
   Future<Map<String, dynamic>> _fetchRemoteData() async {
     final remoteSubscriptions = await _apiService.getSubscriptions();
-    final remoteLabels = await _apiService.getLabels();
+    final remoteLabels = await _apiService.getLabels(withDefault: true);
     final remoteFamilyMembers = await _apiService.getFamilyMembers();
 
     return {
@@ -408,9 +503,11 @@ class SyncService {
 
   /// Update local storage with remote data
   Future<void> _updateLocalStorage(Map<String, dynamic> remoteData) async {
-    final remoteSubscriptions = remoteData['subscriptions'] as List<Subscription>;
+    final remoteSubscriptions =
+        remoteData['subscriptions'] as List<Subscription>;
     final remoteLabels = remoteData['labels'] as List<Label>;
-    final remoteFamilyMembers = remoteData['familyMembers'] as List<FamilyMember>;
+    final remoteFamilyMembers =
+        remoteData['familyMembers'] as List<FamilyMember>;
 
     final localSubscriptions = _subscriptionRepository.getAll();
     final localLabels = _labelRepository.getAll();
@@ -433,12 +530,12 @@ class SyncService {
     for (final remoteLabel in remoteLabels) {
       final localLabel = localLabels.firstWhere(
         (l) => l.id == remoteLabel.id,
-        orElse: () => remoteLabel,
+        orElse: () => Label.empty(),
       );
 
       // If the remote label is newer, update local
-      if (localLabel != remoteLabel) {
-        await _labelRepository.update(remoteLabel);
+      if (localLabel.updatedAt.isBefore(remoteLabel.updatedAt)) {
+        await _labelRepository.update(remoteLabel, withSync: false);
       }
     }
 
@@ -459,10 +556,7 @@ class SyncService {
   /// Update last sync time and clean up
   Future<void> _updateSyncTimeAndCleanup() async {
     // Update last sync time
-    await _prefs.setString(
-      _lastSyncTimeKey,
-      DateTime.now().toIso8601String(),
-    );
+    await _prefs.setString(_lastSyncTimeKey, DateTime.now().toIso8601String());
 
     // If there are no pending operations left, we can clear the sync history
     // as all operations have been successfully processed

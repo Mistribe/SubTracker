@@ -15,17 +15,6 @@ class LabelRepository {
   final _uuid = Uuid();
   SyncProvider? _syncProvider;
 
-  // Default labels
-  static const List<Map<String, dynamic>> _defaultLabels = [
-    {'name': 'Music', 'color': '#81C784'},
-    {'name': 'Internet', 'color': '#64B5F6'},
-    {'name': 'Mobile', 'color': '#FFD54F'},
-    {'name': 'Utilities', 'color': '#9575CD'},
-    {'name': 'Streaming', 'color': '#F06292'},
-    {'name': 'Gaming', 'color': '#4DB6AC'},
-    {'name': 'Software', 'color': '#7986CB'},
-  ];
-
   /// Initialize the repository
   ///
   /// This method must be called before using any other methods in this class.
@@ -34,27 +23,14 @@ class LabelRepository {
     _box = await Hive.openBox<Label>(_boxName);
 
     // Create default labels if the box is empty
-    if (_box.isEmpty) {
-      await _createDefaultLabels();
+    if (_box.isEmpty && _syncProvider != null) {
+      await _syncProvider!.sync();
     }
   }
 
   /// Set the sync provider
   void setSyncProvider(SyncProvider syncProvider) {
     _syncProvider = syncProvider;
-  }
-
-  /// Create default labels
-  Future<void> _createDefaultLabels() async {
-    for (var labelData in _defaultLabels) {
-      final label = Label(
-        id: _uuid.v7(),
-        name: labelData['name'],
-        isDefault: true,
-        color: labelData['color'],
-      );
-      await _box.put(label.id, label);
-    }
   }
 
   /// Get all labels
@@ -97,12 +73,12 @@ class LabelRepository {
   }
 
   /// Update an existing label
-  Future<void> update(Label label) async {
+  Future<void> update(Label label, {bool withSync = true}) async {
     // Save to local storage
     await _box.put(label.id, label);
 
     // Queue for sync if provider is available
-    if (_syncProvider != null) {
+    if (_syncProvider != null && withSync) {
       await _syncProvider!.queueUpdateLabel(label);
     }
   }

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/subscription.dart';
 import '../models/label.dart';
 import '../models/family_member.dart';
+import '../models/subscription_payment.dart';
 import '../services/api_service.dart';
 import '../services/sync_service.dart';
 import '../repositories/subscription_repository.dart';
@@ -177,6 +178,49 @@ class SyncProvider extends ChangeNotifier {
 
   Future<void> queueDeleteFamilyMember(String id) async {
     await _queueDelete(id, SyncDataType.familyMember);
+  }
+
+  /// Queue a create operation for a subscription payment
+  Future<void> queueCreateSubscriptionPayment(
+    SubscriptionPayment payment,
+    String subscriptionId,
+  ) async {
+    if (!_isInitialized) return;
+
+    await _syncService.queueCreate(payment, subscriptionId: subscriptionId);
+    _hasPendingOperations = await _syncService.hasPendingOperations();
+    _hasSyncHistory = await _syncService.hasSyncHistory();
+    notifyListeners();
+  }
+
+  /// Queue an update operation for a subscription payment
+  Future<void> queueUpdateSubscriptionPayment(
+    SubscriptionPayment payment,
+    String subscriptionId,
+  ) async {
+    if (!_isInitialized) return;
+
+    await _syncService.queueUpdate(payment, subscriptionId: subscriptionId);
+    _hasPendingOperations = await _syncService.hasPendingOperations();
+    _hasSyncHistory = await _syncService.hasSyncHistory();
+    notifyListeners();
+  }
+
+  /// Queue a delete operation for a subscription payment
+  Future<void> queueDeleteSubscriptionPayment(
+    String paymentId,
+    String subscriptionId,
+  ) async {
+    if (!_isInitialized) return;
+
+    await _syncService.queueDelete(
+      paymentId,
+      SyncDataType.subscriptionPayment,
+      subscriptionId: subscriptionId,
+    );
+    _hasPendingOperations = await _syncService.hasPendingOperations();
+    _hasSyncHistory = await _syncService.hasSyncHistory();
+    notifyListeners();
   }
 
   @override
