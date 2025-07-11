@@ -20,11 +20,11 @@ type SubscriptionUpdateEndpoint struct {
 }
 
 type updateSubscriptionModel struct {
-	Name          string    `json:"name"`
-	Labels        []string  `json:"labels"`
-	FamilyMembers []string  `json:"family_members"`
-	Payer         *string   `json:"payer,omitempty"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	Name          string     `json:"name"`
+	Labels        []string   `json:"labels"`
+	FamilyMembers []string   `json:"family_members"`
+	Payer         *string    `json:"payer,omitempty"`
+	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
 }
 
 func (m updateSubscriptionModel) Command(id uuid.UUID) result.Result[command.UpdateSubscriptionCommand] {
@@ -54,7 +54,7 @@ func (m updateSubscriptionModel) Command(id uuid.UUID) result.Result[command.Upd
 		Labels:        labels,
 		FamilyMembers: familyMembers,
 		Payer:         payer,
-		UpdatedAt:     option.Some(m.UpdatedAt),
+		UpdatedAt:     option.New(m.UpdatedAt),
 	})
 }
 
