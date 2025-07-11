@@ -10,30 +10,38 @@ import (
 )
 
 type SubscriptionRepository struct {
+	subscriptions map[uuid.UUID]subscription.Subscription
 }
 
 func NewSubscriptionRepository() *SubscriptionRepository {
-	return &SubscriptionRepository{}
+	return &SubscriptionRepository{
+		subscriptions: make(map[uuid.UUID]subscription.Subscription),
+	}
 }
 
 func (r SubscriptionRepository) Get(ctx context.Context, id uuid.UUID) (
 	option.Option[subscription.Subscription],
 	error) {
-	//TODO implement me
-	panic("implement me")
+	if sub, ok := r.subscriptions[id]; ok {
+		return option.Some(sub), nil
+	}
+	return option.None[subscription.Subscription](), nil
 }
 
 func (r SubscriptionRepository) GetAll(ctx context.Context) ([]subscription.Subscription, error) {
-	//TODO implement me
-	panic("implement me")
+	subscriptions := make([]subscription.Subscription, 0, len(r.subscriptions))
+	for _, sub := range r.subscriptions {
+		subscriptions = append(subscriptions, sub)
+	}
+	return subscriptions, nil
 }
 
 func (r SubscriptionRepository) Save(ctx context.Context, subscription subscription.Subscription) error {
-	//TODO implement me
-	panic("implement me")
+	r.subscriptions[subscription.Id()] = subscription
+	return nil
 }
 
 func (r SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	//TODO implement me
-	panic("implement me")
+	delete(r.subscriptions, id)
+	return nil
 }

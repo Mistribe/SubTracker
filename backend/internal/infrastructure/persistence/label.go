@@ -10,33 +10,45 @@ import (
 )
 
 type LabelRepository struct {
+	labels map[uuid.UUID]label.Label
 }
 
 func NewLabelRepository() *LabelRepository {
-	return &LabelRepository{}
+	return &LabelRepository{
+		labels: make(map[uuid.UUID]label.Label),
+	}
 }
 
 func (r LabelRepository) Get(ctx context.Context, id uuid.UUID) (option.Option[label.Label], error) {
-	//TODO implement me
-	panic("implement me")
+	if lbl, ok := r.labels[id]; ok {
+		return option.Some(lbl), nil
+	}
+	return option.None[label.Label](), nil
 }
 
 func (r LabelRepository) GetAll(ctx context.Context) ([]label.Label, error) {
-	//TODO implement me
-	panic("implement me")
+	labels := make([]label.Label, 0, len(r.labels))
+	for _, lbl := range r.labels {
+		labels = append(labels, lbl)
+	}
+	return labels, nil
 }
 
-func (r LabelRepository) Save(ctx context.Context, label label.Label) error {
-	//TODO implement me
-	panic("implement me")
+func (r LabelRepository) Save(ctx context.Context, lbl label.Label) error {
+	r.labels[lbl.Id()] = lbl
+	return nil
 }
 
 func (r LabelRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	//TODO implement me
-	panic("implement me")
+	delete(r.labels, id)
+	return nil
 }
 
 func (r LabelRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
-	//TODO implement me
-	panic("implement me")
+	for _, id := range ids {
+		if _, exists := r.labels[id]; !exists {
+			return false, nil
+		}
+	}
+	return true, nil
 }
