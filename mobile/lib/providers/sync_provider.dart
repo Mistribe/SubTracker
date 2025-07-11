@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/subscription.dart';
+import '../models/label.dart';
+import '../models/family_member.dart';
 import '../services/api_service.dart';
 import '../services/sync_service.dart';
 import '../repositories/subscription_repository.dart';
+import '../repositories/label_repository.dart';
+import '../repositories/family_member_repository.dart';
 
 /// Provider for the sync service
 class SyncProvider extends ChangeNotifier {
@@ -16,8 +20,16 @@ class SyncProvider extends ChangeNotifier {
   bool _hasPendingOperations = false;
   bool _hasSyncHistory = false;
 
-  SyncProvider({required SubscriptionRepository subscriptionRepository}) {
-    _initialize(subscriptionRepository);
+  SyncProvider({
+    required SubscriptionRepository subscriptionRepository,
+    required LabelRepository labelRepository,
+    required FamilyMemberRepository familyMemberRepository,
+  }) {
+    _initialize(
+      subscriptionRepository,
+      labelRepository,
+      familyMemberRepository,
+    );
   }
 
   /// Initialize the provider

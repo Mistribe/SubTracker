@@ -1,13 +1,20 @@
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 import '../models/family_member.dart';
+import '../providers/sync_provider.dart';
 
 class FamilyMemberRepository {
   static const String boxName = 'family_members';
   final Box<FamilyMember> _box;
   final Uuid _uuid = Uuid();
+  SyncProvider? _syncProvider;
 
   FamilyMemberRepository(this._box);
+
+  /// Set the sync provider
+  void setSyncProvider(SyncProvider syncProvider) {
+    _syncProvider = syncProvider;
+  }
 
   // Initialize the repository
   static Future<FamilyMemberRepository> initialize() async {
@@ -32,18 +39,53 @@ class FamilyMemberRepository {
       name: name,
       isKid: isKid,
     );
+    // Save to local storage
     await _box.put(familyMember.id, familyMember);
+
+    // Queue for sync if provider is available
+    if (_syncProvider != null) {
+      await _syncProvider!.queueCreate(familyMember);
+    }
+
     return familyMember;
   }
 
   // Update an existing family member
   Future<void> update(FamilyMember familyMember) async {
+    // Save to local storage
     await _box.put(familyMember.id, familyMember);
+
+    // Queue for sync if provider is available
+    if (_syncProvider != null) {
+      await _syncProvider!.queueUpdate(familyMember);
+    }
   }
 
   // Delete a family member
   Future<void> delete(String id) async {
+    // Delete from local storage
     await _box.delete(id);
+
+    // Queue for sync if provider is available
+    if (_syncProvider != null) {
+      await _syncProvider!.queueDelete(id);
+    }
+  }
+
+  // Clear all family members
+  Future<void> clearAll() async {
+    // Get all IDs before clearing
+    final ids = _box.keys.cast<String>().toList();
+
+    // Clear local storage
+    await _box.clear();
+
+    // Queue deletes for sync if provider is available
+    if (_syncProvider != null) {
+      for (final id in ids) {
+        await _syncProvider!.queueDelete(id);
+      }
+    }
   }
 
   // Close the box when done

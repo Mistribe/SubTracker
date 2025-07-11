@@ -3,7 +3,11 @@ import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/subscription.dart';
+import '../models/label.dart';
+import '../models/family_member.dart';
 import '../repositories/subscription_repository.dart';
+import '../repositories/label_repository.dart';
+import '../repositories/family_member_repository.dart';
 import 'api_service.dart';
 
 /// Type of sync operation
@@ -48,6 +52,8 @@ class PendingSyncOperation {
 class SyncService {
   final ApiService _apiService;
   final SubscriptionRepository _subscriptionRepository;
+  final LabelRepository _labelRepository;
+  final FamilyMemberRepository _familyMemberRepository;
   final Connectivity _connectivity;
   final SharedPreferencesAsync _prefs;
 
@@ -66,10 +72,14 @@ class SyncService {
   SyncService({
     required ApiService apiService,
     required SubscriptionRepository subscriptionRepository,
+    required LabelRepository labelRepository,
+    required FamilyMemberRepository familyMemberRepository,
     required Connectivity connectivity,
     required SharedPreferencesAsync prefs,
   }) : _apiService = apiService,
        _subscriptionRepository = subscriptionRepository,
+       _labelRepository = labelRepository,
+       _familyMemberRepository = familyMemberRepository,
        _connectivity = connectivity,
        _prefs = prefs;
 
@@ -206,35 +216,43 @@ class SyncService {
     await _savePendingOperations(operations);
   }
 
-  /// Queue a create operation
-  Future<void> queueCreate(Subscription subscription) async {
-    await _addPendingOperation(
-      PendingSyncOperation(
-        id: subscription.id,
-        type: SyncOperationType.create,
-        data: subscription.toJson(),
-      ),
-    );
+  /// Queue a create operation for a subscription
+  Future<void> queueCreate(dynamic entity) async {
+    if (entity is Subscription || entity is Label || entity is FamilyMember) {
+      await _addPendingOperation(
+        PendingSyncOperation(
+          id: entity.id,
+          type: SyncOperationType.create,
+          data: entity.toJson(),
+        ),
+      );
 
-    // Try to sync immediately if online
-    if (_isOnline) {
-      sync();
+      // Try to sync immediately if online
+      if (_isOnline) {
+        sync();
+      }
+    } else {
+      throw ArgumentError('Entity must be a Subscription, Label, or FamilyMember');
     }
   }
 
-  /// Queue an update operation
-  Future<void> queueUpdate(Subscription subscription) async {
-    await _addPendingOperation(
-      PendingSyncOperation(
-        id: subscription.id,
-        type: SyncOperationType.update,
-        data: subscription.toJson(),
-      ),
-    );
+  /// Queue an update operation for a subscription
+  Future<void> queueUpdate(dynamic entity) async {
+    if (entity is Subscription || entity is Label || entity is FamilyMember) {
+      await _addPendingOperation(
+        PendingSyncOperation(
+          id: entity.id,
+          type: SyncOperationType.update,
+          data: entity.toJson(),
+        ),
+      );
 
-    // Try to sync immediately if online
-    if (_isOnline) {
-      sync();
+      // Try to sync immediately if online
+      if (_isOnline) {
+        sync();
+      }
+    } else {
+      throw ArgumentError('Entity must be a Subscription, Label, or FamilyMember');
     }
   }
 
@@ -267,21 +285,78 @@ class SyncService {
           switch (operation.type) {
             case SyncOperationType.create:
               if (operation.data != null) {
-                final subscription = Subscription.fromJson(operation.data!);
-                await _apiService.createSubscription(subscription);
-                successfulOperations.add(operation);
+                // Determine the entity type based on the data
+                if (operation.data!.containsKey('amount')) {
+                  // This is a Subscription
+                  final subscription = Subscription.fromJson(operation.data!);
+                  await _apiService.createSubscription(subscription);
+                  successfulOperations.add(operation);
+                } else if (operation.data!.containsKey('color')) {
+                  // This is a Label
+                  final label = Label.fromJson(operation.data!);
+                  await _apiService.createLabel(label);
+                  successfulOperations.add(operation);
+                } else if (operation.data!.containsKey('isKid')) {
+                  // This is a FamilyMember
+                  final familyMember = FamilyMember.fromJson(operation.data!);
+                  await _apiService.createFamilyMember(familyMember);
+                  successfulOperations.add(operation);
+                }
               }
               break;
             case SyncOperationType.update:
               if (operation.data != null) {
-                final subscription = Subscription.fromJson(operation.data!);
-                await _apiService.updateSubscription(subscription);
-                successfulOperations.add(operation);
+                // Determine the entity type based on the data
+                if (operation.data!.containsKey('amount')) {
+                  // This is a Subscription
+                  final subscription = Subscription.fromJson(operation.data!);
+                  await _apiService.updateSubscription(subscription);
+                  successfulOperations.add(operation);
+                } else if (operation.data!.containsKey('color')) {
+                  // This is a Label
+                  final label = Label.fromJson(operation.data!);
+                  await _apiService.updateLabel(label);
+                  successfulOperations.add(operation);
+                } else if (operation.data!.containsKey('isKid')) {
+                  // This is a FamilyMember
+                  final familyMember = FamilyMember.fromJson(operation.data!);
+                  await _apiService.updateFamilyMember(familyMember);
+                  successfulOperations.add(operation);
+                }
               }
               break;
             case SyncOperationType.delete:
-              await _apiService.deleteSubscription(operation.id);
-              successfulOperations.add(operation);
+              // We need to determine the entity type for delete operations
+              // This could be done by adding a 'type' field to the operation
+              // or by checking if the ID exists in each repository
+              if (_subscriptionRepository.get(operation.id) != null) {
+                await _apiService.deleteSubscription(operation.id);
+                successfulOperations.add(operation);
+              } else if (_labelRepository.get(operation.id) != null) {
+                await _apiService.deleteLabel(operation.id);
+                successfulOperations.add(operation);
+              } else if (_familyMemberRepository.get(operation.id) != null) {
+                await _apiService.deleteFamilyMember(operation.id);
+                successfulOperations.add(operation);
+              } else {
+                // If we can't determine the entity type, try all delete operations
+                try {
+                  await _apiService.deleteSubscription(operation.id);
+                  successfulOperations.add(operation);
+                } catch (_) {
+                  try {
+                    await _apiService.deleteLabel(operation.id);
+                    successfulOperations.add(operation);
+                  } catch (_) {
+                    try {
+                      await _apiService.deleteFamilyMember(operation.id);
+                      successfulOperations.add(operation);
+                    } catch (e) {
+                      print('Failed to delete entity with ID ${operation.id}: $e');
+                    }
+                  }
+                }
+              }
               break;
           }
         } catch (e) {
