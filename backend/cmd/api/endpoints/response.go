@@ -10,6 +10,7 @@ import (
 
 type handleResponseOptions[TValue any] struct {
 	Mapper func(TValue) any
+	Status int
 }
 
 type handleResponseOptionFunc[TValue any] func(*handleResponseOptions[TValue])
@@ -17,6 +18,16 @@ type handleResponseOptionFunc[TValue any] func(*handleResponseOptions[TValue])
 func withMapping[TValue any](f func(TValue) any) handleResponseOptionFunc[TValue] {
 	return func(opt *handleResponseOptions[TValue]) {
 		opt.Mapper = f
+		opt.Status = http.StatusOK
+	}
+}
+
+func withNoContent[TValue any]() handleResponseOptionFunc[TValue] {
+	return func(opt *handleResponseOptions[TValue]) {
+		opt.Mapper = func(value TValue) any {
+			return nil
+		}
+		opt.Status = http.StatusNoContent
 	}
 }
 
@@ -24,7 +35,8 @@ func handleErrorResponse(c *gin.Context, err error) {
 	c.JSON(http.StatusBadRequest, httpError{Message: err.Error()})
 }
 
-func handleResponse[TValue any](c *gin.Context,
+func handleResponse[TValue any](
+	c *gin.Context,
 	r result.Result[TValue],
 	f ...handleResponseOptionFunc[TValue]) {
 	opt := handleResponseOptions[TValue]{}

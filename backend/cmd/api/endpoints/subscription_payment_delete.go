@@ -50,7 +50,7 @@ func (s SubscriptionPaymentDeleteEndpoint) Handle(c *gin.Context) {
 	}
 
 	r := s.handler.Handle(c, cmd)
-	handleResponse(c, r, withNoContent())
+	handleResponse(c, r, withNoContent[result.Unit]())
 }
 
 func (s SubscriptionPaymentDeleteEndpoint) Pattern() []string {
