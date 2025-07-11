@@ -18,7 +18,15 @@ type handleResponseOptionFunc[TValue any] func(*handleResponseOptions[TValue])
 func withMapping[TValue any](f func(TValue) any) handleResponseOptionFunc[TValue] {
 	return func(opt *handleResponseOptions[TValue]) {
 		opt.Mapper = f
-		opt.Status = http.StatusOK
+		if opt.Status == 0 {
+			opt.Status = http.StatusOK
+		}
+	}
+}
+
+func withStatus[TValue any](status int) handleResponseOptionFunc[TValue] {
+	return func(opt *handleResponseOptions[TValue]) {
+		opt.Status = status
 	}
 }
 
@@ -47,9 +55,13 @@ func handleResponse[TValue any](
 	result.Match[TValue, any](r,
 		func(value TValue) any {
 			if opt.Mapper != nil {
-				c.JSON(http.StatusOK, opt.Mapper(value))
+				c.JSON(opt.Status, opt.Mapper(value))
 			} else {
-				c.JSON(http.StatusOK, value)
+				if opt.Status == 0 {
+					c.JSON(http.StatusOK, value)
+				} else {
+					c.JSON(opt.Status, value)
+				}
 			}
 			return nil
 		}, func(err error) any {

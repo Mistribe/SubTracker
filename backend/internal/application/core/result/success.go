@@ -23,7 +23,7 @@ func (s success[V]) IsFaulted() bool {
 }
 
 func (s success[V]) IsSuccess() bool {
-	return false
+	return true
 }
 
 func (s success[V]) IfSuccess(action func(value V)) {

@@ -86,6 +86,7 @@ func (f FamilyMemberCreateEndpoint) Handle(c *gin.Context) {
 			r := f.handler.Handle(c, cmd)
 			handleResponse(c,
 				r,
+				withStatus[family.Member](http.StatusCreated),
 				withMapping[family.Member](func(fm family.Member) any {
 					return newFamilyMemberModel(fm)
 				}))
@@ -101,7 +102,7 @@ func (f FamilyMemberCreateEndpoint) Handle(c *gin.Context) {
 
 func (f FamilyMemberCreateEndpoint) Pattern() []string {
 	return []string{
-		"",
+		"/members",
 	}
 }
 

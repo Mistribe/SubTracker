@@ -19,7 +19,7 @@ type SubscriptionEndpointGroup struct {
 }
 
 func (s SubscriptionEndpointGroup) Prefix() string {
-	return "/subscription"
+	return "/subscriptions"
 }
 
 func (s SubscriptionEndpointGroup) Routes() []ginfx.Route {

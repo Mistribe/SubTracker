@@ -15,6 +15,10 @@ type SubscriptionGetAllEndpoint struct {
 	handler core.QueryHandler[query.FindAllQuery, []subscription.Subscription]
 }
 
+func NewSubscriptionGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, []subscription.Subscription]) *SubscriptionGetAllEndpoint {
+	return &SubscriptionGetAllEndpoint{handler: handler}
+}
+
 // Handle godoc
 // @Summary		Get all subscriptions
 // @Description	Get all subscriptions
@@ -50,8 +54,4 @@ func (s SubscriptionGetAllEndpoint) Method() string {
 
 func (s SubscriptionGetAllEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
-}
-
-func NewSubscriptionGetAllEndpoint() *SubscriptionGetAllEndpoint {
-	return &SubscriptionGetAllEndpoint{}
 }
