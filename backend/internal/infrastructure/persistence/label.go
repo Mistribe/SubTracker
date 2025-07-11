@@ -26,9 +26,12 @@ func (r LabelRepository) Get(ctx context.Context, id uuid.UUID) (option.Option[l
 	return option.None[label.Label](), nil
 }
 
-func (r LabelRepository) GetAll(ctx context.Context) ([]label.Label, error) {
+func (r LabelRepository) GetAll(ctx context.Context, withDefault bool) ([]label.Label, error) {
 	labels := make([]label.Label, 0, len(r.labels))
 	for _, lbl := range r.labels {
+		if !withDefault && lbl.IsDefault() {
+			continue
+		}
 		labels = append(labels, lbl)
 	}
 	return labels, nil

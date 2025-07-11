@@ -19,6 +19,10 @@ type SubscriptionCreateEndpoint struct {
 	handler core.CommandHandler[command.CreateSubscriptionCommand, subscription.Subscription]
 }
 
+func NewSubscriptionCreateEndpoint(handler core.CommandHandler[command.CreateSubscriptionCommand, subscription.Subscription]) *SubscriptionCreateEndpoint {
+	return &SubscriptionCreateEndpoint{handler: handler}
+}
+
 type createPaymentModel struct {
 	Id        *string    `json:"id,omitempty"`
 	Price     float64    `json:"price"`
@@ -107,7 +111,6 @@ func (m createSubscriptionModel) ToSubscription() result.Result[subscription.Sub
 }
 
 func (m createSubscriptionModel) Command() result.Result[command.CreateSubscriptionCommand] {
-
 	return result.Bind[subscription.Subscription, command.CreateSubscriptionCommand](
 		m.ToSubscription(),
 		func(sub subscription.Subscription) result.Result[command.CreateSubscriptionCommand] {
@@ -158,7 +161,7 @@ func (s SubscriptionCreateEndpoint) Handle(c *gin.Context) {
 
 func (s SubscriptionCreateEndpoint) Pattern() []string {
 	return []string{
-		"/:id",
+		"",
 	}
 }
 
@@ -168,8 +171,4 @@ func (s SubscriptionCreateEndpoint) Method() string {
 
 func (s SubscriptionCreateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
-}
-
-func NewSubscriptionCreateEndpoint() *SubscriptionCreateEndpoint {
-	return &SubscriptionCreateEndpoint{}
 }

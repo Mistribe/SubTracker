@@ -15,20 +15,22 @@ type LabelGetAllEndpoint struct {
 	handler core.QueryHandler[query.FindAllQuery, []label.Label]
 }
 
+func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, []label.Label]) *LabelGetAllEndpoint {
+	return &LabelGetAllEndpoint{handler: handler}
+}
+
 // Handle godoc
 // @Summary		Get all labels
 // @Description	Get all labels
 // @Tags			label
 // @Produce		json
+// @Param			with_default	query		boolean	false	"Include default labels"
 // @Success		200	{array}		labelModel
 // @Failure		400	{object}	httpError
 // @Router			/labels [get]
-func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, []label.Label]) *LabelGetAllEndpoint {
-	return &LabelGetAllEndpoint{handler: handler}
-}
-
 func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
-	q := query.NewFindAllQuery()
+	withDefault := c.DefaultQuery("with_default", "false") == "true"
+	q := query.NewFindAllQuery(withDefault)
 	r := e.handler.Handle(c, q)
 	handleResponse(c,
 		r,

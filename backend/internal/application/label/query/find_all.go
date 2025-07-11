@@ -8,10 +8,13 @@ import (
 )
 
 type FindAllQuery struct {
+	WithDefault bool
 }
 
-func NewFindAllQuery() FindAllQuery {
-	return FindAllQuery{}
+func NewFindAllQuery(withDefault bool) FindAllQuery {
+	return FindAllQuery{
+		WithDefault: withDefault,
+	}
 }
 
 type FindAllQueryHandler struct {
@@ -23,7 +26,7 @@ func NewFindAllQueryHandler(repository label.Repository) *FindAllQueryHandler {
 }
 
 func (h FindAllQueryHandler) Handle(ctx context.Context, query FindAllQuery) result.Result[[]label.Label] {
-	lbs, err := h.repository.GetAll(ctx)
+	lbs, err := h.repository.GetAll(ctx, query.WithDefault)
 	if err != nil {
 		return result.Fail[[]label.Label](err)
 	}

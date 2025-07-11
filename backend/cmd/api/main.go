@@ -9,6 +9,7 @@ import (
 	"github.com/oleexo/subtracker/internal/application"
 	"github.com/oleexo/subtracker/internal/infrastructure/logfx"
 	"github.com/oleexo/subtracker/internal/infrastructure/persistence"
+	"github.com/oleexo/subtracker/internal/infrastructure/startup"
 )
 
 // @title			SubTracker API
@@ -34,6 +35,7 @@ func main() {
 		persistence.BuildPersistenceModule(),
 		BuildRoutesModule(),
 		BuildHttpServerModule(),
+		startup.BuildStartupModule(),
 	)
 
 	app.Run()

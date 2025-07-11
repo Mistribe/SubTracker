@@ -6,6 +6,7 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
+	"github.com/oleexo/subtracker/internal/infrastructure/startup"
 )
 
 func AsRepository[TRepository any](f any) any {
@@ -20,6 +21,7 @@ func BuildPersistenceModule() fx.Option {
 			AsRepository[subscription.Repository](NewSubscriptionRepository),
 			AsRepository[family.Repository](NewFamilyRepository),
 			AsRepository[label.Repository](NewLabelRepository),
+			startup.AsStartupTask(newLabelTask),
 		),
 	)
 }
