@@ -20,7 +20,7 @@ type SubscriptionDeleteEndpoint struct {
 //	@Summary		Delete an existing subscription
 //	@Description	Delete an existing subscription
 //	@Tags			subscription
-//	@Param			id	path		string	true	"Subscription ID"
+//	@Param			id	path	string	true	"Subscription ID"
 //	@Success		204	"No Content"
 //	@Failure		400	{object}	httpError
 //	@Router			/subscriptions/{id} [delete]

@@ -75,7 +75,7 @@ func (m createSubscriptionPaymentModel) Command(subscriptionId string) result.Re
 //	@Tags			subscription
 //	@Accept			json
 //	@Produce		json
-//	@Param			subscription_id	path		string	true	"Subscription ID"
+//	@Param			subscription_id	path		string							true	"Subscription ID"
 //	@Param			payment			body		createSubscriptionPaymentModel	true	"Payment data"
 //	@Success		201				{object}	subscriptionModel
 //	@Failure		400				{object}	httpError

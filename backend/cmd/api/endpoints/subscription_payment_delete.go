@@ -22,8 +22,8 @@ type SubscriptionPaymentDeleteEndpoint struct {
 //	@Tags			subscription
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path		string	true	"Subscription ID"
-//	@Param			paymentId	path		string	true	"Payment ID"
+//	@Param			id			path	string	true	"Subscription ID"
+//	@Param			paymentId	path	string	true	"Payment ID"
 //	@Success		204
 //	@Failure		400	{object}	httpError
 //	@Router			/subscriptions/{id}/payments/{paymentId} [delete]

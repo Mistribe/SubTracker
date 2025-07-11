@@ -65,10 +65,10 @@ func (m updateSubscriptionModel) Command(id uuid.UUID) result.Result[command.Upd
 //	@Tags			subscription
 //	@Accept			json
 //	@Produce		json
-//	@Param			id			path		string					true	"Subscription ID"
+//	@Param			id				path		string					true	"Subscription ID"
 //	@Param			subscription	body		updateSubscriptionModel	true	"Subscription data"
-//	@Success		200			{object}	subscriptionModel
-//	@Failure		400			{object}	httpError
+//	@Success		200				{object}	subscriptionModel
+//	@Failure		400				{object}	httpError
 //	@Router			/subscriptions/{id} [put]
 func (s SubscriptionUpdateEndpoint) Handle(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
