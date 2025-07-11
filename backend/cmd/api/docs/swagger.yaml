@@ -53,6 +53,23 @@ definitions:
           $ref: '#/definitions/endpoints.createPaymentModel'
         type: array
     type: object
+  endpoints.createSubscriptionPaymentModel:
+    properties:
+      created_at:
+        type: string
+      currency:
+        type: string
+      end_date:
+        type: string
+      id:
+        type: string
+      months:
+        type: integer
+      price:
+        type: number
+      start_date:
+        type: string
+    type: object
   endpoints.familyMemberModel:
     properties:
       created_at:
@@ -148,6 +165,23 @@ definitions:
       is_default:
         type: boolean
       name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  endpoints.updateSubscriptionModel:
+    properties:
+      family_members:
+        items:
+          type: string
+        type: array
+      labels:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      payer:
         type: string
       updated_at:
         type: string
@@ -406,6 +440,24 @@ paths:
       tags:
       - subscription
   /subscriptions/{id}:
+    delete:
+      description: Delete an existing subscription
+      parameters:
+      - description: Subscription ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Delete an existing subscription
+      tags:
+      - subscription
     get:
       description: Get subscription by ID
       produces:
@@ -424,6 +476,95 @@ paths:
           schema:
             $ref: '#/definitions/endpoints.httpError'
       summary: Get subscription by ID
+      tags:
+      - subscription
+    put:
+      consumes:
+      - application/json
+      description: Update an existing subscription
+      parameters:
+      - description: Subscription ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Subscription data
+        in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/endpoints.updateSubscriptionModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoints.subscriptionModel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Update an existing subscription
+      tags:
+      - subscription
+  /subscriptions/{id}/payments/{paymentId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a subscription payment
+      parameters:
+      - description: Subscription ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Payment ID
+        in: path
+        name: paymentId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Delete a subscription payment
+      tags:
+      - subscription
+  /subscriptions/{subscription_id}/payments:
+    post:
+      consumes:
+      - application/json
+      description: Create a new subscription payment
+      parameters:
+      - description: Subscription ID
+        in: path
+        name: subscription_id
+        required: true
+        type: string
+      - description: Payment data
+        in: body
+        name: payment
+        required: true
+        schema:
+          $ref: '#/definitions/endpoints.createSubscriptionPaymentModel'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/endpoints.subscriptionModel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Create a new subscription payment
       tags:
       - subscription
 swagger: "2.0"

@@ -5,7 +5,7 @@ install-deps:
 	go install github.com/vektra/mockery/v3@v3.5.0
 
 build-swagger:
-	@swag init -g ./cmd/api/main.go -o ./cmd/api/docs
+	@swag init -d ./cmd/api/ -o ./cmd/api/docs
 build:
 	go build -v ./cmd/api/main.go -o ./tmp/api
 
