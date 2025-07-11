@@ -37,7 +37,7 @@ class SubscriptionRepository {
 
     // Queue for sync if provider is available
     if (_syncProvider != null) {
-      await _syncProvider!.queueCreate(subscription);
+      await _syncProvider!.queueCreateSubscription(subscription);
     }
   }
 
@@ -48,7 +48,7 @@ class SubscriptionRepository {
 
     // Queue for sync if provider is available
     if (_syncProvider != null) {
-      await _syncProvider!.queueUpdate(subscription);
+      await _syncProvider!.queueUpdateSubscription(subscription);
     }
   }
 
@@ -59,7 +59,7 @@ class SubscriptionRepository {
 
     // Queue for sync if provider is available
     if (_syncProvider != null) {
-      await _syncProvider!.queueDelete(id);
+      await _syncProvider!.queueDeleteSubscription(id);
     }
   }
 
@@ -74,7 +74,7 @@ class SubscriptionRepository {
     // Queue deletes for sync if provider is available
     if (_syncProvider != null) {
       for (final id in ids) {
-        await _syncProvider!.queueDelete(id);
+        await _syncProvider!.queueDeleteSubscription(id);
       }
     }
   }

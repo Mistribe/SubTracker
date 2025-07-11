@@ -90,7 +90,7 @@ class LabelRepository {
 
     // Queue for sync if provider is available
     if (_syncProvider != null) {
-      await _syncProvider!.queueCreate(label);
+      await _syncProvider!.queueCreateLabel(label);
     }
 
     return label;
@@ -103,7 +103,7 @@ class LabelRepository {
 
     // Queue for sync if provider is available
     if (_syncProvider != null) {
-      await _syncProvider!.queueUpdate(label);
+      await _syncProvider!.queueUpdateLabel(label);
     }
   }
 
@@ -114,7 +114,7 @@ class LabelRepository {
 
     // Queue for sync if provider is available
     if (_syncProvider != null) {
-      await _syncProvider!.queueDelete(id);
+      await _syncProvider!.queueDeleteLabel(id);
     }
   }
 
@@ -137,7 +137,7 @@ class LabelRepository {
     // Queue deletes for sync if provider is available
     if (_syncProvider != null) {
       for (final id in ids) {
-        await _syncProvider!.queueDelete(id);
+        await _syncProvider!.queueDeleteLabel(id);
       }
     }
   }

@@ -34,17 +34,13 @@ class FamilyMemberRepository {
 
   // Add a new family member
   Future<FamilyMember> add(String name, {bool isKid = false}) async {
-    final familyMember = FamilyMember(
-      id: _uuid.v7(),
-      name: name,
-      isKid: isKid,
-    );
+    final familyMember = FamilyMember(id: _uuid.v7(), name: name, isKid: isKid);
     // Save to local storage
     await _box.put(familyMember.id, familyMember);
 
     // Queue for sync if provider is available
     if (_syncProvider != null) {
-      await _syncProvider!.queueCreate(familyMember);
+      await _syncProvider!.queueCreateFamilyMember(familyMember);
     }
 
     return familyMember;
@@ -57,7 +53,7 @@ class FamilyMemberRepository {
 
     // Queue for sync if provider is available
     if (_syncProvider != null) {
-      await _syncProvider!.queueUpdate(familyMember);
+      await _syncProvider!.queueUpdateFamilyMember(familyMember);
     }
   }
 
@@ -68,7 +64,7 @@ class FamilyMemberRepository {
 
     // Queue for sync if provider is available
     if (_syncProvider != null) {
-      await _syncProvider!.queueDelete(id);
+      await _syncProvider!.queueDeleteFamilyMember(id);
     }
   }
 
@@ -83,7 +79,7 @@ class FamilyMemberRepository {
     // Queue deletes for sync if provider is available
     if (_syncProvider != null) {
       for (final id in ids) {
-        await _syncProvider!.queueDelete(id);
+        await _syncProvider!.queueDeleteFamilyMember(id);
       }
     }
   }

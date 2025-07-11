@@ -13,16 +13,20 @@ import 'api_service.dart';
 /// Type of sync operation
 enum SyncOperationType { create, update, delete }
 
+enum SyncDataType { label, subscription, familyMember }
+
 /// Pending sync operation
 class PendingSyncOperation {
   final String id;
   final SyncOperationType type;
+  final SyncDataType dataType;
   final Map<String, dynamic>? data;
   final DateTime timestamp;
 
   PendingSyncOperation({
     required this.id,
     required this.type,
+    required this.dataType,
     this.data,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
@@ -31,6 +35,7 @@ class PendingSyncOperation {
     return {
       'id': id,
       'type': type.toString().split('.').last,
+      'data_type': dataType.toString(),
       'data': data,
       'timestamp': timestamp.toIso8601String(),
     };
@@ -41,6 +46,9 @@ class PendingSyncOperation {
       id: json['id'],
       type: SyncOperationType.values.firstWhere(
         (e) => e.toString().split('.').last == json['type'],
+      ),
+      dataType: SyncDataType.values.firstWhere(
+        (e) => e.toString() == json['data_type'],
       ),
       data: json['data'],
       timestamp: DateTime.parse(json['timestamp']),
@@ -216,6 +224,16 @@ class SyncService {
     await _savePendingOperations(operations);
   }
 
+  SyncDataType getDataTypeFromEntity(dynamic entity) {
+    if (entity is Subscription) {
+      return SyncDataType.subscription;
+    } else if (entity is Label) {
+      return SyncDataType.label;
+    } else {
+      return SyncDataType.familyMember;
+    }
+  }
+
   /// Queue a create operation for a subscription
   Future<void> queueCreate(dynamic entity) async {
     if (entity is Subscription || entity is Label || entity is FamilyMember) {
@@ -223,6 +241,7 @@ class SyncService {
         PendingSyncOperation(
           id: entity.id,
           type: SyncOperationType.create,
+          dataType: getDataTypeFromEntity(entity),
           data: entity.toJson(),
         ),
       );
@@ -232,7 +251,9 @@ class SyncService {
         sync();
       }
     } else {
-      throw ArgumentError('Entity must be a Subscription, Label, or FamilyMember');
+      throw ArgumentError(
+        'Entity must be a Subscription, Label, or FamilyMember',
+      );
     }
   }
 
@@ -243,6 +264,7 @@ class SyncService {
         PendingSyncOperation(
           id: entity.id,
           type: SyncOperationType.update,
+          dataType: getDataTypeFromEntity(entity),
           data: entity.toJson(),
         ),
       );
@@ -252,14 +274,20 @@ class SyncService {
         sync();
       }
     } else {
-      throw ArgumentError('Entity must be a Subscription, Label, or FamilyMember');
+      throw ArgumentError(
+        'Entity must be a Subscription, Label, or FamilyMember',
+      );
     }
   }
 
   /// Queue a delete operation
-  Future<void> queueDelete(String id) async {
+  Future<void> queueDelete(String id, SyncDataType dataType) async {
     await _addPendingOperation(
-      PendingSyncOperation(id: id, type: SyncOperationType.delete),
+      PendingSyncOperation(
+        id: id,
+        type: SyncOperationType.delete,
+        dataType: dataType,
+      ),
     );
 
     // Try to sync immediately if online
@@ -285,43 +313,47 @@ class SyncService {
           switch (operation.type) {
             case SyncOperationType.create:
               if (operation.data != null) {
-                // Determine the entity type based on the data
-                if (operation.data!.containsKey('amount')) {
-                  // This is a Subscription
-                  final subscription = Subscription.fromJson(operation.data!);
-                  await _apiService.createSubscription(subscription);
-                  successfulOperations.add(operation);
-                } else if (operation.data!.containsKey('color')) {
-                  // This is a Label
-                  final label = Label.fromJson(operation.data!);
-                  await _apiService.createLabel(label);
-                  successfulOperations.add(operation);
-                } else if (operation.data!.containsKey('isKid')) {
-                  // This is a FamilyMember
-                  final familyMember = FamilyMember.fromJson(operation.data!);
-                  await _apiService.createFamilyMember(familyMember);
-                  successfulOperations.add(operation);
+                switch (operation.dataType) {
+                  case SyncDataType.subscription:
+                    final subscription = Subscription.fromJson(operation.data!);
+                    await _apiService.createSubscription(subscription);
+                    successfulOperations.add(operation);
+                    break;
+                  case SyncDataType.label:
+                    final label = Label.fromJson(operation.data!);
+                    await _apiService.createLabel(label);
+                    successfulOperations.add(operation);
+                    break;
+                  case SyncDataType.familyMember:
+                    final familyMember = FamilyMember.fromJson(operation.data!);
+                    await _apiService.createFamilyMember(familyMember);
+                    successfulOperations.add(operation);
+                    break;
                 }
               }
               break;
             case SyncOperationType.update:
               if (operation.data != null) {
                 // Determine the entity type based on the data
-                if (operation.data!.containsKey('amount')) {
-                  // This is a Subscription
-                  final subscription = Subscription.fromJson(operation.data!);
-                  await _apiService.updateSubscription(subscription);
-                  successfulOperations.add(operation);
-                } else if (operation.data!.containsKey('color')) {
-                  // This is a Label
-                  final label = Label.fromJson(operation.data!);
-                  await _apiService.updateLabel(label);
-                  successfulOperations.add(operation);
-                } else if (operation.data!.containsKey('isKid')) {
-                  // This is a FamilyMember
-                  final familyMember = FamilyMember.fromJson(operation.data!);
-                  await _apiService.updateFamilyMember(familyMember);
-                  successfulOperations.add(operation);
+                switch (operation.dataType) {
+                  case SyncDataType.subscription:
+                    // This is a Subscription
+                    final subscription = Subscription.fromJson(operation.data!);
+                    await _apiService.updateSubscription(subscription);
+                    successfulOperations.add(operation);
+                    break;
+                  case SyncDataType.label:
+                    // This is a Label
+                    final label = Label.fromJson(operation.data!);
+                    await _apiService.updateLabel(label);
+                    successfulOperations.add(operation);
+                    break;
+                  case SyncDataType.familyMember:
+                    // This is a FamilyMember
+                    final familyMember = FamilyMember.fromJson(operation.data!);
+                    await _apiService.updateFamilyMember(familyMember);
+                    successfulOperations.add(operation);
+                    break;
                 }
               }
               break;
@@ -329,35 +361,20 @@ class SyncService {
               // We need to determine the entity type for delete operations
               // This could be done by adding a 'type' field to the operation
               // or by checking if the ID exists in each repository
-              if (_subscriptionRepository.get(operation.id) != null) {
-                await _apiService.deleteSubscription(operation.id);
-                successfulOperations.add(operation);
-              } else if (_labelRepository.get(operation.id) != null) {
-                await _apiService.deleteLabel(operation.id);
-                successfulOperations.add(operation);
-              } else if (_familyMemberRepository.get(operation.id) != null) {
-                await _apiService.deleteFamilyMember(operation.id);
-                successfulOperations.add(operation);
-              } else {
-                // If we can't determine the entity type, try all delete operations
-                try {
+              switch (operation.dataType) {
+                case SyncDataType.subscription:
                   await _apiService.deleteSubscription(operation.id);
                   successfulOperations.add(operation);
-                } catch (_) {
-                  try {
-                    await _apiService.deleteLabel(operation.id);
-                    successfulOperations.add(operation);
-                  } catch (_) {
-                    try {
-                      await _apiService.deleteFamilyMember(operation.id);
-                      successfulOperations.add(operation);
-                    } catch (e) {
-                      print('Failed to delete entity with ID ${operation.id}: $e');
-                    }
-                  }
-                }
+                  break;
+                case SyncDataType.label:
+                  await _apiService.deleteLabel(operation.id);
+                  successfulOperations.add(operation);
+                  break;
+                case SyncDataType.familyMember:
+                  await _apiService.deleteFamilyMember(operation.id);
+                  successfulOperations.add(operation);
+                  break;
               }
-              break;
           }
         } catch (e) {
           print(

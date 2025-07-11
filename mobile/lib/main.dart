@@ -42,12 +42,14 @@ void main() async {
 
   final familyMemberRepository = await FamilyMemberRepository.initialize();
 
-  runApp(MyApp(
-    subscriptionRepository: paymentRepository,
-    settingsRepository: settingsRepository,
-    labelRepository: labelRepository,
-    familyMemberRepository: familyMemberRepository,
-  ));
+  runApp(
+    MyApp(
+      subscriptionRepository: paymentRepository,
+      settingsRepository: settingsRepository,
+      labelRepository: labelRepository,
+      familyMemberRepository: familyMemberRepository,
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -57,7 +59,7 @@ class MyApp extends StatelessWidget {
   final FamilyMemberRepository familyMemberRepository;
 
   const MyApp({
-    super.key, 
+    super.key,
     required this.subscriptionRepository,
     required this.settingsRepository,
     required this.labelRepository,
@@ -73,6 +75,8 @@ class MyApp extends StatelessWidget {
           create: (_) {
             final syncProvider = SyncProvider(
               subscriptionRepository: subscriptionRepository,
+              familyMemberRepository: familyMemberRepository,
+              labelRepository: labelRepository,
             );
             // Set the sync provider in the repository
             subscriptionRepository.setSyncProvider(syncProvider);
@@ -87,9 +91,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
         ChangeNotifierProvider(
-          create: (_) => ThemeProvider(
-            settingsRepository: settingsRepository,
-          ),
+          create: (_) => ThemeProvider(settingsRepository: settingsRepository),
         ),
         ChangeNotifierProvider(
           create: (_) => FamilyMemberProvider(

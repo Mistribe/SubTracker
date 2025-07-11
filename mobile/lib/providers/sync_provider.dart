@@ -35,6 +35,8 @@ class SyncProvider extends ChangeNotifier {
   /// Initialize the provider
   Future<void> _initialize(
     SubscriptionRepository subscriptionRepository,
+    LabelRepository labelRepository,
+    FamilyMemberRepository familyMemberRepository,
   ) async {
     if (_isInitialized) return;
 
@@ -48,6 +50,8 @@ class SyncProvider extends ChangeNotifier {
     _syncService = SyncService(
       apiService: _apiService,
       subscriptionRepository: subscriptionRepository,
+      labelRepository: labelRepository,
+      familyMemberRepository: familyMemberRepository,
       connectivity: Connectivity(),
       prefs: prefs,
     );
@@ -98,7 +102,7 @@ class SyncProvider extends ChangeNotifier {
   }
 
   /// Queue a create operation
-  Future<void> queueCreate(Subscription subscription) async {
+  Future<void> queueCreateSubscription(Subscription subscription) async {
     if (!_isInitialized) return;
 
     await _syncService.queueCreate(subscription);
@@ -107,8 +111,26 @@ class SyncProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> queueCreateLabel(Label label) async {
+    if (!_isInitialized) return;
+
+    await _syncService.queueCreate(label);
+    _hasPendingOperations = await _syncService.hasPendingOperations();
+    _hasSyncHistory = await _syncService.hasSyncHistory();
+    notifyListeners();
+  }
+
+  Future<void> queueCreateFamilyMember(FamilyMember familyMember) async {
+    if (!_isInitialized) return;
+
+    await _syncService.queueCreate(familyMember);
+    _hasPendingOperations = await _syncService.hasPendingOperations();
+    _hasSyncHistory = await _syncService.hasSyncHistory();
+    notifyListeners();
+  }
+
   /// Queue an update operation
-  Future<void> queueUpdate(Subscription subscription) async {
+  Future<void> queueUpdateSubscription(Subscription subscription) async {
     if (!_isInitialized) return;
 
     await _syncService.queueUpdate(subscription);
@@ -117,14 +139,44 @@ class SyncProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Queue a delete operation
-  Future<void> queueDelete(String id) async {
+  Future<void> queueUpdateLabel(Label label) async {
     if (!_isInitialized) return;
 
-    await _syncService.queueDelete(id);
+    await _syncService.queueUpdate(label);
     _hasPendingOperations = await _syncService.hasPendingOperations();
     _hasSyncHistory = await _syncService.hasSyncHistory();
     notifyListeners();
+  }
+
+  Future<void> queueUpdateFamilyMember(FamilyMember familyMember) async {
+    if (!_isInitialized) return;
+
+    await _syncService.queueUpdate(familyMember);
+    _hasPendingOperations = await _syncService.hasPendingOperations();
+    _hasSyncHistory = await _syncService.hasSyncHistory();
+    notifyListeners();
+  }
+
+  Future<void> _queueDelete(String id, SyncDataType dataType) async {
+    if (!_isInitialized) return;
+
+    await _syncService.queueDelete(id, dataType);
+    _hasPendingOperations = await _syncService.hasPendingOperations();
+    _hasSyncHistory = await _syncService.hasSyncHistory();
+    notifyListeners();
+  }
+
+  /// Queue a delete operation
+  Future<void> queueDeleteSubscription(String id) async {
+    await _queueDelete(id, SyncDataType.subscription);
+  }
+
+  Future<void> queueDeleteLabel(String id) async {
+    await _queueDelete(id, SyncDataType.label);
+  }
+
+  Future<void> queueDeleteFamilyMember(String id) async {
+    await _queueDelete(id, SyncDataType.familyMember);
   }
 
   @override
