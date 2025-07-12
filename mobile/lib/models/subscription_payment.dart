@@ -126,7 +126,8 @@ class SubscriptionPayment {
       months: months ?? this.months,
       currency: currency ?? this.currency,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? DateTime.now(), // Always update the updatedAt field
+      updatedAt:
+          updatedAt ?? DateTime.now(), // Always update the updatedAt field
     );
   }
 
@@ -134,12 +135,12 @@ class SubscriptionPayment {
     return {
       'id': id,
       'price': price,
-      'startDate': startDate.millisecondsSinceEpoch,
-      'endDate': endDate?.millisecondsSinceEpoch,
+      'start_date': startDate.millisecondsSinceEpoch,
+      'end_date': endDate?.millisecondsSinceEpoch,
       'months': months,
       'currency': currency,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
     };
   }
 
@@ -147,19 +148,18 @@ class SubscriptionPayment {
     return SubscriptionPayment(
       id: json['id'],
       price: json['price'],
-      startDate: DateTime.fromMillisecondsSinceEpoch(json['startDate']),
-      endDate: json['endDate'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(json['endDate'])
+      startDate: DateTime.fromMillisecondsSinceEpoch(json['start_date']),
+      endDate: json['end_date'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(json['end_date'])
           : null,
       months: json['months'],
-      currency:
-          json['currency'] ??
-          Currency.USD.code, // Default to USD for backward compatibility
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
+      currency: json['currency'] ?? Currency.USD.code,
+      // Default to USD for backward compatibility
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
           : null,
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'])
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'])
           : null,
     );
   }

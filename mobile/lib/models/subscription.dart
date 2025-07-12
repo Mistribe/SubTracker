@@ -86,7 +86,6 @@ class Subscription extends HiveObject {
     return detail.state;
   }
 
-
   // Calculate the monthly cost based on current price
   double get monthlyCost {
     var currentDetail = getLastPaymentDetail();
@@ -208,7 +207,8 @@ class Subscription extends HiveObject {
       userFamilyMembers: userFamilyMembers ?? this.userFamilyMembers,
       payerFamilyMember: payerFamilyMember ?? this.payerFamilyMember,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? DateTime.now(), // Always update the updatedAt field
+      updatedAt:
+          updatedAt ?? DateTime.now(), // Always update the updatedAt field
     );
   }
 
@@ -217,16 +217,16 @@ class Subscription extends HiveObject {
     return {
       'id': id,
       'name': name,
-      'paymentDetails': subscriptionPayments
+      'payments': subscriptionPayments
           .map((detail) => detail.toJson())
           .toList(),
       'labels': labels.map((label) => label.toJson()).toList(),
-      'userFamilyMembers': userFamilyMembers
+      'family_members': userFamilyMembers
           .map((member) => member.toJson())
           .toList(),
-      'payerFamilyMember': payerFamilyMember?.toJson(),
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'payer': payerFamilyMember?.toJson(),
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
     };
   }
 
@@ -234,8 +234,8 @@ class Subscription extends HiveObject {
     return Subscription(
       id: json['id'],
       name: json['name'],
-      subscriptionPayments: json['paymentDetails'] != null
-          ? (json['paymentDetails'] as List)
+      subscriptionPayments: json['payments'] != null
+          ? (json['payments'] as List)
                 .map((item) => SubscriptionPayment.fromJson(item))
                 .toList()
           : [],
@@ -244,19 +244,19 @@ class Subscription extends HiveObject {
                 .map((item) => Label.fromJson(item))
                 .toList()
           : [],
-      userFamilyMembers: json['userFamilyMembers'] != null
-          ? (json['userFamilyMembers'] as List)
+      userFamilyMembers: json['family_members'] != null
+          ? (json['family_members'] as List)
                 .map((item) => FamilyMember.fromJson(item))
                 .toList()
           : [],
-      payerFamilyMember: json['payerFamilyMember'] != null
-          ? FamilyMember.fromJson(json['payerFamilyMember'])
+      payerFamilyMember: json['payer'] != null
+          ? FamilyMember.fromJson(json['payer'])
           : null,
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
           : null,
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'])
+      updatedAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
           : null,
     );
   }

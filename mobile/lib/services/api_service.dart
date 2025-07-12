@@ -97,7 +97,8 @@ class ApiService {
       );
 
       if (response.statusCode == 201) {
-        return Subscription.fromJson(json.decode(response.body));
+        final responseBody = json.decode(response.body);
+        return Subscription.fromJson(responseBody);
       } else {
         final errorData = json.decode(response.body);
         throw Exception(
