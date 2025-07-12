@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:subscription_tracker/providers/family_member_provider.dart';
+import 'package:subscription_tracker/providers/label_provider.dart';
 import '../models/currency.dart';
 import '../models/subscription.dart';
 import '../models/subscription_state.dart';
@@ -470,7 +472,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                 ),
 
                 // Show labels if there are any
-                if (subscription.labels.isNotEmpty)
+                if (subscription.labelIds.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Column(
@@ -487,45 +489,55 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                             ),
                           ),
                         ),
-                        Wrap(
-                          spacing: 4,
-                          runSpacing: 4,
-                          children: subscription.labels.map((label) {
-                            return Chip(
-                              label: Text(
-                                label.name,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              backgroundColor: Color(
-                                int.parse(
-                                      label.color.substring(1, 7),
-                                      radix: 16,
-                                    ) +
-                                    0xFF000000,
-                              ),
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 0,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
+                        Consumer<LabelProvider>(
+                          builder: (context, provider, child) {
+                            final labels = provider.labels
+                                .where(
+                                  (label) =>
+                                      subscription.labelIds.contains(label.id),
+                                )
+                                .toList();
+                            return Wrap(
+                              spacing: 4,
+                              runSpacing: 4,
+                              children: labels.map((label) {
+                                return Chip(
+                                  label: Text(
+                                    label.name,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  backgroundColor: Color(
+                                    int.parse(
+                                          label.color.substring(1, 7),
+                                          radix: 16,
+                                        ) +
+                                        0xFF000000,
+                                  ),
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 0,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                );
+                              }).toList(),
                             );
-                          }).toList(),
+                          },
                         ),
                       ],
                     ),
                   ),
 
                 // Show family members if any are assigned
-                if (subscription.userFamilyMembers.isNotEmpty ||
-                    subscription.payerFamilyMember != null)
+                if (subscription.userFamilyMemberIds.isNotEmpty ||
+                    subscription.payerFamilyMemberId != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Column(
@@ -551,7 +563,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                             padding: const EdgeInsets.all(16.0),
                             child: Column(
                               children: [
-                                if (subscription.userFamilyMembers.isNotEmpty)
+                                if (subscription.userFamilyMemberIds.isNotEmpty)
                                   Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -570,46 +582,71 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                           ),
                                         ),
                                       ),
-                                      ...subscription.userFamilyMembers.map(
-                                        (member) => ListTile(
-                                          leading: const CircleAvatar(
-                                            child: Icon(Icons.person),
-                                          ),
-                                          title: Text(
-                                            member.name,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Theme.of(
-                                                context,
-                                              ).colorScheme.primary,
-                                            ),
-                                          ),
-                                          dense: true,
-                                        ),
+                                      Consumer<FamilyMemberProvider>(
+                                        builder: (context, provider, child) {
+                                          final familyMembers = provider
+                                              .familyMembers
+                                              .where(
+                                                (member) => subscription
+                                                    .userFamilyMemberIds
+                                                    .contains(member.id),
+                                              )
+                                              .toList();
+
+                                          return Wrap(
+                                            children: familyMembers
+                                                .map(
+                                                  (member) => ListTile(
+                                                    leading: const CircleAvatar(
+                                                      child: Icon(Icons.person),
+                                                    ),
+                                                    title: Text(
+                                                      member.name,
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Theme.of(
+                                                          context,
+                                                        ).colorScheme.primary,
+                                                      ),
+                                                    ),
+                                                    dense: true,
+                                                  ),
+                                                )
+                                                .toList(),
+                                          );
+                                        },
                                       ),
                                     ],
                                   ),
-                                if (subscription.payerFamilyMember != null)
-                                  ListTile(
-                                    leading: CircleAvatar(
-                                      child: Icon(
-                                        subscription.payerFamilyMember!.id ==
-                                                'family'
-                                            ? Icons.group
-                                            : Icons.account_balance_wallet,
-                                      ),
-                                    ),
-                                    title: const Text('Paid by'),
-                                    subtitle: Text(
-                                      subscription.payerFamilyMember!.name,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary,
-                                      ),
-                                    ),
-                                    dense: true,
+                                if (subscription.payerFamilyMemberId != null)
+                                  Consumer<FamilyMemberProvider>(
+                                    builder: (context, provider, child) {
+                                      final payer = provider
+                                          .getFamilyMemberById(
+                                            subscription.payerFamilyMemberId,
+                                          )!;
+                                      return ListTile(
+                                        leading: CircleAvatar(
+                                          child: Icon(
+                                            payer.id == 'family'
+                                                ? Icons.group
+                                                : Icons.account_balance_wallet,
+                                          ),
+                                        ),
+                                        title: const Text('Paid by'),
+                                        subtitle: Text(
+                                          payer.name,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                          ),
+                                        ),
+                                        dense: true,
+                                      );
+                                    },
                                   ),
                               ],
                             ),

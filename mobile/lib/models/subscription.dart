@@ -4,6 +4,7 @@ import 'package:subscription_tracker/models/label.dart';
 import 'package:subscription_tracker/models/currency.dart';
 import 'package:subscription_tracker/models/family_member.dart';
 import 'package:subscription_tracker/models/subscription_state.dart';
+import 'package:uuid/uuid.dart';
 
 part 'subscription.g.dart';
 
@@ -19,13 +20,13 @@ class Subscription extends HiveObject {
   final List<SubscriptionPayment> subscriptionPayments;
 
   @HiveField(4)
-  final List<Label> labels;
+  final List<String> labelIds;
 
   @HiveField(5)
-  final List<FamilyMember> userFamilyMembers;
+  final List<String> userFamilyMemberIds;
 
   @HiveField(6)
-  final FamilyMember? payerFamilyMember;
+  final String? payerFamilyMemberId;
 
   @HiveField(7)
   final DateTime createdAt;
@@ -37,14 +38,14 @@ class Subscription extends HiveObject {
     required this.id,
     required this.name,
     List<SubscriptionPayment>? subscriptionPayments,
-    List<Label>? labels,
-    List<FamilyMember>? userFamilyMembers,
-    this.payerFamilyMember,
+    List<String>? labelIds,
+    List<String>? userFamilyMemberIds,
+    this.payerFamilyMemberId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : subscriptionPayments = subscriptionPayments ?? [],
-       labels = labels ?? [],
-       userFamilyMembers = userFamilyMembers ?? [],
+       labelIds = labelIds ?? [],
+       userFamilyMemberIds = userFamilyMemberIds ?? [],
        createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
 
@@ -193,9 +194,9 @@ class Subscription extends HiveObject {
     String? id,
     String? name,
     List<SubscriptionPayment>? subscriptionPayments,
-    List<Label>? labels,
-    List<FamilyMember>? userFamilyMembers,
-    FamilyMember? payerFamilyMember,
+    List<String>? labelIds,
+    List<String>? userFamilyMemberIds,
+    String? payerFamilyMemberId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -203,9 +204,9 @@ class Subscription extends HiveObject {
       id: id ?? this.id,
       name: name ?? this.name,
       subscriptionPayments: subscriptionPayments ?? this.subscriptionPayments,
-      labels: labels ?? this.labels,
-      userFamilyMembers: userFamilyMembers ?? this.userFamilyMembers,
-      payerFamilyMember: payerFamilyMember ?? this.payerFamilyMember,
+      labelIds: labelIds ?? this.labelIds,
+      userFamilyMemberIds: userFamilyMemberIds ?? this.userFamilyMemberIds,
+      payerFamilyMemberId: payerFamilyMemberId ?? this.payerFamilyMemberId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt:
           updatedAt ?? DateTime.now(), // Always update the updatedAt field
@@ -220,11 +221,9 @@ class Subscription extends HiveObject {
       'payments': subscriptionPayments
           .map((detail) => detail.toJson())
           .toList(),
-      'labels': labels.map((label) => label.toJson()).toList(),
-      'family_members': userFamilyMembers
-          .map((member) => member.toJson())
-          .toList(),
-      'payer': payerFamilyMember?.toJson(),
+      'labels': labelIds,
+      'family_members': userFamilyMemberIds,
+      'payer': payerFamilyMemberId,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -239,24 +238,18 @@ class Subscription extends HiveObject {
                 .map((item) => SubscriptionPayment.fromJson(item))
                 .toList()
           : [],
-      labels: json['labels'] != null
-          ? (json['labels'] as List)
-                .map((item) => Label.fromJson(item))
-                .toList()
+      labelIds: json['labels'] != null
+          ? (json['labels'] as List).cast<String>()
           : [],
-      userFamilyMembers: json['family_members'] != null
-          ? (json['family_members'] as List)
-                .map((item) => FamilyMember.fromJson(item))
-                .toList()
+      userFamilyMemberIds: json['family_members'] != null
+          ? (json['family_members'] as List).cast<String>()
           : [],
-      payerFamilyMember: json['payer'] != null
-          ? FamilyMember.fromJson(json['payer'])
-          : null,
+      payerFamilyMemberId: json['payer'] as String?,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : null,
-      updatedAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'])
           : null,
     );
   }
@@ -278,5 +271,19 @@ class Subscription extends HiveObject {
 
     // Remove the payment detail
     subscriptionPayments.removeAt(index);
+  }
+
+  factory Subscription.empty() {
+    const uuid = Uuid();
+    return Subscription(
+      id: uuid.v7(),
+      name: '',
+      labelIds: [],
+      payerFamilyMemberId: null,
+      subscriptionPayments: [],
+      userFamilyMemberIds: [],
+      createdAt: DateTime.fromMillisecondsSinceEpoch(0),
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(0),
+    );
   }
 }

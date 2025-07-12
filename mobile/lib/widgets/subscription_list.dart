@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:subscription_tracker/providers/label_provider.dart';
 import 'package:subscription_tracker/widgets/price_change_form.dart';
 import '../providers/subscription_provider.dart';
 import '../models/subscription.dart';
@@ -497,37 +498,46 @@ class SubscriptionCard extends StatelessWidget {
                 ),
 
               // Labels
-              if (subscription.labels.isNotEmpty)
+              if (subscription.labelIds.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
-                  child: Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: subscription.labels.map((label) {
-                      final labelColor = Color(
-                        int.parse(label.color.substring(1, 7), radix: 16) +
-                            0xFF000000,
+                  child: Consumer<LabelProvider>(
+                    builder: (context, provider, child) {
+                      final labels = provider.labels
+                          .where(
+                            (label) => subscription.labelIds.contains(label.id),
+                          )
+                          .toList();
+                      return Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: labels.map((label) {
+                          final labelColor = Color(
+                            int.parse(label.color.substring(1, 7), radix: 16) +
+                                0xFF000000,
+                          );
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: labelColor.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: labelColor, width: 1),
+                            ),
+                            child: Text(
+                              label.name,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: labelColor,
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       );
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: labelColor.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: labelColor, width: 1),
-                        ),
-                        child: Text(
-                          label.name,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: labelColor,
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                    },
                   ),
                 ),
             ],

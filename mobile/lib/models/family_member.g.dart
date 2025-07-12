@@ -19,20 +19,26 @@ class FamilyMemberAdapter extends TypeAdapter<FamilyMember> {
     return FamilyMember(
       id: fields[0] as String,
       name: fields[1] as String,
-      isKid: fields[2] as bool? ?? false,
+      isKid: fields[2] as bool,
+      createdAt: fields[3] as DateTime?,
+      updatedAt: fields[4] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, FamilyMember obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.isKid);
+      ..write(obj.isKid)
+      ..writeByte(3)
+      ..write(obj.createdAt)
+      ..writeByte(4)
+      ..write(obj.updatedAt);
   }
 
   @override

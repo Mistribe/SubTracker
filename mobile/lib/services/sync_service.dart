@@ -520,12 +520,25 @@ class SyncService {
     for (final remoteSubscription in remoteSubscriptions) {
       final localSubscription = localSubscriptions.firstWhere(
         (s) => s.id == remoteSubscription.id,
-        orElse: () => remoteSubscription,
+        orElse: () => Subscription.empty(),
       );
 
       // If the remote subscription is newer, update local
-      if (localSubscription != remoteSubscription) {
-        await _subscriptionRepository.update(remoteSubscription);
+      if (localSubscription.updatedAt.isBefore(remoteSubscription.updatedAt)) {
+        await _subscriptionRepository.update(
+          remoteSubscription,
+          withSync: false,
+        );
+      }
+    }
+
+    // Remove local labels that don't exist in remote data
+    for (final localSubscription in localSubscriptions) {
+      if (!remoteSubscriptions.any((r) => r.id == localSubscription.id)) {
+        await _subscriptionRepository.delete(
+          localSubscription.id,
+          withSync: false,
+        );
       }
     }
 

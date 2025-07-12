@@ -21,13 +21,15 @@ class LabelAdapter extends TypeAdapter<Label> {
       name: fields[1] as String,
       isDefault: fields[2] as bool,
       color: fields[3] as String,
+      createdAt: fields[4] as DateTime?,
+      updatedAt: fields[5] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Label obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -35,7 +37,11 @@ class LabelAdapter extends TypeAdapter<Label> {
       ..writeByte(2)
       ..write(obj.isDefault)
       ..writeByte(3)
-      ..write(obj.color);
+      ..write(obj.color)
+      ..writeByte(4)
+      ..write(obj.createdAt)
+      ..writeByte(5)
+      ..write(obj.updatedAt);
   }
 
   @override

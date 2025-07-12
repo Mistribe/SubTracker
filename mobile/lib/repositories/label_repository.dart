@@ -75,7 +75,7 @@ class LabelRepository {
   Future<void> update(Label label, {bool withSync = true}) async {
     // Check if the label is a default label
     final existingLabel = get(label.id);
-    if (existingLabel != null && existingLabel.isDefault) {
+    if (existingLabel != null && existingLabel.isDefault && withSync) {
       throw Exception('Default labels cannot be edited');
     }
 

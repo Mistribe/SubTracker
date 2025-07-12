@@ -88,17 +88,15 @@ class SubscriptionProvider with ChangeNotifier {
 
       // Filter by selected labels
       if (_selectedLabelIds.isNotEmpty &&
-          !subscription.labels.any(
-            (label) => _selectedLabelIds.contains(label.id),
+          !subscription.labelIds.any(
+            (labelId) => _selectedLabelIds.contains(labelId),
           )) {
         return false;
       }
 
       // Filter by selected family member
       if (_selectedFamilyMemberId != null &&
-          !subscription.userFamilyMembers.any(
-            (member) => member.id == _selectedFamilyMemberId,
-          )) {
+          !subscription.userFamilyMemberIds.contains(_selectedFamilyMemberId)) {
         return false;
       }
 
@@ -107,12 +105,11 @@ class SubscriptionProvider with ChangeNotifier {
         // Special case for "Family (common account)"
         if (_selectedPayerFamilyMemberId == kFamilyCommonAccountId) {
           // Show subscriptions with no specific payer
-          if (subscription.payerFamilyMember != null) {
+          if (subscription.payerFamilyMemberId != null) {
             return false;
           }
-        } else if (subscription.payerFamilyMember == null ||
-            subscription.payerFamilyMember!.id !=
-                _selectedPayerFamilyMemberId) {
+        } else if (subscription.payerFamilyMemberId == null ||
+            subscription.payerFamilyMemberId != _selectedPayerFamilyMemberId) {
           return false;
         }
       }
@@ -378,14 +375,13 @@ class SubscriptionProvider with ChangeNotifier {
     DateTime startDate, {
     DateTime? endDate,
     String? currency,
-    List<Label>? labels,
-    List<FamilyMember>? userFamilyMembers,
-    FamilyMember? payerFamilyMember,
+    List<String>? labelIds,
+    List<String>? userFamilyMemberIds,
+    String? payerFamilyMemberId,
   }) async {
     // Validate that a kid is not set as a payer
-    if (payerFamilyMember != null && payerFamilyMember.isKid) {
-      throw Exception('A kid cannot be set as a payer for a subscription');
-    }
+    // Note: We can't validate if a kid is set as a payer here anymore since we only have the ID
+    // This validation should be done before calling this method
 
     // Create initial subscription history entry
     final initialSubscriptionPayment = [
@@ -404,9 +400,9 @@ class SubscriptionProvider with ChangeNotifier {
       id: _generateId(),
       name: name,
       subscriptionPayments: initialSubscriptionPayment,
-      labels: labels ?? [],
-      userFamilyMembers: userFamilyMembers,
-      payerFamilyMember: payerFamilyMember,
+      labelIds: labelIds ?? [],
+      userFamilyMemberIds: userFamilyMemberIds,
+      payerFamilyMemberId: payerFamilyMemberId,
     );
 
     // Add to local list
@@ -429,7 +425,13 @@ class SubscriptionProvider with ChangeNotifier {
   }
 
   // Update an existing subscription
-  Future<void> updateSubscription(String id, String name) async {
+  Future<void> updateSubscription(
+    String id,
+    String name,
+    List<String> labelIds,
+    List<String> familyMemberIds,
+    String? payerId,
+  ) async {
     final index = _subscriptions.indexWhere(
       (subscription) => subscription.id == id,
     );
@@ -437,7 +439,13 @@ class SubscriptionProvider with ChangeNotifier {
     if (index >= 0) {
       final subscription = _subscriptions[index];
 
-      _subscriptions[index] = subscription.copyWith(name: name);
+      _subscriptions[index] = subscription.copyWith(
+        name: name,
+        userFamilyMemberIds: familyMemberIds,
+        payerFamilyMemberId: payerId,
+        labelIds: labelIds,
+        updatedAt: DateTime.now(),
+      );
 
       // Persist to storage
       await subscriptionRepository.update(subscription);
@@ -669,12 +677,12 @@ class SubscriptionProvider with ChangeNotifier {
   // Update subscription labels
   Future<void> updateSubscriptionLabels(
     String subscriptionId,
-    List<Label> labels,
+    List<String> labelIds,
   ) async {
     final index = _subscriptions.indexWhere((s) => s.id == subscriptionId);
     if (index >= 0) {
       final subscription = _subscriptions[index];
-      final updatedSubscription = subscription.copyWith(labels: labels);
+      final updatedSubscription = subscription.copyWith(labelIds: labelIds);
 
       _subscriptions[index] = updatedSubscription;
       await subscriptionRepository.update(updatedSubscription);
@@ -686,20 +694,19 @@ class SubscriptionProvider with ChangeNotifier {
   // Update subscription family members
   Future<void> updateSubscriptionFamilyMembers(
     String subscriptionId, {
-    List<FamilyMember>? userFamilyMembers,
-    FamilyMember? payerFamilyMember,
+    List<String>? userFamilyMemberIds,
+    String? payerFamilyMemberId,
   }) async {
     // Validate that a kid is not set as a payer
-    if (payerFamilyMember != null && payerFamilyMember.isKid) {
-      throw Exception('A kid cannot be set as a payer for a subscription');
-    }
+    // Note: We can't validate if a kid is set as a payer here anymore since we only have the ID
+    // This validation should be done before calling this method
 
     final index = _subscriptions.indexWhere((s) => s.id == subscriptionId);
     if (index >= 0) {
       final subscription = _subscriptions[index];
       final updatedSubscription = subscription.copyWith(
-        userFamilyMembers: userFamilyMembers,
-        payerFamilyMember: payerFamilyMember,
+        userFamilyMemberIds: userFamilyMemberIds,
+        payerFamilyMemberId: payerFamilyMemberId,
       );
 
       _subscriptions[index] = updatedSubscription;

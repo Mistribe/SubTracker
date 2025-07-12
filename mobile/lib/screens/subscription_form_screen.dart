@@ -78,11 +78,44 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
         _recurrenceCountController = TextEditingController(text: '1');
       }
       _selectedCurrency = currentDetail.currency;
-      _selectedLabels = List<Label>.from(subscription.labels);
-      _userFamilyMembers = List<FamilyMember>.from(
-        subscription.userFamilyMembers,
-      );
-      _payerFamilyMember = subscription.payerFamilyMember;
+
+      // Fetch labels from provider
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final labelProvider = Provider.of<LabelProvider>(
+          context,
+          listen: false,
+        );
+        setState(() {
+          _selectedLabels = subscription.labelIds
+              .map((id) => labelProvider.getLabel(id) ?? Label.empty())
+              .where((label) => label.id.isNotEmpty)
+              .toList();
+        });
+      });
+
+      // Fetch family members from provider
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final familyMemberProvider = Provider.of<FamilyMemberProvider>(
+          context,
+          listen: false,
+        );
+        setState(() {
+          _userFamilyMembers = subscription.userFamilyMemberIds
+              .map(
+                (id) =>
+                    familyMemberProvider.getFamilyMemberById(id) ??
+                    FamilyMember.empty(),
+              )
+              .where((member) => member.id.isNotEmpty)
+              .toList();
+
+          _payerFamilyMember = subscription.payerFamilyMemberId != null
+              ? familyMemberProvider.getFamilyMemberById(
+                  subscription.payerFamilyMemberId,
+                )
+              : null;
+        });
+      });
 
       // Set the selected duration based on months
       if (_months == 1) {
@@ -301,7 +334,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
           ),
         );
 
-        final provider = Provider.of<SubscriptionProvider>(
+        final subscriptionProvider = Provider.of<SubscriptionProvider>(
           context,
           listen: false,
         );
@@ -311,25 +344,18 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
           final subscription = widget.subscription!;
 
           // Update the subscription name and labels
-          await provider.updateSubscription(subscription.id, name);
-
-          // Update the subscription labels
-          await provider.updateSubscriptionLabels(
+          await subscriptionProvider.updateSubscription(
             subscription.id,
-            _selectedLabels,
-          );
-
-          // Update the subscription family members
-          await provider.updateSubscriptionFamilyMembers(
-            subscription.id,
-            userFamilyMembers: _userFamilyMembers,
-            payerFamilyMember: _payerFamilyMember,
+            name,
+            _selectedLabels.map((label) => label.id).toList(),
+            _userFamilyMembers.map((member) => member.id).toList(),
+            _payerFamilyMember?.id,
           );
 
           // Update the subscription detail if it's active
           if (_isActiveSubscription) {
             final currentDetail = subscription.getLastPaymentDetail();
-            await provider.updateSubscriptionPayment(
+            await subscriptionProvider.updateSubscriptionPayment(
               subscription.id,
               currentDetail.id,
               price,
@@ -341,16 +367,18 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
           }
         } else {
           // Add mode
-          await provider.addPayment(
+          await subscriptionProvider.addPayment(
             name,
             price,
             _months,
             _startDate,
             endDate: _endDate,
             currency: _selectedCurrency,
-            labels: _selectedLabels,
-            userFamilyMembers: _userFamilyMembers,
-            payerFamilyMember: _payerFamilyMember,
+            labelIds: _selectedLabels.map((label) => label.id).toList(),
+            userFamilyMemberIds: _userFamilyMembers
+                .map((member) => member.id)
+                .toList(),
+            payerFamilyMemberId: _payerFamilyMember?.id,
           );
         }
 

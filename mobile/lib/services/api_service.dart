@@ -87,11 +87,9 @@ class ApiService {
                 },
               )
               .toList(),
-          'labels': subscription.labels.map((l) => l.id).toList(),
-          'family_members': subscription.userFamilyMembers
-              .map((f) => f.id)
-              .toList(),
-          'payer': subscription.payerFamilyMember?.id,
+          'labels': subscription.labelIds.toList(),
+          'family_members': subscription.userFamilyMemberIds.toList(),
+          'payer': subscription.payerFamilyMemberId,
           'created_at': subscription.createdAt.toUtc().toIso8601String(),
         }),
       );
@@ -118,11 +116,9 @@ class ApiService {
       // Prepare the update payload according to swagger updateSubscriptionModel
       final updatePayload = {
         'name': subscription.name,
-        'payer': subscription.payerFamilyMember?.id,
-        'family_members': subscription.userFamilyMembers
-            .map((member) => member.id)
-            .toList(),
-        'labels': subscription.labels.map((label) => label.id).toList(),
+        'payer': subscription.payerFamilyMemberId,
+        'family_members': subscription.userFamilyMemberIds.toList(),
+        'labels': subscription.labelIds.toList(),
         'updated_at': subscription.updatedAt.toUtc().toIso8601String(),
       };
 
