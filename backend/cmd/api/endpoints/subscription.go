@@ -35,7 +35,10 @@ func NewSubscriptionEndpointGroup(
 	getAllEndpoint *SubscriptionGetAllEndpoint,
 	createEndpoint *SubscriptionCreateEndpoint,
 	updateEndpoint *SubscriptionUpdateEndpoint,
-	deleteEndpoint *SubscriptionDeleteEndpoint) *SubscriptionEndpointGroup {
+	deleteEndpoint *SubscriptionDeleteEndpoint,
+	createPaymentEndpoint *SubscriptionPaymentCreateEndpoint,
+	updatePaymentEndpoint *SubscriptionPaymentUpdateEndpoint,
+	deletePaymentEndpoint *SubscriptionPaymentDeleteEndpoint) *SubscriptionEndpointGroup {
 	return &SubscriptionEndpointGroup{
 		routes: []ginfx.Route{
 			getEndpoint,
@@ -43,6 +46,9 @@ func NewSubscriptionEndpointGroup(
 			createEndpoint,
 			updateEndpoint,
 			deleteEndpoint,
+			createPaymentEndpoint,
+			updatePaymentEndpoint,
+			deletePaymentEndpoint,
 		},
 	}
 }

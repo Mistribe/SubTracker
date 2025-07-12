@@ -16,4 +16,5 @@ var (
 		MaxFamilyMemberCount)
 	ErrPaymentCannotEndBeforeStart = errors.New("payment end date cannot be before the starting date")
 	ErrPaymentNotFound             = errors.New("payment not found")
+	ErrPaymentAlreadyExists        = errors.New("payment already exists")
 )

@@ -24,28 +24,43 @@ func NewCreatePaymentCommandHandler(subscriptionRepository subscription.Reposito
 	return &CreatePaymentCommandHandler{subscriptionRepository: subscriptionRepository}
 }
 
-func (h CreatePaymentCommandHandler) Handle(ctx context.Context,
+func (h CreatePaymentCommandHandler) Handle(
+	ctx context.Context,
 	command CreatePaymentCommand) result.Result[subscription.Subscription] {
 	subOpt, err := h.subscriptionRepository.Get(ctx, command.SubscriptionId)
 	if err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	return option.Match(subOpt, func(sub subscription.Subscription) result.Result[subscription.Subscription] {
-		return h.createPayment(ctx, command.Payment, sub)
-	},
-		func() result.Result[subscription.Subscription] {
+	return option.Match(subOpt,
+		func(sub subscription.Subscription) result.Result[subscription.Subscription] {
+			return h.createPayment(ctx, command.Payment, sub)
+		}, func() result.Result[subscription.Subscription] {
 			return result.Fail[subscription.Subscription](subscription.ErrSubscriptionNotFound)
 		},
 	)
 }
 
-func (h CreatePaymentCommandHandler) createPayment(ctx context.Context,
+func (h CreatePaymentCommandHandler) createPayment(
+	ctx context.Context,
 	payment subscription.Payment,
 	sub subscription.Subscription) result.Result[subscription.Subscription] {
 
 	if err := payment.Validate(); err != nil {
 		return result.Fail[subscription.Subscription](err)
+	}
+
+	if existingPaymentOpt := sub.GetPaymentById(payment.Id()); existingPaymentOpt.IsSome() {
+		return option.Match(existingPaymentOpt,
+			func(existingPayment subscription.Payment) result.Result[subscription.Subscription] {
+				if existingPayment.Equal(payment) {
+					return result.Success(sub)
+				}
+				return result.Fail[subscription.Subscription](subscription.ErrPaymentAlreadyExists)
+			},
+			func() result.Result[subscription.Subscription] {
+				return result.Fail[subscription.Subscription](subscription.ErrPaymentNotFound)
+			})
 	}
 
 	sub.AddPayment(payment)

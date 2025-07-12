@@ -144,6 +144,17 @@ func (p *Payment) SetUpdatedAt(updatedAt time.Time) {
 	p.isDirty = true
 }
 
+func (p *Payment) Equal(other Payment) bool {
+	return p.id == other.id &&
+		p.price == other.price &&
+		p.startDate == other.startDate &&
+		p.endDate == other.endDate &&
+		p.months == other.months &&
+		p.currency == other.currency &&
+		p.createdAt == other.createdAt &&
+		p.updatedAt == other.updatedAt
+}
+
 func sortPayments(payments []Payment) {
 	sort.Slice(payments, func(i, j int) bool {
 		return payments[i].startDate.After(payments[j].startDate)

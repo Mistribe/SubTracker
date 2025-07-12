@@ -19,6 +19,10 @@ type SubscriptionPaymentCreateEndpoint struct {
 	handler core.CommandHandler[command.CreatePaymentCommand, subscription.Subscription]
 }
 
+func NewSubscriptionPaymentCreateEndpoint(handler core.CommandHandler[command.CreatePaymentCommand, subscription.Subscription]) *SubscriptionPaymentCreateEndpoint {
+	return &SubscriptionPaymentCreateEndpoint{handler: handler}
+}
+
 type createSubscriptionPaymentModel struct {
 	Id        *string    `json:"id,omitempty"`
 	Price     float64    `json:"price"`
@@ -95,6 +99,7 @@ func (s SubscriptionPaymentCreateEndpoint) Handle(c *gin.Context) {
 			r := s.handler.Handle(c, cmd)
 			handleResponse(c,
 				r,
+				withStatus[subscription.Subscription](http.StatusCreated),
 				withMapping[subscription.Subscription](func(sub subscription.Subscription) any {
 					return newSubscriptionModel(sub)
 				}))
@@ -120,8 +125,4 @@ func (s SubscriptionPaymentCreateEndpoint) Method() string {
 
 func (s SubscriptionPaymentCreateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
-}
-
-func NewSubscriptionPaymentCreateEndpoint() *SubscriptionPaymentCreateEndpoint {
-	return &SubscriptionPaymentCreateEndpoint{}
 }
