@@ -3,7 +3,7 @@ package core
 import (
 	"context"
 
-	"github.com/oleexo/subtracker/internal/application/core/result"
+	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type Query interface{}

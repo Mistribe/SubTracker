@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/oleexo/subtracker/internal/application/core/result"
 	"github.com/oleexo/subtracker/internal/domain/family"
+	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type DeleteFamilyMemberCommand struct {

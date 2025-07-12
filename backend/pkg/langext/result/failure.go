@@ -1,5 +1,9 @@
 package result
 
+import (
+	"errors"
+)
+
 func Fail[V any](err error) Result[V] {
 	return failure[V]{
 		err: err,
@@ -8,6 +12,14 @@ func Fail[V any](err error) Result[V] {
 
 type failure[V any] struct {
 	err error
+}
+
+func (f failure[V]) Equal(other Result[V]) bool {
+	if other.IsSuccess() {
+		return false
+	}
+
+	return errors.Is(f.err, other.getError())
 }
 
 func (f failure[V]) getValue() V {

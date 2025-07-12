@@ -8,7 +8,7 @@ type none[TValue any] struct {
 }
 
 func (n none[TValue]) getValue() TValue {
-	panic("cannot retrive value in none case")
+	panic("cannot retrieve value in none case")
 }
 
 func (n none[TValue]) IsSome() bool {

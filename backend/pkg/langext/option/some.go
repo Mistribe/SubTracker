@@ -1,8 +1,12 @@
 package option
 
-func Some[TValue any](value TValue) Option[TValue] {
+import (
+	"reflect"
+)
+
+func Some[TValue any](someValue TValue) Option[TValue] {
 	return some[TValue]{
-		value: value,
+		value: someValue,
 	}
 }
 
@@ -12,6 +16,19 @@ type some[TValue any] struct {
 
 func (s some[TValue]) getValue() TValue {
 	return s.value
+}
+
+func (s some[TValue]) Equal(otherOption Option[TValue]) bool {
+	if otherOption.IsNone() {
+		return false
+	}
+
+	otherValue := otherOption.getValue()
+	if currentValueEq, ok := any(s.value).(interface{ Equal(otherValue TValue) bool }); ok {
+		return currentValueEq.Equal(otherValue)
+	}
+
+	return reflect.DeepEqual(s.value, otherValue)
 }
 
 func (s some[TValue]) IsSome() bool {
@@ -39,8 +56,4 @@ func (s some[TValue]) ValueWithDefault(_ TValue) TValue {
 
 func (s some[TValue]) Transform(f func(TValue) TValue) Option[TValue] {
 	return Some(f(s.value))
-}
-
-func (s some[TValue]) Equal(other Option[TValue]) bool {
-	return other.IsSome() && s.value == other.getValue()
 }

@@ -3,11 +3,10 @@ package subscription
 import (
 	"time"
 
-	"github.com/oleexo/subtracker/internal/application/core/result"
-
 	"github.com/google/uuid"
 
-	"github.com/oleexo/subtracker/internal/application/core/option"
+	"github.com/oleexo/subtracker/pkg/langext/option"
+	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 const (

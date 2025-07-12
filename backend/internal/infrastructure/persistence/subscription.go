@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/oleexo/subtracker/internal/application/core/option"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
+	"github.com/oleexo/subtracker/pkg/langext/option"
 )
 
 type SubscriptionRepository struct {

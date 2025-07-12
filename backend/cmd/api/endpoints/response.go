@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/oleexo/subtracker/internal/application/core/result"
+	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type handleResponseOptions[TValue any] struct {

@@ -8,9 +8,10 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/oleexo/subtracker/internal/application/core/option"
+	"github.com/stretchr/testify/mock"
+
 	"github.com/oleexo/subtracker/internal/domain/label"
-	mock "github.com/stretchr/testify/mock"
+	"github.com/oleexo/subtracker/pkg/langext/option"
 )
 
 // NewMockRepository creates a new instance of MockRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

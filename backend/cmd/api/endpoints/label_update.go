@@ -9,10 +9,10 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/application/core/option"
-	"github.com/oleexo/subtracker/internal/application/core/result"
 	"github.com/oleexo/subtracker/internal/application/label/command"
 	"github.com/oleexo/subtracker/internal/domain/label"
+	"github.com/oleexo/subtracker/pkg/langext/option"
+	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type LabelUpdateEndpoint struct {

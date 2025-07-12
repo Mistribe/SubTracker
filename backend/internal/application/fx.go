@@ -4,7 +4,6 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/application/core/result"
 	fmlyCommand "github.com/oleexo/subtracker/internal/application/family/command"
 	fmlyQuery "github.com/oleexo/subtracker/internal/application/family/query"
 	lblCommand "github.com/oleexo/subtracker/internal/application/label/command"
@@ -14,6 +13,7 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
+	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 func AsCommandHandler[TCommand core.Command, TResult any](f any) any {

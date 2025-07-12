@@ -8,6 +8,7 @@ type Result[V any] interface {
 
 	IfSuccess(action func(value V))
 	IfFailure(action func(err error))
+	Equal(other Result[V]) bool
 }
 
 func Bind[TIn any, TOut any](result Result[TIn],

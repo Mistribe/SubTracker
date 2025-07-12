@@ -7,8 +7,8 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/application/core/result"
 	"github.com/oleexo/subtracker/internal/application/subscription/command"
+	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type SubscriptionPaymentDeleteEndpoint struct {

@@ -3,8 +3,8 @@ package query
 import (
 	"context"
 
-	"github.com/oleexo/subtracker/internal/application/core/result"
 	"github.com/oleexo/subtracker/internal/domain/label"
+	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type FindAllQuery struct {
