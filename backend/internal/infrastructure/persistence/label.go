@@ -37,6 +37,16 @@ func (r LabelRepository) GetAll(ctx context.Context, withDefault bool) ([]label.
 	return labels, nil
 }
 
+func (r LabelRepository) GetDefaults(ctx context.Context) ([]label.Label, error) {
+	labels := make([]label.Label, 0, len(r.labels))
+	for _, lbl := range r.labels {
+		if lbl.IsDefault() {
+			labels = append(labels, lbl)
+		}
+	}
+	return labels, nil
+}
+
 func (r LabelRepository) Save(ctx context.Context, lbl label.Label) error {
 	r.labels[lbl.Id()] = lbl
 	return nil

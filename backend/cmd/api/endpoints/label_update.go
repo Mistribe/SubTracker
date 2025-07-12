@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,6 @@ import (
 	"github.com/oleexo/subtracker/internal/application/core/result"
 	"github.com/oleexo/subtracker/internal/application/label/command"
 	"github.com/oleexo/subtracker/internal/domain/label"
-	"github.com/oleexo/subtracker/pkg/ext"
 )
 
 type LabelUpdateEndpoint struct {
@@ -21,13 +21,11 @@ type LabelUpdateEndpoint struct {
 
 type updateLabelModel struct {
 	Name      string     `json:"name"`
-	IsDefault *bool      `json:"is_default,omitempty"`
 	Color     string     `json:"color"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
 func (m updateLabelModel) Command(id uuid.UUID) result.Result[command.UpdateLabelCommand] {
-	isDefault := ext.ValueOrDefault(m.IsDefault, false)
 	updatedAt := option.None[time.Time]()
 
 	if m.UpdatedAt != nil {
@@ -37,8 +35,7 @@ func (m updateLabelModel) Command(id uuid.UUID) result.Result[command.UpdateLabe
 	return result.Success(command.UpdateLabelCommand{
 		Id:        id,
 		Name:      m.Name,
-		IsDefault: isDefault,
-		Color:     m.Color,
+		Color:     strings.ToUpper(m.Color),
 		UpdatedAt: updatedAt,
 	})
 }

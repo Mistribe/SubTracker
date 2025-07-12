@@ -18,7 +18,8 @@ func NewLabelEndpointGroup(
 	updateEndpoint *LabelUpdateEndpoint,
 	deleteEndpoint *LabelDeleteEndpoint,
 	getEndpoint *LabelGetEndpoint,
-	getAllEndpoint *LabelGetAllEndpoint) *LabelEndpointGroup {
+	getAllEndpoint *LabelGetAllEndpoint,
+	defaultEndpoint *DefaultLabelEndpoint) *LabelEndpointGroup {
 	return &LabelEndpointGroup{
 		routes: []ginfx.Route{
 			createEndpoint,
@@ -26,6 +27,7 @@ func NewLabelEndpointGroup(
 			deleteEndpoint,
 			getEndpoint,
 			getAllEndpoint,
+			defaultEndpoint,
 		},
 	}
 }

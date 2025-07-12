@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -43,7 +44,7 @@ func (m createLabelModel) ToLabel() result.Result[label.Label] {
 		id,
 		m.Name,
 		isDefault,
-		m.Color,
+		strings.ToUpper(m.Color),
 		createdAt,
 		createdAt,
 	)
@@ -83,6 +84,7 @@ func (l LabelCreateEndpoint) Handle(c *gin.Context) {
 			r := l.handler.Handle(c, cmd)
 			handleResponse(c,
 				r,
+				withStatus[label.Label](http.StatusCreated),
 				withMapping[label.Label](func(lbl label.Label) any {
 					return newLabelModel(lbl)
 				}))

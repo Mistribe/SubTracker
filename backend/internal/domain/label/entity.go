@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	hexColorRegex = regexp.MustCompile(`^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$`)
+	hexColorRegex = regexp.MustCompile(`^#([A-Fa-f0-9]{8}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$`)
 )
 
 type Label struct {
@@ -41,7 +41,11 @@ func NewLabelWithoutValidation(id uuid.UUID,
 	}
 }
 
-func NewLabel(id uuid.UUID, name string, isDefault bool, color string, createdAt time.Time,
+func NewLabel(id uuid.UUID,
+	name string,
+	isDefault bool,
+	color string,
+	createdAt time.Time,
 	updatedAt time.Time) result.Result[Label] {
 	lbl := NewLabelWithoutValidation(id, name, isDefault, color, createdAt, updatedAt)
 
@@ -128,4 +132,13 @@ func (l *Label) SetColor(color string) {
 func (l *Label) SetUpdatedAt(updatedAt time.Time) {
 	l.updatedAt = updatedAt
 	l.isDirty = true
+}
+
+func (l *Label) Equal(other Label) bool {
+	return l.id == other.id &&
+		l.name == other.name &&
+		l.isDefault == other.isDefault &&
+		l.color == other.color &&
+		l.createdAt.Equal(other.createdAt) &&
+		l.updatedAt.Equal(other.updatedAt)
 }

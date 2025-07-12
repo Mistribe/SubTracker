@@ -14,7 +14,6 @@ import (
 type UpdateLabelCommand struct {
 	Id        uuid.UUID
 	Name      string
-	IsDefault bool
 	Color     string
 	UpdatedAt option.Option[time.Time]
 }
@@ -43,7 +42,6 @@ func (h UpdateLabelCommandHandler) updateLabel(ctx context.Context,
 	command UpdateLabelCommand,
 	lbl label.Label) result.Result[label.Label] {
 	lbl.SetName(command.Name)
-	lbl.SetIsDefault(command.IsDefault)
 	lbl.SetColor(command.Color)
 
 	command.UpdatedAt.IfSome(func(updatedAt time.Time) {
