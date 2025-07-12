@@ -42,7 +42,6 @@ class SubscriptionProvider with ChangeNotifier {
   final SyncProvider? syncProvider;
   final List<String> _selectedLabelIds = [];
   List<Subscription> _subscriptions = [];
-  List<Label> _labels = [];
   bool _showInactiveSubscriptions = false;
   SubscriptionSortOption _sortOption = SubscriptionSortOption.none;
   String? _selectedFamilyMemberId;
@@ -56,18 +55,10 @@ class SubscriptionProvider with ChangeNotifier {
   }) {
     // Load subscriptions from repository
     _loadPayments();
-    // Load labels from repository
-    _loadLabels();
     // Load settings if repository is provided
     if (settingsRepository != null) {
       _loadSettings();
     }
-  }
-
-  // Load labels from repository
-  Future<void> _loadLabels() async {
-    _labels = labelRepository.getAll();
-    notifyListeners();
   }
 
   // Load settings from repository
@@ -202,22 +193,25 @@ class SubscriptionProvider with ChangeNotifier {
   }
 
   // Getter for all labels
-  List<Label> get labels => List.unmodifiable(_labels);
+  List<Label> get labels => List.unmodifiable(labelRepository.getAll());
 
   // Getter for default labels
-  List<Label> get defaultLabels =>
-      _labels.where((label) => label.isDefault).toList();
+  List<Label> get defaultLabels => labelRepository.getDefaultLabels();
 
   // Getter for custom labels
-  List<Label> get customLabels =>
-      _labels.where((label) => !label.isDefault).toList();
+  List<Label> get customLabels => labelRepository.getCustomLabels();
 
   // Getter for selected label IDs
   List<String> get selectedLabelIds => List.unmodifiable(_selectedLabelIds);
 
   // Getter for selected labels (Label objects)
-  List<Label> get selectedLabels =>
-      _labels.where((label) => _selectedLabelIds.contains(label.id)).toList();
+  List<Label> get selectedLabels {
+    // Get the latest labels from the repository
+    final allLabels = labelRepository.getAll();
+    return allLabels
+        .where((label) => _selectedLabelIds.contains(label.id))
+        .toList();
+  }
 
   // Toggle a label in the filter (add if not present, remove if present)
   void toggleLabelFilter(String labelId) {
@@ -490,7 +484,10 @@ class SubscriptionProvider with ChangeNotifier {
 
       // Queue for sync if provider is available
       if (syncProvider != null) {
-        await syncProvider!.queueCreateSubscriptionPayment(newPayment, subscriptionId);
+        await syncProvider!.queueCreateSubscriptionPayment(
+          newPayment,
+          subscriptionId,
+        );
       }
 
       notifyListeners();
@@ -537,7 +534,10 @@ class SubscriptionProvider with ChangeNotifier {
 
       // Queue for sync if provider is available
       if (syncProvider != null) {
-        await syncProvider!.queueUpdateSubscriptionPayment(updatedPayment, subscriptionId);
+        await syncProvider!.queueUpdateSubscriptionPayment(
+          updatedPayment,
+          subscriptionId,
+        );
       }
 
       notifyListeners();
@@ -573,7 +573,10 @@ class SubscriptionProvider with ChangeNotifier {
 
       // Queue for sync if provider is available
       if (syncProvider != null && currentDetail.id == updatedDetail.id) {
-        await syncProvider!.queueUpdateSubscriptionPayment(updatedDetail, subscriptionId);
+        await syncProvider!.queueUpdateSubscriptionPayment(
+          updatedDetail,
+          subscriptionId,
+        );
       }
 
       notifyListeners();
@@ -616,7 +619,10 @@ class SubscriptionProvider with ChangeNotifier {
 
       // Queue for sync if provider is available
       if (syncProvider != null) {
-        await syncProvider!.queueCreateSubscriptionPayment(newPayment, subscriptionId);
+        await syncProvider!.queueCreateSubscriptionPayment(
+          newPayment,
+          subscriptionId,
+        );
       }
 
       notifyListeners();
@@ -643,7 +649,10 @@ class SubscriptionProvider with ChangeNotifier {
 
       // Queue for sync if provider is available
       if (syncProvider != null) {
-        await syncProvider!.queueDeleteSubscriptionPayment(paymentId, subscriptionId);
+        await syncProvider!.queueDeleteSubscriptionPayment(
+          paymentId,
+          subscriptionId,
+        );
       }
 
       notifyListeners();
@@ -655,75 +664,7 @@ class SubscriptionProvider with ChangeNotifier {
     return uuid.v7();
   }
 
-  // Label management methods
-
-  // Add a new custom label
-  Future<void> addLabel(String name, String color) async {
-    final label = await labelRepository.add(name, color);
-    _labels.add(label);
-    notifyListeners();
-  }
-
-  // Update an existing label
-  Future<void> updateLabel(Label label) async {
-    await labelRepository.update(label);
-    final index = _labels.indexWhere((l) => l.id == label.id);
-    if (index >= 0) {
-      _labels[index] = label;
-
-      // Update all subscriptions that use this label
-      for (var subscription in _subscriptions) {
-        final labelIndex = subscription.labels.indexWhere(
-          (l) => l.id == label.id,
-        );
-        if (labelIndex >= 0) {
-          final updatedLabels = List<Label>.from(subscription.labels);
-          updatedLabels[labelIndex] = label;
-
-          final updatedSubscription = subscription.copyWith(
-            labels: updatedLabels,
-          );
-          await subscriptionRepository.update(updatedSubscription);
-
-          final subscriptionIndex = _subscriptions.indexWhere(
-            (s) => s.id == subscription.id,
-          );
-          if (subscriptionIndex >= 0) {
-            _subscriptions[subscriptionIndex] = updatedSubscription;
-          }
-        }
-      }
-
-      notifyListeners();
-    }
-  }
-
-  // Delete a custom label
-  Future<void> deleteLabel(String id) async {
-    await labelRepository.delete(id);
-    _labels.removeWhere((label) => label.id == id);
-
-    // Remove the label from all subscriptions
-    for (var subscription in _subscriptions) {
-      final hasLabel = subscription.labels.any((label) => label.id == id);
-      if (hasLabel) {
-        final updatedLabels = subscription.labels
-            .where((label) => label.id != id)
-            .toList();
-        final updatedSubscription = subscription.copyWith(
-          labels: updatedLabels,
-        );
-        await subscriptionRepository.update(updatedSubscription);
-
-        final index = _subscriptions.indexWhere((s) => s.id == subscription.id);
-        if (index >= 0) {
-          _subscriptions[index] = updatedSubscription;
-        }
-      }
-    }
-
-    notifyListeners();
-  }
+  // Label management methods have been moved to LabelProvider
 
   // Update subscription labels
   Future<void> updateSubscriptionLabels(

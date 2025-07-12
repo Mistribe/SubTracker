@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:subscription_tracker/models/subscription_state.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/family_member_provider.dart';
+import '../providers/label_provider.dart';
 import '../models/subscription.dart';
 import '../models/label.dart';
 import '../models/currency.dart';
@@ -387,8 +388,9 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
 
   // Build label chips for selection
   List<Widget> _buildLabelChips() {
-    final provider = Provider.of<SubscriptionProvider>(context);
-    final allLabels = provider.labels;
+    final labelProvider = Provider.of<LabelProvider>(context);
+    // Get the latest labels from the provider
+    final allLabels = labelProvider.labels;
 
     return allLabels.map((label) {
       final isSelected = _selectedLabels.any(
@@ -513,7 +515,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
               if (name.isNotEmpty) {
                 final colorHex =
                     '#${selectedColor.value.toARGB32().toRadixString(16).substring(2)}';
-                Provider.of<SubscriptionProvider>(
+                Provider.of<LabelProvider>(
                   context,
                   listen: false,
                 ).addLabel(name, colorHex).then((_) {

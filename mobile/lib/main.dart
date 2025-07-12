@@ -10,6 +10,7 @@ import 'providers/subscription_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/family_member_provider.dart';
 import 'providers/sync_provider.dart';
+import 'providers/label_provider.dart';
 import 'repositories/subscription_repository.dart';
 import 'repositories/settings_repository.dart';
 import 'repositories/label_repository.dart';
@@ -84,6 +85,13 @@ class MyApp extends StatelessWidget {
             labelRepository.setSyncProvider(syncProvider);
             return syncProvider;
           },
+        ),
+        // LabelProvider must be created before SubscriptionProvider
+        ChangeNotifierProvider(
+          create: (context) => LabelProvider(
+            labelRepository: labelRepository,
+            syncProvider: Provider.of<SyncProvider>(context, listen: false),
+          ),
         ),
         ChangeNotifierProvider(
           create: (_) => SubscriptionProvider(

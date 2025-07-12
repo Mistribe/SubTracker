@@ -122,7 +122,7 @@ class ApiService {
             .map((member) => member.id)
             .toList(),
         'labels': subscription.labels.map((label) => label.id).toList(),
-        'updated_at': DateTime.now().toIso8601String(),
+        'updated_at': subscription.updatedAt.toUtc().toIso8601String(),
       };
 
       final response = await _httpClient.put(
