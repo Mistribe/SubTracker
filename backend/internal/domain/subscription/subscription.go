@@ -26,7 +26,8 @@ type Subscription struct {
 	isDirty       bool
 }
 
-func NewSubscription(id uuid.UUID,
+func NewSubscription(
+	id uuid.UUID,
 	name string,
 	payments []Payment,
 	labels []uuid.UUID,
@@ -52,7 +53,8 @@ func NewSubscription(id uuid.UUID,
 	return result.Success(sub)
 }
 
-func NewSubscriptionWithoutValidation(id uuid.UUID,
+func NewSubscriptionWithoutValidation(
+	id uuid.UUID,
 	name string,
 	payments []Payment,
 	labels []uuid.UUID,
@@ -243,136 +245,4 @@ func (s *Subscription) Equal(other Subscription) bool {
 	}
 
 	return true
-}
-
-type Payment struct {
-	id        uuid.UUID
-	price     float64
-	startDate time.Time
-	endDate   *time.Time
-	months    int
-	currency  string
-	createdAt time.Time
-	updatedAt time.Time
-	isDirty   bool
-}
-
-func NewPayment(id uuid.UUID,
-	price float64,
-	startDate time.Time,
-	endDate option.Option[time.Time],
-	months int,
-	currency string,
-	createdAt,
-	updatedAt time.Time) result.Result[Payment] {
-	payment := NewPaymentWithoutValidation(id, price, startDate, endDate, months, currency, createdAt, updatedAt)
-	if err := payment.Validate(); err != nil {
-		return result.Fail[Payment](err)
-	}
-	return result.Success(payment)
-}
-
-func NewPaymentWithoutValidation(id uuid.UUID,
-	price float64,
-	startDate time.Time,
-	endDate option.Option[time.Time],
-	months int,
-	currency string,
-	createdAt,
-	updatedAt time.Time) Payment {
-	return Payment{
-		id:        id,
-		price:     price,
-		startDate: startDate.UTC().Truncate(24 * time.Hour),
-		endDate: endDate.Transform(func(v time.Time) time.Time {
-			return v.UTC().Truncate(24 * time.Hour)
-		}).Value(),
-		months:    months,
-		currency:  currency,
-		createdAt: createdAt.UTC(),
-		updatedAt: updatedAt.UTC(),
-		isDirty:   true,
-	}
-}
-
-func (p *Payment) Id() uuid.UUID {
-	return p.id
-}
-
-func (p *Payment) Price() float64 {
-	return p.price
-}
-
-func (p *Payment) StartDate() time.Time {
-	return p.startDate
-}
-
-func (p *Payment) EndDate() option.Option[time.Time] {
-	return option.New(p.endDate)
-}
-
-func (p *Payment) Months() int {
-	return p.months
-}
-
-func (p *Payment) Currency() string {
-	return p.currency
-}
-
-func (p *Payment) CreatedAt() time.Time {
-	return p.createdAt
-}
-
-func (p *Payment) UpdatedAt() time.Time {
-	return p.updatedAt
-}
-
-func (p *Payment) Validate() error {
-	if p.endDate != nil {
-		if p.endDate.Before(p.startDate) {
-			return ErrPaymentCannotEndBeforeStart
-		}
-	}
-
-	return nil
-}
-
-func (p *Payment) IsDirty() bool {
-	return p.isDirty
-}
-
-func (p *Payment) Clean() {
-	p.isDirty = false
-}
-
-func (p *Payment) SetPrice(price float64) {
-	p.price = price
-	p.isDirty = true
-}
-
-func (p *Payment) SetStartDate(date time.Time) {
-	p.startDate = date.UTC().Truncate(24 * time.Hour)
-	p.isDirty = true
-}
-
-func (p *Payment) SetEndDate(date option.Option[time.Time]) {
-	p.endDate = date.Transform(func(v time.Time) time.Time {
-		return v.UTC().Truncate(24 * time.Hour)
-	}).Value()
-	p.isDirty = true
-}
-
-func (p *Payment) SetMonths(months int) {
-	p.months = months
-	p.isDirty = true
-}
-
-func (p *Payment) SetCurrency(currency string) {
-	p.currency = currency
-	p.isDirty = true
-}
-
-func (p *Payment) SetUpdatedAt(updatedAt time.Time) {
-	p.updatedAt = updatedAt
-	p.isDirty = true
 }
