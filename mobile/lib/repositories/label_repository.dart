@@ -2,7 +2,6 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../models/label.dart';
-import '../models/subscription.dart';
 import '../providers/sync_provider.dart';
 
 /// Repository for handling label data persistence

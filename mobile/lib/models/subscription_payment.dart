@@ -135,8 +135,8 @@ class SubscriptionPayment {
     return {
       'id': id,
       'price': price,
-      'start_date': startDate.millisecondsSinceEpoch,
-      'end_date': endDate?.millisecondsSinceEpoch,
+      'start_date': startDate.toIso8601String(),
+      'end_date': endDate?.toIso8601String(),
       'months': months,
       'currency': currency,
       'created_at': createdAt.toIso8601String(),
@@ -147,10 +147,12 @@ class SubscriptionPayment {
   factory SubscriptionPayment.fromJson(Map<String, dynamic> json) {
     return SubscriptionPayment(
       id: json['id'],
-      price: json['price'],
-      startDate: DateTime.fromMillisecondsSinceEpoch(json['start_date']),
+      price: (json['price'] is int)
+          ? (json['price'] as int).toDouble()
+          : json['price'],
+      startDate: DateTime.parse(json['start_date']),
       endDate: json['end_date'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(json['end_date'])
+          ? DateTime.parse(json['end_date'])
           : null,
       months: json['months'],
       currency: json['currency'] ?? Currency.USD.code,

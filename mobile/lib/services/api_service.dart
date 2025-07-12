@@ -133,7 +133,8 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        return Subscription.fromJson(json.decode(response.body));
+        final responseBody = json.decode(response.body);
+        return Subscription.fromJson(responseBody);
       } else if (response.statusCode == 404) {
         final errorData = json.decode(response.body);
         throw Exception(errorData['message'] ?? 'Subscription not found');
