@@ -70,7 +70,7 @@ class SyncService {
   bool _isSyncing = false;
   bool _isOnline = false;
 
-  StreamSubscription<ConnectivityResult>? _connectivitySubscription;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
   Timer? _syncTimer;
 
   static const String _pendingOperationsKey = 'pending_sync_operations';
@@ -102,9 +102,10 @@ class SyncService {
 
     // Listen for connectivity changes
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen((
-      result,
+        List<ConnectivityResult> results,
     ) {
       final wasOnline = _isOnline;
+      final result = results.isNotEmpty ? results.first : ConnectivityResult.none;
       _isOnline = result != ConnectivityResult.none;
 
       // If we just came online, trigger a sync

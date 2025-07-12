@@ -455,6 +455,28 @@ class ApiService {
     }
   }
 
+  Future<List<Label>> getDefaultLabels() async {
+    try {
+      final response = await _httpClient.get(
+        Uri.parse('$baseUrl/labels/default'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((json) => Label.fromJson(json)).toList();
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(
+          errorData['message'] ??
+              'Failed to load labels: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
   /// Get label by ID
   /// GET /labels/{id}
   Future<Label> getLabel(String id) async {
@@ -488,8 +510,7 @@ class ApiService {
       final updatePayload = {
         'name': label.name,
         'color': label.color,
-        'is_default': label.isDefault,
-        'updated_at': DateTime.now().toIso8601String(),
+        'updated_at': label.updatedAt.toUtc().toIso8601String(),
       };
 
       final response = await _httpClient.put(
@@ -547,10 +568,10 @@ class ApiService {
     try {
       // Create label payload according to createLabelModel in swagger
       final labelPayload = {
+        'id': label.id,
         'name': label.name,
         'color': label.color,
-        'is_default': label.isDefault,
-        'created_at': DateTime.now().toIso8601String(),
+        'created_at': label.createdAt.toUtc().toIso8601String(),
       };
 
       final response = await _httpClient.post(

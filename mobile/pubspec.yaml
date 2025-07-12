@@ -52,7 +52,7 @@ dependencies:
 
   # Network and Sync
   http: ^1.2.0
-  connectivity_plus: ^5.0.2
+  connectivity_plus: ^6.1.4
   shared_preferences: ^2.2.2
 
 dev_dependencies:
