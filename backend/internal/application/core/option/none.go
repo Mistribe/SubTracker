@@ -37,3 +37,7 @@ func (n none[TValue]) ValueWithDefault(value TValue) TValue {
 func (n none[TValue]) Transform(f func(TValue) TValue) Option[TValue] {
 	return n
 }
+
+func (n none[TValue]) Equal(other Option[TValue]) bool {
+	return other.IsNone()
+}

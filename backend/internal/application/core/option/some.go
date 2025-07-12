@@ -40,3 +40,7 @@ func (s some[TValue]) ValueWithDefault(_ TValue) TValue {
 func (s some[TValue]) Transform(f func(TValue) TValue) Option[TValue] {
 	return Some(f(s.value))
 }
+
+func (s some[TValue]) Equal(other Option[TValue]) bool {
+	return other.IsSome() && s.value == other.getValue()
+}

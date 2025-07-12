@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/oleexo/subtracker/internal/application/core/option"
 	"github.com/oleexo/subtracker/internal/application/core/result"
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/internal/domain/label"
@@ -33,9 +34,24 @@ func NewCreateSubscriptionCommandHandler(subscriptionRepository subscription.Rep
 
 func (h CreateSubscriptionCommandHandler) Handle(ctx context.Context,
 	command CreateSubscriptionCommand) result.Result[subscription.Subscription] {
-	if err := h.assertNotExists(ctx, command.Subscription.Id()); err != nil {
+	opt, err := h.subscriptionRepository.Get(ctx, command.Subscription.Id())
+	if err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
+
+	return option.Match(opt, func(in subscription.Subscription) result.Result[subscription.Subscription] {
+		if in.Equal(command.Subscription) {
+			return result.Success(in)
+		}
+		return result.Fail[subscription.Subscription](subscription.ErrSubscriptionAlreadyExists)
+	}, func() result.Result[subscription.Subscription] {
+		return h.createSubscription(ctx, command)
+	})
+
+}
+
+func (h CreateSubscriptionCommandHandler) createSubscription(ctx context.Context,
+	command CreateSubscriptionCommand) result.Result[subscription.Subscription] {
 	if err := h.ensureLabelsExists(ctx, command.Subscription.Labels()); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
@@ -77,16 +93,4 @@ func (h CreateSubscriptionCommandHandler) ensureLabelsExists(ctx context.Context
 		return nil
 	}
 	return label.ErrLabelNotFound
-}
-
-func (h CreateSubscriptionCommandHandler) assertNotExists(ctx context.Context, id uuid.UUID) error {
-	sub, err := h.subscriptionRepository.Get(ctx, id)
-	if err != nil {
-		return err
-	}
-	if sub != nil {
-		return subscription.ErrSubscriptionAlreadyExists
-	}
-
-	return nil
 }

@@ -145,6 +145,7 @@ func (s SubscriptionCreateEndpoint) Handle(c *gin.Context) {
 			r := s.handler.Handle(c, cmd)
 			handleResponse(c,
 				r,
+				withStatus[subscription.Subscription](http.StatusCreated),
 				withMapping[subscription.Subscription](func(sub subscription.Subscription) any {
 					return newSubscriptionModel(sub)
 				}))

@@ -12,6 +12,7 @@ type Option[TValue any] interface {
 	Value() *TValue
 	ValueWithDefault(defaultValue TValue) TValue
 	Transform(func(TValue) TValue) Option[TValue]
+	Equal(payer Option[TValue]) bool
 }
 
 func New[T any](in *T) Option[T] {

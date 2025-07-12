@@ -33,12 +33,16 @@ func (s SubscriptionEndpointGroup) Middlewares() []gin.HandlerFunc {
 func NewSubscriptionEndpointGroup(
 	getEndpoint *SubscriptionGetEndpoint,
 	getAllEndpoint *SubscriptionGetAllEndpoint,
-	createEndpoint *SubscriptionCreateEndpoint) *SubscriptionEndpointGroup {
+	createEndpoint *SubscriptionCreateEndpoint,
+	updateEndpoint *SubscriptionUpdateEndpoint,
+	deleteEndpoint *SubscriptionDeleteEndpoint) *SubscriptionEndpointGroup {
 	return &SubscriptionEndpointGroup{
 		routes: []ginfx.Route{
 			getEndpoint,
 			getAllEndpoint,
 			createEndpoint,
+			updateEndpoint,
+			deleteEndpoint,
 		},
 	}
 }

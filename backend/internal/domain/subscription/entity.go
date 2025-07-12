@@ -203,6 +203,49 @@ func (s *Subscription) Validate() error {
 	return nil
 }
 
+func (s *Subscription) Equal(other Subscription) bool {
+	if s.id != other.id || s.name != other.name {
+		return false
+	}
+
+	if len(s.payments) != len(other.payments) {
+		return false
+	}
+	for i := range s.payments {
+		if s.payments[i] != other.payments[i] {
+			return false
+		}
+	}
+
+	if len(s.labels) != len(other.labels) {
+		return false
+	}
+	for i := range s.labels {
+		if s.labels[i] != other.labels[i] {
+			return false
+		}
+	}
+
+	if len(s.familyMembers) != len(other.familyMembers) {
+		return false
+	}
+	for i := range s.familyMembers {
+		if s.familyMembers[i] != other.familyMembers[i] {
+			return false
+		}
+	}
+
+	if !s.payer.Equal(other.payer) {
+		return false
+	}
+
+	if !s.createdAt.Equal(other.createdAt) || !s.updatedAt.Equal(other.updatedAt) {
+		return false
+	}
+
+	return true
+}
+
 type Payment struct {
 	id        uuid.UUID
 	price     float64
@@ -247,8 +290,8 @@ func NewPaymentWithoutValidation(id uuid.UUID,
 		}).Value(),
 		months:    months,
 		currency:  currency,
-		createdAt: createdAt.UTC().Truncate(24 * time.Hour),
-		updatedAt: updatedAt,
+		createdAt: createdAt.UTC(),
+		updatedAt: updatedAt.UTC(),
 		isDirty:   true,
 	}
 }
