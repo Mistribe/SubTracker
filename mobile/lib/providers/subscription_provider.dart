@@ -39,7 +39,6 @@ class SubscriptionProvider with ChangeNotifier {
   final SubscriptionRepository subscriptionRepository;
   final SettingsRepository? settingsRepository;
   final LabelRepository labelRepository;
-  final SyncProvider? syncProvider;
   final List<String> _selectedLabelIds = [];
   List<Subscription> _subscriptions = [];
   bool _showInactiveSubscriptions = false;
@@ -51,7 +50,6 @@ class SubscriptionProvider with ChangeNotifier {
     required this.subscriptionRepository,
     required this.labelRepository,
     this.settingsRepository,
-    this.syncProvider,
   }) {
     // Load subscriptions from repository
     _loadPayments();
@@ -488,15 +486,7 @@ class SubscriptionProvider with ChangeNotifier {
       subscription.addPaymentDetail(newPayment);
 
       // Persist to storage
-      await subscriptionRepository.update(subscription);
-
-      // Queue for sync if provider is available
-      if (syncProvider != null) {
-        await syncProvider!.queueCreateSubscriptionPayment(
-          newPayment,
-          subscriptionId,
-        );
-      }
+      await subscriptionRepository.createPayment(subscription.id, newPayment);
 
       notifyListeners();
     }
@@ -538,15 +528,10 @@ class SubscriptionProvider with ChangeNotifier {
       subscription.setPaymentDetail(updatedPayment);
 
       // Persist to storage
-      await subscriptionRepository.update(subscription);
-
-      // Queue for sync if provider is available
-      if (syncProvider != null) {
-        await syncProvider!.queueUpdateSubscriptionPayment(
-          updatedPayment,
-          subscriptionId,
-        );
-      }
+      await subscriptionRepository.updatePayment(
+        subscriptionId,
+        updatedPayment,
+      );
 
       notifyListeners();
     }
@@ -577,15 +562,10 @@ class SubscriptionProvider with ChangeNotifier {
       final updatedDetail = subscription.getLastPaymentDetail();
 
       // Persist to storage
-      await subscriptionRepository.update(subscription);
-
-      // Queue for sync if provider is available
-      if (syncProvider != null && currentDetail.id == updatedDetail.id) {
-        await syncProvider!.queueUpdateSubscriptionPayment(
-          updatedDetail,
-          subscriptionId,
-        );
-      }
+      await subscriptionRepository.updatePayment(
+        subscription.id,
+        updatedDetail,
+      );
 
       notifyListeners();
     }
@@ -623,15 +603,7 @@ class SubscriptionProvider with ChangeNotifier {
       subscription.addPaymentDetail(newPayment);
 
       // Persist to storage
-      await subscriptionRepository.update(subscription);
-
-      // Queue for sync if provider is available
-      if (syncProvider != null) {
-        await syncProvider!.queueCreateSubscriptionPayment(
-          newPayment,
-          subscriptionId,
-        );
-      }
+      await subscriptionRepository.createPayment(subscription.id, newPayment);
 
       notifyListeners();
     }
@@ -655,13 +627,7 @@ class SubscriptionProvider with ChangeNotifier {
       // Persist to storage
       await subscriptionRepository.update(subscription);
 
-      // Queue for sync if provider is available
-      if (syncProvider != null) {
-        await syncProvider!.queueDeleteSubscriptionPayment(
-          paymentId,
-          subscriptionId,
-        );
-      }
+      await subscriptionRepository.deletePayment(subscription.id, paymentId);
 
       notifyListeners();
     }

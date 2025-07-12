@@ -210,9 +210,9 @@ class ApiService {
         'price': payment.price,
         'currency': payment.currency,
         'months': payment.months,
-        'start_date': payment.startDate.toIso8601String(),
-        'end_date': payment.endDate?.toIso8601String(),
-        'created_at': payment.createdAt.toIso8601String(),
+        'start_date': payment.startDate.toUtc().toIso8601String(),
+        'end_date': payment.endDate?.toUtc().toIso8601String(),
+        'created_at': payment.createdAt.toUtc().toIso8601String(),
       };
 
       final response = await _httpClient.post(
@@ -254,9 +254,9 @@ class ApiService {
         'price': payment.price,
         'currency': payment.currency,
         'months': payment.months,
-        'start_date': payment.startDate.toIso8601String(),
-        'end_date': payment.endDate?.toIso8601String(),
-        'updated_at': payment.updatedAt.toIso8601String(),
+        'start_date': payment.startDate.toUtc().toIso8601String(),
+        'end_date': payment.endDate?.toUtc().toIso8601String(),
+        'updated_at': payment.updatedAt.toUtc().toIso8601String(),
       };
 
       final response = await _httpClient.put(

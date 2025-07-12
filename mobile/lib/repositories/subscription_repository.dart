@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:subscription_tracker/models/subscription_payment.dart';
 import '../models/subscription.dart';
 import '../providers/sync_provider.dart';
 
@@ -49,6 +50,27 @@ class SubscriptionRepository {
     // Queue for sync if provider is available
     if (_syncProvider != null && withSync) {
       await _syncProvider!.queueUpdateSubscription(subscription);
+    }
+  }
+
+  Future<void> createPayment(String id, SubscriptionPayment payment) async {
+    // Queue for sync if provider is available
+    if (_syncProvider != null) {
+      await _syncProvider!.queueCreateSubscriptionPayment(payment, id);
+    }
+  }
+
+  Future<void> updatePayment(String id, SubscriptionPayment payment) async {
+    // Queue for sync if provider is available
+    if (_syncProvider != null) {
+      await _syncProvider!.queueUpdateSubscriptionPayment(payment, id);
+    }
+  }
+
+  Future<void> deletePayment(String id, String paymentId) async {
+    // Queue for sync if provider is available
+    if (_syncProvider != null) {
+      await _syncProvider!.queueDeleteSubscriptionPayment(paymentId, id);
     }
   }
 
