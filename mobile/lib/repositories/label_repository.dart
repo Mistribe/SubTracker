@@ -90,7 +90,7 @@ class LabelRepository {
   }
 
   /// Delete a label
-  Future<void> delete(String id) async {
+  Future<void> delete(String id, {bool withSync = true}) async {
     // Check if the label is a default label
     final existingLabel = get(id);
     if (existingLabel != null && existingLabel.isDefault) {
@@ -101,7 +101,7 @@ class LabelRepository {
     await _box.delete(id);
 
     // Queue for sync if provider is available
-    if (_syncProvider != null) {
+    if (_syncProvider != null && withSync) {
       await _syncProvider!.queueDeleteLabel(id);
     }
   }

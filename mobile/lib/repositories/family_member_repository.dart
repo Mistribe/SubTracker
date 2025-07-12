@@ -47,23 +47,23 @@ class FamilyMemberRepository {
   }
 
   // Update an existing family member
-  Future<void> update(FamilyMember familyMember) async {
+  Future<void> update(FamilyMember familyMember, {bool withSync = true}) async {
     // Save to local storage
     await _box.put(familyMember.id, familyMember);
 
     // Queue for sync if provider is available
-    if (_syncProvider != null) {
+    if (_syncProvider != null && withSync) {
       await _syncProvider!.queueUpdateFamilyMember(familyMember);
     }
   }
 
   // Delete a family member
-  Future<void> delete(String id) async {
+  Future<void> delete(String id, {bool withSync = true}) async {
     // Delete from local storage
     await _box.delete(id);
 
     // Queue for sync if provider is available
-    if (_syncProvider != null) {
+    if (_syncProvider != null && withSync) {
       await _syncProvider!.queueDeleteFamilyMember(id);
     }
   }

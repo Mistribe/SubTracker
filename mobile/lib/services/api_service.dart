@@ -379,7 +379,7 @@ class ApiService {
       final updatePayload = {
         'name': member.name,
         'id_kid': member.isKid, // Note: field is id_kid in the API, not is_kid
-        'updated_at': DateTime.now().toIso8601String(),
+        'updated_at': member.updatedAt.toUtc().toIso8601String(),
       };
 
       final response = await _httpClient.put(

@@ -102,10 +102,12 @@ class SyncService {
 
     // Listen for connectivity changes
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen((
-        List<ConnectivityResult> results,
+      List<ConnectivityResult> results,
     ) {
       final wasOnline = _isOnline;
-      final result = results.isNotEmpty ? results.first : ConnectivityResult.none;
+      final result = results.isNotEmpty
+          ? results.first
+          : ConnectivityResult.none;
       _isOnline = result != ConnectivityResult.none;
 
       // If we just came online, trigger a sync
@@ -540,16 +542,30 @@ class SyncService {
       }
     }
 
+    // Remove local labels that don't exist in remote data
+    for (final localLabel in localLabels) {
+      if (!remoteLabels.any((r) => r.id == localLabel.id)) {
+        await _labelRepository.delete(localLabel.id, withSync: false);
+      }
+    }
+
     // Update local storage with remote family members
     for (final remoteMember in remoteFamilyMembers) {
       final localMember = localFamilyMembers.firstWhere(
         (m) => m.id == remoteMember.id,
-        orElse: () => remoteMember,
+        orElse: () => FamilyMember.empty(),
       );
 
       // If the remote member is newer, update local
-      if (localMember != remoteMember) {
-        await _familyMemberRepository.update(remoteMember);
+      if (localMember.updatedAt.isBefore(remoteMember.updatedAt)) {
+        await _familyMemberRepository.update(remoteMember, withSync: false);
+      }
+    }
+
+    // Remove local labels that don't exist in remote data
+    for (final localMember in localFamilyMembers) {
+      if (!remoteFamilyMembers.any((r) => r.id == localMember.id)) {
+        await _familyMemberRepository.delete(localMember.id, withSync: false);
       }
     }
   }

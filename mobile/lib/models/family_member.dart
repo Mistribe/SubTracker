@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
 
 part 'family_member.g.dart';
 
@@ -41,7 +42,8 @@ class FamilyMember extends HiveObject {
       name: name ?? this.name,
       isKid: isKid ?? this.isKid,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? DateTime.now(), // Always update the updatedAt field
+      updatedAt:
+          updatedAt ?? DateTime.now(), // Always update the updatedAt field
     );
   }
 
@@ -67,6 +69,17 @@ class FamilyMember extends HiveObject {
       updatedAt: json['updatedAt'] != null
           ? DateTime.parse(json['updatedAt'])
           : null,
+    );
+  }
+
+  factory FamilyMember.empty() {
+    const uuid = Uuid();
+    return FamilyMember(
+      id: uuid.v7(),
+      name: '',
+      isKid: false,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(0),
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(0),
     );
   }
 }
