@@ -9,12 +9,8 @@ import '../providers/sync_provider.dart';
 /// It uses the label repository for data persistence.
 class LabelProvider with ChangeNotifier {
   final LabelRepository labelRepository;
-  final SyncProvider? syncProvider;
 
-  LabelProvider({
-    required this.labelRepository,
-    this.syncProvider,
-  });
+  LabelProvider({required this.labelRepository});
 
   /// Get all labels
   List<Label> get labels => List.unmodifiable(labelRepository.getAll());

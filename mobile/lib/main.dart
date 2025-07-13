@@ -88,16 +88,12 @@ class MyApp extends StatelessWidget {
         ),
         // LabelProvider must be created before SubscriptionProvider
         ChangeNotifierProvider(
-          create: (context) => LabelProvider(
-            labelRepository: labelRepository,
-            syncProvider: Provider.of<SyncProvider>(context, listen: false),
-          ),
+          create: (context) => LabelProvider(labelRepository: labelRepository),
         ),
         ChangeNotifierProvider(
           create: (_) => SubscriptionProvider(
             subscriptionRepository: subscriptionRepository,
             settingsRepository: settingsRepository,
-            labelRepository: labelRepository,
           ),
         ),
         ChangeNotifierProvider(

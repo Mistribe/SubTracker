@@ -4,58 +4,41 @@ import '../repositories/family_member_repository.dart';
 
 class FamilyMemberProvider with ChangeNotifier {
   final FamilyMemberRepository familyMemberRepository;
-  List<FamilyMember> _familyMembers = [];
 
-  FamilyMemberProvider({
-    required this.familyMemberRepository,
-  }) {
-    // Load family members from repository
-    _loadFamilyMembers();
-  }
-
-  // Load family members from repository
-  Future<void> _loadFamilyMembers() async {
-    _familyMembers = familyMemberRepository.getAll();
-    notifyListeners();
-  }
+  FamilyMemberProvider({required this.familyMemberRepository});
 
   // Getter for the family members list
-  List<FamilyMember> get familyMembers => List.unmodifiable(_familyMembers);
+  List<FamilyMember> get familyMembers =>
+      List.unmodifiable(familyMemberRepository.getAll());
 
   // Check if there are any family members
-  bool get hasFamilyMembers => _familyMembers.isNotEmpty;
+  bool get hasFamilyMembers => familyMemberRepository.getAll().isNotEmpty;
 
   // Add a new family member
-  Future<void> addFamilyMember(String name, {bool isKid = false}) async {
+  Future<FamilyMember> addFamilyMember(
+    String name, {
+    bool isKid = false,
+  }) async {
     final familyMember = await familyMemberRepository.add(name, isKid: isKid);
-    _familyMembers.add(familyMember);
     notifyListeners();
+    return familyMember;
   }
 
   // Update an existing family member
   Future<void> updateFamilyMember(String id, String name, {bool? isKid}) async {
-    final index = _familyMembers.indexWhere(
-      (familyMember) => familyMember.id == id,
-    );
-
-    if (index >= 0) {
-      final familyMember = _familyMembers[index];
-      final updatedFamilyMember = familyMember.copyWith(
-        name: name,
-        isKid: isKid,
-      );
-
-      await familyMemberRepository.update(updatedFamilyMember);
-
-      _familyMembers[index] = updatedFamilyMember;
-      notifyListeners();
+    final familyMember = familyMemberRepository.get(id);
+    if (familyMember == null) {
+      return;
     }
+    final updatedFamilyMember = familyMember.copyWith(name: name, isKid: isKid);
+
+    await familyMemberRepository.update(updatedFamilyMember);
+
+    notifyListeners();
   }
 
   // Remove a family member
   Future<void> removeFamilyMember(String id) async {
-    _familyMembers.removeWhere((familyMember) => familyMember.id == id);
-
     // Remove from storage
     await familyMemberRepository.delete(id);
 
@@ -66,14 +49,6 @@ class FamilyMemberProvider with ChangeNotifier {
   FamilyMember? getFamilyMemberById(String? id) {
     if (id == null) return null;
 
-    final index = _familyMembers.indexWhere(
-      (familyMember) => familyMember.id == id,
-    );
-
-    if (index >= 0) {
-      return _familyMembers[index];
-    }
-
-    return null;
+    return familyMemberRepository.get(id);
   }
 }

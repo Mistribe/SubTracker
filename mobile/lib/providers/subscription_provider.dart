@@ -38,9 +38,9 @@ const String kFamilyCommonAccountId = 'family_common_account';
 class SubscriptionProvider with ChangeNotifier {
   final SubscriptionRepository subscriptionRepository;
   final SettingsRepository? settingsRepository;
-  final LabelRepository labelRepository;
+
+  // Filters
   final List<String> _selectedLabelIds = [];
-  List<Subscription> _subscriptions = [];
   bool _showInactiveSubscriptions = false;
   SubscriptionSortOption _sortOption = SubscriptionSortOption.none;
   String? _selectedFamilyMemberId;
@@ -48,11 +48,8 @@ class SubscriptionProvider with ChangeNotifier {
 
   SubscriptionProvider({
     required this.subscriptionRepository,
-    required this.labelRepository,
     this.settingsRepository,
   }) {
-    // Load subscriptions from repository
-    _loadPayments();
     // Load settings if repository is provided
     if (settingsRepository != null) {
       _loadSettings();
@@ -65,19 +62,14 @@ class SubscriptionProvider with ChangeNotifier {
     _defaultCurrency = settings.defaultCurrency;
   }
 
-  // Load subscriptions from repository
-  Future<void> _loadPayments() async {
-    _subscriptions = subscriptionRepository.getAll();
-    notifyListeners();
-  }
-
   // Getter for the subscriptions list
-  List<Subscription> get subscriptions => List.unmodifiable(_subscriptions);
+  List<Subscription> get subscriptions =>
+      List.unmodifiable(subscriptionRepository.getAll());
 
   // Getter for filtered subscriptions with optimized implementation
   List<Subscription> get filteredSubscriptions {
     // Apply all filters in a single pass
-    final filtered = _subscriptions.where((subscription) {
+    final filtered = subscriptions.where((subscription) {
       // Filter by active status
       if (!_showInactiveSubscriptions &&
           subscription.state == SubscriptionState.ended) {
@@ -187,26 +179,8 @@ class SubscriptionProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Getter for all labels
-  List<Label> get labels => List.unmodifiable(labelRepository.getAll());
-
-  // Getter for default labels
-  List<Label> get defaultLabels => labelRepository.getDefaultLabels();
-
-  // Getter for custom labels
-  List<Label> get customLabels => labelRepository.getCustomLabels();
-
   // Getter for selected label IDs
   List<String> get selectedLabelIds => List.unmodifiable(_selectedLabelIds);
-
-  // Getter for selected labels (Label objects)
-  List<Label> get selectedLabels {
-    // Get the latest labels from the repository
-    final allLabels = labelRepository.getAll();
-    return allLabels
-        .where((label) => _selectedLabelIds.contains(label.id))
-        .toList();
-  }
 
   // Toggle a label in the filter (add if not present, remove if present)
   void toggleLabelFilter(String labelId) {
@@ -272,7 +246,7 @@ class SubscriptionProvider with ChangeNotifier {
 
   // Calculate total monthly cost in the default currency (USD)
   double get totalMonthlyCost {
-    return _subscriptions.fold(
+    return subscriptions.fold(
       0,
       (sum, subscription) => sum + subscription.monthlyCost,
     );
@@ -280,7 +254,7 @@ class SubscriptionProvider with ChangeNotifier {
 
   // Calculate total monthly cost in the selected currency
   double get totalMonthlyCostInSelectedCurrency {
-    return _subscriptions.fold(0.0, (sum, subscription) {
+    return subscriptions.fold(0.0, (sum, subscription) {
       final detail = subscription.getLastPaymentDetail();
       if (detail.state != SubscriptionState.active) return sum;
 
@@ -318,14 +292,14 @@ class SubscriptionProvider with ChangeNotifier {
 
   // Get the count of active subscriptions (excluding stopped subscriptions)
   int get activePaymentsCount {
-    return _subscriptions
+    return subscriptions
         .where((subscription) => subscription.state == SubscriptionState.active)
         .length;
   }
 
   // Get the count of active subscriptions that have not started yet
   int get notStartedPaymentsCount {
-    return _subscriptions
+    return subscriptions
         .where(
           (subscription) => subscription.state == SubscriptionState.notStarted,
         )
@@ -334,7 +308,7 @@ class SubscriptionProvider with ChangeNotifier {
 
   // Calculate total amount spent across all subscriptions
   double get totalAmountSpent {
-    return _subscriptions.fold(
+    return subscriptions.fold(
       0,
       (sum, subscription) => sum + subscription.totalAmountSpent,
     );
@@ -403,9 +377,6 @@ class SubscriptionProvider with ChangeNotifier {
       payerFamilyMemberId: payerFamilyMemberId,
     );
 
-    // Add to local list
-    _subscriptions.add(subscription);
-
     // Persist to storage
     await subscriptionRepository.add(subscription);
 
@@ -414,11 +385,8 @@ class SubscriptionProvider with ChangeNotifier {
 
   // Remove a subscription
   Future<void> removePayment(String id) async {
-    _subscriptions.removeWhere((subscription) => subscription.id == id);
-
     // Remove from storage
     await subscriptionRepository.delete(id);
-
     notifyListeners();
   }
 
@@ -430,26 +398,23 @@ class SubscriptionProvider with ChangeNotifier {
     List<String> familyMemberIds,
     String? payerId,
   ) async {
-    final index = _subscriptions.indexWhere(
-      (subscription) => subscription.id == id,
+    final subscription = subscriptionRepository.get(id);
+
+    if (subscription == null) {
+      return;
+    }
+    final updatedSubscriptions = subscription.copyWith(
+      name: name,
+      userFamilyMemberIds: familyMemberIds,
+      payerFamilyMemberId: payerId,
+      labelIds: labelIds,
+      updatedAt: DateTime.now(),
     );
 
-    if (index >= 0) {
-      final subscription = _subscriptions[index];
+    // Persist to storage
+    await subscriptionRepository.update(updatedSubscriptions);
 
-      _subscriptions[index] = subscription.copyWith(
-        name: name,
-        userFamilyMemberIds: familyMemberIds,
-        payerFamilyMemberId: payerId,
-        labelIds: labelIds,
-        updatedAt: DateTime.now(),
-      );
-
-      // Persist to storage
-      await subscriptionRepository.update(subscription);
-
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   // Add a price change at a specific date
@@ -461,35 +426,32 @@ class SubscriptionProvider with ChangeNotifier {
     int? months,
     String? currency,
   }) async {
-    final index = _subscriptions.indexWhere(
-      (subscription) => subscription.id == subscriptionId,
+    final subscription = subscriptionRepository.get(subscriptionId);
+    if (subscription == null) {
+      return;
+    }
+
+    final previousDetail = subscription.getLastPaymentDetail();
+    // Update the current subscription detail with end date
+    subscription.setEndDateToCurrentPaymentDetail(effectiveDate);
+
+    // Create new subscription payment
+    final newPayment = SubscriptionPayment(
+      id: _generateId(),
+      price: newPrice,
+      startDate: effectiveDate,
+      endDate: endDate,
+      months: months ?? previousDetail.months,
+      currency: currency ?? previousDetail.currency,
     );
 
-    if (index >= 0) {
-      final subscription = _subscriptions[index];
+    // Add new subscription detail
+    subscription.addPaymentDetail(newPayment);
 
-      final previousDetail = subscription.getLastPaymentDetail();
-      // Update the current subscription detail with end date
-      subscription.setEndDateToCurrentPaymentDetail(effectiveDate);
+    // Persist to storage
+    await subscriptionRepository.createPayment(subscription.id, newPayment);
 
-      // Create new subscription payment
-      final newPayment = SubscriptionPayment(
-        id: _generateId(),
-        price: newPrice,
-        startDate: effectiveDate,
-        endDate: endDate,
-        months: months ?? previousDetail.months,
-        currency: currency ?? previousDetail.currency,
-      );
-
-      // Add new subscription detail
-      subscription.addPaymentDetail(newPayment);
-
-      // Persist to storage
-      await subscriptionRepository.createPayment(subscription.id, newPayment);
-
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   // Update a subscription history entry
@@ -502,39 +464,33 @@ class SubscriptionProvider with ChangeNotifier {
     DateTime? endDate,
     String? currency,
   }) async {
-    final index = _subscriptions.indexWhere(
-      (subscription) => subscription.id == subscriptionId,
+    final subscription = subscriptionRepository.get(subscriptionId);
+    if (subscription == null) {
+      return;
+    }
+
+    // Get the existing payment detail to preserve the currency if not provided
+    final existingDetail = subscription.findDetailById(subscriptionDetailId);
+    final detailCurrency =
+        currency ?? (existingDetail?.currency ?? _defaultCurrency);
+
+    // Create updated payment
+    final updatedPayment = SubscriptionPayment(
+      id: subscriptionDetailId,
+      price: newPrice,
+      startDate: startDate,
+      endDate: endDate,
+      months: months,
+      currency: detailCurrency,
     );
 
-    if (index >= 0) {
-      final subscription = _subscriptions[index];
+    // Update the subscription
+    subscription.setPaymentDetail(updatedPayment);
 
-      // Get the existing payment detail to preserve the currency if not provided
-      final existingDetail = subscription.findDetailById(subscriptionDetailId);
-      final detailCurrency =
-          currency ?? (existingDetail?.currency ?? _defaultCurrency);
+    // Persist to storage
+    await subscriptionRepository.updatePayment(subscriptionId, updatedPayment);
 
-      // Create updated payment
-      final updatedPayment = SubscriptionPayment(
-        id: subscriptionDetailId,
-        price: newPrice,
-        startDate: startDate,
-        endDate: endDate,
-        months: months,
-        currency: detailCurrency,
-      );
-
-      // Update the subscription
-      subscription.setPaymentDetail(updatedPayment);
-
-      // Persist to storage
-      await subscriptionRepository.updatePayment(
-        subscriptionId,
-        updatedPayment,
-      );
-
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   // Stop a subscription
@@ -542,33 +498,27 @@ class SubscriptionProvider with ChangeNotifier {
     String subscriptionId, {
     DateTime? stopDate,
   }) async {
-    final index = _subscriptions.indexWhere(
-      (subscription) => subscription.id == subscriptionId,
-    );
-
-    if (index >= 0) {
-      final subscription = _subscriptions[index];
-
-      // If stopDate is not provided, use the last subscription date
-      final effectiveStopDate = stopDate ?? subscription.lastPaymentDate;
-
-      // Get the current payment detail before updating it
-      final currentDetail = subscription.getLastPaymentDetail();
-
-      // Update the subscription
-      subscription.endCurrentPaymentDetail(effectiveStopDate);
-
-      // Get the updated payment detail
-      final updatedDetail = subscription.getLastPaymentDetail();
-
-      // Persist to storage
-      await subscriptionRepository.updatePayment(
-        subscription.id,
-        updatedDetail,
-      );
-
-      notifyListeners();
+    final subscription = subscriptionRepository.get(subscriptionId);
+    if (subscription == null) {
+      return;
     }
+
+    // If stopDate is not provided, use the last subscription date
+    final effectiveStopDate = stopDate ?? subscription.lastPaymentDate;
+
+    // Get the current payment detail before updating it
+    final currentDetail = subscription.getLastPaymentDetail();
+
+    // Update the subscription
+    subscription.endCurrentPaymentDetail(effectiveStopDate);
+
+    // Get the updated payment detail
+    final updatedDetail = subscription.getLastPaymentDetail();
+
+    // Persist to storage
+    await subscriptionRepository.updatePayment(subscription.id, updatedDetail);
+
+    notifyListeners();
   }
 
   // Reactivate a subscription at a specific date
@@ -580,33 +530,30 @@ class SubscriptionProvider with ChangeNotifier {
     DateTime? endDate,
     String? currency,
   }) async {
-    final index = _subscriptions.indexWhere(
-      (subscription) => subscription.id == subscriptionId,
+    final subscription = subscriptionRepository.get(subscriptionId);
+    if (subscription == null) {
+      return;
+    }
+
+    final previousDetail = subscription.getLastPaymentDetail();
+
+    // Create new subscription payment
+    final newPayment = SubscriptionPayment(
+      id: _generateId(),
+      price: price ?? previousDetail.price,
+      startDate: reactivationDate,
+      endDate: endDate,
+      months: months ?? previousDetail.months,
+      currency: currency ?? previousDetail.currency,
     );
 
-    if (index >= 0) {
-      final subscription = _subscriptions[index];
+    // Add to subscription
+    subscription.addPaymentDetail(newPayment);
 
-      final previousDetail = subscription.getLastPaymentDetail();
+    // Persist to storage
+    await subscriptionRepository.createPayment(subscription.id, newPayment);
 
-      // Create new subscription payment
-      final newPayment = SubscriptionPayment(
-        id: _generateId(),
-        price: price ?? previousDetail.price,
-        startDate: reactivationDate,
-        endDate: endDate,
-        months: months ?? previousDetail.months,
-        currency: currency ?? previousDetail.currency,
-      );
-
-      // Add to subscription
-      subscription.addPaymentDetail(newPayment);
-
-      // Persist to storage
-      await subscriptionRepository.createPayment(subscription.id, newPayment);
-
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   // Remove a specific subscription payment
@@ -614,23 +561,19 @@ class SubscriptionProvider with ChangeNotifier {
     String subscriptionId,
     String paymentId,
   ) async {
-    final index = _subscriptions.indexWhere(
-      (subscription) => subscription.id == subscriptionId,
-    );
-
-    if (index >= 0) {
-      final subscription = _subscriptions[index];
-
-      // Remove the payment from the subscription
-      subscription.removePaymentDetail(paymentId);
-
-      // Persist to storage
-      await subscriptionRepository.update(subscription);
-
-      await subscriptionRepository.deletePayment(subscription.id, paymentId);
-
-      notifyListeners();
+    final subscription = subscriptionRepository.get(subscriptionId);
+    if (subscription == null) {
+      return;
     }
+    // Remove the payment from the subscription
+    subscription.removePaymentDetail(paymentId);
+
+    // Persist to storage
+    await subscriptionRepository.update(subscription);
+
+    await subscriptionRepository.deletePayment(subscription.id, paymentId);
+
+    notifyListeners();
   }
 
   // Generate a unique ID for a new subscription
@@ -645,16 +588,15 @@ class SubscriptionProvider with ChangeNotifier {
     String subscriptionId,
     List<String> labelIds,
   ) async {
-    final index = _subscriptions.indexWhere((s) => s.id == subscriptionId);
-    if (index >= 0) {
-      final subscription = _subscriptions[index];
-      final updatedSubscription = subscription.copyWith(labelIds: labelIds);
-
-      _subscriptions[index] = updatedSubscription;
-      await subscriptionRepository.update(updatedSubscription);
-
-      notifyListeners();
+    final subscription = subscriptionRepository.get(subscriptionId);
+    if (subscription == null) {
+      return;
     }
+    final updatedSubscription = subscription.copyWith(labelIds: labelIds);
+
+    await subscriptionRepository.update(updatedSubscription);
+
+    notifyListeners();
   }
 
   // Update subscription family members
@@ -667,18 +609,17 @@ class SubscriptionProvider with ChangeNotifier {
     // Note: We can't validate if a kid is set as a payer here anymore since we only have the ID
     // This validation should be done before calling this method
 
-    final index = _subscriptions.indexWhere((s) => s.id == subscriptionId);
-    if (index >= 0) {
-      final subscription = _subscriptions[index];
-      final updatedSubscription = subscription.copyWith(
-        userFamilyMemberIds: userFamilyMemberIds,
-        payerFamilyMemberId: payerFamilyMemberId,
-      );
-
-      _subscriptions[index] = updatedSubscription;
-      await subscriptionRepository.update(updatedSubscription);
-
-      notifyListeners();
+    final subscription = subscriptionRepository.get(subscriptionId);
+    if (subscription == null) {
+      return;
     }
+    final updatedSubscription = subscription.copyWith(
+      userFamilyMemberIds: userFamilyMemberIds,
+      payerFamilyMemberId: payerFamilyMemberId,
+    );
+
+    await subscriptionRepository.update(updatedSubscription);
+
+    notifyListeners();
   }
 }

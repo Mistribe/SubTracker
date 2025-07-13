@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:subscription_tracker/providers/label_provider.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/family_member_provider.dart';
 import '../providers/sync_provider.dart';
@@ -13,7 +14,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final paymentProvider = Provider.of<SubscriptionProvider>(context);
+    final subscriptionProvider = Provider.of<SubscriptionProvider>(context);
+    final labelProvider = Provider.of<LabelProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -33,7 +35,8 @@ class HomeScreen extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const SyncStatusIndicator(),
-                      if (syncProvider.isInitialized && syncProvider.hasPendingOperations)
+                      if (syncProvider.isInitialized &&
+                          syncProvider.hasPendingOperations)
                         IconButton(
                           icon: const Icon(Icons.sync, size: 20),
                           onPressed: () => syncProvider.sync(),
@@ -76,7 +79,7 @@ class HomeScreen extends StatelessWidget {
                         child: _buildSummaryCard(
                           context,
                           'Monthly',
-                          paymentProvider.formattedMonthlyCost,
+                          subscriptionProvider.formattedMonthlyCost,
                           Icons.calendar_today,
                           Colors.blue,
                         ),
@@ -88,7 +91,7 @@ class HomeScreen extends StatelessWidget {
                         child: _buildSummaryCard(
                           context,
                           'Annually',
-                          paymentProvider.formattedAnnualCost,
+                          subscriptionProvider.formattedAnnualCost,
                           Icons.calendar_month,
                           Colors.purple,
                         ),
@@ -100,7 +103,7 @@ class HomeScreen extends StatelessWidget {
                         child: _buildSummaryCard(
                           context,
                           'Active',
-                          '${paymentProvider.activePaymentsCount}${paymentProvider.notStartedPaymentsCount > 0 ? ' (${paymentProvider.notStartedPaymentsCount})' : ''}',
+                          '${subscriptionProvider.activePaymentsCount}${subscriptionProvider.notStartedPaymentsCount > 0 ? ' (${subscriptionProvider.notStartedPaymentsCount})' : ''}',
                           Icons.check_circle,
                           Colors.green,
                         ),
@@ -130,7 +133,7 @@ class HomeScreen extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                            '${paymentProvider.filteredSubscriptions.length} of ${paymentProvider.subscriptions.length}',
+                            '${subscriptionProvider.filteredSubscriptions.length} of ${subscriptionProvider.subscriptions.length}',
                             style: TextStyle(
                               fontSize: 14,
                               color: Theme.of(
@@ -150,32 +153,33 @@ class HomeScreen extends StatelessWidget {
                               if (newValue == SubscriptionFilterOption.labels) {
                                 _showLabelFilterBottomSheet(
                                   context,
-                                  paymentProvider,
+                                  subscriptionProvider,
+                                  labelProvider,
                                 );
                               } else if (newValue ==
                                   SubscriptionFilterOption.showInactive) {
-                                paymentProvider.showInactiveSubscriptions =
+                                subscriptionProvider.showInactiveSubscriptions =
                                     true;
                               } else if (newValue ==
                                   SubscriptionFilterOption.hideInactive) {
-                                paymentProvider.showInactiveSubscriptions =
+                                subscriptionProvider.showInactiveSubscriptions =
                                     false;
                               } else if (newValue ==
                                   SubscriptionFilterOption.familyMembers) {
                                 _showFamilyMemberFilterBottomSheet(
                                   context,
-                                  paymentProvider,
+                                  subscriptionProvider,
                                 );
                               } else if (newValue ==
                                   SubscriptionFilterOption.payer) {
                                 _showPayerFilterBottomSheet(
                                   context,
-                                  paymentProvider,
+                                  subscriptionProvider,
                                 );
                               }
                             },
                             itemBuilder: (context) => [
-                              if (paymentProvider.labels.isNotEmpty)
+                              if (labelProvider.labels.isNotEmpty)
                                 PopupMenuItem(
                                   value: SubscriptionFilterOption.labels,
                                   child: Row(
@@ -188,7 +192,7 @@ class HomeScreen extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        'Labels ${paymentProvider.selectedLabelIds.isNotEmpty ? "(${paymentProvider.selectedLabelIds.length})" : ""}',
+                                        'Labels ${subscriptionProvider.selectedLabelIds.isNotEmpty ? "(${subscriptionProvider.selectedLabelIds.length})" : ""}',
                                       ),
                                     ],
                                   ),
@@ -210,7 +214,7 @@ class HomeScreen extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        'Family Member ${paymentProvider.selectedFamilyMemberId != null ? "(1)" : ""}',
+                                        'Family Member ${subscriptionProvider.selectedFamilyMemberId != null ? "(1)" : ""}',
                                       ),
                                     ],
                                   ),
@@ -232,12 +236,13 @@ class HomeScreen extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        'Payer ${paymentProvider.selectedPayerFamilyMemberId != null ? "(1)" : ""}',
+                                        'Payer ${subscriptionProvider.selectedPayerFamilyMemberId != null ? "(1)" : ""}',
                                       ),
                                     ],
                                   ),
                                 ),
-                              if (paymentProvider.showInactiveSubscriptions)
+                              if (subscriptionProvider
+                                  .showInactiveSubscriptions)
                                 PopupMenuItem(
                                   value: SubscriptionFilterOption.hideInactive,
                                   child: Row(
@@ -280,7 +285,7 @@ class HomeScreen extends StatelessWidget {
                               size: 20,
                             ),
                             onSelected: (SubscriptionSortOption newValue) {
-                              paymentProvider.sortOption = newValue;
+                              subscriptionProvider.sortOption = newValue;
                             },
                             itemBuilder: (context) => [
                               const PopupMenuItem(
@@ -573,15 +578,16 @@ class HomeScreen extends StatelessWidget {
   // Show bottom sheet for label filtering - simplified implementation
   void _showLabelFilterBottomSheet(
     BuildContext context,
-    SubscriptionProvider provider,
+    SubscriptionProvider subscriptionProvider,
+    LabelProvider labelProvider,
   ) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
-            final allLabels = provider.labels;
-            final selectedLabelIds = provider.selectedLabelIds;
+            final allLabels = labelProvider.labels;
+            final selectedLabelIds = subscriptionProvider.selectedLabelIds;
 
             return SafeArea(
               child: Padding(
@@ -604,7 +610,7 @@ class HomeScreen extends StatelessWidget {
                         if (selectedLabelIds.isNotEmpty)
                           TextButton(
                             onPressed: () {
-                              provider.clearLabelFilters();
+                              subscriptionProvider.clearLabelFilters();
                               setState(() {});
                             },
                             child: const Text('Clear'),
@@ -639,7 +645,7 @@ class HomeScreen extends StatelessWidget {
                             selected: isSelected,
                             label: Text(label.name),
                             onSelected: (_) {
-                              provider.toggleLabelFilter(label.id);
+                              subscriptionProvider.toggleLabelFilter(label.id);
                               setState(() {});
                             },
                             selectedColor: labelColor,

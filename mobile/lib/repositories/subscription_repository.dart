@@ -31,6 +31,10 @@ class SubscriptionRepository {
     return _box.values.toList();
   }
 
+  Subscription? get(String id) {
+    return _box.get(id);
+  }
+
   /// Add a new subscription
   Future<void> add(Subscription subscription) async {
     // Save to local storage
