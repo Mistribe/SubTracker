@@ -24,7 +24,8 @@ type Label struct {
 	isDirty   bool
 }
 
-func NewLabelWithoutValidation(id uuid.UUID,
+func NewLabelWithoutValidation(
+	id uuid.UUID,
 	name string,
 	isDefault bool,
 	color string,
@@ -32,16 +33,17 @@ func NewLabelWithoutValidation(id uuid.UUID,
 	updatedAt time.Time) Label {
 	return Label{
 		id:        id,
-		name:      name,
+		name:      strings.TrimSpace(name),
 		isDefault: isDefault,
-		color:     color,
+		color:     strings.TrimSpace(color),
 		createdAt: createdAt,
 		updatedAt: updatedAt,
 		isDirty:   true,
 	}
 }
 
-func NewLabel(id uuid.UUID,
+func NewLabel(
+	id uuid.UUID,
 	name string,
 	isDefault bool,
 	color string,

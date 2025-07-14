@@ -1,6 +1,7 @@
 package subscription
 
 import (
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -64,7 +65,7 @@ func NewSubscriptionWithoutValidation(
 	updatedAt time.Time) Subscription {
 	return Subscription{
 		id:            id,
-		name:          name,
+		name:          strings.TrimSpace(name),
 		payments:      payments,
 		labels:        labels,
 		familyMembers: familyMembers,

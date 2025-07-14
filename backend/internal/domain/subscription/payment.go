@@ -2,6 +2,7 @@ package subscription
 
 import (
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -55,7 +56,7 @@ func NewPaymentWithoutValidation(
 			return v.UTC().Truncate(24 * time.Hour)
 		}).Value(),
 		months:    months,
-		currency:  currency,
+		currency:  strings.TrimSpace(currency),
 		createdAt: createdAt.UTC(),
 		updatedAt: updatedAt.UTC(),
 		isDirty:   true,

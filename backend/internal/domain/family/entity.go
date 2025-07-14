@@ -3,6 +3,7 @@ package family
 import (
 	"errors"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -46,9 +47,13 @@ func NewMemberWithoutValidation(
 	isKid bool,
 	createdAt time.Time,
 	updatedAt time.Time) Member {
+	if email != nil {
+		trimEmail := strings.TrimSpace(*email)
+		email = &trimEmail
+	}
 	return Member{
 		id:        id,
-		name:      name,
+		name:      strings.TrimSpace(name),
 		email:     email,
 		isKid:     isKid,
 		createdAt: createdAt,
