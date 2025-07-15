@@ -25,6 +25,7 @@ type Subscription struct {
 	createdAt     time.Time
 	updatedAt     time.Time
 	isDirty       bool
+	isExists      bool
 }
 
 func NewSubscription(
@@ -45,6 +46,7 @@ func NewSubscription(
 		payer,
 		createdAt,
 		updatedAt,
+		false,
 	)
 
 	if err := sub.Validate(); err != nil {
@@ -62,7 +64,8 @@ func NewSubscriptionWithoutValidation(
 	familyMembers []uuid.UUID,
 	payer option.Option[uuid.UUID],
 	createdAt time.Time,
-	updatedAt time.Time) Subscription {
+	updatedAt time.Time,
+	isExists bool) Subscription {
 	return Subscription{
 		id:            id,
 		name:          strings.TrimSpace(name),
@@ -73,6 +76,7 @@ func NewSubscriptionWithoutValidation(
 		createdAt:     createdAt,
 		updatedAt:     updatedAt,
 		isDirty:       true,
+		isExists:      isExists,
 	}
 }
 
@@ -246,4 +250,8 @@ func (s *Subscription) Equal(other Subscription) bool {
 	}
 
 	return true
+}
+
+func (s *Subscription) IsExists() bool {
+	return s.isExists
 }

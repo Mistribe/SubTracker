@@ -21,6 +21,7 @@ type Payment struct {
 	createdAt time.Time
 	updatedAt time.Time
 	isDirty   bool
+	isExists  bool
 }
 
 func NewPayment(
@@ -32,7 +33,7 @@ func NewPayment(
 	currency string,
 	createdAt,
 	updatedAt time.Time) result.Result[Payment] {
-	payment := NewPaymentWithoutValidation(id, price, startDate, endDate, months, currency, createdAt, updatedAt)
+	payment := NewPaymentWithoutValidation(id, price, startDate, endDate, months, currency, createdAt, updatedAt, false)
 	if err := payment.Validate(); err != nil {
 		return result.Fail[Payment](err)
 	}
@@ -47,7 +48,8 @@ func NewPaymentWithoutValidation(
 	months int,
 	currency string,
 	createdAt,
-	updatedAt time.Time) Payment {
+	updatedAt time.Time,
+	isExists bool) Payment {
 	return Payment{
 		id:        id,
 		price:     price,
@@ -60,6 +62,7 @@ func NewPaymentWithoutValidation(
 		createdAt: createdAt.UTC(),
 		updatedAt: updatedAt.UTC(),
 		isDirty:   true,
+		isExists:  isExists,
 	}
 }
 

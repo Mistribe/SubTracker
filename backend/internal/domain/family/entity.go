@@ -127,3 +127,11 @@ func (m *Member) Clean() {
 	m.isDirty = false
 	m.isExists = true
 }
+
+func (m *Member) IsDirty() bool {
+	return m.isDirty
+}
+
+func (m *Member) IsExists() bool {
+	return m.isExists
+}

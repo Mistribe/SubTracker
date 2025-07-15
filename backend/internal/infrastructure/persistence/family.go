@@ -3,11 +3,12 @@ package persistence
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 
 	"github.com/oleexo/subtracker/internal/domain/family"
-	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 )
 
@@ -72,35 +73,63 @@ func (r FamilyRepository) toEntity(source memberModel) family.Member {
 }
 
 func (r FamilyRepository) Get(ctx context.Context, id uuid.UUID) (option.Option[family.Member], error) {
-	if member, ok := r.members[id]; ok {
-		return option.Some(member), nil
+	var model memberModel
+	if err := r.repository.db.WithContext(ctx).First(&model, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return option.None[family.Member](), nil
+		}
+		return option.None[family.Member](), err
 	}
-	return option.None[family.Member](), nil
+	return option.Some(r.toEntity(model)), nil
 }
 
 func (r FamilyRepository) GetAll(ctx context.Context) ([]family.Member, error) {
-	members := make([]family.Member, 0, len(r.members))
-	for _, member := range r.members {
-		members = append(members, member)
+	var members []memberModel
+	if result := r.repository.db.WithContext(ctx).Find(&members); result.Error != nil {
+		return nil, result.Error
 	}
-	return members, nil
+	result := make([]family.Member, 0, len(members))
+	for _, mbr := range members {
+		result = append(result, r.toEntity(mbr))
+	}
+	return result, nil
 }
 
 func (r FamilyRepository) Save(ctx context.Context, member family.Member) error {
-	r.members[member.Id()] = member
+	if !member.IsDirty() {
+		return nil
+	}
+	dbMember := r.toModel(&member)
+	var result *gorm.DB
+	if member.IsExists() {
+		result = r.repository.db.WithContext(ctx).Save(&dbMember)
+	} else {
+		result = r.repository.db.WithContext(ctx).Create(&dbMember)
+	}
+
+	if result.Error != nil {
+		return result.Error
+	}
+	member.Clean()
 	return nil
 }
 
 func (r FamilyRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	delete(r.members, id)
-	return nil
+	return r.repository.db.WithContext(ctx).Delete(&memberModel{}, id).Error
 }
 
 func (r FamilyRepository) Exists(ctx context.Context, members ...uuid.UUID) (bool, error) {
-	for _, id := range members {
-		if _, exists := r.members[id]; !exists {
-			return false, nil
+	var count int64
+	if len(members) == 1 {
+		result := r.repository.db.WithContext(ctx).Model(&memberModel{}).Where("id = ?", members[0]).Count(&count)
+		if result.Error != nil {
+			return false, result.Error
+		}
+	} else {
+		result := r.repository.db.WithContext(ctx).Model(&memberModel{}).Where("id IN ?", members).Count(&count)
+		if result.Error != nil {
+			return false, result.Error
 		}
 	}
-	return true, nil
+	return count == int64(len(members)), nil
 }
