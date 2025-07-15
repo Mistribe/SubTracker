@@ -2,21 +2,73 @@ package persistence
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/family"
+	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 )
 
-type FamilyRepository struct {
-	members map[uuid.UUID]family.Member
+type memberModel struct {
+	BaseModel
+	Name  string         `gorm:"type:varchar(100);not null"`
+	Email sql.NullString `gorm:"type:varchar(100)"`
+	IsKid bool           `gorm:"type:boolean;not null;default:false"`
 }
 
-func NewFamilyRepository() *FamilyRepository {
+type FamilyRepository struct {
+	repository *Repository
+}
+
+func NewFamilyRepository(repository *Repository) *FamilyRepository {
 	return &FamilyRepository{
-		members: make(map[uuid.UUID]family.Member),
+		repository: repository,
 	}
+}
+
+func (r FamilyRepository) toModel(source *family.Member) memberModel {
+
+	return memberModel{
+		BaseModel: BaseModel{
+			Id:        source.Id(),
+			CreatedAt: source.CreatedAt(),
+			UpdatedAt: source.UpdatedAt(),
+		},
+		Name: source.Name(),
+		Email: option.Match(source.Email(), func(in string) sql.NullString {
+			return sql.NullString{
+				String: in,
+				Valid:  true,
+			}
+		}, func() sql.NullString {
+			return sql.NullString{
+				Valid: false,
+			}
+		}),
+		IsKid: source.IsKid(),
+	}
+}
+
+func (r FamilyRepository) toEntity(source memberModel) family.Member {
+	var email *string
+	if source.Email.Valid {
+		email = &source.Email.String
+	} else {
+		email = nil
+	}
+	lbl := family.NewMemberWithoutValidation(
+		source.Id,
+		source.Name,
+		email,
+		source.IsKid,
+		source.CreatedAt,
+		source.UpdatedAt,
+		true,
+	)
+	lbl.Clean()
+	return lbl
 }
 
 func (r FamilyRepository) Get(ctx context.Context, id uuid.UUID) (option.Option[family.Member], error) {

@@ -22,6 +22,7 @@ type Label struct {
 	createdAt time.Time
 	updatedAt time.Time
 	isDirty   bool
+	isExists  bool
 }
 
 func NewLabelWithoutValidation(
@@ -30,7 +31,8 @@ func NewLabelWithoutValidation(
 	isDefault bool,
 	color string,
 	createdAt time.Time,
-	updatedAt time.Time) Label {
+	updatedAt time.Time,
+	isExists bool) Label {
 	return Label{
 		id:        id,
 		name:      strings.TrimSpace(name),
@@ -39,6 +41,7 @@ func NewLabelWithoutValidation(
 		createdAt: createdAt,
 		updatedAt: updatedAt,
 		isDirty:   true,
+		isExists:  isExists,
 	}
 }
 
@@ -49,7 +52,7 @@ func NewLabel(
 	color string,
 	createdAt time.Time,
 	updatedAt time.Time) result.Result[Label] {
-	lbl := NewLabelWithoutValidation(id, name, isDefault, color, createdAt, updatedAt)
+	lbl := NewLabelWithoutValidation(id, name, isDefault, color, createdAt, updatedAt, false)
 
 	if err := lbl.Validate(); err != nil {
 		return result.Fail[Label](err)
@@ -136,6 +139,10 @@ func (l *Label) SetUpdatedAt(updatedAt time.Time) {
 	l.isDirty = true
 }
 
+func (l *Label) IsExists() bool {
+	return l.isExists
+}
+
 func (l *Label) Equal(other Label) bool {
 	return l.id == other.id &&
 		l.name == other.name &&
@@ -143,4 +150,13 @@ func (l *Label) Equal(other Label) bool {
 		l.color == other.color &&
 		l.createdAt.Equal(other.createdAt) &&
 		l.updatedAt.Equal(other.updatedAt)
+}
+
+func (l *Label) Clean() {
+	l.isDirty = false
+	l.isExists = true
+}
+
+func (l *Label) IsDirty() bool {
+	return l.isDirty
 }

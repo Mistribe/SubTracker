@@ -22,6 +22,7 @@ type Member struct {
 	createdAt time.Time
 	updatedAt time.Time
 	isDirty   bool
+	isExists  bool
 }
 
 func NewMember(
@@ -31,7 +32,7 @@ func NewMember(
 	isKid bool,
 	createdAt time.Time,
 	updatedAt time.Time) result.Result[Member] {
-	mbr := NewMemberWithoutValidation(id, name, email.Value(), isKid, createdAt, updatedAt)
+	mbr := NewMemberWithoutValidation(id, name, email.Value(), isKid, createdAt, updatedAt, false)
 
 	if err := mbr.Validate(); err != nil {
 		return result.Fail[Member](err)
@@ -46,7 +47,8 @@ func NewMemberWithoutValidation(
 	email *string,
 	isKid bool,
 	createdAt time.Time,
-	updatedAt time.Time) Member {
+	updatedAt time.Time,
+	isExists bool) Member {
 	if email != nil {
 		trimEmail := strings.TrimSpace(*email)
 		email = &trimEmail
@@ -59,6 +61,7 @@ func NewMemberWithoutValidation(
 		createdAt: createdAt,
 		updatedAt: updatedAt,
 		isDirty:   true,
+		isExists:  isExists,
 	}
 }
 
@@ -118,4 +121,9 @@ func (m *Member) Email() option.Option[string] {
 func (m *Member) SetEmail(email option.Option[string]) {
 	m.email = email.Value()
 	m.isDirty = true
+}
+
+func (m *Member) Clean() {
+	m.isDirty = false
+	m.isExists = true
 }
