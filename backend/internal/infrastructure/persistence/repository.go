@@ -78,10 +78,14 @@ func newRepositoryTask(repository *Repository) *RepositoryTask {
 	return &RepositoryTask{repository: repository}
 }
 
-func (r RepositoryTask) OnStart(ctx context.Context) error {
+func (r RepositoryTask) OnStart(_ context.Context) error {
+	if err := r.repository.db.AutoMigrate(&subscriptionModel{}, &labelModel{}, &familyMemberModel{}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (r RepositoryTask) OnStop(ctx context.Context) error {
+func (r RepositoryTask) OnStop(_ context.Context) error {
 	return r.repository.Close()
 }

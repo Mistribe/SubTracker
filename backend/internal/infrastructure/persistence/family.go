@@ -12,7 +12,7 @@ import (
 	"github.com/oleexo/subtracker/pkg/langext/option"
 )
 
-type memberModel struct {
+type familyMemberModel struct {
 	BaseModel
 	Name  string         `gorm:"type:varchar(100);not null"`
 	Email sql.NullString `gorm:"type:varchar(100)"`
@@ -29,9 +29,9 @@ func NewFamilyRepository(repository *Repository) *FamilyRepository {
 	}
 }
 
-func (r FamilyRepository) toModel(source *family.Member) memberModel {
+func (r FamilyRepository) toModel(source *family.Member) familyMemberModel {
 
-	return memberModel{
+	return familyMemberModel{
 		BaseModel: BaseModel{
 			Id:        source.Id(),
 			CreatedAt: source.CreatedAt(),
@@ -52,7 +52,7 @@ func (r FamilyRepository) toModel(source *family.Member) memberModel {
 	}
 }
 
-func (r FamilyRepository) toEntity(source memberModel) family.Member {
+func (r FamilyRepository) toEntity(source familyMemberModel) family.Member {
 	var email *string
 	if source.Email.Valid {
 		email = &source.Email.String
@@ -73,7 +73,7 @@ func (r FamilyRepository) toEntity(source memberModel) family.Member {
 }
 
 func (r FamilyRepository) Get(ctx context.Context, id uuid.UUID) (option.Option[family.Member], error) {
-	var model memberModel
+	var model familyMemberModel
 	if err := r.repository.db.WithContext(ctx).First(&model, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return option.None[family.Member](), nil
@@ -84,7 +84,7 @@ func (r FamilyRepository) Get(ctx context.Context, id uuid.UUID) (option.Option[
 }
 
 func (r FamilyRepository) GetAll(ctx context.Context) ([]family.Member, error) {
-	var members []memberModel
+	var members []familyMemberModel
 	if result := r.repository.db.WithContext(ctx).Find(&members); result.Error != nil {
 		return nil, result.Error
 	}
@@ -115,18 +115,18 @@ func (r FamilyRepository) Save(ctx context.Context, member family.Member) error 
 }
 
 func (r FamilyRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.repository.db.WithContext(ctx).Delete(&memberModel{}, id).Error
+	return r.repository.db.WithContext(ctx).Delete(&familyMemberModel{}, id).Error
 }
 
 func (r FamilyRepository) Exists(ctx context.Context, members ...uuid.UUID) (bool, error) {
 	var count int64
 	if len(members) == 1 {
-		result := r.repository.db.WithContext(ctx).Model(&memberModel{}).Where("id = ?", members[0]).Count(&count)
+		result := r.repository.db.WithContext(ctx).Model(&familyMemberModel{}).Where("id = ?", members[0]).Count(&count)
 		if result.Error != nil {
 			return false, result.Error
 		}
 	} else {
-		result := r.repository.db.WithContext(ctx).Model(&memberModel{}).Where("id IN ?", members).Count(&count)
+		result := r.repository.db.WithContext(ctx).Model(&familyMemberModel{}).Where("id IN ?", members).Count(&count)
 		if result.Error != nil {
 			return false, result.Error
 		}
