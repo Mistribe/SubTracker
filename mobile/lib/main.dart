@@ -17,8 +17,9 @@ import 'repositories/subscription_repository.dart';
 import 'repositories/settings_repository.dart';
 import 'repositories/label_repository.dart';
 import 'repositories/family_member_repository.dart';
-import 'repositories/user_repository.dart';
 import 'screens/home_screen.dart';
+import 'package:kinde_flutter_sdk/kinde_flutter_sdk.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   // Ensure Flutter is initialized
@@ -26,6 +27,16 @@ void main() async {
 
   // Initialize Hive
   await Hive.initFlutter();
+
+  await dotenv.load(fileName: ".env");
+  await KindeFlutterSDK.initializeSDK(
+    authDomain: dotenv.env['KINDE_AUTH_DOMAIN']!,
+    authClientId: dotenv.env['KINDE_AUTH_CLIENT_ID']!,
+    loginRedirectUri: dotenv.env['KINDE_LOGIN_REDIRECT_URI']!,
+    logoutRedirectUri: dotenv.env['KINDE_LOGOUT_REDIRECT_URI']!,
+    //optional
+    scopes: ["email", "profile", "offline", "openid"], // optional,
+  );
 
   // Register Hive adapters
   Hive.registerAdapter(SubscriptionAdapter());
@@ -47,16 +58,12 @@ void main() async {
 
   final familyMemberRepository = await FamilyMemberRepository.initialize();
 
-  final userRepository = UserRepository();
-  await userRepository.initialize();
-
   runApp(
     MyApp(
       subscriptionRepository: paymentRepository,
       settingsRepository: settingsRepository,
       labelRepository: labelRepository,
       familyMemberRepository: familyMemberRepository,
-      userRepository: userRepository,
     ),
   );
 }
@@ -66,7 +73,6 @@ class MyApp extends StatelessWidget {
   final SettingsRepository settingsRepository;
   final LabelRepository labelRepository;
   final FamilyMemberRepository familyMemberRepository;
-  final UserRepository userRepository;
 
   const MyApp({
     super.key,
@@ -74,7 +80,6 @@ class MyApp extends StatelessWidget {
     required this.settingsRepository,
     required this.labelRepository,
     required this.familyMemberRepository,
-    required this.userRepository,
   });
 
   @override
@@ -85,9 +90,7 @@ class MyApp extends StatelessWidget {
         // UserProvider must be created before SyncProvider
         ChangeNotifierProvider(
           create: (_) {
-            final userProvider = UserProvider(userRepository: userRepository);
-            // Set the user provider in the repository
-            userRepository.setUserProvider(userProvider);
+            final userProvider = UserProvider();
             return userProvider;
           },
         ),
@@ -97,7 +100,6 @@ class MyApp extends StatelessWidget {
               subscriptionRepository: subscriptionRepository,
               familyMemberRepository: familyMemberRepository,
               labelRepository: labelRepository,
-              userRepository: userRepository,
             );
             // Set the sync provider in the repository
             subscriptionRepository.setSyncProvider(syncProvider);
@@ -126,7 +128,6 @@ class MyApp extends StatelessWidget {
         ),
         // Provide direct access to repositories
         Provider<LabelRepository>.value(value: labelRepository),
-        Provider<UserRepository>.value(value: userRepository),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {

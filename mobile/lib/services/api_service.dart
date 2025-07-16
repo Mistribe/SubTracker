@@ -1,35 +1,36 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:kinde_flutter_sdk/kinde_flutter_sdk.dart';
 import '../models/subscription.dart';
 import '../models/family_member.dart';
 import '../models/label.dart';
 import '../models/subscription_payment.dart';
-import '../repositories/user_repository.dart';
 
 /// Service for handling API requests to the backend
 /// API implementation based on the SubTracker swagger specification
 class ApiService {
   final String baseUrl;
   final http.Client _httpClient;
-  UserRepository? _userRepository;
 
-  ApiService({required this.baseUrl, http.Client? httpClient, UserRepository? userRepository})
-    : _httpClient = httpClient ?? http.Client(),
-      _userRepository = userRepository;
-
-  /// Set the user repository
-  void setUserRepository(UserRepository userRepository) {
-    _userRepository = userRepository;
-  }
+  ApiService({required this.baseUrl, http.Client? httpClient})
+    : _httpClient = httpClient ?? http.Client();
 
   /// Get authentication headers
-  Map<String, String> _getHeaders({bool requiresAuth = true}) {
+  Future<Map<String, String>> _getHeaders({bool requiresAuth = true}) async {
     final headers = {'Content-Type': 'application/json'};
 
-    if (requiresAuth && _userRepository != null) {
-      final token = _userRepository!.getAuthToken();
-      if (token != null) {
-        headers['Authorization'] = 'Bearer $token';
+    if (requiresAuth) {
+      try {
+        final isAuthenticated = await KindeFlutterSDK.instance
+            .isAuthenticated();
+        if (isAuthenticated) {
+          final token = await KindeFlutterSDK.instance.getToken();
+          if (token != null && token.isNotEmpty) {
+            headers['Authorization'] = 'Bearer $token';
+          }
+        }
+      } catch (e) {
+        print('Error getting authentication token: $e');
       }
     }
 
@@ -37,8 +38,13 @@ class ApiService {
   }
 
   /// Check if the user is authenticated
-  bool isAuthenticated() {
-    return _userRepository?.isAuthenticated() ?? false;
+  Future<bool> isAuthenticated() async {
+    try {
+      return await KindeFlutterSDK.instance.isAuthenticated();
+    } catch (e) {
+      print('Error checking authentication status: $e');
+      return false;
+    }
   }
 
   /// Get all subscriptions from the backend
@@ -47,7 +53,7 @@ class ApiService {
     try {
       final response = await _httpClient.get(
         Uri.parse('$baseUrl/subscriptions'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -71,7 +77,7 @@ class ApiService {
     try {
       final response = await _httpClient.get(
         Uri.parse('$baseUrl/subscriptions/$id'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -97,7 +103,7 @@ class ApiService {
     try {
       final response = await _httpClient.post(
         Uri.parse('$baseUrl/subscriptions'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
         body: json.encode({
           'id': subscription.id,
           'name': subscription.name,
@@ -151,7 +157,7 @@ class ApiService {
 
       final response = await _httpClient.put(
         Uri.parse('$baseUrl/subscriptions/${subscription.id}'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
         body: json.encode(updatePayload),
       );
 
@@ -179,7 +185,7 @@ class ApiService {
     try {
       final response = await _httpClient.delete(
         Uri.parse('$baseUrl/subscriptions/$id'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
       );
 
       if (response.statusCode == 204) {
@@ -208,7 +214,7 @@ class ApiService {
     try {
       final response = await _httpClient.delete(
         Uri.parse('$baseUrl/subscriptions/$subscriptionId/payments/$paymentId'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
       );
 
       if (response.statusCode == 204) {
@@ -244,7 +250,7 @@ class ApiService {
 
       final response = await _httpClient.post(
         Uri.parse('$baseUrl/subscriptions/$subscriptionId/payments'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
         body: json.encode(paymentPayload),
       );
 
@@ -290,7 +296,7 @@ class ApiService {
         Uri.parse(
           '$baseUrl/subscriptions/$subscriptionId/payments/${payment.id}',
         ),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
         body: json.encode(paymentPayload),
       );
 
@@ -320,7 +326,7 @@ class ApiService {
     try {
       final response = await _httpClient.get(
         Uri.parse('$baseUrl/families/members'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -352,7 +358,7 @@ class ApiService {
 
       final response = await _httpClient.post(
         Uri.parse('$baseUrl/families/members'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
         body: json.encode(memberPayload),
       );
 
@@ -376,7 +382,7 @@ class ApiService {
     try {
       final response = await _httpClient.get(
         Uri.parse('$baseUrl/families/members/$id'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -409,7 +415,7 @@ class ApiService {
 
       final response = await _httpClient.put(
         Uri.parse('$baseUrl/families/members/${member.id}'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
         body: json.encode(updatePayload),
       );
 
@@ -436,7 +442,7 @@ class ApiService {
     try {
       final response = await _httpClient.delete(
         Uri.parse('$baseUrl/families/members/$id'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
       );
 
       if (response.statusCode == 204) {
@@ -462,7 +468,7 @@ class ApiService {
     try {
       final response = await _httpClient.get(
         Uri.parse('$baseUrl/labels?with_default=$withDefault'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -484,7 +490,7 @@ class ApiService {
     try {
       final response = await _httpClient.get(
         Uri.parse('$baseUrl/labels/default'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -508,7 +514,7 @@ class ApiService {
     try {
       final response = await _httpClient.get(
         Uri.parse('$baseUrl/labels/$id'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -540,7 +546,7 @@ class ApiService {
 
       final response = await _httpClient.put(
         Uri.parse('$baseUrl/labels/${label.id}'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
         body: json.encode(updatePayload),
       );
 
@@ -567,7 +573,7 @@ class ApiService {
     try {
       final response = await _httpClient.delete(
         Uri.parse('$baseUrl/labels/$id'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
       );
 
       if (response.statusCode == 204) {
@@ -601,7 +607,7 @@ class ApiService {
 
       final response = await _httpClient.post(
         Uri.parse('$baseUrl/labels'),
-        headers: _getHeaders(),
+        headers: await _getHeaders(),
         body: json.encode(labelPayload),
       );
 

@@ -1,72 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:kinde_flutter_sdk/kinde_flutter_sdk.dart';
 import '../models/user.dart';
-import '../repositories/user_repository.dart';
+
+class User {
+  final String id;
+  final String email;
+  final String? displayName;
+
+  User({required this.id, required this.email, this.displayName});
+}
 
 class UserProvider extends ChangeNotifier {
-  final UserRepository _userRepository;
-  User? _currentUser;
-  bool _isInitialized = false;
+  User? _user;
+  bool _isAuthenticated = false;
 
-  UserProvider({required UserRepository userRepository})
-      : _userRepository = userRepository {
-    _initialize();
-  }
-
-  // Initialize the provider
-  Future<void> _initialize() async {
-    if (_isInitialized) return;
-
-    // Get the current user from the repository
-    _currentUser = _userRepository.getCurrentUser();
-    _isInitialized = true;
-    notifyListeners();
+  UserProvider() {
+    // Initialize by checking if user is already authenticated
+    refreshUser();
   }
 
   // Get the current user
-  User? get currentUser => _currentUser;
+  User? get user => _user;
 
   // Check if a user is authenticated
-  bool get isAuthenticated => _currentUser != null && _userRepository.getAuthToken() != null;
+  bool get isAuthenticated => _isAuthenticated;
 
-  // Check if the provider is initialized
-  bool get isInitialized => _isInitialized;
+  // Refresh the user state from Kinde
+  Future<void> refreshUser() async {
+    try {
+      final isAuthenticated = await KindeFlutterSDK.instance.isAuthenticated();
 
-  // Set the current user (called by the repository)
-  void setCurrentUser(User? user) {
-    _currentUser = user;
-    notifyListeners();
-  }
+      if (isAuthenticated) {
+        final kindeUser = KindeFlutterSDK.instance.getUserDetails();
 
-  // Sign up a new user
-  Future<User> signUp(String email, String password, {String? displayName}) async {
-    final user = await _userRepository.signUp(email, password, displayName: displayName);
-    _currentUser = user;
-    notifyListeners();
-    return user;
-  }
+        if (kindeUser != null) {
+          _user = User(
+            id: kindeUser.id ?? '',
+            email: kindeUser.email ?? '',
+            displayName: kindeUser.givenName,
+          );
+          _isAuthenticated = true;
+        } else {
+          _user = null;
+          _isAuthenticated = false;
+        }
+      } else {
+        _user = null;
+        _isAuthenticated = false;
+      }
 
-  // Sign in a user
-  Future<User?> signIn(String email, String password) async {
-    final user = await _userRepository.signIn(email, password);
-    _currentUser = user;
-    notifyListeners();
-    return user;
-  }
-
-  // Sign out the current user
-  Future<void> signOut() async {
-    await _userRepository.signOut();
-    _currentUser = null;
-    notifyListeners();
-  }
-
-  // Update user information
-  Future<User> updateUser(User user) async {
-    final updatedUser = await _userRepository.updateUser(user);
-    if (_currentUser?.id == user.id) {
-      _currentUser = updatedUser;
+      notifyListeners();
+    } catch (e) {
+      _user = null;
+      _isAuthenticated = false;
       notifyListeners();
     }
-    return updatedUser;
+  }
+
+  // Sign out the user
+  Future<void> signOut() async {
+    try {
+      await KindeFlutterSDK.instance.logout();
+      _user = null;
+      _isAuthenticated = false;
+      notifyListeners();
+    } catch (e) {
+      // Handle error
+      print('Error signing out: $e');
+    }
   }
 }

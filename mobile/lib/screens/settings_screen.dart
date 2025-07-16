@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kinde_flutter_sdk/kinde_flutter_sdk.dart';
 import 'package:provider/provider.dart';
 import '../models/currency.dart';
 import '../providers/theme_provider.dart';
@@ -7,7 +8,6 @@ import '../providers/user_provider.dart';
 import '../providers/sync_provider.dart';
 import 'family_management_screen.dart';
 import 'label_management_screen.dart';
-import 'auth_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -54,7 +54,9 @@ class SettingsScreen extends StatelessWidget {
               themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
             ),
             value: themeProvider.isDarkMode,
-            onChanged: themeProvider.useSystemTheme ? null : (_) => themeProvider.toggleTheme(),
+            onChanged: themeProvider.useSystemTheme
+                ? null
+                : (_) => themeProvider.toggleTheme(),
           ),
           const Divider(),
           ListTile(
@@ -130,8 +132,8 @@ class SettingsScreen extends StatelessWidget {
                 return Column(
                   children: [
                     ListTile(
-                      title: Text(userProvider.currentUser?.displayName ?? 'User'),
-                      subtitle: Text(userProvider.currentUser?.email ?? ''),
+                      title: Text(userProvider.user?.displayName ?? 'User'),
+                      subtitle: Text(userProvider.user?.email ?? 'email'),
                       leading: const Icon(Icons.person),
                     ),
                     ListTile(
@@ -140,7 +142,7 @@ class SettingsScreen extends StatelessWidget {
                       leading: const Icon(Icons.logout),
                       onTap: () async {
                         await userProvider.signOut();
-                        syncProvider.updateSyncEnabled();
+                        syncProvider.updateSyncEnabled(isAuthenticated: false);
                       },
                     ),
                   ],
@@ -149,18 +151,15 @@ class SettingsScreen extends StatelessWidget {
                 // User is not signed in - show sign in option
                 return ListTile(
                   title: const Text('Sign In / Sign Up'),
-                  subtitle: const Text('Enable synchronization with your account'),
+                  subtitle: const Text(
+                    'Enable synchronization with your account',
+                  ),
                   leading: const Icon(Icons.login),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const AuthScreen(),
-                      ),
-                    ).then((_) {
-                      // Update sync enabled status when returning from auth screen
-                      syncProvider.updateSyncEnabled();
-                    });
+                  onTap: () async {
+                    await KindeFlutterSDK.instance.login(
+                      type: AuthFlowType.pkce,
+                    );
                   },
                 );
               }
@@ -178,9 +177,7 @@ class SettingsScreen extends StatelessWidget {
                       : 'Disabled - Sign in to enable synchronization',
                 ),
                 leading: Icon(
-                  syncProvider.isSyncEnabled
-                      ? Icons.sync
-                      : Icons.sync_disabled,
+                  syncProvider.isSyncEnabled ? Icons.sync : Icons.sync_disabled,
                 ),
               );
             },

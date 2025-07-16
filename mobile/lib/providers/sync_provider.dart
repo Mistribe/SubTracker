@@ -10,7 +10,6 @@ import '../services/sync_service.dart';
 import '../repositories/subscription_repository.dart';
 import '../repositories/label_repository.dart';
 import '../repositories/family_member_repository.dart';
-import '../repositories/user_repository.dart';
 
 /// Provider for the sync service
 class SyncProvider extends ChangeNotifier {
@@ -21,16 +20,13 @@ class SyncProvider extends ChangeNotifier {
   DateTime? _lastSyncTime;
   bool _hasPendingOperations = false;
   bool _hasSyncHistory = false;
-  UserRepository? _userRepository;
   bool _isSyncEnabled = true;
 
   SyncProvider({
     required SubscriptionRepository subscriptionRepository,
     required LabelRepository labelRepository,
     required FamilyMemberRepository familyMemberRepository,
-    UserRepository? userRepository,
   }) {
-    _userRepository = userRepository;
     _initialize(
       subscriptionRepository,
       labelRepository,
@@ -47,16 +43,13 @@ class SyncProvider extends ChangeNotifier {
     if (_isInitialized) return;
 
     // Initialize API service
-    _apiService = ApiService(
-      baseUrl: 'http://10.0.2.2:8080',
-      userRepository: _userRepository,
-    );
+    _apiService = ApiService(baseUrl: 'http://10.0.2.2:8080');
 
     // Initialize shared preferences
     final prefs = SharedPreferencesAsync();
 
     // Check if sync is enabled (user is authenticated)
-    _isSyncEnabled = _userRepository == null || _userRepository!.isAuthenticated();
+    _isSyncEnabled = false;
 
     // Initialize sync service
     _syncService = SyncService(
@@ -98,18 +91,14 @@ class SyncProvider extends ChangeNotifier {
   /// Get whether sync is enabled (user is authenticated)
   bool get isSyncEnabled => _isSyncEnabled;
 
-  /// Set the user repository and update sync enabled status
-  void setUserRepository(UserRepository userRepository) {
-    _userRepository = userRepository;
-    _apiService.setUserRepository(userRepository);
-    _isSyncEnabled = userRepository.isAuthenticated();
-    notifyListeners();
-  }
-
   /// Update sync enabled status based on user authentication
-  void updateSyncEnabled() {
+  void updateSyncEnabled({bool? isAuthenticated}) {
     final wasEnabled = _isSyncEnabled;
-    _isSyncEnabled = _userRepository == null || _userRepository!.isAuthenticated();
+
+    // If isAuthenticated is provided, use it; otherwise keep current value
+    if (isAuthenticated != null) {
+      _isSyncEnabled = isAuthenticated;
+    }
 
     if (wasEnabled != _isSyncEnabled) {
       notifyListeners();
