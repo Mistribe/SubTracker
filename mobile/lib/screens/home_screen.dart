@@ -3,9 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:subscription_tracker/providers/label_provider.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/family_member_provider.dart';
-import '../providers/sync_provider.dart';
 import '../widgets/subscription_list.dart';
-import '../widgets/sync_status_indicator.dart';
 import 'subscription_form_screen.dart';
 import 'settings_screen.dart';
 
@@ -25,31 +23,6 @@ class HomeScreen extends StatelessWidget {
         ),
         elevation: 0,
         actions: [
-          // Sync status indicator
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Center(
-              child: Consumer<SyncProvider>(
-                builder: (context, syncProvider, _) {
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SyncStatusIndicator(),
-                      if (syncProvider.isInitialized &&
-                          syncProvider.hasPendingOperations)
-                        IconButton(
-                          icon: const Icon(Icons.sync, size: 20),
-                          onPressed: () => syncProvider.sync(),
-                          tooltip: 'Sync now',
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                        ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {

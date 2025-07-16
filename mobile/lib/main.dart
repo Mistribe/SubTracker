@@ -6,15 +6,18 @@ import 'models/subscription.dart';
 import 'models/settings.dart';
 import 'models/label.dart';
 import 'models/family_member.dart';
+import 'models/user.dart';
 import 'providers/subscription_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/family_member_provider.dart';
 import 'providers/sync_provider.dart';
 import 'providers/label_provider.dart';
+import 'providers/user_provider.dart';
 import 'repositories/subscription_repository.dart';
 import 'repositories/settings_repository.dart';
 import 'repositories/label_repository.dart';
 import 'repositories/family_member_repository.dart';
+import 'repositories/user_repository.dart';
 import 'screens/home_screen.dart';
 
 void main() async {
@@ -30,6 +33,7 @@ void main() async {
   Hive.registerAdapter(SettingsAdapter());
   Hive.registerAdapter(LabelAdapter());
   Hive.registerAdapter(FamilyMemberAdapter());
+  Hive.registerAdapter(UserAdapter());
 
   // Initialize repositories
   final paymentRepository = SubscriptionRepository();
@@ -43,12 +47,16 @@ void main() async {
 
   final familyMemberRepository = await FamilyMemberRepository.initialize();
 
+  final userRepository = UserRepository();
+  await userRepository.initialize();
+
   runApp(
     MyApp(
       subscriptionRepository: paymentRepository,
       settingsRepository: settingsRepository,
       labelRepository: labelRepository,
       familyMemberRepository: familyMemberRepository,
+      userRepository: userRepository,
     ),
   );
 }
@@ -58,6 +66,7 @@ class MyApp extends StatelessWidget {
   final SettingsRepository settingsRepository;
   final LabelRepository labelRepository;
   final FamilyMemberRepository familyMemberRepository;
+  final UserRepository userRepository;
 
   const MyApp({
     super.key,
@@ -65,6 +74,7 @@ class MyApp extends StatelessWidget {
     required this.settingsRepository,
     required this.labelRepository,
     required this.familyMemberRepository,
+    required this.userRepository,
   });
 
   @override
@@ -72,12 +82,22 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         // SyncProvider must be created before SubscriptionProvider
+        // UserProvider must be created before SyncProvider
         ChangeNotifierProvider(
           create: (_) {
+            final userProvider = UserProvider(userRepository: userRepository);
+            // Set the user provider in the repository
+            userRepository.setUserProvider(userProvider);
+            return userProvider;
+          },
+        ),
+        ChangeNotifierProvider(
+          create: (context) {
             final syncProvider = SyncProvider(
               subscriptionRepository: subscriptionRepository,
               familyMemberRepository: familyMemberRepository,
               labelRepository: labelRepository,
+              userRepository: userRepository,
             );
             // Set the sync provider in the repository
             subscriptionRepository.setSyncProvider(syncProvider);
@@ -106,6 +126,7 @@ class MyApp extends StatelessWidget {
         ),
         // Provide direct access to repositories
         Provider<LabelRepository>.value(value: labelRepository),
+        Provider<UserRepository>.value(value: userRepository),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {

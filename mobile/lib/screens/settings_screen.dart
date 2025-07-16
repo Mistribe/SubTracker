@@ -3,8 +3,11 @@ import 'package:provider/provider.dart';
 import '../models/currency.dart';
 import '../providers/theme_provider.dart';
 import '../providers/subscription_provider.dart';
+import '../providers/user_provider.dart';
+import '../providers/sync_provider.dart';
 import 'family_management_screen.dart';
 import 'label_management_screen.dart';
+import 'auth_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -114,6 +117,74 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           const Divider(),
+          ListTile(
+            title: const Text('Account'),
+            leading: const Icon(Icons.account_circle),
+          ),
+          Consumer<UserProvider>(
+            builder: (context, userProvider, _) {
+              final syncProvider = Provider.of<SyncProvider>(context);
+
+              if (userProvider.isAuthenticated) {
+                // User is signed in - show user info and sign out option
+                return Column(
+                  children: [
+                    ListTile(
+                      title: Text(userProvider.currentUser?.displayName ?? 'User'),
+                      subtitle: Text(userProvider.currentUser?.email ?? ''),
+                      leading: const Icon(Icons.person),
+                    ),
+                    ListTile(
+                      title: const Text('Sign Out'),
+                      subtitle: const Text('Sign out of your account'),
+                      leading: const Icon(Icons.logout),
+                      onTap: () async {
+                        await userProvider.signOut();
+                        syncProvider.updateSyncEnabled();
+                      },
+                    ),
+                  ],
+                );
+              } else {
+                // User is not signed in - show sign in option
+                return ListTile(
+                  title: const Text('Sign In / Sign Up'),
+                  subtitle: const Text('Enable synchronization with your account'),
+                  leading: const Icon(Icons.login),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const AuthScreen(),
+                      ),
+                    ).then((_) {
+                      // Update sync enabled status when returning from auth screen
+                      syncProvider.updateSyncEnabled();
+                    });
+                  },
+                );
+              }
+            },
+          ),
+          const Divider(),
+          // Sync status
+          Consumer<SyncProvider>(
+            builder: (context, syncProvider, _) {
+              return ListTile(
+                title: const Text('Synchronization'),
+                subtitle: Text(
+                  syncProvider.isSyncEnabled
+                      ? 'Enabled - Data will be synced with the server'
+                      : 'Disabled - Sign in to enable synchronization',
+                ),
+                leading: Icon(
+                  syncProvider.isSyncEnabled
+                      ? Icons.sync
+                      : Icons.sync_disabled,
+                ),
+              );
+            },
+          ),
           // Additional settings can be added here in the future
         ],
       ),

@@ -4,15 +4,42 @@ import '../models/subscription.dart';
 import '../models/family_member.dart';
 import '../models/label.dart';
 import '../models/subscription_payment.dart';
+import '../repositories/user_repository.dart';
 
 /// Service for handling API requests to the backend
 /// API implementation based on the SubTracker swagger specification
 class ApiService {
   final String baseUrl;
   final http.Client _httpClient;
+  UserRepository? _userRepository;
 
-  ApiService({required this.baseUrl, http.Client? httpClient})
-    : _httpClient = httpClient ?? http.Client();
+  ApiService({required this.baseUrl, http.Client? httpClient, UserRepository? userRepository})
+    : _httpClient = httpClient ?? http.Client(),
+      _userRepository = userRepository;
+
+  /// Set the user repository
+  void setUserRepository(UserRepository userRepository) {
+    _userRepository = userRepository;
+  }
+
+  /// Get authentication headers
+  Map<String, String> _getHeaders({bool requiresAuth = true}) {
+    final headers = {'Content-Type': 'application/json'};
+
+    if (requiresAuth && _userRepository != null) {
+      final token = _userRepository!.getAuthToken();
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+    }
+
+    return headers;
+  }
+
+  /// Check if the user is authenticated
+  bool isAuthenticated() {
+    return _userRepository?.isAuthenticated() ?? false;
+  }
 
   /// Get all subscriptions from the backend
   /// GET /subscriptions
@@ -20,7 +47,7 @@ class ApiService {
     try {
       final response = await _httpClient.get(
         Uri.parse('$baseUrl/subscriptions'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -44,7 +71,7 @@ class ApiService {
     try {
       final response = await _httpClient.get(
         Uri.parse('$baseUrl/subscriptions/$id'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -70,7 +97,7 @@ class ApiService {
     try {
       final response = await _httpClient.post(
         Uri.parse('$baseUrl/subscriptions'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
         body: json.encode({
           'id': subscription.id,
           'name': subscription.name,
@@ -124,7 +151,7 @@ class ApiService {
 
       final response = await _httpClient.put(
         Uri.parse('$baseUrl/subscriptions/${subscription.id}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
         body: json.encode(updatePayload),
       );
 
@@ -152,7 +179,7 @@ class ApiService {
     try {
       final response = await _httpClient.delete(
         Uri.parse('$baseUrl/subscriptions/$id'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
       );
 
       if (response.statusCode == 204) {
@@ -181,7 +208,7 @@ class ApiService {
     try {
       final response = await _httpClient.delete(
         Uri.parse('$baseUrl/subscriptions/$subscriptionId/payments/$paymentId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
       );
 
       if (response.statusCode == 204) {
@@ -217,7 +244,7 @@ class ApiService {
 
       final response = await _httpClient.post(
         Uri.parse('$baseUrl/subscriptions/$subscriptionId/payments'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
         body: json.encode(paymentPayload),
       );
 
@@ -263,7 +290,7 @@ class ApiService {
         Uri.parse(
           '$baseUrl/subscriptions/$subscriptionId/payments/${payment.id}',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
         body: json.encode(paymentPayload),
       );
 
@@ -293,7 +320,7 @@ class ApiService {
     try {
       final response = await _httpClient.get(
         Uri.parse('$baseUrl/families/members'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -325,7 +352,7 @@ class ApiService {
 
       final response = await _httpClient.post(
         Uri.parse('$baseUrl/families/members'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
         body: json.encode(memberPayload),
       );
 
@@ -349,7 +376,7 @@ class ApiService {
     try {
       final response = await _httpClient.get(
         Uri.parse('$baseUrl/families/members/$id'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -382,7 +409,7 @@ class ApiService {
 
       final response = await _httpClient.put(
         Uri.parse('$baseUrl/families/members/${member.id}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
         body: json.encode(updatePayload),
       );
 
@@ -409,7 +436,7 @@ class ApiService {
     try {
       final response = await _httpClient.delete(
         Uri.parse('$baseUrl/families/members/$id'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
       );
 
       if (response.statusCode == 204) {
@@ -435,7 +462,7 @@ class ApiService {
     try {
       final response = await _httpClient.get(
         Uri.parse('$baseUrl/labels?with_default=$withDefault'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -457,7 +484,7 @@ class ApiService {
     try {
       final response = await _httpClient.get(
         Uri.parse('$baseUrl/labels/default'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -481,7 +508,7 @@ class ApiService {
     try {
       final response = await _httpClient.get(
         Uri.parse('$baseUrl/labels/$id'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -513,7 +540,7 @@ class ApiService {
 
       final response = await _httpClient.put(
         Uri.parse('$baseUrl/labels/${label.id}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
         body: json.encode(updatePayload),
       );
 
@@ -540,7 +567,7 @@ class ApiService {
     try {
       final response = await _httpClient.delete(
         Uri.parse('$baseUrl/labels/$id'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
       );
 
       if (response.statusCode == 204) {
@@ -574,7 +601,7 @@ class ApiService {
 
       final response = await _httpClient.post(
         Uri.parse('$baseUrl/labels'),
-        headers: {'Content-Type': 'application/json'},
+        headers: _getHeaders(),
         body: json.encode(labelPayload),
       );
 
