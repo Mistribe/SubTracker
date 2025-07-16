@@ -28,7 +28,8 @@ type UpdateSubscriptionCommandHandler struct {
 	familyRepository       family.Repository
 }
 
-func NewUpdateSubscriptionCommandHandler(subscriptionRepository subscription.Repository,
+func NewUpdateSubscriptionCommandHandler(
+	subscriptionRepository subscription.Repository,
 	labelRepository label.Repository,
 	familyRepository family.Repository) *UpdateSubscriptionCommandHandler {
 	return &UpdateSubscriptionCommandHandler{
@@ -38,7 +39,8 @@ func NewUpdateSubscriptionCommandHandler(subscriptionRepository subscription.Rep
 	}
 }
 
-func (h UpdateSubscriptionCommandHandler) Handle(ctx context.Context,
+func (h UpdateSubscriptionCommandHandler) Handle(
+	ctx context.Context,
 	command UpdateSubscriptionCommand) result.Result[subscription.Subscription] {
 	subOpt, err := h.subscriptionRepository.Get(ctx, command.Id)
 	if err != nil {
@@ -51,7 +53,8 @@ func (h UpdateSubscriptionCommandHandler) Handle(ctx context.Context,
 	})
 }
 
-func (h UpdateSubscriptionCommandHandler) updateSubscription(ctx context.Context,
+func (h UpdateSubscriptionCommandHandler) updateSubscription(
+	ctx context.Context,
 	command UpdateSubscriptionCommand,
 	sub subscription.Subscription) result.Result[subscription.Subscription] {
 	if err := h.ensureLabelsExists(ctx, command.Labels); err != nil {
@@ -78,14 +81,15 @@ func (h UpdateSubscriptionCommandHandler) updateSubscription(ctx context.Context
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	if err := h.subscriptionRepository.Save(ctx, sub); err != nil {
+	if err := h.subscriptionRepository.Save(ctx, &sub); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 
 	return result.Success(sub)
 }
 
-func (h UpdateSubscriptionCommandHandler) ensureFamilyMemberExists(ctx context.Context,
+func (h UpdateSubscriptionCommandHandler) ensureFamilyMemberExists(
+	ctx context.Context,
 	familyMembers []uuid.UUID) error {
 	if len(familyMembers) == 0 {
 		return nil

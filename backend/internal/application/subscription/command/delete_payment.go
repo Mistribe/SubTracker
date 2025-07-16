@@ -23,7 +23,8 @@ func NewDeletePaymentCommandHandler(repository subscription.Repository) *DeleteP
 	return &DeletePaymentCommandHandler{repository: repository}
 }
 
-func (h DeletePaymentCommandHandler) Handle(ctx context.Context,
+func (h DeletePaymentCommandHandler) Handle(
+	ctx context.Context,
 	command DeletePaymentCommand) result.Result[result.Unit] {
 	subOpt, err := h.repository.Get(ctx, command.SubscriptionId)
 	if err != nil {
@@ -37,11 +38,12 @@ func (h DeletePaymentCommandHandler) Handle(ctx context.Context,
 	})
 }
 
-func (h DeletePaymentCommandHandler) deletePayment(ctx context.Context, command DeletePaymentCommand,
+func (h DeletePaymentCommandHandler) deletePayment(
+	ctx context.Context, command DeletePaymentCommand,
 	sub subscription.Subscription) result.Result[result.Unit] {
 	sub.RemovePayment(command.PaymentId)
 
-	if err := h.repository.Save(ctx, sub); err != nil {
+	if err := h.repository.Save(ctx, &sub); err != nil {
 		return result.Fail[result.Unit](err)
 	}
 

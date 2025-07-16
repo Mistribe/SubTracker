@@ -21,8 +21,8 @@ type Repository struct {
 }
 
 func NewRepository(cfg config.Configuration) *Repository {
-	dsn := cfg.GetString("database.dsn")
-	//	dsn := "host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
+	dsn := cfg.GetString("DATABASE_DSN")
+	//	dsn := "host=localhost user=postgres password=postgres dbname=app port=5432"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)
@@ -74,12 +74,23 @@ type RepositoryTask struct {
 	repository *Repository
 }
 
+func (r RepositoryTask) Priority() int {
+	return -1
+}
+
 func newRepositoryTask(repository *Repository) *RepositoryTask {
 	return &RepositoryTask{repository: repository}
 }
 
 func (r RepositoryTask) OnStart(_ context.Context) error {
-	if err := r.repository.db.AutoMigrate(&subscriptionModel{}, &labelModel{}, &familyMemberModel{}); err != nil {
+	if err := r.repository.db.AutoMigrate(
+		&subscriptionModel{},
+		&labelModel{},
+		&familyMemberModel{},
+		&subscriptionPaymentModel{},
+		&subscriptionFamilyMemberModel{},
+		&subscriptionLabelModel{},
+	); err != nil {
 		return err
 	}
 

@@ -18,6 +18,10 @@ type labelModel struct {
 	IsDefault bool   `gorm:"type:boolean;not null;default:false;index"`
 }
 
+func (l labelModel) TableName() string {
+	return "labels"
+}
+
 type LabelRepository struct {
 	repository *Repository
 }

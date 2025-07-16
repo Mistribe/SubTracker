@@ -17,9 +17,18 @@ type subscriptionLabelModel struct {
 	LabelId uuid.UUID `gorm:"primaryKey;type:uuid;not null"`
 	SubId   uuid.UUID `gorm:"primaryKey;type:uuid;not null"`
 }
+
+func (s subscriptionLabelModel) TableName() string {
+	return "subscription_labels"
+}
+
 type subscriptionFamilyMemberModel struct {
 	FamilyMemberId uuid.UUID `gorm:"primaryKey;type:uuid;not null"`
 	SubId          uuid.UUID `gorm:"primaryKey;type:uuid;not null"`
+}
+
+func (s subscriptionFamilyMemberModel) TableName() string {
+	return "subscription_family_members"
 }
 
 type subscriptionPaymentModel struct {
@@ -31,6 +40,11 @@ type subscriptionPaymentModel struct {
 	Months    int        `gorm:"type:integer;not null"`
 	Currency  string     `gorm:"type:varchar(10);not null"`
 }
+
+func (s subscriptionPaymentModel) TableName() string {
+	return "subscription_payments"
+}
+
 type subscriptionModel struct {
 	BaseModel
 	Name          string                          `gorm:"type:varchar(100);not null"`
@@ -38,6 +52,10 @@ type subscriptionModel struct {
 	Labels        []subscriptionLabelModel        `gorm:"foreignKey:SubId"`
 	FamilyMembers []subscriptionFamilyMemberModel `gorm:"foreignKey:SubId"`
 	PayerId       *uuid.UUID                      `gorm:"type:uuid"`
+}
+
+func (s subscriptionModel) TableName() string {
+	return "subscriptions"
 }
 
 type SubscriptionRepository struct {
@@ -171,12 +189,12 @@ func (r SubscriptionRepository) GetAll(ctx context.Context) ([]subscription.Subs
 	return result, nil
 }
 
-func (r SubscriptionRepository) Save(ctx context.Context, subscription subscription.Subscription) error {
+func (r SubscriptionRepository) Save(ctx context.Context, subscription *subscription.Subscription) error {
 	if subscription.IsDirty() == false {
 		return nil
 	}
 
-	dbSubscription := r.toModel(&subscription)
+	dbSubscription := r.toModel(subscription)
 	var result *gorm.DB
 	if subscription.IsExists() {
 		result = r.repository.db.WithContext(ctx).Save(&dbSubscription)

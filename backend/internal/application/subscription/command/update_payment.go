@@ -30,7 +30,8 @@ func NewUpdatePaymentCommandHandler(repository subscription.Repository) *UpdateP
 	return &UpdatePaymentCommandHandler{repository: repository}
 }
 
-func (h UpdatePaymentCommandHandler) Handle(ctx context.Context,
+func (h UpdatePaymentCommandHandler) Handle(
+	ctx context.Context,
 	command UpdatePaymentCommand) result.Result[subscription.Subscription] {
 	subOpt, err := h.repository.Get(ctx, command.SubscriptionId)
 	if err != nil {
@@ -48,7 +49,8 @@ func (h UpdatePaymentCommandHandler) Handle(ctx context.Context,
 	})
 }
 
-func (h UpdatePaymentCommandHandler) updatePayment(ctx context.Context,
+func (h UpdatePaymentCommandHandler) updatePayment(
+	ctx context.Context,
 	command UpdatePaymentCommand,
 	sub subscription.Subscription,
 	payment subscription.Payment) result.Result[subscription.Subscription] {
@@ -75,7 +77,7 @@ func (h UpdatePaymentCommandHandler) updatePayment(ctx context.Context,
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	if err := h.repository.Save(ctx, sub); err != nil {
+	if err := h.repository.Save(ctx, &sub); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 

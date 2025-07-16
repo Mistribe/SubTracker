@@ -22,7 +22,8 @@ type CreateSubscriptionCommandHandler struct {
 	familyRepository       family.Repository
 }
 
-func NewCreateSubscriptionCommandHandler(subscriptionRepository subscription.Repository,
+func NewCreateSubscriptionCommandHandler(
+	subscriptionRepository subscription.Repository,
 	labelRepository label.Repository,
 	familyRepository family.Repository) *CreateSubscriptionCommandHandler {
 	return &CreateSubscriptionCommandHandler{
@@ -32,7 +33,8 @@ func NewCreateSubscriptionCommandHandler(subscriptionRepository subscription.Rep
 	}
 }
 
-func (h CreateSubscriptionCommandHandler) Handle(ctx context.Context,
+func (h CreateSubscriptionCommandHandler) Handle(
+	ctx context.Context,
 	command CreateSubscriptionCommand) result.Result[subscription.Subscription] {
 	opt, err := h.subscriptionRepository.Get(ctx, command.Subscription.Id())
 	if err != nil {
@@ -50,7 +52,8 @@ func (h CreateSubscriptionCommandHandler) Handle(ctx context.Context,
 
 }
 
-func (h CreateSubscriptionCommandHandler) createSubscription(ctx context.Context,
+func (h CreateSubscriptionCommandHandler) createSubscription(
+	ctx context.Context,
 	command CreateSubscriptionCommand) result.Result[subscription.Subscription] {
 	if err := h.ensureLabelsExists(ctx, command.Subscription.Labels()); err != nil {
 		return result.Fail[subscription.Subscription](err)
@@ -59,14 +62,16 @@ func (h CreateSubscriptionCommandHandler) createSubscription(ctx context.Context
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	if err := h.subscriptionRepository.Save(ctx, command.Subscription); err != nil {
+	// todo make a new sub not from input
+	if err := h.subscriptionRepository.Save(ctx, &command.Subscription); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 
 	return result.Success(command.Subscription)
 }
 
-func (h CreateSubscriptionCommandHandler) ensureFamilyMemberExists(ctx context.Context,
+func (h CreateSubscriptionCommandHandler) ensureFamilyMemberExists(
+	ctx context.Context,
 	familyMembers []uuid.UUID) error {
 	if len(familyMembers) == 0 {
 		return nil

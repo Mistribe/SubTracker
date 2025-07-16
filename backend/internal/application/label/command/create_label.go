@@ -43,11 +43,13 @@ func (h CreateLabelCommandHandler) Handle(ctx context.Context, command CreateLab
 	})
 }
 
-func (h CreateLabelCommandHandler) createLabel(ctx context.Context, command CreateLabelCommand,
+func (h CreateLabelCommandHandler) createLabel(
+	ctx context.Context, command CreateLabelCommand,
 	r result.Result[label.Label]) result.Result[label.Label] {
 	return result.Bind[label.Label, label.Label](r,
 		func(value label.Label) result.Result[label.Label] {
-			if err := h.repository.Save(ctx, command.Label); err != nil {
+			// todo make a new label not from input
+			if err := h.repository.Save(ctx, &command.Label); err != nil {
 				return result.Fail[label.Label](err)
 			}
 			return result.Success(command.Label)

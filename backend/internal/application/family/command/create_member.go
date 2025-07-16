@@ -33,7 +33,8 @@ func (h CreateFamilyMemberCommandHandler) Handle(
 	if err := command.Member.Validate(); err != nil {
 		return result.Fail[family.Member](err)
 	}
-	if err := h.repository.Save(ctx, command.Member); err != nil {
+	// todo make a new member not from input
+	if err := h.repository.Save(ctx, &command.Member); err != nil {
 		return result.Fail[family.Member](err)
 	}
 

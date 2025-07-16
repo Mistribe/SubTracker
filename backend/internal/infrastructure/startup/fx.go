@@ -2,6 +2,7 @@ package startup
 
 import (
 	"context"
+	"sort"
 
 	"go.uber.org/fx"
 )
@@ -22,6 +23,9 @@ type taskParams struct {
 func invoke(params taskParams) {
 	params.Lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
+			sort.Slice(params.Tasks, func(i, j int) bool {
+				return params.Tasks[i].Priority() < params.Tasks[j].Priority()
+			})
 			for _, task := range params.Tasks {
 				if err := task.OnStart(ctx); err != nil {
 					return err
@@ -30,6 +34,9 @@ func invoke(params taskParams) {
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
+			sort.Slice(params.Tasks, func(i, j int) bool {
+				return params.Tasks[i].Priority() < params.Tasks[j].Priority()
+			})
 			for _, task := range params.Tasks {
 				if err := task.OnStop(ctx); err != nil {
 					return err

@@ -71,7 +71,7 @@ func (h CreatePaymentCommandHandler) createPayment(
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	if err := h.subscriptionRepository.Save(ctx, sub); err != nil {
+	if err := h.subscriptionRepository.Save(ctx, &sub); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 

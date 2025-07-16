@@ -19,6 +19,10 @@ type familyMemberModel struct {
 	IsKid bool           `gorm:"type:boolean;not null;default:false"`
 }
 
+func (f familyMemberModel) TableName() string {
+	return "family_members"
+}
+
 type FamilyRepository struct {
 	repository *Repository
 }
@@ -95,11 +99,11 @@ func (r FamilyRepository) GetAll(ctx context.Context) ([]family.Member, error) {
 	return result, nil
 }
 
-func (r FamilyRepository) Save(ctx context.Context, member family.Member) error {
+func (r FamilyRepository) Save(ctx context.Context, member *family.Member) error {
 	if !member.IsDirty() {
 		return nil
 	}
-	dbMember := r.toModel(&member)
+	dbMember := r.toModel(member)
 	var result *gorm.DB
 	if member.IsExists() {
 		result = r.repository.db.WithContext(ctx).Save(&dbMember)

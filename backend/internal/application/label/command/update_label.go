@@ -38,7 +38,8 @@ func (h UpdateLabelCommandHandler) Handle(ctx context.Context, command UpdateLab
 	})
 }
 
-func (h UpdateLabelCommandHandler) updateLabel(ctx context.Context,
+func (h UpdateLabelCommandHandler) updateLabel(
+	ctx context.Context,
 	command UpdateLabelCommand,
 	lbl label.Label) result.Result[label.Label] {
 	lbl.SetName(command.Name)
@@ -55,7 +56,7 @@ func (h UpdateLabelCommandHandler) updateLabel(ctx context.Context,
 		return result.Fail[label.Label](err)
 	}
 
-	if err := h.repository.Save(ctx, lbl); err != nil {
+	if err := h.repository.Save(ctx, &lbl); err != nil {
 		return result.Fail[label.Label](err)
 	}
 
