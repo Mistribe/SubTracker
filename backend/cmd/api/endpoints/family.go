@@ -6,11 +6,13 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/oleexo/subtracker/cmd/api/ginfx"
+	"github.com/oleexo/subtracker/cmd/api/middlewares"
 	"github.com/oleexo/subtracker/internal/domain/family"
 )
 
 type FamilyEndpointGroup struct {
-	routes []ginfx.Route
+	routes      []ginfx.Route
+	middlewares []gin.HandlerFunc
 }
 
 func NewFamilyEndpointGroup(
@@ -18,7 +20,8 @@ func NewFamilyEndpointGroup(
 	updateEndpoint *FamilyMemberUpdateEndpoint,
 	deleteEndpoint *FamilyMemberDeleteEndpoint,
 	getEndpoint *FamilyMemberGetEndpoint,
-	getAllEndpoint *FamilyMemberGetAllEndpoint) *FamilyEndpointGroup {
+	getAllEndpoint *FamilyMemberGetAllEndpoint,
+	authenticationMiddleware *middlewares.AuthenticationMiddleware) *FamilyEndpointGroup {
 	return &FamilyEndpointGroup{
 		routes: []ginfx.Route{
 			createEndpoint,
@@ -26,6 +29,9 @@ func NewFamilyEndpointGroup(
 			deleteEndpoint,
 			getEndpoint,
 			getAllEndpoint,
+		},
+		middlewares: []gin.HandlerFunc{
+			authenticationMiddleware.Middleware(),
 		},
 	}
 }
@@ -39,7 +45,7 @@ func (g FamilyEndpointGroup) Routes() []ginfx.Route {
 }
 
 func (g FamilyEndpointGroup) Middlewares() []gin.HandlerFunc {
-	return nil
+	return g.middlewares
 }
 
 type familyMemberModel struct {

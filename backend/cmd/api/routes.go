@@ -5,11 +5,13 @@ import (
 
 	"github.com/oleexo/subtracker/cmd/api/endpoints"
 	"github.com/oleexo/subtracker/cmd/api/ginfx"
+	"github.com/oleexo/subtracker/cmd/api/middlewares"
 )
 
 func BuildRoutesModule() fx.Option {
 	return fx.Module("routes",
 		fx.Provide(
+			middlewares.NewAuthenticationMiddleware,
 			endpoints.NewSubscriptionGetEndpoint,
 			endpoints.NewSubscriptionGetAllEndpoint,
 			endpoints.NewSubscriptionCreateEndpoint,
