@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:subscription_tracker/providers/authentication_provider.dart';
 import '../models/subscription.dart';
 import '../models/label.dart';
 import '../models/family_member.dart';
 import '../models/subscription_payment.dart';
 import '../services/api_service.dart';
+import '../services/authentication_service.dart';
 import '../services/sync_service.dart';
 import '../repositories/subscription_repository.dart';
 import '../repositories/label_repository.dart';
@@ -15,6 +17,7 @@ import '../repositories/family_member_repository.dart';
 class SyncProvider extends ChangeNotifier {
   late final ApiService _apiService;
   late final SyncService _syncService;
+  final AuthenticationService _authenticationService;
   bool _isInitialized = false;
   bool _isSyncing = false;
   DateTime? _lastSyncTime;
@@ -26,7 +29,8 @@ class SyncProvider extends ChangeNotifier {
     required SubscriptionRepository subscriptionRepository,
     required LabelRepository labelRepository,
     required FamilyMemberRepository familyMemberRepository,
-  }) {
+    required AuthenticationService authenticationService,
+  }) : _authenticationService = authenticationService {
     _initialize(
       subscriptionRepository,
       labelRepository,
@@ -49,7 +53,7 @@ class SyncProvider extends ChangeNotifier {
     final prefs = SharedPreferencesAsync();
 
     // Check if sync is enabled (user is authenticated)
-    _isSyncEnabled = false;
+    _isSyncEnabled = await _authenticationService.isAuthenticated();
 
     // Initialize sync service
     _syncService = SyncService(

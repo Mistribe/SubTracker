@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:subscription_tracker/models/subscription_payment.dart';
+import 'package:subscription_tracker/services/authentication_service.dart';
 import 'models/subscription.dart';
 import 'models/settings.dart';
 import 'models/label.dart';
@@ -12,7 +13,7 @@ import 'providers/theme_provider.dart';
 import 'providers/family_member_provider.dart';
 import 'providers/sync_provider.dart';
 import 'providers/label_provider.dart';
-import 'providers/user_provider.dart';
+import 'providers/authentication_provider.dart';
 import 'repositories/subscription_repository.dart';
 import 'repositories/settings_repository.dart';
 import 'repositories/label_repository.dart';
@@ -58,12 +59,15 @@ void main() async {
 
   final familyMemberRepository = await FamilyMemberRepository.initialize();
 
+  final authenticationService = AuthenticationService();
+
   runApp(
     MyApp(
       subscriptionRepository: paymentRepository,
       settingsRepository: settingsRepository,
       labelRepository: labelRepository,
       familyMemberRepository: familyMemberRepository,
+      authenticationService: authenticationService,
     ),
   );
 }
@@ -73,6 +77,7 @@ class MyApp extends StatelessWidget {
   final SettingsRepository settingsRepository;
   final LabelRepository labelRepository;
   final FamilyMemberRepository familyMemberRepository;
+  final AuthenticationService authenticationService;
 
   const MyApp({
     super.key,
@@ -80,18 +85,18 @@ class MyApp extends StatelessWidget {
     required this.settingsRepository,
     required this.labelRepository,
     required this.familyMemberRepository,
+    required this.authenticationService,
   });
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // SyncProvider must be created before SubscriptionProvider
-        // UserProvider must be created before SyncProvider
         ChangeNotifierProvider(
           create: (_) {
-            final userProvider = UserProvider();
-            return userProvider;
+            return AuthenticationProvider(
+              authenticationService: authenticationService,
+            );
           },
         ),
         ChangeNotifierProvider(
@@ -100,6 +105,7 @@ class MyApp extends StatelessWidget {
               subscriptionRepository: subscriptionRepository,
               familyMemberRepository: familyMemberRepository,
               labelRepository: labelRepository,
+              authenticationService: authenticationService,
             );
             // Set the sync provider in the repository
             subscriptionRepository.setSyncProvider(syncProvider);
@@ -108,6 +114,7 @@ class MyApp extends StatelessWidget {
             return syncProvider;
           },
         ),
+
         // LabelProvider must be created before SubscriptionProvider
         ChangeNotifierProvider(
           create: (context) => LabelProvider(labelRepository: labelRepository),

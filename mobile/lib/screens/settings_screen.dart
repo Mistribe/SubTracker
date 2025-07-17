@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/currency.dart';
 import '../providers/theme_provider.dart';
 import '../providers/subscription_provider.dart';
-import '../providers/user_provider.dart';
+import '../providers/authentication_provider.dart';
 import '../providers/sync_provider.dart';
 import 'family_management_screen.dart';
 import 'label_management_screen.dart';
@@ -30,6 +30,85 @@ class SettingsScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
+          ListTile(
+            title: const Text('Account'),
+            leading: const Icon(Icons.account_circle),
+          ),
+          Consumer<AuthenticationProvider>(
+            builder: (context, userProvider, _) {
+              final syncProvider = Provider.of<SyncProvider>(context);
+
+              if (userProvider.isAuthenticated) {
+                // User is signed in - show user info and sign out option
+                return Column(
+                  children: [
+                    ListTile(
+                      title: Text(userProvider.user?.displayName ?? 'User'),
+                      subtitle: Text(userProvider.user?.email ?? 'email'),
+                      leading: const Icon(Icons.person),
+                    ),
+                    ListTile(
+                      title: const Text('Sign Out'),
+                      subtitle: const Text('Sign out of your account'),
+                      leading: const Icon(Icons.logout),
+                      onTap: () async {
+                        await userProvider.signOut();
+                        syncProvider.updateSyncEnabled(isAuthenticated: false);
+                      },
+                    ),
+                  ],
+                );
+              } else {
+                // User is not signed in - show sign in option
+                return ListTile(
+                  title: const Text('Sign In / Sign Up'),
+                  subtitle: const Text(
+                    'Enable synchronization with your account',
+                  ),
+                  leading: const Icon(Icons.login),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () async {
+                    try {
+                      final token = await KindeFlutterSDK.instance.login(
+                        type: AuthFlowType.pkce,
+                      );
+
+                      if (token != null) {
+                        // Handle successful login
+                        // await userProvider.signIn(); // or however you handle sign in
+                        syncProvider.updateSyncEnabled(isAuthenticated: true);
+                      }
+                    } catch (e) {
+                      // Handle error
+                      print('Login error: $e');
+                      print('Error type: ${e.runtimeType}');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Login failed: $e')),
+                      );
+                    }
+                  },
+                );
+              }
+            },
+          ),
+          const Divider(),
+          // Sync status
+          Consumer<SyncProvider>(
+            builder: (context, syncProvider, _) {
+              return ListTile(
+                title: const Text('Synchronization'),
+                subtitle: Text(
+                  syncProvider.isSyncEnabled
+                      ? 'Enabled - Data will be synced with the server'
+                      : 'Disabled - Sign in to enable synchronization',
+                ),
+                leading: Icon(
+                  syncProvider.isSyncEnabled ? Icons.sync : Icons.sync_disabled,
+                ),
+              );
+            },
+          ),
+          const Divider(),
           ListTile(
             title: const Text('Appearance'),
             leading: const Icon(Icons.palette),
@@ -118,71 +197,6 @@ class SettingsScreen extends StatelessWidget {
               );
             },
           ),
-          const Divider(),
-          ListTile(
-            title: const Text('Account'),
-            leading: const Icon(Icons.account_circle),
-          ),
-          Consumer<UserProvider>(
-            builder: (context, userProvider, _) {
-              final syncProvider = Provider.of<SyncProvider>(context);
-
-              if (userProvider.isAuthenticated) {
-                // User is signed in - show user info and sign out option
-                return Column(
-                  children: [
-                    ListTile(
-                      title: Text(userProvider.user?.displayName ?? 'User'),
-                      subtitle: Text(userProvider.user?.email ?? 'email'),
-                      leading: const Icon(Icons.person),
-                    ),
-                    ListTile(
-                      title: const Text('Sign Out'),
-                      subtitle: const Text('Sign out of your account'),
-                      leading: const Icon(Icons.logout),
-                      onTap: () async {
-                        await userProvider.signOut();
-                        syncProvider.updateSyncEnabled(isAuthenticated: false);
-                      },
-                    ),
-                  ],
-                );
-              } else {
-                // User is not signed in - show sign in option
-                return ListTile(
-                  title: const Text('Sign In / Sign Up'),
-                  subtitle: const Text(
-                    'Enable synchronization with your account',
-                  ),
-                  leading: const Icon(Icons.login),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () async {
-                    await KindeFlutterSDK.instance.login(
-                      type: AuthFlowType.pkce,
-                    );
-                  },
-                );
-              }
-            },
-          ),
-          const Divider(),
-          // Sync status
-          Consumer<SyncProvider>(
-            builder: (context, syncProvider, _) {
-              return ListTile(
-                title: const Text('Synchronization'),
-                subtitle: Text(
-                  syncProvider.isSyncEnabled
-                      ? 'Enabled - Data will be synced with the server'
-                      : 'Disabled - Sign in to enable synchronization',
-                ),
-                leading: Icon(
-                  syncProvider.isSyncEnabled ? Icons.sync : Icons.sync_disabled,
-                ),
-              );
-            },
-          ),
-          // Additional settings can be added here in the future
         ],
       ),
     );
