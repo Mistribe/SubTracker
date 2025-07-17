@@ -35,6 +35,7 @@ class SyncProvider extends ChangeNotifier {
       subscriptionRepository,
       labelRepository,
       familyMemberRepository,
+      authenticationService,
     );
   }
 
@@ -43,17 +44,21 @@ class SyncProvider extends ChangeNotifier {
     SubscriptionRepository subscriptionRepository,
     LabelRepository labelRepository,
     FamilyMemberRepository familyMemberRepository,
+    AuthenticationService authenticationService,
   ) async {
     if (_isInitialized) return;
 
     // Initialize API service
-    _apiService = ApiService(baseUrl: 'http://10.0.2.2:8080');
+    _apiService = ApiService(
+      baseUrl: 'http://10.0.2.2:8080',
+      authenticationService: authenticationService,
+    );
 
     // Initialize shared preferences
     final prefs = SharedPreferencesAsync();
 
     // Check if sync is enabled (user is authenticated)
-    _isSyncEnabled = await _authenticationService.isAuthenticated();
+    _isSyncEnabled = await authenticationService.isAuthenticated();
 
     // Initialize sync service
     _syncService = SyncService(

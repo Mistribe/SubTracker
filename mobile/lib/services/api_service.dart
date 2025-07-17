@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:kinde_flutter_sdk/kinde_flutter_sdk.dart';
+import 'package:subscription_tracker/services/authentication_service.dart';
 import '../models/subscription.dart';
 import '../models/family_member.dart';
 import '../models/label.dart';
@@ -10,10 +11,14 @@ import '../models/subscription_payment.dart';
 /// API implementation based on the SubTracker swagger specification
 class ApiService {
   final String baseUrl;
+  final AuthenticationService authenticationService;
   final http.Client _httpClient;
 
-  ApiService({required this.baseUrl, http.Client? httpClient})
-    : _httpClient = httpClient ?? http.Client();
+  ApiService({
+    required this.baseUrl,
+    required this.authenticationService,
+    http.Client? httpClient,
+  }) : _httpClient = httpClient ?? http.Client();
 
   /// Get authentication headers
   Future<Map<String, String>> _getHeaders({bool requiresAuth = true}) async {
@@ -21,13 +26,9 @@ class ApiService {
 
     if (requiresAuth) {
       try {
-        final isAuthenticated = await KindeFlutterSDK.instance
-            .isAuthenticated();
-        if (isAuthenticated) {
-          final token = await KindeFlutterSDK.instance.getToken();
-          if (token != null && token.isNotEmpty) {
-            headers['Authorization'] = 'Bearer $token';
-          }
+        final token = await authenticationService.getToken();
+        if (token != null && token.isNotEmpty) {
+          headers['Authorization'] = 'Bearer $token';
         }
       } catch (e) {
         print('Error getting authentication token: $e');
