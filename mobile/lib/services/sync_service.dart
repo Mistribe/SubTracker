@@ -643,6 +643,11 @@ class SyncService {
     return (await _getSyncHistory()).isNotEmpty;
   }
 
+  /// Get the count of pending operations
+  Future<int> getPendingOperationsCount() async {
+    return (await _getPendingOperations()).length;
+  }
+
   /// Dispose resources
   void dispose() {
     _connectivitySubscription?.cancel();

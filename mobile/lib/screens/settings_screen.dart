@@ -49,9 +49,7 @@ class SettingsScreen extends StatelessWidget {
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const AccountScreen(),
-                      ),
+                      MaterialPageRoute(builder: (context) => AccountScreen()),
                     );
                   },
                 );

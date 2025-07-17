@@ -97,6 +97,12 @@ class SyncProvider extends ChangeNotifier {
   /// Get whether there are operations in the sync history
   bool get hasSyncHistory => _hasSyncHistory;
 
+  /// Get the number of pending operations
+  Future<int> getPendingOperationsCount() async {
+    if (!_isInitialized) return 0;
+    return await _syncService.getPendingOperationsCount();
+  }
+
   /// Get whether sync is enabled (user is authenticated)
   bool get isSyncEnabled => _isSyncEnabled;
 
