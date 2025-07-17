@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/label.dart';
 import '../repositories/label_repository.dart';
-import '../providers/sync_provider.dart';
 
 /// Provider for managing labels
 ///

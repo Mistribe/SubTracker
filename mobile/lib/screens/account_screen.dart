@@ -4,7 +4,7 @@ import '../providers/authentication_provider.dart';
 import '../providers/sync_provider.dart';
 
 class AccountScreen extends StatelessWidget {
-  AccountScreen({super.key});
+  const AccountScreen({super.key});
 
   // Format DateTime to a readable string
   String _formatDateTime(DateTime dateTime) {

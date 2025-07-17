@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:subscription_tracker/providers/authentication_provider.dart';
 import '../models/subscription.dart';
 import '../models/label.dart';
 import '../models/family_member.dart';
@@ -48,6 +48,7 @@ class SyncProvider extends ChangeNotifier {
   ) async {
     if (_isInitialized) return;
 
+    final baseUrl = dotenv.env["BACKEND_URL"];
     // Initialize API service
     _apiService = ApiService(
       baseUrl: 'http://10.0.2.2:8080',
