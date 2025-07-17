@@ -40,6 +40,10 @@ class AuthenticationService {
     return await sdk.getToken();
   }
 
+  Future<void> deleteAccount() async {
+    // todo
+  }
+
   Future<String?> login() async {
     try {
       return await sdk.login(type: AuthFlowType.pkce);

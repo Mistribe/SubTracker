@@ -29,7 +29,13 @@ class AuthenticationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Sign out the user
+  Future<void> signIn() async {
+    final token = await _authenticationService.login();
+    if (token != null) {
+      await refreshUser();
+    }
+  }
+
   Future<void> signOut() async {
     await _authenticationService.logout();
     _user = null;
