@@ -467,6 +467,10 @@ class ApiService {
   /// GET /labels
   Future<List<Label>> getLabels({bool withDefault = true}) async {
     try {
+      final isAuthenticated = await authenticationService.isAuthenticated();
+      if (!isAuthenticated) {
+        return await getDefaultLabels();
+      }
       final response = await _httpClient.get(
         Uri.parse('$baseUrl/labels?with_default=$withDefault'),
         headers: await _getHeaders(),
