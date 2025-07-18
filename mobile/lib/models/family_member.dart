@@ -16,6 +16,7 @@ class FamilyMember extends HiveObject {
 
   @HiveField(3)
   final bool isKid;
+
   @HiveField(4)
   final String familyId;
 

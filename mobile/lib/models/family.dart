@@ -25,8 +25,8 @@ class Family extends HiveObject {
     required this.id,
     required this.name,
     required this.isOwner,
+    required this.haveJointAccount,
     List<FamilyMember>? familyMembers,
-    this.haveJointAccount = true,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : members = familyMembers ?? [],
@@ -69,10 +69,10 @@ class Family extends HiveObject {
       id: json['id'],
       name: json['name'],
       isOwner: json['is_owner'],
+      haveJointAccount: json['have_joint_account'],
       familyMembers: (json['members'] as List?)
           ?.map((member) => FamilyMember.fromJson(member))
           .toList(),
-      haveJointAccount: json['have_joint_account'] ?? true,
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
     );
