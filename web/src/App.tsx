@@ -1,5 +1,6 @@
 import './App.css'
 import { KindeProvider } from "@kinde-oss/kinde-auth-react";
+import { ThemeProvider } from './contexts/ThemeContext';
 import Routes from './Routes';
 
 function App() {
@@ -7,6 +8,7 @@ function App() {
   const baseUrl = window.location.origin;
   
   return (
+    <ThemeProvider>
       <KindeProvider
           clientId="8021135b4546409488061c2ed6ac3a51"
           domain="https://mistribe.kinde.com"
@@ -15,6 +17,7 @@ function App() {
       >
           <Routes />
       </KindeProvider>
+    </ThemeProvider>
   )
 }
 

@@ -2,29 +2,36 @@ import { Routes as RouterRoutes, Route, BrowserRouter, Navigate } from 'react-ro
 import { useKindeAuth } from '@kinde-oss/kinde-auth-react';
 import ProtectedRoute from './components/ProtectedRoute';
 import SignIn from './pages/SignIn';
-
-// This is a placeholder for a home page component
-const Home = () => {
-  const { user } = useKindeAuth();
-  
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Welcome to Recurrent Payment Tracker</h1>
-      {user ? (
-        <p>Hello, {user.givenName || user.email}!</p>
-      ) : (
-        <p>Please log in to manage your payments.</p>
-      )}
-    </div>
-  );
-};
+import Home from './pages/Home';
+import ThemeToggle from './components/ThemeToggle';
+import { Button } from './components/ui/button';
 
 // This is a placeholder for a dashboard page component
 const Dashboard = () => {
+  const { logout } = useKindeAuth();
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-      <p>Your payments dashboard will be displayed here.</p>
+    <div className="min-h-screen flex flex-col">
+      {/* Navigation Bar */}
+      <nav className="border-b">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center">
+            <h1 className="text-xl font-bold">RecurrentPaymentTracker</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button onClick={logout} variant="outline">
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      </nav>
+      
+      {/* Dashboard Content */}
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+        <p>Your payments dashboard will be displayed here.</p>
+      </div>
     </div>
   );
 };
