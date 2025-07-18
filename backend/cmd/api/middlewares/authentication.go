@@ -1,17 +1,12 @@
 package middlewares
 
 import (
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/base64"
-	"encoding/json"
-	"errors"
+	"context"
 	"fmt"
-	"math/big"
 	"net/http"
 	"strings"
-	"sync"
 
+	"github.com/MicahParks/keyfunc/v3"
 	"github.com/Oleexo/config-go"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -22,191 +17,139 @@ type AuthenticationMiddleware struct {
 }
 
 func NewAuthenticationMiddleware(cfg config.Configuration) *AuthenticationMiddleware {
-	return &AuthenticationMiddleware{config: KindeConfig{
-		Domain:   "",
-		Audience: "",
-		Issuer:   "",
-	}}
+	domain := cfg.GetString("KINDE_AUTH_DOMAIN")
+	audience := cfg.GetString("KINDE_AUDIENCE")
+	return &AuthenticationMiddleware{
+		config: NewKindeConfig(domain, audience),
+	}
 }
 
 type KindeConfig struct {
 	Domain   string
 	Audience string
-	Issuer   string
+	Keyfunc  keyfunc.Keyfunc
+}
+
+func NewKindeConfig(domain, audience string) KindeConfig {
+	jwksURL := domain + "/.well-known/jwks"
+
+	keyFunc, err := keyfunc.NewDefaultCtx(context.Background(), []string{jwksURL})
+	if err != nil {
+		panic(fmt.Sprintf("Failed to get the JWKS: %s", err.Error()))
+	}
+
+	return KindeConfig{
+		Domain:   domain,
+		Audience: audience,
+		Keyfunc:  keyFunc,
+	}
 }
 
 func (m AuthenticationMiddleware) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token, err := extractToken(c)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format"})
+		// Extract the Authorization header
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
 			c.Abort()
 			return
 		}
 
-		parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-			}
+		// Check if the header starts with "Bearer "
+		const bearerPrefix = "Bearer "
+		if !strings.HasPrefix(authHeader, bearerPrefix) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header must start with Bearer"})
+			c.Abort()
+			return
+		}
 
-			cert, err := getCertificate(m.config.Domain, token.Header["kid"].(string))
-			if err != nil {
-				return nil, err
-			}
+		// Extract the token
+		tokenString := strings.TrimPrefix(authHeader, bearerPrefix)
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token is required"})
+			c.Abort()
+			return
+		}
 
-			return cert, nil
-		})
+		// Parse and validate the token
+		token, err := jwt.Parse(tokenString, m.config.Keyfunc.Keyfunc)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("Failed to parse token: %s", err.Error())})
+			c.Abort()
+			return
+		}
 
-		if err != nil || !parsedToken.Valid {
+		// Check if token is valid
+		if !token.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
 		}
 
-		claims, ok := parsedToken.Claims.(jwt.MapClaims)
+		// Extract and validate claims
+		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid claims"})
-			c.Abort()
-			return
-		}
-
-		if !validateClaims(claims, m.config) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
 			c.Abort()
 			return
 		}
 
+		// Validate audience if specified
+		if m.config.Audience != "" {
+			if !m.validateAudience(claims, m.config.Audience) {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid audience"})
+				c.Abort()
+				return
+			}
+		}
+
+		// Validate issuer
+		if !m.validateIssuer(claims, m.config.Domain) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid issuer"})
+			c.Abort()
+			return
+		}
+
+		// Store claims in context for use in handlers
 		c.Set("claims", claims)
+		c.Set("user_id", claims["sub"])
+
 		c.Next()
 	}
 }
 
-func extractToken(c *gin.Context) (string, error) {
-	bearerToken := c.GetHeader("Authorization")
-	if bearerToken == "" {
-		return "", errors.New("no token found")
-	}
-
-	parts := strings.Split(bearerToken, " ")
-	if len(parts) != 2 || parts[0] != "Bearer" {
-		return "", errors.New("invalid token format")
-	}
-
-	return parts[1], nil
-}
-
-func validateClaims(claims jwt.MapClaims, config KindeConfig) bool {
-	aud, ok := claims["aud"].(string)
-	if !ok || aud != config.Audience {
+// validateAudience checks if the token audience matches the expected audience
+func (m AuthenticationMiddleware) validateAudience(claims jwt.MapClaims, expectedAudience string) bool {
+	aud, ok := claims["aud"]
+	if !ok {
 		return false
 	}
 
-	iss, ok := claims["iss"].(string)
-	if !ok || iss != config.Issuer {
+	switch v := aud.(type) {
+	case string:
+		return v == expectedAudience
+	case []interface{}:
+		for _, a := range v {
+			if str, ok := a.(string); ok && str == expectedAudience {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// validateIssuer checks if the token issuer matches the expected domain
+func (m AuthenticationMiddleware) validateIssuer(claims jwt.MapClaims, expectedDomain string) bool {
+	iss, ok := claims["iss"]
+	if !ok {
 		return false
 	}
 
-	return true
-}
-
-func getCertificate(domain, kid string) (interface{}, error) {
-	// Implements certificate retrieval and caching from the Kinde JWKS endpoint
-	jwksURL := fmt.Sprintf("https://%s/.well-known/jwks.json", domain)
-	key, err := getPublicKeyFromJWKS(jwksURL, kid)
-	if err != nil {
-		return nil, err
-	}
-	return key, nil
-}
-
-// JWK and JWKS related types
-type jwkKey struct {
-	Kid string   `json:"kid"`
-	Kty string   `json:"kty"`
-	Alg string   `json:"alg"`
-	Use string   `json:"use"`
-	N   string   `json:"n"`
-	E   string   `json:"e"`
-	X5c []string `json:"x5c"`
-}
-
-type jwks struct {
-	Keys []jwkKey `json:"keys"`
-}
-
-// Caching of JWKS by URL
-var (
-	jwksCache   = make(map[string]jwks)
-	jwksCacheMu sync.RWMutex
-)
-
-// Get public key for kid from JWKS endpoint
-func getPublicKeyFromJWKS(jwksURL, kid string) (*rsa.PublicKey, error) {
-	jwksCacheMu.RLock()
-	jwksData, cached := jwksCache[jwksURL]
-	jwksCacheMu.RUnlock()
-
-	// Only fetch if missing or expired (TODO: Expiry/refresh logic, for now only in-memory cache)
-	if !cached {
-		resp, err := http.Get(jwksURL)
-		if err != nil {
-			return nil, fmt.Errorf("failed to fetch JWKS: %w", err)
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("unexpected JWKS response status: %d", resp.StatusCode)
-		}
-
-		decoder := json.NewDecoder(resp.Body)
-		if err := decoder.Decode(&jwksData); err != nil {
-			return nil, fmt.Errorf("failed to parse JWKS: %w", err)
-		}
-
-		jwksCacheMu.Lock()
-		jwksCache[jwksURL] = jwksData
-		jwksCacheMu.Unlock()
+	issuer, ok := iss.(string)
+	if !ok {
+		return false
 	}
 
-	// Find the correct key by kid
-	for _, key := range jwksData.Keys {
-		if key.Kid == kid {
-			// Use X5C if present (recommended by Kinde docs), fall back to N/E if missing
-			if len(key.X5c) > 0 {
-				// The certificate is base64 DER encoded, decode and parse
-				certDER, err := base64.StdEncoding.DecodeString(key.X5c[0])
-				if err != nil {
-					return nil, fmt.Errorf("failed to decode x5c cert: %w", err)
-				}
-				cert, err := x509.ParseCertificate(certDER)
-				if err != nil {
-					return nil, fmt.Errorf("failed to parse x5c cert: %w", err)
-				}
-				pubKey, ok := cert.PublicKey.(*rsa.PublicKey)
-				if !ok {
-					return nil, errors.New("public key from x5c is not RSA")
-				}
-				return pubKey, nil
-			}
-			// Else: use N/E (should not happen with Kinde, but implemented for completeness)
-			nBytes, err := base64.RawURLEncoding.DecodeString(key.N)
-			if err != nil {
-				return nil, fmt.Errorf("failed to decode n: %w", err)
-			}
-			eBytes, err := base64.RawURLEncoding.DecodeString(key.E)
-			if err != nil {
-				return nil, fmt.Errorf("failed to decode e: %w", err)
-			}
-			eInt := 0
-			for i := 0; i < len(eBytes); i++ {
-				eInt = eInt<<8 + int(eBytes[i])
-			}
-			pubKey := &rsa.PublicKey{
-				N: new(big.Int).SetBytes(nBytes),
-				E: eInt,
-			}
-			return pubKey, nil
-		}
-	}
-	return nil, fmt.Errorf("key with kid='%s' not found in JWKS", kid)
+	// The issuer should match the Kinde domain
+	return issuer == expectedDomain
 }
