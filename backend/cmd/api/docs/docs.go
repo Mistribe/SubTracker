@@ -24,7 +24,30 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/families/members": {
+        "/default": {
+            "get": {
+                "description": "Retrieves a list of default labels",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Get default labels",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/endpoints.labelModel"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/families": {
             "get": {
                 "description": "Get all family members",
                 "produces": [
@@ -40,7 +63,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/endpoints.familyMemberModel"
+                                "$ref": "#/definitions/endpoints.familyModel"
                             }
                         }
                     },
@@ -53,7 +76,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create a new family member",
+                "description": "Create a new family",
                 "consumes": [
                     "application/json"
                 ],
@@ -63,7 +86,87 @@ const docTemplate = `{
                 "tags": [
                     "family"
                 ],
-                "summary": "Create a new family member",
+                "summary": "Create a new family",
+                "parameters": [
+                    {
+                        "description": "Family data",
+                        "name": "family",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.createFamilyModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.familyModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    }
+                }
+            }
+        },
+        "/families/{familyId}": {
+            "put": {
+                "description": "Update a family",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "family"
+                ],
+                "summary": "Update a family",
+                "parameters": [
+                    {
+                        "description": "Family data",
+                        "name": "family",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.updateFamilyModel"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.familyModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    }
+                }
+            }
+        },
+        "/families/{familyId}/members": {
+            "post": {
+                "description": "Add a new family member",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "family"
+                ],
+                "summary": "Add a new family member",
                 "parameters": [
                     {
                         "description": "Family member data",
@@ -79,7 +182,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/endpoints.familyMemberModel"
+                            "$ref": "#/definitions/endpoints.familyModel"
                         }
                     },
                     "400": {
@@ -91,37 +194,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/families/members/{id}": {
-            "get": {
-                "description": "Get family member by ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "family"
-                ],
-                "summary": "Get family member by ID",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/endpoints.familyMemberModel"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/endpoints.httpError"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/endpoints.httpError"
-                        }
-                    }
-                }
-            },
+        "/families/{familyId}/members/{id}": {
             "put": {
                 "description": "Update family member by ID",
                 "consumes": [
@@ -149,7 +222,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/endpoints.familyMemberModel"
+                            "$ref": "#/definitions/endpoints.familyModel"
                         }
                     },
                     "400": {
@@ -191,6 +264,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/families/{id}": {
+            "get": {
+                "description": "Get family member by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "family"
+                ],
+                "summary": "Get family member by ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.familyModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/endpoints.httpError"
+                        }
+                    }
+                }
+            }
+        },
         "/labels": {
             "get": {
                 "description": "Get all labels",
@@ -201,6 +306,14 @@ const docTemplate = `{
                     "label"
                 ],
                 "summary": "Get all labels",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Include default labels",
+                        "name": "with_default",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -640,6 +753,23 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoints.createFamilyModel": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "have_joint_account": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "endpoints.createLabelModel": {
             "type": "object",
             "properties": {
@@ -692,6 +822,9 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "family_id": {
+                    "type": "string"
+                },
                 "family_members": {
                     "type": "array",
                     "items": {
@@ -710,7 +843,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "payer": {
+                "payed_by_joint_account": {
+                    "type": "boolean"
+                },
+                "payer_id": {
                     "type": "string"
                 },
                 "payments": {
@@ -753,11 +889,43 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "family_id": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "is_kid": {
                     "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoints.familyModel": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "have_joint_account": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_owner": {
+                    "type": "boolean"
+                },
+                "members": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/endpoints.familyMemberModel"
+                    }
                 },
                 "name": {
                     "type": "string"
@@ -882,14 +1050,25 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoints.updateFamilyModel": {
+            "type": "object",
+            "properties": {
+                "have_joint_account": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "endpoints.updateLabelModel": {
             "type": "object",
             "properties": {
                 "color": {
                     "type": "string"
-                },
-                "is_default": {
-                    "type": "boolean"
                 },
                 "name": {
                     "type": "string"
@@ -917,7 +1096,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "payer": {
+                "payed_by_joint_account": {
+                    "type": "boolean"
+                },
+                "payer_id": {
                     "type": "string"
                 },
                 "updated_at": {

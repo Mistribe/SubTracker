@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/oleexo/subtracker/internal/domain/user"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/family/command"
@@ -74,6 +75,14 @@ func (f FamilyMemberUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
+	userId, ok := user.FromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, httpError{
+			Message: "invalid user id",
+		})
+		return
+	}
+
 	var model updateFamilyMemberModel
 	if err := c.ShouldBindJSON(&model); err != nil {
 		c.JSON(http.StatusBadRequest, httpError{
@@ -88,7 +97,7 @@ func (f FamilyMemberUpdateEndpoint) Handle(c *gin.Context) {
 			handleResponse(c,
 				r,
 				withMapping[family.Family](func(mbr family.Family) any {
-					return newFamilyModel(mbr)
+					return newFamilyModel(userId, mbr)
 				}))
 			return result.Unit{}
 		},

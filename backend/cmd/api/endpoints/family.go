@@ -55,14 +55,14 @@ func (g FamilyEndpointGroup) Middlewares() []gin.HandlerFunc {
 type familyModel struct {
 	Id               string              `json:"id"`
 	Name             string              `json:"name"`
-	OwnerId          string              `json:"owner_id"`
+	IsOwner          bool                `json:"is_owner"`
 	Members          []familyMemberModel `json:"members"`
 	HaveJointAccount bool                `json:"have_joint_account"`
 	CreatedAt        time.Time           `json:"created_at"`
 	UpdatedAt        time.Time           `json:"updated_at"`
 }
 
-func newFamilyModel(source family.Family) familyModel {
+func newFamilyModel(userId string, source family.Family) familyModel {
 	members := make([]familyMemberModel, 0, len(source.Members()))
 	for _, member := range source.Members() {
 		members = append(members, newFamilyMemberModel(member))
@@ -71,7 +71,7 @@ func newFamilyModel(source family.Family) familyModel {
 	return familyModel{
 		Id:               source.Id().String(),
 		Name:             source.Name(),
-		OwnerId:          source.OwnerId(),
+		IsOwner:          source.OwnerId() == userId,
 		Members:          members,
 		HaveJointAccount: source.HaveJointAccount(),
 		CreatedAt:        source.CreatedAt(),
@@ -83,6 +83,7 @@ type familyMemberModel struct {
 	Id        string    `json:"id"`
 	Name      string    `json:"name"`
 	IsKid     bool      `json:"is_kid"`
+	FamilyId  string    `json:"family_id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -92,6 +93,7 @@ func newFamilyMemberModel(source family.Member) familyMemberModel {
 		Id:        source.Id().String(),
 		Name:      source.Name(),
 		IsKid:     source.IsKid(),
+		FamilyId:  source.FamilyId().String(),
 		CreatedAt: source.CreatedAt(),
 		UpdatedAt: source.UpdatedAt(),
 	}

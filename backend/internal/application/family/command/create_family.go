@@ -31,6 +31,9 @@ func (h *CreateFamilyCommandHandler) Handle(ctx context.Context, cmd CreateFamil
 		return result.Fail[family.Family](err)
 	}
 	return option.Match(famOpt, func(fam family.Family) result.Result[family.Family] {
+		if fam.Equal(cmd.Family) {
+			return result.Success(cmd.Family)
+		}
 		return result.Fail[family.Family](family.ErrFamilyAlreadyExists)
 	}, func() result.Result[family.Family] {
 		return h.createFamily(ctx, cmd)

@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/oleexo/subtracker/internal/domain/user"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/family/query"
@@ -42,6 +43,14 @@ func (f FamilyGetEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
+	userId, ok := user.FromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, httpError{
+			Message: "invalid user id",
+		})
+		return
+	}
+
 	q := query.FindOneQuery{
 		Id: id,
 	}
@@ -50,7 +59,7 @@ func (f FamilyGetEndpoint) Handle(c *gin.Context) {
 	handleResponse(c,
 		r,
 		withMapping[family.Family](func(fm family.Family) any {
-			return newFamilyModel(fm)
+			return newFamilyModel(userId, fm)
 		}))
 }
 

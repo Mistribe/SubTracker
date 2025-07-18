@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/oleexo/subtracker/internal/domain/user"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/family/query"
@@ -24,14 +25,20 @@ type FamilyGetAllEndpoint struct {
 // @Router			/families [get]
 func (f FamilyGetAllEndpoint) Handle(c *gin.Context) {
 	q := query.FindAllQuery{}
-
+	userId, ok := user.FromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, httpError{
+			Message: "invalid user id",
+		})
+		return
+	}
 	r := f.handler.Handle(c, q)
 	handleResponse(c,
 		r,
 		withMapping[[]family.Family](func(fms []family.Family) any {
 			result := make([]interface{}, len(fms))
 			for i, fm := range fms {
-				result[i] = newFamilyModel(fm)
+				result[i] = newFamilyModel(userId, fm)
 			}
 			return result
 		}))

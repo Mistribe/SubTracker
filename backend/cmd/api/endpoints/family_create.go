@@ -92,7 +92,7 @@ func (f FamilyCreateEndpoint) Handle(c *gin.Context) {
 				r,
 				withStatus[family.Family](http.StatusCreated),
 				withMapping[family.Family](func(f family.Family) any {
-					return newFamilyModel(f)
+					return newFamilyModel(userId, f)
 				}))
 			return result.Unit{}
 		},

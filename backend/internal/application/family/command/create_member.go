@@ -43,7 +43,7 @@ func (h CreateFamilyMemberCommandHandler) addFamilyMemberToFamily(ctx context.Co
 		return result.Fail[family.Family](err)
 	}
 	if err := fam.AddMember(command.Member); err != nil {
-		return result.Fail[family.Family](err)
+		return result.Success(fam)
 	}
 
 	if err := h.repository.SaveMember(ctx, &command.Member); err != nil {

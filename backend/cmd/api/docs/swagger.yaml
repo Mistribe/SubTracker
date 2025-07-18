@@ -13,6 +13,17 @@ definitions:
       name:
         type: string
     type: object
+  endpoints.createFamilyModel:
+    properties:
+      created_at:
+        type: string
+      have_joint_account:
+        type: boolean
+      id:
+        type: string
+      name:
+        type: string
+    type: object
   endpoints.createLabelModel:
     properties:
       color:
@@ -47,6 +58,8 @@ definitions:
     properties:
       created_at:
         type: string
+      family_id:
+        type: string
       family_members:
         items:
           type: string
@@ -59,7 +72,9 @@ definitions:
         type: array
       name:
         type: string
-      payer:
+      payed_by_joint_account:
+        type: boolean
+      payer_id:
         type: string
       payments:
         items:
@@ -87,10 +102,31 @@ definitions:
     properties:
       created_at:
         type: string
+      family_id:
+        type: string
       id:
         type: string
       is_kid:
         type: boolean
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  endpoints.familyModel:
+    properties:
+      created_at:
+        type: string
+      have_joint_account:
+        type: boolean
+      id:
+        type: string
+      is_owner:
+        type: boolean
+      members:
+        items:
+          $ref: '#/definitions/endpoints.familyMemberModel'
+        type: array
       name:
         type: string
       updated_at:
@@ -171,12 +207,19 @@ definitions:
       updated_at:
         type: string
     type: object
+  endpoints.updateFamilyModel:
+    properties:
+      have_joint_account:
+        type: boolean
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
   endpoints.updateLabelModel:
     properties:
       color:
         type: string
-      is_default:
-        type: boolean
       name:
         type: string
       updated_at:
@@ -194,7 +237,9 @@ definitions:
         type: array
       name:
         type: string
-      payer:
+      payed_by_joint_account:
+        type: boolean
+      payer_id:
         type: string
       updated_at:
         type: string
@@ -213,7 +258,22 @@ info:
   title: SubTracker API
   version: "1.0"
 paths:
-  /families/members:
+  /default:
+    get:
+      description: Retrieves a list of default labels
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/endpoints.labelModel'
+            type: array
+      summary: Get default labels
+      tags:
+      - label
+  /families:
     get:
       description: Get all family members
       produces:
@@ -223,7 +283,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/endpoints.familyMemberModel'
+              $ref: '#/definitions/endpoints.familyModel'
             type: array
         "400":
           description: Bad Request
@@ -235,7 +295,59 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new family member
+      description: Create a new family
+      parameters:
+      - description: Family data
+        in: body
+        name: family
+        required: true
+        schema:
+          $ref: '#/definitions/endpoints.createFamilyModel'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/endpoints.familyModel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Create a new family
+      tags:
+      - family
+  /families/{familyId}:
+    put:
+      consumes:
+      - application/json
+      description: Update a family
+      parameters:
+      - description: Family data
+        in: body
+        name: family
+        required: true
+        schema:
+          $ref: '#/definitions/endpoints.updateFamilyModel'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoints.familyModel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Update a family
+      tags:
+      - family
+  /families/{familyId}/members:
+    post:
+      consumes:
+      - application/json
+      description: Add a new family member
       parameters:
       - description: Family member data
         in: body
@@ -249,15 +361,15 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/endpoints.familyMemberModel'
+            $ref: '#/definitions/endpoints.familyModel'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/endpoints.httpError'
-      summary: Create a new family member
+      summary: Add a new family member
       tags:
       - family
-  /families/members/{id}:
+  /families/{familyId}/members/{id}:
     delete:
       description: Delete family member by ID
       responses:
@@ -272,26 +384,6 @@ paths:
           schema:
             $ref: '#/definitions/endpoints.httpError'
       summary: Delete family member by ID
-      tags:
-      - family
-    get:
-      description: Get family member by ID
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/endpoints.familyMemberModel'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/endpoints.httpError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/endpoints.httpError'
-      summary: Get family member by ID
       tags:
       - family
     put:
@@ -311,7 +403,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/endpoints.familyMemberModel'
+            $ref: '#/definitions/endpoints.familyModel'
         "400":
           description: Bad Request
           schema:
@@ -323,9 +415,35 @@ paths:
       summary: Update family member by ID
       tags:
       - family
+  /families/{id}:
+    get:
+      description: Get family member by ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoints.familyModel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/endpoints.httpError'
+      summary: Get family member by ID
+      tags:
+      - family
   /labels:
     get:
       description: Get all labels
+      parameters:
+      - description: Include default labels
+        in: query
+        name: with_default
+        type: boolean
       produces:
       - application/json
       responses:

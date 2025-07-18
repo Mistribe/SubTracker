@@ -15,9 +15,10 @@ import (
 
 type familyModel struct {
 	BaseModel
-	Name             string `gorm:"type:varchar(100);not null"`
-	OwnerId          string `gorm:"type:varchar(100);not null"`
-	HaveJointAccount bool   `gorm:"type:boolean;not null;default:false"`
+	Name             string              `gorm:"type:varchar(100);not null"`
+	OwnerId          string              `gorm:"type:varchar(100);not null"`
+	HaveJointAccount bool                `gorm:"type:boolean;not null;default:false"`
+	Members          []familyMemberModel `gorm:"foreignKey:FamilyId;references:Id"`
 }
 
 func (f familyModel) TableName() string {
@@ -66,7 +67,8 @@ func (r FamilyRepository) toFamilyMemberModel(source *family.Member) familyMembe
 				Valid: false,
 			}
 		}),
-		IsKid: source.IsKid(),
+		IsKid:    source.IsKid(),
+		FamilyId: source.FamilyId(),
 	}
 }
 
@@ -105,11 +107,16 @@ func (r FamilyRepository) toMemberEntity(source familyMemberModel) family.Member
 }
 
 func (r FamilyRepository) toFamilyEntity(source familyModel) family.Family {
+	members := make([]family.Member, 0, len(source.Members))
+	for _, member := range source.Members {
+		members = append(members, r.toMemberEntity(member))
+	}
 	fam := family.NewFamilyWithoutValidation(
 		source.Id,
-		source.Name,
 		source.OwnerId,
+		source.Name,
 		source.HaveJointAccount,
+		members,
 		source.CreatedAt,
 		source.UpdatedAt,
 		true,
@@ -121,11 +128,14 @@ func (r FamilyRepository) toFamilyEntity(source familyModel) family.Family {
 
 func (r FamilyRepository) GetById(ctx context.Context, id uuid.UUID) (option.Option[family.Family], error) {
 	var model familyModel
-	if err := r.repository.db.WithContext(ctx).First(&model, id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	result := r.repository.db.WithContext(ctx).
+		Preload("Members").
+		First(&model, id)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return option.None[family.Family](), nil
 		}
-		return option.None[family.Family](), err
+		return option.None[family.Family](), result.Error
 	}
 	return option.Some(r.toFamilyEntity(model)), nil
 }
@@ -136,7 +146,7 @@ func (r FamilyRepository) GetOwn(ctx context.Context) (option.Option[family.Fami
 		return option.None[family.Family](), nil
 	}
 	var model familyModel
-	if err := r.repository.db.WithContext(ctx).Where("OwnerId = ?", userId).First(&model).Error; err != nil {
+	if err := r.repository.db.WithContext(ctx).Where("owner_id = ?", userId).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return option.None[family.Family](), nil
 		}
@@ -152,7 +162,7 @@ func (r FamilyRepository) GetAll(ctx context.Context) ([]family.Family, error) {
 	}
 	var families []familyModel
 	// todo add fetch family where the user is member
-	if result := r.repository.db.WithContext(ctx).Where("OwnerId = ?", userId).Find(&families); result.Error != nil {
+	if result := r.repository.db.WithContext(ctx).Where("owner_id = ?", userId).Find(&families); result.Error != nil {
 		return nil, result.Error
 	}
 	result := make([]family.Family, 0, len(families))

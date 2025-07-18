@@ -155,3 +155,34 @@ func (m *Member) IsExists() bool {
 func (m *Member) FamilyId() uuid.UUID {
 	return m.familyId
 }
+
+func (m *Member) Equal(member Member) bool {
+	if m.id != member.id ||
+		m.familyId != member.familyId ||
+		m.name != member.name ||
+		m.isKid != member.isKid ||
+		!m.createdAt.Equal(member.createdAt) ||
+		!m.updatedAt.Equal(member.updatedAt) {
+		return false
+	}
+
+	if (m.email == nil && member.email != nil) ||
+		(m.email != nil && member.email == nil) {
+		return false
+	}
+
+	if m.email != nil && member.email != nil && *m.email != *member.email {
+		return false
+	}
+
+	if (m.userId == nil && member.userId != nil) ||
+		(m.userId != nil && member.userId == nil) {
+		return false
+	}
+
+	if m.userId != nil && member.userId != nil && *m.userId != *member.userId {
+		return false
+	}
+
+	return true
+}

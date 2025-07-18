@@ -23,7 +23,7 @@ func NewDefaultLabelEndpoint(handler core.QueryHandler[query.DefaultLabelQuery, 
 // Handle godoc
 // @Summary Get default labels
 // @Description Retrieves a list of default labels
-// @Tags labels
+// @Tags label
 // @Produce json
 // @Success 200 {array} labelModel
 // @Router /default [get]

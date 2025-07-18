@@ -30,7 +30,7 @@ func NewFamily(
 	haveJointAccount bool,
 	createdAt time.Time,
 	updatedAt time.Time) result.Result[Family] {
-	f := NewFamilyWithoutValidation(id, ownerId, name, haveJointAccount, createdAt, updatedAt, false)
+	f := NewFamilyWithoutValidation(id, ownerId, name, haveJointAccount, nil, createdAt, updatedAt, false)
 
 	if err := f.Validate(); err != nil {
 		return result.Fail[Family](err)
@@ -43,17 +43,20 @@ func NewFamilyWithoutValidation(
 	ownerId string,
 	name string,
 	haveJointAccount bool,
+	members []Member,
 	createdAt time.Time,
 	updatedAt time.Time,
 	isExists bool) Family {
 	return Family{
-		id:        id,
-		ownerId:   ownerId,
-		name:      name,
-		createdAt: createdAt,
-		updatedAt: updatedAt,
-		isDirty:   true,
-		isExists:  isExists,
+		id:               id,
+		ownerId:          ownerId,
+		name:             name,
+		members:          members,
+		createdAt:        createdAt,
+		updatedAt:        updatedAt,
+		haveJointAccount: haveJointAccount,
+		isDirty:          true,
+		isExists:         isExists,
 	}
 }
 
@@ -198,4 +201,29 @@ func (f *Family) SetHaveJointAccount(haveJointAccount bool) {
 func (f *Family) SetName(name string) {
 	f.name = name
 	f.isDirty = true
+}
+
+func (f *Family) Equal(family Family) bool {
+	if f.id != family.id ||
+		f.ownerId != family.ownerId ||
+		f.name != family.name ||
+		f.haveJointAccount != family.haveJointAccount ||
+		!f.createdAt.Equal(family.createdAt) ||
+		!f.updatedAt.Equal(family.updatedAt) ||
+		len(f.members) != len(family.members) {
+		return false
+	}
+
+	memberMap := make(map[uuid.UUID]Member)
+	for _, member := range f.members {
+		memberMap[member.Id()] = member
+	}
+
+	for _, member := range family.members {
+		if existingMember, ok := memberMap[member.Id()]; !ok || !existingMember.Equal(member) {
+			return false
+		}
+	}
+
+	return true
 }
