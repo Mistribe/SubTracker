@@ -35,6 +35,7 @@ void main() async {
     authClientId: dotenv.env['KINDE_AUTH_CLIENT_ID']!,
     loginRedirectUri: dotenv.env['KINDE_LOGIN_REDIRECT_URI']!,
     logoutRedirectUri: dotenv.env['KINDE_LOGOUT_REDIRECT_URI']!,
+    audience: dotenv.env['KINDE_AUDIENCE'],
     //optional
     scopes: ["email", "profile", "offline", "openid"], // optional,
   );
