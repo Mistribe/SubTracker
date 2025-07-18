@@ -1,5 +1,7 @@
-import { Routes as RouterRoutes, Route, BrowserRouter } from 'react-router-dom';
+import { Routes as RouterRoutes, Route, BrowserRouter, Navigate } from 'react-router-dom';
 import { useKindeAuth } from '@kinde-oss/kinde-auth-react';
+import ProtectedRoute from './components/ProtectedRoute';
+import SignIn from './pages/SignIn';
 
 // This is a placeholder for a home page component
 const Home = () => {
@@ -35,10 +37,17 @@ const Routes = () => {
     <BrowserRouter>
       <RouterRoutes>
         <Route path="/" element={<Home />} />
-        {isAuthenticated && (
-          <Route path="/dashboard" element={<Dashboard />} />
-        )}
-        {/* Add more routes as needed */}
+        <Route path="/signin" element={<SignIn />} />
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        {/* Redirect to signin if route doesn't exist */}
+        <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/signin"} />} />
       </RouterRoutes>
     </BrowserRouter>
   );
