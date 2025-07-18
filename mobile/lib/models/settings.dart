@@ -14,10 +14,14 @@ class Settings {
   @HiveField(2)
   final String defaultCurrency;
 
+  @HiveField(3)
+  final String? selectedFamilyId;
+
   Settings({
     this.isDarkMode = false,
     this.useSystemTheme = true,
     this.defaultCurrency = Currency.defaultCode,
+    this.selectedFamilyId,
   });
 
   // Get the default currency as a Currency enum
@@ -28,12 +32,14 @@ class Settings {
     bool? useSystemTheme,
     String? defaultCurrency,
     Currency? defaultCurrencyEnum,
+    String? selectedFamilyId,
   }) {
     return Settings(
       isDarkMode: isDarkMode ?? this.isDarkMode,
       useSystemTheme: useSystemTheme ?? this.useSystemTheme,
       defaultCurrency:
           defaultCurrencyEnum?.code ?? defaultCurrency ?? this.defaultCurrency,
+      selectedFamilyId: selectedFamilyId ?? this.selectedFamilyId,
     );
   }
 }

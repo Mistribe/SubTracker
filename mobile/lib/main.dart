@@ -133,8 +133,10 @@ class MyApp extends StatelessWidget {
           create: (_) => ThemeProvider(settingsRepository: settingsRepository),
         ),
         ChangeNotifierProvider(
-          create: (_) =>
-              FamilyProvider(familyRepository: familyMemberRepository),
+          create: (_) => FamilyProvider(
+            familyRepository: familyMemberRepository,
+            settingsRepository: settingsRepository,
+          ),
         ),
         // Provide direct access to repositories
         Provider<LabelRepository>.value(value: labelRepository),

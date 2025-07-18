@@ -2,18 +2,47 @@ import 'package:flutter/foundation.dart';
 import '../models/family.dart';
 import '../models/family_member.dart';
 import '../repositories/family_repository.dart';
+import '../repositories/settings_repository.dart';
 
 class FamilyProvider with ChangeNotifier {
   final FamilyRepository familyRepository;
+  final SettingsRepository settingsRepository;
 
   String? _selectedFamilyId;
 
-  FamilyProvider({required this.familyRepository});
+  FamilyProvider({
+    required this.familyRepository,
+    required this.settingsRepository,
+  }) {
+    _initializeSelectedFamily();
+  }
+
+  Future<void> _initializeSelectedFamily() async {
+    // Load selected family ID from settings
+    final settings = settingsRepository.getSettings();
+    _selectedFamilyId = settings.selectedFamilyId;
+
+    // Check if the selected family still exists
+    if (_selectedFamilyId != null &&
+        familyRepository.get(_selectedFamilyId!) == null) {
+      _selectedFamilyId = null;
+    }
+
+    // If no family is selected but families exist, select the first one
+    if (_selectedFamilyId == null && hasFamilies) {
+      final families = familyRepository.getAll();
+      if (families.isNotEmpty) {
+        _selectedFamilyId = families.first.id;
+        await settingsRepository.updateSelectedFamilyId(_selectedFamilyId);
+      }
+    }
+  }
 
   String? get selectedFamilyId => _selectedFamilyId;
 
-  void setSelectedFamilyId(String? id) {
+  Future<void> setSelectedFamilyId(String? id) async {
     _selectedFamilyId = id;
+    await settingsRepository.updateSelectedFamilyId(id);
     notifyListeners();
   }
 
@@ -51,6 +80,7 @@ class FamilyProvider with ChangeNotifier {
     );
     if (family != null) {
       _selectedFamilyId = family.id;
+      await settingsRepository.updateSelectedFamilyId(_selectedFamilyId);
       notifyListeners();
     }
     return family;
@@ -77,6 +107,14 @@ class FamilyProvider with ChangeNotifier {
     await familyRepository.delete(id);
     if (_selectedFamilyId == id) {
       _selectedFamilyId = null;
+      await settingsRepository.updateSelectedFamilyId(null);
+
+      // If there are other families, select the first one
+      final families = familyRepository.getAll();
+      if (families.isNotEmpty) {
+        _selectedFamilyId = families.first.id;
+        await settingsRepository.updateSelectedFamilyId(_selectedFamilyId);
+      }
     }
     notifyListeners();
   }

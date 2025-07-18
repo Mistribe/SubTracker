@@ -14,7 +14,7 @@ class SettingsRepository {
   Future<void> initialize() async {
     // Open the Hive box for settings
     _box = await Hive.openBox<Settings>(_boxName);
-    
+
     // Initialize with default settings if none exist
     if (!_box.containsKey(_settingsKey)) {
       await _box.put(_settingsKey, Settings());
@@ -46,6 +46,15 @@ class SettingsRepository {
     final currentSettings = getSettings();
     final updatedSettings = currentSettings.copyWith(
       defaultCurrency: currency,
+    );
+    await saveSettings(updatedSettings);
+  }
+
+  /// Update selected family ID
+  Future<void> updateSelectedFamilyId(String? familyId) async {
+    final currentSettings = getSettings();
+    final updatedSettings = currentSettings.copyWith(
+      selectedFamilyId: familyId,
     );
     await saveSettings(updatedSettings);
   }

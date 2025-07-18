@@ -54,27 +54,205 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
             ),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              _isEditMode ? 'Edit your family' : 'Manage your families',
-              style: TextStyle(
-                fontSize: 16,
-                color: Theme.of(context).textTheme.bodyLarge?.color,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                _isEditMode ? 'Edit your family' : 'Manage your families',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
               ),
             ),
-          ),
-          if (selectedFamily != null && _isEditMode)
-            _buildFamilyEditForm(context, selectedFamily, familyProvider)
-          else
-            Expanded(
-              child: families.isEmpty
-                  ? _buildEmptyFamiliesView(context)
-                  : _buildFamiliesList(context, families, familyProvider),
-            ),
-        ],
+            // Family dropdown selector
+            if (families.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Active Family:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      value: familyProvider.selectedFamilyId,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                      ),
+                      items: families.map((family) {
+                        return DropdownMenuItem<String>(
+                          value: family.id,
+                          child: Row(
+                            children: [
+                              Text(family.name),
+                              if (family.isOwner)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8.0),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0,
+                                      vertical: 2.0,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12.0),
+                                    ),
+                                    child: const Text(
+                                      'Owner',
+                                      style: TextStyle(
+                                        fontSize: 12.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          familyProvider.setSelectedFamilyId(newValue);
+                          setState(() {
+                            _isEditMode = false;
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 16),
+            // Display family members if a family is selected
+            if (selectedFamily != null && !_isEditMode)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Family Members:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    selectedFamily.members.isEmpty
+                        ? const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8.0),
+                            child: Text('No family members yet'),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: selectedFamily.members.length,
+                            itemBuilder: (context, index) {
+                              final member = selectedFamily.members[index];
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  child: Text(
+                                    member.name.isNotEmpty
+                                        ? member.name[0].toUpperCase()
+                                        : '?',
+                                  ),
+                                ),
+                                title: Row(
+                                  children: [
+                                    Text(member.name),
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 8.0),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0,
+                                          vertical: 2.0,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: member.isKid
+                                              ? Colors.blue.withOpacity(0.2)
+                                              : Colors.green.withOpacity(0.2),
+                                          borderRadius: BorderRadius.circular(
+                                            12.0,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          member.isKid ? 'Kid' : 'Adult',
+                                          style: const TextStyle(
+                                            fontSize: 12.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                trailing: canEdit
+                                    ? Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.edit),
+                                            onPressed: () =>
+                                                _showEditMemberDialog(
+                                                  context,
+                                                  selectedFamily.id,
+                                                  member,
+                                                  familyProvider,
+                                                ),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete),
+                                            onPressed: () =>
+                                                _showDeleteMemberDialog(
+                                                  context,
+                                                  selectedFamily.id,
+                                                  member,
+                                                  familyProvider,
+                                                ),
+                                          ),
+                                        ],
+                                      )
+                                    : null,
+                              );
+                            },
+                          ),
+                    if (canEdit)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0, bottom: 16.0),
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showAddMemberDialog(
+                            context,
+                            selectedFamily.id,
+                            familyProvider,
+                          ),
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add Family Member'),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            if (selectedFamily != null && _isEditMode)
+              _buildFamilyEditForm(context, selectedFamily, familyProvider)
+            else if (families.isEmpty)
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: _buildEmptyFamiliesView(context),
+              ),
+          ],
+        ),
       ),
       floatingActionButton: !_isEditMode && !familyProvider.hasOwnedFamily
           ? FloatingActionButton(
@@ -128,9 +306,7 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
         return ListTile(
           leading: CircleAvatar(
             child: Text(
-              family.name.isNotEmpty
-                  ? family.name[0].toUpperCase()
-                  : '?',
+              family.name.isNotEmpty ? family.name[0].toUpperCase() : '?',
             ),
           ),
           title: Row(
@@ -184,11 +360,8 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete),
-                      onPressed: () => _showDeleteFamilyDialog(
-                        context,
-                        family,
-                        provider,
-                      ),
+                      onPressed: () =>
+                          _showDeleteFamilyDialog(context, family, provider),
                     ),
                   ],
                 )
@@ -234,10 +407,7 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
             const SizedBox(height: 24),
             const Text(
               'Family Members',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             if (family.members.isEmpty)
@@ -315,11 +485,8 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
               ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () => _showAddMemberDialog(
-                context,
-                family.id,
-                provider,
-              ),
+              onPressed: () =>
+                  _showAddMemberDialog(context, family.id, provider),
               icon: const Icon(Icons.add),
               label: const Text('Add Family Member'),
             ),
@@ -406,7 +573,10 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
               onPressed: () {
                 final name = nameController.text.trim();
                 if (name.isNotEmpty) {
-                  provider.createFamily(name, haveJointAccount: haveJointAccount);
+                  provider.createFamily(
+                    name,
+                    haveJointAccount: haveJointAccount,
+                  );
                   Navigator.of(context).pop();
                 }
               },
@@ -498,11 +668,7 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
               onPressed: () {
                 final name = nameController.text.trim();
                 if (name.isNotEmpty) {
-                  provider.addFamilyMember(
-                    familyId,
-                    name,
-                    isKid: isKid,
-                  );
+                  provider.addFamilyMember(familyId, name, isKid: isKid);
                   Navigator.of(context).pop();
                 }
               },
