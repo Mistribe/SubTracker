@@ -6,89 +6,93 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/oleexo/subtracker/internal/domain/user"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/family/command"
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/pkg/ext"
-	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
-type FamilyMemberCreateEndpoint struct {
-	handler core.CommandHandler[command.CreateFamilyMemberCommand, family.Member]
+type FamilyCreateEndpoint struct {
+	handler core.CommandHandler[command.CreateFamilyCommand, family.Family]
 }
 
-type createFamilyMemberModel struct {
-	Id        *string    `json:"id,omitempty"`
-	Name      string     `json:"name"`
-	Email     *string    `json:"email,omitempty"`
-	IsKid     bool       `json:"is_kid"`
-	CreatedAt *time.Time `json:"created_at,omitempty"`
+type createFamilyModel struct {
+	Id               *string    `json:"id,omitempty"`
+	Name             string     `json:"name"`
+	HaveJointAccount bool       `json:"have_joint_account"`
+	CreatedAt        *time.Time `json:"created_at,omitempty"`
 }
 
-func (m createFamilyMemberModel) ToFamilyMember() result.Result[family.Member] {
+func (m createFamilyModel) ToFamily(ownerId string) result.Result[family.Family] {
 	var id uuid.UUID
 	var err error
 	var createdAt time.Time
-	email := option.None[string]()
-	if m.Email != nil {
-		email = option.Some(*m.Email)
-	}
+
 	id, err = parseUuidOrNew(m.Id)
 	if err != nil {
-		return result.Fail[family.Member](err)
+		return result.Fail[family.Family](err)
 	}
 
 	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
 
-	return family.NewMember(
+	return family.NewFamily(
 		id,
+		ownerId,
 		m.Name,
-		email,
-		m.IsKid,
+		m.HaveJointAccount,
 		createdAt,
 		createdAt,
 	)
 }
 
-func (m createFamilyMemberModel) Command() result.Result[command.CreateFamilyMemberCommand] {
-	return result.Bind[family.Member, command.CreateFamilyMemberCommand](
-		m.ToFamilyMember(),
-		func(fm family.Member) result.Result[command.CreateFamilyMemberCommand] {
-			return result.Success(command.CreateFamilyMemberCommand{
-				Member: fm,
+func (m createFamilyModel) Command(ownerId string) result.Result[command.CreateFamilyCommand] {
+	return result.Bind[family.Family, command.CreateFamilyCommand](
+		m.ToFamily(ownerId),
+		func(f family.Family) result.Result[command.CreateFamilyCommand] {
+			return result.Success(command.CreateFamilyCommand{
+				Family: f,
 			})
 		})
 }
 
 // Handle godoc
-// @Summary		Create a new family member
-// @Description	Create a new family member
+// @Summary		Create a new family
+// @Description	Create a new family
 // @Tags			family
 // @Accept			json
-// @Produce		json
-// @Param			member	body		createFamilyMemberModel	true	"Family member data"
-// @Success		201		{object}	familyMemberModel
+// @Produce			json
+// @Param			family	body		createFamilyModel	true	"Family data"
+// @Success		201		{object}	familyModel
 // @Failure		400		{object}	httpError
-// @Router			/families/members [post]
-func (f FamilyMemberCreateEndpoint) Handle(c *gin.Context) {
-	var model createFamilyMemberModel
+// @Router			/families [post]
+func (f FamilyCreateEndpoint) Handle(c *gin.Context) {
+	var model createFamilyModel
 	if err := c.ShouldBindJSON(&model); err != nil {
 		c.JSON(http.StatusBadRequest, httpError{
 			Message: err.Error(),
 		})
 		return
 	}
+	userId, ok := user.FromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, httpError{
+			Message: "invalid user id",
+		})
+		return
+	}
 
-	result.Match[command.CreateFamilyMemberCommand, result.Unit](model.Command(),
-		func(cmd command.CreateFamilyMemberCommand) result.Unit {
+	cmd := model.Command(userId)
+	result.Match[command.CreateFamilyCommand, result.Unit](cmd,
+		func(cmd command.CreateFamilyCommand) result.Unit {
 			r := f.handler.Handle(c, cmd)
 			handleResponse(c,
 				r,
-				withStatus[family.Member](http.StatusCreated),
-				withMapping[family.Member](func(fm family.Member) any {
-					return newFamilyMemberModel(fm)
+				withStatus[family.Family](http.StatusCreated),
+				withMapping[family.Family](func(f family.Family) any {
+					return newFamilyModel(f)
 				}))
 			return result.Unit{}
 		},
@@ -100,22 +104,22 @@ func (f FamilyMemberCreateEndpoint) Handle(c *gin.Context) {
 		})
 }
 
-func (f FamilyMemberCreateEndpoint) Pattern() []string {
+func (f FamilyCreateEndpoint) Pattern() []string {
 	return []string{
-		"/members",
+		"",
 	}
 }
 
-func (f FamilyMemberCreateEndpoint) Method() string {
+func (f FamilyCreateEndpoint) Method() string {
 	return http.MethodPost
 }
 
-func (f FamilyMemberCreateEndpoint) Middlewares() []gin.HandlerFunc {
+func (f FamilyCreateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewFamilyMemberCreateEndpoint(handler core.CommandHandler[command.CreateFamilyMemberCommand, family.Member]) *FamilyMemberCreateEndpoint {
-	return &FamilyMemberCreateEndpoint{
+func NewFamilyCreateEndpoint(handler core.CommandHandler[command.CreateFamilyCommand, family.Family]) *FamilyCreateEndpoint {
+	return &FamilyCreateEndpoint{
 		handler: handler,
 	}
 }

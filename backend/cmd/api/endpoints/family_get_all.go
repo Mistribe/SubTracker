@@ -10,8 +10,8 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/family"
 )
 
-type FamilyMemberGetAllEndpoint struct {
-	handler core.QueryHandler[query.FindAllQuery, []family.Member]
+type FamilyGetAllEndpoint struct {
+	handler core.QueryHandler[query.FindAllQuery, []family.Family]
 }
 
 // Handle godoc
@@ -19,40 +19,40 @@ type FamilyMemberGetAllEndpoint struct {
 // @Description	Get all family members
 // @Tags			family
 // @Produce		json
-// @Success		200	{array}		familyMemberModel
+// @Success		200	{array}		familyModel
 // @Failure		400	{object}	httpError
-// @Router			/families/members [get]
-func (f FamilyMemberGetAllEndpoint) Handle(c *gin.Context) {
+// @Router			/families [get]
+func (f FamilyGetAllEndpoint) Handle(c *gin.Context) {
 	q := query.FindAllQuery{}
 
 	r := f.handler.Handle(c, q)
 	handleResponse(c,
 		r,
-		withMapping[[]family.Member](func(fms []family.Member) any {
+		withMapping[[]family.Family](func(fms []family.Family) any {
 			result := make([]interface{}, len(fms))
 			for i, fm := range fms {
-				result[i] = newFamilyMemberModel(fm)
+				result[i] = newFamilyModel(fm)
 			}
 			return result
 		}))
 }
 
-func (f FamilyMemberGetAllEndpoint) Pattern() []string {
+func (f FamilyGetAllEndpoint) Pattern() []string {
 	return []string{
-		"/members",
+		"",
 	}
 }
 
-func (f FamilyMemberGetAllEndpoint) Method() string {
+func (f FamilyGetAllEndpoint) Method() string {
 	return http.MethodGet
 }
 
-func (f FamilyMemberGetAllEndpoint) Middlewares() []gin.HandlerFunc {
+func (f FamilyGetAllEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewFamilyMemberGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, []family.Member]) *FamilyMemberGetAllEndpoint {
-	return &FamilyMemberGetAllEndpoint{
+func NewFamilyMemberGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, []family.Family]) *FamilyGetAllEndpoint {
+	return &FamilyGetAllEndpoint{
 		handler: handler,
 	}
 }

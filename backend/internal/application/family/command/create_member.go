@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/oleexo/subtracker/internal/domain/family"
+	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
@@ -21,22 +22,34 @@ func NewCreateFamilyMemberCommandHandler(repository family.Repository) *CreateFa
 
 func (h CreateFamilyMemberCommandHandler) Handle(
 	ctx context.Context,
-	command CreateFamilyMemberCommand) result.Result[family.Member] {
-	existingMember, err := h.repository.Get(ctx, command.Member.Id())
-	if err != nil {
-		return result.Fail[family.Member](err)
-	}
-	if existingMember.IsSome() {
-		return result.Fail[family.Member](family.ErrMemberAlreadyExists)
-	}
-
+	command CreateFamilyMemberCommand) result.Result[family.Family] {
 	if err := command.Member.Validate(); err != nil {
-		return result.Fail[family.Member](err)
+		return result.Fail[family.Family](err)
 	}
-	// todo make a new member not from input
-	if err := h.repository.Save(ctx, &command.Member); err != nil {
-		return result.Fail[family.Member](err)
+	famOpt, err := h.repository.GetById(ctx, command.Member.FamilyId())
+	if err != nil {
+		return result.Fail[family.Family](err)
 	}
 
-	return result.Success(command.Member)
+	return option.Match(famOpt, func(fam family.Family) result.Result[family.Family] {
+		return h.addFamilyMemberToFamily(ctx, command, fam)
+	}, func() result.Result[family.Family] {
+		return result.Fail[family.Family](family.ErrFamilyNotFound)
+	})
+}
+
+func (h CreateFamilyMemberCommandHandler) addFamilyMemberToFamily(ctx context.Context, command CreateFamilyMemberCommand, fam family.Family) result.Result[family.Family] {
+	if err := ensureOwnerIsEditor(ctx, fam.OwnerId()); err != nil {
+		return result.Fail[family.Family](err)
+	}
+	if err := fam.AddMember(command.Member); err != nil {
+		return result.Fail[family.Family](err)
+	}
+
+	if err := h.repository.SaveMember(ctx, &command.Member); err != nil {
+		return result.Fail[family.Family](err)
+	}
+
+	return result.Success(fam)
+
 }

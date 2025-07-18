@@ -24,18 +24,18 @@ func NewFindOneQueryHandler(repository family.Repository) *FindOneQueryHandler {
 
 func (h FindOneQueryHandler) Handle(
 	ctx context.Context,
-	query FindOneQuery) result.Result[family.Member] {
-	member, err := h.repository.Get(ctx, query.Id)
+	query FindOneQuery) result.Result[family.Family] {
+	member, err := h.repository.GetById(ctx, query.Id)
 	if err != nil {
-		return result.Fail[family.Member](err)
+		return result.Fail[family.Family](err)
 	}
 
-	return option.Match[family.Member, result.Result[family.Member]](member,
-		func(in family.Member) result.Result[family.Member] {
+	return option.Match[family.Family, result.Result[family.Family]](member,
+		func(in family.Family) result.Result[family.Family] {
 			return result.Success(in)
 		},
-		func() result.Result[family.Member] {
-			return result.Fail[family.Member](family.ErrFamilyMemberNotFound)
+		func() result.Result[family.Family] {
+			return result.Fail[family.Family](family.ErrFamilyNotFound)
 		},
 	)
 }

@@ -58,7 +58,7 @@ func (h CreateSubscriptionCommandHandler) createSubscription(
 	if err := h.ensureLabelsExists(ctx, command.Subscription.Labels()); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
-	if err := h.ensureFamilyMemberExists(ctx, command.Subscription.FamilyMembers()); err != nil {
+	if err := h.ensureFamilyMemberExists(ctx, command.Subscription); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 
@@ -72,18 +72,22 @@ func (h CreateSubscriptionCommandHandler) createSubscription(
 
 func (h CreateSubscriptionCommandHandler) ensureFamilyMemberExists(
 	ctx context.Context,
-	familyMembers []uuid.UUID) error {
-	if len(familyMembers) == 0 {
+	sub subscription.Subscription) error {
+	return option.Match(sub.FamilyId(), func(familyId uuid.UUID) error {
+		if len(sub.FamilyMembers()) == 0 {
+			return nil
+		}
+		exists, err := h.familyRepository.MemberExists(ctx, familyId, sub.FamilyMembers()...)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return nil
+		}
+		return family.ErrFamilyMemberNotFound
+	}, func() error {
 		return nil
-	}
-	exists, err := h.familyRepository.Exists(ctx, familyMembers...)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return nil
-	}
-	return family.ErrFamilyMemberNotFound
+	})
 }
 
 func (h CreateSubscriptionCommandHandler) ensureLabelsExists(ctx context.Context, labels []uuid.UUID) error {

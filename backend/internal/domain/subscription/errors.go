@@ -14,7 +14,10 @@ var (
 		MaxLabelCount)
 	ErrSubscriptionFamilyMemberExceeded = fmt.Errorf("subscription's family members have exceeded the maximum of %d",
 		MaxFamilyMemberCount)
-	ErrPaymentCannotEndBeforeStart = errors.New("payment end date cannot be before the starting date")
-	ErrPaymentNotFound             = errors.New("payment not found")
-	ErrPaymentAlreadyExists        = errors.New("payment already exists")
+	ErrPaymentCannotEndBeforeStart          = errors.New("payment end date cannot be before the starting date")
+	ErrPaymentNotFound                      = errors.New("payment not found")
+	ErrPaymentAlreadyExists                 = errors.New("payment already exists")
+	ErrCannotHaveFamilyMembersWithoutFamily = errors.New("cannot have family members without a family")
+	ErrPayerAndJointAccountConflict         = errors.New("subscription cannot have both payer and joint account payment")
+	ErrNoFamilyDefined                      = errors.New("no family defined")
 )

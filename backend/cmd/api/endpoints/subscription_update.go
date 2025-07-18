@@ -20,11 +20,12 @@ type SubscriptionUpdateEndpoint struct {
 }
 
 type updateSubscriptionModel struct {
-	Name          string     `json:"name"`
-	Labels        []string   `json:"labels"`
-	FamilyMembers []string   `json:"family_members"`
-	Payer         *string    `json:"payer,omitempty"`
-	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
+	Name                string     `json:"name"`
+	Labels              []string   `json:"labels"`
+	FamilyMembers       []string   `json:"family_members"`
+	PayerId             *string    `json:"payer_id,omitempty"`
+	PayedByJointAccount bool       `json:"payed_by_joint_account,omitempty"`
+	UpdatedAt           *time.Time `json:"updated_at,omitempty"`
 }
 
 func (m updateSubscriptionModel) Command(id uuid.UUID) result.Result[command.UpdateSubscriptionCommand] {
@@ -43,18 +44,19 @@ func (m updateSubscriptionModel) Command(id uuid.UUID) result.Result[command.Upd
 		return result.Fail[command.UpdateSubscriptionCommand](err)
 	}
 
-	payer, err = option.ParseNew(m.Payer, uuid.Parse)
+	payer, err = option.ParseNew(m.PayerId, uuid.Parse)
 	if err != nil {
 		return result.Fail[command.UpdateSubscriptionCommand](err)
 	}
 
 	return result.Success(command.UpdateSubscriptionCommand{
-		Id:            id,
-		Name:          m.Name,
-		Labels:        labels,
-		FamilyMembers: familyMembers,
-		Payer:         payer,
-		UpdatedAt:     option.New(m.UpdatedAt),
+		Id:                  id,
+		Name:                m.Name,
+		Labels:              labels,
+		FamilyMembers:       familyMembers,
+		PayerId:             payer,
+		PayedByJointAccount: m.PayedByJointAccount,
+		UpdatedAt:           option.New(m.UpdatedAt),
 	})
 }
 

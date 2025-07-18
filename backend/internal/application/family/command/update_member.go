@@ -13,6 +13,7 @@ import (
 
 type UpdateFamilyMemberCommand struct {
 	Id        uuid.UUID
+	FamilyId  uuid.UUID
 	Name      string
 	Email     option.Option[string]
 	IsKid     bool
@@ -29,23 +30,33 @@ func NewUpdateFamilyMemberCommandHandler(repository family.Repository) *UpdateFa
 
 func (h UpdateFamilyMemberCommandHandler) Handle(
 	ctx context.Context,
-	command UpdateFamilyMemberCommand) result.Result[family.Member] {
-	mbrOpt, err := h.repository.Get(ctx, command.Id)
+	command UpdateFamilyMemberCommand) result.Result[family.Family] {
+	famOpt, err := h.repository.GetById(ctx, command.FamilyId)
 	if err != nil {
-		return result.Fail[family.Member](err)
+		return result.Fail[family.Family](err)
 	}
 
-	return option.Match(mbrOpt, func(in family.Member) result.Result[family.Member] {
-		return h.updateFamilyMember(ctx, command, in)
-	}, func() result.Result[family.Member] {
-		return result.Fail[family.Member](family.ErrFamilyMemberNotFound)
+	return option.Match(famOpt, func(fam family.Family) result.Result[family.Family] {
+		return option.Match(fam.GetMember(command.Id),
+			func(mbr family.Member) result.Result[family.Family] {
+				return h.updateFamilyMember(ctx, command, fam, mbr)
+			}, func() result.Result[family.Family] {
+				return result.Fail[family.Family](family.ErrFamilyMemberNotFound)
+			})
+
+	}, func() result.Result[family.Family] {
+		return result.Fail[family.Family](family.ErrFamilyNotFound)
 	})
 }
 
 func (h UpdateFamilyMemberCommandHandler) updateFamilyMember(
 	ctx context.Context,
 	command UpdateFamilyMemberCommand,
-	mbr family.Member) result.Result[family.Member] {
+	fam family.Family,
+	mbr family.Member) result.Result[family.Family] {
+	if err := ensureOwnerIsEditor(ctx, fam.OwnerId()); err != nil {
+		return result.Fail[family.Family](err)
+	}
 	mbr.SetName(command.Name)
 	if command.IsKid {
 		mbr.SetAsKid()
@@ -62,12 +73,20 @@ func (h UpdateFamilyMemberCommandHandler) updateFamilyMember(
 	})
 
 	if err := mbr.Validate(); err != nil {
-		return result.Fail[family.Member](err)
+		return result.Fail[family.Family](err)
 	}
 
-	if err := h.repository.Save(ctx, &mbr); err != nil {
-		return result.Fail[family.Member](err)
+	if err := fam.UpdateMember(mbr); err != nil {
+		return result.Fail[family.Family](err)
 	}
 
-	return result.Success(mbr)
+	if err := fam.Validate(); err != nil {
+		return result.Fail[family.Family](err)
+	}
+
+	if err := h.repository.SaveMember(ctx, &mbr); err != nil {
+		return result.Fail[family.Family](err)
+	}
+
+	return result.Success(fam)
 }

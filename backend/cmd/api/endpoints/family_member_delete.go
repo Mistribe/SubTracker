@@ -24,7 +24,7 @@ type FamilyMemberDeleteEndpoint struct {
 //	@Success		204	"No Content"
 //	@Failure		400	{object}	httpError
 //	@Failure		404	{object}	httpError
-//	@Router			/families/members/{id} [delete]
+//	@Router			/families/{familyId}/members/{id} [delete]
 func (f FamilyMemberDeleteEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")
 	if idParam == "" {
@@ -42,8 +42,24 @@ func (f FamilyMemberDeleteEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
+	familyIdParam := c.Param("familyId")
+	if familyIdParam == "" {
+		c.JSON(http.StatusBadRequest, httpError{
+			Message: "family id parameter is required",
+		})
+		return
+	}
+
+	familyId, err := uuid.Parse(familyIdParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httpError{
+			Message: "invalid family id format",
+		})
+	}
+
 	cmd := command.DeleteFamilyMemberCommand{
-		Id: id,
+		Id:       id,
+		FamilyId: familyId,
 	}
 
 	r := f.handler.Handle(c, cmd)
@@ -52,7 +68,7 @@ func (f FamilyMemberDeleteEndpoint) Handle(c *gin.Context) {
 
 func (f FamilyMemberDeleteEndpoint) Pattern() []string {
 	return []string{
-		"/members/:id",
+		"/:familyId/members/:id",
 	}
 }
 

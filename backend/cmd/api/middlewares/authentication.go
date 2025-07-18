@@ -10,6 +10,7 @@ import (
 	"github.com/Oleexo/config-go"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
 type AuthenticationMiddleware struct {
@@ -112,7 +113,7 @@ func (m AuthenticationMiddleware) Middleware() gin.HandlerFunc {
 
 		// Store claims in context for use in handlers
 		c.Set("claims", claims)
-		c.Set("user_id", claims["sub"])
+		c.Set(user.ContextKey, claims["sub"])
 
 		c.Next()
 	}

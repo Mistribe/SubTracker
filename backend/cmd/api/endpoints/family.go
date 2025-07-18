@@ -16,19 +16,23 @@ type FamilyEndpointGroup struct {
 }
 
 func NewFamilyEndpointGroup(
-	createEndpoint *FamilyMemberCreateEndpoint,
-	updateEndpoint *FamilyMemberUpdateEndpoint,
-	deleteEndpoint *FamilyMemberDeleteEndpoint,
-	getEndpoint *FamilyMemberGetEndpoint,
-	getAllEndpoint *FamilyMemberGetAllEndpoint,
+	familyCreateEndpoint *FamilyCreateEndpoint,
+	familyUpdateEndpoint *FamilyUpdateEndpoint,
+	familyMemberCreateEndpoint *FamilyMemberCreateEndpoint,
+	familyMemberUpdateEndpoint *FamilyMemberUpdateEndpoint,
+	familyMemberDeleteEndpoint *FamilyMemberDeleteEndpoint,
+	familyGetEndpoint *FamilyGetEndpoint,
+	familyGetAllEndpoint *FamilyGetAllEndpoint,
 	authenticationMiddleware *middlewares.AuthenticationMiddleware) *FamilyEndpointGroup {
 	return &FamilyEndpointGroup{
 		routes: []ginfx.Route{
-			createEndpoint,
-			updateEndpoint,
-			deleteEndpoint,
-			getEndpoint,
-			getAllEndpoint,
+			familyCreateEndpoint,
+			familyUpdateEndpoint,
+			familyMemberCreateEndpoint,
+			familyMemberUpdateEndpoint,
+			familyMemberDeleteEndpoint,
+			familyGetEndpoint,
+			familyGetAllEndpoint,
 		},
 		middlewares: []gin.HandlerFunc{
 			authenticationMiddleware.Middleware(),
@@ -46,6 +50,33 @@ func (g FamilyEndpointGroup) Routes() []ginfx.Route {
 
 func (g FamilyEndpointGroup) Middlewares() []gin.HandlerFunc {
 	return g.middlewares
+}
+
+type familyModel struct {
+	Id               string              `json:"id"`
+	Name             string              `json:"name"`
+	OwnerId          string              `json:"owner_id"`
+	Members          []familyMemberModel `json:"members"`
+	HaveJointAccount bool                `json:"have_joint_account"`
+	CreatedAt        time.Time           `json:"created_at"`
+	UpdatedAt        time.Time           `json:"updated_at"`
+}
+
+func newFamilyModel(source family.Family) familyModel {
+	members := make([]familyMemberModel, 0, len(source.Members()))
+	for _, member := range source.Members() {
+		members = append(members, newFamilyMemberModel(member))
+	}
+
+	return familyModel{
+		Id:               source.Id().String(),
+		Name:             source.Name(),
+		OwnerId:          source.OwnerId(),
+		Members:          members,
+		HaveJointAccount: source.HaveJointAccount(),
+		CreatedAt:        source.CreatedAt(),
+		UpdatedAt:        source.UpdatedAt(),
+	}
 }
 
 type familyMemberModel struct {

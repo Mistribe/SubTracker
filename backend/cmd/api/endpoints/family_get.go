@@ -11,8 +11,8 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/family"
 )
 
-type FamilyMemberGetEndpoint struct {
-	handler core.QueryHandler[query.FindOneQuery, family.Member]
+type FamilyGetEndpoint struct {
+	handler core.QueryHandler[query.FindOneQuery, family.Family]
 }
 
 // Handle godoc
@@ -21,11 +21,11 @@ type FamilyMemberGetEndpoint struct {
 // @Tags			family
 // @Produce		json
 // @Param			id	path		uuid.UUID	true	"Family member ID"
-// @Success		200	{object}	familyMemberModel
+// @Success		200	{object}	familyModel
 // @Failure		400	{object}	httpError
 // @Failure		404	{object}	httpError
-// @Router			/families/members/{id} [get]
-func (f FamilyMemberGetEndpoint) Handle(c *gin.Context) {
+// @Router			/families/{id} [get]
+func (f FamilyGetEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")
 	if idParam == "" {
 		c.JSON(http.StatusBadRequest, httpError{
@@ -49,27 +49,27 @@ func (f FamilyMemberGetEndpoint) Handle(c *gin.Context) {
 	r := f.handler.Handle(c, q)
 	handleResponse(c,
 		r,
-		withMapping[family.Member](func(fm family.Member) any {
-			return newFamilyMemberModel(fm)
+		withMapping[family.Family](func(fm family.Family) any {
+			return newFamilyModel(fm)
 		}))
 }
 
-func (f FamilyMemberGetEndpoint) Pattern() []string {
+func (f FamilyGetEndpoint) Pattern() []string {
 	return []string{
-		"/members/:id",
+		"/:id",
 	}
 }
 
-func (f FamilyMemberGetEndpoint) Method() string {
+func (f FamilyGetEndpoint) Method() string {
 	return http.MethodGet
 }
 
-func (f FamilyMemberGetEndpoint) Middlewares() []gin.HandlerFunc {
+func (f FamilyGetEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewFamilyMemberGetEndpoint(handler core.QueryHandler[query.FindOneQuery, family.Member]) *FamilyMemberGetEndpoint {
-	return &FamilyMemberGetEndpoint{
+func NewFamilyMemberGetEndpoint(handler core.QueryHandler[query.FindOneQuery, family.Family]) *FamilyGetEndpoint {
+	return &FamilyGetEndpoint{
 		handler: handler,
 	}
 }

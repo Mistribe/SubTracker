@@ -14,8 +14,10 @@ import (
 )
 
 type subscriptionLabelModel struct {
-	LabelId uuid.UUID `gorm:"primaryKey;type:uuid;not null"`
-	SubId   uuid.UUID `gorm:"primaryKey;type:uuid;not null"`
+	LabelId      uuid.UUID         `gorm:"primaryKey;type:uuid;not null"`
+	Label        labelModel        `gorm:"foreignKey:LabelId;references:Id"`
+	SubId        uuid.UUID         `gorm:"primaryKey;type:uuid;not null"`
+	Subscription subscriptionModel `gorm:"foreignKey:SubId;references:Id"`
 }
 
 func (s subscriptionLabelModel) TableName() string {
@@ -23,8 +25,10 @@ func (s subscriptionLabelModel) TableName() string {
 }
 
 type subscriptionFamilyMemberModel struct {
-	FamilyMemberId uuid.UUID `gorm:"primaryKey;type:uuid;not null"`
-	SubId          uuid.UUID `gorm:"primaryKey;type:uuid;not null"`
+	FamilyMemberId uuid.UUID         `gorm:"primaryKey;type:uuid;not null"`
+	FamilyMember   familyMemberModel `gorm:"foreignKey:FamilyMemberId;references:Id"`
+	SubId          uuid.UUID         `gorm:"primaryKey;type:uuid;not null"`
+	Subscription   subscriptionModel `gorm:"foreignKey:SubId;references:Id"`
 }
 
 func (s subscriptionFamilyMemberModel) TableName() string {
@@ -47,11 +51,15 @@ func (s subscriptionPaymentModel) TableName() string {
 
 type subscriptionModel struct {
 	BaseModel
-	Name          string                          `gorm:"type:varchar(100);not null"`
-	Payments      []subscriptionPaymentModel      `gorm:"foreignKey:SubId"`
-	Labels        []subscriptionLabelModel        `gorm:"foreignKey:SubId"`
-	FamilyMembers []subscriptionFamilyMemberModel `gorm:"foreignKey:SubId"`
-	PayerId       *uuid.UUID                      `gorm:"type:uuid"`
+	Name                string                          `gorm:"type:varchar(100);not null"`
+	Payments            []subscriptionPaymentModel      `gorm:"foreignKey:SubId"`
+	Labels              []subscriptionLabelModel        `gorm:"foreignKey:SubId"`
+	FamilyMembers       []subscriptionFamilyMemberModel `gorm:"foreignKey:SubId"`
+	PayerId             *uuid.UUID                      `gorm:"type:uuid"`
+	Payer               *familyMemberModel              `gorm:"foreignKey:PayerId;references:Id"`
+	PayedByJointAccount bool                            `gorm:"type:boolean;not null;default:false"`
+	FamilyId            *uuid.UUID                      `gorm:"type:uuid"`
+	Family              *familyModel                    `gorm:"foreignKey:FamilyId;references:Id"`
 }
 
 func (s subscriptionModel) TableName() string {
@@ -116,6 +124,12 @@ func (r SubscriptionRepository) toModel(source *subscription.Subscription) subsc
 		}, func() *uuid.UUID {
 			return nil
 		}),
+		PayedByJointAccount: source.PayedByJointAccount(),
+		FamilyId: option.Match(source.FamilyId(), func(in uuid.UUID) *uuid.UUID {
+			return &in
+		}, func() *uuid.UUID {
+			return nil
+		}),
 	}
 }
 
@@ -141,11 +155,13 @@ func (r SubscriptionRepository) toEntity(source subscriptionModel) subscription.
 	})
 	sub := subscription.NewSubscriptionWithoutValidation(
 		source.Id,
+		source.FamilyId,
 		source.Name,
 		payments,
 		labels,
 		familyMembers,
-		option.New(source.PayerId),
+		source.PayerId,
+		source.PayedByJointAccount,
 		source.CreatedAt,
 		source.UpdatedAt,
 		true,

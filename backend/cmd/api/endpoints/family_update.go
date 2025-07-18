@@ -6,75 +6,78 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/oleexo/subtracker/internal/domain/user"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/family/command"
 	"github.com/oleexo/subtracker/internal/domain/family"
-	"github.com/oleexo/subtracker/pkg/langext/option"
+	"github.com/oleexo/subtracker/pkg/ext"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
-type FamilyMemberUpdateEndpoint struct {
-	handler core.CommandHandler[command.UpdateFamilyMemberCommand, family.Member]
+type FamilyUpdateEndpoint struct {
+	handler core.CommandHandler[command.UpdateFamilyCommand, family.Family]
 }
 
-type updateFamilyMemberModel struct {
-	Name      string     `json:"name"`
-	Email     *string    `json:"email,omitempty"`
-	IsKid     bool       `json:"id_kid"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+type updateFamilyModel struct {
+	Name             string     `json:"name"`
+	HaveJointAccount bool       `json:"have_joint_account"`
+	UpdatedAt        *time.Time `json:"updated_at,omitempty"`
 }
 
-func (m updateFamilyMemberModel) Command(id uuid.UUID) result.Result[command.UpdateFamilyMemberCommand] {
-	email := option.None[string]()
-	if m.Email != nil {
-		email = option.Some(*m.Email)
-	}
+func (m updateFamilyModel) ToFamily(id uuid.UUID, ownerId string, createdAt time.Time) result.Result[family.Family] {
+	updatedAt := ext.ValueOrDefault(m.UpdatedAt, time.Now())
+	return family.NewFamily(
+		id,
+		ownerId,
+		m.Name,
+		m.HaveJointAccount,
+		createdAt,
+		updatedAt,
+	)
+}
 
-	updatedAt := option.None[time.Time]()
-	if m.UpdatedAt != nil {
-		updatedAt = option.Some(*m.UpdatedAt)
-	}
-
-	return result.Success(command.UpdateFamilyMemberCommand{
-		Id:        id,
-		Name:      m.Name,
-		Email:     email,
-		IsKid:     m.IsKid,
-		UpdatedAt: updatedAt,
-	})
+func (m updateFamilyModel) Command(id uuid.UUID, ownerId string, createdAt time.Time) result.Result[command.UpdateFamilyCommand] {
+	return result.Bind[family.Family, command.UpdateFamilyCommand](
+		m.ToFamily(id, ownerId, createdAt),
+		func(f family.Family) result.Result[command.UpdateFamilyCommand] {
+			return result.Success(command.UpdateFamilyCommand{
+				Id:               uuid.UUID{},
+				Name:             "",
+				UpdatedAt:        nil,
+				HaveJointAccount: false,
+			})
+		})
 }
 
 // Handle godoc
-// @Summary		Update family member by ID
-// @Description	Update family member by ID
+// @Summary		Update a family
+// @Description	Update a family
 // @Tags			family
 // @Accept			json
-// @Produce		json
-// @Param			id		path		uuid.UUID				true	"Family member ID"
-// @Param			member	body		updateFamilyMemberModel	true	"Family member data"
-// @Success		200		{object}	familyMemberModel
+// @Produce			json
+// @Param			family	body		updateFamilyModel	true	"Family data"
+// @Success		200		{object}	familyModel
 // @Failure		400		{object}	httpError
-// @Failure		404		{object}	httpError
-// @Router			/families/members/{id} [put]
-func (f FamilyMemberUpdateEndpoint) Handle(c *gin.Context) {
-	idParam := c.Param("id")
-	if idParam == "" {
-		c.JSON(http.StatusBadRequest, httpError{
-			Message: "id parameter is required",
-		})
-		return
-	}
-
-	id, err := uuid.Parse(idParam)
+// @Router			/families/{familyId} [put]
+func (f FamilyUpdateEndpoint) Handle(c *gin.Context) {
+	familyId, err := uuid.Parse(c.Param("familyId"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, httpError{
-			Message: "invalid id format",
+			Message: err.Error(),
 		})
 		return
 	}
 
-	var model updateFamilyMemberModel
+	userId, ok := user.FromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, httpError{
+			Message: "invalid user id",
+		})
+		return
+	}
+
+	var model updateFamilyModel
 	if err := c.ShouldBindJSON(&model); err != nil {
 		c.JSON(http.StatusBadRequest, httpError{
 			Message: err.Error(),
@@ -82,13 +85,15 @@ func (f FamilyMemberUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	result.Match[command.UpdateFamilyMemberCommand, result.Unit](model.Command(id),
-		func(cmd command.UpdateFamilyMemberCommand) result.Unit {
+	cmd := model.Command(familyId, userId, time.Now())
+	result.Match[command.UpdateFamilyCommand, result.Unit](cmd,
+		func(cmd command.UpdateFamilyCommand) result.Unit {
 			r := f.handler.Handle(c, cmd)
 			handleResponse(c,
 				r,
-				withMapping[family.Member](func(mbr family.Member) any {
-					return newFamilyMemberModel(mbr)
+				withStatus[family.Family](http.StatusOK),
+				withMapping[family.Family](func(f family.Family) any {
+					return newFamilyModel(f)
 				}))
 			return result.Unit{}
 		},
@@ -98,25 +103,24 @@ func (f FamilyMemberUpdateEndpoint) Handle(c *gin.Context) {
 			})
 			return result.Unit{}
 		})
-
 }
 
-func (f FamilyMemberUpdateEndpoint) Pattern() []string {
+func (f FamilyUpdateEndpoint) Pattern() []string {
 	return []string{
-		"/members/:id",
+		"/:familyId",
 	}
 }
 
-func (f FamilyMemberUpdateEndpoint) Method() string {
+func (f FamilyUpdateEndpoint) Method() string {
 	return http.MethodPut
 }
 
-func (f FamilyMemberUpdateEndpoint) Middlewares() []gin.HandlerFunc {
+func (f FamilyUpdateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewFamilyMemberUpdateEndpoint(handler core.CommandHandler[command.UpdateFamilyMemberCommand, family.Member]) *FamilyMemberUpdateEndpoint {
-	return &FamilyMemberUpdateEndpoint{
+func NewFamilyUpdateEndpoint(handler core.CommandHandler[command.UpdateFamilyCommand, family.Family]) *FamilyUpdateEndpoint {
+	return &FamilyUpdateEndpoint{
 		handler: handler,
 	}
 }

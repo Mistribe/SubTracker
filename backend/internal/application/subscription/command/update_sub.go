@@ -14,12 +14,14 @@ import (
 )
 
 type UpdateSubscriptionCommand struct {
-	Id            uuid.UUID
-	Name          string
-	Labels        []uuid.UUID
-	FamilyMembers []uuid.UUID
-	Payer         option.Option[uuid.UUID]
-	UpdatedAt     option.Option[time.Time]
+	Id                  uuid.UUID
+	Name                string
+	Labels              []uuid.UUID
+	FamilyId            option.Option[uuid.UUID]
+	FamilyMembers       []uuid.UUID
+	PayerId             option.Option[uuid.UUID]
+	PayedByJointAccount bool
+	UpdatedAt           option.Option[time.Time]
 }
 
 type UpdateSubscriptionCommandHandler struct {
@@ -61,14 +63,15 @@ func (h UpdateSubscriptionCommandHandler) updateSubscription(
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	if err := h.ensureFamilyMemberExists(ctx, command.FamilyMembers); err != nil {
+	if err := h.ensureFamilyMemberExists(ctx, command.FamilyId, command.FamilyMembers); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 
 	sub.SetName(command.Name)
 	sub.SetLabels(command.Labels)
 	sub.SetFamilyMembers(command.FamilyMembers)
-	sub.SetPayer(command.Payer)
+	sub.SetPayer(command.PayerId)
+	sub.SetPayedByJointAccount(command.PayedByJointAccount)
 
 	command.UpdatedAt.IfSome(func(updatedAt time.Time) {
 		sub.SetUpdatedAt(updatedAt)
@@ -90,18 +93,23 @@ func (h UpdateSubscriptionCommandHandler) updateSubscription(
 
 func (h UpdateSubscriptionCommandHandler) ensureFamilyMemberExists(
 	ctx context.Context,
+	famIdOpt option.Option[uuid.UUID],
 	familyMembers []uuid.UUID) error {
-	if len(familyMembers) == 0 {
+	return option.Match(famIdOpt, func(familyId uuid.UUID) error {
+		if len(familyMembers) == 0 {
+			return nil
+		}
+		exists, err := h.familyRepository.MemberExists(ctx, familyId, familyMembers...)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return nil
+		}
+		return family.ErrFamilyMemberNotFound
+	}, func() error {
 		return nil
-	}
-	exists, err := h.familyRepository.Exists(ctx, familyMembers...)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return nil
-	}
-	return family.ErrFamilyMemberNotFound
+	})
 }
 
 func (h UpdateSubscriptionCommandHandler) ensureLabelsExists(ctx context.Context, labels []uuid.UUID) error {

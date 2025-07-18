@@ -16,8 +16,10 @@ var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]
 
 type Member struct {
 	id        uuid.UUID
+	familyId  uuid.UUID
 	name      string
 	email     *string
+	userId    *string
 	isKid     bool
 	createdAt time.Time
 	updatedAt time.Time
@@ -27,12 +29,20 @@ type Member struct {
 
 func NewMember(
 	id uuid.UUID,
+	familyId uuid.UUID,
 	name string,
 	email option.Option[string],
 	isKid bool,
 	createdAt time.Time,
 	updatedAt time.Time) result.Result[Member] {
-	mbr := NewMemberWithoutValidation(id, name, email.Value(), isKid, createdAt, updatedAt, false)
+	mbr := NewMemberWithoutValidation(id,
+		familyId,
+		strings.TrimSpace(name),
+		email.Value(),
+		isKid,
+		createdAt,
+		updatedAt,
+		false)
 
 	if err := mbr.Validate(); err != nil {
 		return result.Fail[Member](err)
@@ -43,6 +53,7 @@ func NewMember(
 
 func NewMemberWithoutValidation(
 	id uuid.UUID,
+	familyId uuid.UUID,
 	name string,
 	email *string,
 	isKid bool,
@@ -55,8 +66,10 @@ func NewMemberWithoutValidation(
 	}
 	return Member{
 		id:        id,
+		familyId:  familyId,
 		name:      strings.TrimSpace(name),
 		email:     email,
+		userId:    nil,
 		isKid:     isKid,
 		createdAt: createdAt,
 		updatedAt: updatedAt,
@@ -90,6 +103,9 @@ func (m *Member) Validate() error {
 		if !emailRegex.MatchString(*m.email) {
 			return errors.New("invalid email format")
 		}
+	}
+	if m.name == "" {
+		return errors.New("name is empty")
 	}
 	return nil
 }
@@ -134,4 +150,8 @@ func (m *Member) IsDirty() bool {
 
 func (m *Member) IsExists() bool {
 	return m.isExists
+}
+
+func (m *Member) FamilyId() uuid.UUID {
+	return m.familyId
 }

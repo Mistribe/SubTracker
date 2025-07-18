@@ -58,20 +58,22 @@ func (m createPaymentModel) ToPayment() result.Result[subscription.Payment] {
 }
 
 type createSubscriptionModel struct {
-	Id            *string              `json:"id,omitempty"`
-	Name          string               `json:"name"`
-	Payments      []createPaymentModel `json:"payments"`
-	Labels        []string             `json:"labels"`
-	FamilyMembers []string             `json:"family_members"`
-	Payer         *string              `json:"payer,omitempty"`
-	CreatedAt     *time.Time           `json:"created_at,omitempty"`
+	Id                  *string              `json:"id,omitempty"`
+	FamilyId            *string              `json:"family_id,omitempty"`
+	Name                string               `json:"name"`
+	Payments            []createPaymentModel `json:"payments"`
+	Labels              []string             `json:"labels"`
+	FamilyMembers       []string             `json:"family_members"`
+	PayerId             *string              `json:"payer_id,omitempty"`
+	PayedByJointAccount bool                 `json:"payed_by_joint_account,omitempty"`
+	CreatedAt           *time.Time           `json:"created_at,omitempty"`
 }
 
 func (m createSubscriptionModel) ToSubscription() result.Result[subscription.Subscription] {
 	var id uuid.UUID
 	var labels []uuid.UUID
 	var familyMembers []uuid.UUID
-	var payer option.Option[uuid.UUID]
+	var payerId option.Option[uuid.UUID]
 	var createdAt time.Time
 	var err error
 	id, err = parseUuidOrNew(m.Id)
@@ -89,20 +91,23 @@ func (m createSubscriptionModel) ToSubscription() result.Result[subscription.Sub
 	if err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
-	payer, err = option.ParseNew(m.Payer, uuid.Parse)
+	payerId, err = option.ParseNew(m.PayerId, uuid.Parse)
 	if err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
+	familyId, err := option.ParseNew(m.FamilyId, uuid.Parse)
 
 	return result.BindReduce(paymentRes, func(value []subscription.Payment) result.Result[subscription.Subscription] {
 		return subscription.NewSubscription(
 			id,
+			familyId,
 			m.Name,
 			value,
 			labels,
 			familyMembers,
-			payer,
+			payerId,
+			m.PayedByJointAccount,
 			createdAt,
 			createdAt,
 		)

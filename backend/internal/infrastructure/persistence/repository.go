@@ -87,6 +87,7 @@ func (r RepositoryTask) OnStart(_ context.Context) error {
 		&subscriptionModel{},
 		&labelModel{},
 		&familyMemberModel{},
+		&familyModel{},
 		&subscriptionPaymentModel{},
 		&subscriptionFamilyMemberModel{},
 		&subscriptionLabelModel{},

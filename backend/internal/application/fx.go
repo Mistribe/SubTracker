@@ -49,11 +49,13 @@ func BuildApplicationModule() fx.Option {
 			AsCommandHandler[lblCommand.UpdateLabelCommand, label.Label](lblCommand.NewUpdateLabelCommandHandler),
 			AsCommandHandler[lblCommand.DeleteLabelCommand, result.Unit](lblCommand.NewDeleteLabelCommandHandler),
 
-			AsQueryHandler[fmlyQuery.FindAllQuery, []family.Member](fmlyQuery.NewFindAllQueryHandler),
-			AsQueryHandler[fmlyQuery.FindOneQuery, family.Member](fmlyQuery.NewFindOneQueryHandler),
+			AsQueryHandler[fmlyQuery.FindAllQuery, []family.Family](fmlyQuery.NewFindAllQueryHandler),
+			AsQueryHandler[fmlyQuery.FindOneQuery, family.Family](fmlyQuery.NewFindOneQueryHandler),
 
-			AsCommandHandler[fmlyCommand.CreateFamilyMemberCommand, family.Member](fmlyCommand.NewCreateFamilyMemberCommandHandler),
-			AsCommandHandler[fmlyCommand.UpdateFamilyMemberCommand, family.Member](fmlyCommand.NewUpdateFamilyMemberCommandHandler),
+			AsCommandHandler[fmlyCommand.CreateFamilyCommand, family.Family](fmlyCommand.NewCreateFamilyCommandHandler),
+			AsCommandHandler[fmlyCommand.UpdateFamilyCommand, family.Family](fmlyCommand.NewUpdateFamilyCommandHandler),
+			AsCommandHandler[fmlyCommand.CreateFamilyMemberCommand, family.Family](fmlyCommand.NewCreateFamilyMemberCommandHandler),
+			AsCommandHandler[fmlyCommand.UpdateFamilyMemberCommand, family.Family](fmlyCommand.NewUpdateFamilyMemberCommandHandler),
 			AsCommandHandler[fmlyCommand.DeleteFamilyMemberCommand, result.Unit](fmlyCommand.NewDeleteFamilyMemberCommandHandler),
 		),
 	)

@@ -16,34 +16,40 @@ const (
 )
 
 type Subscription struct {
-	id            uuid.UUID
-	name          string
-	payments      []Payment
-	labels        []uuid.UUID
-	familyMembers []uuid.UUID
-	payer         option.Option[uuid.UUID]
-	createdAt     time.Time
-	updatedAt     time.Time
-	isDirty       bool
-	isExists      bool
+	id                  uuid.UUID
+	familyId            *uuid.UUID
+	name                string
+	payments            []Payment
+	labels              []uuid.UUID
+	familyMembers       []uuid.UUID
+	payerId             *uuid.UUID
+	payedByJointAccount bool
+	createdAt           time.Time
+	updatedAt           time.Time
+	isDirty             bool
+	isExists            bool
 }
 
 func NewSubscription(
 	id uuid.UUID,
+	familyId option.Option[uuid.UUID],
 	name string,
 	payments []Payment,
 	labels []uuid.UUID,
 	familyMembers []uuid.UUID,
 	payer option.Option[uuid.UUID],
+	payedByJointAccount bool,
 	createdAt time.Time,
 	updatedAt time.Time) result.Result[Subscription] {
 	sub := NewSubscriptionWithoutValidation(
 		id,
+		familyId.Value(),
 		name,
 		payments,
 		labels,
 		familyMembers,
-		payer,
+		payer.Value(),
+		payedByJointAccount,
 		createdAt,
 		updatedAt,
 		false,
@@ -58,25 +64,29 @@ func NewSubscription(
 
 func NewSubscriptionWithoutValidation(
 	id uuid.UUID,
+	familyId *uuid.UUID,
 	name string,
 	payments []Payment,
 	labels []uuid.UUID,
 	familyMembers []uuid.UUID,
-	payer option.Option[uuid.UUID],
+	payerId *uuid.UUID,
+	payedByJointAccount bool,
 	createdAt time.Time,
 	updatedAt time.Time,
 	isExists bool) Subscription {
 	return Subscription{
-		id:            id,
-		name:          strings.TrimSpace(name),
-		payments:      payments,
-		labels:        labels,
-		familyMembers: familyMembers,
-		payer:         payer,
-		createdAt:     createdAt,
-		updatedAt:     updatedAt,
-		isDirty:       true,
-		isExists:      isExists,
+		id:                  id,
+		familyId:            familyId,
+		name:                strings.TrimSpace(name),
+		payments:            payments,
+		labels:              labels,
+		familyMembers:       familyMembers,
+		payerId:             payerId,
+		payedByJointAccount: payedByJointAccount,
+		createdAt:           createdAt,
+		updatedAt:           updatedAt,
+		isDirty:             true,
+		isExists:            isExists,
 	}
 }
 
@@ -90,6 +100,14 @@ func (s *Subscription) Name() string {
 
 func (s *Subscription) SetName(name string) {
 	s.name = name
+}
+
+func (s *Subscription) PayedByJointAccount() bool {
+	return s.payedByJointAccount
+}
+
+func (s *Subscription) FamilyId() option.Option[uuid.UUID] {
+	return option.New(s.familyId)
 }
 
 func (s *Subscription) Payments() []Payment {
@@ -155,11 +173,11 @@ func (s *Subscription) SetFamilyMembers(familyMembers []uuid.UUID) {
 }
 
 func (s *Subscription) Payer() option.Option[uuid.UUID] {
-	return s.payer
+	return option.New(s.payerId)
 }
 
 func (s *Subscription) SetPayer(payer option.Option[uuid.UUID]) {
-	s.payer = payer
+	s.payerId = payer.Value()
 	s.isDirty = true
 }
 func (s *Subscription) CreatedAt() time.Time {
@@ -206,6 +224,18 @@ func (s *Subscription) Validate() error {
 		}
 	}
 
+	if s.familyId != nil && len(s.familyMembers) > 0 {
+		return ErrCannotHaveFamilyMembersWithoutFamily
+	}
+
+	if s.payerId != nil && s.payedByJointAccount {
+		return ErrPayerAndJointAccountConflict
+	}
+
+	if s.familyId == nil && s.payedByJointAccount {
+		return ErrNoFamilyDefined
+	}
+
 	return nil
 }
 
@@ -241,7 +271,7 @@ func (s *Subscription) Equal(other Subscription) bool {
 		}
 	}
 
-	if !s.payer.Equal(other.payer) {
+	if s.payerId != other.payerId {
 		return false
 	}
 
@@ -254,4 +284,9 @@ func (s *Subscription) Equal(other Subscription) bool {
 
 func (s *Subscription) IsExists() bool {
 	return s.isExists
+}
+
+func (s *Subscription) SetPayedByJointAccount(payedByJointAccount bool) {
+	s.payedByJointAccount = payedByJointAccount
+	s.isDirty = true
 }
