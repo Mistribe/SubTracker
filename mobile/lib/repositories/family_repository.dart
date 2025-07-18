@@ -106,7 +106,7 @@ class FamilyRepository {
     String? email,
     bool isKid = false,
   }) async {
-    var family = get(familyId);
+    final family = get(familyId);
     if (family == null) {
       return null;
     }
@@ -118,9 +118,11 @@ class FamilyRepository {
       isKid: isKid,
     );
 
-    family = family.copyWith(members: [...family.members, familyMember]);
+    final updatedFamily = family.copyWith(
+      members: [...family.members, familyMember],
+    );
 
-    await _box.put(family.id, family);
+    await _box.put(family.id, updatedFamily);
 
     if (_syncProvider != null) {
       await _syncProvider!.queueCreateFamilyMember(familyMember);

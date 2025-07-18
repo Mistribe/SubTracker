@@ -20,19 +20,22 @@ class SettingsAdapter extends TypeAdapter<Settings> {
       isDarkMode: fields[0] as bool,
       useSystemTheme: fields[1] as bool,
       defaultCurrency: fields[2] as String,
+      selectedFamilyId: fields[3] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Settings obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.isDarkMode)
       ..writeByte(1)
       ..write(obj.useSystemTheme)
       ..writeByte(2)
-      ..write(obj.defaultCurrency);
+      ..write(obj.defaultCurrency)
+      ..writeByte(3)
+      ..write(obj.selectedFamilyId);
   }
 
   @override

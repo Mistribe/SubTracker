@@ -46,8 +46,8 @@ void main() async {
   Hive.registerAdapter(SubscriptionPaymentAdapter());
   Hive.registerAdapter(SettingsAdapter());
   Hive.registerAdapter(LabelAdapter());
-  Hive.registerAdapter(FamilyAdapter());
   Hive.registerAdapter(FamilyMemberAdapter());
+  Hive.registerAdapter(FamilyAdapter());
   Hive.registerAdapter(UserAdapter());
 
   // Initialize repositories

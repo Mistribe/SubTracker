@@ -137,16 +137,29 @@ class SettingsScreen extends StatelessWidget {
             title: const Text('Family Management'),
             leading: const Icon(Icons.family_restroom),
           ),
-          ListTile(
-            title: const Text('Manage Family Members'),
-            subtitle: const Text('Add, edit, or remove family members'),
-            leading: const Icon(Icons.people),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const FamilyManagementScreen(),
+          Consumer<AuthenticationProvider>(
+            builder: (context, authenticationProvider, _) {
+              return ListTile(
+                title: const Text('Manage Family Members'),
+                subtitle: Text(
+                  authenticationProvider.isAuthenticated
+                      ? 'Add, edit, or remove family members'
+                      : 'Sign in to manage family members',
                 ),
+                leading: const Icon(Icons.people),
+                trailing: authenticationProvider.isAuthenticated
+                    ? const Icon(Icons.arrow_forward_ios, size: 16)
+                    : null,
+                enabled: authenticationProvider.isAuthenticated,
+                onTap: authenticationProvider.isAuthenticated
+                    ? () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const FamilyManagementScreen(),
+                          ),
+                        );
+                      }
+                    : null,
               );
             },
           ),

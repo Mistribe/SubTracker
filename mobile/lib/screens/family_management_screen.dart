@@ -15,10 +15,19 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
   bool _isEditMode = false;
   final _nameController = TextEditingController();
   bool _haveJointAccount = true;
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the page controller - we'll set the initial page after we get the data
+    _pageController = PageController(viewportFraction: 0.85);
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -28,6 +37,23 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
     final families = familyProvider.families;
     final selectedFamily = familyProvider.selectedFamily;
     final canEdit = familyProvider.canEditSelectedFamily;
+
+    // Update page controller to show the currently selected family
+    if (families.isNotEmpty && selectedFamily != null) {
+      final selectedIndex = families.indexWhere(
+        (family) => family.id == familyProvider.selectedFamilyId,
+      );
+      if (selectedIndex != -1 && _pageController.hasClients) {
+        // Only animate if the current page is different
+        if (_pageController.page?.round() != selectedIndex) {
+          _pageController.animateToPage(
+            selectedIndex,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -67,7 +93,7 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
                 ),
               ),
             ),
-            // Family dropdown selector
+            // Family swipe selector
             if (families.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -82,54 +108,118 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      value: familyProvider.selectedFamilyId,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
+                    Container(
+                      height: 100,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      items: families.map((family) {
-                        return DropdownMenuItem<String>(
-                          value: family.id,
-                          child: Row(
-                            children: [
-                              Text(family.name),
-                              if (family.isOwner)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 8.0),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0,
-                                      vertical: 2.0,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(12.0),
-                                    ),
-                                    child: const Text(
-                                      'Owner',
-                                      style: TextStyle(
-                                        fontSize: 12.0,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        if (newValue != null) {
-                          familyProvider.setSelectedFamilyId(newValue);
+                      child: PageView.builder(
+                        itemCount: families.length,
+                        controller: _pageController,
+                        onPageChanged: (index) {
+                          familyProvider.setSelectedFamilyId(families[index].id);
                           setState(() {
                             _isEditMode = false;
                           });
-                        }
-                      },
+                        },
+                        itemBuilder: (context, index) {
+                          final family = families[index];
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Card(
+                              elevation: 2,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          family.name,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        if (family.isOwner)
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 8.0),
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 8.0,
+                                                vertical: 2.0,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.green.withOpacity(0.2),
+                                                borderRadius: BorderRadius.circular(12.0),
+                                              ),
+                                              child: const Text(
+                                                'Owner',
+                                                style: TextStyle(
+                                                  fontSize: 12.0,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${family.members.length} members',
+                                      style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.arrow_back_ios, size: 16, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(
+                            families.length,
+                            (index) => Container(
+                              width: 8,
+                              height: 8,
+                              margin: const EdgeInsets.symmetric(horizontal: 2),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: index == families.indexWhere(
+                                  (family) => family.id == familyProvider.selectedFamilyId,
+                                )
+                                    ? Theme.of(context).primaryColor
+                                    : Colors.grey.shade300,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Center(
+                      child: Text(
+                        'Swipe left or right to change family',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
                     ),
                   ],
                 ),
