@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:subscription_tracker/models/subscription_state.dart';
 import '../providers/subscription_provider.dart';
-import '../providers/family_member_provider.dart';
+import '../providers/family_provider.dart';
 import '../providers/label_provider.dart';
 import '../models/subscription.dart';
 import '../models/label.dart';
@@ -95,7 +95,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
 
       // Fetch family members from provider
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final familyMemberProvider = Provider.of<FamilyMemberProvider>(
+        final familyMemberProvider = Provider.of<FamilyProvider>(
           context,
           listen: false,
         );
@@ -452,7 +452,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
 
   // Build family member chips for selection
   List<Widget> _buildFamilyMemberChips() {
-    final familyMemberProvider = Provider.of<FamilyMemberProvider>(context);
+    final familyMemberProvider = Provider.of<FamilyProvider>(context);
     final allFamilyMembers = familyMemberProvider.familyMembers;
 
     return allFamilyMembers.map((member) {
@@ -982,7 +982,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                 const SizedBox(height: 24),
 
                 // Family Section
-                Consumer<FamilyMemberProvider>(
+                Consumer<FamilyProvider>(
                   builder: (context, familyMemberProvider, _) {
                     final hasFamilyMembers =
                         familyMemberProvider.hasFamilyMembers;
@@ -1102,12 +1102,13 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                               value: null,
                                               child: Text('None'),
                                             ),
-                                            const DropdownMenuItem<String?>(
-                                              value: 'family',
-                                              child: Text(
-                                                'Family (common account)',
+                                            if (familyMemberProvider.selectedFamily?.haveJointAccount ?? false)
+                                              const DropdownMenuItem<String?>(
+                                                value: 'family',
+                                                child: Text(
+                                                  'Family (common account)',
+                                                ),
                                               ),
-                                            ),
                                             ...familyMembers
                                                 .where(
                                                   (member) => !member.isKid,
@@ -1125,11 +1126,14 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                             setState(() {
                                               if (value == 'family') {
                                                 // Create a special FamilyMember object for "Family"
-                                                _payerFamilyMember = FamilyMember(
-                                                  id: 'family',
-                                                  name:
-                                                      'Family (common account)',
-                                                );
+                                                final selectedFamilyId = familyMemberProvider.selectedFamilyId;
+                                                if (selectedFamilyId != null) {
+                                                  _payerFamilyMember = FamilyMember(
+                                                    id: 'family',
+                                                    name: 'Family (common account)',
+                                                    familyId: selectedFamilyId,
+                                                  );
+                                                }
                                               } else {
                                                 _payerFamilyMember =
                                                     value == null

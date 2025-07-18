@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:subscription_tracker/models/family.dart';
 import 'package:subscription_tracker/models/subscription_payment.dart';
 import 'package:subscription_tracker/services/authentication_service.dart';
 import 'models/subscription.dart';
@@ -10,14 +11,14 @@ import 'models/family_member.dart';
 import 'models/user.dart';
 import 'providers/subscription_provider.dart';
 import 'providers/theme_provider.dart';
-import 'providers/family_member_provider.dart';
+import 'providers/family_provider.dart';
 import 'providers/sync_provider.dart';
 import 'providers/label_provider.dart';
 import 'providers/authentication_provider.dart';
 import 'repositories/subscription_repository.dart';
 import 'repositories/settings_repository.dart';
 import 'repositories/label_repository.dart';
-import 'repositories/family_member_repository.dart';
+import 'repositories/family_repository.dart';
 import 'screens/home_screen.dart';
 import 'package:kinde_flutter_sdk/kinde_flutter_sdk.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -45,6 +46,7 @@ void main() async {
   Hive.registerAdapter(SubscriptionPaymentAdapter());
   Hive.registerAdapter(SettingsAdapter());
   Hive.registerAdapter(LabelAdapter());
+  Hive.registerAdapter(FamilyAdapter());
   Hive.registerAdapter(FamilyMemberAdapter());
   Hive.registerAdapter(UserAdapter());
 
@@ -58,7 +60,8 @@ void main() async {
   final labelRepository = LabelRepository();
   await labelRepository.initialize();
 
-  final familyMemberRepository = await FamilyMemberRepository.initialize();
+  final familyRepository = FamilyRepository();
+  await familyRepository.initialize();
 
   final authenticationService = AuthenticationService();
 
@@ -67,7 +70,7 @@ void main() async {
       subscriptionRepository: paymentRepository,
       settingsRepository: settingsRepository,
       labelRepository: labelRepository,
-      familyMemberRepository: familyMemberRepository,
+      familyMemberRepository: familyRepository,
       authenticationService: authenticationService,
     ),
   );
@@ -77,7 +80,7 @@ class MyApp extends StatelessWidget {
   final SubscriptionRepository subscriptionRepository;
   final SettingsRepository settingsRepository;
   final LabelRepository labelRepository;
-  final FamilyMemberRepository familyMemberRepository;
+  final FamilyRepository familyMemberRepository;
   final AuthenticationService authenticationService;
 
   const MyApp({
@@ -130,9 +133,8 @@ class MyApp extends StatelessWidget {
           create: (_) => ThemeProvider(settingsRepository: settingsRepository),
         ),
         ChangeNotifierProvider(
-          create: (_) => FamilyMemberProvider(
-            familyMemberRepository: familyMemberRepository,
-          ),
+          create: (_) =>
+              FamilyProvider(familyRepository: familyMemberRepository),
         ),
         // Provide direct access to repositories
         Provider<LabelRepository>.value(value: labelRepository),

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:kinde_flutter_sdk/kinde_flutter_sdk.dart';
 import 'package:subscription_tracker/services/authentication_service.dart';
+import '../models/family.dart';
 import '../models/subscription.dart';
 import '../models/family_member.dart';
 import '../models/label.dart';
@@ -321,18 +322,18 @@ class ApiService {
     }
   }
 
-  /// Get all family members
-  /// GET /families/members
-  Future<List<FamilyMember>> getFamilyMembers() async {
+  /// Get all families
+  /// GET /families
+  Future<List<Family>> getFamilies() async {
     try {
       final response = await _httpClient.get(
-        Uri.parse('$baseUrl/families/members'),
+        Uri.parse('$baseUrl/families'),
         headers: await _getHeaders(),
       );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        return data.map((json) => FamilyMember.fromJson(json)).toList();
+        return data.map((json) => Family.fromJson(json)).toList();
       } else {
         final errorData = json.decode(response.body);
         throw Exception(
@@ -633,5 +634,17 @@ class ApiService {
   /// Close the HTTP client when done
   void dispose() {
     _httpClient.close();
+  }
+
+  Future<void> deleteFamily(String id) async {
+    // todo not implemented
+  }
+
+  Future<void> createFamily(Family family) async {
+    // todo not implemented
+  }
+
+  Future<void> updateFamily(Family family) async {
+    // todo not implemented
   }
 }

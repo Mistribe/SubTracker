@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:subscription_tracker/providers/label_provider.dart';
 import '../providers/subscription_provider.dart';
-import '../providers/family_member_provider.dart';
+import '../providers/family_provider.dart';
 import '../widgets/subscription_list.dart';
 import 'subscription_form_screen.dart';
 import 'settings_screen.dart';
@@ -171,7 +171,7 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 ),
                               // Family member filter option
-                              if (Provider.of<FamilyMemberProvider>(
+                              if (Provider.of<FamilyProvider>(
                                 context,
                                 listen: false,
                               ).hasFamilyMembers)
@@ -193,7 +193,7 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 ),
                               // Payer filter option
-                              if (Provider.of<FamilyMemberProvider>(
+                              if (Provider.of<FamilyProvider>(
                                 context,
                                 listen: false,
                               ).hasFamilyMembers)
@@ -323,7 +323,7 @@ class HomeScreen extends StatelessWidget {
     BuildContext context,
     SubscriptionProvider provider,
   ) {
-    final familyMemberProvider = Provider.of<FamilyMemberProvider>(
+    final familyMemberProvider = Provider.of<FamilyProvider>(
       context,
       listen: false,
     );
@@ -344,7 +344,7 @@ class HomeScreen extends StatelessWidget {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
-            final familyMembers = familyMemberProvider.familyMembers;
+            final familyMembers = familyMemberProvider.families;
             final selectedFamilyMemberId = provider.selectedFamilyMemberId;
 
             return SafeArea(
@@ -425,7 +425,7 @@ class HomeScreen extends StatelessWidget {
     BuildContext context,
     SubscriptionProvider provider,
   ) {
-    final familyMemberProvider = Provider.of<FamilyMemberProvider>(
+    final familyMemberProvider = Provider.of<FamilyProvider>(
       context,
       listen: false,
     );
@@ -446,7 +446,7 @@ class HomeScreen extends StatelessWidget {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
-            final familyMembers = familyMemberProvider.familyMembers;
+            final familyMembers = familyMemberProvider.families;
             final selectedPayerFamilyMemberId =
                 provider.selectedPayerFamilyMemberId;
 

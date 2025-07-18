@@ -2,19 +2,26 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:subscription_tracker/models/family.dart';
 import '../models/subscription.dart';
 import '../models/label.dart';
 import '../models/family_member.dart';
 import '../models/subscription_payment.dart';
 import '../repositories/subscription_repository.dart';
 import '../repositories/label_repository.dart';
-import '../repositories/family_member_repository.dart';
+import '../repositories/family_repository.dart';
 import 'api_service.dart';
 
 /// Type of sync operation
 enum SyncOperationType { create, update, delete }
 
-enum SyncDataType { label, subscription, familyMember, subscriptionPayment }
+enum SyncDataType {
+  label,
+  subscription,
+  familyMember,
+  subscriptionPayment,
+  family,
+}
 
 /// Pending sync operation
 class PendingSyncOperation {
@@ -62,7 +69,7 @@ class SyncService {
   final ApiService _apiService;
   final SubscriptionRepository _subscriptionRepository;
   final LabelRepository _labelRepository;
-  final FamilyMemberRepository _familyMemberRepository;
+  final FamilyRepository _familyRepository;
   final Connectivity _connectivity;
   final SharedPreferencesAsync _prefs;
 
@@ -82,13 +89,13 @@ class SyncService {
     required ApiService apiService,
     required SubscriptionRepository subscriptionRepository,
     required LabelRepository labelRepository,
-    required FamilyMemberRepository familyMemberRepository,
+    required FamilyRepository familyMemberRepository,
     required Connectivity connectivity,
     required SharedPreferencesAsync prefs,
   }) : _apiService = apiService,
        _subscriptionRepository = subscriptionRepository,
        _labelRepository = labelRepository,
-       _familyMemberRepository = familyMemberRepository,
+       _familyRepository = familyMemberRepository,
        _connectivity = connectivity,
        _prefs = prefs;
 
@@ -235,6 +242,8 @@ class SyncService {
       return SyncDataType.label;
     } else if (entity is SubscriptionPayment) {
       return SyncDataType.subscriptionPayment;
+    } else if (entity is Family) {
+      return SyncDataType.family;
     } else {
       return SyncDataType.familyMember;
     }
@@ -244,6 +253,7 @@ class SyncService {
   Future<void> queueCreate(dynamic entity, {String? subscriptionId}) async {
     if (entity is Subscription ||
         entity is Label ||
+        entity is Family ||
         entity is FamilyMember ||
         entity is SubscriptionPayment) {
       final data = entity.toJson();
@@ -371,6 +381,11 @@ class SyncService {
                   await _apiService.createLabel(label);
                   successfulOperations.add(operation);
                   break;
+                case SyncDataType.family:
+                  final family = Family.fromJson(operation.data!);
+                  await _apiService.createFamily(family);
+                  successfulOperations.add(operation);
+                  break;
                 case SyncDataType.familyMember:
                   final familyMember = FamilyMember.fromJson(operation.data!);
                   await _apiService.createFamilyMember(familyMember);
@@ -410,6 +425,11 @@ class SyncService {
                   await _apiService.updateLabel(label);
                   successfulOperations.add(operation);
                   break;
+                case SyncDataType.family:
+                  final family = Family.fromJson(operation.data!);
+                  await _apiService.updateFamily(family);
+                  successfulOperations.add(operation);
+                  break;
                 case SyncDataType.familyMember:
                   // This is a FamilyMember
                   final familyMember = FamilyMember.fromJson(operation.data!);
@@ -446,6 +466,10 @@ class SyncService {
                 break;
               case SyncDataType.label:
                 await _apiService.deleteLabel(operation.id);
+                successfulOperations.add(operation);
+                break;
+              case SyncDataType.family:
+                await _apiService.deleteFamily(operation.id);
                 successfulOperations.add(operation);
                 break;
               case SyncDataType.familyMember:
@@ -495,12 +519,12 @@ class SyncService {
   Future<Map<String, dynamic>> _fetchRemoteData() async {
     final remoteSubscriptions = await _apiService.getSubscriptions();
     final remoteLabels = await _apiService.getLabels(withDefault: true);
-    final remoteFamilyMembers = await _apiService.getFamilyMembers();
+    final remoteFamilies = await _apiService.getFamilies();
 
     return {
       'subscriptions': remoteSubscriptions,
       'labels': remoteLabels,
-      'familyMembers': remoteFamilyMembers,
+      'families': remoteFamilies,
     };
   }
 
@@ -509,12 +533,11 @@ class SyncService {
     final remoteSubscriptions =
         remoteData['subscriptions'] as List<Subscription>;
     final remoteLabels = remoteData['labels'] as List<Label>;
-    final remoteFamilyMembers =
-        remoteData['familyMembers'] as List<FamilyMember>;
+    final remoteFamilies = remoteData['families'] as List<Family>;
 
     final localSubscriptions = _subscriptionRepository.getAll();
     final localLabels = _labelRepository.getAll();
-    final localFamilyMembers = _familyMemberRepository.getAll();
+    final localFamilies = _familyRepository.getAll();
 
     // Update local storage with remote subscriptions
     for (final remoteSubscription in remoteSubscriptions) {
@@ -563,22 +586,29 @@ class SyncService {
     }
 
     // Update local storage with remote family members
-    for (final remoteMember in remoteFamilyMembers) {
-      final localMember = localFamilyMembers.firstWhere(
-        (m) => m.id == remoteMember.id,
-        orElse: () => FamilyMember.empty(),
+    for (final remoteFamily in remoteFamilies) {
+      final localMember = localFamilies.firstWhere(
+        (m) => m.id == remoteFamily.id,
+        orElse: () => Family.empty(),
       );
 
       // If the remote member is newer, update local
-      if (localMember.updatedAt.isBefore(remoteMember.updatedAt)) {
-        await _familyMemberRepository.update(remoteMember, withSync: false);
+      if (localMember.updatedAt.isBefore(remoteFamily.updatedAt)) {
+        await _familyRepository.update(
+          remoteFamily.id,
+          remoteFamily.name,
+          haveJointAccount: remoteFamily.haveJointAccount,
+          members: remoteFamily.members,
+          updatedAt: remoteFamily.updatedAt,
+          withSync: false,
+        );
       }
     }
 
     // Remove local labels that don't exist in remote data
-    for (final localMember in localFamilyMembers) {
-      if (!remoteFamilyMembers.any((r) => r.id == localMember.id)) {
-        await _familyMemberRepository.delete(localMember.id, withSync: false);
+    for (final localMember in localFamilies) {
+      if (!remoteFamilies.any((r) => r.id == localMember.id)) {
+        await _familyRepository.delete(localMember.id, withSync: false);
       }
     }
   }

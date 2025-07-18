@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:subscription_tracker/providers/family_member_provider.dart';
+import 'package:subscription_tracker/providers/family_provider.dart';
 import 'package:subscription_tracker/providers/label_provider.dart';
 import '../models/currency.dart';
 import '../models/subscription.dart';
@@ -582,10 +582,10 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                           ),
                                         ),
                                       ),
-                                      Consumer<FamilyMemberProvider>(
+                                      Consumer<FamilyProvider>(
                                         builder: (context, provider, child) {
                                           final familyMembers = provider
-                                              .familyMembers
+                                              .families
                                               .where(
                                                 (member) => subscription
                                                     .userFamilyMemberIds
@@ -620,7 +620,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                     ],
                                   ),
                                 if (subscription.payerFamilyMemberId != null)
-                                  Consumer<FamilyMemberProvider>(
+                                  Consumer<FamilyProvider>(
                                     builder: (context, provider, child) {
                                       final payer = provider
                                           .getFamilyMemberById(

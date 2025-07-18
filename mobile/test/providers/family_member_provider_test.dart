@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:subscription_tracker/models/family_member.dart';
-import 'package:subscription_tracker/providers/family_member_provider.dart';
-import 'package:subscription_tracker/repositories/family_member_repository.dart';
+import 'package:subscription_tracker/providers/family_provider.dart';
+import 'package:subscription_tracker/repositories/family_repository.dart';
 
 // Mock implementation of FamilyMemberRepository
-class MockFamilyMemberRepository implements FamilyMemberRepository {
+class MockFamilyMemberRepository implements FamilyRepository {
   final List<FamilyMember> _familyMembers = [];
 
   @override
@@ -15,9 +15,7 @@ class MockFamilyMemberRepository implements FamilyMemberRepository {
   @override
   FamilyMember? get(String id) {
     try {
-      return _familyMembers.firstWhere(
-        (member) => member.id == id,
-      );
+      return _familyMembers.firstWhere((member) => member.id == id);
     } catch (e) {
       return null;
     }
@@ -61,50 +59,50 @@ class MockFamilyMemberRepository implements FamilyMemberRepository {
 void main() {
   group('FamilyMemberProvider', () {
     late MockFamilyMemberRepository mockRepository;
-    late FamilyMemberProvider provider;
+    late FamilyProvider provider;
 
     setUp(() {
       mockRepository = MockFamilyMemberRepository();
-      provider = FamilyMemberProvider(familyMemberRepository: mockRepository);
+      provider = FamilyProvider(familyRepository: mockRepository);
 
       // Wait for the provider to initialize
       Future.delayed(Duration.zero);
     });
 
     test('initializes with empty list', () {
-      expect(provider.familyMembers, isEmpty);
+      expect(provider.families, isEmpty);
       expect(provider.hasFamilyMembers, isFalse);
     });
 
     test('addFamilyMember adds a family member', () async {
       await provider.addFamilyMember('John Doe');
 
-      expect(provider.familyMembers.length, equals(1));
-      expect(provider.familyMembers[0].name, equals('John Doe'));
-      expect(provider.familyMembers[0].isKid, isFalse);
+      expect(provider.families.length, equals(1));
+      expect(provider.families[0].name, equals('John Doe'));
+      expect(provider.families[0].isKid, isFalse);
       expect(provider.hasFamilyMembers, isTrue);
     });
 
     test('addFamilyMember adds a kid', () async {
       await provider.addFamilyMember('Child', isKid: true);
 
-      expect(provider.familyMembers.length, equals(1));
-      expect(provider.familyMembers[0].name, equals('Child'));
-      expect(provider.familyMembers[0].isKid, isTrue);
+      expect(provider.families.length, equals(1));
+      expect(provider.families[0].name, equals('Child'));
+      expect(provider.families[0].isKid, isTrue);
     });
 
     test('updateFamilyMember updates a family member', () async {
       // Add a family member first
       await provider.addFamilyMember('John Doe');
-      final id = provider.familyMembers[0].id;
+      final id = provider.families[0].id;
 
       // Update the family member
       await provider.updateFamilyMember(id, 'Jane Doe', isKid: true);
 
-      expect(provider.familyMembers.length, equals(1));
-      expect(provider.familyMembers[0].id, equals(id));
-      expect(provider.familyMembers[0].name, equals('Jane Doe'));
-      expect(provider.familyMembers[0].isKid, isTrue);
+      expect(provider.families.length, equals(1));
+      expect(provider.families[0].id, equals(id));
+      expect(provider.families[0].name, equals('Jane Doe'));
+      expect(provider.families[0].isKid, isTrue);
     });
 
     test('updateFamilyMember does nothing for non-existent ID', () async {
@@ -114,19 +112,19 @@ void main() {
       // Try to update a non-existent family member
       await provider.updateFamilyMember('non-existent-id', 'Jane Doe');
 
-      expect(provider.familyMembers.length, equals(1));
-      expect(provider.familyMembers[0].name, equals('John Doe'));
+      expect(provider.families.length, equals(1));
+      expect(provider.families[0].name, equals('John Doe'));
     });
 
     test('removeFamilyMember removes a family member', () async {
       // Add a family member first
       await provider.addFamilyMember('John Doe');
-      final id = provider.familyMembers[0].id;
+      final id = provider.families[0].id;
 
       // Remove the family member
       await provider.removeFamilyMember(id);
 
-      expect(provider.familyMembers, isEmpty);
+      expect(provider.families, isEmpty);
       expect(provider.hasFamilyMembers, isFalse);
     });
 
@@ -135,8 +133,8 @@ void main() {
       await provider.addFamilyMember('John Doe');
       await provider.addFamilyMember('Jane Doe');
 
-      final id1 = provider.familyMembers[0].id;
-      final id2 = provider.familyMembers[1].id;
+      final id1 = provider.families[0].id;
+      final id2 = provider.families[1].id;
 
       final member1 = provider.getFamilyMemberById(id1);
       final member2 = provider.getFamilyMemberById(id2);

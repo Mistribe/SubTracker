@@ -25,11 +25,13 @@ class Subscription extends HiveObject {
 
   @HiveField(6)
   final String? payerFamilyMemberId;
-
   @HiveField(7)
-  final DateTime createdAt;
+  final bool payedByJointAccount;
 
   @HiveField(8)
+  final DateTime createdAt;
+
+  @HiveField(9)
   final DateTime updatedAt;
 
   Subscription({
@@ -39,6 +41,7 @@ class Subscription extends HiveObject {
     List<String>? labelIds,
     List<String>? userFamilyMemberIds,
     this.payerFamilyMemberId,
+    this.payedByJointAccount = false,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : subscriptionPayments = subscriptionPayments ?? [],
@@ -195,6 +198,7 @@ class Subscription extends HiveObject {
     List<String>? labelIds,
     List<String>? userFamilyMemberIds,
     String? payerFamilyMemberId,
+    bool? payedByJointAccount,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -205,6 +209,7 @@ class Subscription extends HiveObject {
       labelIds: labelIds ?? this.labelIds,
       userFamilyMemberIds: userFamilyMemberIds ?? this.userFamilyMemberIds,
       payerFamilyMemberId: payerFamilyMemberId ?? this.payerFamilyMemberId,
+      payedByJointAccount: payedByJointAccount ?? this.payedByJointAccount,
       createdAt: createdAt ?? this.createdAt,
       updatedAt:
           updatedAt ?? DateTime.now(), // Always update the updatedAt field
@@ -221,7 +226,8 @@ class Subscription extends HiveObject {
           .toList(),
       'labels': labelIds,
       'family_members': userFamilyMemberIds,
-      'payer': payerFamilyMemberId,
+      'payer_id': payerFamilyMemberId,
+      'payed_by_joint_account': payedByJointAccount,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -242,7 +248,8 @@ class Subscription extends HiveObject {
       userFamilyMemberIds: json['family_members'] != null
           ? (json['family_members'] as List).cast<String>()
           : [],
-      payerFamilyMemberId: json['payer'] as String?,
+      payerFamilyMemberId: json['payer_id'] as String?,
+      payedByJointAccount: json['payed_by_joint_account'] as bool,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : null,

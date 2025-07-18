@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:subscription_tracker/models/family.dart';
 import '../models/subscription.dart';
 import '../models/label.dart';
 import '../models/family_member.dart';
@@ -11,7 +12,7 @@ import '../services/authentication_service.dart';
 import '../services/sync_service.dart';
 import '../repositories/subscription_repository.dart';
 import '../repositories/label_repository.dart';
-import '../repositories/family_member_repository.dart';
+import '../repositories/family_repository.dart';
 
 /// Provider for the sync service
 class SyncProvider extends ChangeNotifier {
@@ -28,7 +29,7 @@ class SyncProvider extends ChangeNotifier {
   SyncProvider({
     required SubscriptionRepository subscriptionRepository,
     required LabelRepository labelRepository,
-    required FamilyMemberRepository familyMemberRepository,
+    required FamilyRepository familyMemberRepository,
     required AuthenticationService authenticationService,
   }) : _authenticationService = authenticationService {
     _initialize(
@@ -43,7 +44,7 @@ class SyncProvider extends ChangeNotifier {
   Future<void> _initialize(
     SubscriptionRepository subscriptionRepository,
     LabelRepository labelRepository,
-    FamilyMemberRepository familyMemberRepository,
+    FamilyRepository familyMemberRepository,
     AuthenticationService authenticationService,
   ) async {
     if (_isInitialized) return;
@@ -163,6 +164,15 @@ class SyncProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> queueCreateFamily(Family family) async {
+    if (!_isInitialized) return;
+
+    await _syncService.queueCreate(family);
+    _hasPendingOperations = await _syncService.hasPendingOperations();
+    _hasSyncHistory = await _syncService.hasSyncHistory();
+    notifyListeners();
+  }
+
   Future<void> queueCreateFamilyMember(FamilyMember familyMember) async {
     if (!_isInitialized) return;
 
@@ -200,6 +210,15 @@ class SyncProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> queueUpdateFamily(Family family) async {
+    if (!_isInitialized) return;
+
+    await _syncService.queueUpdate(family);
+    _hasPendingOperations = await _syncService.hasPendingOperations();
+    _hasSyncHistory = await _syncService.hasSyncHistory();
+    notifyListeners();
+  }
+
   Future<void> _queueDelete(String id, SyncDataType dataType) async {
     if (!_isInitialized) return;
 
@@ -220,6 +239,10 @@ class SyncProvider extends ChangeNotifier {
 
   Future<void> queueDeleteFamilyMember(String id) async {
     await _queueDelete(id, SyncDataType.familyMember);
+  }
+
+  Future<void> queueDeleteFamily(String id) async {
+    await _queueDelete(id, SyncDataType.family);
   }
 
   /// Queue a create operation for a subscription payment
