@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
@@ -45,7 +46,8 @@ func (h *updateFamilyCommandHandler) Handle(ctx context.Context, cmd UpdateFamil
 
 }
 
-func (h *updateFamilyCommandHandler) updateFamily(ctx context.Context, cmd UpdateFamilyCommand, fam family.Family) result.Result[family.Family] {
+func (h *updateFamilyCommandHandler) updateFamily(ctx context.Context, cmd UpdateFamilyCommand,
+	fam family.Family) result.Result[family.Family] {
 	if err := ensureOwnerIsEditor(ctx, fam.OwnerId()); err != nil {
 		return result.Fail[family.Family](err)
 	}

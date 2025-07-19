@@ -6,7 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/domain/user"
+	"github.com/oleexo/subtracker/pkg/langext/option"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/family/command"
@@ -37,17 +39,14 @@ func (m updateFamilyModel) ToFamily(id uuid.UUID, ownerId string, createdAt time
 	)
 }
 
-func (m updateFamilyModel) Command(id uuid.UUID, ownerId string, createdAt time.Time) result.Result[command.UpdateFamilyCommand] {
-	return result.Bind[family.Family, command.UpdateFamilyCommand](
-		m.ToFamily(id, ownerId, createdAt),
-		func(f family.Family) result.Result[command.UpdateFamilyCommand] {
-			return result.Success(command.UpdateFamilyCommand{
-				Id:               uuid.UUID{},
-				Name:             "",
-				UpdatedAt:        nil,
-				HaveJointAccount: false,
-			})
-		})
+func (m updateFamilyModel) Command(familyId uuid.UUID) result.Result[command.UpdateFamilyCommand] {
+	return result.Success(command.UpdateFamilyCommand{
+		Id:               familyId,
+		Name:             m.Name,
+		UpdatedAt:        option.Some[time.Time](ext.ValueOrDefault[time.Time](m.UpdatedAt, time.Now())),
+		HaveJointAccount: m.HaveJointAccount,
+	})
+
 }
 
 // Handle godoc
@@ -85,7 +84,7 @@ func (f FamilyUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	cmd := model.Command(familyId, userId, time.Now())
+	cmd := model.Command(familyId)
 	result.Match[command.UpdateFamilyCommand, result.Unit](cmd,
 		func(cmd command.UpdateFamilyCommand) result.Unit {
 			r := f.handler.Handle(c, cmd)
