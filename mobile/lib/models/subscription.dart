@@ -34,6 +34,9 @@ class Subscription extends HiveObject {
   @HiveField(9)
   final DateTime updatedAt;
 
+  @HiveField(10)
+  final String eTag;
+
   Subscription({
     required this.id,
     required this.name,
@@ -42,6 +45,7 @@ class Subscription extends HiveObject {
     List<String>? userFamilyMemberIds,
     this.payerFamilyMemberId,
     this.payedByJointAccount = false,
+    this.eTag = '',
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : subscriptionPayments = subscriptionPayments ?? [],
@@ -199,6 +203,7 @@ class Subscription extends HiveObject {
     List<String>? userFamilyMemberIds,
     String? payerFamilyMemberId,
     bool? payedByJointAccount,
+    String? eTag,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -210,9 +215,9 @@ class Subscription extends HiveObject {
       userFamilyMemberIds: userFamilyMemberIds ?? this.userFamilyMemberIds,
       payerFamilyMemberId: payerFamilyMemberId ?? this.payerFamilyMemberId,
       payedByJointAccount: payedByJointAccount ?? this.payedByJointAccount,
+      eTag: eTag ?? this.eTag,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt:
-          updatedAt ?? DateTime.now(), // Always update the updatedAt field
+      updatedAt: updatedAt ?? DateTime.now(),
     );
   }
 
@@ -228,6 +233,7 @@ class Subscription extends HiveObject {
       'family_members': userFamilyMemberIds,
       'payer_id': payerFamilyMemberId,
       'payed_by_joint_account': payedByJointAccount,
+      'etag': eTag,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -250,6 +256,7 @@ class Subscription extends HiveObject {
           : [],
       payerFamilyMemberId: json['payer_id'] as String?,
       payedByJointAccount: json['payed_by_joint_account'] as bool,
+      eTag: json['etag'],
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : null,
@@ -287,6 +294,7 @@ class Subscription extends HiveObject {
       payerFamilyMemberId: null,
       subscriptionPayments: [],
       userFamilyMemberIds: [],
+      eTag: '',
       createdAt: DateTime.fromMillisecondsSinceEpoch(0),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(0),
     );

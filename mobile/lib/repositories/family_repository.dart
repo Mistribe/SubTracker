@@ -197,7 +197,7 @@ class FamilyRepository {
 
     // Queue for sync if provider is available
     if (_syncProvider != null && withSync) {
-      await _syncProvider!.queueDeleteFamilyMember(memberId);
+      await _syncProvider!.queueDeleteFamilyMember(familyId, memberId);
     }
   }
 
@@ -212,7 +212,7 @@ class FamilyRepository {
     // Queue deletes for sync if provider is available
     if (_syncProvider != null) {
       for (final id in ids) {
-        await _syncProvider!.queueDeleteFamilyMember(id);
+        await _syncProvider!.queueDeleteFamily(id);
       }
     }
   }

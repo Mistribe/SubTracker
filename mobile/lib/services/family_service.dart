@@ -22,7 +22,8 @@ class FamilyService extends BaseService {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        return data.map((json) => Family.fromJson(json)).toList();
+        final families = data.map((json) => Family.fromJson(json)).toList();
+        return families;
       } else {
         final errorData = json.decode(response.body);
         throw Exception(
@@ -107,7 +108,7 @@ class FamilyService extends BaseService {
       };
 
       final response = await httpClient.put(
-        Uri.parse('$baseUrl/families/members/${member.id}'),
+        Uri.parse('$baseUrl/families/${member.familyId}/members/${member.id}'),
         headers: await getHeaders(),
         body: json.encode(updatePayload),
       );
@@ -130,11 +131,10 @@ class FamilyService extends BaseService {
   }
 
   /// Delete family member by ID
-  /// DELETE /families/members/{id}
-  Future<void> deleteFamilyMember(String id) async {
+  Future<void> deleteFamilyMember(String familyId, String memberId) async {
     try {
       final response = await httpClient.delete(
-        Uri.parse('$baseUrl/families/members/$id'),
+        Uri.parse('$baseUrl/families/$familyId/members/$memberId'),
         headers: await getHeaders(),
       );
 

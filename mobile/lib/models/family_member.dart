@@ -26,12 +26,16 @@ class FamilyMember extends HiveObject {
   @HiveField(6)
   final DateTime updatedAt;
 
+  @HiveField(7)
+  final String eTag;
+
   FamilyMember({
     required this.id,
     required this.name,
     required this.familyId,
     this.isKid = false,
     this.email,
+    this.eTag = '',
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : createdAt = createdAt ?? DateTime.now(),
@@ -43,6 +47,7 @@ class FamilyMember extends HiveObject {
     String? name,
     String? email,
     bool? isKid,
+    String? eTag,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -50,11 +55,11 @@ class FamilyMember extends HiveObject {
       id: id ?? this.id,
       familyId: familyId,
       name: name ?? this.name,
+      eTag: eTag ?? this.eTag,
       isKid: isKid ?? this.isKid,
       email: email ?? this.email,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt:
-          updatedAt ?? DateTime.now(), // Always update the updatedAt field
+      updatedAt: updatedAt ?? DateTime.now(),
     );
   }
 
@@ -66,6 +71,7 @@ class FamilyMember extends HiveObject {
       'name': name,
       'is_kid': isKid,
       'email': email,
+      'etag': eTag,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -78,6 +84,7 @@ class FamilyMember extends HiveObject {
       name: json['name'],
       isKid: json['is_kid'] ?? false,
       email: json['email'],
+      eTag: json['etag'],
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : null,
@@ -94,6 +101,7 @@ class FamilyMember extends HiveObject {
       familyId: '',
       name: '',
       isKid: false,
+      eTag: '',
       email: null,
       createdAt: DateTime.fromMillisecondsSinceEpoch(0),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(0),

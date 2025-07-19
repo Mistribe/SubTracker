@@ -20,12 +20,15 @@ class Family extends HiveObject {
   final DateTime createdAt;
   @HiveField(6)
   final DateTime updatedAt;
+  @HiveField(7)
+  final String eTag;
 
   Family({
     required this.id,
     required this.name,
     required this.isOwner,
     required this.haveJointAccount,
+    this.eTag = "",
     List<FamilyMember>? familyMembers,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -38,6 +41,7 @@ class Family extends HiveObject {
     String? name,
     List<FamilyMember>? members,
     bool? haveJointAccount,
+    String? eTag,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -45,6 +49,7 @@ class Family extends HiveObject {
       id: id ?? this.id,
       name: name ?? this.name,
       isOwner: isOwner,
+      eTag: eTag ?? this.eTag,
       familyMembers: members ?? this.members,
       haveJointAccount: haveJointAccount ?? this.haveJointAccount,
       createdAt: createdAt ?? this.createdAt,
@@ -59,6 +64,7 @@ class Family extends HiveObject {
       'is_owner': isOwner,
       'members': members.map((member) => member.toJson()).toList(),
       'have_joint_account': haveJointAccount,
+      'etag': eTag,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -73,6 +79,7 @@ class Family extends HiveObject {
       familyMembers: (json['members'] as List?)
           ?.map((member) => FamilyMember.fromJson(member))
           .toList(),
+      eTag: json['etag'],
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
     );
@@ -86,6 +93,7 @@ class Family extends HiveObject {
       isOwner: false,
       familyMembers: [],
       haveJointAccount: true,
+      eTag: '',
       createdAt: DateTime.fromMillisecondsSinceEpoch(0),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(0),
     );

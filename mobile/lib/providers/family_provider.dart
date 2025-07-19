@@ -124,11 +124,13 @@ class FamilyProvider with ChangeNotifier {
     String familyId,
     String name, {
     bool isKid = false,
+    String? email,
   }) async {
     final familyMember = await familyRepository.addMember(
       familyId,
       name,
       isKid: isKid,
+      email: email,
     );
     if (familyMember == null) {
       // todo handle error
@@ -146,7 +148,7 @@ class FamilyProvider with ChangeNotifier {
     bool isKid = false,
     String? email,
   }) async {
-    final familyMember = familyRepository.get(memberId);
+    final familyMember = familyRepository.get(familyId);
     if (familyMember == null) {
       return;
     }

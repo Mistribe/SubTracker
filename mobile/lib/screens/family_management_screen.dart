@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/family.dart';
 import '../models/family_member.dart';
 import '../providers/family_provider.dart';
+import 'family_member_form_screen.dart';
 
 class FamilyManagementScreen extends StatefulWidget {
   const FamilyManagementScreen({super.key});
@@ -712,62 +713,27 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
     BuildContext context,
     String familyId,
     FamilyProvider provider,
-  ) {
-    final nameController = TextEditingController();
-    bool isKid = false;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Add Family Member'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  hintText: 'Enter family member name',
-                ),
-                textCapitalization: TextCapitalization.words,
-                autofocus: true,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Checkbox(
-                    value: isKid,
-                    onChanged: (value) {
-                      setState(() {
-                        isKid = value ?? false;
-                      });
-                    },
-                  ),
-                  const Text('This is a kid'),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                final name = nameController.text.trim();
-                if (name.isNotEmpty) {
-                  provider.addFamilyMember(familyId, name, isKid: isKid);
-                  Navigator.of(context).pop();
-                }
-              },
-              child: const Text('Add'),
-            ),
-          ],
-        ),
+  ) async {
+    // Navigate to the family member form screen
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute<Map<String, dynamic>>(
+        builder: (context) {
+          return FamilyMemberFormScreen(
+            familyId: familyId,
+          );
+        },
       ),
     );
+
+    // Process the result if the user saved the form
+    if (result != null) {
+      provider.addFamilyMember(
+        familyId, 
+        result['name'], 
+        isKid: result['isKid'],
+        email: result['email'],
+      );
+    }
   }
 
   void _showEditMemberDialog(
@@ -775,67 +741,29 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
     String familyId,
     FamilyMember member,
     FamilyProvider provider,
-  ) {
-    final nameController = TextEditingController(text: member.name);
-    bool isKid = member.isKid;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Edit Family Member'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  hintText: 'Enter family member name',
-                ),
-                textCapitalization: TextCapitalization.words,
-                autofocus: true,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Checkbox(
-                    value: isKid,
-                    onChanged: (value) {
-                      setState(() {
-                        isKid = value ?? false;
-                      });
-                    },
-                  ),
-                  const Text('This is a kid'),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                final name = nameController.text.trim();
-                if (name.isNotEmpty) {
-                  provider.updateFamilyMember(
-                    familyId,
-                    member.id,
-                    name,
-                    isKid: isKid,
-                  );
-                  Navigator.of(context).pop();
-                }
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        ),
+  ) async {
+    // Navigate to the family member form screen with the existing member data
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute<Map<String, dynamic>>(
+        builder: (context) {
+          return FamilyMemberFormScreen(
+            familyId: familyId,
+            member: member,
+          );
+        },
       ),
     );
+
+    // Process the result if the user saved the form
+    if (result != null) {
+      provider.updateFamilyMember(
+        familyId,
+        member.id,
+        result['name'],
+        isKid: result['isKid'],
+        email: result['email'],
+      );
+    }
   }
 
   void _showDeleteMemberDialog(

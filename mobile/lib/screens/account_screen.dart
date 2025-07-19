@@ -183,6 +183,32 @@ class AccountScreen extends StatelessWidget {
                             minimumSize: const Size(double.infinity, 40),
                           ),
                         ),
+
+                        const SizedBox(height: 8),
+
+                        // Clear queue and fetch data button
+                        ElevatedButton.icon(
+                          onPressed: syncProvider.isSyncing 
+                            ? null 
+                            : () => syncProvider.clearQueueAndFetchData(),
+                          icon: syncProvider.isSyncing 
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.delete_sweep),
+                          label: Text(
+                            syncProvider.isSyncing 
+                              ? 'Processing...' 
+                              : 'Clear Queue & Refresh'
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 40),
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
                       ],
                     ),
                   ),

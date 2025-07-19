@@ -35,6 +35,9 @@ class SubscriptionPayment {
   @HiveField(7)
   final DateTime updatedAt;
 
+  @HiveField(8)
+  final String eTag;
+
   SubscriptionPayment({
     required this.id,
     required this.price,
@@ -42,6 +45,7 @@ class SubscriptionPayment {
     required this.endDate,
     required this.months,
     required this.currency,
+    this.eTag = '',
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : createdAt = createdAt ?? DateTime.now(),
@@ -115,6 +119,7 @@ class SubscriptionPayment {
     DateTime? endDate,
     int? months,
     String? currency,
+    String? eTag,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -125,9 +130,9 @@ class SubscriptionPayment {
       endDate: endDate ?? this.endDate,
       months: months ?? this.months,
       currency: currency ?? this.currency,
+      eTag: eTag ?? this.eTag,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt:
-          updatedAt ?? DateTime.now(), // Always update the updatedAt field
+      updatedAt: updatedAt ?? DateTime.now(),
     );
   }
 
@@ -139,6 +144,7 @@ class SubscriptionPayment {
       'end_date': endDate?.toIso8601String(),
       'months': months,
       'currency': currency,
+      'etag': eTag,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -156,7 +162,7 @@ class SubscriptionPayment {
           : null,
       months: json['months'],
       currency: json['currency'] ?? Currency.USD.code,
-      // Default to USD for backward compatibility
+      eTag: json['etag'],
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : null,

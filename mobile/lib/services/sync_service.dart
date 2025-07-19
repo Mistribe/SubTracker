@@ -289,9 +289,14 @@ class SyncService {
   }
 
   /// Queue an update operation for a subscription
-  Future<void> queueUpdate(dynamic entity, {String? subscriptionId}) async {
+  Future<void> queueUpdate(
+    dynamic entity, {
+    String? subscriptionId,
+    String? familyId,
+  }) async {
     if (entity is Subscription ||
         entity is Label ||
+        entity is Family ||
         entity is FamilyMember ||
         entity is SubscriptionPayment) {
       final data = entity.toJson();
@@ -304,6 +309,15 @@ class SyncService {
           );
         }
         data['subscriptionId'] = subscriptionId;
+      }
+
+      if (entity is FamilyMember) {
+        if (familyId == null) {
+          throw ArgumentError(
+            'Family ID is required for FamilyMember operations',
+          );
+        }
+        data['familyId'] = familyId;
       }
 
       await _addPendingOperation(
@@ -331,6 +345,7 @@ class SyncService {
     String id,
     SyncDataType dataType, {
     String? subscriptionId,
+    String? familyId,
   }) async {
     // For SubscriptionPayment, we need the subscription ID
     Map<String, dynamic>? data;
@@ -341,6 +356,13 @@ class SyncService {
         );
       }
       data = {'subscriptionId': subscriptionId};
+    } else if (dataType == SyncDataType.familyMember) {
+      if (familyId == null) {
+        throw ArgumentError(
+          'Family ID is required for FamilyMember delete operations',
+        );
+      }
+      data = {'familyId': familyId};
     }
 
     await _addPendingOperation(
@@ -473,7 +495,13 @@ class SyncService {
                 successfulOperations.add(operation);
                 break;
               case SyncDataType.familyMember:
-                await _apiService.deleteFamilyMember(operation.id);
+                final familyId = operation.data?['familyId'];
+                if (familyId == null) {
+                  throw Exception(
+                    'Family ID is required for family member operations',
+                  );
+                }
+                await _apiService.deleteFamilyMember(familyId, operation.id);
                 successfulOperations.add(operation);
                 break;
               case SyncDataType.subscriptionPayment:
@@ -593,7 +621,8 @@ class SyncService {
       );
 
       // If the remote member is newer, update local
-      if (localMember.updatedAt.isBefore(remoteFamily.updatedAt)) {
+      if (localMember.updatedAt.isBefore(remoteFamily.updatedAt) ||
+          localMember.members.length != remoteFamily.members.length) {
         await _familyRepository.update(
           remoteFamily.id,
           remoteFamily.name,
@@ -676,6 +705,32 @@ class SyncService {
   /// Get the count of pending operations
   Future<int> getPendingOperationsCount() async {
     return (await _getPendingOperations()).length;
+  }
+
+  /// Clear pending operations and fetch fresh data from server
+  Future<void> clearQueueAndFetchData() async {
+    // Prevent multiple operations from running simultaneously
+    if (_isSyncing || !_isOnline) return;
+
+    _isSyncing = true;
+
+    try {
+      // Clear pending operations
+      await _savePendingOperations([]);
+
+      // Fetch latest data from backend
+      final remoteData = await _fetchRemoteData();
+
+      // Update local storage with remote data
+      await _updateLocalStorage(remoteData);
+
+      // Update last sync time and clean up
+      await _updateSyncTimeAndCleanup();
+    } catch (e) {
+      print('Clear queue and fetch data error: $e');
+    } finally {
+      _isSyncing = false;
+    }
   }
 
   /// Dispose resources

@@ -138,8 +138,8 @@ class ApiService {
 
   /// Delete family member by ID
   /// DELETE /families/members/{id}
-  Future<void> deleteFamilyMember(String id) async {
-    return _familyService.deleteFamilyMember(id);
+  Future<void> deleteFamilyMember(String familyId, String memberId) async {
+    return _familyService.deleteFamilyMember(familyId, memberId);
   }
 
   /// Delete family by ID
