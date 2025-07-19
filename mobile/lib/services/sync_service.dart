@@ -567,15 +567,13 @@ class SyncService {
     final localLabels = _labelRepository.getAll();
     final localFamilies = _familyRepository.getAll();
 
-    // Update local storage with remote subscriptions
     for (final remoteSubscription in remoteSubscriptions) {
       final localSubscription = localSubscriptions.firstWhere(
         (s) => s.id == remoteSubscription.id,
         orElse: () => Subscription.empty(),
       );
 
-      // If the remote subscription is newer, update local
-      if (localSubscription.updatedAt.isBefore(remoteSubscription.updatedAt)) {
+      if (localSubscription.eTag != remoteSubscription.eTag) {
         await _subscriptionRepository.update(
           remoteSubscription,
           withSync: false,
@@ -583,7 +581,6 @@ class SyncService {
       }
     }
 
-    // Remove local labels that don't exist in remote data
     for (final localSubscription in localSubscriptions) {
       if (!remoteSubscriptions.any((r) => r.id == localSubscription.id)) {
         await _subscriptionRepository.delete(
@@ -593,36 +590,34 @@ class SyncService {
       }
     }
 
-    // Update local storage with remote labels
     for (final remoteLabel in remoteLabels) {
       final localLabel = localLabels.firstWhere(
         (l) => l.id == remoteLabel.id,
         orElse: () => Label.empty(),
       );
 
-      // If the remote label is newer, update local
-      if (localLabel.updatedAt.isBefore(remoteLabel.updatedAt)) {
+      if (localLabel.eTag != remoteLabel.eTag) {
         await _labelRepository.update(remoteLabel, withSync: false);
       }
     }
 
-    // Remove local labels that don't exist in remote data
     for (final localLabel in localLabels) {
       if (!remoteLabels.any((r) => r.id == localLabel.id)) {
-        await _labelRepository.delete(localLabel.id, withSync: false);
+        await _labelRepository.delete(
+          localLabel.id,
+          withSync: false,
+          force: true,
+        );
       }
     }
 
-    // Update local storage with remote family members
     for (final remoteFamily in remoteFamilies) {
       final localMember = localFamilies.firstWhere(
         (m) => m.id == remoteFamily.id,
         orElse: () => Family.empty(),
       );
 
-      // If the remote member is newer, update local
-      if (localMember.updatedAt.isBefore(remoteFamily.updatedAt) ||
-          localMember.members.length != remoteFamily.members.length) {
+      if (localMember.eTag != remoteFamily.eTag) {
         await _familyRepository.update(
           remoteFamily.id,
           remoteFamily.name,
@@ -634,7 +629,6 @@ class SyncService {
       }
     }
 
-    // Remove local labels that don't exist in remote data
     for (final localMember in localFamilies) {
       if (!remoteFamilies.any((r) => r.id == localMember.id)) {
         await _familyRepository.delete(localMember.id, withSync: false);

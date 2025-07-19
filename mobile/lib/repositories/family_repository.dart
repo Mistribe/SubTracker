@@ -174,7 +174,7 @@ class FamilyRepository {
 
     // Queue for sync if provider is available
     if (_syncProvider != null && withSync) {
-      await _syncProvider!.queueUpdateFamilyMember(familyMember);
+      await _syncProvider!.queueUpdateFamilyMember(updatedFamilyMember);
     }
   }
 

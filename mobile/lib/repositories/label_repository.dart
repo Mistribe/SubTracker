@@ -89,10 +89,14 @@ class LabelRepository {
   }
 
   /// Delete a label
-  Future<void> delete(String id, {bool withSync = true}) async {
+  Future<void> delete(
+    String id, {
+    bool withSync = true,
+    bool force = false,
+  }) async {
     // Check if the label is a default label
     final existingLabel = get(id);
-    if (existingLabel != null && existingLabel.isDefault) {
+    if (existingLabel != null && existingLabel.isDefault && !force) {
       throw Exception('Default labels cannot be removed');
     }
 
