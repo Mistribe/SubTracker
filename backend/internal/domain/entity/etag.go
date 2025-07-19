@@ -20,12 +20,30 @@ func CalculateETag(etagEntities ...ETagEntity) string {
 		switch v := value.(type) {
 		case string:
 			hasher.Write([]byte(v))
-		case int, int8, int16, int32, int64:
-			hasher.Write([]byte(strconv.FormatInt(v.(int64), 10)))
-		case uint, uint8, uint16, uint32, uint64:
-			hasher.Write([]byte(strconv.FormatUint(v.(uint64), 10)))
-		case float32, float64:
-			hasher.Write([]byte(strconv.FormatFloat(v.(float64), 'f', -1, 64)))
+		case int:
+			hasher.Write([]byte(strconv.FormatInt(int64(v), 10)))
+		case int8:
+			hasher.Write([]byte(strconv.FormatInt(int64(v), 10)))
+		case int16:
+			hasher.Write([]byte(strconv.FormatInt(int64(v), 10)))
+		case int32:
+			hasher.Write([]byte(strconv.FormatInt(int64(v), 10)))
+		case int64:
+			hasher.Write([]byte(strconv.FormatInt(v, 10)))
+		case uint:
+			hasher.Write([]byte(strconv.FormatUint(uint64(v), 10)))
+		case uint8:
+			hasher.Write([]byte(strconv.FormatUint(uint64(v), 10)))
+		case uint16:
+			hasher.Write([]byte(strconv.FormatUint(uint64(v), 10)))
+		case uint32:
+			hasher.Write([]byte(strconv.FormatUint(uint64(v), 10)))
+		case uint64:
+			hasher.Write([]byte(strconv.FormatUint(v, 10)))
+		case float32:
+			hasher.Write([]byte(strconv.FormatFloat(float64(v), 'f', -1, 64)))
+		case float64:
+			hasher.Write([]byte(strconv.FormatFloat(v, 'f', -1, 64)))
 		case bool:
 			if v {
 				hasher.Write([]byte("1"))
