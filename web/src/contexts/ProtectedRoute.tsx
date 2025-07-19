@@ -1,19 +1,18 @@
-import { ReactNode } from "react";
-import { Navigate } from "react-router-dom";
-import { useAuth } from "./useAuth";
+import {useKindeAuth} from "@kinde-oss/kinde-auth-react";
+import type {ReactNode} from "react";
 
 interface ProtectedRouteProps {
-  children: ReactNode;
+    children: ReactNode;
 }
 
-export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isAuthenticated } = useAuth();
-  const storedAuth = localStorage.getItem("isAuthenticated");
-  
-  // If not authenticated, redirect to login
-  if (!isAuthenticated && storedAuth !== "true") {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return <>{children}</>;
+export const ProtectedRoute = ({children}: ProtectedRouteProps) => {
+    const {isAuthenticated, login} = useKindeAuth();
+
+    if (!isAuthenticated) {
+
+        login();
+        return null;
+    }
+
+    return <>{children}</>;
 };
