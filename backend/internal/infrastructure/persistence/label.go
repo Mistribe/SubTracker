@@ -8,14 +8,16 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/oleexo/subtracker/internal/domain/label"
+	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 )
 
 type labelModel struct {
 	BaseModel
-	Name      string `gorm:"type:varchar(100);not null"`
-	Color     string `gorm:"type:varchar(20);not null"`
-	IsDefault bool   `gorm:"type:boolean;not null;default:false;index"`
+	OwnerId   *string `gorm:"type:varchar(100)"`
+	Name      string  `gorm:"type:varchar(100);not null"`
+	Color     string  `gorm:"type:varchar(20);not null"`
+	IsDefault bool    `gorm:"type:boolean;not null;default:false;index"`
 }
 
 func (l labelModel) TableName() string {
@@ -40,6 +42,7 @@ func (r LabelRepository) toModel(source *label.Label) labelModel {
 			UpdatedAt: source.UpdatedAt(),
 			Etag:      source.ETag(),
 		},
+		OwnerId:   source.OwnerId(),
 		Name:      source.Name(),
 		Color:     source.Color(),
 		IsDefault: source.IsDefault(),
@@ -49,6 +52,7 @@ func (r LabelRepository) toModel(source *label.Label) labelModel {
 func (r LabelRepository) toEntity(source labelModel) label.Label {
 	lbl := label.NewLabelWithoutValidation(
 		source.Id,
+		source.OwnerId,
 		source.Name,
 		source.IsDefault,
 		source.Color,
@@ -72,10 +76,17 @@ func (r LabelRepository) Get(ctx context.Context, id uuid.UUID) (option.Option[l
 }
 
 func (r LabelRepository) GetAll(ctx context.Context, withDefault bool) ([]label.Label, error) {
+	userId, ok := user.FromContext(ctx)
+	if !ok {
+		return nil, nil
+	}
 	var labels []labelModel
 	query := r.repository.db.WithContext(ctx)
-	if !withDefault {
-		query = query.Where("is_default = ?", false)
+
+	if withDefault {
+		query = query.Where("owner_id = ? OR (owner_id is null AND is_default = ?)", userId, true)
+	} else {
+		query = query.Where("owner_id = ?", userId)
 	}
 	if result := query.Find(&labels); result.Error != nil {
 		return nil, result.Error

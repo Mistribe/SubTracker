@@ -2,6 +2,11 @@ package user
 
 import (
 	"context"
+	"errors"
+)
+
+var (
+	ErrNotFound = errors.New("user not found")
 )
 
 const ContextKey string = "SUBTRACKER_USER_ID"

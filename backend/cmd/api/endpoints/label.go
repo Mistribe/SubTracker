@@ -6,11 +6,13 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/oleexo/subtracker/cmd/api/ginfx"
+	"github.com/oleexo/subtracker/cmd/api/middlewares"
 	"github.com/oleexo/subtracker/internal/domain/label"
 )
 
 type LabelEndpointGroup struct {
-	routes []ginfx.Route
+	routes      []ginfx.Route
+	middlewares []gin.HandlerFunc
 }
 
 func NewLabelEndpointGroup(
@@ -19,7 +21,8 @@ func NewLabelEndpointGroup(
 	deleteEndpoint *LabelDeleteEndpoint,
 	getEndpoint *LabelGetEndpoint,
 	getAllEndpoint *LabelGetAllEndpoint,
-	defaultEndpoint *DefaultLabelEndpoint) *LabelEndpointGroup {
+	defaultEndpoint *DefaultLabelEndpoint,
+	authenticationMiddleware *middlewares.AuthenticationMiddleware) *LabelEndpointGroup {
 	return &LabelEndpointGroup{
 		routes: []ginfx.Route{
 			createEndpoint,
@@ -28,6 +31,9 @@ func NewLabelEndpointGroup(
 			getEndpoint,
 			getAllEndpoint,
 			defaultEndpoint,
+		},
+		middlewares: []gin.HandlerFunc{
+			authenticationMiddleware.Middleware(),
 		},
 	}
 }
@@ -41,7 +47,7 @@ func (g LabelEndpointGroup) Routes() []ginfx.Route {
 }
 
 func (g LabelEndpointGroup) Middlewares() []gin.HandlerFunc {
-	return nil
+	return g.middlewares
 }
 
 type labelModel struct {

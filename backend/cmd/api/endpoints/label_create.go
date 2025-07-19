@@ -11,6 +11,7 @@ import (
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/label/command"
 	"github.com/oleexo/subtracker/internal/domain/label"
+	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/ext"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
@@ -27,7 +28,7 @@ type createLabelModel struct {
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 
-func (m createLabelModel) ToLabel() result.Result[label.Label] {
+func (m createLabelModel) ToLabel(userId string) result.Result[label.Label] {
 	var id uuid.UUID
 	var err error
 	var createdAt time.Time
@@ -42,6 +43,7 @@ func (m createLabelModel) ToLabel() result.Result[label.Label] {
 
 	return label.NewLabel(
 		id,
+		&userId,
 		m.Name,
 		isDefault,
 		strings.ToUpper(m.Color),
@@ -50,9 +52,9 @@ func (m createLabelModel) ToLabel() result.Result[label.Label] {
 	)
 }
 
-func (m createLabelModel) Command() result.Result[command.CreateLabelCommand] {
+func (m createLabelModel) Command(userId string) result.Result[command.CreateLabelCommand] {
 	return result.Bind[label.Label, command.CreateLabelCommand](
-		m.ToLabel(),
+		m.ToLabel(userId),
 		func(lbl label.Label) result.Result[command.CreateLabelCommand] {
 			return result.Success(command.CreateLabelCommand{
 				Label: lbl,
@@ -79,7 +81,17 @@ func (l LabelCreateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	result.Match[command.CreateLabelCommand, result.Unit](model.Command(),
+	userId, ok := user.FromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, httpError{
+			Message: "invalid user id",
+		})
+		return
+	}
+
+	cmd := model.Command(userId)
+
+	result.Match[command.CreateLabelCommand, result.Unit](cmd,
 		func(cmd command.CreateLabelCommand) result.Unit {
 			r := l.handler.Handle(c, cmd)
 			handleResponse(c,

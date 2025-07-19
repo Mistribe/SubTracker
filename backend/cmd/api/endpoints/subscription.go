@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/cmd/api/ginfx"
+	"github.com/oleexo/subtracker/cmd/api/middlewares"
 	"github.com/oleexo/subtracker/pkg/ext"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 
@@ -15,7 +16,8 @@ import (
 )
 
 type SubscriptionEndpointGroup struct {
-	routes []ginfx.Route
+	routes      []ginfx.Route
+	middlewares []gin.HandlerFunc
 }
 
 func (s SubscriptionEndpointGroup) Prefix() string {
@@ -27,7 +29,7 @@ func (s SubscriptionEndpointGroup) Routes() []ginfx.Route {
 }
 
 func (s SubscriptionEndpointGroup) Middlewares() []gin.HandlerFunc {
-	return nil
+	return s.middlewares
 }
 
 func NewSubscriptionEndpointGroup(
@@ -38,7 +40,8 @@ func NewSubscriptionEndpointGroup(
 	deleteEndpoint *SubscriptionDeleteEndpoint,
 	createPaymentEndpoint *SubscriptionPaymentCreateEndpoint,
 	updatePaymentEndpoint *SubscriptionPaymentUpdateEndpoint,
-	deletePaymentEndpoint *SubscriptionPaymentDeleteEndpoint) *SubscriptionEndpointGroup {
+	deletePaymentEndpoint *SubscriptionPaymentDeleteEndpoint,
+	authenticationMiddleware *middlewares.AuthenticationMiddleware) *SubscriptionEndpointGroup {
 	return &SubscriptionEndpointGroup{
 		routes: []ginfx.Route{
 			getEndpoint,
@@ -49,6 +52,9 @@ func NewSubscriptionEndpointGroup(
 			createPaymentEndpoint,
 			updatePaymentEndpoint,
 			deletePaymentEndpoint,
+		},
+		middlewares: []gin.HandlerFunc{
+			authenticationMiddleware.Middleware(),
 		},
 	}
 }

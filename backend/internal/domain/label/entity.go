@@ -18,6 +18,7 @@ var (
 type Label struct {
 	*entity.Base
 
+	ownerId   *string
 	name      string
 	isDefault bool
 	color     string
@@ -25,6 +26,7 @@ type Label struct {
 
 func NewLabelWithoutValidation(
 	id uuid.UUID,
+	ownerId *string,
 	name string,
 	isDefault bool,
 	color string,
@@ -33,6 +35,7 @@ func NewLabelWithoutValidation(
 	isExists bool) Label {
 	return Label{
 		Base:      entity.NewBase(id, createdAt, updatedAt, true, isExists),
+		ownerId:   ownerId,
 		name:      strings.TrimSpace(name),
 		isDefault: isDefault,
 		color:     strings.TrimSpace(color),
@@ -41,12 +44,13 @@ func NewLabelWithoutValidation(
 
 func NewLabel(
 	id uuid.UUID,
+	ownerId *string,
 	name string,
 	isDefault bool,
 	color string,
 	createdAt time.Time,
 	updatedAt time.Time) result.Result[Label] {
-	lbl := NewLabelWithoutValidation(id, name, isDefault, color, createdAt, updatedAt, false)
+	lbl := NewLabelWithoutValidation(id, ownerId, name, isDefault, color, createdAt, updatedAt, false)
 
 	if err := lbl.Validate(); err != nil {
 		return result.Fail[Label](err)
@@ -57,6 +61,10 @@ func NewLabel(
 
 func (l *Label) Name() string {
 	return l.name
+}
+
+func (l *Label) OwnerId() *string {
+	return l.ownerId
 }
 
 func (l *Label) IsDefault() bool {
