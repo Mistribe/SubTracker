@@ -1,21 +1,15 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import '../models/subscription.dart';
 import '../models/subscription_payment.dart';
 import 'base_service.dart';
-import 'authentication_service.dart';
 
 /// Service for handling subscription-related API requests
 class SubscriptionService extends BaseService {
   SubscriptionService({
-    required String baseUrl,
-    required AuthenticationService authenticationService,
-    http.Client? httpClient,
-  }) : super(
-          baseUrl: baseUrl,
-          authenticationService: authenticationService,
-          httpClient: httpClient,
-        );
+    required super.baseUrl,
+    required super.authenticationService,
+    super.httpClient,
+  });
 
   /// Get all subscriptions from the backend
   /// GET /subscriptions

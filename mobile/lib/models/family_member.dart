@@ -48,7 +48,7 @@ class FamilyMember extends HiveObject {
   }) {
     return FamilyMember(
       id: id ?? this.id,
-      familyId: this.familyId,
+      familyId: familyId,
       name: name ?? this.name,
       isKid: isKid ?? this.isKid,
       email: email ?? this.email,

@@ -1,20 +1,14 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import '../models/label.dart';
 import 'base_service.dart';
-import 'authentication_service.dart';
 
 /// Service for handling label-related API requests
 class LabelService extends BaseService {
   LabelService({
-    required String baseUrl,
-    required AuthenticationService authenticationService,
-    http.Client? httpClient,
-  }) : super(
-          baseUrl: baseUrl,
-          authenticationService: authenticationService,
-          httpClient: httpClient,
-        );
+    required super.baseUrl,
+    required super.authenticationService,
+    super.httpClient,
+  });
 
   /// Get all labels
   /// GET /labels

@@ -1,6 +1,5 @@
 import 'package:hive/hive.dart';
 import 'package:subscription_tracker/models/family.dart';
-import 'package:subscription_tracker/providers/subscription_provider.dart';
 import 'package:uuid/uuid.dart';
 import '../models/family_member.dart';
 import '../providers/sync_provider.dart';

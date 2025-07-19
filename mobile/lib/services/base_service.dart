@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:kinde_flutter_sdk/kinde_flutter_sdk.dart';
 import 'package:subscription_tracker/services/authentication_service.dart';

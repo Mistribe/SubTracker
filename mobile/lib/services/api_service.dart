@@ -5,7 +5,6 @@ import '../models/subscription.dart';
 import '../models/family_member.dart';
 import '../models/label.dart';
 import '../models/subscription_payment.dart';
-import 'base_service.dart';
 import 'subscription_service.dart';
 import 'family_service.dart';
 import 'label_service.dart';

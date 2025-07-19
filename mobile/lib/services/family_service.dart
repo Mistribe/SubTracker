@@ -1,21 +1,15 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import '../models/family.dart';
 import '../models/family_member.dart';
 import 'base_service.dart';
-import 'authentication_service.dart';
 
 /// Service for handling family-related API requests
 class FamilyService extends BaseService {
   FamilyService({
-    required String baseUrl,
-    required AuthenticationService authenticationService,
-    http.Client? httpClient,
-  }) : super(
-         baseUrl: baseUrl,
-         authenticationService: authenticationService,
-         httpClient: httpClient,
-       );
+    required super.baseUrl,
+    required super.authenticationService,
+    super.httpClient,
+  });
 
   /// Get all families
   /// GET /families
