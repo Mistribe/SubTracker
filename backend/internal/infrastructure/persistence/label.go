@@ -38,6 +38,7 @@ func (r LabelRepository) toModel(source *label.Label) labelModel {
 			Id:        source.Id(),
 			CreatedAt: source.CreatedAt(),
 			UpdatedAt: source.UpdatedAt(),
+			Etag:      source.ETag(),
 		},
 		Name:      source.Name(),
 		Color:     source.Color(),

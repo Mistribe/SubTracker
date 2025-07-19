@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
@@ -15,14 +16,11 @@ var (
 )
 
 type Label struct {
-	id        uuid.UUID
+	*entity.Base
+
 	name      string
 	isDefault bool
 	color     string
-	createdAt time.Time
-	updatedAt time.Time
-	isDirty   bool
-	isExists  bool
 }
 
 func NewLabelWithoutValidation(
@@ -34,14 +32,10 @@ func NewLabelWithoutValidation(
 	updatedAt time.Time,
 	isExists bool) Label {
 	return Label{
-		id:        id,
+		Base:      entity.NewBase(id, createdAt, updatedAt, true, isExists),
 		name:      strings.TrimSpace(name),
 		isDefault: isDefault,
 		color:     strings.TrimSpace(color),
-		createdAt: createdAt,
-		updatedAt: updatedAt,
-		isDirty:   true,
-		isExists:  isExists,
 	}
 }
 
@@ -61,10 +55,6 @@ func NewLabel(
 	return result.Success(lbl)
 }
 
-func (l *Label) Id() uuid.UUID {
-	return l.id
-}
-
 func (l *Label) Name() string {
 	return l.name
 }
@@ -75,14 +65,6 @@ func (l *Label) IsDefault() bool {
 
 func (l *Label) Color() string {
 	return l.color
-}
-
-func (l *Label) CreatedAt() time.Time {
-	return l.createdAt
-}
-
-func (l *Label) UpdatedAt() time.Time {
-	return l.updatedAt
 }
 
 func (l *Label) Validate() error {
@@ -121,42 +103,33 @@ func (l *Label) validateColor() error {
 
 func (l *Label) SetName(name string) {
 	l.name = name
-	l.isDirty = true
+	l.SetAsDirty()
 }
 
 func (l *Label) SetIsDefault(isDefault bool) {
 	l.isDefault = isDefault
-	l.isDirty = true
+	l.SetAsDirty()
 }
 
 func (l *Label) SetColor(color string) {
 	l.color = color
-	l.isDirty = true
-}
-
-func (l *Label) SetUpdatedAt(updatedAt time.Time) {
-	l.updatedAt = updatedAt
-	l.isDirty = true
-}
-
-func (l *Label) IsExists() bool {
-	return l.isExists
+	l.SetAsDirty()
 }
 
 func (l *Label) Equal(other Label) bool {
-	return l.id == other.id &&
+	return l.Base.Equal(*other.Base) &&
 		l.name == other.name &&
 		l.isDefault == other.isDefault &&
-		l.color == other.color &&
-		l.createdAt.Equal(other.createdAt) &&
-		l.updatedAt.Equal(other.updatedAt)
+		l.color == other.color
 }
 
-func (l *Label) Clean() {
-	l.isDirty = false
-	l.isExists = true
+func (l *Label) ETagFields() []interface{} {
+	return []interface{}{
+		l.name,
+		l.isDefault,
+		l.color,
+	}
 }
-
-func (l *Label) IsDirty() bool {
-	return l.isDirty
+func (l *Label) ETag() string {
+	return entity.CalculateETag(l, l.Base)
 }

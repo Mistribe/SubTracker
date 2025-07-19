@@ -62,6 +62,7 @@ type paymentModel struct {
 	Currency  string     `json:"currency"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
+	Etag      string     `json:"etag"`
 }
 
 type subscriptionModel struct {
@@ -73,6 +74,7 @@ type subscriptionModel struct {
 	Payer         *string        `json:"payer,omitempty"`
 	CreatedAt     time.Time      `json:"created_at"`
 	UpdatedAt     time.Time      `json:"updated_at"`
+	Etag          string         `json:"etag"`
 }
 
 func newPaymentModel(source subscription.Payment) paymentModel {
@@ -85,6 +87,7 @@ func newPaymentModel(source subscription.Payment) paymentModel {
 		Currency:  source.Currency(),
 		CreatedAt: source.CreatedAt(),
 		UpdatedAt: source.UpdatedAt(),
+		Etag:      source.ETag(),
 	}
 }
 
@@ -98,5 +101,6 @@ func newSubscriptionModel(source subscription.Subscription) subscriptionModel {
 		Payer:         option.Map[uuid.UUID, string](source.Payer(), ext.UuidToString).Value(),
 		CreatedAt:     source.CreatedAt(),
 		UpdatedAt:     source.UpdatedAt(),
+		Etag:          source.ETag(),
 	}
 }

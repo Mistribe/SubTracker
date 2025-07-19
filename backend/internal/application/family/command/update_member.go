@@ -88,5 +88,9 @@ func (h UpdateFamilyMemberCommandHandler) updateFamilyMember(
 		return result.Fail[family.Family](err)
 	}
 
+	if err := h.repository.MarkAsUpdated(ctx, fam.Id(), mbr.UpdatedAt()); err != nil {
+		return result.Fail[family.Family](err)
+	}
+
 	return result.Success(fam)
 }

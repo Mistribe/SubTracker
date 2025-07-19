@@ -2,6 +2,7 @@ package family
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -36,4 +37,7 @@ type Repository interface {
 
 	// MemberExists checks if all provided member UUIDs exist within a specified family UUID context. Returns true if they exist.
 	MemberExists(ctx context.Context, familyId uuid.UUID, members ...uuid.UUID) (bool, error)
+
+	// MarkAsUpdated updates the updatedAt timestamp for a specific family identified by familyId in the repository.
+	MarkAsUpdated(ctx context.Context, familyId uuid.UUID, updatedAt time.Time) error
 }

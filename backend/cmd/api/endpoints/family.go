@@ -60,6 +60,7 @@ type familyModel struct {
 	HaveJointAccount bool                `json:"have_joint_account"`
 	CreatedAt        time.Time           `json:"created_at"`
 	UpdatedAt        time.Time           `json:"updated_at"`
+	Etag             string              `json:"etag"`
 }
 
 func newFamilyModel(userId string, source family.Family) familyModel {
@@ -76,6 +77,7 @@ func newFamilyModel(userId string, source family.Family) familyModel {
 		HaveJointAccount: source.HaveJointAccount(),
 		CreatedAt:        source.CreatedAt(),
 		UpdatedAt:        source.UpdatedAt(),
+		Etag:             source.ETag(),
 	}
 }
 
@@ -86,6 +88,7 @@ type familyMemberModel struct {
 	FamilyId  string    `json:"family_id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	Etag      string    `json:"etag"`
 }
 
 func newFamilyMemberModel(source family.Member) familyMemberModel {
@@ -96,5 +99,6 @@ func newFamilyMemberModel(source family.Member) familyMemberModel {
 		FamilyId:  source.FamilyId().String(),
 		CreatedAt: source.CreatedAt(),
 		UpdatedAt: source.UpdatedAt(),
+		Etag:      source.ETag(),
 	}
 }

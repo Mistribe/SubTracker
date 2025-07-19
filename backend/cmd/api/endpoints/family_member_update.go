@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/domain/user"
 
 	"github.com/oleexo/subtracker/internal/application/core"
@@ -26,7 +27,7 @@ type updateFamilyMemberModel struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
-func (m updateFamilyMemberModel) Command(id uuid.UUID) result.Result[command.UpdateFamilyMemberCommand] {
+func (m updateFamilyMemberModel) Command(familyId, memberId uuid.UUID) result.Result[command.UpdateFamilyMemberCommand] {
 	email := option.None[string]()
 	if m.Email != nil {
 		email = option.Some(*m.Email)
@@ -38,7 +39,8 @@ func (m updateFamilyMemberModel) Command(id uuid.UUID) result.Result[command.Upd
 	}
 
 	return result.Success(command.UpdateFamilyMemberCommand{
-		Id:        id,
+		FamilyId:  familyId,
+		Id:        memberId,
 		Name:      m.Name,
 		Email:     email,
 		IsKid:     m.IsKid,
@@ -75,6 +77,14 @@ func (f FamilyMemberUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
+	familyId, err := uuid.Parse(c.Param("familyId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httpError{
+			Message: err.Error(),
+		})
+		return
+	}
+
 	userId, ok := user.FromContext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, httpError{
@@ -91,7 +101,8 @@ func (f FamilyMemberUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	result.Match[command.UpdateFamilyMemberCommand, result.Unit](model.Command(id),
+	cmd := model.Command(familyId, id)
+	result.Match[command.UpdateFamilyMemberCommand, result.Unit](cmd,
 		func(cmd command.UpdateFamilyMemberCommand) result.Unit {
 			r := f.handler.Handle(c, cmd)
 			handleResponse(c,

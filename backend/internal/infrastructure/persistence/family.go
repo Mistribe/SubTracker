@@ -4,10 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
-	"github.com/oleexo/subtracker/internal/domain/user"
 	"gorm.io/gorm"
+
+	"github.com/oleexo/subtracker/internal/domain/user"
 
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/pkg/langext/option"
@@ -55,6 +57,7 @@ func (r FamilyRepository) toFamilyMemberModel(source *family.Member) familyMembe
 			Id:        source.Id(),
 			CreatedAt: source.CreatedAt(),
 			UpdatedAt: source.UpdatedAt(),
+			Etag:      source.ETag(),
 		},
 		Name: source.Name(),
 		Email: option.Match(source.Email(), func(in string) sql.NullString {
@@ -78,6 +81,7 @@ func (r FamilyRepository) toFamilyModel(source *family.Family) familyModel {
 			Id:        source.Id(),
 			CreatedAt: source.CreatedAt(),
 			UpdatedAt: source.UpdatedAt(),
+			Etag:      source.ETag(),
 		},
 		Name:             source.Name(),
 		OwnerId:          source.OwnerId(),
@@ -160,16 +164,19 @@ func (r FamilyRepository) GetAll(ctx context.Context) ([]family.Family, error) {
 	if !ok {
 		return []family.Family{}, nil
 	}
-	var families []familyModel
-	// todo add fetch family where the user is member
-	if result := r.repository.db.WithContext(ctx).Where("owner_id = ?", userId).Find(&families); result.Error != nil {
+	var familyModels []familyModel
+	result := r.repository.db.WithContext(ctx).
+		Preload("Members").
+		Where("owner_id = ?", userId).
+		Find(&familyModels)
+	if result.Error != nil {
 		return nil, result.Error
 	}
-	result := make([]family.Family, 0, len(families))
-	for _, fam := range families {
-		result = append(result, r.toFamilyEntity(fam))
+	families := make([]family.Family, 0, len(familyModels))
+	for _, fam := range familyModels {
+		families = append(families, r.toFamilyEntity(fam))
 	}
-	return result, nil
+	return families, nil
 }
 
 func (r FamilyRepository) GetAllMembers(ctx context.Context, familyId uuid.UUID) ([]family.Member, error) {
@@ -233,15 +240,23 @@ func (r FamilyRepository) Delete(ctx context.Context, familyId uuid.UUID) error 
 func (r FamilyRepository) MemberExists(ctx context.Context, familyId uuid.UUID, members ...uuid.UUID) (bool, error) {
 	var count int64
 	if len(members) == 1 {
-		result := r.repository.db.WithContext(ctx).Model(&familyMemberModel{}).Where("family_id = ? AND id = ?", familyId, members[0]).Count(&count)
+		result := r.repository.db.WithContext(ctx).Model(&familyMemberModel{}).Where("family_id = ? AND id = ?",
+			familyId, members[0]).Count(&count)
 		if result.Error != nil {
 			return false, result.Error
 		}
 	} else {
-		result := r.repository.db.WithContext(ctx).Model(&familyMemberModel{}).Where("family_id = ? AND id IN ?", familyId, members).Count(&count)
+		result := r.repository.db.WithContext(ctx).Model(&familyMemberModel{}).Where("family_id = ? AND id IN ?",
+			familyId, members).Count(&count)
 		if result.Error != nil {
 			return false, result.Error
 		}
 	}
 	return count == int64(len(members)), nil
+}
+
+func (r FamilyRepository) MarkAsUpdated(ctx context.Context, familyId uuid.UUID, updatedAt time.Time) error {
+	result := r.repository.db.WithContext(ctx).Model(&familyModel{}).Where("id = ?", familyId).Update("updated_at",
+		updatedAt)
+	return result.Error
 }

@@ -5,20 +5,19 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type Family struct {
-	id               uuid.UUID
+	*entity.Base
+
 	ownerId          string
 	name             string
 	members          []Member
 	haveJointAccount bool
-	createdAt        time.Time
-	updatedAt        time.Time
-	isDirty          bool
-	isExists         bool
 }
 
 var ErrDuplicateMember = errors.New("member with the same ID or email already exists")
@@ -48,15 +47,11 @@ func NewFamilyWithoutValidation(
 	updatedAt time.Time,
 	isExists bool) Family {
 	return Family{
-		id:               id,
+		Base:             entity.NewBase(id, createdAt, updatedAt, true, isExists),
 		ownerId:          ownerId,
 		name:             name,
 		members:          members,
-		createdAt:        createdAt,
-		updatedAt:        updatedAt,
 		haveJointAccount: haveJointAccount,
-		isDirty:          true,
-		isExists:         isExists,
 	}
 }
 
@@ -96,18 +91,8 @@ func (f *Family) Validate() error {
 	return nil
 }
 
-func (f *Family) Id() uuid.UUID {
-	return f.id
-}
 func (f *Family) HaveJointAccount() bool {
 	return f.haveJointAccount
-}
-func (f *Family) CreatedAt() time.Time {
-	return f.createdAt
-}
-
-func (f *Family) UpdatedAt() time.Time {
-	return f.updatedAt
 }
 
 func (f *Family) Name() string {
@@ -116,19 +101,6 @@ func (f *Family) Name() string {
 
 func (f *Family) OwnerId() string {
 	return f.ownerId
-}
-
-func (f *Family) Clean() {
-	f.isDirty = false
-	f.isExists = true
-}
-
-func (f *Family) IsDirty() bool {
-	return f.isDirty
-}
-
-func (f *Family) IsExists() bool {
-	return f.isExists
 }
 
 func (f *Family) Members() []Member {
@@ -141,7 +113,7 @@ func (f *Family) AddMember(member Member) error {
 	}
 
 	f.members = append(f.members, member)
-	f.isDirty = true
+	f.SetAsDirty()
 	return nil
 }
 
@@ -169,7 +141,7 @@ func (f *Family) GetMember(id uuid.UUID) option.Option[Member] {
 
 func (f *Family) UpdateMember(member Member) error {
 	for idx, m := range f.members {
-		if m.Id() == member.id {
+		if m.Id() == member.Base.Id() {
 			f.members[idx] = member
 			return nil
 		}
@@ -188,28 +160,21 @@ func (f *Family) ContainsMember(id uuid.UUID) bool {
 	return false
 }
 
-func (f *Family) SetUpdatedAt(updatedAt time.Time) {
-	f.updatedAt = updatedAt
-	f.isDirty = true
-}
-
 func (f *Family) SetHaveJointAccount(haveJointAccount bool) {
 	f.haveJointAccount = haveJointAccount
-	f.isDirty = true
+	f.SetAsDirty()
 }
 
 func (f *Family) SetName(name string) {
 	f.name = name
-	f.isDirty = true
+	f.SetAsDirty()
 }
 
 func (f *Family) Equal(family Family) bool {
-	if f.id != family.id ||
+	if !f.Base.Equal(*family.Base) ||
 		f.ownerId != family.ownerId ||
 		f.name != family.name ||
 		f.haveJointAccount != family.haveJointAccount ||
-		!f.createdAt.Equal(family.createdAt) ||
-		!f.updatedAt.Equal(family.updatedAt) ||
 		len(f.members) != len(family.members) {
 		return false
 	}
@@ -226,4 +191,21 @@ func (f *Family) Equal(family Family) bool {
 	}
 
 	return true
+}
+
+func (f *Family) ETagFields() []interface{} {
+	fields := []interface{}{
+		f.ownerId,
+		f.haveJointAccount,
+		f.name,
+	}
+
+	for _, member := range f.members {
+		fields = append(fields, member.ETagFields()...)
+	}
+
+	return fields
+}
+func (f *Family) ETag() string {
+	return entity.CalculateETag(f, f.Base)
 }

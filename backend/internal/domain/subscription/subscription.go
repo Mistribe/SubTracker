@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
@@ -16,7 +17,8 @@ const (
 )
 
 type Subscription struct {
-	id                  uuid.UUID
+	*entity.Base
+
 	familyId            *uuid.UUID
 	name                string
 	payments            []Payment
@@ -24,10 +26,6 @@ type Subscription struct {
 	familyMembers       []uuid.UUID
 	payerId             *uuid.UUID
 	payedByJointAccount bool
-	createdAt           time.Time
-	updatedAt           time.Time
-	isDirty             bool
-	isExists            bool
 }
 
 func NewSubscription(
@@ -75,7 +73,7 @@ func NewSubscriptionWithoutValidation(
 	updatedAt time.Time,
 	isExists bool) Subscription {
 	return Subscription{
-		id:                  id,
+		Base:                entity.NewBase(id, createdAt, updatedAt, true, isExists),
 		familyId:            familyId,
 		name:                strings.TrimSpace(name),
 		payments:            payments,
@@ -83,15 +81,7 @@ func NewSubscriptionWithoutValidation(
 		familyMembers:       familyMembers,
 		payerId:             payerId,
 		payedByJointAccount: payedByJointAccount,
-		createdAt:           createdAt,
-		updatedAt:           updatedAt,
-		isDirty:             true,
-		isExists:            isExists,
 	}
-}
-
-func (s *Subscription) Id() uuid.UUID {
-	return s.id
 }
 
 func (s *Subscription) Name() string {
@@ -123,7 +113,7 @@ func (s *Subscription) AddPayment(newPayment Payment) {
 func (s *Subscription) RemovePayment(paymentId uuid.UUID) {
 	var payments []Payment
 	for _, p := range s.payments {
-		if p.id != paymentId {
+		if p.Id() != paymentId {
 			payments = append(payments, p)
 		}
 	}
@@ -134,7 +124,7 @@ func (s *Subscription) RemovePayment(paymentId uuid.UUID) {
 func (s *Subscription) UpdatePayment(payment Payment) {
 	var payments []Payment
 	for i, p := range s.payments {
-		if p.id == payment.id {
+		if p.Id() == payment.Id() {
 			payments[i] = payment
 		} else {
 			payments[i] = p
@@ -146,7 +136,7 @@ func (s *Subscription) UpdatePayment(payment Payment) {
 
 func (s *Subscription) GetPaymentById(paymentId uuid.UUID) option.Option[Payment] {
 	for _, p := range s.payments {
-		if p.id == paymentId {
+		if p.Id() == paymentId {
 			return option.Some(p)
 		}
 	}
@@ -160,7 +150,7 @@ func (s *Subscription) Labels() []uuid.UUID {
 
 func (s *Subscription) SetLabels(labels []uuid.UUID) {
 	s.labels = labels
-	s.isDirty = true
+	s.SetAsDirty()
 }
 
 func (s *Subscription) FamilyMembers() []uuid.UUID {
@@ -169,7 +159,7 @@ func (s *Subscription) FamilyMembers() []uuid.UUID {
 
 func (s *Subscription) SetFamilyMembers(familyMembers []uuid.UUID) {
 	s.familyMembers = familyMembers
-	s.isDirty = true
+	s.SetAsDirty()
 }
 
 func (s *Subscription) Payer() option.Option[uuid.UUID] {
@@ -178,27 +168,7 @@ func (s *Subscription) Payer() option.Option[uuid.UUID] {
 
 func (s *Subscription) SetPayer(payer option.Option[uuid.UUID]) {
 	s.payerId = payer.Value()
-	s.isDirty = true
-}
-func (s *Subscription) CreatedAt() time.Time {
-	return s.createdAt
-}
-
-func (s *Subscription) UpdatedAt() time.Time {
-	return s.updatedAt
-}
-
-func (s *Subscription) SetUpdatedAt(newValue time.Time) {
-	s.updatedAt = newValue
-	s.isDirty = true
-}
-
-func (s *Subscription) IsDirty() bool {
-	return s.isDirty
-}
-
-func (s *Subscription) Clean() {
-	s.isDirty = false
+	s.SetAsDirty()
 }
 
 func (s *Subscription) Validate() error {
@@ -240,7 +210,10 @@ func (s *Subscription) Validate() error {
 }
 
 func (s *Subscription) Equal(other Subscription) bool {
-	if s.id != other.id || s.name != other.name {
+	if !s.Base.Equal(*other.Base) {
+		return false
+	}
+	if s.name != other.name {
 		return false
 	}
 
@@ -275,18 +248,37 @@ func (s *Subscription) Equal(other Subscription) bool {
 		return false
 	}
 
-	if !s.createdAt.Equal(other.createdAt) || !s.updatedAt.Equal(other.updatedAt) {
-		return false
-	}
-
 	return true
-}
-
-func (s *Subscription) IsExists() bool {
-	return s.isExists
 }
 
 func (s *Subscription) SetPayedByJointAccount(payedByJointAccount bool) {
 	s.payedByJointAccount = payedByJointAccount
-	s.isDirty = true
+	s.SetAsDirty()
+}
+
+func (s *Subscription) ETagFields() []interface{} {
+	fields := []interface{}{
+		s.familyId,
+		s.name,
+		s.payerId,
+		s.payedByJointAccount,
+	}
+
+	for _, payment := range s.payments {
+		fields = append(fields, payment.ETagFields()...)
+	}
+
+	for _, label := range s.labels {
+		fields = append(fields, label.String())
+	}
+
+	for _, member := range s.familyMembers {
+		fields = append(fields, member.String())
+	}
+
+	return fields
+}
+
+func (s *Subscription) ETag() string {
+	return entity.CalculateETag(s, s.Base)
 }

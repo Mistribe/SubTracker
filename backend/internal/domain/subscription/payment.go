@@ -7,21 +7,19 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type Payment struct {
-	id        uuid.UUID
+	*entity.Base
+
 	price     float64
 	startDate time.Time
 	endDate   *time.Time
 	months    int
 	currency  string
-	createdAt time.Time
-	updatedAt time.Time
-	isDirty   bool
-	isExists  bool
 }
 
 func NewPayment(
@@ -51,23 +49,15 @@ func NewPaymentWithoutValidation(
 	updatedAt time.Time,
 	isExists bool) Payment {
 	return Payment{
-		id:        id,
+		Base:      entity.NewBase(id, createdAt, updatedAt, true, isExists),
 		price:     price,
 		startDate: startDate.UTC().Truncate(24 * time.Hour),
 		endDate: endDate.Transform(func(v time.Time) time.Time {
 			return v.UTC().Truncate(24 * time.Hour)
 		}).Value(),
-		months:    months,
-		currency:  strings.TrimSpace(currency),
-		createdAt: createdAt.UTC(),
-		updatedAt: updatedAt.UTC(),
-		isDirty:   true,
-		isExists:  isExists,
+		months:   months,
+		currency: strings.TrimSpace(currency),
 	}
-}
-
-func (p *Payment) Id() uuid.UUID {
-	return p.id
 }
 
 func (p *Payment) Price() float64 {
@@ -90,14 +80,6 @@ func (p *Payment) Currency() string {
 	return p.currency
 }
 
-func (p *Payment) CreatedAt() time.Time {
-	return p.createdAt
-}
-
-func (p *Payment) UpdatedAt() time.Time {
-	return p.updatedAt
-}
-
 func (p *Payment) Validate() error {
 	if p.endDate != nil {
 		if p.endDate.Before(p.startDate) {
@@ -108,55 +90,53 @@ func (p *Payment) Validate() error {
 	return nil
 }
 
-func (p *Payment) IsDirty() bool {
-	return p.isDirty
-}
-
-func (p *Payment) Clean() {
-	p.isDirty = false
-}
-
 func (p *Payment) SetPrice(price float64) {
 	p.price = price
-	p.isDirty = true
+	p.SetAsDirty()
 }
 
 func (p *Payment) SetStartDate(date time.Time) {
 	p.startDate = date.UTC().Truncate(24 * time.Hour)
-	p.isDirty = true
+	p.SetAsDirty()
 }
 
 func (p *Payment) SetEndDate(date option.Option[time.Time]) {
 	p.endDate = date.Transform(func(v time.Time) time.Time {
 		return v.UTC().Truncate(24 * time.Hour)
 	}).Value()
-	p.isDirty = true
+	p.SetAsDirty()
 }
 
 func (p *Payment) SetMonths(months int) {
 	p.months = months
-	p.isDirty = true
+	p.SetAsDirty()
 }
 
 func (p *Payment) SetCurrency(currency string) {
 	p.currency = currency
-	p.isDirty = true
-}
-
-func (p *Payment) SetUpdatedAt(updatedAt time.Time) {
-	p.updatedAt = updatedAt
-	p.isDirty = true
+	p.SetAsDirty()
 }
 
 func (p *Payment) Equal(other Payment) bool {
-	return p.id == other.id &&
+	return p.Base.Equal(*other.Base) &&
 		p.price == other.price &&
 		p.startDate == other.startDate &&
 		p.endDate == other.endDate &&
 		p.months == other.months &&
-		p.currency == other.currency &&
-		p.createdAt == other.createdAt &&
-		p.updatedAt == other.updatedAt
+		p.currency == other.currency
+}
+
+func (p *Payment) ETagFields() []interface{} {
+	return []interface{}{
+		p.price,
+		p.startDate,
+		p.endDate,
+		p.months,
+		p.currency,
+	}
+}
+func (p *Payment) ETag() string {
+	return entity.CalculateETag(p, p.Base)
 }
 
 func sortPayments(payments []Payment) {
@@ -188,5 +168,4 @@ func sortPayments(payments []Payment) {
 
 		payments[idx] = *current
 	}
-
 }

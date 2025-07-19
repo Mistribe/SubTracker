@@ -51,6 +51,7 @@ type labelModel struct {
 	Color     string    `json:"color"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	Etag      string    `json:"etag"`
 }
 
 func newLabelModel(source label.Label) labelModel {
@@ -61,5 +62,6 @@ func newLabelModel(source label.Label) labelModel {
 		Color:     source.Color(),
 		CreatedAt: source.CreatedAt(),
 		UpdatedAt: source.UpdatedAt(),
+		Etag:      source.ETag(),
 	}
 }

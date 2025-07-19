@@ -3,10 +3,12 @@ package persistence
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"time"
 
 	"github.com/Oleexo/config-go"
 	"github.com/google/uuid"
+	sloggorm "github.com/orandin/slog-gorm"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -15,15 +17,22 @@ type BaseModel struct {
 	Id        uuid.UUID `gorm:"primaryKey;type:uuid"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	Etag      string
 }
 type Repository struct {
 	db *gorm.DB
 }
 
-func NewRepository(cfg config.Configuration) *Repository {
+func NewRepository(cfg config.Configuration,
+	logger *slog.Logger) *Repository {
 	dsn := cfg.GetString("DATABASE_DSN")
 	//	dsn := "host=localhost user=postgres password=postgres dbname=app port=5432"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: sloggorm.New(
+			sloggorm.WithLogger(logger),
+			sloggorm.WithTraceAll(), // Log all SQL queries
+		),
+	})
 	if err != nil {
 		panic(err)
 	}

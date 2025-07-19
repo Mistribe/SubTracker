@@ -82,6 +82,7 @@ func (r SubscriptionRepository) toPaymentModel(subId uuid.UUID, source subscript
 			Id:        source.Id(),
 			CreatedAt: source.CreatedAt(),
 			UpdatedAt: source.UpdatedAt(),
+			Etag:      source.ETag(),
 		},
 		SubId:     subId,
 		Price:     source.Price(),
@@ -102,6 +103,7 @@ func (r SubscriptionRepository) toModel(source *subscription.Subscription) subsc
 			Id:        source.Id(),
 			CreatedAt: source.CreatedAt(),
 			UpdatedAt: source.UpdatedAt(),
+			Etag:      source.ETag(),
 		},
 		Name: source.Name(),
 		Payments: ext.Map(source.Payments(), func(in subscription.Payment) subscriptionPaymentModel {
