@@ -177,9 +177,9 @@ func (r SubscriptionRepository) Get(ctx context.Context, id uuid.UUID) (
 	error) {
 	var model subscriptionModel
 	result := r.repository.db.WithContext(ctx).
-		InnerJoins("Payments").
-		InnerJoins("Labels").
-		InnerJoins("FamilyMembers").
+		Preload("Payments").
+		Preload("Labels").
+		Preload("FamilyMembers").
 		First(&model, id)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
