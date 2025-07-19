@@ -4,6 +4,7 @@ import '../models/family.dart';
 import '../models/family_member.dart';
 import '../providers/family_provider.dart';
 import 'family_member_form_screen.dart';
+import 'family_edit_screen.dart';
 
 class FamilyManagementScreen extends StatefulWidget {
   const FamilyManagementScreen({super.key});
@@ -13,9 +14,6 @@ class FamilyManagementScreen extends StatefulWidget {
 }
 
 class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
-  bool _isEditMode = false;
-  final _nameController = TextEditingController();
-  bool _haveJointAccount = true;
   late PageController _pageController;
 
   @override
@@ -27,7 +25,6 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -66,18 +63,9 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
         actions: [
           if (selectedFamily != null && canEdit)
             IconButton(
-              icon: Icon(_isEditMode ? Icons.visibility : Icons.edit),
-              onPressed: () {
-                setState(() {
-                  _isEditMode = !_isEditMode;
-                  if (_isEditMode) {
-                    // Initialize form with current values
-                    _nameController.text = selectedFamily.name;
-                    _haveJointAccount = selectedFamily.haveJointAccount;
-                  }
-                });
-              },
-              tooltip: _isEditMode ? 'View mode' : 'Edit mode',
+              icon: const Icon(Icons.edit),
+              onPressed: () => _navigateToEditFamily(context, selectedFamily.id, familyProvider),
+              tooltip: 'Edit family',
             ),
         ],
       ),
@@ -87,7 +75,7 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                _isEditMode ? 'Edit your family' : 'Manage your families',
+                'Manage your families',
                 style: TextStyle(
                   fontSize: 16,
                   color: Theme.of(context).textTheme.bodyLarge?.color,
@@ -120,9 +108,6 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
                         controller: _pageController,
                         onPageChanged: (index) {
                           familyProvider.setSelectedFamilyId(families[index].id);
-                          setState(() {
-                            _isEditMode = false;
-                          });
                         },
                         itemBuilder: (context, index) {
                           final family = families[index];
@@ -227,7 +212,7 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
               ),
             const SizedBox(height: 16),
             // Display family members if a family is selected
-            if (selectedFamily != null && !_isEditMode)
+            if (selectedFamily != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
@@ -335,9 +320,7 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
                   ],
                 ),
               ),
-            if (selectedFamily != null && _isEditMode)
-              _buildFamilyEditForm(context, selectedFamily, familyProvider)
-            else if (families.isEmpty)
+            if (families.isEmpty)
               SizedBox(
                 height: MediaQuery.of(context).size.height * 0.6,
                 child: _buildEmptyFamiliesView(context),
@@ -345,9 +328,9 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
           ],
         ),
       ),
-      floatingActionButton: !_isEditMode && !familyProvider.hasOwnedFamily
+      floatingActionButton: !familyProvider.hasOwnedFamily
           ? FloatingActionButton(
-              onPressed: () => _showAddFamilyDialog(context, familyProvider),
+              onPressed: () => _navigateToAddFamily(context, familyProvider),
               child: const Icon(Icons.add),
             )
           : null,
@@ -385,298 +368,34 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
     );
   }
 
-  Widget _buildFamiliesList(
-    BuildContext context,
-    List<Family> families,
-    FamilyProvider provider,
-  ) {
-    return ListView.builder(
-      itemCount: families.length,
-      itemBuilder: (context, index) {
-        final family = families[index];
-        return ListTile(
-          leading: CircleAvatar(
-            child: Text(
-              family.name.isNotEmpty ? family.name[0].toUpperCase() : '?',
-            ),
-          ),
-          title: Row(
-            children: [
-              Text(family.name),
-              if (family.isOwner)
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0,
-                      vertical: 2.0,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    child: const Text(
-                      'Owner',
-                      style: TextStyle(
-                        fontSize: 12.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          subtitle: Text('${family.members.length} members'),
-          selected: provider.selectedFamilyId == family.id,
-          onTap: () {
-            provider.setSelectedFamilyId(family.id);
-            setState(() {
-              _isEditMode = false;
-            });
-          },
-          trailing: family.isOwner
-              ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () {
-                        provider.setSelectedFamilyId(family.id);
-                        setState(() {
-                          _isEditMode = true;
-                          _nameController.text = family.name;
-                          _haveJointAccount = family.haveJointAccount;
-                        });
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () =>
-                          _showDeleteFamilyDialog(context, family, provider),
-                    ),
-                  ],
-                )
-              : null,
-        );
-      },
+  void _navigateToAddFamily(BuildContext context, FamilyProvider provider) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const FamilyEditScreen(),
+      ),
     );
+    
+    if (result == true) {
+      // Family was created, no need to do anything as the provider already updated
+    }
   }
 
-  Widget _buildFamilyEditForm(
+  void _navigateToEditFamily(
     BuildContext context,
-    Family family,
+    String familyId,
     FamilyProvider provider,
-  ) {
-    return Expanded(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Family Name',
-                hintText: 'Enter family name',
-              ),
-              textCapitalization: TextCapitalization.words,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Checkbox(
-                  value: _haveJointAccount,
-                  onChanged: (value) {
-                    setState(() {
-                      _haveJointAccount = value ?? true;
-                    });
-                  },
-                ),
-                const Text('Have joint account'),
-              ],
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Family Members',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            if (family.members.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: Text('No family members yet'),
-              )
-            else
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: family.members.length,
-                itemBuilder: (context, index) {
-                  final member = family.members[index];
-                  return ListTile(
-                    leading: CircleAvatar(
-                      child: Text(
-                        member.name.isNotEmpty
-                            ? member.name[0].toUpperCase()
-                            : '?',
-                      ),
-                    ),
-                    title: Row(
-                      children: [
-                        Text(member.name),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8.0,
-                              vertical: 2.0,
-                            ),
-                            decoration: BoxDecoration(
-                              color: member.isKid
-                                  ? Colors.blue.withOpacity(0.2)
-                                  : Colors.green.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(12.0),
-                            ),
-                            child: Text(
-                              member.isKid ? 'Kid' : 'Adult',
-                              style: const TextStyle(
-                                fontSize: 12.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () => _showEditMemberDialog(
-                            context,
-                            family.id,
-                            member,
-                            provider,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () => _showDeleteMemberDialog(
-                            context,
-                            family.id,
-                            member,
-                            provider,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () =>
-                  _showAddMemberDialog(context, family.id, provider),
-              icon: const Icon(Icons.add),
-              label: const Text('Add Family Member'),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _isEditMode = false;
-                    });
-                  },
-                  child: const Text('Cancel'),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    final name = _nameController.text.trim();
-                    if (name.isNotEmpty) {
-                      provider.updateFamily(
-                        family.id,
-                        name,
-                        haveJointAccount: _haveJointAccount,
-                      );
-                      setState(() {
-                        _isEditMode = false;
-                      });
-                    }
-                  },
-                  child: const Text('Save'),
-                ),
-              ],
-            ),
-          ],
+  ) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => FamilyEditScreen(
+          familyId: familyId,
         ),
       ),
     );
-  }
-
-  void _showAddFamilyDialog(BuildContext context, FamilyProvider provider) {
-    final nameController = TextEditingController();
-    bool haveJointAccount = true;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Create Family'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Family Name',
-                  hintText: 'Enter family name',
-                ),
-                textCapitalization: TextCapitalization.words,
-                autofocus: true,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Checkbox(
-                    value: haveJointAccount,
-                    onChanged: (value) {
-                      setState(() {
-                        haveJointAccount = value ?? true;
-                      });
-                    },
-                  ),
-                  const Text('Have joint account'),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                final name = nameController.text.trim();
-                if (name.isNotEmpty) {
-                  provider.createFamily(
-                    name,
-                    haveJointAccount: haveJointAccount,
-                  );
-                  Navigator.of(context).pop();
-                }
-              },
-              child: const Text('Create'),
-            ),
-          ],
-        ),
-      ),
-    );
+    
+    if (result == true) {
+      // Family was updated, no need to do anything as the provider already updated
+    }
   }
 
   void _showDeleteFamilyDialog(

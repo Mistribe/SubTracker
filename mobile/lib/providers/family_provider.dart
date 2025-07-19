@@ -187,4 +187,10 @@ class FamilyProvider with ChangeNotifier {
       orElse: () => FamilyMember.empty(),
     );
   }
+
+  Family? getFamilyById(String familyId) {
+    final family = familyRepository.get(familyId);
+    if (family == null) return null;
+    return family;
+  }
 }
