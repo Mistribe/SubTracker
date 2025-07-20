@@ -1,197 +1,248 @@
-import { useState } from "react";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
+import {useState} from "react";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { PlusIcon, Pencil, X } from "lucide-react";
-
-interface Label {
-  id: number;
-  name: string;
-  color: string;
-  count: number;
-}
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Badge} from "@/components/ui/badge";
+import {PlusIcon, Pencil, X, Loader2} from "lucide-react";
+import {useApiClient} from "@/hooks/use-api-client.ts";
+import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
+import type {LabelModel} from "@/api/models";
 
 const LabelsPage = () => {
-  // Sample data - in a real app, this would come from an API
-  const [labels, setLabels] = useState<Label[]>([
-    {
-      id: 1,
-      name: "Subscription",
-      color: "#3b82f6", // blue
-      count: 12
-    },
-    {
-      id: 2,
-      name: "Utilities",
-      color: "#10b981", // green
-      count: 5
-    },
-    {
-      id: 3,
-      name: "Entertainment",
-      color: "#8b5cf6", // purple
-      count: 8
-    },
-    {
-      id: 4,
-      name: "Insurance",
-      color: "#f59e0b", // amber
-      count: 3
-    },
-    {
-      id: 5,
-      name: "Housing",
-      color: "#ef4444", // red
-      count: 2
-    }
-  ]);
+    const apiClient = useApiClient();
+    const queryClient = useQueryClient();
 
-  const [newLabel, setNewLabel] = useState("");
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editingName, setEditingName] = useState("");
+    // Fetch labels using TanStack Query
+    const {
+        data: labels = [],
+        isLoading,
+        error
+    } = useQuery({
+        queryKey: ['labels'],
+        queryFn: async () => {
+            const result = await apiClient?.labels.get();
+            console.log(result);
+            return result || [];
+        },
+        // Optional but useful settings
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        refetchOnWindowFocus: true,
+    });
 
-  const handleAddLabel = () => {
-    if (newLabel.trim()) {
-      const randomColor = `#${Math.floor(Math.random()*16777215).toString(16)}`;
-      setLabels([
-        ...labels,
-        {
-          id: labels.length + 1,
-          name: newLabel,
-          color: randomColor,
-          count: 0
+    const [newLabel, setNewLabel] = useState("");
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editingName, setEditingName] = useState("");
+
+    // Create label mutation
+    const createLabelMutation = useMutation({
+        mutationFn: async (labelData: { name: string, color: string }) => {
+            return await apiClient?.labels.post({
+                name: labelData.name,
+                color: labelData.color
+            });
+        },
+        onSuccess: () => {
+            // Invalidate and refetch
+            queryClient.invalidateQueries({queryKey: ['labels']});
+            setNewLabel("");
         }
-      ]);
-      setNewLabel("");
+    });
+
+    // Update label mutation
+    const updateLabelMutation = useMutation({
+        mutationFn: async ({id, name}: { id: number, name: string }) => {
+            return await apiClient?.labels.byId(id.toString()).patch({
+                name: name
+            });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: ['labels']});
+            setEditingId(null);
+            setEditingName("");
+        }
+    });
+
+    // Delete label mutation
+    const deleteLabelMutation = useMutation({
+        mutationFn: async (id: number) => {
+            return await apiClient?.labels.byId(id.toString()).delete();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: ['labels']});
+        }
+    });
+
+    const handleAddLabel = () => {
+        if (newLabel.trim()) {
+            const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+            createLabelMutation.mutate({
+                name: newLabel,
+                color: randomColor
+            });
+        }
+    };
+
+    const startEditing = (label: LabelModel) => {
+        setEditingId(label.id);
+        setEditingName(label.name);
+    };
+
+    const saveEdit = () => {
+        if (editingId && editingName.trim()) {
+            updateLabelMutation.mutate({
+                id: editingId,
+                name: editingName
+            });
+        }
+    };
+
+    const cancelEdit = () => {
+        setEditingId(null);
+        setEditingName("");
+    };
+
+    const deleteLabel = (id: number) => {
+        deleteLabelMutation.mutate(id);
+    };
+
+    // Show loading or error states
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-4"/>
+                <p className="text-muted-foreground">Loading labels...</p>
+            </div>
+        );
     }
-  };
 
-  const startEditing = (label: Label) => {
-    setEditingId(label.id);
-    setEditingName(label.name);
-  };
-
-  const saveEdit = () => {
-    if (editingId && editingName.trim()) {
-      setLabels(labels.map(label => 
-        label.id === editingId 
-          ? { ...label, name: editingName } 
-          : label
-      ));
-      setEditingId(null);
-      setEditingName("");
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center h-64">
+                <p className="text-destructive mb-2">Error loading labels</p>
+                <p className="text-muted-foreground text-sm">{error instanceof Error ? error.message : 'Unknown error'}</p>
+            </div>
+        );
     }
-  };
 
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditingName("");
-  };
+    return (
+        <div>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold">Labels</h1>
+            </div>
 
-  const deleteLabel = (id: number) => {
-    setLabels(labels.filter(label => label.id !== id));
-  };
+            <Card className="mb-6">
+                <CardHeader>
+                    <CardTitle>Add New Label</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex gap-2">
+                        <Input
+                            placeholder="Enter label name"
+                            value={newLabel}
+                            onChange={(e) => setNewLabel(e.target.value)}
+                            className="max-w-sm"
+                        />
+                        <Button
+                            onClick={handleAddLabel}
+                            disabled={createLabelMutation.isPending}
+                        >
+                            {createLabelMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin"/>
+                            ) : (
+                                <PlusIcon className="h-4 w-4 mr-2"/>
+                            )}
+                            Add Label
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
 
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Labels</h1>
-      </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Manage Labels</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid gap-4">
+                        {labels.map((label) => (
+                            <div
+                                key={label.id}
+                                className="flex items-center justify-between p-3 border rounded-md"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className="w-4 h-4 rounded-full"
+                                        style={{backgroundColor: label.color}}
+                                    />
 
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Add New Label</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2">
-            <Input 
-              placeholder="Enter label name" 
-              value={newLabel}
-              onChange={(e) => setNewLabel(e.target.value)}
-              className="max-w-sm"
-            />
-            <Button onClick={handleAddLabel}>
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Add Label
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+                                    {editingId === label.id ? (
+                                        <Input
+                                            value={editingName}
+                                            onChange={(e) => setEditingName(e.target.value)}
+                                            className="max-w-xs"
+                                            autoFocus
+                                        />
+                                    ) : (
+                                        <span className="font-medium">{label.name}</span>
+                                    )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Manage Labels</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4">
-            {labels.map((label) => (
-              <div 
-                key={label.id} 
-                className="flex items-center justify-between p-3 border rounded-md"
-              >
-                <div className="flex items-center gap-3">
-                  <div 
-                    className="w-4 h-4 rounded-full" 
-                    style={{ backgroundColor: label.color }}
-                  />
-                  
-                  {editingId === label.id ? (
-                    <Input 
-                      value={editingName}
-                      onChange={(e) => setEditingName(e.target.value)}
-                      className="max-w-xs"
-                      autoFocus
-                    />
-                  ) : (
-                    <span className="font-medium">{label.name}</span>
-                  )}
-                  
-                  <Badge variant="secondary">{label.count} items</Badge>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  {editingId === label.id ? (
-                    <>
-                      <Button variant="ghost" size="sm" onClick={saveEdit}>
-                        Save
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={cancelEdit}>
-                        Cancel
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        onClick={() => startEditing(label)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        onClick={() => deleteLabel(label.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+                                    <Badge variant="secondary">{label.count} items</Badge>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    {editingId === label.id ? (
+                                        <>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={saveEdit}
+                                                disabled={updateLabelMutation.isPending}
+                                            >
+                                                {updateLabelMutation.isPending ? (
+                                                    <Loader2 className="h-3 w-3 mr-2 animate-spin"/>
+                                                ) : null}
+                                                Save
+                                            </Button>
+                                            <Button variant="ghost" size="sm" onClick={cancelEdit}>
+                                                Cancel
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => startEditing(label)}
+                                            >
+                                                <Pencil className="h-4 w-4"/>
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => deleteLabel(label.id)}
+                                                className="text-destructive hover:text-destructive"
+                                                disabled={deleteLabelMutation.isPending && deleteLabelMutation.variables === label.id}
+                                            >
+                                                {deleteLabelMutation.isPending && deleteLabelMutation.variables === label.id ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin"/>
+                                                ) : (
+                                                    <X className="h-4 w-4"/>
+                                                )}
+                                            </Button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
 };
 
 export default LabelsPage;

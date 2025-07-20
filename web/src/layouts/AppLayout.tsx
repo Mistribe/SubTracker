@@ -1,4 +1,4 @@
-import {ReactNode} from "react";
+import {type ReactNode} from "react";
 import {Link, useLocation, useNavigate} from "react-router-dom";
 import {useKindeAuth} from "@kinde-oss/kinde-auth-react";
 import {
@@ -39,8 +39,8 @@ export function AppLayout({children}: AppLayoutProps) {
 
     // Get user initials for avatar fallback
     const getInitials = () => {
-        if (!user?.given_name && !user?.family_name) return "U";
-        return `${user?.given_name?.[0] || ""}${user?.family_name?.[0] || ""}`;
+        if (!user?.givenName && !user?.familyName) return "U";
+        return `${user?.givenName?.[0] || ""}${user?.familyName ?.[0] || ""}`;
     };
 
     return (
@@ -115,11 +115,11 @@ export function AppLayout({children}: AppLayoutProps) {
                         <div className="flex items-center justify-between p-2">
                             <div className="flex items-center gap-2">
                                 <Avatar>
-                                    <AvatarImage src={user?.picture || ""} alt={user?.given_name || "User"}/>
+                                    <AvatarImage src={user?.picture || ""} alt={user?.givenName || "User"}/>
                                     <AvatarFallback>{getInitials()}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex flex-col">
-                                    <span className="text-sm font-medium">{user?.given_name} {user?.family_name}</span>
+                                    <span className="text-sm font-medium">{user?.givenName} {user?.familyName}</span>
                                     <span
                                         className="text-xs text-muted-foreground truncate max-w-[120px]">{user?.email}</span>
                                 </div>
