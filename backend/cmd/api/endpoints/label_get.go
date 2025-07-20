@@ -19,7 +19,7 @@ type LabelGetEndpoint struct {
 // @Description	Get label by ID
 // @Tags			label
 // @Produce		json
-// @Param			id	path		uuid.UUID	true	"Label ID"
+// @Param			id	path		string	true	"Label ID"
 // @Success		200	{object}	labelModel
 // @Failure		400	{object}	httpError
 // @Failure		404	{object}	httpError

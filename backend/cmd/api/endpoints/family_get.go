@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/domain/user"
 
 	"github.com/oleexo/subtracker/internal/application/core"
@@ -21,7 +22,7 @@ type FamilyGetEndpoint struct {
 // @Description	Get family member by ID
 // @Tags			family
 // @Produce		json
-// @Param			id	path		uuid.UUID	true	"Family member ID"
+// @Param			id	path		string	true	"Family member ID"
 // @Success		200	{object}	familyModel
 // @Failure		400	{object}	httpError
 // @Failure		404	{object}	httpError

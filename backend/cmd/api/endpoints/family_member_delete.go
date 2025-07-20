@@ -20,7 +20,7 @@ type FamilyMemberDeleteEndpoint struct {
 //	@Summary		Delete family member by ID
 //	@Description	Delete family member by ID
 //	@Tags			family
-//	@Param			id	path	uuid.UUID	true	"Family member ID"
+//	@Param			id	path	string	true	"Family member ID"
 //	@Success		204	"No Content"
 //	@Failure		400	{object}	httpError
 //	@Failure		404	{object}	httpError

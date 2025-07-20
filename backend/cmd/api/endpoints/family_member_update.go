@@ -54,7 +54,7 @@ func (m updateFamilyMemberModel) Command(familyId, memberId uuid.UUID) result.Re
 // @Tags			family
 // @Accept			json
 // @Produce		json
-// @Param			id		path		uuid.UUID				true	"Family member ID"
+// @Param			id		path		string				true	"Family member ID"
 // @Param			member	body		updateFamilyMemberModel	true	"Family member data"
 // @Success		200		{object}	familyModel
 // @Failure		400		{object}	httpError

@@ -19,7 +19,7 @@ type SubscriptionGetEndpoint struct {
 // @Description	Get subscription by ID
 // @Tags			subscription
 // @Produce		json
-// @Param			id	path		uuid.UUID	true	"Subscription ID"
+// @Param			id	path		string	true	"Subscription ID"
 // @Success		200	{object}	subscriptionModel
 // @Failure		400	{object}	httpError
 // @Failure		404	{object}	httpError

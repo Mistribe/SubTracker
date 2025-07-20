@@ -46,7 +46,7 @@ func (m updateLabelModel) Command(id uuid.UUID) result.Result[command.UpdateLabe
 // @Tags			label
 // @Accept			json
 // @Produce		json
-// @Param			id		path		uuid.UUID			true	"Label ID"
+// @Param			id		path		string			true	"Label ID"
 // @Param			label	body		updateLabelModel	true	"Label data"
 // @Success		200		{object}	labelModel
 // @Failure		400		{object}	httpError
