@@ -357,8 +357,46 @@ paths:
       tags:
       - family
   /families/{familyId}:
+    get:
+      description: Get family member by ID
+      parameters:
+      - description: Family member ID
+        in: path
+        name: familyId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.familyModel'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Bad Request
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Not Found
+      summary: Get family member by ID
+      tags:
+      - family
     put:
       description: Update a family
+      parameters:
+      - description: Family member ID
+        in: path
+        name: familyId
+        required: true
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -472,38 +510,6 @@ paths:
                 $ref: '#/components/schemas/endpoints.httpError'
           description: Not Found
       summary: Update family member by ID
-      tags:
-      - family
-  /families/{id}:
-    get:
-      description: Get family member by ID
-      parameters:
-      - description: Family member ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.familyModel'
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.httpError'
-          description: Bad Request
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.httpError'
-          description: Not Found
-      summary: Get family member by ID
       tags:
       - family
   /labels:
@@ -897,4 +903,7 @@ paths:
       tags:
       - subscription
 servers:
-- url: api.subtracker.mistribe.com/
+- description: Production server
+  url: https://api.subtracker.mistribe.com
+- description: Development server
+  url: http://localhost:8080

@@ -21,8 +21,10 @@ import (
 // @contact.email	support@mistribe.com
 // @license.name	Apache 2.0
 // @license.url	http://www.apache.org/licenses/LICENSE-2.0.html
-// @host			api.subtracker.mistribe.com
-// @BasePath		/
+// @servers.url			https://api.subtracker.mistribe.com
+// @servers.description Production server
+// @servers.url         http://localhost:8080
+// @servers.description Development server
 func main() {
 	app := fx.New(
 		configfx.BuildConfigModule(
