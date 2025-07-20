@@ -1,9 +1,12 @@
 import {ThemeProvider} from "@/components/theme-provider"
 import {BrowserRouter, Routes, Route} from "react-router-dom"
 import {ProtectedRoute} from "@/contexts/ProtectedRoute"
+import {AppLayout} from "@/layouts/AppLayout"
 import HomePage from "@/pages/HomePage"
 import DashboardPage from "@/pages/DashboardPage"
 import ProfilePage from "@/pages/ProfilePage"
+import FamiliesPage from "@/pages/FamiliesPage"
+import LabelsPage from "@/pages/LabelsPage"
 
 function App() {
     return (
@@ -18,7 +21,29 @@ function App() {
                         path="/dashboard"
                         element={
                             <ProtectedRoute>
-                                <DashboardPage/>
+                                <AppLayout>
+                                    <DashboardPage/>
+                                </AppLayout>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/families"
+                        element={
+                            <ProtectedRoute>
+                                <AppLayout>
+                                    <FamiliesPage/>
+                                </AppLayout>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/labels"
+                        element={
+                            <ProtectedRoute>
+                                <AppLayout>
+                                    <LabelsPage/>
+                                </AppLayout>
                             </ProtectedRoute>
                         }
                     />
@@ -26,7 +51,9 @@ function App() {
                         path="/profile"
                         element={
                             <ProtectedRoute>
-                                <ProfilePage/>
+                                <AppLayout>
+                                    <ProfilePage/>
+                                </AppLayout>
                             </ProtectedRoute>
                         }
                     />

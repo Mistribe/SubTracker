@@ -1,28 +1,22 @@
-import {useState} from "react";
-import {useNavigate, Link} from "react-router-dom";
-import {ModeToggle} from "@/components/mode-toggle";
-import {useKindeAuth} from "@kinde-oss/kinde-auth-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useKindeAuth } from "@kinde-oss/kinde-auth-react";
 
 const ProfilePage = () => {
-    const navigate = useNavigate();
-    const {logout} = useKindeAuth();
+    const { user: kindeUser } = useKindeAuth();
 
     // Sample user data - in a real app, this would come from an API or auth context
     const [user, setUser] = useState({
-        name: "John Doe",
-        email: "john.doe@example.com",
+        name: kindeUser?.given_name && kindeUser?.family_name 
+            ? `${kindeUser.given_name} ${kindeUser.family_name}` 
+            : "John Doe",
+        email: kindeUser?.email || "john.doe@example.com",
         joinDate: "2025-01-15"
     });
 
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({...user});
-
-    const handleLogout = () => {
-        // Use the logout function from auth context
-        logout();
-        // Redirect to home page
-        navigate("/");
-    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
@@ -36,29 +30,12 @@ const ProfilePage = () => {
     };
 
     return (
-        <div className="container mx-auto p-4">
-            <header className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold">Recurrent Payment Tracker</h1>
-                <div className="flex items-center gap-4">
-                    <Link
-                        to="/dashboard"
-                        className="text-sm hover:underline"
-                    >
-                        Dashboard
-                    </Link>
-                    <button
-                        onClick={handleLogout}
-                        className="text-sm hover:underline"
-                    >
-                        Logout
-                    </button>
-                    <ModeToggle/>
-                </div>
-            </header>
+        <div>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold">Profile</h1>
+            </div>
 
-            <main className="max-w-2xl mx-auto">
-                <h2 className="text-2xl font-semibold mb-6">Profile</h2>
-
+            <div className="max-w-2xl mx-auto">
                 <div className="bg-card p-6 rounded-lg shadow-sm border">
                     {isEditing ? (
                         <form onSubmit={handleSubmit}>
@@ -66,13 +43,12 @@ const ProfilePage = () => {
                                 <label htmlFor="name" className="block text-sm font-medium mb-1">
                                     Name
                                 </label>
-                                <input
+                                <Input
                                     id="name"
                                     name="name"
                                     type="text"
                                     value={formData.name}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
                                     required
                                 />
                             </div>
@@ -81,34 +57,30 @@ const ProfilePage = () => {
                                 <label htmlFor="email" className="block text-sm font-medium mb-1">
                                     Email
                                 </label>
-                                <input
+                                <Input
                                     id="email"
                                     name="email"
                                     type="email"
                                     value={formData.email}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
                                     required
                                 />
                             </div>
 
                             <div className="flex justify-end gap-2 mt-6">
-                                <button
+                                <Button
                                     type="button"
+                                    variant="outline"
                                     onClick={() => {
                                         setFormData({...user});
                                         setIsEditing(false);
                                     }}
-                                    className="px-4 py-2 border rounded hover:bg-muted"
                                 >
                                     Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
-                                >
+                                </Button>
+                                <Button type="submit">
                                     Save Changes
-                                </button>
+                                </Button>
                             </div>
                         </form>
                     ) : (
@@ -129,12 +101,9 @@ const ProfilePage = () => {
                             </div>
 
                             <div className="flex justify-end">
-                                <button
-                                    onClick={() => setIsEditing(true)}
-                                    className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
-                                >
+                                <Button onClick={() => setIsEditing(true)}>
                                     Edit Profile
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     )}
@@ -147,10 +116,9 @@ const ProfilePage = () => {
                         <div className="flex justify-between items-center">
                             <div>
                                 <h4 className="font-medium">Email Notifications</h4>
-                                <p className="text-sm text-muted-foreground">Receive email notifications for upcoming
-                                    payments</p>
+                                <p className="text-sm text-muted-foreground">Receive email notifications for upcoming payments</p>
                             </div>
-                            <button className="px-3 py-1 border rounded">Enabled</button>
+                            <Button variant="outline" size="sm">Enabled</Button>
                         </div>
 
                         <div className="flex justify-between items-center">
@@ -158,21 +126,19 @@ const ProfilePage = () => {
                                 <h4 className="font-medium">Change Password</h4>
                                 <p className="text-sm text-muted-foreground">Update your account password</p>
                             </div>
-                            <button className="px-3 py-1 border rounded">Change</button>
+                            <Button variant="outline" size="sm">Change</Button>
                         </div>
 
                         <div className="flex justify-between items-center">
                             <div>
                                 <h4 className="font-medium text-destructive">Delete Account</h4>
-                                <p className="text-sm text-muted-foreground">Permanently delete your account and all
-                                    data</p>
+                                <p className="text-sm text-muted-foreground">Permanently delete your account and all data</p>
                             </div>
-                            <button className="px-3 py-1 border border-destructive text-destructive rounded">Delete
-                            </button>
+                            <Button variant="outline" size="sm" className="border-destructive text-destructive">Delete</Button>
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     );
 };
