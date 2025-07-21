@@ -227,8 +227,15 @@ func (r SubscriptionRepository) Save(ctx context.Context, subscription *subscrip
 	return nil
 }
 
-func (r SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	if result := r.repository.db.WithContext(ctx).Delete(&subscriptionModel{}, id); result.Error != nil {
+func (r SubscriptionRepository) Delete(ctx context.Context, subscriptionId uuid.UUID) error {
+	if result := r.repository.db.WithContext(ctx).Delete(&subscriptionModel{}, subscriptionId); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r SubscriptionRepository) DeletePayment(ctx context.Context, paymentId uuid.UUID) error {
+	if result := r.repository.db.WithContext(ctx).Delete(&subscriptionPaymentModel{}, paymentId); result.Error != nil {
 		return result.Error
 	}
 	return nil

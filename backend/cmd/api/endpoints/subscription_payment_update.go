@@ -82,7 +82,8 @@ func (e SubscriptionPaymentUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	result.Match(model.ToCommand(subscriptionId, paymentId),
+	cmd := model.ToCommand(subscriptionId, paymentId)
+	result.Match(cmd,
 		func(cmd command.UpdatePaymentCommand) result.Unit {
 			r := e.handler.Handle(c, cmd)
 			handleResponse(c, r,

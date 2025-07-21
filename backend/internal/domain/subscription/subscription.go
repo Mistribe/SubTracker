@@ -119,6 +119,7 @@ func (s *Subscription) RemovePayment(paymentId uuid.UUID) {
 	}
 	sortPayments(payments)
 	s.payments = payments
+	s.SetAsDirty()
 }
 
 func (s *Subscription) UpdatePayment(payment Payment) {
@@ -133,6 +134,7 @@ func (s *Subscription) UpdatePayment(payment Payment) {
 	}
 	sortPayments(payments)
 	s.payments = payments
+	s.SetAsDirty()
 }
 
 func (s *Subscription) GetPaymentById(paymentId uuid.UUID) option.Option[Payment] {

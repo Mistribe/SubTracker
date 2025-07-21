@@ -9,8 +9,9 @@ import (
 )
 
 type Repository interface {
-	Get(ctx context.Context, id uuid.UUID) (option.Option[Subscription], error)
+	Get(ctx context.Context, subscriptionId uuid.UUID) (option.Option[Subscription], error)
 	GetAll(ctx context.Context) ([]Subscription, error)
 	Save(ctx context.Context, subscription *Subscription) error
-	Delete(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, subscriptionId uuid.UUID) error
+	DeletePayment(ctx context.Context, paymentId uuid.UUID) error
 }

@@ -43,6 +43,14 @@ func (h DeletePaymentCommandHandler) deletePayment(
 	sub subscription.Subscription) result.Result[result.Unit] {
 	sub.RemovePayment(command.PaymentId)
 
+	if err := sub.Validate(); err != nil {
+		return result.Fail[result.Unit](err)
+	}
+
+	if err := h.repository.DeletePayment(ctx, command.PaymentId); err != nil {
+		return result.Fail[result.Unit](err)
+	}
+
 	if err := h.repository.Save(ctx, &sub); err != nil {
 		return result.Fail[result.Unit](err)
 	}
