@@ -357,6 +357,11 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
           listen: false,
         );
 
+        final familyProvider = Provider.of<FamilyProvider>(
+          context,
+          listen: false,
+        );
+
         if (_isEditMode) {
           // Update mode
           final subscription = widget.subscription!;
@@ -368,6 +373,13 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
             _selectedLabels.map((label) => label.id).toList(),
             _userFamilyMembers.map((member) => member.id).toList(),
             _payerFamilyMember?.id,
+            payedByJointAccount: _payedByJointAccount,
+            familyId:
+                _payedByJointAccount == true ||
+                    _userFamilyMembers.isNotEmpty ||
+                    _payerFamilyMember != null
+                ? familyProvider.selectedFamilyId
+                : null,
           );
 
           // Update the subscription detail if it's active
@@ -397,6 +409,13 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                 .map((member) => member.id)
                 .toList(),
             payerFamilyMemberId: _payerFamilyMember?.id,
+            payedByJointAccount: _payedByJointAccount,
+            familyId:
+                _payedByJointAccount == true ||
+                    _userFamilyMembers.isNotEmpty ||
+                    _payerFamilyMember != null
+                ? familyProvider.selectedFamilyId
+                : null,
           );
         }
 
@@ -1105,60 +1124,68 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
 
                                         const SizedBox(height: 16),
 
-                                        // Who pays for this subscription
-                                        DropdownButtonFormField<String?>(
-                                          value: _payerFamilyMember?.id,
-                                          decoration: const InputDecoration(
-                                            labelText:
-                                                'Who pays for this subscription',
-                                            prefixIcon: Icon(
-                                              Icons.account_balance_wallet,
+                                        // Joint account toggle
+                                        Row(
+                                          children: [
+                                            Switch(
+                                              value: _payedByJointAccount,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _payedByJointAccount = value;
+                                                  if (value) {
+                                                    // If joint account is selected, clear the payer
+                                                    _payerFamilyMember = null;
+                                                  }
+                                                  _isFormModified = true;
+                                                });
+                                              },
                                             ),
-                                          ),
-                                          items: [
-                                            const DropdownMenuItem<String?>(
-                                              value: null,
-                                              child: Text('None'),
-                                            ),
-                                            if (familyMemberProvider
-                                                    .selectedFamily
-                                                    ?.haveJointAccount ??
-                                                false)
-                                              const DropdownMenuItem<String?>(
-                                                value: 'family',
-                                                child: Text(
-                                                  'Family (common account)',
-                                                ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'Paid by joint account',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                color: Theme.of(
+                                                  context,
+                                                ).textTheme.bodyLarge?.color,
                                               ),
-                                            ...familyMembers
-                                                .where(
-                                                  (member) => !member.isKid,
-                                                )
-                                                .map((member) {
-                                                  return DropdownMenuItem<
-                                                    String?
-                                                  >(
-                                                    value: member.id,
-                                                    child: Text(member.name),
-                                                  );
-                                                }),
+                                            ),
                                           ],
-                                          onChanged: (String? value) {
-                                            setState(() {
-                                              if (value == 'family') {
-                                                // Create a special FamilyMember object for "Family"
-                                                final selectedFamilyId =
-                                                    familyMemberProvider
-                                                        .selectedFamilyId;
-                                                if (selectedFamilyId != null) {
-                                                  _payerFamilyMember = FamilyMember(
-                                                    id: 'family',
-                                                    name:
-                                                        'Family (common account)',
-                                                    familyId: selectedFamilyId,
-                                                  );
-                                                }
-                                              } else {
+                                        ),
+
+                                        const SizedBox(height: 16),
+
+                                        // Who pays for this subscription (only shown if not paid by joint account)
+                                        if (!_payedByJointAccount)
+                                          DropdownButtonFormField<String?>(
+                                            value: _payerFamilyMember?.id,
+                                            decoration: const InputDecoration(
+                                              labelText:
+                                                  'Who pays for this subscription',
+                                              prefixIcon: Icon(
+                                                Icons.account_balance_wallet,
+                                              ),
+                                            ),
+                                            items: [
+                                              const DropdownMenuItem<String?>(
+                                                value: null,
+                                                child: Text('None'),
+                                              ),
+                                              ...familyMembers
+                                                  .where(
+                                                    (member) => !member.isKid,
+                                                  )
+                                                  .map((member) {
+                                                    return DropdownMenuItem<
+                                                      String?
+                                                    >(
+                                                      value: member.id,
+                                                      child: Text(member.name),
+                                                    );
+                                                  }),
+                                            ],
+                                            onChanged: (String? value) {
+                                              setState(() {
                                                 _payerFamilyMember =
                                                     value == null
                                                     ? null
@@ -1166,11 +1193,10 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                                           .getFamilyMemberById(
                                                             value,
                                                           );
-                                              }
-                                              _isFormModified = true;
-                                            });
-                                          },
-                                        ),
+                                                _isFormModified = true;
+                                              });
+                                            },
+                                          ),
                                       ],
                                     ),
                                   )

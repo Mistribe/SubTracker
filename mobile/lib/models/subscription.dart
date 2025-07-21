@@ -25,6 +25,7 @@ class Subscription extends HiveObject {
 
   @HiveField(6)
   final String? payerFamilyMemberId;
+
   @HiveField(7)
   final bool payedByJointAccount;
 
@@ -37,6 +38,9 @@ class Subscription extends HiveObject {
   @HiveField(10)
   final String eTag;
 
+  @HiveField(11)
+  final String? familyId;
+
   Subscription({
     required this.id,
     required this.name,
@@ -46,6 +50,7 @@ class Subscription extends HiveObject {
     this.payerFamilyMemberId,
     this.payedByJointAccount = false,
     this.eTag = '',
+    this.familyId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : subscriptionPayments = subscriptionPayments ?? [],
@@ -206,6 +211,7 @@ class Subscription extends HiveObject {
     String? eTag,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? familyId,
   }) {
     return Subscription(
       id: id ?? this.id,
@@ -218,6 +224,7 @@ class Subscription extends HiveObject {
       eTag: eTag ?? this.eTag,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
+      familyId: familyId ?? this.familyId,
     );
   }
 
@@ -234,6 +241,7 @@ class Subscription extends HiveObject {
       'payer_id': payerFamilyMemberId,
       'payed_by_joint_account': payedByJointAccount,
       'etag': eTag,
+      'family_id': familyId,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -259,6 +267,7 @@ class Subscription extends HiveObject {
           ? false
           : json['payed_by_joint_account'] as bool,
       eTag: json['etag'],
+      familyId: json['family_id'],
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : null,

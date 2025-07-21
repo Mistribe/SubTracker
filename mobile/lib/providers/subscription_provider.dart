@@ -347,6 +347,7 @@ class SubscriptionProvider with ChangeNotifier {
     List<String>? userFamilyMemberIds,
     String? payerFamilyMemberId,
     bool? payedByJointAccount,
+    String? familyId,
   }) async {
     // Validate that a kid is not set as a payer
     // Note: We can't validate if a kid is set as a payer here anymore since we only have the ID
@@ -373,6 +374,7 @@ class SubscriptionProvider with ChangeNotifier {
       userFamilyMemberIds: userFamilyMemberIds,
       payerFamilyMemberId: payerFamilyMemberId,
       payedByJointAccount: payedByJointAccount ?? false,
+      familyId: familyId,
     );
 
     // Persist to storage
@@ -394,8 +396,10 @@ class SubscriptionProvider with ChangeNotifier {
     String name,
     List<String> labelIds,
     List<String> familyMemberIds,
-    String? payerId,
-  ) async {
+    String? payerId, {
+    bool? payedByJointAccount,
+    String? familyId,
+  }) async {
     final subscription = subscriptionRepository.get(id);
 
     if (subscription == null) {
@@ -406,7 +410,9 @@ class SubscriptionProvider with ChangeNotifier {
       userFamilyMemberIds: familyMemberIds,
       payerFamilyMemberId: payerId,
       labelIds: labelIds,
+      payedByJointAccount: payedByJointAccount,
       updatedAt: DateTime.now(),
+      familyId: familyId,
     );
 
     // Persist to storage

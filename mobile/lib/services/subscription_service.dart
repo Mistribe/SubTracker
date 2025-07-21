@@ -87,7 +87,9 @@ class SubscriptionService extends BaseService {
               .toList(),
           'labels': subscription.labelIds.toList(),
           'family_members': subscription.userFamilyMemberIds.toList(),
-          'payer': subscription.payerFamilyMemberId,
+          'payer_id': subscription.payerFamilyMemberId,
+          'family_id': subscription.familyId,
+          'payed_by_joint_account': subscription.payedByJointAccount,
           'created_at': subscription.createdAt.toUtc().toIso8601String(),
         }),
       );
@@ -114,8 +116,10 @@ class SubscriptionService extends BaseService {
       // Prepare the update payload according to swagger updateSubscriptionModel
       final updatePayload = {
         'name': subscription.name,
-        'payer': subscription.payerFamilyMemberId,
+        'payer_id': subscription.payerFamilyMemberId,
+        'payed_by_joint_account': subscription.payedByJointAccount,
         'family_members': subscription.userFamilyMemberIds.toList(),
+        'family_id': subscription.familyId,
         'labels': subscription.labelIds.toList(),
         'updated_at': subscription.updatedAt.toUtc().toIso8601String(),
       };
