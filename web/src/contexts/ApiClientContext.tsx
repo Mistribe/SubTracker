@@ -3,10 +3,11 @@ import {createContext, type ReactNode, useContext} from 'react';
 import {useApiClient} from "@/hooks/use-api-client.ts";
 import type {ApiClient} from "@/api/apiClient.ts";
 
+
 const ApiClientContext = createContext<ApiClient | null>(null);
 
 export function ApiClientProvider({children}: { children: ReactNode }) {
-    const apiClient = useApiClient();
+    const {apiClient} = useApiClient();
 
     return (
         <ApiClientContext.Provider value={apiClient}>

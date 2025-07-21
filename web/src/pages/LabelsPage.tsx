@@ -14,7 +14,7 @@ import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
 import type {LabelModel} from "@/api/models";
 
 const LabelsPage = () => {
-    const apiClient = useApiClient();
+    const {apiClient} = useApiClient();
     const queryClient = useQueryClient();
 
     // Fetch labels using TanStack Query
@@ -25,10 +25,16 @@ const LabelsPage = () => {
     } = useQuery({
         queryKey: ['labels'],
         queryFn: async () => {
-            const result = await apiClient?.labels.get();
+            if (!apiClient) {
+                throw new Error('API client not initialized');
+            }
+            console.log('Fetching labels...');
+            console.log(apiClient);
+            const result = await apiClient?.labels.get({queryParameters: {withDefault: true}});
             console.log(result);
             return result || [];
         },
+        enabled: !!apiClient,
         // Optional but useful settings
         staleTime: 5 * 60 * 1000, // 5 minutes
         refetchOnWindowFocus: true,
