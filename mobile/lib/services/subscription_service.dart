@@ -21,7 +21,8 @@ class SubscriptionService extends BaseService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+        final responseBody = response.body;
+        final List<dynamic> data = json.decode(responseBody);
         return data.map((json) => Subscription.fromJson(json)).toList();
       } else {
         final errorData = json.decode(response.body);

@@ -60,7 +60,7 @@ class FamilyProvider with ChangeNotifier {
 
   bool get hasFamilyMembers => _selectedFamilyId == null
       ? false
-      : (familyRepository.get(_selectedFamilyId!)?.members.isEmpty ?? false);
+      : !(familyRepository.get(_selectedFamilyId!)?.members.isEmpty ?? true);
 
   // Getter for the family members list
   List<Family> get families => List.unmodifiable(familyRepository.getAll());

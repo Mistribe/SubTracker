@@ -38,6 +38,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
   bool _isActiveSubscription = true;
   List<FamilyMember> _userFamilyMembers = [];
   FamilyMember? _payerFamilyMember;
+  bool _payedByJointAccount = false;
   bool _isFormModified = false; // Track if form has been modified
 
   // Get currencies from the Currency enum
@@ -55,6 +56,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
 
       _nameController = TextEditingController(text: subscription.name);
 
+      _payedByJointAccount = subscription.payedByJointAccount;
       // Get the current subscription detail
       final currentDetail = subscription.getLastPaymentDetail();
       _priceController = TextEditingController(
@@ -95,7 +97,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
 
       // Fetch family members from provider
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final familyMemberProvider = Provider.of<FamilyProvider>(
+        final familyProvider = Provider.of<FamilyProvider>(
           context,
           listen: false,
         );
@@ -103,14 +105,14 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
           _userFamilyMembers = subscription.userFamilyMemberIds
               .map(
                 (id) =>
-                    familyMemberProvider.getFamilyMemberById(id) ??
+                    familyProvider.getFamilyMemberById(id) ??
                     FamilyMember.empty(),
               )
               .where((member) => member.id.isNotEmpty)
               .toList();
 
           _payerFamilyMember = subscription.payerFamilyMemberId != null
-              ? familyMemberProvider.getFamilyMemberById(
+              ? familyProvider.getFamilyMemberById(
                   subscription.payerFamilyMemberId,
                 )
               : null;
@@ -151,6 +153,22 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
         );
         setState(() {
           _selectedCurrency = provider.defaultCurrency;
+        });
+      });
+
+      // Fetch family members from provider
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final familyProvider = Provider.of<FamilyProvider>(
+          context,
+          listen: false,
+        );
+        setState(() {
+          final selectedFamily = familyProvider.selectedFamily;
+          if (selectedFamily != null) {
+            _payedByJointAccount = selectedFamily.haveJointAccount;
+          } else {
+            _payedByJointAccount = false;
+          }
         });
       });
 
@@ -1102,7 +1120,10 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                               value: null,
                                               child: Text('None'),
                                             ),
-                                            if (familyMemberProvider.selectedFamily?.haveJointAccount ?? false)
+                                            if (familyMemberProvider
+                                                    .selectedFamily
+                                                    ?.haveJointAccount ??
+                                                false)
                                               const DropdownMenuItem<String?>(
                                                 value: 'family',
                                                 child: Text(
@@ -1126,11 +1147,14 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                                             setState(() {
                                               if (value == 'family') {
                                                 // Create a special FamilyMember object for "Family"
-                                                final selectedFamilyId = familyMemberProvider.selectedFamilyId;
+                                                final selectedFamilyId =
+                                                    familyMemberProvider
+                                                        .selectedFamilyId;
                                                 if (selectedFamilyId != null) {
                                                   _payerFamilyMember = FamilyMember(
                                                     id: 'family',
-                                                    name: 'Family (common account)',
+                                                    name:
+                                                        'Family (common account)',
                                                     familyId: selectedFamilyId,
                                                   );
                                                 }

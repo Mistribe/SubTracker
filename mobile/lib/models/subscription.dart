@@ -255,7 +255,9 @@ class Subscription extends HiveObject {
           ? (json['family_members'] as List).cast<String>()
           : [],
       payerFamilyMemberId: json['payer_id'] as String?,
-      payedByJointAccount: json['payed_by_joint_account'] as bool,
+      payedByJointAccount: json['payed_by_joint_account'] == null
+          ? false
+          : json['payed_by_joint_account'] as bool,
       eTag: json['etag'],
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
