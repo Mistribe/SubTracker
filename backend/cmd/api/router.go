@@ -4,8 +4,10 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"time"
 
 	cfg "github.com/Oleexo/config-go"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 
@@ -60,6 +62,15 @@ func registerRoutes(e *gin.RouterGroup, routes []ginfx2.Route) {
 
 func newGinEngine(parameters EchoServerParams) *gin.Engine {
 	e := gin.Default()
+
+	e.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173"}, // adjust as needed
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "User-Agent"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
