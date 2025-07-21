@@ -2,10 +2,13 @@ package endpoints
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
+	"golang.org/x/text/currency"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/subscription/command"
@@ -45,13 +48,19 @@ func (m createPaymentModel) ToPayment() result.Result[subscription.Payment] {
 	}
 	endDate = option.New(m.EndDate)
 	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
+
+	paymentCurrency, err := currency.ParseISO(strings.TrimSpace(m.Currency))
+	if err != nil {
+		return result.Fail[subscription.Payment](err)
+	}
+
 	return subscription.NewPayment(
 		id,
 		m.Price,
 		m.StartDate,
 		endDate,
 		m.Months,
-		m.Currency,
+		paymentCurrency,
 		createdAt,
 		createdAt,
 	)

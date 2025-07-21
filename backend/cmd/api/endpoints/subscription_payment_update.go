@@ -2,10 +2,12 @@ package endpoints
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"golang.org/x/text/currency"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/subscription/command"
@@ -32,6 +34,10 @@ func (m updatePaymentModel) ToCommand(
 	paymentId uuid.UUID) result.Result[command.UpdatePaymentCommand] {
 	endDate := option.New(m.EndDate)
 	updatedAt := option.New(m.UpdatedAt)
+	paymentCurrency, err := currency.ParseISO(strings.TrimSpace(m.Currency))
+	if err != nil {
+		return result.Fail[command.UpdatePaymentCommand](err)
+	}
 	return result.Success(command.UpdatePaymentCommand{
 		SubscriptionId: subscriptionId,
 		PaymentId:      paymentId,
@@ -39,7 +45,7 @@ func (m updatePaymentModel) ToCommand(
 		StartDate:      m.StartDate,
 		EndDate:        endDate,
 		Months:         m.Months,
-		Currency:       m.Currency,
+		Currency:       paymentCurrency,
 		UpdatedAt:      updatedAt,
 	})
 }

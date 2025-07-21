@@ -2,10 +2,10 @@ package subscription
 
 import (
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"golang.org/x/text/currency"
 
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/pkg/langext/option"
@@ -19,7 +19,7 @@ type Payment struct {
 	startDate time.Time
 	endDate   *time.Time
 	months    int
-	currency  string
+	currency  currency.Unit
 }
 
 func NewPayment(
@@ -28,7 +28,7 @@ func NewPayment(
 	startDate time.Time,
 	endDate option.Option[time.Time],
 	months int,
-	currency string,
+	currency currency.Unit,
 	createdAt,
 	updatedAt time.Time) result.Result[Payment] {
 	payment := NewPaymentWithoutValidation(id, price, startDate, endDate, months, currency, createdAt, updatedAt, false)
@@ -44,7 +44,7 @@ func NewPaymentWithoutValidation(
 	startDate time.Time,
 	endDate option.Option[time.Time],
 	months int,
-	currency string,
+	currency currency.Unit,
 	createdAt,
 	updatedAt time.Time,
 	isExists bool) Payment {
@@ -56,7 +56,7 @@ func NewPaymentWithoutValidation(
 			return v.UTC().Truncate(24 * time.Hour)
 		}).Value(),
 		months:   months,
-		currency: strings.TrimSpace(currency),
+		currency: currency,
 	}
 }
 
@@ -76,7 +76,7 @@ func (p *Payment) Months() int {
 	return p.months
 }
 
-func (p *Payment) Currency() string {
+func (p *Payment) Currency() currency.Unit {
 	return p.currency
 }
 
@@ -112,7 +112,7 @@ func (p *Payment) SetMonths(months int) {
 	p.SetAsDirty()
 }
 
-func (p *Payment) SetCurrency(currency string) {
+func (p *Payment) SetCurrency(currency currency.Unit) {
 	p.currency = currency
 	p.SetAsDirty()
 }

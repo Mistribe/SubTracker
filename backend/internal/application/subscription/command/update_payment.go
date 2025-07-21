@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"golang.org/x/text/currency"
 
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 	"github.com/oleexo/subtracker/pkg/langext/option"
@@ -18,7 +19,7 @@ type UpdatePaymentCommand struct {
 	StartDate      time.Time
 	EndDate        option.Option[time.Time]
 	Months         int
-	Currency       string
+	Currency       currency.Unit
 	UpdatedAt      option.Option[time.Time]
 }
 

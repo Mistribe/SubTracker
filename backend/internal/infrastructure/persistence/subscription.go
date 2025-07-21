@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"golang.org/x/text/currency"
 	"gorm.io/gorm"
 
 	"github.com/oleexo/subtracker/internal/domain/subscription"
@@ -93,7 +94,7 @@ func (r SubscriptionRepository) toPaymentModel(subId uuid.UUID, source subscript
 			return nil
 		}),
 		Months:   source.Months(),
-		Currency: source.Currency(),
+		Currency: source.Currency().String(),
 	}
 }
 
@@ -143,7 +144,7 @@ func (r SubscriptionRepository) toEntity(source subscriptionModel) subscription.
 			source.StartDate,
 			option.New(source.EndDate),
 			source.Months,
-			source.Currency,
+			currency.MustParseISO(source.Currency),
 			source.CreatedAt,
 			source.UpdatedAt,
 			true,

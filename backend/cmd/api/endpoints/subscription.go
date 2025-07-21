@@ -90,7 +90,7 @@ func newPaymentModel(source subscription.Payment) paymentModel {
 		StartDate: source.StartDate(),
 		EndDate:   source.EndDate().Value(),
 		Months:    source.Months(),
-		Currency:  source.Currency(),
+		Currency:  source.Currency().String(),
 		CreatedAt: source.CreatedAt(),
 		UpdatedAt: source.UpdatedAt(),
 		Etag:      source.ETag(),
