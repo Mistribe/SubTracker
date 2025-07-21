@@ -77,7 +77,8 @@ type subscriptionModel struct {
 	Payments      []paymentModel `json:"payments"`
 	Labels        []string       `json:"labels"`
 	FamilyMembers []string       `json:"family_members"`
-	Payer         *string        `json:"payer,omitempty"`
+	PayerId       *string        `json:"payer_id_id,omitempty"`
+	FamilyId      *string        `json:"family_id,omitempty"`
 	CreatedAt     time.Time      `json:"created_at"`
 	UpdatedAt     time.Time      `json:"updated_at"`
 	Etag          string         `json:"etag"`
@@ -104,7 +105,8 @@ func newSubscriptionModel(source subscription.Subscription) subscriptionModel {
 		Payments:      ext.Map(source.Payments(), newPaymentModel),
 		Labels:        ext.Map(source.Labels(), ext.UuidToString),
 		FamilyMembers: ext.Map(source.FamilyMembers(), ext.UuidToString),
-		Payer:         option.Map[uuid.UUID, string](source.Payer(), ext.UuidToString).Value(),
+		PayerId:       option.Map[uuid.UUID, string](source.Payer(), ext.UuidToString).Value(),
+		FamilyId:      option.Map[uuid.UUID, string](source.FamilyId(), ext.UuidToString).Value(),
 		CreatedAt:     source.CreatedAt(),
 		UpdatedAt:     source.UpdatedAt(),
 		Etag:          source.ETag(),
