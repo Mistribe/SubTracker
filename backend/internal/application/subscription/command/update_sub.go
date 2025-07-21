@@ -72,6 +72,7 @@ func (h UpdateSubscriptionCommandHandler) updateSubscription(
 	sub.SetFamilyMembers(command.FamilyMembers)
 	sub.SetPayer(command.PayerId)
 	sub.SetPayedByJointAccount(command.PayedByJointAccount)
+	sub.SetFamilyId(command.FamilyId)
 
 	command.UpdatedAt.IfSome(func(updatedAt time.Time) {
 		sub.SetUpdatedAt(updatedAt)

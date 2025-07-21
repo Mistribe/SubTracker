@@ -122,7 +122,8 @@ func (s *Subscription) RemovePayment(paymentId uuid.UUID) {
 }
 
 func (s *Subscription) UpdatePayment(payment Payment) {
-	var payments []Payment
+	payments := make([]Payment, len(s.payments))
+	copy(payments, s.payments)
 	for i, p := range s.payments {
 		if p.Id() == payment.Id() {
 			payments[i] = payment
@@ -171,6 +172,11 @@ func (s *Subscription) SetPayer(payer option.Option[uuid.UUID]) {
 	s.SetAsDirty()
 }
 
+func (s *Subscription) SetFamilyId(familyId option.Option[uuid.UUID]) {
+	s.familyId = familyId.Value()
+	s.SetAsDirty()
+}
+
 func (s *Subscription) Validate() error {
 	if len(s.name) < 1 {
 		return ErrSubscriptionNameTooShort
@@ -194,7 +200,7 @@ func (s *Subscription) Validate() error {
 		}
 	}
 
-	if s.familyId != nil && len(s.familyMembers) > 0 {
+	if s.familyId == nil && len(s.familyMembers) > 0 {
 		return ErrCannotHaveFamilyMembersWithoutFamily
 	}
 
@@ -202,7 +208,8 @@ func (s *Subscription) Validate() error {
 		return ErrPayerAndJointAccountConflict
 	}
 
-	if s.familyId == nil && s.payedByJointAccount {
+	if (s.familyId == nil && s.payedByJointAccount) ||
+		(s.familyId == nil && s.payerId != nil) {
 		return ErrNoFamilyDefined
 	}
 

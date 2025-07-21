@@ -111,6 +111,8 @@ func (e SubscriptionPaymentUpdateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewSubscriptionPaymentUpdateEndpoint() *SubscriptionPaymentUpdateEndpoint {
-	return &SubscriptionPaymentUpdateEndpoint{}
+func NewSubscriptionPaymentUpdateEndpoint(handler core.CommandHandler[command.UpdatePaymentCommand, subscription.Subscription]) *SubscriptionPaymentUpdateEndpoint {
+	return &SubscriptionPaymentUpdateEndpoint{
+		handler: handler,
+	}
 }

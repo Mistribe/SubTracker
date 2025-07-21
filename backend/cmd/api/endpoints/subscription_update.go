@@ -23,6 +23,7 @@ type updateSubscriptionModel struct {
 	Name                string     `json:"name"`
 	Labels              []string   `json:"labels"`
 	FamilyMembers       []string   `json:"family_members"`
+	FamilyId            *string    `json:"family_id,omitempty"`
 	PayerId             *string    `json:"payer_id,omitempty"`
 	PayedByJointAccount bool       `json:"payed_by_joint_account,omitempty"`
 	UpdatedAt           *time.Time `json:"updated_at,omitempty"`
@@ -49,6 +50,11 @@ func (m updateSubscriptionModel) Command(id uuid.UUID) result.Result[command.Upd
 		return result.Fail[command.UpdateSubscriptionCommand](err)
 	}
 
+	familyId, err := option.ParseNew(m.FamilyId, uuid.Parse)
+	if err != nil {
+		return result.Fail[command.UpdateSubscriptionCommand](err)
+	}
+
 	return result.Success(command.UpdateSubscriptionCommand{
 		Id:                  id,
 		Name:                m.Name,
@@ -57,6 +63,7 @@ func (m updateSubscriptionModel) Command(id uuid.UUID) result.Result[command.Upd
 		PayerId:             payer,
 		PayedByJointAccount: m.PayedByJointAccount,
 		UpdatedAt:           option.New(m.UpdatedAt),
+		FamilyId:            familyId,
 	})
 }
 

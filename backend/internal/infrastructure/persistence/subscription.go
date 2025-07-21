@@ -53,9 +53,9 @@ func (s subscriptionPaymentModel) TableName() string {
 type subscriptionModel struct {
 	BaseModel
 	Name                string                          `gorm:"type:varchar(100);not null"`
-	Payments            []subscriptionPaymentModel      `gorm:"foreignKey:SubId"`
-	Labels              []subscriptionLabelModel        `gorm:"foreignKey:SubId"`
-	FamilyMembers       []subscriptionFamilyMemberModel `gorm:"foreignKey:SubId"`
+	Payments            []subscriptionPaymentModel      `gorm:"foreignKey:SubId;references:Id;constraint:OnDelete:CASCADE"`
+	Labels              []subscriptionLabelModel        `gorm:"foreignKey:SubId;references:Id;constraint:OnDelete:CASCADE"`
+	FamilyMembers       []subscriptionFamilyMemberModel `gorm:"foreignKey:SubId;references:Id;constraint:OnDelete:CASCADE"`
 	PayerId             *uuid.UUID                      `gorm:"type:uuid"`
 	Payer               *familyMemberModel              `gorm:"foreignKey:PayerId;references:Id"`
 	PayedByJointAccount bool                            `gorm:"type:boolean;not null;default:false"`
