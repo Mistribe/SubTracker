@@ -115,13 +115,14 @@ class _EditSubscriptionPaymentScreenState
         _months,
       );
       _recurrenceCountController.text = recurrenceCount.toString();
+      _useRecurrenceCount = true;
     } else {
       // Default to 1 recurrence
       _recurrenceCountController.text = '1';
+      _useRecurrenceCount = false;
     }
 
     // Always enable recurrence count as it's the only way to set end date
-    _useRecurrenceCount = true;
 
     // Set the selected duration based on months
     if (_months == 1) {

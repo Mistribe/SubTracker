@@ -536,8 +536,9 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                   ),
 
                 // Show family members if any are assigned
-                if (subscription.userFamilyMemberIds.isNotEmpty ||
-                    subscription.payerFamilyMemberId != null)
+                if (subscription.familyId != null &&
+                    (subscription.userFamilyMemberIds.isNotEmpty ||
+                        subscription.payerFamilyMemberId != null))
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Column(
@@ -584,14 +585,19 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                       ),
                                       Consumer<FamilyProvider>(
                                         builder: (context, provider, child) {
-                                          final familyMembers = provider
-                                              .families
-                                              .where(
-                                                (member) => subscription
-                                                    .userFamilyMemberIds
-                                                    .contains(member.id),
-                                              )
-                                              .toList();
+                                          final family = provider.getFamilyById(
+                                            subscription.familyId!,
+                                          );
+                                          var familyMembers = [];
+                                          if (family != null) {
+                                            familyMembers = family.members
+                                                .where(
+                                                  (member) => subscription
+                                                      .userFamilyMemberIds
+                                                      .contains(member.id),
+                                                )
+                                                .toList();
+                                          }
 
                                           return Wrap(
                                             children: familyMembers

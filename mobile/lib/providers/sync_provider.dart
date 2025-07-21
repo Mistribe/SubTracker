@@ -283,7 +283,7 @@ class SyncProvider extends ChangeNotifier {
   ) async {
     await _queueDelete(
       paymentId,
-      SyncDataType.family,
+      SyncDataType.subscriptionPayment,
       subscriptionId: subscriptionId,
     );
   }

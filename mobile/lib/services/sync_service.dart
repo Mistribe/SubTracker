@@ -557,7 +557,10 @@ class SyncService {
   }
 
   /// Update local storage with remote data
-  Future<void> _updateLocalStorage(Map<String, dynamic> remoteData) async {
+  Future<void> _updateLocalStorage(
+    Map<String, dynamic> remoteData, {
+    bool force = false,
+  }) async {
     final remoteSubscriptions =
         remoteData['subscriptions'] as List<Subscription>;
     final remoteLabels = remoteData['labels'] as List<Label>;
@@ -573,7 +576,7 @@ class SyncService {
         orElse: () => Subscription.empty(),
       );
 
-      if (localSubscription.eTag != remoteSubscription.eTag) {
+      if (localSubscription.eTag != remoteSubscription.eTag || force) {
         await _subscriptionRepository.update(
           remoteSubscription,
           withSync: false,
@@ -596,7 +599,7 @@ class SyncService {
         orElse: () => Label.empty(),
       );
 
-      if (localLabel.eTag != remoteLabel.eTag) {
+      if (localLabel.eTag != remoteLabel.eTag || force) {
         await _labelRepository.update(remoteLabel, withSync: false);
       }
     }
@@ -617,7 +620,7 @@ class SyncService {
         orElse: () => Family.empty(),
       );
 
-      if (localMember.eTag != remoteFamily.eTag) {
+      if (localMember.eTag != remoteFamily.eTag || force) {
         await _familyRepository.update(
           remoteFamily.id,
           remoteFamily.name,
@@ -716,7 +719,7 @@ class SyncService {
       final remoteData = await _fetchRemoteData();
 
       // Update local storage with remote data
-      await _updateLocalStorage(remoteData);
+      await _updateLocalStorage(remoteData, force: true);
 
       // Update last sync time and clean up
       await _updateSyncTimeAndCleanup();

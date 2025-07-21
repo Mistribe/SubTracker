@@ -573,7 +573,7 @@ class SubscriptionProvider with ChangeNotifier {
     subscription.removePaymentDetail(paymentId);
 
     // Persist to storage
-    await subscriptionRepository.update(subscription);
+    await subscriptionRepository.update(subscription, withSync: false);
 
     await subscriptionRepository.deletePayment(subscription.id, paymentId);
 
