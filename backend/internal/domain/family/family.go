@@ -9,6 +9,7 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 type Family struct {
@@ -16,7 +17,7 @@ type Family struct {
 
 	ownerId          string
 	name             string
-	members          []Member
+	members          *slicesx.Tracked[Member]
 	haveJointAccount bool
 }
 
@@ -37,6 +38,14 @@ func NewFamily(
 	return result.Success(f)
 }
 
+func memberUniqueComparer(a Member, b Member) bool {
+	return a.Id() == b.Id()
+}
+
+func memberComparer(a Member, b Member) bool {
+	return a.Equal(b)
+}
+
 func NewFamilyWithoutValidation(
 	id uuid.UUID,
 	ownerId string,
@@ -50,7 +59,7 @@ func NewFamilyWithoutValidation(
 		Base:             entity.NewBase(id, createdAt, updatedAt, true, isExists),
 		ownerId:          ownerId,
 		name:             name,
-		members:          members,
+		members:          slicesx.NewTracked(members, memberUniqueComparer, memberComparer),
 		haveJointAccount: haveJointAccount,
 	}
 }
@@ -69,7 +78,7 @@ func (f *Family) Validate() error {
 	emailMap := make(map[string]bool)
 	idMap := make(map[uuid.UUID]bool)
 
-	for _, member := range f.members {
+	for member := range f.members.It() {
 		if idMap[member.Id()] {
 			return ErrDuplicateMember
 		}
@@ -103,7 +112,7 @@ func (f *Family) OwnerId() string {
 	return f.ownerId
 }
 
-func (f *Family) Members() []Member {
+func (f *Family) Members() *slicesx.Tracked[Member] {
 	return f.members
 }
 
@@ -112,13 +121,13 @@ func (f *Family) AddMember(member Member) error {
 		return ErrDuplicateMember
 	}
 
-	f.members = append(f.members, member)
+	f.members.Add(member)
 	f.SetAsDirty()
 	return nil
 }
 
 func (f *Family) isDuplicateMember(member Member) bool {
-	for _, m := range f.members {
+	for m := range f.members.It() {
 		if m.Id() == member.Id() {
 			return true
 		}
@@ -130,7 +139,7 @@ func (f *Family) isDuplicateMember(member Member) bool {
 }
 
 func (f *Family) GetMember(id uuid.UUID) option.Option[Member] {
-	for _, m := range f.members {
+	for m := range f.members.It() {
 		if m.Id() == id {
 			return option.Some(m)
 		}
@@ -140,18 +149,16 @@ func (f *Family) GetMember(id uuid.UUID) option.Option[Member] {
 }
 
 func (f *Family) UpdateMember(member Member) error {
-	for idx, m := range f.members {
-		if m.Id() == member.Base.Id() {
-			f.members[idx] = member
-			return nil
-		}
+	if !f.members.Update(member) {
+		return ErrFamilyMemberNotFound
+
 	}
 
-	return ErrFamilyMemberNotFound
+	return nil
 }
 
 func (f *Family) ContainsMember(id uuid.UUID) bool {
-	for _, m := range f.members {
+	for m := range f.members.It() {
 		if m.Id() == id {
 			return true
 		}
@@ -175,16 +182,16 @@ func (f *Family) Equal(family Family) bool {
 		f.ownerId != family.ownerId ||
 		f.name != family.name ||
 		f.haveJointAccount != family.haveJointAccount ||
-		len(f.members) != len(family.members) {
+		f.members.Len() != family.members.Len() {
 		return false
 	}
 
 	memberMap := make(map[uuid.UUID]Member)
-	for _, member := range f.members {
+	for member := range f.members.It() {
 		memberMap[member.Id()] = member
 	}
 
-	for _, member := range family.members {
+	for member := range family.members.It() {
 		if existingMember, ok := memberMap[member.Id()]; !ok || !existingMember.Equal(member) {
 			return false
 		}
@@ -200,7 +207,7 @@ func (f *Family) ETagFields() []interface{} {
 		f.name,
 	}
 
-	for _, member := range f.members {
+	for member := range f.members.It() {
 		fields = append(fields, member.ETagFields()...)
 	}
 

@@ -51,7 +51,7 @@ func NewFamilyRepository(repository *Repository) *FamilyRepository {
 	}
 }
 
-func (r FamilyRepository) toFamilyMemberModel(source *family.Member) familyMemberModel {
+func (r FamilyRepository) toFamilyMemberModel(source family.Member) familyMemberModel {
 	return familyMemberModel{
 		BaseModel: BaseModel{
 			Id:        source.Id(),
@@ -198,34 +198,66 @@ func (r FamilyRepository) Save(ctx context.Context, family *family.Family) error
 	dbMember := r.toFamilyModel(family)
 	var result *gorm.DB
 	if family.IsExists() {
-		result = r.repository.db.WithContext(ctx).Save(&dbMember)
+		result = r.repository.db.WithContext(ctx).
+			Omit("Members").
+			Save(&dbMember)
 	} else {
-		result = r.repository.db.WithContext(ctx).Create(&dbMember)
+		result = r.repository.db.WithContext(ctx).
+			Omit("Members").
+			Create(&dbMember)
 	}
 
 	if result.Error != nil {
 		return result.Error
+	}
+
+	if err := saveTrackedSlice(ctx, family.Members(), r.createMember, r.updateMember, r.deleteMember); err != nil {
+		return err
 	}
 	family.Clean()
 	return nil
 }
 
-func (r FamilyRepository) SaveMember(ctx context.Context, member *family.Member) error {
+func (r FamilyRepository) createMember(ctx context.Context, member family.Member) error {
 	if !member.IsDirty() {
 		return nil
 	}
 	dbMember := r.toFamilyMemberModel(member)
-	var result *gorm.DB
 	if member.IsExists() {
-		result = r.repository.db.WithContext(ctx).Save(&dbMember)
-	} else {
-		result = r.repository.db.WithContext(ctx).Create(&dbMember)
+		return family.ErrMemberAlreadyExists
 	}
+	result := r.repository.db.WithContext(ctx).Save(&dbMember)
 
 	if result.Error != nil {
 		return result.Error
 	}
 	member.Clean()
+	return nil
+}
+
+func (r FamilyRepository) updateMember(ctx context.Context, member family.Member) error {
+	if !member.IsDirty() {
+		return nil
+	}
+	dbMember := r.toFamilyMemberModel(member)
+	if !member.IsExists() {
+		return family.ErrMemberNotAlreadyExists
+	}
+	result := r.repository.db.WithContext(ctx).Create(&dbMember)
+
+	if result.Error != nil {
+		return result.Error
+	}
+	member.Clean()
+	return nil
+}
+
+func (r FamilyRepository) deleteMember(ctx context.Context, member family.Member) error {
+	result := r.repository.db.WithContext(ctx).Delete(&familyMemberModel{}, member.Id())
+	if result.Error != nil {
+		return result.Error
+	}
+
 	return nil
 }
 

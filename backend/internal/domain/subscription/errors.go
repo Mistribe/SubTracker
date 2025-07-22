@@ -17,6 +17,7 @@ var (
 	ErrPaymentCannotEndBeforeStart          = errors.New("payment end date cannot be before the starting date")
 	ErrPaymentNotFound                      = errors.New("payment not found")
 	ErrPaymentAlreadyExists                 = errors.New("payment already exists")
+	ErrPaymentNotAlreadyExists              = errors.New("payment not already exists")
 	ErrCannotHaveFamilyMembersWithoutFamily = errors.New("cannot have family members without a family")
 	ErrPayerAndJointAccountConflict         = errors.New("subscription cannot have both payer and joint account payment")
 	ErrNoFamilyDefined                      = errors.New("no family defined")

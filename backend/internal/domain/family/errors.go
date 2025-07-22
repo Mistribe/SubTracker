@@ -4,6 +4,7 @@ import "errors"
 
 var (
 	ErrMemberAlreadyExists    = errors.New("family member already exists")
+	ErrMemberNotAlreadyExists = errors.New("family member not already exists")
 	ErrFamilyMemberNotFound   = errors.New("family member not found")
 	ErrFamilyNotFound         = errors.New("family not found")
 	ErrNameRequired           = errors.New("name is required")

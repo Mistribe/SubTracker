@@ -9,6 +9,7 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 const (
@@ -21,9 +22,9 @@ type Subscription struct {
 
 	familyId            *uuid.UUID
 	name                string
-	payments            []Payment
-	labels              []uuid.UUID
-	familyMembers       []uuid.UUID
+	payments            *slicesx.Tracked[Payment]
+	labels              *slicesx.Tracked[uuid.UUID]
+	familyMembers       *slicesx.Tracked[uuid.UUID]
 	payerId             *uuid.UUID
 	payedByJointAccount bool
 }
@@ -60,6 +61,26 @@ func NewSubscription(
 	return result.Success(sub)
 }
 
+func paymentUniqueComparer(a Payment, b Payment) bool {
+	return a.Id() == b.Id()
+}
+
+func paymentComparer(a Payment, b Payment) bool {
+	return a.Equal(b)
+}
+
+func paymentSorter(a Payment, b Payment) bool {
+	return a.startDate.After(b.startDate)
+}
+
+func uuidUniqueComparer(a uuid.UUID, b uuid.UUID) bool {
+	return a == b
+}
+
+func uuidComparer(a uuid.UUID, b uuid.UUID) bool {
+	return a == b
+}
+
 func NewSubscriptionWithoutValidation(
 	id uuid.UUID,
 	familyId *uuid.UUID,
@@ -76,9 +97,9 @@ func NewSubscriptionWithoutValidation(
 		Base:                entity.NewBase(id, createdAt, updatedAt, true, isExists),
 		familyId:            familyId,
 		name:                strings.TrimSpace(name),
-		payments:            payments,
-		labels:              labels,
-		familyMembers:       familyMembers,
+		payments:            slicesx.NewTracked(payments, paymentUniqueComparer, paymentComparer),
+		labels:              slicesx.NewTracked(labels, uuidUniqueComparer, uuidComparer),
+		familyMembers:       slicesx.NewTracked(familyMembers, uuidUniqueComparer, uuidComparer),
 		payerId:             payerId,
 		payedByJointAccount: payedByJointAccount,
 	}
@@ -100,45 +121,35 @@ func (s *Subscription) FamilyId() option.Option[uuid.UUID] {
 	return option.New(s.familyId)
 }
 
-func (s *Subscription) Payments() []Payment {
+func (s *Subscription) Payments() *slicesx.Tracked[Payment] {
 	return s.payments
 }
 
 func (s *Subscription) AddPayment(newPayment Payment) {
-	payments := append(s.payments, newPayment)
-	sortPayments(payments)
-	s.payments = payments
+	s.payments.Add(newPayment)
+	s.payments.Sort(paymentSorter)
+	s.SetAsDirty()
 }
 
 func (s *Subscription) RemovePayment(paymentId uuid.UUID) {
-	var payments []Payment
-	for _, p := range s.payments {
+	for p := range s.payments.It() {
 		if p.Id() != paymentId {
-			payments = append(payments, p)
+			s.payments.Remove(p)
+			break
 		}
 	}
-	sortPayments(payments)
-	s.payments = payments
+	s.payments.Sort(paymentSorter)
 	s.SetAsDirty()
 }
 
 func (s *Subscription) UpdatePayment(payment Payment) {
-	payments := make([]Payment, len(s.payments))
-	copy(payments, s.payments)
-	for i, p := range s.payments {
-		if p.Id() == payment.Id() {
-			payments[i] = payment
-		} else {
-			payments[i] = p
-		}
-	}
-	sortPayments(payments)
-	s.payments = payments
+	s.payments.Update(payment)
+	s.payments.Sort(paymentSorter)
 	s.SetAsDirty()
 }
 
 func (s *Subscription) GetPaymentById(paymentId uuid.UUID) option.Option[Payment] {
-	for _, p := range s.payments {
+	for p := range s.payments.It() {
 		if p.Id() == paymentId {
 			return option.Some(p)
 		}
@@ -147,21 +158,21 @@ func (s *Subscription) GetPaymentById(paymentId uuid.UUID) option.Option[Payment
 	return option.None[Payment]()
 }
 
-func (s *Subscription) Labels() []uuid.UUID {
+func (s *Subscription) Labels() *slicesx.Tracked[uuid.UUID] {
 	return s.labels
 }
 
 func (s *Subscription) SetLabels(labels []uuid.UUID) {
-	s.labels = labels
+	s.labels.Set(labels)
 	s.SetAsDirty()
 }
 
-func (s *Subscription) FamilyMembers() []uuid.UUID {
+func (s *Subscription) FamilyMembers() *slicesx.Tracked[uuid.UUID] {
 	return s.familyMembers
 }
 
 func (s *Subscription) SetFamilyMembers(familyMembers []uuid.UUID) {
-	s.familyMembers = familyMembers
+	s.familyMembers.Set(familyMembers)
 	s.SetAsDirty()
 }
 
@@ -184,25 +195,25 @@ func (s *Subscription) Validate() error {
 		return ErrSubscriptionNameTooShort
 	}
 
-	if len(s.payments) == 0 {
+	if s.payments.Len() == 0 {
 		return ErrSubscriptionPaymentMissing
 	}
 
-	if len(s.labels) > MaxLabelCount {
+	if s.labels.Len() > MaxLabelCount {
 		return ErrSubscriptionLabelExceeded
 	}
 
-	if len(s.familyMembers) > MaxFamilyMemberCount {
+	if s.familyMembers.Len() > MaxFamilyMemberCount {
 		return ErrSubscriptionFamilyMemberExceeded
 	}
 
-	for _, payment := range s.payments {
+	for payment := range s.payments.It() {
 		if err := payment.Validate(); err != nil {
 			return err
 		}
 	}
 
-	if s.familyId == nil && len(s.familyMembers) > 0 {
+	if s.familyId == nil && s.familyMembers.Len() > 0 {
 		return ErrCannotHaveFamilyMembersWithoutFamily
 	}
 
@@ -226,31 +237,16 @@ func (s *Subscription) Equal(other Subscription) bool {
 		return false
 	}
 
-	if len(s.payments) != len(other.payments) {
+	if !s.payments.Equals(other.payments.Values()) {
 		return false
-	}
-	for i := range s.payments {
-		if s.payments[i] != other.payments[i] {
-			return false
-		}
 	}
 
-	if len(s.labels) != len(other.labels) {
+	if !s.labels.Equals(other.labels.Values()) {
 		return false
-	}
-	for i := range s.labels {
-		if s.labels[i] != other.labels[i] {
-			return false
-		}
 	}
 
-	if len(s.familyMembers) != len(other.familyMembers) {
+	if s.familyMembers.Equals(other.familyMembers.Values()) {
 		return false
-	}
-	for i := range s.familyMembers {
-		if s.familyMembers[i] != other.familyMembers[i] {
-			return false
-		}
 	}
 
 	if s.payerId != other.payerId {
@@ -273,15 +269,15 @@ func (s *Subscription) ETagFields() []interface{} {
 		s.payedByJointAccount,
 	}
 
-	for _, payment := range s.payments {
+	for payment := range s.payments.It() {
 		fields = append(fields, payment.ETagFields()...)
 	}
 
-	for _, label := range s.labels {
+	for label := range s.labels.It() {
 		fields = append(fields, label.String())
 	}
 
-	for _, member := range s.familyMembers {
+	for member := range s.familyMembers.It() {
 		fields = append(fields, member.String())
 	}
 

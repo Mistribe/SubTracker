@@ -38,7 +38,8 @@ func (h CreateFamilyMemberCommandHandler) Handle(
 	})
 }
 
-func (h CreateFamilyMemberCommandHandler) addFamilyMemberToFamily(ctx context.Context,
+func (h CreateFamilyMemberCommandHandler) addFamilyMemberToFamily(
+	ctx context.Context,
 	command CreateFamilyMemberCommand, fam family.Family) result.Result[family.Family] {
 	if err := ensureOwnerIsEditor(ctx, fam.OwnerId()); err != nil {
 		return result.Fail[family.Family](err)
@@ -47,10 +48,11 @@ func (h CreateFamilyMemberCommandHandler) addFamilyMemberToFamily(ctx context.Co
 		return result.Success(fam)
 	}
 
-	if err := h.repository.SaveMember(ctx, &command.Member); err != nil {
+	if err := fam.Validate(); err != nil {
 		return result.Fail[family.Family](err)
 	}
-	if err := h.repository.MarkAsUpdated(ctx, fam.Id(), command.Member.UpdatedAt()); err != nil {
+
+	if err := h.repository.Save(ctx, &fam); err != nil {
 		return result.Fail[family.Family](err)
 	}
 

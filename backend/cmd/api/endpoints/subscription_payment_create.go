@@ -35,7 +35,7 @@ type createSubscriptionPaymentModel struct {
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 
-func (m createSubscriptionPaymentModel) ToPayment() result.Result[subscription.Payment] {
+func (m createSubscriptionPaymentModel) ToPayment(subscriptionId uuid.UUID) result.Result[subscription.Payment] {
 	var id uuid.UUID
 	var err error
 	var endDate option.Option[time.Time]
@@ -58,19 +58,21 @@ func (m createSubscriptionPaymentModel) ToPayment() result.Result[subscription.P
 		endDate,
 		m.Months,
 		paymentCurrency,
+		subscriptionId,
 		createdAt,
 		createdAt,
 	)
 }
 
 func (m createSubscriptionPaymentModel) Command(subscriptionId string) result.Result[command.CreatePaymentCommand] {
+	subId, err := uuid.Parse(subscriptionId)
+	if err != nil {
+		return result.Fail[command.CreatePaymentCommand](err)
+	}
+
 	return result.Bind[subscription.Payment, command.CreatePaymentCommand](
-		m.ToPayment(),
+		m.ToPayment(subId),
 		func(payment subscription.Payment) result.Result[command.CreatePaymentCommand] {
-			subId, err := uuid.Parse(subscriptionId)
-			if err != nil {
-				return result.Fail[command.CreatePaymentCommand](err)
-			}
 			return result.Success(command.CreatePaymentCommand{
 				SubscriptionId: subId,
 				Payment:        payment,

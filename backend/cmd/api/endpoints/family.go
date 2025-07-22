@@ -64,8 +64,8 @@ type familyModel struct {
 }
 
 func newFamilyModel(userId string, source family.Family) familyModel {
-	members := make([]familyMemberModel, 0, len(source.Members()))
-	for _, member := range source.Members() {
+	var members []familyMemberModel
+	for member := range source.Members().It() {
 		members = append(members, newFamilyMemberModel(member))
 	}
 

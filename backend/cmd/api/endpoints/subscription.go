@@ -102,9 +102,9 @@ func newSubscriptionModel(source subscription.Subscription) subscriptionModel {
 	return subscriptionModel{
 		Id:            source.Id().String(),
 		Name:          source.Name(),
-		Payments:      ext.Map(source.Payments(), newPaymentModel),
-		Labels:        ext.Map(source.Labels(), ext.UuidToString),
-		FamilyMembers: ext.Map(source.FamilyMembers(), ext.UuidToString),
+		Payments:      ext.Map(source.Payments().Values(), newPaymentModel),
+		Labels:        ext.Map(source.Labels().Values(), ext.UuidToString),
+		FamilyMembers: ext.Map(source.FamilyMembers().Values(), ext.UuidToString),
 		PayerId:       option.Map[uuid.UUID, string](source.Payer(), ext.UuidToString).Value(),
 		FamilyId:      option.Map[uuid.UUID, string](source.FamilyId(), ext.UuidToString).Value(),
 		CreatedAt:     source.CreatedAt(),

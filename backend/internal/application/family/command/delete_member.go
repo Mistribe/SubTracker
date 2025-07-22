@@ -2,7 +2,6 @@ package command
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -40,7 +39,8 @@ func (h DeleteFamilyMemberCommandHandler) Handle(
 	})
 }
 
-func (h DeleteFamilyMemberCommandHandler) deleteMember(ctx context.Context, command DeleteFamilyMemberCommand,
+func (h DeleteFamilyMemberCommandHandler) deleteMember(
+	ctx context.Context, command DeleteFamilyMemberCommand,
 	fam family.Family) result.Result[result.Unit] {
 	if err := ensureOwnerIsEditor(ctx, fam.OwnerId()); err != nil {
 		return result.Fail[result.Unit](err)
@@ -49,11 +49,11 @@ func (h DeleteFamilyMemberCommandHandler) deleteMember(ctx context.Context, comm
 		return result.Fail[result.Unit](family.ErrFamilyMemberNotFound)
 	}
 
-	if err := h.repository.DeleteMember(ctx, command.Id); err != nil {
+	if err := fam.Validate(); err != nil {
 		return result.Fail[result.Unit](err)
 	}
 
-	if err := h.repository.MarkAsUpdated(ctx, fam.Id(), time.Now()); err != nil {
+	if err := h.repository.Save(ctx, &fam); err != nil {
 		return result.Fail[result.Unit](err)
 	}
 

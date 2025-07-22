@@ -77,7 +77,7 @@ func NewSubscriptionRepository(repository *Repository) *SubscriptionRepository {
 	}
 }
 
-func (r SubscriptionRepository) toPaymentModel(subId uuid.UUID, source subscription.Payment) subscriptionPaymentModel {
+func (r SubscriptionRepository) toPaymentModel(source subscription.Payment) subscriptionPaymentModel {
 	return subscriptionPaymentModel{
 		BaseModel: BaseModel{
 			Id:        source.Id(),
@@ -85,7 +85,7 @@ func (r SubscriptionRepository) toPaymentModel(subId uuid.UUID, source subscript
 			UpdatedAt: source.UpdatedAt(),
 			Etag:      source.ETag(),
 		},
-		SubId:     subId,
+		SubId:     source.SubscriptionId(),
 		Price:     source.Price(),
 		StartDate: source.StartDate(),
 		EndDate: option.Match(source.EndDate(), func(in time.Time) *time.Time {
@@ -106,22 +106,10 @@ func (r SubscriptionRepository) toModel(source *subscription.Subscription) subsc
 			UpdatedAt: source.UpdatedAt(),
 			Etag:      source.ETag(),
 		},
-		Name: source.Name(),
-		Payments: ext.Map(source.Payments(), func(in subscription.Payment) subscriptionPaymentModel {
-			return r.toPaymentModel(source.Id(), in)
-		}),
-		Labels: ext.Map(source.Labels(), func(in uuid.UUID) subscriptionLabelModel {
-			return subscriptionLabelModel{
-				LabelId: in,
-				SubId:   source.Id(),
-			}
-		}),
-		FamilyMembers: ext.Map(source.FamilyMembers(), func(in uuid.UUID) subscriptionFamilyMemberModel {
-			return subscriptionFamilyMemberModel{
-				FamilyMemberId: in,
-				SubId:          source.Id(),
-			}
-		}),
+		Name:          source.Name(),
+		Payments:      nil,
+		Labels:        nil,
+		FamilyMembers: nil,
 		PayerId: option.Match(source.Payer(), func(in uuid.UUID) *uuid.UUID {
 			return &in
 		}, func() *uuid.UUID {
@@ -145,6 +133,7 @@ func (r SubscriptionRepository) toEntity(source subscriptionModel) subscription.
 			option.New(source.EndDate),
 			source.Months,
 			currency.MustParseISO(source.Currency),
+			source.SubId,
 			source.CreatedAt,
 			source.UpdatedAt,
 			true,
@@ -216,14 +205,191 @@ func (r SubscriptionRepository) Save(ctx context.Context, subscription *subscrip
 	dbSubscription := r.toModel(subscription)
 	var result *gorm.DB
 	if subscription.IsExists() {
-		result = r.repository.db.WithContext(ctx).Save(&dbSubscription)
+		result = r.repository.db.WithContext(ctx).
+			Omit("Payments").
+			Omit("Labels").
+			Omit("FamilyMembers").
+			Save(&dbSubscription)
 	} else {
 		result = r.repository.db.WithContext(ctx).Create(&dbSubscription)
 	}
 	if result.Error != nil {
 		return result.Error
 	}
+
+	if err := saveTrackedSlice(ctx,
+		subscription.Payments(),
+		r.createPayment,
+		r.updatePayment,
+		r.deletePayment); err != nil {
+		return err
+	}
+
+	if err := saveTrackedSlice(ctx,
+		subscription.Labels(),
+		func(ctx context.Context, labelId uuid.UUID) error {
+			return r.createSubscriptionLabel(ctx, subscription.Id(), labelId)
+		},
+		func(ctx context.Context, labelId uuid.UUID) error {
+			return r.updateSubscriptionLabel(ctx, subscription.Id(), labelId)
+		},
+		func(ctx context.Context, labelId uuid.UUID) error {
+			return r.deleteSubscriptionLabel(ctx, subscription.Id(), labelId)
+		}); err != nil {
+		return err
+	}
+
+	if err := saveTrackedSlice(ctx,
+		subscription.FamilyMembers(),
+		func(ctx context.Context, memberId uuid.UUID) error {
+			return r.createSubscriptionFamilyMember(ctx, subscription.Id(), memberId)
+		},
+		func(ctx context.Context, memberId uuid.UUID) error {
+			return r.updateSubscriptionFamilyMember(ctx, subscription.Id(), memberId)
+		},
+		func(ctx context.Context, memberId uuid.UUID) error {
+			return r.deleteSubscriptionFamilyMember(ctx, subscription.Id(), memberId)
+		}); err != nil {
+		return err
+	}
+
 	subscription.Clean()
+	return nil
+}
+
+func (r SubscriptionRepository) createPayment(
+	ctx context.Context,
+	payment subscription.Payment) error {
+	if payment.IsDirty() == false {
+		return nil
+	}
+
+	dbPayment := r.toPaymentModel(payment)
+	if payment.IsExists() {
+		return subscription.ErrPaymentAlreadyExists
+	}
+	result := r.repository.db.WithContext(ctx).Create(&dbPayment)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (r SubscriptionRepository) updatePayment(
+	ctx context.Context,
+	payment subscription.Payment) error {
+	if payment.IsDirty() == false {
+		return nil
+	}
+
+	dbPayment := r.toPaymentModel(payment)
+	if !payment.IsExists() {
+		return subscription.ErrPaymentNotAlreadyExists
+	}
+	result := r.repository.db.WithContext(ctx).Save(&dbPayment)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	payment.Clean()
+	return nil
+}
+
+func (r SubscriptionRepository) deletePayment(ctx context.Context, payment subscription.Payment) error {
+	result := r.repository.db.WithContext(ctx).Delete(&subscriptionPaymentModel{}, payment.Id())
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r SubscriptionRepository) createSubscriptionLabel(
+	ctx context.Context,
+	subscriptionId uuid.UUID,
+	labelId uuid.UUID) error {
+	dbLabelLink := subscriptionLabelModel{
+		LabelId: labelId,
+		SubId:   subscriptionId,
+	}
+	if result := r.repository.db.WithContext(ctx).Create(&dbLabelLink); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r SubscriptionRepository) updateSubscriptionLabel(
+	ctx context.Context,
+	subscriptionId uuid.UUID,
+	labelId uuid.UUID) error {
+	dbLabelLink := subscriptionLabelModel{
+		LabelId: labelId,
+		SubId:   subscriptionId,
+	}
+	if result := r.repository.db.WithContext(ctx).Save(&dbLabelLink); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r SubscriptionRepository) deleteSubscriptionLabel(
+	ctx context.Context,
+	subscriptionId uuid.UUID,
+	labelId uuid.UUID) error {
+	dbLabelLink := subscriptionLabelModel{
+		LabelId: labelId,
+		SubId:   subscriptionId,
+	}
+	if result := r.repository.db.WithContext(ctx).Delete(&dbLabelLink); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r SubscriptionRepository) createSubscriptionFamilyMember(
+	ctx context.Context,
+	subscriptionId uuid.UUID,
+	familyMemberId uuid.UUID) error {
+	dbFamilyMemberLink := subscriptionFamilyMemberModel{
+		FamilyMemberId: familyMemberId,
+		SubId:          subscriptionId,
+	}
+
+	if result := r.repository.db.WithContext(ctx).Create(&dbFamilyMemberLink); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r SubscriptionRepository) updateSubscriptionFamilyMember(
+	ctx context.Context,
+	subscriptionId uuid.UUID,
+	familyMemberId uuid.UUID) error {
+	dbFamilyMemberLink := subscriptionFamilyMemberModel{
+		FamilyMemberId: familyMemberId,
+		SubId:          subscriptionId,
+	}
+
+	if result := r.repository.db.WithContext(ctx).Save(&dbFamilyMemberLink); result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r SubscriptionRepository) deleteSubscriptionFamilyMember(
+	ctx context.Context,
+	subscriptionId uuid.UUID,
+	familyMemberId uuid.UUID) error {
+	dbFamilyMemberLink := subscriptionFamilyMemberModel{
+		FamilyMemberId: familyMemberId,
+		SubId:          subscriptionId,
+	}
+
+	if result := r.repository.db.WithContext(ctx).Delete(&dbFamilyMemberLink); result.Error != nil {
+		return result.Error
+	}
 	return nil
 }
 

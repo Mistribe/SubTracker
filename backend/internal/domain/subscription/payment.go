@@ -15,11 +15,12 @@ import (
 type Payment struct {
 	*entity.Base
 
-	price     float64
-	startDate time.Time
-	endDate   *time.Time
-	months    int
-	currency  currency.Unit
+	price          float64
+	startDate      time.Time
+	endDate        *time.Time
+	months         int
+	currency       currency.Unit
+	subscriptionId uuid.UUID
 }
 
 func NewPayment(
@@ -29,9 +30,11 @@ func NewPayment(
 	endDate option.Option[time.Time],
 	months int,
 	currency currency.Unit,
+	subscriptionId uuid.UUID,
 	createdAt,
 	updatedAt time.Time) result.Result[Payment] {
-	payment := NewPaymentWithoutValidation(id, price, startDate, endDate, months, currency, createdAt, updatedAt, false)
+	payment := NewPaymentWithoutValidation(id, price, startDate, endDate, months, currency, subscriptionId, createdAt,
+		updatedAt, false)
 	if err := payment.Validate(); err != nil {
 		return result.Fail[Payment](err)
 	}
@@ -45,6 +48,7 @@ func NewPaymentWithoutValidation(
 	endDate option.Option[time.Time],
 	months int,
 	currency currency.Unit,
+	subscriptionId uuid.UUID,
 	createdAt,
 	updatedAt time.Time,
 	isExists bool) Payment {
@@ -55,8 +59,9 @@ func NewPaymentWithoutValidation(
 		endDate: endDate.Transform(func(v time.Time) time.Time {
 			return v.UTC().Truncate(24 * time.Hour)
 		}).Value(),
-		months:   months,
-		currency: currency,
+		months:         months,
+		currency:       currency,
+		subscriptionId: subscriptionId,
 	}
 }
 
@@ -137,6 +142,10 @@ func (p *Payment) ETagFields() []interface{} {
 }
 func (p *Payment) ETag() string {
 	return entity.CalculateETag(p, p.Base)
+}
+
+func (p *Payment) SubscriptionId() uuid.UUID {
+	return p.subscriptionId
 }
 
 func sortPayments(payments []Payment) {

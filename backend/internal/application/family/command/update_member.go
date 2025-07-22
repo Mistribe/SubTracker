@@ -84,11 +84,7 @@ func (h UpdateFamilyMemberCommandHandler) updateFamilyMember(
 		return result.Fail[family.Family](err)
 	}
 
-	if err := h.repository.SaveMember(ctx, &mbr); err != nil {
-		return result.Fail[family.Family](err)
-	}
-
-	if err := h.repository.MarkAsUpdated(ctx, fam.Id(), mbr.UpdatedAt()); err != nil {
+	if err := h.repository.Save(ctx, &fam); err != nil {
 		return result.Fail[family.Family](err)
 	}
 

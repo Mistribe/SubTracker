@@ -36,7 +36,7 @@ type createPaymentModel struct {
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 
-func (m createPaymentModel) ToPayment() result.Result[subscription.Payment] {
+func (m createPaymentModel) ToPayment(subscriptionId uuid.UUID) result.Result[subscription.Payment] {
 	var id uuid.UUID
 	var err error
 	var endDate option.Option[time.Time]
@@ -61,6 +61,7 @@ func (m createPaymentModel) ToPayment() result.Result[subscription.Payment] {
 		endDate,
 		m.Months,
 		paymentCurrency,
+		subscriptionId,
 		createdAt,
 		createdAt,
 	)
@@ -90,7 +91,7 @@ func (m createSubscriptionModel) ToSubscription() result.Result[subscription.Sub
 		return result.Fail[subscription.Subscription](err)
 	}
 	paymentRes := ext.Map(m.Payments, func(in createPaymentModel) result.Result[subscription.Payment] {
-		return in.ToPayment()
+		return in.ToPayment(id)
 	})
 	labels, err = ext.MapErr(m.Labels, uuid.Parse)
 	if err != nil {
