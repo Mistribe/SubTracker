@@ -22,7 +22,7 @@ func NewCreateFamilyCommandHandler(repository family.Repository) *CreateFamilyCo
 	}
 }
 
-func (h *CreateFamilyCommandHandler) Handle(ctx context.Context, cmd CreateFamilyCommand) result.Result[family.Family] {
+func (h CreateFamilyCommandHandler) Handle(ctx context.Context, cmd CreateFamilyCommand) result.Result[family.Family] {
 	if err := cmd.Family.Validate(); err != nil {
 		return result.Fail[family.Family](err)
 	}
@@ -40,7 +40,9 @@ func (h *CreateFamilyCommandHandler) Handle(ctx context.Context, cmd CreateFamil
 	})
 }
 
-func (h *CreateFamilyCommandHandler) createFamily(ctx context.Context, cmd CreateFamilyCommand) result.Result[family.Family] {
+func (h CreateFamilyCommandHandler) createFamily(
+	ctx context.Context,
+	cmd CreateFamilyCommand) result.Result[family.Family] {
 	if err := h.repository.Save(ctx, &cmd.Family); err != nil {
 		return result.Fail[family.Family](err)
 	}

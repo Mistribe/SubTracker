@@ -243,7 +243,7 @@ func (r FamilyRepository) updateMember(ctx context.Context, member family.Member
 	if !member.IsExists() {
 		return family.ErrMemberNotAlreadyExists
 	}
-	result := r.repository.db.WithContext(ctx).Create(&dbMember)
+	result := r.repository.db.WithContext(ctx).Save(&dbMember)
 
 	if result.Error != nil {
 		return result.Error

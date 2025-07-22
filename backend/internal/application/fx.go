@@ -37,6 +37,7 @@ func BuildApplicationModule() fx.Option {
 			AsCommandHandler[subCommand.CreateSubscriptionCommand, subscription.Subscription](subCommand.NewCreateSubscriptionCommandHandler),
 			AsCommandHandler[subCommand.UpdateSubscriptionCommand, subscription.Subscription](subCommand.NewUpdateSubscriptionCommandHandler),
 			AsCommandHandler[subCommand.DeleteSubscriptionCommand, result.Unit](subCommand.NewDeleteSubscriptionCommandHandler),
+			AsCommandHandler[subCommand.PatchSubscriptionCommand, subscription.Subscription](subCommand.NewPatchSubscriptionCommandHandler),
 			AsCommandHandler[subCommand.CreatePaymentCommand, subscription.Subscription](subCommand.NewCreatePaymentCommandHandler),
 			AsCommandHandler[subCommand.UpdatePaymentCommand, subscription.Subscription](subCommand.NewUpdatePaymentCommandHandler),
 			AsCommandHandler[subCommand.DeletePaymentCommand, result.Unit](subCommand.NewDeletePaymentCommandHandler),
@@ -54,6 +55,7 @@ func BuildApplicationModule() fx.Option {
 
 			AsCommandHandler[fmlyCommand.CreateFamilyCommand, family.Family](fmlyCommand.NewCreateFamilyCommandHandler),
 			AsCommandHandler[fmlyCommand.UpdateFamilyCommand, family.Family](fmlyCommand.NewUpdateFamilyCommandHandler),
+			AsCommandHandler[fmlyCommand.PatchFamilyCommand, family.Family](fmlyCommand.NewPatchFamilyCommandHandler),
 			AsCommandHandler[fmlyCommand.CreateFamilyMemberCommand, family.Family](fmlyCommand.NewCreateFamilyMemberCommandHandler),
 			AsCommandHandler[fmlyCommand.UpdateFamilyMemberCommand, family.Family](fmlyCommand.NewUpdateFamilyMemberCommandHandler),
 			AsCommandHandler[fmlyCommand.DeleteFamilyMemberCommand, result.Unit](fmlyCommand.NewDeleteFamilyMemberCommandHandler),

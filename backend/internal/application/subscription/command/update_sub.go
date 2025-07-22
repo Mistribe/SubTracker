@@ -59,11 +59,11 @@ func (h UpdateSubscriptionCommandHandler) updateSubscription(
 	ctx context.Context,
 	command UpdateSubscriptionCommand,
 	sub subscription.Subscription) result.Result[subscription.Subscription] {
-	if err := h.ensureLabelsExists(ctx, command.Labels); err != nil {
+	if err := ensureLabelsExists(ctx, h.labelRepository, command.Labels); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	if err := h.ensureFamilyMemberExists(ctx, command.FamilyId, command.FamilyMembers); err != nil {
+	if err := ensureFamilyMemberExists(ctx, h.familyRepository, command.FamilyId, command.FamilyMembers); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 
@@ -90,39 +90,4 @@ func (h UpdateSubscriptionCommandHandler) updateSubscription(
 	}
 
 	return result.Success(sub)
-}
-
-func (h UpdateSubscriptionCommandHandler) ensureFamilyMemberExists(
-	ctx context.Context,
-	famIdOpt option.Option[uuid.UUID],
-	familyMembers []uuid.UUID) error {
-	return option.Match(famIdOpt, func(familyId uuid.UUID) error {
-		if len(familyMembers) == 0 {
-			return nil
-		}
-		exists, err := h.familyRepository.MemberExists(ctx, familyId, familyMembers...)
-		if err != nil {
-			return err
-		}
-		if exists {
-			return nil
-		}
-		return family.ErrFamilyMemberNotFound
-	}, func() error {
-		return nil
-	})
-}
-
-func (h UpdateSubscriptionCommandHandler) ensureLabelsExists(ctx context.Context, labels []uuid.UUID) error {
-	if len(labels) == 0 {
-		return nil
-	}
-	exists, err := h.labelRepository.Exists(ctx, labels...)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return nil
-	}
-	return label.ErrLabelNotFound
 }

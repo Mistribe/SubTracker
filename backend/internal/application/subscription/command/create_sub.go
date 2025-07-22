@@ -3,8 +3,6 @@ package command
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
@@ -35,71 +33,35 @@ func NewCreateSubscriptionCommandHandler(
 
 func (h CreateSubscriptionCommandHandler) Handle(
 	ctx context.Context,
-	command CreateSubscriptionCommand) result.Result[subscription.Subscription] {
-	opt, err := h.subscriptionRepository.Get(ctx, command.Subscription.Id())
+	cmd CreateSubscriptionCommand) result.Result[subscription.Subscription] {
+	opt, err := h.subscriptionRepository.Get(ctx, cmd.Subscription.Id())
 	if err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 
 	return option.Match(opt, func(in subscription.Subscription) result.Result[subscription.Subscription] {
-		if in.Equal(command.Subscription) {
+		if in.Equal(cmd.Subscription) {
 			return result.Success(in)
 		}
 		return result.Fail[subscription.Subscription](subscription.ErrSubscriptionAlreadyExists)
 	}, func() result.Result[subscription.Subscription] {
-		return h.createSubscription(ctx, command)
+		return h.createSubscription(ctx, cmd)
 	})
 
 }
 
 func (h CreateSubscriptionCommandHandler) createSubscription(
 	ctx context.Context,
-	command CreateSubscriptionCommand) result.Result[subscription.Subscription] {
-	if err := h.ensureLabelsExists(ctx, command.Subscription.Labels().Values()); err != nil {
-		return result.Fail[subscription.Subscription](err)
-	}
-	if err := h.ensureFamilyMemberExists(ctx, command.Subscription); err != nil {
-		return result.Fail[subscription.Subscription](err)
-	}
-
-	// todo make a new sub not from input
-	if err := h.subscriptionRepository.Save(ctx, &command.Subscription); err != nil {
-		return result.Fail[subscription.Subscription](err)
-	}
-
-	return result.Success(command.Subscription)
-}
-
-func (h CreateSubscriptionCommandHandler) ensureFamilyMemberExists(
-	ctx context.Context,
-	sub subscription.Subscription) error {
-	return option.Match(sub.FamilyId(), func(familyId uuid.UUID) error {
-		if sub.FamilyMembers().Len() == 0 {
-			return nil
-		}
-		exists, err := h.familyRepository.MemberExists(ctx, familyId, sub.FamilyMembers().Values()...)
-		if err != nil {
-			return err
-		}
-		if exists {
-			return nil
-		}
-		return family.ErrFamilyMemberNotFound
-	}, func() error {
-		return nil
-	})
-}
-
-func (h CreateSubscriptionCommandHandler) ensureLabelsExists(ctx context.Context, labels []uuid.UUID) error {
-	if len(labels) == 0 {
-		return nil
-	}
-	exists, err := h.labelRepository.Exists(ctx, labels...)
+	cmd CreateSubscriptionCommand) result.Result[subscription.Subscription] {
+	newSub, err := createSubscription(ctx, h.labelRepository, h.familyRepository, cmd.Subscription)
 	if err != nil {
-		return err
+		return result.Fail[subscription.Subscription](err)
 	}
-	if exists {
-		return nil
+
+	err = h.subscriptionRepository.Save(ctx, &newSub)
+	if err != nil {
+		return result.Fail[subscription.Subscription](err)
 	}
-	return label.ErrLabelNotFound
+
+	return result.Success(newSub)
 }

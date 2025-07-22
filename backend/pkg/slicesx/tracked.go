@@ -92,6 +92,15 @@ func (d *Tracked[T]) GetAt(index int) T {
 	return d._values[index]
 }
 
+func (d *Tracked[T]) Get(value T) (T, bool) {
+	for _, v := range d._values {
+		if d._uniqueCompareFunc(v, value) {
+			return v, true
+		}
+	}
+	return value, false
+}
+
 func (d *Tracked[T]) Set(values []T) {
 	var newValues []T
 	for _, vIn := range d._values {

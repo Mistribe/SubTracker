@@ -18,6 +18,7 @@ type FamilyEndpointGroup struct {
 func NewFamilyEndpointGroup(
 	familyCreateEndpoint *FamilyCreateEndpoint,
 	familyUpdateEndpoint *FamilyUpdateEndpoint,
+	familyPatchEndpoint *FamilyPatchEndpoint,
 	familyMemberCreateEndpoint *FamilyMemberCreateEndpoint,
 	familyMemberUpdateEndpoint *FamilyMemberUpdateEndpoint,
 	familyMemberDeleteEndpoint *FamilyMemberDeleteEndpoint,
@@ -28,6 +29,7 @@ func NewFamilyEndpointGroup(
 		routes: []ginfx.Route{
 			familyCreateEndpoint,
 			familyUpdateEndpoint,
+			familyPatchEndpoint,
 			familyMemberCreateEndpoint,
 			familyMemberUpdateEndpoint,
 			familyMemberDeleteEndpoint,

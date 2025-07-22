@@ -17,6 +17,7 @@ func BuildRoutesModule() fx.Option {
 			endpoints.NewSubscriptionCreateEndpoint,
 			endpoints.NewSubscriptionUpdateEndpoint,
 			endpoints.NewSubscriptionDeleteEndpoint,
+			endpoints.NewSubscriptionPatchEndpoint,
 			endpoints.NewSubscriptionPaymentCreateEndpoint,
 			endpoints.NewSubscriptionPaymentUpdateEndpoint,
 			endpoints.NewSubscriptionPaymentDeleteEndpoint,
@@ -32,6 +33,7 @@ func BuildRoutesModule() fx.Option {
 
 			endpoints.NewFamilyCreateEndpoint,
 			endpoints.NewFamilyUpdateEndpoint,
+			endpoints.NewFamilyPatchEndpoint,
 			endpoints.NewFamilyMemberGetAllEndpoint,
 			endpoints.NewFamilyMemberGetEndpoint,
 			endpoints.NewFamilyMemberCreateEndpoint,
