@@ -118,13 +118,14 @@ class FamilyRepository {
     );
 
     final updatedFamily = family.copyWith(
+      eTag: '',
       members: [...family.members, familyMember],
     );
 
     await _box.put(family.id, updatedFamily);
 
     if (_syncProvider != null) {
-      await _syncProvider!.queueCreateFamilyMember(familyMember);
+      await _syncProvider!.queueUpdateFamily(updatedFamily);
     }
 
     return familyMember;
@@ -167,14 +168,14 @@ class FamilyRepository {
         )
         .toList();
 
-    final updatedFamily = family.copyWith(members: updatedMembers);
+    final updatedFamily = family.copyWith(eTag: '', members: updatedMembers);
 
     // Save to local storage
     await _box.put(familyId, updatedFamily);
 
     // Queue for sync if provider is available
     if (_syncProvider != null && withSync) {
-      await _syncProvider!.queueUpdateFamilyMember(updatedFamilyMember);
+      await _syncProvider!.queueUpdateFamily(updatedFamily);
     }
   }
 
@@ -190,6 +191,7 @@ class FamilyRepository {
     }
 
     final updatedFamily = family.copyWith(
+      eTag: '', // todo calculate real etag
       members: family.members.where((member) => member.id != memberId).toList(),
     );
 
@@ -197,7 +199,7 @@ class FamilyRepository {
 
     // Queue for sync if provider is available
     if (_syncProvider != null && withSync) {
-      await _syncProvider!.queueDeleteFamilyMember(familyId, memberId);
+      await _syncProvider!.queueUpdateFamily(updatedFamily);
     }
   }
 

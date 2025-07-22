@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:subscription_tracker/models/family.dart';
 import '../models/subscription.dart';
 import '../models/label.dart';
-import '../models/family_member.dart';
 import '../models/subscription_payment.dart';
 import '../services/api_service.dart';
 import '../services/authentication_service.dart';
@@ -18,7 +17,6 @@ import '../repositories/family_repository.dart';
 class SyncProvider extends ChangeNotifier {
   late final ApiService _apiService;
   late final SyncService _syncService;
-  final AuthenticationService _authenticationService;
   bool _isInitialized = false;
   bool _isSyncing = false;
   DateTime? _lastSyncTime;
@@ -31,7 +29,7 @@ class SyncProvider extends ChangeNotifier {
     required LabelRepository labelRepository,
     required FamilyRepository familyMemberRepository,
     required AuthenticationService authenticationService,
-  }) : _authenticationService = authenticationService {
+  }) {
     _initialize(
       subscriptionRepository,
       labelRepository,
@@ -64,6 +62,7 @@ class SyncProvider extends ChangeNotifier {
 
     // Initialize sync service
     _syncService = SyncService(
+      authenticationService: authenticationService,
       apiService: _apiService,
       subscriptionRepository: subscriptionRepository,
       labelRepository: labelRepository,
@@ -191,15 +190,6 @@ class SyncProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> queueCreateFamilyMember(FamilyMember familyMember) async {
-    if (!_isInitialized) return;
-
-    await _syncService.queueCreate(familyMember);
-    _hasPendingOperations = await _syncService.hasPendingOperations();
-    _hasSyncHistory = await _syncService.hasSyncHistory();
-    notifyListeners();
-  }
-
   /// Queue an update operation
   Future<void> queueUpdateSubscription(Subscription subscription) async {
     if (!_isInitialized) return;
@@ -219,18 +209,6 @@ class SyncProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> queueUpdateFamilyMember(FamilyMember familyMember) async {
-    if (!_isInitialized) return;
-
-    await _syncService.queueUpdate(
-      familyMember,
-      familyId: familyMember.familyId,
-    );
-    _hasPendingOperations = await _syncService.hasPendingOperations();
-    _hasSyncHistory = await _syncService.hasSyncHistory();
-    notifyListeners();
-  }
-
   Future<void> queueUpdateFamily(Family family) async {
     if (!_isInitialized) return;
 
@@ -240,20 +218,10 @@ class SyncProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _queueDelete(
-    String id,
-    SyncDataType dataType, {
-    String? subscriptionId,
-    String? familyId,
-  }) async {
+  Future<void> _queueDelete(String id, SyncDataType dataType) async {
     if (!_isInitialized) return;
 
-    await _syncService.queueDelete(
-      id,
-      dataType,
-      subscriptionId: subscriptionId,
-      familyId: familyId,
-    );
+    await _syncService.queueDelete(id, dataType);
     _hasPendingOperations = await _syncService.hasPendingOperations();
     _hasSyncHistory = await _syncService.hasSyncHistory();
     notifyListeners();
@@ -268,50 +236,8 @@ class SyncProvider extends ChangeNotifier {
     await _queueDelete(id, SyncDataType.label);
   }
 
-  Future<void> queueDeleteFamilyMember(String familyId, String memberId) async {
-    await _queueDelete(memberId, SyncDataType.familyMember, familyId: familyId);
-  }
-
   Future<void> queueDeleteFamily(String familyId) async {
     await _queueDelete(familyId, SyncDataType.family);
-  }
-
-  /// Queue a delete operation for a subscription payment
-  Future<void> queueDeleteSubscriptionPayment(
-    String paymentId,
-    String subscriptionId,
-  ) async {
-    await _queueDelete(
-      paymentId,
-      SyncDataType.subscriptionPayment,
-      subscriptionId: subscriptionId,
-    );
-  }
-
-  /// Queue a create operation for a subscription payment
-  Future<void> queueCreateSubscriptionPayment(
-    SubscriptionPayment payment,
-    String subscriptionId,
-  ) async {
-    if (!_isInitialized) return;
-
-    await _syncService.queueCreate(payment, subscriptionId: subscriptionId);
-    _hasPendingOperations = await _syncService.hasPendingOperations();
-    _hasSyncHistory = await _syncService.hasSyncHistory();
-    notifyListeners();
-  }
-
-  /// Queue an update operation for a subscription payment
-  Future<void> queueUpdateSubscriptionPayment(
-    SubscriptionPayment payment,
-    String subscriptionId,
-  ) async {
-    if (!_isInitialized) return;
-
-    await _syncService.queueUpdate(payment, subscriptionId: subscriptionId);
-    _hasPendingOperations = await _syncService.hasPendingOperations();
-    _hasSyncHistory = await _syncService.hasSyncHistory();
-    notifyListeners();
   }
 
   @override

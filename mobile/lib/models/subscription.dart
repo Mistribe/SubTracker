@@ -66,6 +66,16 @@ class Subscription extends HiveObject {
     return sortedHistory[0];
   }
 
+  SubscriptionPayment? getActivePaymentDetail() {
+    final now = DateTime.now();
+    for (var payment in subscriptionPayments) {
+      if (payment.endDate == null || payment.endDate!.isAfter(now)) {
+        return payment;
+      }
+    }
+    return null;
+  }
+
   SubscriptionPayment getPaymentDetailAtDate(DateTime date) {
     if (subscriptionPayments.isEmpty) {
       throw StateError('No payment details available');
@@ -143,23 +153,18 @@ class Subscription extends HiveObject {
     return subscriptionPayments[idx];
   }
 
-  void setPaymentDetail(SubscriptionPayment detail) {
-    final idx = subscriptionPayments.indexWhere((d) => d.id == detail.id);
+  void addPayment(SubscriptionPayment paymentDetail) {
+    subscriptionPayments.add(paymentDetail);
+    subscriptionPayments.sort((a, b) => a.startDate.compareTo(b.startDate));
+  }
+
+  void updatePayment(SubscriptionPayment payment) {
+    final idx = subscriptionPayments.indexWhere((d) => d.id == payment.id);
     if (idx < 0) {
       throw StateError('No payment details available');
     }
 
-    subscriptionPayments[idx] = detail;
-    subscriptionPayments.sort((a, b) => a.startDate.compareTo(b.startDate));
-  }
-
-  void setEndDateToCurrentPaymentDetail(DateTime effectiveDate) {
-    final currentDetail = getLastPaymentDetail();
-    setPaymentDetail(currentDetail.copyWith(endDate: effectiveDate));
-  }
-
-  void addPaymentDetail(SubscriptionPayment paymentDetail) {
-    subscriptionPayments.add(paymentDetail);
+    subscriptionPayments[idx] = payment;
     subscriptionPayments.sort((a, b) => a.startDate.compareTo(b.startDate));
   }
 
@@ -232,6 +237,7 @@ class Subscription extends HiveObject {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'family_id': familyId,
       'name': name,
       'payments': subscriptionPayments
           .map((detail) => detail.toJson())
@@ -241,9 +247,8 @@ class Subscription extends HiveObject {
       'payer_id': payerFamilyMemberId,
       'payed_by_joint_account': payedByJointAccount,
       'etag': eTag,
-      'family_id': familyId,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
   }
 
@@ -278,8 +283,11 @@ class Subscription extends HiveObject {
   }
 
   void endCurrentPaymentDetail(DateTime endDate) {
-    final currentDetail = getLastPaymentDetail();
-    setPaymentDetail(currentDetail.copyWith(endDate: endDate));
+    final currentDetail = getActivePaymentDetail();
+    if (currentDetail == null) {
+      return;
+    }
+    updatePayment(currentDetail.copyWith(endDate: endDate));
   }
 
   // Remove a payment detail by ID

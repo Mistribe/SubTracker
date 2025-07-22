@@ -419,7 +419,10 @@ void main() {
 
         // Use reflection or a similar technique to set the property
         // Since we can't directly override the getter in the test, we'll test the behavior indirectly
-        expect(payment.startDate.day, equals(nextPaymentDate.day - 5 + 5)); // This will always be true
+        expect(
+          payment.startDate.day,
+          equals(nextPaymentDate.day - 5 + 5),
+        ); // This will always be true
       },
     );
 
@@ -444,7 +447,10 @@ void main() {
 
         // Use reflection or a similar technique to set the property
         // Since we can't directly override the getter in the test, we'll test the behavior indirectly
-        expect(payment.startDate.day, equals(lastPaymentDate.day)); // This will always be true
+        expect(
+          payment.startDate.day,
+          equals(lastPaymentDate.day),
+        ); // This will always be true
       },
     );
 
@@ -555,7 +561,7 @@ void main() {
         );
 
         final payment2 = createPayment(id: '2');
-        subscription.addPaymentDetail(payment2);
+        subscription.addPayment(payment2);
 
         expect(subscription.subscriptionPayments, hasLength(2));
         expect(subscription.subscriptionPayments[1], equals(payment2));
@@ -575,7 +581,7 @@ void main() {
           id: '2',
           startDate: DateTime(2023, 1, 1),
         );
-        subscription.addPaymentDetail(payment2);
+        subscription.addPayment(payment2);
 
         expect(subscription.subscriptionPayments[0].id, equals('2'));
         expect(subscription.subscriptionPayments[1].id, equals('1'));
@@ -586,10 +592,7 @@ void main() {
       'formattedNextPaymentDate formats the next payment date correctly',
       () {
         // Create a custom subscription with a fixed formatted next payment date
-        final subscription = _TestSubscription(
-          id: '1',
-          name: 'Netflix',
-        );
+        final subscription = _TestSubscription(id: '1', name: 'Netflix');
 
         // Since we can't directly override the formattedNextPaymentDate getter,
         // we'll test a simple date formatting function
@@ -762,8 +765,14 @@ void main() {
       );
       expect(updatedSubscription.labels, hasLength(1));
       expect(updatedSubscription.labels.first, equals(newLabel));
-      expect(updatedSubscription.createdAt, equals(createdAt)); // createdAt should remain the same
-      expect(updatedSubscription.updatedAt, equals(newUpdatedAt)); // updatedAt should be updated
+      expect(
+        updatedSubscription.createdAt,
+        equals(createdAt),
+      ); // createdAt should remain the same
+      expect(
+        updatedSubscription.updatedAt,
+        equals(newUpdatedAt),
+      ); // updatedAt should be updated
     });
 
     test('toJson converts subscription to JSON correctly', () {
@@ -896,6 +905,7 @@ void main() {
 class _TestSubscription extends Subscription {
   final double mockTotalAmountSpent;
   final SubscriptionState? mockState;
+
   _TestSubscription({
     required super.id,
     required super.name,

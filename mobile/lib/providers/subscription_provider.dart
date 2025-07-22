@@ -435,11 +435,17 @@ class SubscriptionProvider with ChangeNotifier {
       return;
     }
 
-    final previousDetail = subscription.getLastPaymentDetail();
-    // Update the current subscription detail with end date
-    subscription.setEndDateToCurrentPaymentDetail(effectiveDate);
+    final activePayment = subscription.getActivePaymentDetail();
 
-    // Create new subscription payment
+    if (activePayment != null) {
+      final updatedActivePayment = activePayment.copyWith(
+        endDate: effectiveDate,
+      );
+      subscription.updatePayment(updatedActivePayment);
+    }
+
+    final previousDetail = subscription.getLastPaymentDetail();
+
     final newPayment = SubscriptionPayment(
       id: _generateId(),
       price: newPrice,
@@ -449,11 +455,9 @@ class SubscriptionProvider with ChangeNotifier {
       currency: currency ?? previousDetail.currency,
     );
 
-    // Add new subscription detail
-    subscription.addPaymentDetail(newPayment);
+    subscription.addPayment(newPayment);
 
-    // Persist to storage
-    await subscriptionRepository.createPayment(subscription.id, newPayment);
+    await subscriptionRepository.update(subscription);
 
     notifyListeners();
   }
@@ -489,10 +493,10 @@ class SubscriptionProvider with ChangeNotifier {
     );
 
     // Update the subscription
-    subscription.setPaymentDetail(updatedPayment);
+    subscription.updatePayment(updatedPayment);
 
     // Persist to storage
-    await subscriptionRepository.updatePayment(subscriptionId, updatedPayment);
+    await subscriptionRepository.update(subscription);
 
     notifyListeners();
   }
@@ -516,11 +520,8 @@ class SubscriptionProvider with ChangeNotifier {
     // Update the subscription
     subscription.endCurrentPaymentDetail(effectiveStopDate);
 
-    // Get the updated payment detail
-    final updatedDetail = subscription.getLastPaymentDetail();
-
     // Persist to storage
-    await subscriptionRepository.updatePayment(subscription.id, updatedDetail);
+    await subscriptionRepository.update(subscription);
 
     notifyListeners();
   }
@@ -552,10 +553,10 @@ class SubscriptionProvider with ChangeNotifier {
     );
 
     // Add to subscription
-    subscription.addPaymentDetail(newPayment);
+    subscription.addPayment(newPayment);
 
     // Persist to storage
-    await subscriptionRepository.createPayment(subscription.id, newPayment);
+    await subscriptionRepository.add(subscription);
 
     notifyListeners();
   }
@@ -569,13 +570,9 @@ class SubscriptionProvider with ChangeNotifier {
     if (subscription == null) {
       return;
     }
-    // Remove the payment from the subscription
     subscription.removePaymentDetail(paymentId);
 
-    // Persist to storage
-    await subscriptionRepository.update(subscription, withSync: false);
-
-    await subscriptionRepository.deletePayment(subscription.id, paymentId);
+    await subscriptionRepository.update(subscription);
 
     notifyListeners();
   }

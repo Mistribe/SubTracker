@@ -58,58 +58,10 @@ class ApiService {
     return _subscriptionService.getSubscription(id);
   }
 
-  /// Create a new subscription on the backend
-  /// POST /subscriptions
-  Future<Subscription> createSubscription(Subscription subscription) async {
-    return _subscriptionService.createSubscription(subscription);
-  }
-
-  /// Update an existing subscription on the backend
-  /// PUT /subscriptions/{id}
-  Future<Subscription> updateSubscription(Subscription subscription) async {
-    return _subscriptionService.updateSubscription(subscription);
-  }
-
   /// Delete a subscription from the backend
   /// DELETE /subscriptions/{id}
   Future<void> deleteSubscription(String id) async {
     return _subscriptionService.deleteSubscription(id);
-  }
-
-  /// Delete a payment from a subscription
-  /// DELETE /subscriptions/{id}/payments/{paymentId}
-  Future<void> deleteSubscriptionPayment(
-    String subscriptionId,
-    String paymentId,
-  ) async {
-    return _subscriptionService.deleteSubscriptionPayment(
-      subscriptionId,
-      paymentId,
-    );
-  }
-
-  /// Add a new payment to a subscription
-  /// POST /subscriptions/{subscription_id}/payments
-  Future<SubscriptionPayment> createSubscriptionPayment(
-    String subscriptionId,
-    SubscriptionPayment payment,
-  ) async {
-    return _subscriptionService.createSubscriptionPayment(
-      subscriptionId,
-      payment,
-    );
-  }
-
-  /// Update a subscription payment
-  /// This method is used for synchronization purposes
-  Future<SubscriptionPayment> updateSubscriptionPayment(
-    String subscriptionId,
-    SubscriptionPayment payment,
-  ) async {
-    return _subscriptionService.updateSubscriptionPayment(
-      subscriptionId,
-      payment,
-    );
   }
 
   /// Get all families
@@ -118,10 +70,8 @@ class ApiService {
     return _familyService.getFamilies();
   }
 
-  /// Create a new family member
-  /// POST /families/members
-  Future<Family> createFamilyMember(FamilyMember member) async {
-    return _familyService.createFamilyMember(member);
+  Future<Family> patchFamily(Family family) async {
+    return _familyService.patchFamily(family);
   }
 
   /// Get family member by ID
@@ -130,34 +80,10 @@ class ApiService {
     return _familyService.getFamilyMember(id);
   }
 
-  /// Update family member by ID
-  /// PUT /families/members/{id}
-  Future<Family> updateFamilyMember(FamilyMember member) async {
-    return _familyService.updateFamilyMember(member);
-  }
-
-  /// Delete family member by ID
-  /// DELETE /families/members/{id}
-  Future<void> deleteFamilyMember(String familyId, String memberId) async {
-    return _familyService.deleteFamilyMember(familyId, memberId);
-  }
-
   /// Delete family by ID
   /// DELETE /families/{id}
   Future<void> deleteFamily(String id) async {
     return _familyService.deleteFamily(id);
-  }
-
-  /// Create a new family
-  /// POST /families
-  Future<Family> createFamily(Family family) async {
-    return _familyService.createFamily(family);
-  }
-
-  /// Update family by ID
-  /// PUT /families/{id}
-  Future<Family> updateFamily(Family family) async {
-    return _familyService.updateFamily(family);
   }
 
   /// Get all labels
@@ -194,6 +120,10 @@ class ApiService {
   /// POST /labels
   Future<Label> createLabel(Label label) async {
     return _labelService.createLabel(label);
+  }
+
+  Future<Subscription> patchSubscription(Subscription subscription) async {
+    return _subscriptionService.patchSubscription(subscription);
   }
 
   /// Close the HTTP client when done

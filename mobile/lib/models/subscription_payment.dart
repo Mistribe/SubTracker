@@ -140,13 +140,13 @@ class SubscriptionPayment {
     return {
       'id': id,
       'price': price,
-      'start_date': startDate.toIso8601String(),
-      'end_date': endDate?.toIso8601String(),
+      'start_date': startDate.toUtc().toIso8601String(),
+      'end_date': endDate?.toUtc().toIso8601String(),
       'months': months,
       'currency': currency,
       'etag': eTag,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
   }
 

@@ -3,25 +3,29 @@ import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:subscription_tracker/models/family.dart';
-import '../models/subscription.dart';
 import '../models/label.dart';
 import '../models/family_member.dart';
+import '../models/subscription.dart';
 import '../models/subscription_payment.dart';
 import '../repositories/subscription_repository.dart';
 import '../repositories/label_repository.dart';
 import '../repositories/family_repository.dart';
 import 'api_service.dart';
+import 'authentication_service.dart';
+
+class UnknownEntityTypeException implements Exception {
+  final String message;
+
+  UnknownEntityTypeException(this.message);
+
+  @override
+  String toString() => message;
+}
 
 /// Type of sync operation
 enum SyncOperationType { create, update, delete }
 
-enum SyncDataType {
-  label,
-  subscription,
-  familyMember,
-  subscriptionPayment,
-  family,
-}
+enum SyncDataType { label, subscription, family }
 
 /// Pending sync operation
 class PendingSyncOperation {
@@ -68,6 +72,7 @@ class PendingSyncOperation {
 class SyncService {
   final ApiService _apiService;
   final SubscriptionRepository _subscriptionRepository;
+  final AuthenticationService _authenticationService;
   final LabelRepository _labelRepository;
   final FamilyRepository _familyRepository;
   final Connectivity _connectivity;
@@ -86,6 +91,7 @@ class SyncService {
   static const Duration _syncInterval = Duration(minutes: 15);
 
   SyncService({
+    required AuthenticationService authenticationService,
     required ApiService apiService,
     required SubscriptionRepository subscriptionRepository,
     required LabelRepository labelRepository,
@@ -97,6 +103,7 @@ class SyncService {
        _labelRepository = labelRepository,
        _familyRepository = familyMemberRepository,
        _connectivity = connectivity,
+       _authenticationService = authenticationService,
        _prefs = prefs;
 
   /// Initialize the sync service
@@ -240,33 +247,19 @@ class SyncService {
       return SyncDataType.subscription;
     } else if (entity is Label) {
       return SyncDataType.label;
-    } else if (entity is SubscriptionPayment) {
-      return SyncDataType.subscriptionPayment;
     } else if (entity is Family) {
       return SyncDataType.family;
     } else {
-      return SyncDataType.familyMember;
+      throw UnknownEntityTypeException(
+        'Unknown entity type: ${entity.runtimeType}',
+      );
     }
   }
 
   /// Queue a create operation for a subscription
-  Future<void> queueCreate(dynamic entity, {String? subscriptionId}) async {
-    if (entity is Subscription ||
-        entity is Label ||
-        entity is Family ||
-        entity is FamilyMember ||
-        entity is SubscriptionPayment) {
+  Future<void> queueCreate(dynamic entity) async {
+    if (entity is Subscription || entity is Label || entity is Family) {
       final data = entity.toJson();
-
-      // For SubscriptionPayment, we need to store the subscription ID
-      if (entity is SubscriptionPayment) {
-        if (subscriptionId == null) {
-          throw ArgumentError(
-            'Subscription ID is required for SubscriptionPayment operations',
-          );
-        }
-        data['subscriptionId'] = subscriptionId;
-      }
 
       await _addPendingOperation(
         PendingSyncOperation(
@@ -289,36 +282,9 @@ class SyncService {
   }
 
   /// Queue an update operation for a subscription
-  Future<void> queueUpdate(
-    dynamic entity, {
-    String? subscriptionId,
-    String? familyId,
-  }) async {
-    if (entity is Subscription ||
-        entity is Label ||
-        entity is Family ||
-        entity is FamilyMember ||
-        entity is SubscriptionPayment) {
+  Future<void> queueUpdate(dynamic entity) async {
+    if (entity is Subscription || entity is Label || entity is Family) {
       final data = entity.toJson();
-
-      // For SubscriptionPayment, we need to store the subscription ID
-      if (entity is SubscriptionPayment) {
-        if (subscriptionId == null) {
-          throw ArgumentError(
-            'Subscription ID is required for SubscriptionPayment operations',
-          );
-        }
-        data['subscriptionId'] = subscriptionId;
-      }
-
-      if (entity is FamilyMember) {
-        if (familyId == null) {
-          throw ArgumentError(
-            'Family ID is required for FamilyMember operations',
-          );
-        }
-        data['familyId'] = familyId;
-      }
 
       await _addPendingOperation(
         PendingSyncOperation(
@@ -341,36 +307,13 @@ class SyncService {
   }
 
   /// Queue a delete operation
-  Future<void> queueDelete(
-    String id,
-    SyncDataType dataType, {
-    String? subscriptionId,
-    String? familyId,
-  }) async {
-    // For SubscriptionPayment, we need the subscription ID
-    Map<String, dynamic>? data;
-    if (dataType == SyncDataType.subscriptionPayment) {
-      if (subscriptionId == null) {
-        throw ArgumentError(
-          'Subscription ID is required for SubscriptionPayment delete operations',
-        );
-      }
-      data = {'subscriptionId': subscriptionId};
-    } else if (dataType == SyncDataType.familyMember) {
-      if (familyId == null) {
-        throw ArgumentError(
-          'Family ID is required for FamilyMember delete operations',
-        );
-      }
-      data = {'familyId': familyId};
-    }
-
+  Future<void> queueDelete(String id, SyncDataType dataType) async {
     await _addPendingOperation(
       PendingSyncOperation(
         id: id,
         type: SyncOperationType.delete,
         dataType: dataType,
-        data: data,
+        data: null,
       ),
     );
 
@@ -395,7 +338,7 @@ class SyncService {
               switch (operation.dataType) {
                 case SyncDataType.subscription:
                   final subscription = Subscription.fromJson(operation.data!);
-                  await _apiService.createSubscription(subscription);
+                  await _apiService.patchSubscription(subscription);
                   successfulOperations.add(operation);
                   break;
                 case SyncDataType.label:
@@ -405,27 +348,7 @@ class SyncService {
                   break;
                 case SyncDataType.family:
                   final family = Family.fromJson(operation.data!);
-                  await _apiService.createFamily(family);
-                  successfulOperations.add(operation);
-                  break;
-                case SyncDataType.familyMember:
-                  final familyMember = FamilyMember.fromJson(operation.data!);
-                  await _apiService.createFamilyMember(familyMember);
-                  successfulOperations.add(operation);
-                  break;
-                case SyncDataType.subscriptionPayment:
-                  final payment = SubscriptionPayment.fromJson(operation.data!);
-                  // We need the subscription ID for this operation
-                  final subscriptionId = operation.data!['subscriptionId'];
-                  if (subscriptionId == null) {
-                    throw Exception(
-                      'Subscription ID is required for subscription payment operations',
-                    );
-                  }
-                  await _apiService.createSubscriptionPayment(
-                    subscriptionId,
-                    payment,
-                  );
+                  await _apiService.patchFamily(family);
                   successfulOperations.add(operation);
                   break;
               }
@@ -438,7 +361,7 @@ class SyncService {
                 case SyncDataType.subscription:
                   // This is a Subscription
                   final subscription = Subscription.fromJson(operation.data!);
-                  await _apiService.updateSubscription(subscription);
+                  await _apiService.patchSubscription(subscription);
                   successfulOperations.add(operation);
                   break;
                 case SyncDataType.label:
@@ -449,29 +372,7 @@ class SyncService {
                   break;
                 case SyncDataType.family:
                   final family = Family.fromJson(operation.data!);
-                  await _apiService.updateFamily(family);
-                  successfulOperations.add(operation);
-                  break;
-                case SyncDataType.familyMember:
-                  // This is a FamilyMember
-                  final familyMember = FamilyMember.fromJson(operation.data!);
-                  await _apiService.updateFamilyMember(familyMember);
-                  successfulOperations.add(operation);
-                  break;
-                case SyncDataType.subscriptionPayment:
-                  // This is a SubscriptionPayment
-                  final payment = SubscriptionPayment.fromJson(operation.data!);
-                  // We need the subscription ID for this operation
-                  final subscriptionId = operation.data!['subscriptionId'];
-                  if (subscriptionId == null) {
-                    throw Exception(
-                      'Subscription ID is required for subscription payment operations',
-                    );
-                  }
-                  await _apiService.updateSubscriptionPayment(
-                    subscriptionId,
-                    payment,
-                  );
+                  await _apiService.patchFamily(family);
                   successfulOperations.add(operation);
                   break;
               }
@@ -492,31 +393,6 @@ class SyncService {
                 break;
               case SyncDataType.family:
                 await _apiService.deleteFamily(operation.id);
-                successfulOperations.add(operation);
-                break;
-              case SyncDataType.familyMember:
-                final familyId = operation.data?['familyId'];
-                if (familyId == null) {
-                  throw Exception(
-                    'Family ID is required for family member operations',
-                  );
-                }
-                await _apiService.deleteFamilyMember(familyId, operation.id);
-                successfulOperations.add(operation);
-                break;
-              case SyncDataType.subscriptionPayment:
-                // For subscription payment, we need both the subscription ID and the payment ID
-                // The subscription ID should be stored in the metadata
-                final subscriptionId = operation.data?['subscriptionId'];
-                if (subscriptionId == null) {
-                  throw Exception(
-                    'Subscription ID is required for subscription payment operations',
-                  );
-                }
-                await _apiService.deleteSubscriptionPayment(
-                  subscriptionId,
-                  operation.id,
-                );
                 successfulOperations.add(operation);
                 break;
             }
@@ -653,6 +529,10 @@ class SyncService {
 
   /// Synchronize data with the backend
   Future<void> sync() async {
+    final isAuthenticated = await _authenticationService.isAuthenticated();
+    if (!isAuthenticated) {
+      return;
+    }
     // Prevent multiple syncs from running simultaneously
     if (_isSyncing || !_isOnline) return;
 

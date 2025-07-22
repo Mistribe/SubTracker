@@ -65,8 +65,8 @@ class Family extends HiveObject {
       'members': members.map((member) => member.toJson()).toList(),
       'have_joint_account': haveJointAccount,
       'etag': eTag,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
+      'updated_at': updatedAt.toUtc().toIso8601String(),
     };
   }
 

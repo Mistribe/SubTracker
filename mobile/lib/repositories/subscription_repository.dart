@@ -56,28 +56,7 @@ class SubscriptionRepository {
       await _syncProvider!.queueUpdateSubscription(subscription);
     }
   }
-
-  Future<void> createPayment(String id, SubscriptionPayment payment) async {
-    // Queue for sync if provider is available
-    if (_syncProvider != null) {
-      await _syncProvider!.queueCreateSubscriptionPayment(payment, id);
-    }
-  }
-
-  Future<void> updatePayment(String id, SubscriptionPayment payment) async {
-    // Queue for sync if provider is available
-    if (_syncProvider != null) {
-      await _syncProvider!.queueUpdateSubscriptionPayment(payment, id);
-    }
-  }
-
-  Future<void> deletePayment(String id, String paymentId) async {
-    // Queue for sync if provider is available
-    if (_syncProvider != null) {
-      await _syncProvider!.queueDeleteSubscriptionPayment(paymentId, id);
-    }
-  }
-
+  
   /// Delete a subscription
   Future<void> delete(String id, {bool withSync = true}) async {
     // Delete from local storage
