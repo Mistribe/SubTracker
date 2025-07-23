@@ -156,6 +156,42 @@ export interface CreateLabelModel extends AdditionalDataHolder, Parsable {
 export function createLabelModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
     return deserializeIntoLabelModel;
 }
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {PatchFamilyMemberModel}
+ */
+// @ts-ignore
+export function createPatchFamilyMemberModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoPatchFamilyMemberModel;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {PatchFamilyModel}
+ */
+// @ts-ignore
+export function createPatchFamilyModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoPatchFamilyModel;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {PatchPaymentModel}
+ */
+// @ts-ignore
+export function createPatchPaymentModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoPatchPaymentModel;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {PatchSubscriptionModel}
+ */
+// @ts-ignore
+export function createPatchSubscriptionModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoPatchSubscriptionModel;
+}
 export interface CreatePaymentModel extends AdditionalDataHolder, Parsable {
     /**
      * The created_at property
@@ -479,6 +515,72 @@ export function deserializeIntoLabelModel(labelModel: Partial<LabelModel> | unde
 }
 /**
  * The deserialization information for the current model
+ * @param PatchFamilyMemberModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoPatchFamilyMemberModel(patchFamilyMemberModel: Partial<PatchFamilyMemberModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "email": n => { patchFamilyMemberModel.email = n.getStringValue(); },
+        "id": n => { patchFamilyMemberModel.id = n.getStringValue(); },
+        "is_kid": n => { patchFamilyMemberModel.isKid = n.getBooleanValue(); },
+        "name": n => { patchFamilyMemberModel.name = n.getStringValue(); },
+        "updated_at": n => { patchFamilyMemberModel.updatedAt = n.getStringValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param PatchFamilyModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoPatchFamilyModel(patchFamilyModel: Partial<PatchFamilyModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "have_joint_account": n => { patchFamilyModel.haveJointAccount = n.getBooleanValue(); },
+        "id": n => { patchFamilyModel.id = n.getStringValue(); },
+        "members": n => { patchFamilyModel.members = n.getCollectionOfObjectValues<PatchFamilyMemberModel>(createPatchFamilyMemberModelFromDiscriminatorValue); },
+        "name": n => { patchFamilyModel.name = n.getStringValue(); },
+        "updated_at": n => { patchFamilyModel.updatedAt = n.getStringValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param PatchPaymentModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoPatchPaymentModel(patchPaymentModel: Partial<PatchPaymentModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "currency": n => { patchPaymentModel.currency = n.getStringValue(); },
+        "end_date": n => { patchPaymentModel.endDate = n.getStringValue(); },
+        "id": n => { patchPaymentModel.id = n.getStringValue(); },
+        "months": n => { patchPaymentModel.months = n.getNumberValue(); },
+        "price": n => { patchPaymentModel.price = n.getNumberValue(); },
+        "start_date": n => { patchPaymentModel.startDate = n.getStringValue(); },
+        "updated_at": n => { patchPaymentModel.updatedAt = n.getStringValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param PatchSubscriptionModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoPatchSubscriptionModel(patchSubscriptionModel: Partial<PatchSubscriptionModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "family_id": n => { patchSubscriptionModel.familyId = n.getStringValue(); },
+        "family_members": n => { patchSubscriptionModel.familyMembers = n.getCollectionOfPrimitiveValues<string>(); },
+        "id": n => { patchSubscriptionModel.id = n.getStringValue(); },
+        "labels": n => { patchSubscriptionModel.labels = n.getCollectionOfPrimitiveValues<string>(); },
+        "name": n => { patchSubscriptionModel.name = n.getStringValue(); },
+        "payed_by_joint_account": n => { patchSubscriptionModel.payedByJointAccount = n.getBooleanValue(); },
+        "payer_id": n => { patchSubscriptionModel.payerId = n.getStringValue(); },
+        "payments": n => { patchSubscriptionModel.payments = n.getCollectionOfObjectValues<PatchPaymentModel>(createPatchPaymentModelFromDiscriminatorValue); },
+        "updated_at": n => { patchSubscriptionModel.updatedAt = n.getStringValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
  * @param PaymentModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
@@ -506,11 +608,12 @@ export function deserializeIntoSubscriptionModel(subscriptionModel: Partial<Subs
     return {
         "created_at": n => { subscriptionModel.createdAt = n.getStringValue(); },
         "etag": n => { subscriptionModel.etag = n.getStringValue(); },
+        "family_id": n => { subscriptionModel.familyId = n.getStringValue(); },
         "family_members": n => { subscriptionModel.familyMembers = n.getCollectionOfPrimitiveValues<string>(); },
         "id": n => { subscriptionModel.id = n.getStringValue(); },
         "labels": n => { subscriptionModel.labels = n.getCollectionOfPrimitiveValues<string>(); },
         "name": n => { subscriptionModel.name = n.getStringValue(); },
-        "payer": n => { subscriptionModel.payer = n.getStringValue(); },
+        "payer_id_id": n => { subscriptionModel.payerIdId = n.getStringValue(); },
         "payments": n => { subscriptionModel.payments = n.getCollectionOfObjectValues<PaymentModel>(createPaymentModelFromDiscriminatorValue); },
         "updated_at": n => { subscriptionModel.updatedAt = n.getStringValue(); },
     }
@@ -579,6 +682,7 @@ export function deserializeIntoUpdatePaymentModel(updatePaymentModel: Partial<Up
 // @ts-ignore
 export function deserializeIntoUpdateSubscriptionModel(updateSubscriptionModel: Partial<UpdateSubscriptionModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
+        "family_id": n => { updateSubscriptionModel.familyId = n.getStringValue(); },
         "family_members": n => { updateSubscriptionModel.familyMembers = n.getCollectionOfPrimitiveValues<string>(); },
         "labels": n => { updateSubscriptionModel.labels = n.getCollectionOfPrimitiveValues<string>(); },
         "name": n => { updateSubscriptionModel.name = n.getStringValue(); },
@@ -682,6 +786,130 @@ export interface LabelModel extends AdditionalDataHolder, Parsable {
      * The name property
      */
     name?: string | null;
+    /**
+     * The updated_at property
+     */
+    updatedAt?: string | null;
+}
+/**
+ * Model for updating family member details
+ */
+export interface PatchFamilyMemberModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Optional email address
+     */
+    email?: string | null;
+    /**
+     * Optional member ID. If not provided, new member will be created
+     */
+    id?: string | null;
+    /**
+     * Indicates if the member is a kid
+     */
+    isKid?: boolean | null;
+    /**
+     * Member's name
+     */
+    name?: string | null;
+    /**
+     * Optional timestamp of the last update
+     */
+    updatedAt?: string | null;
+}
+/**
+ * Model for updating family details
+ */
+export interface PatchFamilyModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Indicates if family has joint account
+     */
+    haveJointAccount?: boolean | null;
+    /**
+     * Family ID
+     */
+    id?: string | null;
+    /**
+     * List of family members
+     */
+    members?: PatchFamilyMemberModel[] | null;
+    /**
+     * Family name
+     */
+    name?: string | null;
+    /**
+     * Optional timestamp of the last update
+     */
+    updatedAt?: string | null;
+}
+/**
+ * Payment update model
+ */
+export interface PatchPaymentModel extends AdditionalDataHolder, Parsable {
+    /**
+     * The currency property
+     */
+    currency?: string | null;
+    /**
+     * The end_date property
+     */
+    endDate?: string | null;
+    /**
+     * The id property
+     */
+    id?: string | null;
+    /**
+     * The months property
+     */
+    months?: number | null;
+    /**
+     * The price property
+     */
+    price?: number | null;
+    /**
+     * The start_date property
+     */
+    startDate?: string | null;
+    /**
+     * The updated_at property
+     */
+    updatedAt?: string | null;
+}
+/**
+ * Subscription update model
+ */
+export interface PatchSubscriptionModel extends AdditionalDataHolder, Parsable {
+    /**
+     * The family_id property
+     */
+    familyId?: string | null;
+    /**
+     * The family_members property
+     */
+    familyMembers?: string[] | null;
+    /**
+     * The id property
+     */
+    id?: string | null;
+    /**
+     * The labels property
+     */
+    labels?: string[] | null;
+    /**
+     * The name property
+     */
+    name?: string | null;
+    /**
+     * The payed_by_joint_account property
+     */
+    payedByJointAccount?: boolean | null;
+    /**
+     * The payer_id property
+     */
+    payerId?: string | null;
+    /**
+     * The payments property
+     */
+    payments?: PatchPaymentModel[] | null;
     /**
      * The updated_at property
      */
@@ -898,6 +1126,76 @@ export function serializeLabelModel(writer: SerializationWriter, labelModel: Par
 /**
  * Serializes information the current object
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param PatchFamilyMemberModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializePatchFamilyMemberModel(writer: SerializationWriter, patchFamilyMemberModel: Partial<PatchFamilyMemberModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!patchFamilyMemberModel || isSerializingDerivedType) { return; }
+    writer.writeStringValue("email", patchFamilyMemberModel.email);
+    writer.writeStringValue("id", patchFamilyMemberModel.id);
+    writer.writeBooleanValue("is_kid", patchFamilyMemberModel.isKid);
+    writer.writeStringValue("name", patchFamilyMemberModel.name);
+    writer.writeStringValue("updated_at", patchFamilyMemberModel.updatedAt);
+    writer.writeAdditionalData(patchFamilyMemberModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param PatchFamilyModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializePatchFamilyModel(writer: SerializationWriter, patchFamilyModel: Partial<PatchFamilyModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!patchFamilyModel || isSerializingDerivedType) { return; }
+    writer.writeBooleanValue("have_joint_account", patchFamilyModel.haveJointAccount);
+    writer.writeStringValue("id", patchFamilyModel.id);
+    writer.writeCollectionOfObjectValues<PatchFamilyMemberModel>("members", patchFamilyModel.members, serializePatchFamilyMemberModel);
+    writer.writeStringValue("name", patchFamilyModel.name);
+    writer.writeStringValue("updated_at", patchFamilyModel.updatedAt);
+    writer.writeAdditionalData(patchFamilyModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param PatchPaymentModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializePatchPaymentModel(writer: SerializationWriter, patchPaymentModel: Partial<PatchPaymentModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!patchPaymentModel || isSerializingDerivedType) { return; }
+    writer.writeStringValue("currency", patchPaymentModel.currency);
+    writer.writeStringValue("end_date", patchPaymentModel.endDate);
+    writer.writeStringValue("id", patchPaymentModel.id);
+    writer.writeNumberValue("months", patchPaymentModel.months);
+    writer.writeNumberValue("price", patchPaymentModel.price);
+    writer.writeStringValue("start_date", patchPaymentModel.startDate);
+    writer.writeStringValue("updated_at", patchPaymentModel.updatedAt);
+    writer.writeAdditionalData(patchPaymentModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param PatchSubscriptionModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializePatchSubscriptionModel(writer: SerializationWriter, patchSubscriptionModel: Partial<PatchSubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!patchSubscriptionModel || isSerializingDerivedType) { return; }
+    writer.writeStringValue("family_id", patchSubscriptionModel.familyId);
+    writer.writeCollectionOfPrimitiveValues<string>("family_members", patchSubscriptionModel.familyMembers);
+    writer.writeStringValue("id", patchSubscriptionModel.id);
+    writer.writeCollectionOfPrimitiveValues<string>("labels", patchSubscriptionModel.labels);
+    writer.writeStringValue("name", patchSubscriptionModel.name);
+    writer.writeBooleanValue("payed_by_joint_account", patchSubscriptionModel.payedByJointAccount);
+    writer.writeStringValue("payer_id", patchSubscriptionModel.payerId);
+    writer.writeCollectionOfObjectValues<PatchPaymentModel>("payments", patchSubscriptionModel.payments, serializePatchPaymentModel);
+    writer.writeStringValue("updated_at", patchSubscriptionModel.updatedAt);
+    writer.writeAdditionalData(patchSubscriptionModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param PaymentModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
@@ -926,11 +1224,12 @@ export function serializeSubscriptionModel(writer: SerializationWriter, subscrip
     if (!subscriptionModel || isSerializingDerivedType) { return; }
     writer.writeStringValue("created_at", subscriptionModel.createdAt);
     writer.writeStringValue("etag", subscriptionModel.etag);
+    writer.writeStringValue("family_id", subscriptionModel.familyId);
     writer.writeCollectionOfPrimitiveValues<string>("family_members", subscriptionModel.familyMembers);
     writer.writeStringValue("id", subscriptionModel.id);
     writer.writeCollectionOfPrimitiveValues<string>("labels", subscriptionModel.labels);
     writer.writeStringValue("name", subscriptionModel.name);
-    writer.writeStringValue("payer", subscriptionModel.payer);
+    writer.writeStringValue("payer_id_id", subscriptionModel.payerIdId);
     writer.writeCollectionOfObjectValues<PaymentModel>("payments", subscriptionModel.payments, serializePaymentModel);
     writer.writeStringValue("updated_at", subscriptionModel.updatedAt);
     writer.writeAdditionalData(subscriptionModel.additionalData);
@@ -1004,6 +1303,7 @@ export function serializeUpdatePaymentModel(writer: SerializationWriter, updateP
 // @ts-ignore
 export function serializeUpdateSubscriptionModel(writer: SerializationWriter, updateSubscriptionModel: Partial<UpdateSubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!updateSubscriptionModel || isSerializingDerivedType) { return; }
+    writer.writeStringValue("family_id", updateSubscriptionModel.familyId);
     writer.writeCollectionOfPrimitiveValues<string>("family_members", updateSubscriptionModel.familyMembers);
     writer.writeCollectionOfPrimitiveValues<string>("labels", updateSubscriptionModel.labels);
     writer.writeStringValue("name", updateSubscriptionModel.name);
@@ -1022,6 +1322,10 @@ export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
      */
     etag?: string | null;
     /**
+     * The family_id property
+     */
+    familyId?: string | null;
+    /**
      * The family_members property
      */
     familyMembers?: string[] | null;
@@ -1038,9 +1342,9 @@ export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
      */
     name?: string | null;
     /**
-     * The payer property
+     * The payer_id_id property
      */
-    payer?: string | null;
+    payerIdId?: string | null;
     /**
      * The payments property
      */
@@ -1123,6 +1427,10 @@ export interface UpdatePaymentModel extends AdditionalDataHolder, Parsable {
     updatedAt?: string | null;
 }
 export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable {
+    /**
+     * The family_id property
+     */
+    familyId?: string | null;
     /**
      * The family_members property
      */

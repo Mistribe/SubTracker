@@ -47,7 +47,7 @@ const LabelsPage = () => {
     // Create label mutation
     const createLabelMutation = useMutation({
         mutationFn: async (labelData: { name: string, color: string }) => {
-            return await apiClient?.labels.post({
+            return apiClient?.labels.post({
                 name: labelData.name,
                 color: labelData.color
             });
@@ -61,9 +61,10 @@ const LabelsPage = () => {
 
     // Update label mutation
     const updateLabelMutation = useMutation({
-        mutationFn: async ({id, name}: { id: number, name: string }) => {
-            return await apiClient?.labels.byId(id.toString()).patch({
-                name: name
+        mutationFn: async ({id, name, color}: { id: number, name: string, color: string }) => {
+            return apiClient?.labels.byId(id.toString()).put({
+                name: name,
+                color: color,
             });
         },
         onSuccess: () => {
@@ -76,7 +77,7 @@ const LabelsPage = () => {
     // Delete label mutation
     const deleteLabelMutation = useMutation({
         mutationFn: async (id: number) => {
-            return await apiClient?.labels.byId(id.toString()).delete();
+            return apiClient?.labels.byId(id.toString()).delete();
         },
         onSuccess: () => {
             queryClient.invalidateQueries({queryKey: ['labels']});
