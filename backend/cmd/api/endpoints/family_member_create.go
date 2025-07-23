@@ -66,15 +66,16 @@ func (m createFamilyMemberModel) Command(familyId uuid.UUID) result.Result[comma
 }
 
 // Handle godoc
-// @Summary		Add a new family member
-// @Description	Add a new family member
-// @Tags			family
-// @Accept			json
-// @Produce			json
-// @Param			member	body		createFamilyMemberModel	true	"Family member data"
-// @Success		201		{object}	familyModel
-// @Failure		400		{object}	httpError
-// @Router			/families/{familyId}/members [post]
+//
+//	@Summary		Add a new family member
+//	@Description	Add a new family member
+//	@Tags			family
+//	@Accept			json
+//	@Produce		json
+//	@Param			member	body		createFamilyMemberModel	true	"Family member data"
+//	@Success		201		{object}	familyModel
+//	@Failure		400		{object}	httpError
+//	@Router			/families/{familyId}/members [post]
 func (f FamilyMemberCreateEndpoint) Handle(c *gin.Context) {
 	familyId, err := uuid.Parse(c.Param("familyId"))
 	if err != nil {

@@ -21,12 +21,13 @@ func NewDefaultLabelEndpoint(handler core.QueryHandler[query.DefaultLabelQuery, 
 }
 
 // Handle godoc
-// @Summary Get default labels
-// @Description Retrieves a list of default labels
-// @Tags label
-// @Produce json
-// @Success 200 {array} labelModel
-// @Router /default [get]
+//
+//	@Summary		Get default labels
+//	@Description	Retrieves a list of default labels
+//	@Tags			label
+//	@Produce		json
+//	@Success		200	{array}	labelModel
+//	@Router			/default [get]
 func (e DefaultLabelEndpoint) Handle(c *gin.Context) {
 	r := e.handler.Handle(c, query.DefaultLabelQuery{})
 	handleResponse(c,

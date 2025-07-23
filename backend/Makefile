@@ -6,6 +6,8 @@ install-deps:
 
 openapi:
 	@swag init -d ./cmd/api/ -o ./cmd/api/docs --v3.1
+openapi-fmt:
+	@swag fmt -d ./cmd/api/
 build:
 	go build -v ./cmd/api/main.go -o ./tmp/api
 

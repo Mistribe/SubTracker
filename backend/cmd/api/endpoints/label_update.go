@@ -41,17 +41,18 @@ func (m updateLabelModel) Command(id uuid.UUID) result.Result[command.UpdateLabe
 }
 
 // Handle godoc
-// @Summary		Update label by ID
-// @Description	Update label by ID
-// @Tags			label
-// @Accept			json
-// @Produce		json
-// @Param			id		path		string			true	"Label ID"
-// @Param			label	body		updateLabelModel	true	"Label data"
-// @Success		200		{object}	labelModel
-// @Failure		400		{object}	httpError
-// @Failure		404		{object}	httpError
-// @Router			/labels/{id} [put]
+//
+//	@Summary		Update label by ID
+//	@Description	Update label by ID
+//	@Tags			label
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string				true	"Label ID"
+//	@Param			label	body		updateLabelModel	true	"Label data"
+//	@Success		200		{object}	labelModel
+//	@Failure		400		{object}	httpError
+//	@Failure		404		{object}	httpError
+//	@Router			/labels/{id} [put]
 func (l LabelUpdateEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")
 	if idParam == "" {

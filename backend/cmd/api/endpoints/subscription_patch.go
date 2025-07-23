@@ -25,6 +25,7 @@ func NewSubscriptionPatchEndpoint(handler core.CommandHandler[command.PatchSubsc
 	return &SubscriptionPatchEndpoint{handler: handler}
 }
 
+// @Description	Payment update model
 type patchPaymentModel struct {
 	Id        *string    `json:"id,omitempty"`
 	Price     float64    `json:"price"`
@@ -64,6 +65,7 @@ func (m patchPaymentModel) ToPayment(subscriptionId uuid.UUID) (subscription.Pay
 	), nil
 }
 
+// @Description	Subscription update model
 type patchSubscriptionModel struct {
 	Id                  *string             `json:"id,omitempty"`
 	FamilyId            *string             `json:"family_id,omitempty"`
@@ -128,6 +130,17 @@ func (m patchSubscriptionModel) Command() result.Result[command.PatchSubscriptio
 	})
 }
 
+// Handle godoc
+//
+//	@Summary		Update subscription
+//	@Description	Update an existing subscription with new details
+//	@Tags			subscriptions
+//	@Accept			json
+//	@Produce		json
+//	@Param			subscription	body		patchSubscriptionModel	true	"Subscription details to update"
+//	@Success		200				{object}	subscriptionModel		"Updated subscription"
+//	@Failure		400				{object}	httpError				"Invalid request"
+//	@Router			/subscriptions [patch]
 func (e SubscriptionPatchEndpoint) Handle(c *gin.Context) {
 	var model patchSubscriptionModel
 	if err := c.ShouldBindJSON(&model); err != nil {

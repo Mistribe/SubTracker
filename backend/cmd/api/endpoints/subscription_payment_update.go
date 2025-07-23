@@ -51,18 +51,19 @@ func (m updatePaymentModel) ToCommand(
 }
 
 // Handle godoc
-// @Summary      Update subscription payment
-// @Description  Update payment details for a specific subscription
-// @Tags         subscription
-// @Accept       json
-// @Produce      json
-// @Param        id        path     string              true  "Subscription ID"
-// @Param        paymentId path     string              true  "Payment ID"
-// @Param        payment   body     updatePaymentModel  true  "Payment details"
-// @Success      200       {object} subscriptionModel
-// @Failure      400       {object} httpError
-// @Failure      404       {object} httpError
-// @Router       /subscriptions/{id}/payments/{paymentId} [put]
+//
+//	@Summary		Update subscription payment
+//	@Description	Update payment details for a specific subscription
+//	@Tags			subscription
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path		string				true	"Subscription ID"
+//	@Param			paymentId	path		string				true	"Payment ID"
+//	@Param			payment		body		updatePaymentModel	true	"Payment details"
+//	@Success		200			{object}	subscriptionModel
+//	@Failure		400			{object}	httpError
+//	@Failure		404			{object}	httpError
+//	@Router			/subscriptions/{id}/payments/{paymentId} [put]
 func (e SubscriptionPaymentUpdateEndpoint) Handle(c *gin.Context) {
 	subscriptionId, err := uuid.Parse(c.Param("id"))
 	if err != nil {

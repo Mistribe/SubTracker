@@ -162,6 +162,96 @@ components:
         updated_at:
           type: string
       type: object
+    endpoints.patchFamilyMemberModel:
+      description: Model for updating family member details
+      properties:
+        email:
+          description: Optional email address
+          type: string
+        id:
+          description: Optional member ID. If not provided, new member will be created
+          type: string
+        is_kid:
+          description: Indicates if the member is a kid
+          type: boolean
+        name:
+          description: Member's name
+          type: string
+        updated_at:
+          description: Optional timestamp of the last update
+          type: string
+      type: object
+    endpoints.patchFamilyModel:
+      description: Model for updating family details
+      properties:
+        have_joint_account:
+          description: Indicates if family has joint account
+          type: boolean
+        id:
+          description: Family ID
+          type: string
+        members:
+          description: List of family members
+          items:
+            $ref: '#/components/schemas/endpoints.patchFamilyMemberModel'
+          type: array
+          uniqueItems: false
+        name:
+          description: Family name
+          type: string
+        updated_at:
+          description: Optional timestamp of the last update
+          type: string
+      type: object
+    endpoints.patchPaymentModel:
+      description: Payment update model
+      properties:
+        currency:
+          type: string
+        end_date:
+          type: string
+        id:
+          type: string
+        months:
+          type: integer
+        price:
+          type: number
+        start_date:
+          type: string
+        updated_at:
+          type: string
+      type: object
+    endpoints.patchSubscriptionModel:
+      description: Subscription update model
+      properties:
+        family_id:
+          type: string
+        family_members:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        id:
+          type: string
+        labels:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        name:
+          type: string
+        payed_by_joint_account:
+          type: boolean
+        payer_id:
+          type: string
+        payments:
+          items:
+            $ref: '#/components/schemas/endpoints.patchPaymentModel'
+          type: array
+          uniqueItems: false
+        updated_at:
+          type: string
+      type: object
     endpoints.paymentModel:
       properties:
         created_at:
@@ -189,6 +279,8 @@ components:
           type: string
         etag:
           type: string
+        family_id:
+          type: string
         family_members:
           items:
             type: string
@@ -203,7 +295,7 @@ components:
           uniqueItems: false
         name:
           type: string
-        payer:
+        payer_id_id:
           type: string
         payments:
           items:
@@ -259,6 +351,8 @@ components:
       type: object
     endpoints.updateSubscriptionModel:
       properties:
+        family_id:
+          type: string
         family_members:
           items:
             type: string
@@ -331,6 +425,37 @@ paths:
       summary: Get all family members
       tags:
       - family
+    patch:
+      description: Patch family with members
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.patchFamilyModel'
+        description: Family update data
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.familyModel'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Unauthorized
+      summary: Patch family with members
+      tags:
+      - Family
     post:
       description: Create a new family
       requestBody:
@@ -682,6 +807,31 @@ paths:
       summary: Get all subscriptions
       tags:
       - subscription
+    patch:
+      description: Update an existing subscription with new details
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.patchSubscriptionModel'
+        description: Subscription details to update
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.subscriptionModel'
+          description: Updated subscription
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Invalid request
+      summary: Update subscription
+      tags:
+      - subscriptions
     post:
       description: Create a new subscription
       requestBody:

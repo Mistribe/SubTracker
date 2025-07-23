@@ -23,7 +23,7 @@ func NewFamilyPatchEndpoint(handler core.CommandHandler[command.PatchFamilyComma
 	return &FamilyPatchEndpoint{handler: handler}
 }
 
-// @Description Model for updating family member details
+// @Description	Model for updating family member details
 type patchFamilyMemberModel struct {
 	// Optional member ID. If not provided, new member will be created
 	Id *string `json:"id,omitempty"`
@@ -60,7 +60,7 @@ func (m patchFamilyMemberModel) Command(familyId uuid.UUID) (family.Member, erro
 
 }
 
-// @Description Model for updating family details
+// @Description	Model for updating family details
 type patchFamilyModel struct {
 	// Family ID
 	Id *string `json:"id"`
@@ -102,16 +102,17 @@ func (m patchFamilyModel) Command(ownerId string) result.Result[command.PatchFam
 }
 
 // Handle
-// @Summary Patch family with members
-// @Description Patch family with members
-// @Tags Family
-// @Accept json
-// @Produce json
-// @Param family body patchFamilyModel true "Family update data"
-// @Success 200 {object} familyModel
-// @Failure 400 {object} httpError
-// @Failure 401 {object} httpError
-// @Router /families [patch]
+//
+//	@Summary		Patch family with members
+//	@Description	Patch family with members
+//	@Tags			Family
+//	@Accept			json
+//	@Produce		json
+//	@Param			family	body		patchFamilyModel	true	"Family update data"
+//	@Success		200		{object}	familyModel
+//	@Failure		400		{object}	httpError
+//	@Failure		401		{object}	httpError
+//	@Router			/families [patch]
 func (e FamilyPatchEndpoint) Handle(c *gin.Context) {
 	userId, ok := user.FromContext(c)
 	if !ok {
