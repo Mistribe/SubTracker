@@ -162,6 +162,18 @@ components:
         updated_at:
           type: string
       type: object
+    endpoints.paginatedResponseModel-endpoints_labelModel:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/endpoints.labelModel'
+          type: array
+          uniqueItems: false
+        length:
+          type: integer
+        total:
+          type: integer
+      type: object
     endpoints.patchFamilyMemberModel:
       description: Model for updating family member details
       properties:
@@ -646,14 +658,22 @@ paths:
         name: with_default
         schema:
           type: boolean
+      - description: Number of items per page
+        in: query
+        name: size
+        schema:
+          type: integer
+      - description: Page number
+        in: query
+        name: page
+        schema:
+          type: integer
       responses:
         "200":
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/endpoints.labelModel'
-                type: array
+                $ref: '#/components/schemas/endpoints.paginatedResponseModel-endpoints_labelModel'
           description: OK
         "400":
           content:

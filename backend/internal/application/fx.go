@@ -42,7 +42,7 @@ func BuildApplicationModule() fx.Option {
 			AsCommandHandler[subCommand.UpdatePaymentCommand, subscription.Subscription](subCommand.NewUpdatePaymentCommandHandler),
 			AsCommandHandler[subCommand.DeletePaymentCommand, result.Unit](subCommand.NewDeletePaymentCommandHandler),
 
-			AsQueryHandler[lblQuery.FindAllQuery, []label.Label](lblQuery.NewFindAllQueryHandler),
+			AsQueryHandler[lblQuery.FindAllQuery, core.PaginatedResponse[label.Label]](lblQuery.NewFindAllQueryHandler),
 			AsQueryHandler[lblQuery.FindOneQuery, label.Label](lblQuery.NewFindOneQueryHandler),
 			AsQueryHandler[lblQuery.DefaultLabelQuery, []label.Label](lblQuery.NewDefaultLabelQueryHandler),
 

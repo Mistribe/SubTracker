@@ -2,20 +2,20 @@ package endpoints
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/label/query"
 	"github.com/oleexo/subtracker/internal/domain/label"
-	"github.com/oleexo/subtracker/pkg/ext"
 )
 
 type LabelGetAllEndpoint struct {
-	handler core.QueryHandler[query.FindAllQuery, []label.Label]
+	handler core.QueryHandler[query.FindAllQuery, core.PaginatedResponse[label.Label]]
 }
 
-func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, []label.Label]) *LabelGetAllEndpoint {
+func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, core.PaginatedResponse[label.Label]]) *LabelGetAllEndpoint {
 	return &LabelGetAllEndpoint{handler: handler}
 }
 
@@ -26,22 +26,27 @@ func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, []labe
 //	@Tags			label
 //	@Produce		json
 //	@Param			with_default	query		boolean	false	"Include default labels"
-//	@Success		200				{array}		labelModel
+//	@Param			size			query		integer	false	"Number of items per page"
+//	@Param			page			query		integer	false	"Page number"
+//	@Success		200				{object}	paginatedResponseModel[labelModel]
 //	@Failure		400				{object}	httpError
 //	@Router			/labels [get]
 func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
 	withDefault := c.DefaultQuery("with_default", "false") == "true"
-	q := query.NewFindAllQuery(withDefault)
+	size, err := strconv.Atoi(c.DefaultQuery("size", "10"))
+	if err != nil {
+		size = 10
+	}
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil {
+		page = 1
+	}
+	q := query.NewFindAllQuery(withDefault, size, page)
 	r := e.handler.Handle(c, q)
 	handleResponse(c,
 		r,
-		withMapping[[]label.Label](func(lbls []label.Label) any {
-			return ext.Map[label.Label, labelModel](
-				lbls,
-				func(lbl label.Label) labelModel {
-					return newLabelModel(lbl)
-				},
-			)
+		withMapping[core.PaginatedResponse[label.Label]](func(paginationResult core.PaginatedResponse[label.Label]) any {
+			return newPaginatedResponseModel(paginationResult, newLabelModel)
 		}))
 }
 

@@ -75,7 +75,7 @@ func (r LabelRepository) Get(ctx context.Context, id uuid.UUID) (option.Option[l
 	return option.Some(r.toEntity(model)), nil
 }
 
-func (r LabelRepository) GetAll(ctx context.Context, withDefault bool) ([]label.Label, error) {
+func (r LabelRepository) GetAll(ctx context.Context, size int, page int, withDefault bool) ([]label.Label, error) {
 	userId, ok := user.FromContext(ctx)
 	if !ok {
 		return nil, nil
@@ -88,6 +88,7 @@ func (r LabelRepository) GetAll(ctx context.Context, withDefault bool) ([]label.
 	} else {
 		query = query.Where("owner_id = ?", userId)
 	}
+	query = query.Offset((page - 1) * size).Limit(size)
 	if result := query.Find(&labels); result.Error != nil {
 		return nil, result.Error
 	}
@@ -96,6 +97,30 @@ func (r LabelRepository) GetAll(ctx context.Context, withDefault bool) ([]label.
 		result = append(result, r.toEntity(lbl))
 	}
 	return result, nil
+}
+
+func (r LabelRepository) GetAllCount(ctx context.Context, withDefault bool) (int64, error) {
+	userId, ok := user.FromContext(ctx)
+	if !ok {
+		return 0, nil
+	}
+	var labels []labelModel
+	query := r.repository.db.WithContext(ctx).Model(&labelModel{})
+
+	if withDefault {
+		query = query.Where("owner_id = ? OR (owner_id is null AND is_default = ?)", userId, true)
+	} else {
+		query = query.Where("owner_id = ?", userId)
+	}
+	var count int64
+	if result := query.Count(&count); result.Error != nil {
+		return 0, result.Error
+	}
+	result := make([]label.Label, 0, len(labels))
+	for _, lbl := range labels {
+		result = append(result, r.toEntity(lbl))
+	}
+	return count, nil
 }
 
 func (r LabelRepository) GetDefaults(ctx context.Context) ([]label.Label, error) {
