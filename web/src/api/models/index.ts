@@ -159,6 +159,15 @@ export function createLabelModelFromDiscriminatorValue(parseNode: ParseNode | un
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {PaginatedResponseModelEndpoints_labelModel}
+ */
+// @ts-ignore
+export function createPaginatedResponseModelEndpoints_labelModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoPaginatedResponseModelEndpoints_labelModel;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
  * @returns {PatchFamilyMemberModel}
  */
 // @ts-ignore
@@ -515,6 +524,19 @@ export function deserializeIntoLabelModel(labelModel: Partial<LabelModel> | unde
 }
 /**
  * The deserialization information for the current model
+ * @param PaginatedResponseModelEndpoints_labelModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoPaginatedResponseModelEndpoints_labelModel(paginatedResponseModelEndpoints_labelModel: Partial<PaginatedResponseModelEndpoints_labelModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "data": n => { paginatedResponseModelEndpoints_labelModel.data = n.getCollectionOfObjectValues<LabelModel>(createLabelModelFromDiscriminatorValue); },
+        "length": n => { paginatedResponseModelEndpoints_labelModel.length = n.getNumberValue(); },
+        "total": n => { paginatedResponseModelEndpoints_labelModel.total = n.getNumberValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
  * @param PatchFamilyMemberModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
@@ -790,6 +812,20 @@ export interface LabelModel extends AdditionalDataHolder, Parsable {
      * The updated_at property
      */
     updatedAt?: string | null;
+}
+export interface PaginatedResponseModelEndpoints_labelModel extends AdditionalDataHolder, Parsable {
+    /**
+     * The data property
+     */
+    data?: LabelModel[] | null;
+    /**
+     * The length property
+     */
+    length?: number | null;
+    /**
+     * The total property
+     */
+    total?: number | null;
 }
 /**
  * Model for updating family member details
@@ -1122,6 +1158,20 @@ export function serializeLabelModel(writer: SerializationWriter, labelModel: Par
     writer.writeStringValue("name", labelModel.name);
     writer.writeStringValue("updated_at", labelModel.updatedAt);
     writer.writeAdditionalData(labelModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param PaginatedResponseModelEndpoints_labelModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializePaginatedResponseModelEndpoints_labelModel(writer: SerializationWriter, paginatedResponseModelEndpoints_labelModel: Partial<PaginatedResponseModelEndpoints_labelModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!paginatedResponseModelEndpoints_labelModel || isSerializingDerivedType) { return; }
+    writer.writeCollectionOfObjectValues<LabelModel>("data", paginatedResponseModelEndpoints_labelModel.data, serializeLabelModel);
+    writer.writeNumberValue("length", paginatedResponseModelEndpoints_labelModel.length);
+    writer.writeNumberValue("total", paginatedResponseModelEndpoints_labelModel.total);
+    writer.writeAdditionalData(paginatedResponseModelEndpoints_labelModel.additionalData);
 }
 /**
  * Serializes information the current object

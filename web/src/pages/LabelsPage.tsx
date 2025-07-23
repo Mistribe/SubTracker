@@ -219,103 +219,99 @@ const LabelsPage = () => {
                 </CardContent>
             </Card>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Manage Labels</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid gap-4">
-                        {labels.map((label) => (
-                            <div
-                                key={label.id}
-                                className="flex items-center justify-between p-3 border rounded-md"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div
-                                        className="w-4 h-4 rounded-full"
-                                        style={{backgroundColor: argbToRgba(label.color)}}
-                                    />
+            <div className="mt-8">
+                <h2 className="text-xl font-semibold mb-4">Labels</h2>
+                <div className="grid gap-4">
+                    {labels.map((label) => (
+                        <div
+                            key={label.id}
+                            className="flex items-center justify-between p-3 border rounded-md"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className="w-4 h-4 rounded-full"
+                                    style={{backgroundColor: argbToRgba(label.color)}}
+                                />
 
-                                    {editingId === label.id ? (
-                                        <div className="flex items-center gap-2">
-                                            <Input
-                                                value={editingName}
-                                                onChange={(e) => setEditingName(e.target.value)}
-                                                className="max-w-xs"
-                                                autoFocus
-                                            />
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <Button variant="outline" className="w-10 p-0">
-                                                        <div
-                                                            className="w-6 h-6 rounded-md"
-                                                            style={{backgroundColor: argbToRgba(editingColor)}}
-                                                        />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0" align="start">
-                                                    <ColorPicker
-                                                        color={editingColor}
-                                                        onChange={setEditingColor}
+                                {editingId === label.id ? (
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            value={editingName}
+                                            onChange={(e) => setEditingName(e.target.value)}
+                                            className="max-w-xs"
+                                            autoFocus
+                                        />
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button variant="outline" className="w-10 p-0">
+                                                    <div
+                                                        className="w-6 h-6 rounded-md"
+                                                        style={{backgroundColor: argbToRgba(editingColor)}}
                                                     />
-                                                </PopoverContent>
-                                            </Popover>
-                                        </div>
-                                    ) : (
-                                        <span className="font-medium">{label.name}</span>
-                                    )}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0" align="start">
+                                                <ColorPicker
+                                                    color={editingColor}
+                                                    onChange={setEditingColor}
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
+                                ) : (
+                                    <span className="font-medium">{label.name}</span>
+                                )}
 
-                                    <Badge variant="secondary">{label.count} items</Badge>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    {editingId === label.id ? (
-                                        <>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={saveEdit}
-                                                disabled={updateLabelMutation.isPending}
-                                            >
-                                                {updateLabelMutation.isPending ? (
-                                                    <Loader2 className="h-3 w-3 mr-2 animate-spin"/>
-                                                ) : null}
-                                                Save
-                                            </Button>
-                                            <Button variant="ghost" size="sm" onClick={cancelEdit}>
-                                                Cancel
-                                            </Button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => startEditing(label)}
-                                            >
-                                                <Pencil className="h-4 w-4"/>
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => deleteLabel(label.id)}
-                                                className="text-destructive hover:text-destructive"
-                                                disabled={deleteLabelMutation.isPending && deleteLabelMutation.variables === label.id}
-                                            >
-                                                {deleteLabelMutation.isPending && deleteLabelMutation.variables === label.id ? (
-                                                    <Loader2 className="h-4 w-4 animate-spin"/>
-                                                ) : (
-                                                    <X className="h-4 w-4"/>
-                                                )}
-                                            </Button>
-                                        </>
-                                    )}
-                                </div>
+                                <Badge variant="secondary">{label.count} items</Badge>
                             </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
+
+                            <div className="flex items-center gap-2">
+                                {editingId === label.id ? (
+                                    <>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={saveEdit}
+                                            disabled={updateLabelMutation.isPending}
+                                        >
+                                            {updateLabelMutation.isPending ? (
+                                                <Loader2 className="h-3 w-3 mr-2 animate-spin"/>
+                                            ) : null}
+                                            Save
+                                        </Button>
+                                        <Button variant="ghost" size="sm" onClick={cancelEdit}>
+                                            Cancel
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => startEditing(label)}
+                                        >
+                                            <Pencil className="h-4 w-4"/>
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => deleteLabel(label.id)}
+                                            className="text-destructive hover:text-destructive"
+                                            disabled={deleteLabelMutation.isPending && deleteLabelMutation.variables === label.id}
+                                        >
+                                            {deleteLabelMutation.isPending && deleteLabelMutation.variables === label.id ? (
+                                                <Loader2 className="h-4 w-4 animate-spin"/>
+                                            ) : (
+                                                <X className="h-4 w-4"/>
+                                            )}
+                                        </Button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 };
