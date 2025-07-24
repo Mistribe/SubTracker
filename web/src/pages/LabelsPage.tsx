@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
-import {Badge} from "@/components/ui/badge";
 import {
     Popover,
     PopoverContent,
@@ -25,7 +24,7 @@ const LabelsPage = () => {
     const {apiClient} = useApiClient();
     const queryClient = useQueryClient();
 
-    const [page, setPage] = useState(1);
+    const [page] = useState(1);
     const [pageSize] = useState(10);
 
     // Fetch labels using TanStack Query
@@ -68,7 +67,7 @@ const LabelsPage = () => {
     const [newLabelColor, setNewLabelColor] = useState("#FF000000"); // Default ARGB color
 
     // State for editing
-    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState("");
     const [editingColor, setEditingColor] = useState("");
 
@@ -89,8 +88,8 @@ const LabelsPage = () => {
 
     // Update label mutation
     const updateLabelMutation = useMutation({
-        mutationFn: async ({id, name, color}: { id: number, name: string, color: string }) => {
-            return apiClient?.labels.byId(id.toString()).put({
+        mutationFn: async ({id, name, color}: { id: string, name: string, color: string }) => {
+            return apiClient?.labels.byId(id).put({
                 name: name,
                 color: color,
             });
@@ -104,8 +103,8 @@ const LabelsPage = () => {
 
     // Delete label mutation
     const deleteLabelMutation = useMutation({
-        mutationFn: async (id: number) => {
-            return apiClient?.labels.byId(id.toString()).delete();
+        mutationFn: async (id: string) => {
+            return apiClient?.labels.byId(id).delete();
         },
         onSuccess: () => {
             queryClient.invalidateQueries({queryKey: ['labels']});
@@ -155,7 +154,7 @@ const LabelsPage = () => {
         setEditingName("");
     };
 
-    const deleteLabel = (id: number) => {
+    const deleteLabel = (id: string) => {
         deleteLabelMutation.mutate(id);
     };
 
@@ -280,8 +279,6 @@ const LabelsPage = () => {
                                 ) : (
                                     <span className="font-medium">{label.name}</span>
                                 )}
-
-                                <Badge variant="secondary">{label.count} items</Badge>
                             </div>
 
                             <div className="flex items-center gap-2">
