@@ -23,7 +23,7 @@ type FamilyUpdateEndpoint struct {
 
 type updateFamilyModel struct {
 	Name             string     `json:"name" binding:"required"`
-	HaveJointAccount bool       `json:"have_joint_account" binding:"required"`
+	HaveJointAccount bool       `json:"have_joint_account,omitempty"`
 	UpdatedAt        *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
