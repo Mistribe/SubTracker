@@ -679,6 +679,7 @@ export function deserializeIntoSubscriptionModel(subscriptionModel: Partial<Subs
         "id": n => { subscriptionModel.id = n.getStringValue(); },
         "labels": n => { subscriptionModel.labels = n.getCollectionOfPrimitiveValues<string>(); },
         "name": n => { subscriptionModel.name = n.getStringValue(); },
+        "payed_by_joint_account": n => { subscriptionModel.payedByJointAccount = n.getBooleanValue(); },
         "payer_id_id": n => { subscriptionModel.payerIdId = n.getStringValue(); },
         "payments": n => { subscriptionModel.payments = n.getCollectionOfObjectValues<PaymentModel>(createPaymentModelFromDiscriminatorValue); },
         "updated_at": n => { subscriptionModel.updatedAt = n.getStringValue(); },
@@ -1379,6 +1380,7 @@ export function serializeSubscriptionModel(writer: SerializationWriter, subscrip
     writer.writeStringValue("id", subscriptionModel.id);
     writer.writeCollectionOfPrimitiveValues<string>("labels", subscriptionModel.labels);
     writer.writeStringValue("name", subscriptionModel.name);
+    writer.writeBooleanValue("payed_by_joint_account", subscriptionModel.payedByJointAccount);
     writer.writeStringValue("payer_id_id", subscriptionModel.payerIdId);
     writer.writeCollectionOfObjectValues<PaymentModel>("payments", subscriptionModel.payments, serializePaymentModel);
     writer.writeStringValue("updated_at", subscriptionModel.updatedAt);
@@ -1491,6 +1493,10 @@ export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
      * The name property
      */
     name?: string | null;
+    /**
+     * The payed_by_joint_account property
+     */
+    payedByJointAccount?: boolean | null;
     /**
      * The payer_id_id property
      */

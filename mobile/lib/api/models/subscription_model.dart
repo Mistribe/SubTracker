@@ -21,6 +21,8 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
     Iterable<String>? labels;
     ///  The name property
     String? name;
+    ///  The payed_by_joint_account property
+    bool? payedByJointAccount;
     ///  The payer_id_id property
     String? payerIdId;
     ///  The payments property
@@ -46,6 +48,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
         deserializerMap['id'] = (node) => id = node.getStringValue();
         deserializerMap['labels'] = (node) => labels = node.getCollectionOfPrimitiveValues<String>();
         deserializerMap['name'] = (node) => name = node.getStringValue();
+        deserializerMap['payed_by_joint_account'] = (node) => payedByJointAccount = node.getBoolValue();
         deserializerMap['payer_id_id'] = (node) => payerIdId = node.getStringValue();
         deserializerMap['payments'] = (node) => payments = node.getCollectionOfObjectValues<PaymentModel>(PaymentModel.createFromDiscriminatorValue);
         deserializerMap['updated_at'] = (node) => updatedAt = node.getStringValue();
@@ -62,6 +65,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
         writer.writeStringValue('id', id);
         writer.writeCollectionOfPrimitiveValues<String?>('labels', labels);
         writer.writeStringValue('name', name);
+        writer.writeBoolValue('payed_by_joint_account', value:payedByJointAccount);
         writer.writeStringValue('payer_id_id', payerIdId);
         writer.writeCollectionOfObjectValues<PaymentModel>('payments', payments);
         writer.writeStringValue('updated_at', updatedAt);

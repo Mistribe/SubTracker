@@ -74,16 +74,17 @@ type paymentModel struct {
 }
 
 type subscriptionModel struct {
-	Id            string         `json:"id" binding:"required"`
-	Name          string         `json:"name" binding:"required"`
-	Payments      []paymentModel `json:"payments" binding:"required"`
-	Labels        []string       `json:"labels" binding:"required"`
-	FamilyMembers []string       `json:"family_members" binding:"required"`
-	PayerId       *string        `json:"payer_id_id,omitempty"`
-	FamilyId      *string        `json:"family_id,omitempty"`
-	CreatedAt     time.Time      `json:"created_at" binding:"required"`
-	UpdatedAt     time.Time      `json:"updated_at" binding:"required"`
-	Etag          string         `json:"etag" binding:"required"`
+	Id                  string         `json:"id" binding:"required"`
+	Name                string         `json:"name" binding:"required"`
+	Payments            []paymentModel `json:"payments" binding:"required"`
+	Labels              []string       `json:"labels" binding:"required"`
+	FamilyMembers       []string       `json:"family_members" binding:"required"`
+	PayerId             *string        `json:"payer_id_id,omitempty"`
+	FamilyId            *string        `json:"family_id,omitempty"`
+	PayedByJointAccount bool           `json:"payed_by_joint_account" binding:"required"`
+	CreatedAt           time.Time      `json:"created_at" binding:"required"`
+	UpdatedAt           time.Time      `json:"updated_at" binding:"required"`
+	Etag                string         `json:"etag" binding:"required"`
 }
 
 func newPaymentModel(source subscription.Payment) paymentModel {
@@ -102,15 +103,16 @@ func newPaymentModel(source subscription.Payment) paymentModel {
 
 func newSubscriptionModel(source subscription.Subscription) subscriptionModel {
 	return subscriptionModel{
-		Id:            source.Id().String(),
-		Name:          source.Name(),
-		Payments:      ext.Map(source.Payments().Values(), newPaymentModel),
-		Labels:        ext.Map(source.Labels().Values(), ext.UuidToString),
-		FamilyMembers: ext.Map(source.FamilyMembers().Values(), ext.UuidToString),
-		PayerId:       option.Map[uuid.UUID, string](source.Payer(), ext.UuidToString).Value(),
-		FamilyId:      option.Map[uuid.UUID, string](source.FamilyId(), ext.UuidToString).Value(),
-		CreatedAt:     source.CreatedAt(),
-		UpdatedAt:     source.UpdatedAt(),
-		Etag:          source.ETag(),
+		Id:                  source.Id().String(),
+		Name:                source.Name(),
+		Payments:            ext.Map(source.Payments().Values(), newPaymentModel),
+		Labels:              ext.Map(source.Labels().Values(), ext.UuidToString),
+		FamilyMembers:       ext.Map(source.FamilyMembers().Values(), ext.UuidToString),
+		PayerId:             option.Map[uuid.UUID, string](source.Payer(), ext.UuidToString).Value(),
+		FamilyId:            option.Map[uuid.UUID, string](source.FamilyId(), ext.UuidToString).Value(),
+		PayedByJointAccount: source.PayedByJointAccount(),
+		CreatedAt:           source.CreatedAt(),
+		UpdatedAt:           source.UpdatedAt(),
+		Etag:                source.ETag(),
 	}
 }

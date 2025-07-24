@@ -416,6 +416,8 @@ components:
           uniqueItems: false
         name:
           type: string
+        payed_by_joint_account:
+          type: boolean
         payer_id_id:
           type: string
         payments:
@@ -432,6 +434,7 @@ components:
       - id
       - labels
       - name
+      - payed_by_joint_account
       - payments
       - updated_at
       type: object

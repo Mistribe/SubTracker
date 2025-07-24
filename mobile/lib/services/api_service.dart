@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'package:microsoft_kiota_bundle/microsoft_kiota_bundle.dart';
 import 'package:subscription_tracker/api/api_client.dart';
 import 'package:subscription_tracker/api/kinde_auth_provider.dart';
+import 'package:subscription_tracker/api/models/subscription_model.dart';
 import 'package:subscription_tracker/services/authentication_service.dart';
 import '../models/Paginated.dart';
 import '../models/family.dart';
@@ -30,6 +31,22 @@ class ApiService {
     client = ApiClient(requestAdapter);
   }
 
+  Subscription fromSubscriptionModel(SubscriptionModel model) {
+    return Subscription(
+        id: model.id!,
+        name: model.name!,
+        subscriptionPayments: null,
+        labelIds: model.labels?.toList(),
+        userFamilyMemberIds: model.familyMembers?.toList(),
+        payerFamilyMemberId: model.payerIdId,
+        payedByJointAccount: model.payedByJointAccount ?? false,
+        eTag: model.etag ?? '',
+        familyId: model.familyId,
+        createdAt: model.createdAt,
+        updatedAt: model.updatedAt
+    );
+  }
+
   /// Get all subscriptions from the backend
   /// GET /subscriptions
   Future<Paginated<Subscription>> getSubscriptions({
@@ -40,7 +57,7 @@ class ApiService {
       params.queryParameters.page = page;
       params.queryParameters.size = size;
     });
-    return new Paginated(result.data, result.length, result.total)
+    return Paginated(result.data!, result.length!, result.total!)
   }
 
   /// Get subscription by ID
