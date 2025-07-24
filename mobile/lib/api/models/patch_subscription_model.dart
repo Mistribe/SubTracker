@@ -25,7 +25,7 @@ class PatchSubscriptionModel implements AdditionalDataHolder, Parsable {
     ///  The payments property
     Iterable<PatchPaymentModel>? payments;
     ///  The updated_at property
-    String? updatedAt;
+    DateTime? updatedAt;
     /// Instantiates a new [PatchSubscriptionModel] and sets the default values.
     PatchSubscriptionModel() :  
         additionalData = {};
@@ -46,7 +46,7 @@ class PatchSubscriptionModel implements AdditionalDataHolder, Parsable {
         deserializerMap['payed_by_joint_account'] = (node) => payedByJointAccount = node.getBoolValue();
         deserializerMap['payer_id'] = (node) => payerId = node.getStringValue();
         deserializerMap['payments'] = (node) => payments = node.getCollectionOfObjectValues<PatchPaymentModel>(PatchPaymentModel.createFromDiscriminatorValue);
-        deserializerMap['updated_at'] = (node) => updatedAt = node.getStringValue();
+        deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
     }
     /// Serializes information the current object
@@ -61,7 +61,7 @@ class PatchSubscriptionModel implements AdditionalDataHolder, Parsable {
         writer.writeBoolValue('payed_by_joint_account', value:payedByJointAccount);
         writer.writeStringValue('payer_id', payerId);
         writer.writeCollectionOfObjectValues<PatchPaymentModel>('payments', payments);
-        writer.writeStringValue('updated_at', updatedAt);
+        writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
     }
 }

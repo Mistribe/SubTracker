@@ -7,7 +7,7 @@ class CreateFamilyModel implements AdditionalDataHolder, Parsable {
     @override
     Map<String, Object?> additionalData;
     ///  The created_at property
-    String? createdAt;
+    DateTime? createdAt;
     ///  The have_joint_account property
     bool? haveJointAccount;
     ///  The id property
@@ -26,7 +26,7 @@ class CreateFamilyModel implements AdditionalDataHolder, Parsable {
     @override
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
-        deserializerMap['created_at'] = (node) => createdAt = node.getStringValue();
+        deserializerMap['created_at'] = (node) => createdAt = node.getDateTimeValue();
         deserializerMap['have_joint_account'] = (node) => haveJointAccount = node.getBoolValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
         deserializerMap['name'] = (node) => name = node.getStringValue();
@@ -36,7 +36,7 @@ class CreateFamilyModel implements AdditionalDataHolder, Parsable {
     ///  [writer] Serialization writer to use to serialize this model
     @override
     void serialize(SerializationWriter writer) {
-        writer.writeStringValue('created_at', createdAt);
+        writer.writeDateTimeValue('created_at', createdAt);
         writer.writeBoolValue('have_joint_account', value:haveJointAccount);
         writer.writeStringValue('id', id);
         writer.writeStringValue('name', name);

@@ -8,7 +8,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
     @override
     Map<String, Object?> additionalData;
     ///  The created_at property
-    String? createdAt;
+    DateTime? createdAt;
     ///  The etag property
     String? etag;
     ///  The family_id property
@@ -28,7 +28,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
     ///  The payments property
     Iterable<PaymentModel>? payments;
     ///  The updated_at property
-    String? updatedAt;
+    DateTime? updatedAt;
     /// Instantiates a new [SubscriptionModel] and sets the default values.
     SubscriptionModel() :  
         additionalData = {};
@@ -41,7 +41,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
     @override
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
-        deserializerMap['created_at'] = (node) => createdAt = node.getStringValue();
+        deserializerMap['created_at'] = (node) => createdAt = node.getDateTimeValue();
         deserializerMap['etag'] = (node) => etag = node.getStringValue();
         deserializerMap['family_id'] = (node) => familyId = node.getStringValue();
         deserializerMap['family_members'] = (node) => familyMembers = node.getCollectionOfPrimitiveValues<String>();
@@ -51,14 +51,14 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
         deserializerMap['payed_by_joint_account'] = (node) => payedByJointAccount = node.getBoolValue();
         deserializerMap['payer_id_id'] = (node) => payerIdId = node.getStringValue();
         deserializerMap['payments'] = (node) => payments = node.getCollectionOfObjectValues<PaymentModel>(PaymentModel.createFromDiscriminatorValue);
-        deserializerMap['updated_at'] = (node) => updatedAt = node.getStringValue();
+        deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
     }
     /// Serializes information the current object
     ///  [writer] Serialization writer to use to serialize this model
     @override
     void serialize(SerializationWriter writer) {
-        writer.writeStringValue('created_at', createdAt);
+        writer.writeDateTimeValue('created_at', createdAt);
         writer.writeStringValue('etag', etag);
         writer.writeStringValue('family_id', familyId);
         writer.writeCollectionOfPrimitiveValues<String?>('family_members', familyMembers);
@@ -68,7 +68,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
         writer.writeBoolValue('payed_by_joint_account', value:payedByJointAccount);
         writer.writeStringValue('payer_id_id', payerIdId);
         writer.writeCollectionOfObjectValues<PaymentModel>('payments', payments);
-        writer.writeStringValue('updated_at', updatedAt);
+        writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
     }
 }

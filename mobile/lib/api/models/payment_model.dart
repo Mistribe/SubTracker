@@ -7,11 +7,11 @@ class PaymentModel implements AdditionalDataHolder, Parsable {
     @override
     Map<String, Object?> additionalData;
     ///  The created_at property
-    String? createdAt;
+    DateTime? createdAt;
     ///  The currency property
     String? currency;
     ///  The end_date property
-    String? endDate;
+    DateTime? endDate;
     ///  The etag property
     String? etag;
     ///  The id property
@@ -21,9 +21,9 @@ class PaymentModel implements AdditionalDataHolder, Parsable {
     ///  The price property
     double? price;
     ///  The start_date property
-    String? startDate;
+    DateTime? startDate;
     ///  The updated_at property
-    String? updatedAt;
+    DateTime? updatedAt;
     /// Instantiates a new [PaymentModel] and sets the default values.
     PaymentModel() :  
         additionalData = {};
@@ -36,30 +36,30 @@ class PaymentModel implements AdditionalDataHolder, Parsable {
     @override
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
-        deserializerMap['created_at'] = (node) => createdAt = node.getStringValue();
+        deserializerMap['created_at'] = (node) => createdAt = node.getDateTimeValue();
         deserializerMap['currency'] = (node) => currency = node.getStringValue();
-        deserializerMap['end_date'] = (node) => endDate = node.getStringValue();
+        deserializerMap['end_date'] = (node) => endDate = node.getDateTimeValue();
         deserializerMap['etag'] = (node) => etag = node.getStringValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
         deserializerMap['months'] = (node) => months = node.getIntValue();
         deserializerMap['price'] = (node) => price = node.getDoubleValue();
-        deserializerMap['start_date'] = (node) => startDate = node.getStringValue();
-        deserializerMap['updated_at'] = (node) => updatedAt = node.getStringValue();
+        deserializerMap['start_date'] = (node) => startDate = node.getDateTimeValue();
+        deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
     }
     /// Serializes information the current object
     ///  [writer] Serialization writer to use to serialize this model
     @override
     void serialize(SerializationWriter writer) {
-        writer.writeStringValue('created_at', createdAt);
+        writer.writeDateTimeValue('created_at', createdAt);
         writer.writeStringValue('currency', currency);
-        writer.writeStringValue('end_date', endDate);
+        writer.writeDateTimeValue('end_date', endDate);
         writer.writeStringValue('etag', etag);
         writer.writeStringValue('id', id);
         writer.writeIntValue('months', months);
         writer.writeDoubleValue('price', price);
-        writer.writeStringValue('start_date', startDate);
-        writer.writeStringValue('updated_at', updatedAt);
+        writer.writeDateTimeValue('start_date', startDate);
+        writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
     }
 }

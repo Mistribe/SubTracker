@@ -9,7 +9,7 @@ class CreateLabelModel implements AdditionalDataHolder, Parsable {
     ///  The color property
     String? color;
     ///  The created_at property
-    String? createdAt;
+    DateTime? createdAt;
     ///  The id property
     String? id;
     ///  The is_default property
@@ -29,7 +29,7 @@ class CreateLabelModel implements AdditionalDataHolder, Parsable {
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
         deserializerMap['color'] = (node) => color = node.getStringValue();
-        deserializerMap['created_at'] = (node) => createdAt = node.getStringValue();
+        deserializerMap['created_at'] = (node) => createdAt = node.getDateTimeValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
         deserializerMap['is_default'] = (node) => isDefault = node.getBoolValue();
         deserializerMap['name'] = (node) => name = node.getStringValue();
@@ -40,7 +40,7 @@ class CreateLabelModel implements AdditionalDataHolder, Parsable {
     @override
     void serialize(SerializationWriter writer) {
         writer.writeStringValue('color', color);
-        writer.writeStringValue('created_at', createdAt);
+        writer.writeDateTimeValue('created_at', createdAt);
         writer.writeStringValue('id', id);
         writer.writeBoolValue('is_default', value:isDefault);
         writer.writeStringValue('name', name);

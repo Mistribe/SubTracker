@@ -11,7 +11,7 @@ class UpdateLabelModel implements AdditionalDataHolder, Parsable {
     ///  The name property
     String? name;
     ///  The updated_at property
-    String? updatedAt;
+    DateTime? updatedAt;
     /// Instantiates a new [UpdateLabelModel] and sets the default values.
     UpdateLabelModel() :  
         additionalData = {};
@@ -26,7 +26,7 @@ class UpdateLabelModel implements AdditionalDataHolder, Parsable {
         var deserializerMap = <String, void Function(ParseNode)>{};
         deserializerMap['color'] = (node) => color = node.getStringValue();
         deserializerMap['name'] = (node) => name = node.getStringValue();
-        deserializerMap['updated_at'] = (node) => updatedAt = node.getStringValue();
+        deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
     }
     /// Serializes information the current object
@@ -35,7 +35,7 @@ class UpdateLabelModel implements AdditionalDataHolder, Parsable {
     void serialize(SerializationWriter writer) {
         writer.writeStringValue('color', color);
         writer.writeStringValue('name', name);
-        writer.writeStringValue('updated_at', updatedAt);
+        writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
     }
 }

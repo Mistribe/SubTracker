@@ -19,7 +19,7 @@ class UpdateSubscriptionModel implements AdditionalDataHolder, Parsable {
     ///  The payer_id property
     String? payerId;
     ///  The updated_at property
-    String? updatedAt;
+    DateTime? updatedAt;
     /// Instantiates a new [UpdateSubscriptionModel] and sets the default values.
     UpdateSubscriptionModel() :  
         additionalData = {};
@@ -38,7 +38,7 @@ class UpdateSubscriptionModel implements AdditionalDataHolder, Parsable {
         deserializerMap['name'] = (node) => name = node.getStringValue();
         deserializerMap['payed_by_joint_account'] = (node) => payedByJointAccount = node.getBoolValue();
         deserializerMap['payer_id'] = (node) => payerId = node.getStringValue();
-        deserializerMap['updated_at'] = (node) => updatedAt = node.getStringValue();
+        deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
     }
     /// Serializes information the current object
@@ -51,7 +51,7 @@ class UpdateSubscriptionModel implements AdditionalDataHolder, Parsable {
         writer.writeStringValue('name', name);
         writer.writeBoolValue('payed_by_joint_account', value:payedByJointAccount);
         writer.writeStringValue('payer_id', payerId);
-        writer.writeStringValue('updated_at', updatedAt);
+        writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
     }
 }

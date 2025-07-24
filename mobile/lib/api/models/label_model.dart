@@ -8,8 +8,8 @@ class LabelModel implements AdditionalDataHolder, Parsable {
     Map<String, Object?> additionalData;
     ///  The color property
     String? color;
-    ///  The created_at property
-    String? createdAt;
+    ///  CreatedAt date and time the label was created
+    DateTime? createdAt;
     ///  The etag property
     String? etag;
     ///  The id property
@@ -18,8 +18,8 @@ class LabelModel implements AdditionalDataHolder, Parsable {
     bool? isDefault;
     ///  The name property
     String? name;
-    ///  The updated_at property
-    String? updatedAt;
+    ///  UpdatedAt date and time the label was last updated
+    DateTime? updatedAt;
     /// Instantiates a new [LabelModel] and sets the default values.
     LabelModel() :  
         additionalData = {};
@@ -33,12 +33,12 @@ class LabelModel implements AdditionalDataHolder, Parsable {
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
         deserializerMap['color'] = (node) => color = node.getStringValue();
-        deserializerMap['created_at'] = (node) => createdAt = node.getStringValue();
+        deserializerMap['created_at'] = (node) => createdAt = node.getDateTimeValue();
         deserializerMap['etag'] = (node) => etag = node.getStringValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
         deserializerMap['is_default'] = (node) => isDefault = node.getBoolValue();
         deserializerMap['name'] = (node) => name = node.getStringValue();
-        deserializerMap['updated_at'] = (node) => updatedAt = node.getStringValue();
+        deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
     }
     /// Serializes information the current object
@@ -46,12 +46,12 @@ class LabelModel implements AdditionalDataHolder, Parsable {
     @override
     void serialize(SerializationWriter writer) {
         writer.writeStringValue('color', color);
-        writer.writeStringValue('created_at', createdAt);
+        writer.writeDateTimeValue('created_at', createdAt);
         writer.writeStringValue('etag', etag);
         writer.writeStringValue('id', id);
         writer.writeBoolValue('is_default', value:isDefault);
         writer.writeStringValue('name', name);
-        writer.writeStringValue('updated_at', updatedAt);
+        writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
     }
 }

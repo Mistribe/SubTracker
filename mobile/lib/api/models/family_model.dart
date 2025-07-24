@@ -8,7 +8,7 @@ class FamilyModel implements AdditionalDataHolder, Parsable {
     @override
     Map<String, Object?> additionalData;
     ///  The created_at property
-    String? createdAt;
+    DateTime? createdAt;
     ///  The etag property
     String? etag;
     ///  The have_joint_account property
@@ -22,7 +22,7 @@ class FamilyModel implements AdditionalDataHolder, Parsable {
     ///  The name property
     String? name;
     ///  The updated_at property
-    String? updatedAt;
+    DateTime? updatedAt;
     /// Instantiates a new [FamilyModel] and sets the default values.
     FamilyModel() :  
         additionalData = {};
@@ -35,28 +35,28 @@ class FamilyModel implements AdditionalDataHolder, Parsable {
     @override
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
-        deserializerMap['created_at'] = (node) => createdAt = node.getStringValue();
+        deserializerMap['created_at'] = (node) => createdAt = node.getDateTimeValue();
         deserializerMap['etag'] = (node) => etag = node.getStringValue();
         deserializerMap['have_joint_account'] = (node) => haveJointAccount = node.getBoolValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
         deserializerMap['is_owner'] = (node) => isOwner = node.getBoolValue();
         deserializerMap['members'] = (node) => members = node.getCollectionOfObjectValues<FamilyMemberModel>(FamilyMemberModel.createFromDiscriminatorValue);
         deserializerMap['name'] = (node) => name = node.getStringValue();
-        deserializerMap['updated_at'] = (node) => updatedAt = node.getStringValue();
+        deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
     }
     /// Serializes information the current object
     ///  [writer] Serialization writer to use to serialize this model
     @override
     void serialize(SerializationWriter writer) {
-        writer.writeStringValue('created_at', createdAt);
+        writer.writeDateTimeValue('created_at', createdAt);
         writer.writeStringValue('etag', etag);
         writer.writeBoolValue('have_joint_account', value:haveJointAccount);
         writer.writeStringValue('id', id);
         writer.writeBoolValue('is_owner', value:isOwner);
         writer.writeCollectionOfObjectValues<FamilyMemberModel>('members', members);
         writer.writeStringValue('name', name);
-        writer.writeStringValue('updated_at', updatedAt);
+        writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
     }
 }

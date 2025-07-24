@@ -7,11 +7,11 @@ class CreatePaymentModel implements AdditionalDataHolder, Parsable {
     @override
     Map<String, Object?> additionalData;
     ///  The created_at property
-    String? createdAt;
+    DateTime? createdAt;
     ///  The currency property
     String? currency;
     ///  The end_date property
-    String? endDate;
+    DateTime? endDate;
     ///  The id property
     String? id;
     ///  The months property
@@ -19,7 +19,7 @@ class CreatePaymentModel implements AdditionalDataHolder, Parsable {
     ///  The price property
     double? price;
     ///  The start_date property
-    String? startDate;
+    DateTime? startDate;
     /// Instantiates a new [CreatePaymentModel] and sets the default values.
     CreatePaymentModel() :  
         additionalData = {};
@@ -32,26 +32,26 @@ class CreatePaymentModel implements AdditionalDataHolder, Parsable {
     @override
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
-        deserializerMap['created_at'] = (node) => createdAt = node.getStringValue();
+        deserializerMap['created_at'] = (node) => createdAt = node.getDateTimeValue();
         deserializerMap['currency'] = (node) => currency = node.getStringValue();
-        deserializerMap['end_date'] = (node) => endDate = node.getStringValue();
+        deserializerMap['end_date'] = (node) => endDate = node.getDateTimeValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
         deserializerMap['months'] = (node) => months = node.getIntValue();
         deserializerMap['price'] = (node) => price = node.getDoubleValue();
-        deserializerMap['start_date'] = (node) => startDate = node.getStringValue();
+        deserializerMap['start_date'] = (node) => startDate = node.getDateTimeValue();
         return deserializerMap;
     }
     /// Serializes information the current object
     ///  [writer] Serialization writer to use to serialize this model
     @override
     void serialize(SerializationWriter writer) {
-        writer.writeStringValue('created_at', createdAt);
+        writer.writeDateTimeValue('created_at', createdAt);
         writer.writeStringValue('currency', currency);
-        writer.writeStringValue('end_date', endDate);
+        writer.writeDateTimeValue('end_date', endDate);
         writer.writeStringValue('id', id);
         writer.writeIntValue('months', months);
         writer.writeDoubleValue('price', price);
-        writer.writeStringValue('start_date', startDate);
+        writer.writeDateTimeValue('start_date', startDate);
         writer.writeAdditionalData(additionalData);
     }
 }

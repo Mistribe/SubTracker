@@ -11,7 +11,7 @@ class UpdateFamilyModel implements AdditionalDataHolder, Parsable {
     ///  The name property
     String? name;
     ///  The updated_at property
-    String? updatedAt;
+    DateTime? updatedAt;
     /// Instantiates a new [UpdateFamilyModel] and sets the default values.
     UpdateFamilyModel() :  
         additionalData = {};
@@ -26,7 +26,7 @@ class UpdateFamilyModel implements AdditionalDataHolder, Parsable {
         var deserializerMap = <String, void Function(ParseNode)>{};
         deserializerMap['have_joint_account'] = (node) => haveJointAccount = node.getBoolValue();
         deserializerMap['name'] = (node) => name = node.getStringValue();
-        deserializerMap['updated_at'] = (node) => updatedAt = node.getStringValue();
+        deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
     }
     /// Serializes information the current object
@@ -35,7 +35,7 @@ class UpdateFamilyModel implements AdditionalDataHolder, Parsable {
     void serialize(SerializationWriter writer) {
         writer.writeBoolValue('have_joint_account', value:haveJointAccount);
         writer.writeStringValue('name', name);
-        writer.writeStringValue('updated_at', updatedAt);
+        writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
     }
 }

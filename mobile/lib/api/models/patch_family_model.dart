@@ -17,7 +17,7 @@ class PatchFamilyModel implements AdditionalDataHolder, Parsable {
     ///  Family name
     String? name;
     ///  Optional timestamp of the last update
-    String? updatedAt;
+    DateTime? updatedAt;
     /// Instantiates a new [PatchFamilyModel] and sets the default values.
     PatchFamilyModel() :  
         additionalData = {};
@@ -34,7 +34,7 @@ class PatchFamilyModel implements AdditionalDataHolder, Parsable {
         deserializerMap['id'] = (node) => id = node.getStringValue();
         deserializerMap['members'] = (node) => members = node.getCollectionOfObjectValues<PatchFamilyMemberModel>(PatchFamilyMemberModel.createFromDiscriminatorValue);
         deserializerMap['name'] = (node) => name = node.getStringValue();
-        deserializerMap['updated_at'] = (node) => updatedAt = node.getStringValue();
+        deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
     }
     /// Serializes information the current object
@@ -45,7 +45,7 @@ class PatchFamilyModel implements AdditionalDataHolder, Parsable {
         writer.writeStringValue('id', id);
         writer.writeCollectionOfObjectValues<PatchFamilyMemberModel>('members', members);
         writer.writeStringValue('name', name);
-        writer.writeStringValue('updated_at', updatedAt);
+        writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
     }
 }
