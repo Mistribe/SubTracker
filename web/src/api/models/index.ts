@@ -159,11 +159,29 @@ export function createLabelModelFromDiscriminatorValue(parseNode: ParseNode | un
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {PaginatedResponseModelEndpoints_familyModel}
+ */
+// @ts-ignore
+export function createPaginatedResponseModelEndpoints_familyModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoPaginatedResponseModelEndpoints_familyModel;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
  * @returns {PaginatedResponseModelEndpoints_labelModel}
  */
 // @ts-ignore
 export function createPaginatedResponseModelEndpoints_labelModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
     return deserializeIntoPaginatedResponseModelEndpoints_labelModel;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {PaginatedResponseModelEndpoints_subscriptionModel}
+ */
+// @ts-ignore
+export function createPaginatedResponseModelEndpoints_subscriptionModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoPaginatedResponseModelEndpoints_subscriptionModel;
 }
 /**
  * Creates a new instance of the appropriate class based on discriminator value
@@ -524,6 +542,19 @@ export function deserializeIntoLabelModel(labelModel: Partial<LabelModel> | unde
 }
 /**
  * The deserialization information for the current model
+ * @param PaginatedResponseModelEndpoints_familyModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoPaginatedResponseModelEndpoints_familyModel(paginatedResponseModelEndpoints_familyModel: Partial<PaginatedResponseModelEndpoints_familyModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "data": n => { paginatedResponseModelEndpoints_familyModel.data = n.getCollectionOfObjectValues<FamilyModel>(createFamilyModelFromDiscriminatorValue); },
+        "length": n => { paginatedResponseModelEndpoints_familyModel.length = n.getNumberValue(); },
+        "total": n => { paginatedResponseModelEndpoints_familyModel.total = n.getNumberValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
  * @param PaginatedResponseModelEndpoints_labelModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
@@ -533,6 +564,19 @@ export function deserializeIntoPaginatedResponseModelEndpoints_labelModel(pagina
         "data": n => { paginatedResponseModelEndpoints_labelModel.data = n.getCollectionOfObjectValues<LabelModel>(createLabelModelFromDiscriminatorValue); },
         "length": n => { paginatedResponseModelEndpoints_labelModel.length = n.getNumberValue(); },
         "total": n => { paginatedResponseModelEndpoints_labelModel.total = n.getNumberValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param PaginatedResponseModelEndpoints_subscriptionModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoPaginatedResponseModelEndpoints_subscriptionModel(paginatedResponseModelEndpoints_subscriptionModel: Partial<PaginatedResponseModelEndpoints_subscriptionModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "data": n => { paginatedResponseModelEndpoints_subscriptionModel.data = n.getCollectionOfObjectValues<SubscriptionModel>(createSubscriptionModelFromDiscriminatorValue); },
+        "length": n => { paginatedResponseModelEndpoints_subscriptionModel.length = n.getNumberValue(); },
+        "total": n => { paginatedResponseModelEndpoints_subscriptionModel.total = n.getNumberValue(); },
     }
 }
 /**
@@ -813,11 +857,39 @@ export interface LabelModel extends AdditionalDataHolder, Parsable {
      */
     updatedAt?: string | null;
 }
+export interface PaginatedResponseModelEndpoints_familyModel extends AdditionalDataHolder, Parsable {
+    /**
+     * The data property
+     */
+    data?: FamilyModel[] | null;
+    /**
+     * The length property
+     */
+    length?: number | null;
+    /**
+     * The total property
+     */
+    total?: number | null;
+}
 export interface PaginatedResponseModelEndpoints_labelModel extends AdditionalDataHolder, Parsable {
     /**
      * The data property
      */
     data?: LabelModel[] | null;
+    /**
+     * The length property
+     */
+    length?: number | null;
+    /**
+     * The total property
+     */
+    total?: number | null;
+}
+export interface PaginatedResponseModelEndpoints_subscriptionModel extends AdditionalDataHolder, Parsable {
+    /**
+     * The data property
+     */
+    data?: SubscriptionModel[] | null;
     /**
      * The length property
      */
@@ -1162,6 +1234,20 @@ export function serializeLabelModel(writer: SerializationWriter, labelModel: Par
 /**
  * Serializes information the current object
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param PaginatedResponseModelEndpoints_familyModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializePaginatedResponseModelEndpoints_familyModel(writer: SerializationWriter, paginatedResponseModelEndpoints_familyModel: Partial<PaginatedResponseModelEndpoints_familyModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!paginatedResponseModelEndpoints_familyModel || isSerializingDerivedType) { return; }
+    writer.writeCollectionOfObjectValues<FamilyModel>("data", paginatedResponseModelEndpoints_familyModel.data, serializeFamilyModel);
+    writer.writeNumberValue("length", paginatedResponseModelEndpoints_familyModel.length);
+    writer.writeNumberValue("total", paginatedResponseModelEndpoints_familyModel.total);
+    writer.writeAdditionalData(paginatedResponseModelEndpoints_familyModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param PaginatedResponseModelEndpoints_labelModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
@@ -1172,6 +1258,20 @@ export function serializePaginatedResponseModelEndpoints_labelModel(writer: Seri
     writer.writeNumberValue("length", paginatedResponseModelEndpoints_labelModel.length);
     writer.writeNumberValue("total", paginatedResponseModelEndpoints_labelModel.total);
     writer.writeAdditionalData(paginatedResponseModelEndpoints_labelModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param PaginatedResponseModelEndpoints_subscriptionModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializePaginatedResponseModelEndpoints_subscriptionModel(writer: SerializationWriter, paginatedResponseModelEndpoints_subscriptionModel: Partial<PaginatedResponseModelEndpoints_subscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!paginatedResponseModelEndpoints_subscriptionModel || isSerializingDerivedType) { return; }
+    writer.writeCollectionOfObjectValues<SubscriptionModel>("data", paginatedResponseModelEndpoints_subscriptionModel.data, serializeSubscriptionModel);
+    writer.writeNumberValue("length", paginatedResponseModelEndpoints_subscriptionModel.length);
+    writer.writeNumberValue("total", paginatedResponseModelEndpoints_subscriptionModel.total);
+    writer.writeAdditionalData(paginatedResponseModelEndpoints_subscriptionModel.additionalData);
 }
 /**
  * Serializes information the current object
