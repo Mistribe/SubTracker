@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -28,7 +29,15 @@ type FamilyGetAllEndpoint struct {
 //	@Failure		400		{object}	httpError
 //	@Router			/families [get]
 func (f FamilyGetAllEndpoint) Handle(c *gin.Context) {
-	q := query.FindAllQuery{}
+	size, err := strconv.Atoi(c.DefaultQuery("size", "10"))
+	if err != nil {
+		size = 10
+	}
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil {
+		page = 1
+	}
+	q := query.NewFindAllQuery(size, page)
 	userId, ok := user.FromContext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, httpError{
