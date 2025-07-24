@@ -629,6 +629,62 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.16.0"
+  microsoft_kiota_abstractions:
+    dependency: transitive
+    description:
+      name: microsoft_kiota_abstractions
+      sha256: cc0cc3dd5f22333e67c4420844501fd5fd5df9e37c1986ac2ff82edcfbd448ed
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
+  microsoft_kiota_bundle:
+    dependency: "direct main"
+    description:
+      name: microsoft_kiota_bundle
+      sha256: d845096a3c70b2b37a8f6ef854543a8df4f333ea16690a4f446ff72875b7e291
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
+  microsoft_kiota_http:
+    dependency: transitive
+    description:
+      name: microsoft_kiota_http
+      sha256: c8c589639f39fb8e5b4487fa35b46239c17451e27552639bfa659b507f6be774
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.5"
+  microsoft_kiota_serialization_form:
+    dependency: transitive
+    description:
+      name: microsoft_kiota_serialization_form
+      sha256: "45b13a61331dcf9a6afad302878cd04755336fa0c56c4825d47cd75ddab91943"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
+  microsoft_kiota_serialization_json:
+    dependency: transitive
+    description:
+      name: microsoft_kiota_serialization_json
+      sha256: "24b57cd6815585244248b2e44feca8a3ae325f6971d1129445d9275418c5c474"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.5"
+  microsoft_kiota_serialization_multipart:
+    dependency: transitive
+    description:
+      name: microsoft_kiota_serialization_multipart
+      sha256: "709107702c37f098294d1d45898e26ba7beaa3e23c043e3d9f398a095409f477"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
+  microsoft_kiota_serialization_text:
+    dependency: transitive
+    description:
+      name: microsoft_kiota_serialization_text
+      sha256: "60117103854c4284e56ec307d6629823e403d01c1d5c014a24ea5460b1ead87b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.3"
   mime:
     dependency: transitive
     description:
@@ -946,6 +1002,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.12.1"
+  std_uritemplate:
+    dependency: transitive
+    description:
+      name: std_uritemplate
+      sha256: a79ad1b469a5e762317a5995dc53a6f49176f0cce58ae24bc0fbdde60fae4f73
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.5"
   stream_channel:
     dependency: transitive
     description:

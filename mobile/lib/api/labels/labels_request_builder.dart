@@ -1,0 +1,70 @@
+// ignore_for_file: type=lint
+import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
+import '../models/create_label_model.dart';
+import '../models/http_error.dart';
+import '../models/label_model.dart';
+import '../models/paginated_response_model_endpoints_label_model.dart';
+import './item/labels_item_request_builder.dart';
+import './labels_request_builder_get_query_parameters.dart';
+
+/// auto generated
+/// Builds and executes requests for operations under \labels
+class LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBuilder> {
+    /// Gets an item from the ApiSdk.labels.item collection
+    ///  [id] Label ID
+    LabelsItemRequestBuilder byId(String id) {
+        var urlTplParams = Map.of(pathParameters);
+        urlTplParams.putIfAbsent('id', () => id);
+        return LabelsItemRequestBuilder(urlTplParams, requestAdapter);
+    }
+    /// Clones the requestbuilder.
+    @override
+    LabelsRequestBuilder clone() {
+        return LabelsRequestBuilder(pathParameters, requestAdapter);
+    }
+    /// Instantiates a new [LabelsRequestBuilder] and sets the default values.
+    ///  [pathParameters] Path parameters for the request
+    ///  [requestAdapter] The request adapter to use to execute the requests.
+    LabelsRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/labels{?page*,size*,with_default*}", pathParameters) ;
+    /// Instantiates a new [LabelsRequestBuilder] and sets the default values.
+    ///  [rawUrl] The raw URL to use for the request builder.
+    ///  [requestAdapter] The request adapter to use to execute the requests.
+    LabelsRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/labels{?page*,size*,with_default*}", {RequestInformation.rawUrlKey : rawUrl}) ;
+    /// Get all labels
+    ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
+    Future<PaginatedResponseModelEndpointsLabelModel?> getAsync([void Function(RequestConfiguration<LabelsRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
+        var requestInfo = toGetRequestInformation(requestConfiguration);
+        final errorMapping = <String, ParsableFactory<Parsable>>{
+            '400' :  HttpError.createFromDiscriminatorValue,
+        };
+        return await requestAdapter.send<PaginatedResponseModelEndpointsLabelModel>(requestInfo, PaginatedResponseModelEndpointsLabelModel.createFromDiscriminatorValue, errorMapping);
+    }
+    /// Create a new label
+    ///  [body] The request body
+    ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
+    Future<LabelModel?> postAsync(CreateLabelModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
+        var requestInfo = toPostRequestInformation(body, requestConfiguration);
+        final errorMapping = <String, ParsableFactory<Parsable>>{
+            '400' :  HttpError.createFromDiscriminatorValue,
+        };
+        return await requestAdapter.send<LabelModel>(requestInfo, LabelModel.createFromDiscriminatorValue, errorMapping);
+    }
+    /// Get all labels
+    ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
+    RequestInformation toGetRequestInformation([void Function(RequestConfiguration<LabelsRequestBuilderGetQueryParameters>)? requestConfiguration]) {
+        var requestInfo = RequestInformation(httpMethod : HttpMethod.get, urlTemplate : urlTemplate, pathParameters :  pathParameters);
+        requestInfo.configure<LabelsRequestBuilderGetQueryParameters>(requestConfiguration, () => LabelsRequestBuilderGetQueryParameters());
+        requestInfo.headers.put('Accept', 'application/json');
+        return requestInfo;
+    }
+    /// Create a new label
+    ///  [body] The request body
+    ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
+    RequestInformation toPostRequestInformation(CreateLabelModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
+        var requestInfo = RequestInformation(httpMethod : HttpMethod.post, urlTemplate : urlTemplate, pathParameters :  pathParameters);
+        requestInfo.configure<DefaultQueryParameters>(requestConfiguration, () => DefaultQueryParameters());
+        requestInfo.headers.put('Accept', 'application/json');
+        requestInfo.setContentFromParsable(requestAdapter, 'application/json', body);
+        return requestInfo;
+    }
+}
