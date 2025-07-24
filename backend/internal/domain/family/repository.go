@@ -17,7 +17,9 @@ type Repository interface {
 	GetOwn(ctx context.Context) (option.Option[Family], error)
 
 	// GetAll retrieves all families from the repository. Returns a slice of Family and an error if retrieval fails.
-	GetAll(ctx context.Context) ([]Family, error)
+	GetAll(ctx context.Context, size, page int) ([]Family, error)
+
+	GetAllCount(ctx context.Context) (int64, error)
 
 	// GetAllMembers retrieves all members associated with the specified family ID from the repository.
 	GetAllMembers(ctx context.Context, id uuid.UUID) ([]Member, error)

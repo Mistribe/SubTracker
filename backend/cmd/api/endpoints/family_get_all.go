@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/oleexo/subtracker/internal/domain/user"
 
 	"github.com/oleexo/subtracker/internal/application/core"
@@ -12,17 +13,20 @@ import (
 )
 
 type FamilyGetAllEndpoint struct {
-	handler core.QueryHandler[query.FindAllQuery, []family.Family]
+	handler core.QueryHandler[query.FindAllQuery, core.PaginatedResponse[family.Family]]
 }
 
 // Handle godoc
-// @Summary		Get all family members
-// @Description	Get all family members
-// @Tags			family
-// @Produce		json
-// @Success		200	{array}		familyModel
-// @Failure		400	{object}	httpError
-// @Router			/families [get]
+//
+//	@Summary		Get all family members
+//	@Description	Get all family members
+//	@Tags			family
+//	@Produce		json
+//	@Param			size	query		integer	false	"Number of items per page"
+//	@Param			page	query		integer	false	"Page number"
+//	@Success		200		{object}	paginatedResponseModel[familyModel]
+//	@Failure		400		{object}	httpError
+//	@Router			/families [get]
 func (f FamilyGetAllEndpoint) Handle(c *gin.Context) {
 	q := query.FindAllQuery{}
 	userId, ok := user.FromContext(c)
@@ -35,12 +39,10 @@ func (f FamilyGetAllEndpoint) Handle(c *gin.Context) {
 	r := f.handler.Handle(c, q)
 	handleResponse(c,
 		r,
-		withMapping[[]family.Family](func(fms []family.Family) any {
-			result := make([]interface{}, len(fms))
-			for i, fm := range fms {
-				result[i] = newFamilyModel(userId, fm)
-			}
-			return result
+		withMapping[core.PaginatedResponse[family.Family]](func(paginatedResult core.PaginatedResponse[family.Family]) any {
+			return newPaginatedResponseModel(paginatedResult, func(value family.Family) any {
+				return newFamilyModel(userId, value)
+			})
 		}))
 }
 
@@ -58,7 +60,7 @@ func (f FamilyGetAllEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewFamilyMemberGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, []family.Family]) *FamilyGetAllEndpoint {
+func NewFamilyMemberGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, core.PaginatedResponse[family.Family]]) *FamilyGetAllEndpoint {
 	return &FamilyGetAllEndpoint{
 		handler: handler,
 	}

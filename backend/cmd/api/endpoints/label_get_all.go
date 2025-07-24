@@ -45,8 +45,8 @@ func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
 	r := e.handler.Handle(c, q)
 	handleResponse(c,
 		r,
-		withMapping[core.PaginatedResponse[label.Label]](func(paginationResult core.PaginatedResponse[label.Label]) any {
-			return newPaginatedResponseModel(paginationResult, newLabelModel)
+		withMapping[core.PaginatedResponse[label.Label]](func(paginatedResult core.PaginatedResponse[label.Label]) any {
+			return newPaginatedResponseModel(paginatedResult, newLabelModel)
 		}))
 }
 

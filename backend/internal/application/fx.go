@@ -32,7 +32,7 @@ func BuildApplicationModule() fx.Option {
 	return fx.Module("application",
 		fx.Provide(
 			AsQueryHandler[subQuery.FindOneQuery, subscription.Subscription](subQuery.NewFindOneQueryHandler),
-			AsQueryHandler[subQuery.FindAllQuery, []subscription.Subscription](subQuery.NewFindAllQueryHandler),
+			AsQueryHandler[subQuery.FindAllQuery, core.PaginatedResponse[subscription.Subscription]](subQuery.NewFindAllQueryHandler),
 
 			AsCommandHandler[subCommand.CreateSubscriptionCommand, subscription.Subscription](subCommand.NewCreateSubscriptionCommandHandler),
 			AsCommandHandler[subCommand.UpdateSubscriptionCommand, subscription.Subscription](subCommand.NewUpdateSubscriptionCommandHandler),
@@ -50,7 +50,7 @@ func BuildApplicationModule() fx.Option {
 			AsCommandHandler[lblCommand.UpdateLabelCommand, label.Label](lblCommand.NewUpdateLabelCommandHandler),
 			AsCommandHandler[lblCommand.DeleteLabelCommand, result.Unit](lblCommand.NewDeleteLabelCommandHandler),
 
-			AsQueryHandler[fmlyQuery.FindAllQuery, []family.Family](fmlyQuery.NewFindAllQueryHandler),
+			AsQueryHandler[fmlyQuery.FindAllQuery, core.PaginatedResponse[family.Family]](fmlyQuery.NewFindAllQueryHandler),
 			AsQueryHandler[fmlyQuery.FindOneQuery, family.Family](fmlyQuery.NewFindOneQueryHandler),
 
 			AsCommandHandler[fmlyCommand.CreateFamilyCommand, family.Family](fmlyCommand.NewCreateFamilyCommandHandler),

@@ -180,12 +180,13 @@ func (r SubscriptionRepository) Get(ctx context.Context, id uuid.UUID) (
 	return option.Some(r.toEntity(model)), nil
 }
 
-func (r SubscriptionRepository) GetAll(ctx context.Context) ([]subscription.Subscription, error) {
+func (r SubscriptionRepository) GetAll(ctx context.Context, size, page int) ([]subscription.Subscription, error) {
 	var models []subscriptionModel
 	if result := r.repository.db.WithContext(ctx).
 		Preload("Payments").
 		Preload("Labels").
 		Preload("FamilyMembers").
+		Offset((page - 1) * size).Limit(size).
 		Find(&models); result.Error != nil {
 		return nil, result.Error
 	}
@@ -195,6 +196,17 @@ func (r SubscriptionRepository) GetAll(ctx context.Context) ([]subscription.Subs
 		result = append(result, r.toEntity(model))
 	}
 	return result, nil
+}
+
+func (r SubscriptionRepository) GetAllCount(ctx context.Context) (int64, error) {
+	var count int64
+	if result := r.repository.db.WithContext(ctx).
+		Model(&subscriptionModel{}).
+		Count(&count); result.Error != nil {
+		return 0, result.Error
+	}
+
+	return count, nil
 }
 
 func (r SubscriptionRepository) Save(ctx context.Context, subscription *subscription.Subscription) error {
