@@ -27,11 +27,11 @@ func NewSubscriptionPaymentCreateEndpoint(handler core.CommandHandler[command.Cr
 
 type createSubscriptionPaymentModel struct {
 	Id        *string    `json:"id,omitempty"`
-	Price     float64    `json:"price"`
-	StartDate time.Time  `json:"start_date"`
+	Price     float64    `json:"price" binding:"required"`
+	StartDate time.Time  `json:"start_date" binding:"required"`
 	EndDate   *time.Time `json:"end_date,omitempty"`
-	Months    int        `json:"months"`
-	Currency  string     `json:"currency"`
+	Months    int        `json:"months" binding:"required"`
+	Currency  string     `json:"currency" binding:"required"`
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 

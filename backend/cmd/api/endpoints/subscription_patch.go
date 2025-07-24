@@ -28,11 +28,11 @@ func NewSubscriptionPatchEndpoint(handler core.CommandHandler[command.PatchSubsc
 // @Description	Payment update model
 type patchPaymentModel struct {
 	Id        *string    `json:"id,omitempty"`
-	Price     float64    `json:"price"`
-	StartDate time.Time  `json:"start_date"`
+	Price     float64    `json:"price" binding:"required"`
+	StartDate time.Time  `json:"start_date" binding:"required"`
 	EndDate   *time.Time `json:"end_date,omitempty"`
-	Months    int        `json:"months"`
-	Currency  string     `json:"currency"`
+	Months    int        `json:"months" binding:"required"`
+	Currency  string     `json:"currency" binding:"required"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
@@ -69,10 +69,10 @@ func (m patchPaymentModel) ToPayment(subscriptionId uuid.UUID) (subscription.Pay
 type patchSubscriptionModel struct {
 	Id                  *string             `json:"id,omitempty"`
 	FamilyId            *string             `json:"family_id,omitempty"`
-	Name                string              `json:"name"`
-	Payments            []patchPaymentModel `json:"payments"`
-	Labels              []string            `json:"labels"`
-	FamilyMembers       []string            `json:"family_members"`
+	Name                string              `json:"name" binding:"required"`
+	Payments            []patchPaymentModel `json:"payments" binding:"required"`
+	Labels              []string            `json:"labels" binding:"required"`
+	FamilyMembers       []string            `json:"family_members" binding:"required"`
 	PayerId             *string             `json:"payer_id,omitempty"`
 	PayedByJointAccount bool                `json:"payed_by_joint_account,omitempty"`
 	UpdatedAt           *time.Time          `json:"updated_at,omitempty"`

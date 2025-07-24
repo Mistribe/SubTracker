@@ -70,10 +70,10 @@ func (m createPaymentModel) ToPayment(subscriptionId uuid.UUID) result.Result[su
 type createSubscriptionModel struct {
 	Id                  *string              `json:"id,omitempty"`
 	FamilyId            *string              `json:"family_id,omitempty"`
-	Name                string               `json:"name"`
-	Payments            []createPaymentModel `json:"payments"`
-	Labels              []string             `json:"labels"`
-	FamilyMembers       []string             `json:"family_members"`
+	Name                string               `json:"name" binding:"required"`
+	Payments            []createPaymentModel `json:"payments" binding:"required"`
+	Labels              []string             `json:"labels" binding:"required"`
+	FamilyMembers       []string             `json:"family_members" binding:"required"`
 	PayerId             *string              `json:"payer_id,omitempty"`
 	PayedByJointAccount bool                 `json:"payed_by_joint_account,omitempty"`
 	CreatedAt           *time.Time           `json:"created_at,omitempty"`

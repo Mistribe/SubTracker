@@ -22,8 +22,8 @@ type FamilyCreateEndpoint struct {
 
 type createFamilyModel struct {
 	Id               *string    `json:"id,omitempty"`
-	Name             string     `json:"name"`
-	HaveJointAccount bool       `json:"have_joint_account"`
+	Name             string     `json:"name" binding:"required"`
+	HaveJointAccount bool       `json:"have_joint_account" binding:"required"`
 	CreatedAt        *time.Time `json:"created_at,omitempty"`
 }
 

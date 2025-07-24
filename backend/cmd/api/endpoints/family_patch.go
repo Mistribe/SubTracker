@@ -28,11 +28,11 @@ type patchFamilyMemberModel struct {
 	// Optional member ID. If not provided, new member will be created
 	Id *string `json:"id,omitempty"`
 	// Member's name
-	Name string `json:"name"`
+	Name string `json:"name" binding:"required"`
 	// Optional email address
 	Email *string `json:"email,omitempty"`
 	// Indicates if the member is a kid
-	IsKid bool `json:"is_kid"`
+	IsKid bool `json:"is_kid" binding:"required"`
 	// Optional timestamp of the last update
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
@@ -63,13 +63,13 @@ func (m patchFamilyMemberModel) Command(familyId uuid.UUID) (family.Member, erro
 // @Description	Model for updating family details
 type patchFamilyModel struct {
 	// Family ID
-	Id *string `json:"id"`
+	Id *string `json:"id" binding:"required"`
 	// Family name
-	Name string `json:"name"`
+	Name string `json:"name" binding:"required"`
 	// Indicates if family has joint account
-	HaveJointAccount bool `json:"have_joint_account"`
+	HaveJointAccount bool `json:"have_joint_account" binding:"required"`
 	// List of family members
-	Members []patchFamilyMemberModel `json:"members"`
+	Members []patchFamilyMemberModel `json:"members" binding:"required"`
 	// Optional timestamp of the last update
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }

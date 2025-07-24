@@ -20,8 +20,8 @@ type LabelUpdateEndpoint struct {
 }
 
 type updateLabelModel struct {
-	Name      string     `json:"name"`
-	Color     string     `json:"color"`
+	Name      string     `json:"name" binding:"required"`
+	Color     string     `json:"color" binding:"required"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 

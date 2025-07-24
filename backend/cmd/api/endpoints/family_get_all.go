@@ -18,16 +18,15 @@ type FamilyGetAllEndpoint struct {
 }
 
 // Handle godoc
-//
-//	@Summary		Get all family members
-//	@Description	Get all family members
-//	@Tags			family
-//	@Produce		json
-//	@Param			size	query		integer	false	"Number of items per page"
-//	@Param			page	query		integer	false	"Page number"
-//	@Success		200		{object}	paginatedResponseModel[familyModel]
-//	@Failure		400		{object}	httpError
-//	@Router			/families [get]
+// @Summary		Get all family members
+// @Description	Get all family members
+// @Tags			family
+// @Produce		json
+// @Param			size	query		integer	false	"Number of items per page"
+// @Param			page	query		integer	false	"Page number"
+// @Success		200		{object}	paginatedResponseModel[familyModel]
+// @Failure		400		{object}	httpError
+// @Router			/families [get]
 func (f FamilyGetAllEndpoint) Handle(c *gin.Context) {
 	size, err := strconv.Atoi(c.DefaultQuery("size", "10"))
 	if err != nil {

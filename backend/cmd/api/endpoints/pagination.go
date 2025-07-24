@@ -6,12 +6,13 @@ import (
 )
 
 type paginatedResponseModel[TValue any] struct {
-	Data   []TValue `json:"data"`
-	Length int      `json:"length"`
-	Total  int64    `json:"total"`
+	Data   []TValue `json:"data" binding:"required"`
+	Length int      `json:"length" binding:"required"`
+	Total  int64    `json:"total" binding:"required"`
 }
 
-func newPaginatedResponseModel[TValue any, TOut any](p core.PaginatedResponse[TValue],
+func newPaginatedResponseModel[TValue any, TOut any](
+	p core.PaginatedResponse[TValue],
 	mapper func(TValue) TOut) paginatedResponseModel[TOut] {
 	return paginatedResponseModel[TOut]{
 		Data:   ext.Map(p.Data(), mapper),

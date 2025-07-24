@@ -1,5 +1,9 @@
 import 'package:http/http.dart' as http;
+import 'package:microsoft_kiota_bundle/microsoft_kiota_bundle.dart';
+import 'package:subscription_tracker/api/api_client.dart';
+import 'package:subscription_tracker/api/kinde_auth_provider.dart';
 import 'package:subscription_tracker/services/authentication_service.dart';
+import '../models/Paginated.dart';
 import '../models/family.dart';
 import '../models/subscription.dart';
 import '../models/family_member.dart';
@@ -13,43 +17,30 @@ import 'label_service.dart';
 /// API implementation based on the SubTracker swagger specification
 /// This class delegates API calls to specialized services for each resource group
 class ApiService {
-  final String baseUrl;
-  final AuthenticationService authenticationService;
+  late final ApiClient client;
 
-  // Specialized services
-  final SubscriptionService _subscriptionService;
-  final FamilyService _familyService;
-  final LabelService _labelService;
-
-  ApiService({
-    required this.baseUrl,
-    required this.authenticationService,
-    http.Client? httpClient,
-  }) : _subscriptionService = SubscriptionService(
-         baseUrl: baseUrl,
-         authenticationService: authenticationService,
-         httpClient: httpClient,
-       ),
-       _familyService = FamilyService(
-         baseUrl: baseUrl,
-         authenticationService: authenticationService,
-         httpClient: httpClient,
-       ),
-       _labelService = LabelService(
-         baseUrl: baseUrl,
-         authenticationService: authenticationService,
-         httpClient: httpClient,
-       );
-
-  /// Check if the user is authenticated
-  Future<bool> isAuthenticated() async {
-    return _subscriptionService.isAuthenticated();
+  ApiService(String baseUrl, AuthenticationService authenticationService) {
+    var authenticationProvider = KindeAuthenticationProvider(
+      authenticationService,
+    );
+    var requestAdapter = DefaultRequestAdapter(
+      authProvider: authenticationProvider,
+    );
+    requestAdapter.baseUrl = baseUrl;
+    client = ApiClient(requestAdapter);
   }
 
   /// Get all subscriptions from the backend
   /// GET /subscriptions
-  Future<List<Subscription>> getSubscriptions() async {
-    return _subscriptionService.getSubscriptions();
+  Future<Paginated<Subscription>> getSubscriptions({
+    int size = 10,
+    int page = 1,
+  }) async {
+    final result = await client.subscriptions.getAsync((params) {
+      params.queryParameters.page = page;
+      params.queryParameters.size = size;
+    });
+    return new Paginated(result.data, result.length, result.total)
   }
 
   /// Get subscription by ID

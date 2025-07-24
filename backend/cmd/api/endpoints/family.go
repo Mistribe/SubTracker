@@ -55,14 +55,14 @@ func (g FamilyEndpointGroup) Middlewares() []gin.HandlerFunc {
 }
 
 type familyModel struct {
-	Id               string              `json:"id"`
-	Name             string              `json:"name"`
-	IsOwner          bool                `json:"is_owner"`
-	Members          []familyMemberModel `json:"members"`
-	HaveJointAccount bool                `json:"have_joint_account"`
-	CreatedAt        time.Time           `json:"created_at"`
-	UpdatedAt        time.Time           `json:"updated_at"`
-	Etag             string              `json:"etag"`
+	Id               string              `json:"id" binding:"required"`
+	Name             string              `json:"name" binding:"required"`
+	IsOwner          bool                `json:"is_owner" binding:"required"`
+	Members          []familyMemberModel `json:"members" binding:"required"`
+	HaveJointAccount bool                `json:"have_joint_account" binding:"required"`
+	CreatedAt        time.Time           `json:"created_at" binding:"required"`
+	UpdatedAt        time.Time           `json:"updated_at" binding:"required"`
+	Etag             string              `json:"etag" binding:"required"`
 }
 
 func newFamilyModel(userId string, source family.Family) familyModel {
@@ -84,13 +84,13 @@ func newFamilyModel(userId string, source family.Family) familyModel {
 }
 
 type familyMemberModel struct {
-	Id        string    `json:"id"`
-	Name      string    `json:"name"`
-	IsKid     bool      `json:"is_kid"`
-	FamilyId  string    `json:"family_id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Etag      string    `json:"etag"`
+	Id        string    `json:"id" binding:"required"`
+	Name      string    `json:"name" binding:"required"`
+	IsKid     bool      `json:"is_kid" binding:"required"`
+	FamilyId  string    `json:"family_id" binding:"required"`
+	CreatedAt time.Time `json:"created_at" binding:"required"`
+	UpdatedAt time.Time `json:"updated_at" binding:"required"`
+	Etag      string    `json:"etag" binding:"required"`
 }
 
 func newFamilyMemberModel(source family.Member) familyMemberModel {

@@ -12,6 +12,9 @@ components:
           type: boolean
         name:
           type: string
+      required:
+      - is_kid
+      - name
       type: object
     endpoints.createFamilyModel:
       properties:
@@ -23,6 +26,9 @@ components:
           type: string
         name:
           type: string
+      required:
+      - have_joint_account
+      - name
       type: object
     endpoints.createLabelModel:
       properties:
@@ -36,6 +42,9 @@ components:
           type: boolean
         name:
           type: string
+      required:
+      - color
+      - name
       type: object
     endpoints.createPaymentModel:
       properties:
@@ -83,6 +92,11 @@ components:
             $ref: '#/components/schemas/endpoints.createPaymentModel'
           type: array
           uniqueItems: false
+      required:
+      - family_members
+      - labels
+      - name
+      - payments
       type: object
     endpoints.createSubscriptionPaymentModel:
       properties:
@@ -100,6 +114,11 @@ components:
           type: number
         start_date:
           type: string
+      required:
+      - currency
+      - months
+      - price
+      - start_date
       type: object
     endpoints.familyMemberModel:
       properties:
@@ -117,6 +136,14 @@ components:
           type: string
         updated_at:
           type: string
+      required:
+      - created_at
+      - etag
+      - family_id
+      - id
+      - is_kid
+      - name
+      - updated_at
       type: object
     endpoints.familyModel:
       properties:
@@ -139,11 +166,22 @@ components:
           type: string
         updated_at:
           type: string
+      required:
+      - created_at
+      - etag
+      - have_joint_account
+      - id
+      - is_owner
+      - members
+      - name
+      - updated_at
       type: object
     endpoints.httpError:
       properties:
         message:
           type: string
+      required:
+      - message
       type: object
     endpoints.labelModel:
       properties:
@@ -161,6 +199,14 @@ components:
           type: string
         updated_at:
           type: string
+      required:
+      - color
+      - created_at
+      - etag
+      - id
+      - is_default
+      - name
+      - updated_at
       type: object
     endpoints.paginatedResponseModel-endpoints_familyModel:
       properties:
@@ -173,6 +219,10 @@ components:
           type: integer
         total:
           type: integer
+      required:
+      - data
+      - length
+      - total
       type: object
     endpoints.paginatedResponseModel-endpoints_labelModel:
       properties:
@@ -185,6 +235,10 @@ components:
           type: integer
         total:
           type: integer
+      required:
+      - data
+      - length
+      - total
       type: object
     endpoints.paginatedResponseModel-endpoints_subscriptionModel:
       properties:
@@ -197,6 +251,10 @@ components:
           type: integer
         total:
           type: integer
+      required:
+      - data
+      - length
+      - total
       type: object
     endpoints.patchFamilyMemberModel:
       description: Model for updating family member details
@@ -216,6 +274,9 @@ components:
         updated_at:
           description: Optional timestamp of the last update
           type: string
+      required:
+      - is_kid
+      - name
       type: object
     endpoints.patchFamilyModel:
       description: Model for updating family details
@@ -238,6 +299,11 @@ components:
         updated_at:
           description: Optional timestamp of the last update
           type: string
+      required:
+      - have_joint_account
+      - id
+      - members
+      - name
       type: object
     endpoints.patchPaymentModel:
       description: Payment update model
@@ -256,6 +322,11 @@ components:
           type: string
         updated_at:
           type: string
+      required:
+      - currency
+      - months
+      - price
+      - start_date
       type: object
     endpoints.patchSubscriptionModel:
       description: Subscription update model
@@ -287,6 +358,11 @@ components:
           uniqueItems: false
         updated_at:
           type: string
+      required:
+      - family_members
+      - labels
+      - name
+      - payments
       type: object
     endpoints.paymentModel:
       properties:
@@ -308,6 +384,15 @@ components:
           type: string
         updated_at:
           type: string
+      required:
+      - created_at
+      - currency
+      - etag
+      - id
+      - months
+      - price
+      - start_date
+      - updated_at
       type: object
     endpoints.subscriptionModel:
       properties:
@@ -340,6 +425,15 @@ components:
           uniqueItems: false
         updated_at:
           type: string
+      required:
+      - created_at
+      - etag
+      - family_members
+      - id
+      - labels
+      - name
+      - payments
+      - updated_at
       type: object
     endpoints.updateFamilyMemberModel:
       properties:
@@ -351,6 +445,9 @@ components:
           type: string
         updated_at:
           type: string
+      required:
+      - id_kid
+      - name
       type: object
     endpoints.updateFamilyModel:
       properties:
@@ -360,6 +457,9 @@ components:
           type: string
         updated_at:
           type: string
+      required:
+      - have_joint_account
+      - name
       type: object
     endpoints.updateLabelModel:
       properties:
@@ -369,6 +469,9 @@ components:
           type: string
         updated_at:
           type: string
+      required:
+      - color
+      - name
       type: object
     endpoints.updatePaymentModel:
       properties:
@@ -384,6 +487,11 @@ components:
           type: string
         updated_at:
           type: string
+      required:
+      - currency
+      - months
+      - price
+      - start_date
       type: object
     endpoints.updateSubscriptionModel:
       properties:
@@ -407,6 +515,10 @@ components:
           type: string
         updated_at:
           type: string
+      required:
+      - family_members
+      - labels
+      - name
       type: object
 externalDocs:
   description: ""

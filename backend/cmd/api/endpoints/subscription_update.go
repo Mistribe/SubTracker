@@ -20,9 +20,9 @@ type SubscriptionUpdateEndpoint struct {
 }
 
 type updateSubscriptionModel struct {
-	Name                string     `json:"name"`
-	Labels              []string   `json:"labels"`
-	FamilyMembers       []string   `json:"family_members"`
+	Name                string     `json:"name" binding:"required"`
+	Labels              []string   `json:"labels" binding:"required"`
+	FamilyMembers       []string   `json:"family_members" binding:"required"`
 	FamilyId            *string    `json:"family_id,omitempty"`
 	PayerId             *string    `json:"payer_id,omitempty"`
 	PayedByJointAccount bool       `json:"payed_by_joint_account,omitempty"`

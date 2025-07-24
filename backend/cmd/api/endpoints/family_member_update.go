@@ -21,9 +21,9 @@ type FamilyMemberUpdateEndpoint struct {
 }
 
 type updateFamilyMemberModel struct {
-	Name      string     `json:"name"`
+	Name      string     `json:"name" binding:"required"`
 	Email     *string    `json:"email,omitempty"`
-	IsKid     bool       `json:"id_kid"`
+	IsKid     bool       `json:"id_kid" binding:"required"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 

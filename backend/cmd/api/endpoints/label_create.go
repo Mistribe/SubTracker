@@ -22,9 +22,9 @@ type LabelCreateEndpoint struct {
 
 type createLabelModel struct {
 	Id        *string    `json:"id,omitempty"`
-	Name      string     `json:"name"`
+	Name      string     `json:"name" binding:"required"`
 	IsDefault *bool      `json:"is_default,omitempty"`
-	Color     string     `json:"color"`
+	Color     string     `json:"color" binding:"required"`
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 
