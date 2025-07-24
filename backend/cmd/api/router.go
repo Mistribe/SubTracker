@@ -65,7 +65,7 @@ func newGinEngine(parameters EchoServerParams) *gin.Engine {
 
 	e.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"}, // adjust as needed
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "User-Agent"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
