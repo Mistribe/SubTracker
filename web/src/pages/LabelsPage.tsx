@@ -19,14 +19,18 @@ import {PlusIcon, Pencil, X, Loader2} from "lucide-react";
 import {useApiClient} from "@/hooks/use-api-client.ts";
 import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
 import type {LabelModel} from "@/api/models";
+import Label from "@/models/label.ts";
 
 const LabelsPage = () => {
     const {apiClient} = useApiClient();
     const queryClient = useQueryClient();
 
+    const [page, setPage] = useState(1);
+    const [pageSize] = useState(10);
+
     // Fetch labels using TanStack Query
     const {
-        data: labels = [],
+        data: queryResponse,
         isLoading,
         error
     } = useQuery({
@@ -35,8 +39,23 @@ const LabelsPage = () => {
             if (!apiClient) {
                 throw new Error('API client not initialized');
             }
-            const result = await apiClient?.labels.get({queryParameters: {withDefault: true}});
-            return result || [];
+            const result = await apiClient?.labels.get({
+                queryParameters: {
+                    withDefault: true,
+                    page: page,
+                    size: pageSize
+                }
+            });
+            if (result && result.data) {
+                return {
+                    labels: result.data.map((model: LabelModel) => {
+                        return Label.fromModel(model);
+                    }),
+                    length: result.data.length,
+                    total: result.total ?? 0
+                }
+            }
+            return {labels: [], length: 0, total: 0};
         },
         enabled: !!apiClient,
         // Optional but useful settings
@@ -102,7 +121,7 @@ const LabelsPage = () => {
         }
     };
 
-    const startEditing = (label: LabelModel) => {
+    const startEditing = (label: Label) => {
         setEditingId(label.id);
         setEditingName(label.name);
         // Convert hex color to ARGB if needed
@@ -222,7 +241,7 @@ const LabelsPage = () => {
             <div className="mt-8">
                 <h2 className="text-xl font-semibold mb-4">Labels</h2>
                 <div className="grid gap-4">
-                    {labels.map((label) => (
+                    {queryResponse?.labels?.map((label) => (
                         <div
                             key={label.id}
                             className="flex items-center justify-between p-3 border rounded-md"
