@@ -1,10 +1,4 @@
 import {useState} from "react";
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle
-} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {
@@ -125,7 +119,7 @@ const LabelsPage = () => {
         if (label.isDefault) {
             return;
         }
-        
+
         setEditingId(label.id);
         setEditingName(label.name);
         // Convert hex color to ARGB if needed
@@ -162,12 +156,12 @@ const LabelsPage = () => {
     const deleteLabel = (id: string) => {
         // Find the label to check if it's a default label
         const labelToDelete = queryResponse?.labels?.find(label => label.id === id);
-        
+
         // Prevent deleting default labels
         if (labelToDelete?.isDefault) {
             return;
         }
-        
+
         deleteLabelMutation.mutate(id);
     };
 
@@ -194,64 +188,56 @@ const LabelsPage = () => {
         <div>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Labels</h1>
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <div
+                            className="w-4 h-4 rounded-full flex-shrink-0"
+                            style={{backgroundColor: argbToRgba(newLabelColor)}}
+                        />
+                        <Input
+                            placeholder="Enter label name"
+                            value={newLabel}
+                            onChange={(e) => setNewLabel(e.target.value)}
+                            className="h-9 text-sm w-full sm:w-48 md:w-64"
+                        />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" size="sm" className="h-9">
+                                    <div
+                                        className="w-4 h-4 rounded-md mr-1"
+                                        style={{backgroundColor: argbToRgba(newLabelColor)}}
+                                    />
+                                    Color
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <ColorPicker
+                                    color={newLabelColor}
+                                    onChange={setNewLabelColor}
+                                />
+                            </PopoverContent>
+                        </Popover>
+                        <Button
+                            size="sm"
+                            className="h-9"
+                            onClick={handleAddLabel}
+                            disabled={createLabelMutation.isPending}
+                        >
+                            {createLabelMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 mr-1 animate-spin"/>
+                            ) : (
+                                <PlusIcon className="h-4 w-4 mr-1"/>
+                            )}
+                            Add
+                        </Button>
+                    </div>
+                </div>
+                <p>{queryResponse?.total} elements</p>
             </div>
 
-            <Card className="mb-6">
-                <CardHeader className="py-4">
-                    <CardTitle className="text-lg">Add New Label</CardTitle>
-                </CardHeader>
-                <CardContent className="py-2">
-                    <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <div
-                                className="w-4 h-4 rounded-full flex-shrink-0"
-                                style={{backgroundColor: argbToRgba(newLabelColor)}}
-                            />
-                            <Input
-                                placeholder="Enter label name"
-                                value={newLabel}
-                                onChange={(e) => setNewLabel(e.target.value)}
-                                className="h-9 text-sm w-full sm:w-48 md:w-64"
-                            />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button variant="outline" size="sm" className="h-9">
-                                        <div
-                                            className="w-4 h-4 rounded-md mr-1"
-                                            style={{backgroundColor: argbToRgba(newLabelColor)}}
-                                        />
-                                        Color
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                    <ColorPicker
-                                        color={newLabelColor}
-                                        onChange={setNewLabelColor}
-                                    />
-                                </PopoverContent>
-                            </Popover>
-                            <Button
-                                size="sm"
-                                className="h-9"
-                                onClick={handleAddLabel}
-                                disabled={createLabelMutation.isPending}
-                            >
-                                {createLabelMutation.isPending ? (
-                                    <Loader2 className="h-4 w-4 mr-1 animate-spin"/>
-                                ) : (
-                                    <PlusIcon className="h-4 w-4 mr-1"/>
-                                )}
-                                Add
-                            </Button>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
             <div className="mt-8">
-                <h2 className="text-xl font-semibold mb-4">Labels</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                     {queryResponse?.labels?.map((label) => (
                         <div
@@ -303,9 +289,9 @@ const LabelsPage = () => {
                                                 ) : null}
                                                 Save
                                             </Button>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
                                                 className="h-7 px-2"
                                                 onClick={cancelEdit}
                                             >
