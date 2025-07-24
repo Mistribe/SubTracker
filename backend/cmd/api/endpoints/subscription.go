@@ -64,12 +64,12 @@ func NewSubscriptionEndpointGroup(
 type paymentModel struct {
 	Id        string     `json:"id" binding:"required"`
 	Price     float64    `json:"price" binding:"required"`
-	StartDate time.Time  `json:"start_date" binding:"required"`
-	EndDate   *time.Time `json:"end_date,omitempty"`
+	StartDate time.Time  `json:"start_date" binding:"required" format:"date-time"`
+	EndDate   *time.Time `json:"end_date,omitempty" format:"date-time"`
 	Months    int        `json:"months" binding:"required"`
 	Currency  string     `json:"currency" binding:"required"`
-	CreatedAt time.Time  `json:"created_at" binding:"required"`
-	UpdatedAt time.Time  `json:"updated_at" binding:"required"`
+	CreatedAt time.Time  `json:"created_at" binding:"required" format:"date-time"`
+	UpdatedAt time.Time  `json:"updated_at" binding:"required" format:"date-time"`
 	Etag      string     `json:"etag" binding:"required"`
 }
 
@@ -82,8 +82,8 @@ type subscriptionModel struct {
 	PayerId             *string        `json:"payer_id_id,omitempty"`
 	FamilyId            *string        `json:"family_id,omitempty"`
 	PayedByJointAccount bool           `json:"payed_by_joint_account" binding:"required"`
-	CreatedAt           time.Time      `json:"created_at" binding:"required"`
-	UpdatedAt           time.Time      `json:"updated_at" binding:"required"`
+	CreatedAt           time.Time      `json:"created_at" binding:"required" format:"date-time"`
+	UpdatedAt           time.Time      `json:"updated_at" binding:"required" format:"date-time"`
 	Etag                string         `json:"etag" binding:"required"`
 }
 

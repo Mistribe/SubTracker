@@ -29,11 +29,11 @@ func NewSubscriptionPatchEndpoint(handler core.CommandHandler[command.PatchSubsc
 type patchPaymentModel struct {
 	Id        *string    `json:"id,omitempty"`
 	Price     float64    `json:"price" binding:"required"`
-	StartDate time.Time  `json:"start_date" binding:"required"`
-	EndDate   *time.Time `json:"end_date,omitempty"`
+	StartDate time.Time  `json:"start_date" binding:"required" format:"date-time"`
+	EndDate   *time.Time `json:"end_date,omitempty" format:"date-time"`
 	Months    int        `json:"months" binding:"required"`
 	Currency  string     `json:"currency" binding:"required"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
 func (m patchPaymentModel) ToPayment(subscriptionId uuid.UUID) (subscription.Payment, error) {
@@ -75,7 +75,7 @@ type patchSubscriptionModel struct {
 	FamilyMembers       []string            `json:"family_members" binding:"required"`
 	PayerId             *string             `json:"payer_id,omitempty"`
 	PayedByJointAccount bool                `json:"payed_by_joint_account,omitempty"`
-	UpdatedAt           *time.Time          `json:"updated_at,omitempty"`
+	UpdatedAt           *time.Time          `json:"updated_at,omitempty" format:"date-time"`
 }
 
 func (m patchSubscriptionModel) Command() result.Result[command.PatchSubscriptionCommand] {

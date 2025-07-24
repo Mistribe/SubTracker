@@ -3,6 +3,7 @@ components:
     endpoints.createFamilyMemberModel:
       properties:
         created_at:
+          format: date-time
           type: string
         email:
           type: string
@@ -19,6 +20,7 @@ components:
     endpoints.createFamilyModel:
       properties:
         created_at:
+          format: date-time
           type: string
         have_joint_account:
           type: boolean
@@ -35,6 +37,7 @@ components:
         color:
           type: string
         created_at:
+          format: date-time
           type: string
         id:
           type: string
@@ -49,10 +52,12 @@ components:
     endpoints.createPaymentModel:
       properties:
         created_at:
+          format: date-time
           type: string
         currency:
           type: string
         end_date:
+          format: date-time
           type: string
         id:
           type: string
@@ -61,6 +66,7 @@ components:
         price:
           type: number
         start_date:
+          format: date-time
           type: string
       type: object
     endpoints.createSubscriptionModel:
@@ -101,10 +107,12 @@ components:
     endpoints.createSubscriptionPaymentModel:
       properties:
         created_at:
+          format: date-time
           type: string
         currency:
           type: string
         end_date:
+          format: date-time
           type: string
         id:
           type: string
@@ -113,6 +121,7 @@ components:
         price:
           type: number
         start_date:
+          format: date-time
           type: string
       required:
       - currency
@@ -123,6 +132,7 @@ components:
     endpoints.familyMemberModel:
       properties:
         created_at:
+          format: date-time
           type: string
         etag:
           type: string
@@ -135,6 +145,7 @@ components:
         name:
           type: string
         updated_at:
+          format: date-time
           type: string
       required:
       - created_at
@@ -148,6 +159,7 @@ components:
     endpoints.familyModel:
       properties:
         created_at:
+          format: date-time
           type: string
         etag:
           type: string
@@ -165,6 +177,7 @@ components:
         name:
           type: string
         updated_at:
+          format: date-time
           type: string
       required:
       - created_at
@@ -188,6 +201,8 @@ components:
         color:
           type: string
         created_at:
+          description: CreatedAt date and time the label was created
+          format: date-time
           type: string
         etag:
           type: string
@@ -198,6 +213,8 @@ components:
         name:
           type: string
         updated_at:
+          description: UpdatedAt date and time the label was last updated
+          format: date-time
           type: string
       required:
       - color
@@ -273,6 +290,7 @@ components:
           type: string
         updated_at:
           description: Optional timestamp of the last update
+          format: date-time
           type: string
       required:
       - is_kid
@@ -298,6 +316,7 @@ components:
           type: string
         updated_at:
           description: Optional timestamp of the last update
+          format: date-time
           type: string
       required:
       - have_joint_account
@@ -311,6 +330,7 @@ components:
         currency:
           type: string
         end_date:
+          format: date-time
           type: string
         id:
           type: string
@@ -319,8 +339,10 @@ components:
         price:
           type: number
         start_date:
+          format: date-time
           type: string
         updated_at:
+          format: date-time
           type: string
       required:
       - currency
@@ -357,6 +379,7 @@ components:
           type: array
           uniqueItems: false
         updated_at:
+          format: date-time
           type: string
       required:
       - family_members
@@ -367,10 +390,12 @@ components:
     endpoints.paymentModel:
       properties:
         created_at:
+          format: date-time
           type: string
         currency:
           type: string
         end_date:
+          format: date-time
           type: string
         etag:
           type: string
@@ -381,8 +406,10 @@ components:
         price:
           type: number
         start_date:
+          format: date-time
           type: string
         updated_at:
+          format: date-time
           type: string
       required:
       - created_at
@@ -397,6 +424,7 @@ components:
     endpoints.subscriptionModel:
       properties:
         created_at:
+          format: date-time
           type: string
         etag:
           type: string
@@ -426,6 +454,7 @@ components:
           type: array
           uniqueItems: false
         updated_at:
+          format: date-time
           type: string
       required:
       - created_at
@@ -447,6 +476,7 @@ components:
         name:
           type: string
         updated_at:
+          format: date-time
           type: string
       required:
       - id_kid
@@ -459,6 +489,7 @@ components:
         name:
           type: string
         updated_at:
+          format: date-time
           type: string
       required:
       - have_joint_account
@@ -471,6 +502,7 @@ components:
         name:
           type: string
         updated_at:
+          format: date-time
           type: string
       required:
       - color
@@ -481,14 +513,17 @@ components:
         currency:
           type: string
         end_date:
+          format: date-time
           type: string
         months:
           type: integer
         price:
           type: number
         start_date:
+          format: date-time
           type: string
         updated_at:
+          format: date-time
           type: string
       required:
       - currency
@@ -517,6 +552,7 @@ components:
         payer_id:
           type: string
         updated_at:
+          format: date-time
           type: string
       required:
       - family_members

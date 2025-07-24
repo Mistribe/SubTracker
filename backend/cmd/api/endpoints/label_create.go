@@ -25,7 +25,7 @@ type createLabelModel struct {
 	Name      string     `json:"name" binding:"required"`
 	IsDefault *bool      `json:"is_default,omitempty"`
 	Color     string     `json:"color" binding:"required"`
-	CreatedAt *time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty" format:"date-time"`
 }
 
 func (m createLabelModel) ToLabel(userId string) result.Result[label.Label] {

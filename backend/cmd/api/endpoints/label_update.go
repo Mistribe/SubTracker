@@ -22,7 +22,7 @@ type LabelUpdateEndpoint struct {
 type updateLabelModel struct {
 	Name      string     `json:"name" binding:"required"`
 	Color     string     `json:"color" binding:"required"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
 func (m updateLabelModel) Command(id uuid.UUID) result.Result[command.UpdateLabelCommand] {

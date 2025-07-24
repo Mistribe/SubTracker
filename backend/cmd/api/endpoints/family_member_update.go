@@ -24,7 +24,7 @@ type updateFamilyMemberModel struct {
 	Name      string     `json:"name" binding:"required"`
 	Email     *string    `json:"email,omitempty"`
 	IsKid     bool       `json:"id_kid" binding:"required"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
 func (m updateFamilyMemberModel) Command(familyId, memberId uuid.UUID) result.Result[command.UpdateFamilyMemberCommand] {

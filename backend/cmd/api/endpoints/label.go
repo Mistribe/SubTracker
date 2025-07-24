@@ -51,12 +51,14 @@ func (g LabelEndpointGroup) Middlewares() []gin.HandlerFunc {
 }
 
 type labelModel struct {
-	Id        string    `json:"id" binding:"required"`
-	Name      string    `json:"name" binding:"required"`
-	IsDefault bool      `json:"is_default" binding:"required"`
-	Color     string    `json:"color" binding:"required"`
-	CreatedAt time.Time `json:"created_at" binding:"required"`
-	UpdatedAt time.Time `json:"updated_at" binding:"required"`
+	Id        string `json:"id" binding:"required"`
+	Name      string `json:"name" binding:"required"`
+	IsDefault bool   `json:"is_default" binding:"required"`
+	Color     string `json:"color" binding:"required"`
+	// CreatedAt date and time the label was created
+	CreatedAt time.Time `json:"created_at" binding:"required" format:"date-time"`
+	// UpdatedAt date and time the label was last updated
+	UpdatedAt time.Time `json:"updated_at" binding:"required" format:"date-time"`
 	Etag      string    `json:"etag" binding:"required"`
 }
 

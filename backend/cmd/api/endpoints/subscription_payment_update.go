@@ -22,11 +22,11 @@ type SubscriptionPaymentUpdateEndpoint struct {
 
 type updatePaymentModel struct {
 	Price     float64    `json:"price" binding:"required"`
-	StartDate time.Time  `json:"start_date" binding:"required"`
-	EndDate   *time.Time `json:"end_date,omitempty"`
+	StartDate time.Time  `json:"start_date" binding:"required" format:"date-time"`
+	EndDate   *time.Time `json:"end_date,omitempty" format:"date-time"`
 	Months    int        `json:"months" binding:"required"`
 	Currency  string     `json:"currency" binding:"required"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
 func (m updatePaymentModel) ToCommand(

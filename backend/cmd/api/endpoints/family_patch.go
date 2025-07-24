@@ -34,7 +34,7 @@ type patchFamilyMemberModel struct {
 	// Indicates if the member is a kid
 	IsKid bool `json:"is_kid" binding:"required"`
 	// Optional timestamp of the last update
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
 func (m patchFamilyMemberModel) Command(familyId uuid.UUID) (family.Member, error) {
@@ -71,7 +71,7 @@ type patchFamilyModel struct {
 	// List of family members
 	Members []patchFamilyMemberModel `json:"members" binding:"required"`
 	// Optional timestamp of the last update
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
 func (m patchFamilyModel) Command(ownerId string) result.Result[command.PatchFamilyCommand] {

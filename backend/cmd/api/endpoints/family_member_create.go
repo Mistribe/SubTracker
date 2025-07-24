@@ -26,7 +26,7 @@ type createFamilyMemberModel struct {
 	Name      string     `json:"name" binding:"required"`
 	Email     *string    `json:"email,omitempty"`
 	IsKid     bool       `json:"is_kid" binding:"required"`
-	CreatedAt *time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty" format:"date-time"`
 }
 
 func (m createFamilyMemberModel) ToFamilyMember(familyId uuid.UUID) result.Result[family.Member] {

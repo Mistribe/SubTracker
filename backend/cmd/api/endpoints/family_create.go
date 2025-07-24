@@ -24,7 +24,7 @@ type createFamilyModel struct {
 	Id               *string    `json:"id,omitempty"`
 	Name             string     `json:"name" binding:"required"`
 	HaveJointAccount bool       `json:"have_joint_account" binding:"required"`
-	CreatedAt        *time.Time `json:"created_at,omitempty"`
+	CreatedAt        *time.Time `json:"created_at,omitempty" format:"date-time"`
 }
 
 func (m createFamilyModel) ToFamily(ownerId string) result.Result[family.Family] {

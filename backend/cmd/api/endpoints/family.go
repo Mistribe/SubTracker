@@ -60,8 +60,8 @@ type familyModel struct {
 	IsOwner          bool                `json:"is_owner" binding:"required"`
 	Members          []familyMemberModel `json:"members" binding:"required"`
 	HaveJointAccount bool                `json:"have_joint_account" binding:"required"`
-	CreatedAt        time.Time           `json:"created_at" binding:"required"`
-	UpdatedAt        time.Time           `json:"updated_at" binding:"required"`
+	CreatedAt        time.Time           `json:"created_at" binding:"required" format:"date-time"`
+	UpdatedAt        time.Time           `json:"updated_at" binding:"required" format:"date-time"`
 	Etag             string              `json:"etag" binding:"required"`
 }
 
@@ -88,8 +88,8 @@ type familyMemberModel struct {
 	Name      string    `json:"name" binding:"required"`
 	IsKid     bool      `json:"is_kid" binding:"required"`
 	FamilyId  string    `json:"family_id" binding:"required"`
-	CreatedAt time.Time `json:"created_at" binding:"required"`
-	UpdatedAt time.Time `json:"updated_at" binding:"required"`
+	CreatedAt time.Time `json:"created_at" binding:"required" format:"date-time"`
+	UpdatedAt time.Time `json:"updated_at" binding:"required" format:"date-time"`
 	Etag      string    `json:"etag" binding:"required"`
 }
 

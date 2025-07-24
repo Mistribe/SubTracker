@@ -26,7 +26,7 @@ type updateSubscriptionModel struct {
 	FamilyId            *string    `json:"family_id,omitempty"`
 	PayerId             *string    `json:"payer_id,omitempty"`
 	PayedByJointAccount bool       `json:"payed_by_joint_account,omitempty"`
-	UpdatedAt           *time.Time `json:"updated_at,omitempty"`
+	UpdatedAt           *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
 func (m updateSubscriptionModel) Command(id uuid.UUID) result.Result[command.UpdateSubscriptionCommand] {

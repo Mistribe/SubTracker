@@ -24,7 +24,7 @@ type FamilyUpdateEndpoint struct {
 type updateFamilyModel struct {
 	Name             string     `json:"name" binding:"required"`
 	HaveJointAccount bool       `json:"have_joint_account" binding:"required"`
-	UpdatedAt        *time.Time `json:"updated_at,omitempty"`
+	UpdatedAt        *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
 func (m updateFamilyModel) ToFamily(id uuid.UUID, ownerId string, createdAt time.Time) result.Result[family.Family] {
