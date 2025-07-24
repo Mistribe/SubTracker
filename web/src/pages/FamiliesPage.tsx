@@ -1,139 +1,151 @@
-import { useState } from "react";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import {useState} from "react";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle
 } from "@/components/ui/card";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
-
-interface FamilyMember {
-  id: number;
-  name: string;
-  role: string;
-  email: string;
-}
-
-interface Family {
-  id: number;
-  name: string;
-  members: FamilyMember[];
-}
+import {Button} from "@/components/ui/button";
+import {PlusIcon, Loader2} from "lucide-react";
+import Family from "@/models/family.ts";
+import {useApiClient} from "@/hooks/use-api-client.ts";
+import {useQuery} from "@tanstack/react-query";
+import type {FamilyModel} from "@/api/models";
 
 const FamiliesPage = () => {
-  // Sample data - in a real app, this would come from an API
-  const [families] = useState<Family[]>([
-    {
-      id: 1,
-      name: "Smith Family",
-      members: [
-        {
-          id: 1,
-          name: "John Smith",
-          role: "Admin",
-          email: "john.smith@example.com"
+    const {apiClient} = useApiClient();
+
+    const [page] = useState(1);
+    const [pageSize] = useState(10);
+
+    // Fetch families using TanStack Query
+    const {
+        data: queryResponse,
+        isLoading,
+        error
+    } = useQuery({
+        queryKey: ['families'],
+        queryFn: async () => {
+            if (!apiClient) {
+                throw new Error('API client not initialized');
+            }
+            const result = await apiClient.families.get({
+                queryParameters: {
+                    page: page,
+                    size: pageSize
+                }
+            });
+            if (result && result.data) {
+                return {
+                    families: result.data.map((model: FamilyModel) => {
+                        return Family.fromModel(model);
+                    }),
+                    length: result.data.length,
+                    total: result.total ?? 0
+                }
+            }
+            return {families: [], length: 0, total: 0};
         },
-        {
-          id: 2,
-          name: "Jane Smith",
-          role: "Member",
-          email: "jane.smith@example.com"
-        },
-        {
-          id: 3,
-          name: "Jimmy Smith",
-          role: "Member",
-          email: "jimmy.smith@example.com"
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: "Johnson Family",
-      members: [
-        {
-          id: 4,
-          name: "Mike Johnson",
-          role: "Admin",
-          email: "mike.johnson@example.com"
-        },
-        {
-          id: 5,
-          name: "Sarah Johnson",
-          role: "Member",
-          email: "sarah.johnson@example.com"
-        }
-      ]
+        enabled: !!apiClient,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        refetchOnWindowFocus: true,
+    });
+
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin"/>
+                <span className="ml-2">Loading families...</span>
+            </div>
+        );
     }
-  ]);
 
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Families</h1>
-        <Button>
-          <PlusIcon className="h-4 w-4 mr-2" />
-          Add Family
-        </Button>
-      </div>
+    // Error state
+    if (error) {
+        return (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <strong className="font-bold">Error!</strong>
+                <span
+                    className="block sm:inline"> {error instanceof Error ? error.message : 'Failed to load families'}</span>
+            </div>
+        );
+    }
 
-      <div className="grid gap-6">
-        {families.map((family) => (
-          <Card key={family.id}>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>{family.name}</CardTitle>
-                  <CardDescription>{family.members.length} members</CardDescription>
+    const families = queryResponse?.families || [];
+
+    return (
+        <div>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold">Families</h1>
+                <Button>
+                    <PlusIcon className="h-4 w-4 mr-2"/>
+                    Add Family
+                </Button>
+            </div>
+
+            {families.length === 0 ? (
+                <div className="text-center p-8 bg-gray-50 rounded-lg">
+                    <p className="text-gray-500">No families found. Create your first family to get started.</p>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">Edit</Button>
-                  <Button variant="outline" size="sm">
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Add Member
-                  </Button>
+            ) : (
+                <div className="grid gap-6">
+                    {families.map((family) => (
+                        <Card key={family.id}>
+                            <CardHeader>
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <CardTitle>{family.name}</CardTitle>
+                                        <CardDescription>{family.members.length} members</CardDescription>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button variant="outline" size="sm">Edit</Button>
+                                        <Button variant="outline" size="sm">
+                                            <PlusIcon className="h-4 w-4 mr-2"/>
+                                            Add Member
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Name</TableHead>
+                                            <TableHead>Role</TableHead>
+                                            <TableHead>Email</TableHead>
+                                            <TableHead className="w-[100px]">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {family.members.map((member) => (
+                                            <TableRow key={member.id}>
+                                                <TableCell className="font-medium">{member.name}</TableCell>
+                                                <TableCell>{member.isKid ? 'Kid' : 'Adult'}</TableCell>
+                                                <TableCell>{member.email}</TableCell>
+                                                <TableCell>
+                                                    <Button variant="ghost" size="sm">Edit</Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    ))}
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead className="w-[100px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {family.members.map((member) => (
-                    <TableRow key={member.id}>
-                      <TableCell className="font-medium">{member.name}</TableCell>
-                      <TableCell>{member.role}</TableCell>
-                      <TableCell>{member.email}</TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="sm">Edit</Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
+            )}
+        </div>
+    );
 };
 
 export default FamiliesPage;
