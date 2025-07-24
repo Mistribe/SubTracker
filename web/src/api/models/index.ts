@@ -62,7 +62,7 @@ export interface CreateFamilyMemberModel extends AdditionalDataHolder, Parsable 
     /**
      * The created_at property
      */
-    createdAt?: string | null;
+    createdAt?: Date | null;
     /**
      * The email property
      */
@@ -93,7 +93,7 @@ export interface CreateFamilyModel extends AdditionalDataHolder, Parsable {
     /**
      * The created_at property
      */
-    createdAt?: string | null;
+    createdAt?: Date | null;
     /**
      * The have_joint_account property
      */
@@ -133,7 +133,7 @@ export interface CreateLabelModel extends AdditionalDataHolder, Parsable {
     /**
      * The created_at property
      */
-    createdAt?: string | null;
+    createdAt?: Date | null;
     /**
      * The id property
      */
@@ -223,7 +223,7 @@ export interface CreatePaymentModel extends AdditionalDataHolder, Parsable {
     /**
      * The created_at property
      */
-    createdAt?: string | null;
+    createdAt?: Date | null;
     /**
      * The currency property
      */
@@ -231,7 +231,7 @@ export interface CreatePaymentModel extends AdditionalDataHolder, Parsable {
     /**
      * The end_date property
      */
-    endDate?: string | null;
+    endDate?: Date | null;
     /**
      * The id property
      */
@@ -247,7 +247,7 @@ export interface CreatePaymentModel extends AdditionalDataHolder, Parsable {
     /**
      * The start_date property
      */
-    startDate?: string | null;
+    startDate?: Date | null;
 }
 /**
  * Creates a new instance of the appropriate class based on discriminator value
@@ -309,7 +309,7 @@ export interface CreateSubscriptionPaymentModel extends AdditionalDataHolder, Pa
     /**
      * The created_at property
      */
-    createdAt?: string | null;
+    createdAt?: Date | null;
     /**
      * The currency property
      */
@@ -317,7 +317,7 @@ export interface CreateSubscriptionPaymentModel extends AdditionalDataHolder, Pa
     /**
      * The end_date property
      */
-    endDate?: string | null;
+    endDate?: Date | null;
     /**
      * The id property
      */
@@ -333,7 +333,7 @@ export interface CreateSubscriptionPaymentModel extends AdditionalDataHolder, Pa
     /**
      * The start_date property
      */
-    startDate?: string | null;
+    startDate?: Date | null;
 }
 /**
  * Creates a new instance of the appropriate class based on discriminator value
@@ -388,7 +388,7 @@ export function createUpdateSubscriptionModelFromDiscriminatorValue(parseNode: P
 // @ts-ignore
 export function deserializeIntoCreateFamilyMemberModel(createFamilyMemberModel: Partial<CreateFamilyMemberModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "created_at": n => { createFamilyMemberModel.createdAt = n.getStringValue(); },
+        "created_at": n => { createFamilyMemberModel.createdAt = n.getDateValue(); },
         "email": n => { createFamilyMemberModel.email = n.getStringValue(); },
         "id": n => { createFamilyMemberModel.id = n.getStringValue(); },
         "is_kid": n => { createFamilyMemberModel.isKid = n.getBooleanValue(); },
@@ -403,7 +403,7 @@ export function deserializeIntoCreateFamilyMemberModel(createFamilyMemberModel: 
 // @ts-ignore
 export function deserializeIntoCreateFamilyModel(createFamilyModel: Partial<CreateFamilyModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "created_at": n => { createFamilyModel.createdAt = n.getStringValue(); },
+        "created_at": n => { createFamilyModel.createdAt = n.getDateValue(); },
         "have_joint_account": n => { createFamilyModel.haveJointAccount = n.getBooleanValue(); },
         "id": n => { createFamilyModel.id = n.getStringValue(); },
         "name": n => { createFamilyModel.name = n.getStringValue(); },
@@ -418,7 +418,7 @@ export function deserializeIntoCreateFamilyModel(createFamilyModel: Partial<Crea
 export function deserializeIntoCreateLabelModel(createLabelModel: Partial<CreateLabelModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "color": n => { createLabelModel.color = n.getStringValue(); },
-        "created_at": n => { createLabelModel.createdAt = n.getStringValue(); },
+        "created_at": n => { createLabelModel.createdAt = n.getDateValue(); },
         "id": n => { createLabelModel.id = n.getStringValue(); },
         "is_default": n => { createLabelModel.isDefault = n.getBooleanValue(); },
         "name": n => { createLabelModel.name = n.getStringValue(); },
@@ -432,13 +432,13 @@ export function deserializeIntoCreateLabelModel(createLabelModel: Partial<Create
 // @ts-ignore
 export function deserializeIntoCreatePaymentModel(createPaymentModel: Partial<CreatePaymentModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "created_at": n => { createPaymentModel.createdAt = n.getStringValue(); },
+        "created_at": n => { createPaymentModel.createdAt = n.getDateValue(); },
         "currency": n => { createPaymentModel.currency = n.getStringValue(); },
-        "end_date": n => { createPaymentModel.endDate = n.getStringValue(); },
+        "end_date": n => { createPaymentModel.endDate = n.getDateValue(); },
         "id": n => { createPaymentModel.id = n.getStringValue(); },
         "months": n => { createPaymentModel.months = n.getNumberValue(); },
         "price": n => { createPaymentModel.price = n.getNumberValue(); },
-        "start_date": n => { createPaymentModel.startDate = n.getStringValue(); },
+        "start_date": n => { createPaymentModel.startDate = n.getDateValue(); },
     }
 }
 /**
@@ -468,13 +468,13 @@ export function deserializeIntoCreateSubscriptionModel(createSubscriptionModel: 
 // @ts-ignore
 export function deserializeIntoCreateSubscriptionPaymentModel(createSubscriptionPaymentModel: Partial<CreateSubscriptionPaymentModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "created_at": n => { createSubscriptionPaymentModel.createdAt = n.getStringValue(); },
+        "created_at": n => { createSubscriptionPaymentModel.createdAt = n.getDateValue(); },
         "currency": n => { createSubscriptionPaymentModel.currency = n.getStringValue(); },
-        "end_date": n => { createSubscriptionPaymentModel.endDate = n.getStringValue(); },
+        "end_date": n => { createSubscriptionPaymentModel.endDate = n.getDateValue(); },
         "id": n => { createSubscriptionPaymentModel.id = n.getStringValue(); },
         "months": n => { createSubscriptionPaymentModel.months = n.getNumberValue(); },
         "price": n => { createSubscriptionPaymentModel.price = n.getNumberValue(); },
-        "start_date": n => { createSubscriptionPaymentModel.startDate = n.getStringValue(); },
+        "start_date": n => { createSubscriptionPaymentModel.startDate = n.getDateValue(); },
     }
 }
 /**
@@ -485,13 +485,13 @@ export function deserializeIntoCreateSubscriptionPaymentModel(createSubscription
 // @ts-ignore
 export function deserializeIntoFamilyMemberModel(familyMemberModel: Partial<FamilyMemberModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "created_at": n => { familyMemberModel.createdAt = n.getStringValue(); },
+        "created_at": n => { familyMemberModel.createdAt = n.getDateValue(); },
         "etag": n => { familyMemberModel.etag = n.getStringValue(); },
         "family_id": n => { familyMemberModel.familyId = n.getStringValue(); },
         "id": n => { familyMemberModel.id = n.getStringValue(); },
         "is_kid": n => { familyMemberModel.isKid = n.getBooleanValue(); },
         "name": n => { familyMemberModel.name = n.getStringValue(); },
-        "updated_at": n => { familyMemberModel.updatedAt = n.getStringValue(); },
+        "updated_at": n => { familyMemberModel.updatedAt = n.getDateValue(); },
     }
 }
 /**
@@ -502,14 +502,14 @@ export function deserializeIntoFamilyMemberModel(familyMemberModel: Partial<Fami
 // @ts-ignore
 export function deserializeIntoFamilyModel(familyModel: Partial<FamilyModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "created_at": n => { familyModel.createdAt = n.getStringValue(); },
+        "created_at": n => { familyModel.createdAt = n.getDateValue(); },
         "etag": n => { familyModel.etag = n.getStringValue(); },
         "have_joint_account": n => { familyModel.haveJointAccount = n.getBooleanValue(); },
         "id": n => { familyModel.id = n.getStringValue(); },
         "is_owner": n => { familyModel.isOwner = n.getBooleanValue(); },
         "members": n => { familyModel.members = n.getCollectionOfObjectValues<FamilyMemberModel>(createFamilyMemberModelFromDiscriminatorValue); },
         "name": n => { familyModel.name = n.getStringValue(); },
-        "updated_at": n => { familyModel.updatedAt = n.getStringValue(); },
+        "updated_at": n => { familyModel.updatedAt = n.getDateValue(); },
     }
 }
 /**
@@ -532,12 +532,12 @@ export function deserializeIntoHttpError(httpError: Partial<HttpError> | undefin
 export function deserializeIntoLabelModel(labelModel: Partial<LabelModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "color": n => { labelModel.color = n.getStringValue(); },
-        "created_at": n => { labelModel.createdAt = n.getStringValue(); },
+        "created_at": n => { labelModel.createdAt = n.getDateValue(); },
         "etag": n => { labelModel.etag = n.getStringValue(); },
         "id": n => { labelModel.id = n.getStringValue(); },
         "is_default": n => { labelModel.isDefault = n.getBooleanValue(); },
         "name": n => { labelModel.name = n.getStringValue(); },
-        "updated_at": n => { labelModel.updatedAt = n.getStringValue(); },
+        "updated_at": n => { labelModel.updatedAt = n.getDateValue(); },
     }
 }
 /**
@@ -591,7 +591,7 @@ export function deserializeIntoPatchFamilyMemberModel(patchFamilyMemberModel: Pa
         "id": n => { patchFamilyMemberModel.id = n.getStringValue(); },
         "is_kid": n => { patchFamilyMemberModel.isKid = n.getBooleanValue(); },
         "name": n => { patchFamilyMemberModel.name = n.getStringValue(); },
-        "updated_at": n => { patchFamilyMemberModel.updatedAt = n.getStringValue(); },
+        "updated_at": n => { patchFamilyMemberModel.updatedAt = n.getDateValue(); },
     }
 }
 /**
@@ -606,7 +606,7 @@ export function deserializeIntoPatchFamilyModel(patchFamilyModel: Partial<PatchF
         "id": n => { patchFamilyModel.id = n.getStringValue(); },
         "members": n => { patchFamilyModel.members = n.getCollectionOfObjectValues<PatchFamilyMemberModel>(createPatchFamilyMemberModelFromDiscriminatorValue); },
         "name": n => { patchFamilyModel.name = n.getStringValue(); },
-        "updated_at": n => { patchFamilyModel.updatedAt = n.getStringValue(); },
+        "updated_at": n => { patchFamilyModel.updatedAt = n.getDateValue(); },
     }
 }
 /**
@@ -618,12 +618,12 @@ export function deserializeIntoPatchFamilyModel(patchFamilyModel: Partial<PatchF
 export function deserializeIntoPatchPaymentModel(patchPaymentModel: Partial<PatchPaymentModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "currency": n => { patchPaymentModel.currency = n.getStringValue(); },
-        "end_date": n => { patchPaymentModel.endDate = n.getStringValue(); },
+        "end_date": n => { patchPaymentModel.endDate = n.getDateValue(); },
         "id": n => { patchPaymentModel.id = n.getStringValue(); },
         "months": n => { patchPaymentModel.months = n.getNumberValue(); },
         "price": n => { patchPaymentModel.price = n.getNumberValue(); },
-        "start_date": n => { patchPaymentModel.startDate = n.getStringValue(); },
-        "updated_at": n => { patchPaymentModel.updatedAt = n.getStringValue(); },
+        "start_date": n => { patchPaymentModel.startDate = n.getDateValue(); },
+        "updated_at": n => { patchPaymentModel.updatedAt = n.getDateValue(); },
     }
 }
 /**
@@ -642,7 +642,7 @@ export function deserializeIntoPatchSubscriptionModel(patchSubscriptionModel: Pa
         "payed_by_joint_account": n => { patchSubscriptionModel.payedByJointAccount = n.getBooleanValue(); },
         "payer_id": n => { patchSubscriptionModel.payerId = n.getStringValue(); },
         "payments": n => { patchSubscriptionModel.payments = n.getCollectionOfObjectValues<PatchPaymentModel>(createPatchPaymentModelFromDiscriminatorValue); },
-        "updated_at": n => { patchSubscriptionModel.updatedAt = n.getStringValue(); },
+        "updated_at": n => { patchSubscriptionModel.updatedAt = n.getDateValue(); },
     }
 }
 /**
@@ -653,15 +653,15 @@ export function deserializeIntoPatchSubscriptionModel(patchSubscriptionModel: Pa
 // @ts-ignore
 export function deserializeIntoPaymentModel(paymentModel: Partial<PaymentModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "created_at": n => { paymentModel.createdAt = n.getStringValue(); },
+        "created_at": n => { paymentModel.createdAt = n.getDateValue(); },
         "currency": n => { paymentModel.currency = n.getStringValue(); },
-        "end_date": n => { paymentModel.endDate = n.getStringValue(); },
+        "end_date": n => { paymentModel.endDate = n.getDateValue(); },
         "etag": n => { paymentModel.etag = n.getStringValue(); },
         "id": n => { paymentModel.id = n.getStringValue(); },
         "months": n => { paymentModel.months = n.getNumberValue(); },
         "price": n => { paymentModel.price = n.getNumberValue(); },
-        "start_date": n => { paymentModel.startDate = n.getStringValue(); },
-        "updated_at": n => { paymentModel.updatedAt = n.getStringValue(); },
+        "start_date": n => { paymentModel.startDate = n.getDateValue(); },
+        "updated_at": n => { paymentModel.updatedAt = n.getDateValue(); },
     }
 }
 /**
@@ -672,7 +672,7 @@ export function deserializeIntoPaymentModel(paymentModel: Partial<PaymentModel> 
 // @ts-ignore
 export function deserializeIntoSubscriptionModel(subscriptionModel: Partial<SubscriptionModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "created_at": n => { subscriptionModel.createdAt = n.getStringValue(); },
+        "created_at": n => { subscriptionModel.createdAt = n.getDateValue(); },
         "etag": n => { subscriptionModel.etag = n.getStringValue(); },
         "family_id": n => { subscriptionModel.familyId = n.getStringValue(); },
         "family_members": n => { subscriptionModel.familyMembers = n.getCollectionOfPrimitiveValues<string>(); },
@@ -682,7 +682,7 @@ export function deserializeIntoSubscriptionModel(subscriptionModel: Partial<Subs
         "payed_by_joint_account": n => { subscriptionModel.payedByJointAccount = n.getBooleanValue(); },
         "payer_id_id": n => { subscriptionModel.payerIdId = n.getStringValue(); },
         "payments": n => { subscriptionModel.payments = n.getCollectionOfObjectValues<PaymentModel>(createPaymentModelFromDiscriminatorValue); },
-        "updated_at": n => { subscriptionModel.updatedAt = n.getStringValue(); },
+        "updated_at": n => { subscriptionModel.updatedAt = n.getDateValue(); },
     }
 }
 /**
@@ -696,7 +696,7 @@ export function deserializeIntoUpdateFamilyMemberModel(updateFamilyMemberModel: 
         "email": n => { updateFamilyMemberModel.email = n.getStringValue(); },
         "id_kid": n => { updateFamilyMemberModel.idKid = n.getBooleanValue(); },
         "name": n => { updateFamilyMemberModel.name = n.getStringValue(); },
-        "updated_at": n => { updateFamilyMemberModel.updatedAt = n.getStringValue(); },
+        "updated_at": n => { updateFamilyMemberModel.updatedAt = n.getDateValue(); },
     }
 }
 /**
@@ -709,7 +709,7 @@ export function deserializeIntoUpdateFamilyModel(updateFamilyModel: Partial<Upda
     return {
         "have_joint_account": n => { updateFamilyModel.haveJointAccount = n.getBooleanValue(); },
         "name": n => { updateFamilyModel.name = n.getStringValue(); },
-        "updated_at": n => { updateFamilyModel.updatedAt = n.getStringValue(); },
+        "updated_at": n => { updateFamilyModel.updatedAt = n.getDateValue(); },
     }
 }
 /**
@@ -722,7 +722,7 @@ export function deserializeIntoUpdateLabelModel(updateLabelModel: Partial<Update
     return {
         "color": n => { updateLabelModel.color = n.getStringValue(); },
         "name": n => { updateLabelModel.name = n.getStringValue(); },
-        "updated_at": n => { updateLabelModel.updatedAt = n.getStringValue(); },
+        "updated_at": n => { updateLabelModel.updatedAt = n.getDateValue(); },
     }
 }
 /**
@@ -734,11 +734,11 @@ export function deserializeIntoUpdateLabelModel(updateLabelModel: Partial<Update
 export function deserializeIntoUpdatePaymentModel(updatePaymentModel: Partial<UpdatePaymentModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "currency": n => { updatePaymentModel.currency = n.getStringValue(); },
-        "end_date": n => { updatePaymentModel.endDate = n.getStringValue(); },
+        "end_date": n => { updatePaymentModel.endDate = n.getDateValue(); },
         "months": n => { updatePaymentModel.months = n.getNumberValue(); },
         "price": n => { updatePaymentModel.price = n.getNumberValue(); },
-        "start_date": n => { updatePaymentModel.startDate = n.getStringValue(); },
-        "updated_at": n => { updatePaymentModel.updatedAt = n.getStringValue(); },
+        "start_date": n => { updatePaymentModel.startDate = n.getDateValue(); },
+        "updated_at": n => { updatePaymentModel.updatedAt = n.getDateValue(); },
     }
 }
 /**
@@ -755,14 +755,14 @@ export function deserializeIntoUpdateSubscriptionModel(updateSubscriptionModel: 
         "name": n => { updateSubscriptionModel.name = n.getStringValue(); },
         "payed_by_joint_account": n => { updateSubscriptionModel.payedByJointAccount = n.getBooleanValue(); },
         "payer_id": n => { updateSubscriptionModel.payerId = n.getStringValue(); },
-        "updated_at": n => { updateSubscriptionModel.updatedAt = n.getStringValue(); },
+        "updated_at": n => { updateSubscriptionModel.updatedAt = n.getDateValue(); },
     }
 }
 export interface FamilyMemberModel extends AdditionalDataHolder, Parsable {
     /**
      * The created_at property
      */
-    createdAt?: string | null;
+    createdAt?: Date | null;
     /**
      * The etag property
      */
@@ -786,13 +786,13 @@ export interface FamilyMemberModel extends AdditionalDataHolder, Parsable {
     /**
      * The updated_at property
      */
-    updatedAt?: string | null;
+    updatedAt?: Date | null;
 }
 export interface FamilyModel extends AdditionalDataHolder, Parsable {
     /**
      * The created_at property
      */
-    createdAt?: string | null;
+    createdAt?: Date | null;
     /**
      * The etag property
      */
@@ -820,7 +820,7 @@ export interface FamilyModel extends AdditionalDataHolder, Parsable {
     /**
      * The updated_at property
      */
-    updatedAt?: string | null;
+    updatedAt?: Date | null;
 }
 export interface HttpError extends AdditionalDataHolder, ApiError, Parsable {
     /**
@@ -834,9 +834,9 @@ export interface LabelModel extends AdditionalDataHolder, Parsable {
      */
     color?: string | null;
     /**
-     * The created_at property
+     * CreatedAt date and time the label was created
      */
-    createdAt?: string | null;
+    createdAt?: Date | null;
     /**
      * The etag property
      */
@@ -854,9 +854,9 @@ export interface LabelModel extends AdditionalDataHolder, Parsable {
      */
     name?: string | null;
     /**
-     * The updated_at property
+     * UpdatedAt date and time the label was last updated
      */
-    updatedAt?: string | null;
+    updatedAt?: Date | null;
 }
 export interface PaginatedResponseModelEndpoints_familyModel extends AdditionalDataHolder, Parsable {
     /**
@@ -923,7 +923,7 @@ export interface PatchFamilyMemberModel extends AdditionalDataHolder, Parsable {
     /**
      * Optional timestamp of the last update
      */
-    updatedAt?: string | null;
+    updatedAt?: Date | null;
 }
 /**
  * Model for updating family details
@@ -948,7 +948,7 @@ export interface PatchFamilyModel extends AdditionalDataHolder, Parsable {
     /**
      * Optional timestamp of the last update
      */
-    updatedAt?: string | null;
+    updatedAt?: Date | null;
 }
 /**
  * Payment update model
@@ -961,7 +961,7 @@ export interface PatchPaymentModel extends AdditionalDataHolder, Parsable {
     /**
      * The end_date property
      */
-    endDate?: string | null;
+    endDate?: Date | null;
     /**
      * The id property
      */
@@ -977,11 +977,11 @@ export interface PatchPaymentModel extends AdditionalDataHolder, Parsable {
     /**
      * The start_date property
      */
-    startDate?: string | null;
+    startDate?: Date | null;
     /**
      * The updated_at property
      */
-    updatedAt?: string | null;
+    updatedAt?: Date | null;
 }
 /**
  * Subscription update model
@@ -1022,13 +1022,13 @@ export interface PatchSubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
      * The updated_at property
      */
-    updatedAt?: string | null;
+    updatedAt?: Date | null;
 }
 export interface PaymentModel extends AdditionalDataHolder, Parsable {
     /**
      * The created_at property
      */
-    createdAt?: string | null;
+    createdAt?: Date | null;
     /**
      * The currency property
      */
@@ -1036,7 +1036,7 @@ export interface PaymentModel extends AdditionalDataHolder, Parsable {
     /**
      * The end_date property
      */
-    endDate?: string | null;
+    endDate?: Date | null;
     /**
      * The etag property
      */
@@ -1056,11 +1056,11 @@ export interface PaymentModel extends AdditionalDataHolder, Parsable {
     /**
      * The start_date property
      */
-    startDate?: string | null;
+    startDate?: Date | null;
     /**
      * The updated_at property
      */
-    updatedAt?: string | null;
+    updatedAt?: Date | null;
 }
 /**
  * Serializes information the current object
@@ -1071,7 +1071,7 @@ export interface PaymentModel extends AdditionalDataHolder, Parsable {
 // @ts-ignore
 export function serializeCreateFamilyMemberModel(writer: SerializationWriter, createFamilyMemberModel: Partial<CreateFamilyMemberModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!createFamilyMemberModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("created_at", createFamilyMemberModel.createdAt);
+    writer.writeDateValue("created_at", createFamilyMemberModel.createdAt);
     writer.writeStringValue("email", createFamilyMemberModel.email);
     writer.writeStringValue("id", createFamilyMemberModel.id);
     writer.writeBooleanValue("is_kid", createFamilyMemberModel.isKid);
@@ -1087,7 +1087,7 @@ export function serializeCreateFamilyMemberModel(writer: SerializationWriter, cr
 // @ts-ignore
 export function serializeCreateFamilyModel(writer: SerializationWriter, createFamilyModel: Partial<CreateFamilyModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!createFamilyModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("created_at", createFamilyModel.createdAt);
+    writer.writeDateValue("created_at", createFamilyModel.createdAt);
     writer.writeBooleanValue("have_joint_account", createFamilyModel.haveJointAccount);
     writer.writeStringValue("id", createFamilyModel.id);
     writer.writeStringValue("name", createFamilyModel.name);
@@ -1103,7 +1103,7 @@ export function serializeCreateFamilyModel(writer: SerializationWriter, createFa
 export function serializeCreateLabelModel(writer: SerializationWriter, createLabelModel: Partial<CreateLabelModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!createLabelModel || isSerializingDerivedType) { return; }
     writer.writeStringValue("color", createLabelModel.color);
-    writer.writeStringValue("created_at", createLabelModel.createdAt);
+    writer.writeDateValue("created_at", createLabelModel.createdAt);
     writer.writeStringValue("id", createLabelModel.id);
     writer.writeBooleanValue("is_default", createLabelModel.isDefault);
     writer.writeStringValue("name", createLabelModel.name);
@@ -1118,13 +1118,13 @@ export function serializeCreateLabelModel(writer: SerializationWriter, createLab
 // @ts-ignore
 export function serializeCreatePaymentModel(writer: SerializationWriter, createPaymentModel: Partial<CreatePaymentModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!createPaymentModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("created_at", createPaymentModel.createdAt);
+    writer.writeDateValue("created_at", createPaymentModel.createdAt);
     writer.writeStringValue("currency", createPaymentModel.currency);
-    writer.writeStringValue("end_date", createPaymentModel.endDate);
+    writer.writeDateValue("end_date", createPaymentModel.endDate);
     writer.writeStringValue("id", createPaymentModel.id);
     writer.writeNumberValue("months", createPaymentModel.months);
     writer.writeNumberValue("price", createPaymentModel.price);
-    writer.writeStringValue("start_date", createPaymentModel.startDate);
+    writer.writeDateValue("start_date", createPaymentModel.startDate);
     writer.writeAdditionalData(createPaymentModel.additionalData);
 }
 /**
@@ -1156,13 +1156,13 @@ export function serializeCreateSubscriptionModel(writer: SerializationWriter, cr
 // @ts-ignore
 export function serializeCreateSubscriptionPaymentModel(writer: SerializationWriter, createSubscriptionPaymentModel: Partial<CreateSubscriptionPaymentModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!createSubscriptionPaymentModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("created_at", createSubscriptionPaymentModel.createdAt);
+    writer.writeDateValue("created_at", createSubscriptionPaymentModel.createdAt);
     writer.writeStringValue("currency", createSubscriptionPaymentModel.currency);
-    writer.writeStringValue("end_date", createSubscriptionPaymentModel.endDate);
+    writer.writeDateValue("end_date", createSubscriptionPaymentModel.endDate);
     writer.writeStringValue("id", createSubscriptionPaymentModel.id);
     writer.writeNumberValue("months", createSubscriptionPaymentModel.months);
     writer.writeNumberValue("price", createSubscriptionPaymentModel.price);
-    writer.writeStringValue("start_date", createSubscriptionPaymentModel.startDate);
+    writer.writeDateValue("start_date", createSubscriptionPaymentModel.startDate);
     writer.writeAdditionalData(createSubscriptionPaymentModel.additionalData);
 }
 /**
@@ -1174,13 +1174,13 @@ export function serializeCreateSubscriptionPaymentModel(writer: SerializationWri
 // @ts-ignore
 export function serializeFamilyMemberModel(writer: SerializationWriter, familyMemberModel: Partial<FamilyMemberModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!familyMemberModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("created_at", familyMemberModel.createdAt);
+    writer.writeDateValue("created_at", familyMemberModel.createdAt);
     writer.writeStringValue("etag", familyMemberModel.etag);
     writer.writeStringValue("family_id", familyMemberModel.familyId);
     writer.writeStringValue("id", familyMemberModel.id);
     writer.writeBooleanValue("is_kid", familyMemberModel.isKid);
     writer.writeStringValue("name", familyMemberModel.name);
-    writer.writeStringValue("updated_at", familyMemberModel.updatedAt);
+    writer.writeDateValue("updated_at", familyMemberModel.updatedAt);
     writer.writeAdditionalData(familyMemberModel.additionalData);
 }
 /**
@@ -1192,14 +1192,14 @@ export function serializeFamilyMemberModel(writer: SerializationWriter, familyMe
 // @ts-ignore
 export function serializeFamilyModel(writer: SerializationWriter, familyModel: Partial<FamilyModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!familyModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("created_at", familyModel.createdAt);
+    writer.writeDateValue("created_at", familyModel.createdAt);
     writer.writeStringValue("etag", familyModel.etag);
     writer.writeBooleanValue("have_joint_account", familyModel.haveJointAccount);
     writer.writeStringValue("id", familyModel.id);
     writer.writeBooleanValue("is_owner", familyModel.isOwner);
     writer.writeCollectionOfObjectValues<FamilyMemberModel>("members", familyModel.members, serializeFamilyMemberModel);
     writer.writeStringValue("name", familyModel.name);
-    writer.writeStringValue("updated_at", familyModel.updatedAt);
+    writer.writeDateValue("updated_at", familyModel.updatedAt);
     writer.writeAdditionalData(familyModel.additionalData);
 }
 /**
@@ -1224,12 +1224,12 @@ export function serializeHttpError(writer: SerializationWriter, httpError: Parti
 export function serializeLabelModel(writer: SerializationWriter, labelModel: Partial<LabelModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!labelModel || isSerializingDerivedType) { return; }
     writer.writeStringValue("color", labelModel.color);
-    writer.writeStringValue("created_at", labelModel.createdAt);
+    writer.writeDateValue("created_at", labelModel.createdAt);
     writer.writeStringValue("etag", labelModel.etag);
     writer.writeStringValue("id", labelModel.id);
     writer.writeBooleanValue("is_default", labelModel.isDefault);
     writer.writeStringValue("name", labelModel.name);
-    writer.writeStringValue("updated_at", labelModel.updatedAt);
+    writer.writeDateValue("updated_at", labelModel.updatedAt);
     writer.writeAdditionalData(labelModel.additionalData);
 }
 /**
@@ -1287,7 +1287,7 @@ export function serializePatchFamilyMemberModel(writer: SerializationWriter, pat
     writer.writeStringValue("id", patchFamilyMemberModel.id);
     writer.writeBooleanValue("is_kid", patchFamilyMemberModel.isKid);
     writer.writeStringValue("name", patchFamilyMemberModel.name);
-    writer.writeStringValue("updated_at", patchFamilyMemberModel.updatedAt);
+    writer.writeDateValue("updated_at", patchFamilyMemberModel.updatedAt);
     writer.writeAdditionalData(patchFamilyMemberModel.additionalData);
 }
 /**
@@ -1303,7 +1303,7 @@ export function serializePatchFamilyModel(writer: SerializationWriter, patchFami
     writer.writeStringValue("id", patchFamilyModel.id);
     writer.writeCollectionOfObjectValues<PatchFamilyMemberModel>("members", patchFamilyModel.members, serializePatchFamilyMemberModel);
     writer.writeStringValue("name", patchFamilyModel.name);
-    writer.writeStringValue("updated_at", patchFamilyModel.updatedAt);
+    writer.writeDateValue("updated_at", patchFamilyModel.updatedAt);
     writer.writeAdditionalData(patchFamilyModel.additionalData);
 }
 /**
@@ -1316,12 +1316,12 @@ export function serializePatchFamilyModel(writer: SerializationWriter, patchFami
 export function serializePatchPaymentModel(writer: SerializationWriter, patchPaymentModel: Partial<PatchPaymentModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!patchPaymentModel || isSerializingDerivedType) { return; }
     writer.writeStringValue("currency", patchPaymentModel.currency);
-    writer.writeStringValue("end_date", patchPaymentModel.endDate);
+    writer.writeDateValue("end_date", patchPaymentModel.endDate);
     writer.writeStringValue("id", patchPaymentModel.id);
     writer.writeNumberValue("months", patchPaymentModel.months);
     writer.writeNumberValue("price", patchPaymentModel.price);
-    writer.writeStringValue("start_date", patchPaymentModel.startDate);
-    writer.writeStringValue("updated_at", patchPaymentModel.updatedAt);
+    writer.writeDateValue("start_date", patchPaymentModel.startDate);
+    writer.writeDateValue("updated_at", patchPaymentModel.updatedAt);
     writer.writeAdditionalData(patchPaymentModel.additionalData);
 }
 /**
@@ -1341,7 +1341,7 @@ export function serializePatchSubscriptionModel(writer: SerializationWriter, pat
     writer.writeBooleanValue("payed_by_joint_account", patchSubscriptionModel.payedByJointAccount);
     writer.writeStringValue("payer_id", patchSubscriptionModel.payerId);
     writer.writeCollectionOfObjectValues<PatchPaymentModel>("payments", patchSubscriptionModel.payments, serializePatchPaymentModel);
-    writer.writeStringValue("updated_at", patchSubscriptionModel.updatedAt);
+    writer.writeDateValue("updated_at", patchSubscriptionModel.updatedAt);
     writer.writeAdditionalData(patchSubscriptionModel.additionalData);
 }
 /**
@@ -1353,15 +1353,15 @@ export function serializePatchSubscriptionModel(writer: SerializationWriter, pat
 // @ts-ignore
 export function serializePaymentModel(writer: SerializationWriter, paymentModel: Partial<PaymentModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!paymentModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("created_at", paymentModel.createdAt);
+    writer.writeDateValue("created_at", paymentModel.createdAt);
     writer.writeStringValue("currency", paymentModel.currency);
-    writer.writeStringValue("end_date", paymentModel.endDate);
+    writer.writeDateValue("end_date", paymentModel.endDate);
     writer.writeStringValue("etag", paymentModel.etag);
     writer.writeStringValue("id", paymentModel.id);
     writer.writeNumberValue("months", paymentModel.months);
     writer.writeNumberValue("price", paymentModel.price);
-    writer.writeStringValue("start_date", paymentModel.startDate);
-    writer.writeStringValue("updated_at", paymentModel.updatedAt);
+    writer.writeDateValue("start_date", paymentModel.startDate);
+    writer.writeDateValue("updated_at", paymentModel.updatedAt);
     writer.writeAdditionalData(paymentModel.additionalData);
 }
 /**
@@ -1373,7 +1373,7 @@ export function serializePaymentModel(writer: SerializationWriter, paymentModel:
 // @ts-ignore
 export function serializeSubscriptionModel(writer: SerializationWriter, subscriptionModel: Partial<SubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!subscriptionModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("created_at", subscriptionModel.createdAt);
+    writer.writeDateValue("created_at", subscriptionModel.createdAt);
     writer.writeStringValue("etag", subscriptionModel.etag);
     writer.writeStringValue("family_id", subscriptionModel.familyId);
     writer.writeCollectionOfPrimitiveValues<string>("family_members", subscriptionModel.familyMembers);
@@ -1383,7 +1383,7 @@ export function serializeSubscriptionModel(writer: SerializationWriter, subscrip
     writer.writeBooleanValue("payed_by_joint_account", subscriptionModel.payedByJointAccount);
     writer.writeStringValue("payer_id_id", subscriptionModel.payerIdId);
     writer.writeCollectionOfObjectValues<PaymentModel>("payments", subscriptionModel.payments, serializePaymentModel);
-    writer.writeStringValue("updated_at", subscriptionModel.updatedAt);
+    writer.writeDateValue("updated_at", subscriptionModel.updatedAt);
     writer.writeAdditionalData(subscriptionModel.additionalData);
 }
 /**
@@ -1398,7 +1398,7 @@ export function serializeUpdateFamilyMemberModel(writer: SerializationWriter, up
     writer.writeStringValue("email", updateFamilyMemberModel.email);
     writer.writeBooleanValue("id_kid", updateFamilyMemberModel.idKid);
     writer.writeStringValue("name", updateFamilyMemberModel.name);
-    writer.writeStringValue("updated_at", updateFamilyMemberModel.updatedAt);
+    writer.writeDateValue("updated_at", updateFamilyMemberModel.updatedAt);
     writer.writeAdditionalData(updateFamilyMemberModel.additionalData);
 }
 /**
@@ -1412,7 +1412,7 @@ export function serializeUpdateFamilyModel(writer: SerializationWriter, updateFa
     if (!updateFamilyModel || isSerializingDerivedType) { return; }
     writer.writeBooleanValue("have_joint_account", updateFamilyModel.haveJointAccount);
     writer.writeStringValue("name", updateFamilyModel.name);
-    writer.writeStringValue("updated_at", updateFamilyModel.updatedAt);
+    writer.writeDateValue("updated_at", updateFamilyModel.updatedAt);
     writer.writeAdditionalData(updateFamilyModel.additionalData);
 }
 /**
@@ -1426,7 +1426,7 @@ export function serializeUpdateLabelModel(writer: SerializationWriter, updateLab
     if (!updateLabelModel || isSerializingDerivedType) { return; }
     writer.writeStringValue("color", updateLabelModel.color);
     writer.writeStringValue("name", updateLabelModel.name);
-    writer.writeStringValue("updated_at", updateLabelModel.updatedAt);
+    writer.writeDateValue("updated_at", updateLabelModel.updatedAt);
     writer.writeAdditionalData(updateLabelModel.additionalData);
 }
 /**
@@ -1439,11 +1439,11 @@ export function serializeUpdateLabelModel(writer: SerializationWriter, updateLab
 export function serializeUpdatePaymentModel(writer: SerializationWriter, updatePaymentModel: Partial<UpdatePaymentModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!updatePaymentModel || isSerializingDerivedType) { return; }
     writer.writeStringValue("currency", updatePaymentModel.currency);
-    writer.writeStringValue("end_date", updatePaymentModel.endDate);
+    writer.writeDateValue("end_date", updatePaymentModel.endDate);
     writer.writeNumberValue("months", updatePaymentModel.months);
     writer.writeNumberValue("price", updatePaymentModel.price);
-    writer.writeStringValue("start_date", updatePaymentModel.startDate);
-    writer.writeStringValue("updated_at", updatePaymentModel.updatedAt);
+    writer.writeDateValue("start_date", updatePaymentModel.startDate);
+    writer.writeDateValue("updated_at", updatePaymentModel.updatedAt);
     writer.writeAdditionalData(updatePaymentModel.additionalData);
 }
 /**
@@ -1461,14 +1461,14 @@ export function serializeUpdateSubscriptionModel(writer: SerializationWriter, up
     writer.writeStringValue("name", updateSubscriptionModel.name);
     writer.writeBooleanValue("payed_by_joint_account", updateSubscriptionModel.payedByJointAccount);
     writer.writeStringValue("payer_id", updateSubscriptionModel.payerId);
-    writer.writeStringValue("updated_at", updateSubscriptionModel.updatedAt);
+    writer.writeDateValue("updated_at", updateSubscriptionModel.updatedAt);
     writer.writeAdditionalData(updateSubscriptionModel.additionalData);
 }
 export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
      * The created_at property
      */
-    createdAt?: string | null;
+    createdAt?: Date | null;
     /**
      * The etag property
      */
@@ -1508,7 +1508,7 @@ export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
      * The updated_at property
      */
-    updatedAt?: string | null;
+    updatedAt?: Date | null;
 }
 export interface UpdateFamilyMemberModel extends AdditionalDataHolder, Parsable {
     /**
@@ -1526,7 +1526,7 @@ export interface UpdateFamilyMemberModel extends AdditionalDataHolder, Parsable 
     /**
      * The updated_at property
      */
-    updatedAt?: string | null;
+    updatedAt?: Date | null;
 }
 export interface UpdateFamilyModel extends AdditionalDataHolder, Parsable {
     /**
@@ -1540,7 +1540,7 @@ export interface UpdateFamilyModel extends AdditionalDataHolder, Parsable {
     /**
      * The updated_at property
      */
-    updatedAt?: string | null;
+    updatedAt?: Date | null;
 }
 export interface UpdateLabelModel extends AdditionalDataHolder, Parsable {
     /**
@@ -1554,7 +1554,7 @@ export interface UpdateLabelModel extends AdditionalDataHolder, Parsable {
     /**
      * The updated_at property
      */
-    updatedAt?: string | null;
+    updatedAt?: Date | null;
 }
 export interface UpdatePaymentModel extends AdditionalDataHolder, Parsable {
     /**
@@ -1564,7 +1564,7 @@ export interface UpdatePaymentModel extends AdditionalDataHolder, Parsable {
     /**
      * The end_date property
      */
-    endDate?: string | null;
+    endDate?: Date | null;
     /**
      * The months property
      */
@@ -1576,11 +1576,11 @@ export interface UpdatePaymentModel extends AdditionalDataHolder, Parsable {
     /**
      * The start_date property
      */
-    startDate?: string | null;
+    startDate?: Date | null;
     /**
      * The updated_at property
      */
-    updatedAt?: string | null;
+    updatedAt?: Date | null;
 }
 export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
@@ -1610,7 +1610,7 @@ export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable 
     /**
      * The updated_at property
      */
-    updatedAt?: string | null;
+    updatedAt?: Date | null;
 }
 /* tslint:enable */
 /* eslint-enable */
