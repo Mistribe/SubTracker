@@ -159,7 +159,7 @@ func (r FamilyRepository) GetOwn(ctx context.Context) (option.Option[family.Fami
 	return option.Some(r.toFamilyEntity(model)), nil
 }
 
-func (r FamilyRepository) GetAll(ctx context.Context) ([]family.Family, error) {
+func (r FamilyRepository) GetAll(ctx context.Context, size, page int) ([]family.Family, error) {
 	userId, ok := user.FromContext(ctx)
 	if !ok {
 		return []family.Family{}, nil
@@ -168,6 +168,7 @@ func (r FamilyRepository) GetAll(ctx context.Context) ([]family.Family, error) {
 	result := r.repository.db.WithContext(ctx).
 		Preload("Members").
 		Where("owner_id = ?", userId).
+		Offset((page - 1) * size).Limit(size).
 		Find(&familyModels)
 	if result.Error != nil {
 		return nil, result.Error
@@ -177,6 +178,22 @@ func (r FamilyRepository) GetAll(ctx context.Context) ([]family.Family, error) {
 		families = append(families, r.toFamilyEntity(fam))
 	}
 	return families, nil
+}
+
+func (r FamilyRepository) GetAllCount(ctx context.Context) (int64, error) {
+	userId, ok := user.FromContext(ctx)
+	if !ok {
+		return 0, nil
+	}
+	var count int64
+	result := r.repository.db.WithContext(ctx).
+		Model(&familyModel{}).
+		Where("owner_id = ?", userId).
+		Count(&count)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return count, nil
 }
 
 func (r FamilyRepository) GetAllMembers(ctx context.Context, familyId uuid.UUID) ([]family.Member, error) {
