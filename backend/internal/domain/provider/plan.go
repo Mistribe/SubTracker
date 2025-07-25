@@ -1,16 +1,13 @@
 package provider
 
 import (
-	"github.com/google/uuid"
-
 	"github.com/oleexo/subtracker/internal/domain/entity"
 )
 
-type Provider struct {
+type Plan struct {
 	*entity.Base
 
 	name        string
 	description string
-	iconUrl     string
-	labels      []uuid.UUID
+	prices      []Price
 }
