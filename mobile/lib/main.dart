@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:subscription_tracker/models/family.dart';
 import 'package:subscription_tracker/models/subscription_payment.dart';
 import 'package:subscription_tracker/services/authentication_service.dart';
-import 'extensions/color_extensions.dart';
 import 'models/subscription.dart';
 import 'models/settings.dart';
 import 'models/label.dart';

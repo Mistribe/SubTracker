@@ -302,8 +302,8 @@ class _LabelManagementPageState extends State<LabelManagementPage> {
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size.fromHeight(50),
                   ).copyWith(
-                    backgroundColor: MaterialStatePropertyAll(Theme.of(context).colorScheme.primaryContainer),
-                    foregroundColor: MaterialStatePropertyAll(Theme.of(context).colorScheme.onPrimaryContainer),
+                    backgroundColor: WidgetStatePropertyAll(Theme.of(context).colorScheme.primaryContainer),
+                    foregroundColor: WidgetStatePropertyAll(Theme.of(context).colorScheme.onPrimaryContainer),
                   ),
                 ),
               ),

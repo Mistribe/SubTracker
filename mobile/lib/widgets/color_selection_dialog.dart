@@ -6,11 +6,11 @@ class ColorSelectionDialog extends StatelessWidget {
   final Function(String, String) onAddLabel;
 
   const ColorSelectionDialog({
-    Key? key,
+    super.key,
     required this.nameController,
     required this.selectedColor,
     required this.onAddLabel,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

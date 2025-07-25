@@ -20,7 +20,7 @@ class SubscriptionDetailsSection extends StatelessWidget {
   final String durationLabel;
 
   const SubscriptionDetailsSection({
-    Key? key,
+    super.key,
     required this.selectedDuration,
     required this.customMonthsController,
     required this.recurrenceCountController,
@@ -37,7 +37,7 @@ class SubscriptionDetailsSection extends StatelessWidget {
     required this.onFreeTrialToggled,
     required this.onFreeTrialMonthsChanged,
     required this.durationLabel,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

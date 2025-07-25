@@ -10,14 +10,14 @@ class SubscriptionLabelsSection extends StatelessWidget {
   final VoidCallback onAddCustomLabel;
 
   const SubscriptionLabelsSection({
-    Key? key,
+    super.key,
     required this.selectedLabels,
     required this.allLabels,
     required this.isLabelsExpanded,
     required this.onLabelsExpandedToggle,
     required this.onLabelToggled,
     required this.onAddCustomLabel,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

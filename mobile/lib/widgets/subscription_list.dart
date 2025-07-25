@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:subscription_tracker/providers/label_provider.dart';
-import '../extensions/color_extensions.dart';
 import 'package:subscription_tracker/widgets/price_change_form.dart';
 import '../providers/subscription_provider.dart';
 import '../models/subscription.dart';

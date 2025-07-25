@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/family.dart';
 import '../models/family_member.dart';
 import '../providers/family_provider.dart';
 import '../screens/family_member_form_screen.dart';
@@ -212,7 +211,7 @@ class _FamilyManagementPageState extends State<FamilyManagementPage> {
                           fontSize: 16,
                         ),
                       ),
-                      if (selectedFamily != null && canEdit)
+                      if (canEdit)
                         IconButton(
                           icon: const Icon(Icons.edit),
                           onPressed: () => _navigateToEditFamily(context, selectedFamily.id, familyProvider),

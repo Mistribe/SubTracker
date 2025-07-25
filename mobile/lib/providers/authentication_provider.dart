@@ -80,15 +80,15 @@ class AuthenticationProvider extends ChangeNotifier {
   Future<void> _switchToUserData(String? userId) async {
     // Update repositories to use user-specific boxes
     if (_subscriptionRepository != null) {
-      await _subscriptionRepository!.setCurrentUser(userId);
+      await _subscriptionRepository.setCurrentUser(userId);
     }
 
     if (_labelRepository != null) {
-      await _labelRepository!.setCurrentUser(userId);
+      await _labelRepository.setCurrentUser(userId);
     }
 
     if (_familyRepository != null) {
-      await _familyRepository!.setCurrentUser(userId);
+      await _familyRepository.setCurrentUser(userId);
     }
   }
 
@@ -98,15 +98,15 @@ class AuthenticationProvider extends ChangeNotifier {
 
     // Clear data in repositories
     if (_subscriptionRepository != null) {
-      await _subscriptionRepository!.clearUserData();
+      await _subscriptionRepository.clearUserData();
     }
 
     if (_labelRepository != null) {
-      await _labelRepository!.clearUserData();
+      await _labelRepository.clearUserData();
     }
 
     if (_familyRepository != null) {
-      await _familyRepository!.clearUserData();
+      await _familyRepository.clearUserData();
     }
   }
 }

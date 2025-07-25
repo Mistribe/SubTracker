@@ -14,7 +14,7 @@ class SubscriptionFamilySection extends StatelessWidget {
   final bool hasFamilyMembers;
 
   const SubscriptionFamilySection({
-    Key? key,
+    super.key,
     required this.userFamilyMembers,
     required this.allFamilyMembers,
     required this.payerFamilyMember,
@@ -25,7 +25,7 @@ class SubscriptionFamilySection extends StatelessWidget {
     required this.onJointAccountToggled,
     required this.onPayerChanged,
     required this.hasFamilyMembers,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
