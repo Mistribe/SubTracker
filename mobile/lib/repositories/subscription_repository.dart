@@ -8,16 +8,42 @@ import '../providers/sync_provider.dart';
 /// This class abstracts the data access layer, making it easier to switch
 /// between different storage mechanisms in the future (e.g., local storage to API).
 class SubscriptionRepository {
-  static const String _boxName = 'subscriptions';
+  static const String _boxPrefix = 'subscriptions_';
+  static const String _anonymousBoxName = 'subscriptions_anonymous';
   late Box<Subscription> _box;
   SyncProvider? _syncProvider;
+  String? _currentUserId;
 
   /// Initialize the repository
   ///
   /// This method must be called before using any other methods in this class.
   Future<void> initialize() async {
-    // Open the Hive box for subscriptions
-    _box = await Hive.openBox<Subscription>(_boxName);
+    // Open the anonymous box by default
+    _box = await Hive.openBox<Subscription>(_anonymousBoxName);
+  }
+
+  /// Set the current user ID and switch to their box
+  Future<void> setCurrentUser(String? userId) async {
+    if (userId == _currentUserId) return;
+
+    // Close the current box if it's open
+    if (_box.isOpen) {
+      await _box.close();
+    }
+
+    _currentUserId = userId;
+
+    // Open the user-specific box or anonymous box
+    if (userId != null) {
+      _box = await Hive.openBox<Subscription>('$_boxPrefix$userId');
+    } else {
+      _box = await Hive.openBox<Subscription>(_anonymousBoxName);
+    }
+  }
+
+  /// Clear data for the current user
+  Future<void> clearUserData() async {
+    await _box.clear();
   }
 
   /// Set the sync provider
@@ -55,7 +81,7 @@ class SubscriptionRepository {
       await _syncProvider!.queueUpdateSubscription(subscription);
     }
   }
-  
+
   /// Delete a subscription
   Future<void> delete(String id, {bool withSync = true}) async {
     // Delete from local storage

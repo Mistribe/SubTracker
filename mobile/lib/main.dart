@@ -20,6 +20,7 @@ import 'repositories/settings_repository.dart';
 import 'repositories/label_repository.dart';
 import 'repositories/family_repository.dart';
 import 'screens/home_screen.dart';
+import 'screens/welcome_screen.dart';
 import 'package:kinde_flutter_sdk/kinde_flutter_sdk.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -96,10 +97,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        // Provide direct access to repositories
+        Provider<SettingsRepository>.value(value: settingsRepository),
+
         ChangeNotifierProvider(
           create: (_) {
             return AuthenticationProvider(
               authenticationService: authenticationService,
+              subscriptionRepository: subscriptionRepository,
+              labelRepository: labelRepository,
+              familyRepository: familyMemberRepository,
             );
           },
         ),
@@ -143,13 +150,21 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
+          // Get settings repository from provider
+          final settingsRepo = Provider.of<SettingsRepository>(context);
+
+          // Get settings to check if onboarding is completed
+          final settings = settingsRepo.getSettings();
+
           return MaterialApp(
             title: 'Subscription Tracker',
             debugShowCheckedModeBanner: false,
             themeMode: themeProvider.themeMode,
             theme: themeProvider.lightTheme,
             darkTheme: themeProvider.darkTheme,
-            home: const HomeScreen(),
+            home: settings.hasCompletedOnboarding 
+                ? const HomeScreen() 
+                : WelcomeScreen(settingsRepository: settingsRepo),
           );
         },
       ),

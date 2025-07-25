@@ -5,10 +5,12 @@ import '../models/family_member.dart';
 import '../providers/sync_provider.dart';
 
 class FamilyRepository {
-  static const String boxName = 'families';
+  static const String _boxPrefix = 'families_';
+  static const String _anonymousBoxName = 'families_anonymous';
   late Box<Family> _box;
   final Uuid _uuid = Uuid();
   SyncProvider? _syncProvider;
+  String? _currentUserId;
 
   /// Set the sync provider
   void setSyncProvider(SyncProvider syncProvider) {
@@ -17,7 +19,32 @@ class FamilyRepository {
 
   // Initialize the repository
   Future<void> initialize() async {
-    _box = await Hive.openBox<Family>(boxName);
+    // Open the anonymous box by default
+    _box = await Hive.openBox<Family>(_anonymousBoxName);
+  }
+
+  /// Set the current user ID and switch to their box
+  Future<void> setCurrentUser(String? userId) async {
+    if (userId == _currentUserId) return;
+
+    // Close the current box if it's open
+    if (_box.isOpen) {
+      await _box.close();
+    }
+
+    _currentUserId = userId;
+
+    // Open the user-specific box or anonymous box
+    if (userId != null) {
+      _box = await Hive.openBox<Family>('$_boxPrefix$userId');
+    } else {
+      _box = await Hive.openBox<Family>(_anonymousBoxName);
+    }
+  }
+
+  /// Clear data for the current user
+  Future<void> clearUserData() async {
+    await _box.clear();
   }
 
   // Get all family members

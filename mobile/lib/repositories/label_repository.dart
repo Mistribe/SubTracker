@@ -9,22 +9,53 @@ import '../providers/sync_provider.dart';
 /// This class abstracts the data access layer for labels, making it easier to switch
 /// between different storage mechanisms in the future.
 class LabelRepository {
-  static const String _boxName = 'labels';
+  static const String _boxPrefix = 'labels_';
+  static const String _anonymousBoxName = 'labels_anonymous';
   late Box<Label> _box;
   final _uuid = Uuid();
   SyncProvider? _syncProvider;
+  String? _currentUserId;
 
   /// Initialize the repository
   ///
   /// This method must be called before using any other methods in this class.
   Future<void> initialize() async {
-    // Open the Hive box for labels
-    _box = await Hive.openBox<Label>(_boxName);
+    // Open the anonymous box by default
+    _box = await Hive.openBox<Label>(_anonymousBoxName);
 
     // Create default labels if the box is empty
     if (_box.isEmpty && _syncProvider != null) {
       await _syncProvider!.sync();
     }
+  }
+
+  /// Set the current user ID and switch to their box
+  Future<void> setCurrentUser(String? userId) async {
+    if (userId == _currentUserId) return;
+
+    // Close the current box if it's open
+    if (_box.isOpen) {
+      await _box.close();
+    }
+
+    _currentUserId = userId;
+
+    // Open the user-specific box or anonymous box
+    if (userId != null) {
+      _box = await Hive.openBox<Label>('$_boxPrefix$userId');
+    } else {
+      _box = await Hive.openBox<Label>(_anonymousBoxName);
+    }
+
+    // Create default labels if the box is empty
+    if (_box.isEmpty && _syncProvider != null) {
+      await _syncProvider!.sync();
+    }
+  }
+
+  /// Clear data for the current user
+  Future<void> clearUserData() async {
+    await _box.clear();
   }
 
   /// Set the sync provider

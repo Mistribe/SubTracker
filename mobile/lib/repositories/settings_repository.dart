@@ -58,4 +58,13 @@ class SettingsRepository {
     );
     await saveSettings(updatedSettings);
   }
+
+  /// Update onboarding completion status
+  Future<void> completeOnboarding() async {
+    final currentSettings = getSettings();
+    final updatedSettings = currentSettings.copyWith(
+      hasCompletedOnboarding: true,
+    );
+    await saveSettings(updatedSettings);
+  }
 }

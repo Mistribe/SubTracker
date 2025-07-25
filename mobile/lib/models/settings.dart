@@ -17,11 +17,15 @@ class Settings {
   @HiveField(3)
   final String? selectedFamilyId;
 
+  @HiveField(4)
+  final bool hasCompletedOnboarding;
+
   Settings({
     this.isDarkMode = false,
     this.useSystemTheme = true,
     this.defaultCurrency = Currency.defaultCode,
     this.selectedFamilyId,
+    this.hasCompletedOnboarding = false,
   });
 
   // Get the default currency as a Currency enum
@@ -33,6 +37,7 @@ class Settings {
     String? defaultCurrency,
     Currency? defaultCurrencyEnum,
     String? selectedFamilyId,
+    bool? hasCompletedOnboarding,
   }) {
     return Settings(
       isDarkMode: isDarkMode ?? this.isDarkMode,
@@ -40,6 +45,7 @@ class Settings {
       defaultCurrency:
           defaultCurrencyEnum?.code ?? defaultCurrency ?? this.defaultCurrency,
       selectedFamilyId: selectedFamilyId ?? this.selectedFamilyId,
+      hasCompletedOnboarding: hasCompletedOnboarding ?? this.hasCompletedOnboarding,
     );
   }
 }
