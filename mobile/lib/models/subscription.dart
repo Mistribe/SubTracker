@@ -219,10 +219,10 @@ class Subscription extends HiveObject {
     return Subscription(
       id: id ?? this.id,
       name: name ?? this.name,
-      subscriptionPayments: subscriptionPayments ?? this.payments,
+      subscriptionPayments: subscriptionPayments ?? payments,
       labelIds: labelIds ?? this.labelIds,
-      userFamilyMemberIds: userFamilyMemberIds ?? this.familyMemberIds,
-      payerId: payerFamilyMemberId ?? this.payerId,
+      userFamilyMemberIds: userFamilyMemberIds ?? familyMemberIds,
+      payerId: payerFamilyMemberId ?? payerId,
       payedByJointAccount: payedByJointAccount ?? this.payedByJointAccount,
       eTag: eTag ?? this.eTag,
       createdAt: createdAt ?? this.createdAt,

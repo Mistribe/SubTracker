@@ -19,12 +19,11 @@ class SubscriptionAdapter extends TypeAdapter<Subscription> {
     return Subscription(
       id: fields[0] as String,
       name: fields[1] as String,
-      subscriptionPayments: (fields[3] as List?)?.cast<SubscriptionPayment>(),
       labelIds: (fields[4] as List?)?.cast<String>(),
-      userFamilyMemberIds: (fields[5] as List?)?.cast<String>(),
       payerId: fields[6] as String?,
       payedByJointAccount: fields[7] as bool,
       eTag: fields[10] as String,
+      familyId: fields[11] as String?,
       createdAt: fields[8] as DateTime?,
       updatedAt: fields[9] as DateTime?,
     );
@@ -33,7 +32,7 @@ class SubscriptionAdapter extends TypeAdapter<Subscription> {
   @override
   void write(BinaryWriter writer, Subscription obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -53,7 +52,9 @@ class SubscriptionAdapter extends TypeAdapter<Subscription> {
       ..writeByte(9)
       ..write(obj.updatedAt)
       ..writeByte(10)
-      ..write(obj.eTag);
+      ..write(obj.eTag)
+      ..writeByte(11)
+      ..write(obj.familyId);
   }
 
   @override

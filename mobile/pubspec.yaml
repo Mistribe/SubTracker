@@ -62,6 +62,11 @@ dependencies:
   # Authentication
   kinde_flutter_sdk: ^1.1.0
 
+  microsoft_kiota_abstractions: any
+  microsoft_kiota_serialization_form: any
+  microsoft_kiota_serialization_json: any
+  microsoft_kiota_serialization_multipart: any
+  microsoft_kiota_serialization_text: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

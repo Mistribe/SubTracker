@@ -1,4 +1,3 @@
-import 'package:subscription_tracker/models/subscription.dart';
 
 class Paginated<T> {
   final List<T> data;

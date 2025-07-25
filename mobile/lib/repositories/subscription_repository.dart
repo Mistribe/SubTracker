@@ -1,6 +1,5 @@
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:subscription_tracker/models/subscription_payment.dart';
 import '../models/subscription.dart';
 import '../providers/sync_provider.dart';
 

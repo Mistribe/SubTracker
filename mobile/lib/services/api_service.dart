@@ -2,7 +2,6 @@ import 'package:microsoft_kiota_bundle/microsoft_kiota_bundle.dart';
 import 'package:subscription_tracker/api/api_client.dart';
 import 'package:subscription_tracker/api/models/create_label_model.dart';
 import 'package:subscription_tracker/api/models/label_model.dart';
-import 'package:subscription_tracker/api/models/patch_payment_model.dart';
 import 'package:subscription_tracker/api/models/patch_subscription_model.dart';
 import 'package:subscription_tracker/api/models/update_label_model.dart';
 import 'package:subscription_tracker/providers/kinde_auth_provider.dart';

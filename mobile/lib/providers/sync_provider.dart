@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:subscription_tracker/models/family.dart';
 import '../models/subscription.dart';
 import '../models/label.dart';
-import '../models/subscription_payment.dart';
 import '../services/api_service.dart';
 import '../services/authentication_service.dart';
 import '../services/sync_service.dart';
