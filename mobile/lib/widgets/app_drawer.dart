@@ -17,11 +17,15 @@ class AppDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthenticationProvider>(context);
 
+    // Calculate settings index for proper selection highlighting
+    int adjustedSelectedIndex = selectedIndex;
+    int settingsIndex = authProvider.isAuthenticated ? 3 : 2;
+
     return Stack(
       children: [
         // Main Navigation Drawer
         NavigationDrawer(
-          selectedIndex: selectedIndex,
+          selectedIndex: adjustedSelectedIndex,
           onDestinationSelected: onDestinationSelected,
           children: [
             // User header

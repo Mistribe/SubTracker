@@ -66,9 +66,8 @@ class _HomeScreenState extends State<HomeScreen> {
         onDestinationSelected: (index) {
           Navigator.pop(context); // Close the drawer
 
-          // The drawer now handles index adjustment internally
-          // Calculate the index of the Settings destination
-          int settingsIndex = authProvider.isAuthenticated ? 4 : 3;
+          // Calculate the index of the Settings destination based on drawer layout
+          int settingsIndex = authProvider.isAuthenticated ? 3 : 2;
 
           // If Settings is selected
           if (index == settingsIndex) {
