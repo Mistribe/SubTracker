@@ -17,6 +17,13 @@ export interface WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFam
      */
     get members(): MembersRequestBuilder;
     /**
+     * Delete family by ID
+     * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
+     * @throws {HttpError} error when the service returns a 400 status code
+     * @throws {HttpError} error when the service returns a 404 status code
+     */
+     delete(requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<void>;
+    /**
      * Get family member by ID
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<FamilyModel>}
@@ -32,6 +39,12 @@ export interface WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFam
      * @throws {HttpError} error when the service returns a 400 status code
      */
      put(body: UpdateFamilyModel, requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<FamilyModel | undefined>;
+    /**
+     * Delete family by ID
+     * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
+     * @returns {RequestInformation}
+     */
+     toDeleteRequestInformation(requestConfiguration?: RequestConfiguration<object> | undefined) : RequestInformation;
     /**
      * Get family member by ID
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
@@ -63,6 +76,15 @@ export const WithFamilyItemRequestBuilderNavigationMetadata: Record<Exclude<keyo
  * Metadata for all the requests in the request builder.
  */
 export const WithFamilyItemRequestBuilderRequestsMetadata: RequestsMetadata = {
+    delete: {
+        uriTemplate: WithFamilyItemRequestBuilderUriTemplate,
+        responseBodyContentType: "application/json",
+        errorMappings: {
+            400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            404: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+        },
+        adapterMethodName: "sendNoResponseContent",
+    },
     get: {
         uriTemplate: WithFamilyItemRequestBuilderUriTemplate,
         responseBodyContentType: "application/json",

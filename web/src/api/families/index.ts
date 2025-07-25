@@ -14,7 +14,7 @@ import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type 
 export interface FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesRequestBuilder> {
     /**
      * Gets an item from the ApiSdk.families.item collection
-     * @param familyId Family member ID
+     * @param familyId Family ID
      * @returns {WithFamilyItemRequestBuilder}
      */
      byFamilyId(familyId: string) : WithFamilyItemRequestBuilder;

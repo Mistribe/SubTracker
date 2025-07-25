@@ -4,6 +4,8 @@
 // @ts-ignore
 import { createHttpErrorFromDiscriminatorValue, createLabelModelFromDiscriminatorValue, createPaginatedResponseModelEndpoints_labelModelFromDiscriminatorValue, serializeCreateLabelModel, serializeLabelModel, type CreateLabelModel, type HttpError, type LabelModel, type PaginatedResponseModelEndpoints_labelModel } from '../models/index.js';
 // @ts-ignore
+import { DefaultRequestBuilderRequestsMetadata, type DefaultRequestBuilder } from './defaultEscaped/index.js';
+// @ts-ignore
 import { LabelsItemRequestBuilderRequestsMetadata, type LabelsItemRequestBuilder } from './item/index.js';
 // @ts-ignore
 import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type NavigationMetadata, type Parsable, type ParsableFactory, type RequestConfiguration, type RequestInformation, type RequestsMetadata } from '@microsoft/kiota-abstractions';
@@ -12,6 +14,10 @@ import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type 
  * Builds and executes requests for operations under /labels
  */
 export interface LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBuilder> {
+    /**
+     * The default property
+     */
+    get defaultEscaped(): DefaultRequestBuilder;
     /**
      * Gets an item from the ApiSdk.labels.item collection
      * @param id Label ID
@@ -81,6 +87,9 @@ export const LabelsRequestBuilderNavigationMetadata: Record<Exclude<keyof Labels
     byId: {
         requestsMetadata: LabelsItemRequestBuilderRequestsMetadata,
         pathParametersMappings: ["id"],
+    },
+    defaultEscaped: {
+        requestsMetadata: DefaultRequestBuilderRequestsMetadata,
     },
 };
 /**
