@@ -68,7 +68,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
 
         final defaultCurrency = subscriptionProvider.defaultCurrencyEnum;
         final subscriptionCurrency = Currency.fromCode(
-          subscription.subscriptionPayments.isNotEmpty
+          subscription.payments.isNotEmpty
               ? subscription.getLastPaymentDetail().currency
               : Currency.defaultCode,
         );
@@ -537,8 +537,8 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
 
                 // Show family members if any are assigned
                 if (subscription.familyId != null &&
-                    (subscription.userFamilyMemberIds.isNotEmpty ||
-                        subscription.payerFamilyMemberId != null))
+                    (subscription.familyMemberIds.isNotEmpty ||
+                        subscription.payerId != null))
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Column(
@@ -564,7 +564,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                             padding: const EdgeInsets.all(16.0),
                             child: Column(
                               children: [
-                                if (subscription.userFamilyMemberIds.isNotEmpty)
+                                if (subscription.familyMemberIds.isNotEmpty)
                                   Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -593,7 +593,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                             familyMembers = family.members
                                                 .where(
                                                   (member) => subscription
-                                                      .userFamilyMemberIds
+                                                      .familyMemberIds
                                                       .contains(member.id),
                                                 )
                                                 .toList();
@@ -625,12 +625,12 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                       ),
                                     ],
                                   ),
-                                if (subscription.payerFamilyMemberId != null)
+                                if (subscription.payerId != null)
                                   Consumer<FamilyProvider>(
                                     builder: (context, provider, child) {
                                       final payer = provider
                                           .getFamilyMemberById(
-                                            subscription.payerFamilyMemberId,
+                                            subscription.payerId,
                                           )!;
                                       return ListTile(
                                         leading: CircleAvatar(
@@ -679,7 +679,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                         ),
                       ),
                       Text(
-                        '${subscription.subscriptionPayments.length} entries',
+                        '${subscription.payments.length} entries',
                         style: TextStyle(
                           fontSize: 14,
                           color: Theme.of(
@@ -692,7 +692,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                if (subscription.subscriptionPayments.isEmpty)
+                if (subscription.payments.isEmpty)
                   Card(
                     elevation: 2,
                     shape: RoundedRectangleBorder(
@@ -715,15 +715,11 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                     child: ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: subscription.subscriptionPayments.length,
+                      itemCount: subscription.payments.length,
                       separatorBuilder: (context, index) => const Divider(),
                       itemBuilder: (context, index) {
-                        final history =
-                            subscription.subscriptionPayments[subscription
-                                    .subscriptionPayments
-                                    .length -
-                                1 -
-                                index];
+                        final history = subscription
+                            .payments[subscription.payments.length - 1 - index];
                         return ListTile(
                           leading: Icon(
                             history.state == SubscriptionState.notStarted
@@ -782,8 +778,7 @@ class _PaymentDetailScreenState extends State<PaymentDetailScreen> {
                                       ],
                                     ),
                                   ),
-                                  if (subscription.subscriptionPayments.length >
-                                      1)
+                                  if (subscription.payments.length > 1)
                                     const PopupMenuItem<String>(
                                       value: 'remove',
                                       child: Row(

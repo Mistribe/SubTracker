@@ -108,8 +108,8 @@ void main() {
 
       expect(subscription.id, equals('1'));
       expect(subscription.name, equals('Netflix'));
-      expect(subscription.subscriptionPayments, hasLength(1));
-      expect(subscription.subscriptionPayments.first, equals(payment));
+      expect(subscription.payments, hasLength(1));
+      expect(subscription.payments.first, equals(payment));
       expect(subscription.labels, hasLength(1));
       expect(subscription.labels.first, equals(label));
       expect(subscription.createdAt, equals(createdAt));
@@ -121,7 +121,7 @@ void main() {
       () {
         final subscription = Subscription(id: '1', name: 'Netflix');
 
-        expect(subscription.subscriptionPayments, isEmpty);
+        expect(subscription.payments, isEmpty);
         expect(subscription.labels, isEmpty);
       },
     );
@@ -491,7 +491,7 @@ void main() {
         final updatedPayment = payment2.copyWith(price: 14.99);
         subscription.setPaymentDetail(updatedPayment);
 
-        expect(subscription.subscriptionPayments[1].price, equals(14.99));
+        expect(subscription.payments[1].price, equals(14.99));
       });
 
       test('throws StateError if no payment detail has the given ID', () {
@@ -528,8 +528,8 @@ void main() {
         );
         subscription.setPaymentDetail(updatedPayment);
 
-        expect(subscription.subscriptionPayments[0].id, equals('2'));
-        expect(subscription.subscriptionPayments[1].id, equals('1'));
+        expect(subscription.payments[0].id, equals('2'));
+        expect(subscription.payments[1].id, equals('1'));
       });
     });
 
@@ -563,8 +563,8 @@ void main() {
         final payment2 = createPayment(id: '2');
         subscription.addPayment(payment2);
 
-        expect(subscription.subscriptionPayments, hasLength(2));
-        expect(subscription.subscriptionPayments[1], equals(payment2));
+        expect(subscription.payments, hasLength(2));
+        expect(subscription.payments[1], equals(payment2));
       });
 
       test('sorts payment details by start date after adding', () {
@@ -583,8 +583,8 @@ void main() {
         );
         subscription.addPayment(payment2);
 
-        expect(subscription.subscriptionPayments[0].id, equals('2'));
-        expect(subscription.subscriptionPayments[1].id, equals('1'));
+        expect(subscription.payments[0].id, equals('2'));
+        expect(subscription.payments[1].id, equals('1'));
       });
     });
 
@@ -710,7 +710,7 @@ void main() {
         final testSubscription = _TestSubscription(
           id: subscription.id,
           name: subscription.name,
-          subscriptionPayments: subscription.subscriptionPayments,
+          subscriptionPayments: subscription.payments,
           labels: subscription.labels,
           mockTotalAmountSpent: 99.99,
         );
@@ -748,8 +748,8 @@ void main() {
       // Original subscription should be unchanged
       expect(subscription.id, equals('1'));
       expect(subscription.name, equals('Netflix'));
-      expect(subscription.subscriptionPayments, hasLength(1));
-      expect(subscription.subscriptionPayments.first, equals(payment));
+      expect(subscription.payments, hasLength(1));
+      expect(subscription.payments.first, equals(payment));
       expect(subscription.labels, hasLength(1));
       expect(subscription.labels.first, equals(label));
       expect(subscription.createdAt, equals(createdAt));
@@ -758,11 +758,8 @@ void main() {
       // Updated subscription should have new values
       expect(updatedSubscription.id, equals('1')); // ID should remain the same
       expect(updatedSubscription.name, equals('Disney+'));
-      expect(updatedSubscription.subscriptionPayments, hasLength(1));
-      expect(
-        updatedSubscription.subscriptionPayments.first,
-        equals(newPayment),
-      );
+      expect(updatedSubscription.payments, hasLength(1));
+      expect(updatedSubscription.payments.first, equals(newPayment));
       expect(updatedSubscription.labels, hasLength(1));
       expect(updatedSubscription.labels.first, equals(newLabel));
       expect(
@@ -833,8 +830,8 @@ void main() {
 
       expect(subscription.id, equals('1'));
       expect(subscription.name, equals('Netflix'));
-      expect(subscription.subscriptionPayments, hasLength(1));
-      expect(subscription.subscriptionPayments.first.id, equals('1'));
+      expect(subscription.payments, hasLength(1));
+      expect(subscription.payments.first.id, equals('1'));
       expect(subscription.labels, hasLength(1));
       expect(subscription.labels.first.id, equals('1'));
       expect(subscription.createdAt, equals(createdAt));
@@ -848,7 +845,7 @@ void main() {
 
       expect(subscription.id, equals('1'));
       expect(subscription.name, equals('Netflix'));
-      expect(subscription.subscriptionPayments, isEmpty);
+      expect(subscription.payments, isEmpty);
       expect(subscription.labels, isEmpty);
     });
 
@@ -883,9 +880,9 @@ void main() {
 
         subscription.removePaymentDetail('2');
 
-        expect(subscription.subscriptionPayments, hasLength(2));
-        expect(subscription.subscriptionPayments[0].id, equals('1'));
-        expect(subscription.subscriptionPayments[1].id, equals('3'));
+        expect(subscription.payments, hasLength(2));
+        expect(subscription.payments[0].id, equals('1'));
+        expect(subscription.payments[1].id, equals('3'));
       });
 
       test('throws StateError if no payment detail has the given ID', () {

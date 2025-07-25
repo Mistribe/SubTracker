@@ -15,16 +15,16 @@ class Subscription extends HiveObject {
   final String name;
 
   @HiveField(3)
-  final List<SubscriptionPayment> subscriptionPayments;
+  final List<SubscriptionPayment> payments;
 
   @HiveField(4)
   final List<String> labelIds;
 
   @HiveField(5)
-  final List<String> userFamilyMemberIds;
+  final List<String> familyMemberIds;
 
   @HiveField(6)
-  final String? payerFamilyMemberId;
+  final String? payerId;
 
   @HiveField(7)
   final bool payedByJointAccount;
@@ -47,20 +47,20 @@ class Subscription extends HiveObject {
     List<SubscriptionPayment>? subscriptionPayments,
     List<String>? labelIds,
     List<String>? userFamilyMemberIds,
-    this.payerFamilyMemberId,
+    this.payerId,
     this.payedByJointAccount = false,
     this.eTag = '',
     this.familyId,
     DateTime? createdAt,
     DateTime? updatedAt,
-  }) : subscriptionPayments = subscriptionPayments ?? [],
+  }) : payments = subscriptionPayments ?? [],
        labelIds = labelIds ?? [],
-       userFamilyMemberIds = userFamilyMemberIds ?? [],
+       familyMemberIds = userFamilyMemberIds ?? [],
        createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
 
   SubscriptionPayment getLastPaymentDetail() {
-    final sortedHistory = List<SubscriptionPayment>.from(subscriptionPayments)
+    final sortedHistory = List<SubscriptionPayment>.from(payments)
       ..sort((a, b) => b.startDate.compareTo(a.startDate));
 
     return sortedHistory[0];
@@ -68,7 +68,7 @@ class Subscription extends HiveObject {
 
   SubscriptionPayment? getActivePaymentDetail() {
     final now = DateTime.now();
-    for (var payment in subscriptionPayments) {
+    for (var payment in payments) {
       if (payment.endDate == null || payment.endDate!.isAfter(now)) {
         return payment;
       }
@@ -77,11 +77,11 @@ class Subscription extends HiveObject {
   }
 
   SubscriptionPayment getPaymentDetailAtDate(DateTime date) {
-    if (subscriptionPayments.isEmpty) {
+    if (payments.isEmpty) {
       throw StateError('No payment details available');
     }
     // Sort payment detail by start date (newest first)
-    final sortedDetails = List<SubscriptionPayment>.from(subscriptionPayments)
+    final sortedDetails = List<SubscriptionPayment>.from(payments)
       ..sort((a, b) => b.startDate.compareTo(a.startDate));
 
     // Find the payment detail entry that covers the given date
@@ -143,29 +143,27 @@ class Subscription extends HiveObject {
   }
 
   SubscriptionPayment? findDetailById(String paymentDetailId) {
-    final idx = subscriptionPayments.indexWhere(
-      (detail) => detail.id == paymentDetailId,
-    );
+    final idx = payments.indexWhere((detail) => detail.id == paymentDetailId);
     if (idx < 0) {
       return null;
     }
 
-    return subscriptionPayments[idx];
+    return payments[idx];
   }
 
   void addPayment(SubscriptionPayment paymentDetail) {
-    subscriptionPayments.add(paymentDetail);
-    subscriptionPayments.sort((a, b) => a.startDate.compareTo(b.startDate));
+    payments.add(paymentDetail);
+    payments.sort((a, b) => a.startDate.compareTo(b.startDate));
   }
 
   void updatePayment(SubscriptionPayment payment) {
-    final idx = subscriptionPayments.indexWhere((d) => d.id == payment.id);
+    final idx = payments.indexWhere((d) => d.id == payment.id);
     if (idx < 0) {
       throw StateError('No payment details available');
     }
 
-    subscriptionPayments[idx] = payment;
-    subscriptionPayments.sort((a, b) => a.startDate.compareTo(b.startDate));
+    payments[idx] = payment;
+    payments.sort((a, b) => a.startDate.compareTo(b.startDate));
   }
 
   // Format the next payment date as a string
@@ -180,15 +178,15 @@ class Subscription extends HiveObject {
     double total = 0.0;
 
     // If the payment starts today or in the future, return 0
-    if (subscriptionPayments.isEmpty ||
-        subscriptionPayments.length == 1 &&
+    if (payments.isEmpty ||
+        payments.length == 1 &&
             getLastPaymentDetail().startDate.isAfter(
               DateTime(now.year, now.month, now.day),
             )) {
       return 0.0;
     }
 
-    for (var detail in subscriptionPayments) {
+    for (var detail in payments) {
       total += detail.monthlyCost * detail.totalMonthElapsed;
     }
 
@@ -197,8 +195,8 @@ class Subscription extends HiveObject {
 
   // Format the total amount spent as a string
   String get formattedTotalAmountSpent {
-    final currencyCode = subscriptionPayments.isNotEmpty
-        ? subscriptionPayments.last.currency
+    final currencyCode = payments.isNotEmpty
+        ? payments.last.currency
         : Currency.USD.code;
     final currency = Currency.fromCode(currencyCode);
     return currency.formatAmount(totalAmountSpent);
@@ -221,10 +219,10 @@ class Subscription extends HiveObject {
     return Subscription(
       id: id ?? this.id,
       name: name ?? this.name,
-      subscriptionPayments: subscriptionPayments ?? this.subscriptionPayments,
+      subscriptionPayments: subscriptionPayments ?? this.payments,
       labelIds: labelIds ?? this.labelIds,
-      userFamilyMemberIds: userFamilyMemberIds ?? this.userFamilyMemberIds,
-      payerFamilyMemberId: payerFamilyMemberId ?? this.payerFamilyMemberId,
+      userFamilyMemberIds: userFamilyMemberIds ?? this.familyMemberIds,
+      payerId: payerFamilyMemberId ?? this.payerId,
       payedByJointAccount: payedByJointAccount ?? this.payedByJointAccount,
       eTag: eTag ?? this.eTag,
       createdAt: createdAt ?? this.createdAt,
@@ -239,12 +237,10 @@ class Subscription extends HiveObject {
       'id': id,
       'family_id': familyId,
       'name': name,
-      'payments': subscriptionPayments
-          .map((detail) => detail.toJson())
-          .toList(),
+      'payments': payments.map((detail) => detail.toJson()).toList(),
       'labels': labelIds,
-      'family_members': userFamilyMemberIds,
-      'payer_id': payerFamilyMemberId,
+      'family_members': familyMemberIds,
+      'payer_id': payerId,
       'payed_by_joint_account': payedByJointAccount,
       'etag': eTag,
       'created_at': createdAt.toUtc().toIso8601String(),
@@ -267,7 +263,7 @@ class Subscription extends HiveObject {
       userFamilyMemberIds: json['family_members'] != null
           ? (json['family_members'] as List).cast<String>()
           : [],
-      payerFamilyMemberId: json['payer_id'] as String?,
+      payerId: json['payer_id'] as String?,
       payedByJointAccount: json['payed_by_joint_account'] == null
           ? false
           : json['payed_by_joint_account'] as bool,
@@ -292,16 +288,14 @@ class Subscription extends HiveObject {
 
   // Remove a payment detail by ID
   void removePaymentDetail(String paymentDetailId) {
-    final index = subscriptionPayments.indexWhere(
-      (detail) => detail.id == paymentDetailId,
-    );
+    final index = payments.indexWhere((detail) => detail.id == paymentDetailId);
 
     if (index < 0) {
       throw StateError('Payment detail not found');
     }
 
     // Remove the payment detail
-    subscriptionPayments.removeAt(index);
+    payments.removeAt(index);
   }
 
   factory Subscription.empty() {
@@ -310,7 +304,7 @@ class Subscription extends HiveObject {
       id: uuid.v7(),
       name: '',
       labelIds: [],
-      payerFamilyMemberId: null,
+      payerId: null,
       subscriptionPayments: [],
       userFamilyMemberIds: [],
       eTag: '',

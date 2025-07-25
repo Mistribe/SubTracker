@@ -82,7 +82,7 @@ class SubscriptionProvider with ChangeNotifier {
 
       // Filter by selected family member
       if (_selectedFamilyMemberId != null &&
-          !subscription.userFamilyMemberIds.contains(_selectedFamilyMemberId)) {
+          !subscription.familyMemberIds.contains(_selectedFamilyMemberId)) {
         return false;
       }
 
@@ -91,11 +91,11 @@ class SubscriptionProvider with ChangeNotifier {
         // Special case for "Family (common account)"
         if (_selectedPayerFamilyMemberId == kFamilyCommonAccountId) {
           // Show subscriptions with no specific payer
-          if (subscription.payerFamilyMemberId != null) {
+          if (subscription.payerId != null) {
             return false;
           }
-        } else if (subscription.payerFamilyMemberId == null ||
-            subscription.payerFamilyMemberId != _selectedPayerFamilyMemberId) {
+        } else if (subscription.payerId == null ||
+            subscription.payerId != _selectedPayerFamilyMemberId) {
           return false;
         }
       }
@@ -372,7 +372,7 @@ class SubscriptionProvider with ChangeNotifier {
       subscriptionPayments: initialSubscriptionPayment,
       labelIds: labelIds ?? [],
       userFamilyMemberIds: userFamilyMemberIds,
-      payerFamilyMemberId: payerFamilyMemberId,
+      payerId: payerFamilyMemberId,
       payedByJointAccount: payedByJointAccount ?? false,
       familyId: familyId,
     );

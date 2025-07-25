@@ -22,7 +22,7 @@ class SubscriptionAdapter extends TypeAdapter<Subscription> {
       subscriptionPayments: (fields[3] as List?)?.cast<SubscriptionPayment>(),
       labelIds: (fields[4] as List?)?.cast<String>(),
       userFamilyMemberIds: (fields[5] as List?)?.cast<String>(),
-      payerFamilyMemberId: fields[6] as String?,
+      payerId: fields[6] as String?,
       payedByJointAccount: fields[7] as bool,
       eTag: fields[10] as String,
       createdAt: fields[8] as DateTime?,
@@ -39,13 +39,13 @@ class SubscriptionAdapter extends TypeAdapter<Subscription> {
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(3)
-      ..write(obj.subscriptionPayments)
+      ..write(obj.payments)
       ..writeByte(4)
       ..write(obj.labelIds)
       ..writeByte(5)
-      ..write(obj.userFamilyMemberIds)
+      ..write(obj.familyMemberIds)
       ..writeByte(6)
-      ..write(obj.payerFamilyMemberId)
+      ..write(obj.payerId)
       ..writeByte(7)
       ..write(obj.payedByJointAccount)
       ..writeByte(8)

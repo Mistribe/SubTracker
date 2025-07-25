@@ -12,7 +12,7 @@ import './item/with_family_item_request_builder.dart';
 /// Builds and executes requests for operations under \families
 class FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesRequestBuilder> {
     /// Gets an item from the ApiSdk.families.item collection
-    ///  [familyId] Family member ID
+    ///  [familyId] Family ID
     WithFamilyItemRequestBuilder byFamilyId(String familyId) {
         var urlTplParams = Map.of(pathParameters);
         urlTplParams.putIfAbsent('familyId', () => familyId);

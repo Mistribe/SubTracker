@@ -83,7 +83,7 @@ class SubscriptionCard extends StatelessWidget {
 
   Widget _buildFrequencyBadge(Subscription subscription) {
     if (subscription.state != SubscriptionState.active ||
-        subscription.subscriptionPayments.isEmpty) {
+        subscription.payments.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -138,7 +138,7 @@ class SubscriptionCard extends StatelessWidget {
     // Get currencies
     final defaultCurrency = subscriptionProvider.defaultCurrencyEnum;
     final subscriptionCurrency = Currency.fromCode(
-      subscription.subscriptionPayments.isNotEmpty
+      subscription.payments.isNotEmpty
           ? subscription.getLastPaymentDetail().currency
           : Currency.defaultCode,
     );

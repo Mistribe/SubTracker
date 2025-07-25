@@ -1,6 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import './payment_model.dart';
+import './subscription_payment_model.dart';
 
 /// auto generated
 class SubscriptionModel implements AdditionalDataHolder, Parsable {
@@ -26,7 +26,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
     ///  The payer_id_id property
     String? payerIdId;
     ///  The payments property
-    Iterable<PaymentModel>? payments;
+    Iterable<SubscriptionPaymentModel>? payments;
     ///  The updated_at property
     DateTime? updatedAt;
     /// Instantiates a new [SubscriptionModel] and sets the default values.
@@ -50,7 +50,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
         deserializerMap['name'] = (node) => name = node.getStringValue();
         deserializerMap['payed_by_joint_account'] = (node) => payedByJointAccount = node.getBoolValue();
         deserializerMap['payer_id_id'] = (node) => payerIdId = node.getStringValue();
-        deserializerMap['payments'] = (node) => payments = node.getCollectionOfObjectValues<PaymentModel>(PaymentModel.createFromDiscriminatorValue);
+        deserializerMap['payments'] = (node) => payments = node.getCollectionOfObjectValues<SubscriptionPaymentModel>(SubscriptionPaymentModel.createFromDiscriminatorValue);
         deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
     }
@@ -67,7 +67,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
         writer.writeStringValue('name', name);
         writer.writeBoolValue('payed_by_joint_account', value:payedByJointAccount);
         writer.writeStringValue('payer_id_id', payerIdId);
-        writer.writeCollectionOfObjectValues<PaymentModel>('payments', payments);
+        writer.writeCollectionOfObjectValues<SubscriptionPaymentModel>('payments', payments);
         writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
     }

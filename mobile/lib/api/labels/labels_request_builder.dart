@@ -4,12 +4,17 @@ import '../models/create_label_model.dart';
 import '../models/http_error.dart';
 import '../models/label_model.dart';
 import '../models/paginated_response_model_endpoints_label_model.dart';
+import './default_/default_request_builder.dart';
 import './item/labels_item_request_builder.dart';
 import './labels_request_builder_get_query_parameters.dart';
 
 /// auto generated
 /// Builds and executes requests for operations under \labels
 class LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBuilder> {
+    ///  The default property
+    DefaultRequestBuilder get default_ {
+        return DefaultRequestBuilder(pathParameters, requestAdapter);
+    }
     /// Gets an item from the ApiSdk.labels.item collection
     ///  [id] Label ID
     LabelsItemRequestBuilder byId(String id) {

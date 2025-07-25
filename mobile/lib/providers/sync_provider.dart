@@ -49,10 +49,7 @@ class SyncProvider extends ChangeNotifier {
 
     final baseUrl = dotenv.env["BACKEND_URL"];
     // Initialize API service
-    _apiService = ApiService(
-      baseUrl: 'http://10.0.2.2:8080',
-      authenticationService: authenticationService,
-    );
+    _apiService = ApiService('http://10.0.2.2:8080', authenticationService);
 
     // Initialize shared preferences
     final prefs = SharedPreferencesAsync();
@@ -242,7 +239,6 @@ class SyncProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    _apiService.dispose();
     _syncService.dispose();
     super.dispose();
   }

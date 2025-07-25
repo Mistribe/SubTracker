@@ -1,6 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import './patch_payment_model.dart';
+import './patch_subscription_payment_model.dart';
 
 /// auto generated
 /// Subscription update model
@@ -23,7 +23,7 @@ class PatchSubscriptionModel implements AdditionalDataHolder, Parsable {
     ///  The payer_id property
     String? payerId;
     ///  The payments property
-    Iterable<PatchPaymentModel>? payments;
+    Iterable<PatchSubscriptionPaymentModel>? payments;
     ///  The updated_at property
     DateTime? updatedAt;
     /// Instantiates a new [PatchSubscriptionModel] and sets the default values.
@@ -45,7 +45,7 @@ class PatchSubscriptionModel implements AdditionalDataHolder, Parsable {
         deserializerMap['name'] = (node) => name = node.getStringValue();
         deserializerMap['payed_by_joint_account'] = (node) => payedByJointAccount = node.getBoolValue();
         deserializerMap['payer_id'] = (node) => payerId = node.getStringValue();
-        deserializerMap['payments'] = (node) => payments = node.getCollectionOfObjectValues<PatchPaymentModel>(PatchPaymentModel.createFromDiscriminatorValue);
+        deserializerMap['payments'] = (node) => payments = node.getCollectionOfObjectValues<PatchSubscriptionPaymentModel>(PatchSubscriptionPaymentModel.createFromDiscriminatorValue);
         deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
     }
@@ -60,7 +60,7 @@ class PatchSubscriptionModel implements AdditionalDataHolder, Parsable {
         writer.writeStringValue('name', name);
         writer.writeBoolValue('payed_by_joint_account', value:payedByJointAccount);
         writer.writeStringValue('payer_id', payerId);
-        writer.writeCollectionOfObjectValues<PatchPaymentModel>('payments', payments);
+        writer.writeCollectionOfObjectValues<PatchSubscriptionPaymentModel>('payments', payments);
         writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
     }

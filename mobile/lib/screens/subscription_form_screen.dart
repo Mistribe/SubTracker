@@ -102,7 +102,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
           listen: false,
         );
         setState(() {
-          _userFamilyMembers = subscription.userFamilyMemberIds
+          _userFamilyMembers = subscription.familyMemberIds
               .map(
                 (id) =>
                     familyProvider.getFamilyMemberById(id) ??
@@ -111,10 +111,8 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
               .where((member) => member.id.isNotEmpty)
               .toList();
 
-          _payerFamilyMember = subscription.payerFamilyMemberId != null
-              ? familyProvider.getFamilyMemberById(
-                  subscription.payerFamilyMemberId,
-                )
+          _payerFamilyMember = subscription.payerId != null
+              ? familyProvider.getFamilyMemberById(subscription.payerId)
               : null;
         });
       });
