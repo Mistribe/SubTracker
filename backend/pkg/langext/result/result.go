@@ -11,7 +11,8 @@ type Result[V any] interface {
 	Equal(other Result[V]) bool
 }
 
-func Bind[TIn any, TOut any](result Result[TIn],
+func Bind[TIn any, TOut any](
+	result Result[TIn],
 	success func(value TIn) Result[TOut]) Result[TOut] {
 	if result.IsSuccess() {
 		return success(result.getValue())
@@ -19,7 +20,8 @@ func Bind[TIn any, TOut any](result Result[TIn],
 	return Fail[TOut](result.getError())
 }
 
-func BindReduce[TIn any, TOut any](results []Result[TIn],
+func BindReduce[TIn any, TOut any](
+	results []Result[TIn],
 	success func(values []TIn) Result[TOut]) Result[TOut] {
 	values := make([]TIn, len(results))
 
@@ -33,14 +35,16 @@ func BindReduce[TIn any, TOut any](results []Result[TIn],
 	return success(values)
 }
 
-func Map[TIn any, TOut any](result Result[TIn],
+func Map[TIn any, TOut any](
+	result Result[TIn],
 	success func(value TIn) TOut) Result[TOut] {
 	return Bind(result, func(value TIn) Result[TOut] {
 		return Success(success(value))
 	})
 }
 
-func Match[TIn any, TOut any](result Result[TIn],
+func Match[TIn any, TOut any](
+	result Result[TIn],
 	success func(value TIn) TOut,
 	failure func(err error) TOut) TOut {
 	if result.IsSuccess() {

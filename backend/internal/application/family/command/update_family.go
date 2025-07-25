@@ -46,7 +46,8 @@ func (h *updateFamilyCommandHandler) Handle(ctx context.Context, cmd UpdateFamil
 
 }
 
-func (h *updateFamilyCommandHandler) updateFamily(ctx context.Context, cmd UpdateFamilyCommand,
+func (h *updateFamilyCommandHandler) updateFamily(
+	ctx context.Context, cmd UpdateFamilyCommand,
 	fam family.Family) result.Result[family.Family] {
 	if err := ensureOwnerIsEditor(ctx, fam.OwnerId()); err != nil {
 		return result.Fail[family.Family](err)

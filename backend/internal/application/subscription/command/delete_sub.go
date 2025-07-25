@@ -22,7 +22,8 @@ func NewDeleteSubscriptionCommandHandler(subscriptionRepository subscription.Rep
 	return &DeleteSubscriptionCommandHandler{subscriptionRepository: subscriptionRepository}
 }
 
-func (h DeleteSubscriptionCommandHandler) Handle(ctx context.Context,
+func (h DeleteSubscriptionCommandHandler) Handle(
+	ctx context.Context,
 	command DeleteSubscriptionCommand) result.Result[result.Unit] {
 	subOpt, err := h.subscriptionRepository.Get(ctx, command.Id)
 	if err != nil {

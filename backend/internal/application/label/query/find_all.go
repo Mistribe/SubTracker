@@ -36,7 +36,8 @@ func NewFindAllQueryHandler(repository label.Repository) *FindAllQueryHandler {
 	return &FindAllQueryHandler{repository: repository}
 }
 
-func (h FindAllQueryHandler) Handle(ctx context.Context,
+func (h FindAllQueryHandler) Handle(
+	ctx context.Context,
 	query FindAllQuery) result.Result[core.PaginatedResponse[label.Label]] {
 	lbs, err := h.repository.GetAll(ctx, query.Size, query.Page, query.WithDefault)
 	if err != nil {

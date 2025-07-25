@@ -35,7 +35,8 @@ func ParseNew[TIn any, TOut any](in *TIn, f func(TIn) (TOut, error)) (Option[TOu
 	return Some(out), nil
 }
 
-func Bind[TIn any, TOut any](option Option[TIn],
+func Bind[TIn any, TOut any](
+	option Option[TIn],
 	some func(TIn) Option[TOut]) Option[TOut] {
 	if option.IsSome() {
 		return some(option.getValue())
@@ -43,14 +44,16 @@ func Bind[TIn any, TOut any](option Option[TIn],
 	return None[TOut]()
 }
 
-func Map[TIn any, TOut any](option Option[TIn],
+func Map[TIn any, TOut any](
+	option Option[TIn],
 	some func(TIn) TOut) Option[TOut] {
 	return Bind(option, func(in TIn) Option[TOut] {
 		return Some(some(in))
 	})
 }
 
-func Match[TIn any, TOut any](option Option[TIn],
+func Match[TIn any, TOut any](
+	option Option[TIn],
 	some func(TIn) TOut,
 	none func() TOut) TOut {
 	if option.IsSome() {

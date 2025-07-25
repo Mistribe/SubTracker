@@ -10,6 +10,7 @@ import (
 	"github.com/Oleexo/config-go"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+
 	"github.com/oleexo/subtracker/internal/domain/user"
 )
 

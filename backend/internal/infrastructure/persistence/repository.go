@@ -23,7 +23,8 @@ type Repository struct {
 	db *gorm.DB
 }
 
-func NewRepository(cfg config.Configuration,
+func NewRepository(
+	cfg config.Configuration,
 	logger *slog.Logger) *Repository {
 	dsn := cfg.GetString("DATABASE_DSN")
 	//	dsn := "host=localhost user=postgres password=postgres dbname=app port=5432"
