@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../repositories/subscription_repository.dart';
 import '../repositories/label_repository.dart';
 import '../repositories/family_repository.dart';
+import '../repositories/settings_repository.dart';
 import '../services/authentication_service.dart';
 
 class AuthenticationProvider extends ChangeNotifier {
@@ -11,16 +12,19 @@ class AuthenticationProvider extends ChangeNotifier {
   final SubscriptionRepository? _subscriptionRepository;
   final LabelRepository? _labelRepository;
   final FamilyRepository? _familyRepository;
+  final SettingsRepository? _settingsRepository;
 
   AuthenticationProvider({
     required AuthenticationService authenticationService,
     SubscriptionRepository? subscriptionRepository,
     LabelRepository? labelRepository,
     FamilyRepository? familyRepository,
-  })  : _authenticationService = authenticationService,
-        _subscriptionRepository = subscriptionRepository,
-        _labelRepository = labelRepository,
-        _familyRepository = familyRepository {
+    SettingsRepository? settingsRepository,
+  }) : _authenticationService = authenticationService,
+       _subscriptionRepository = subscriptionRepository,
+       _labelRepository = labelRepository,
+       _familyRepository = familyRepository,
+       _settingsRepository = settingsRepository {
     refreshUser();
   }
 

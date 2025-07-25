@@ -5,8 +5,6 @@ import '../providers/theme_provider.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/authentication_provider.dart';
 import '../providers/sync_provider.dart';
-import 'family_management_screen.dart';
-import 'label_management_screen.dart';
 import 'account_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -131,55 +129,6 @@ class SettingsScreen extends StatelessWidget {
                 );
               }).toList(),
             ),
-          ),
-          const Divider(),
-          ListTile(
-            title: const Text('Family Management'),
-            leading: const Icon(Icons.family_restroom),
-          ),
-          Consumer<AuthenticationProvider>(
-            builder: (context, authenticationProvider, _) {
-              return ListTile(
-                title: const Text('Manage Family Members'),
-                subtitle: Text(
-                  authenticationProvider.isAuthenticated
-                      ? 'Add, edit, or remove family members'
-                      : 'Sign in to manage family members',
-                ),
-                leading: const Icon(Icons.people),
-                trailing: authenticationProvider.isAuthenticated
-                    ? const Icon(Icons.arrow_forward_ios, size: 16)
-                    : null,
-                enabled: authenticationProvider.isAuthenticated,
-                onTap: authenticationProvider.isAuthenticated
-                    ? () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const FamilyManagementScreen(),
-                          ),
-                        );
-                      }
-                    : null,
-              );
-            },
-          ),
-          const Divider(),
-          ListTile(
-            title: const Text('Label Management'),
-            leading: const Icon(Icons.label),
-          ),
-          ListTile(
-            title: const Text('Manage Labels'),
-            subtitle: const Text('Add, edit, or remove labels'),
-            leading: const Icon(Icons.label_outline),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const LabelManagementScreen(),
-                ),
-              );
-            },
           ),
         ],
       ),

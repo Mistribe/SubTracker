@@ -21,13 +21,14 @@ class SettingsAdapter extends TypeAdapter<Settings> {
       useSystemTheme: fields[1] as bool,
       defaultCurrency: fields[2] as String,
       selectedFamilyId: fields[3] as String?,
+      hasCompletedOnboarding: fields[4] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, Settings obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.isDarkMode)
       ..writeByte(1)
@@ -35,7 +36,9 @@ class SettingsAdapter extends TypeAdapter<Settings> {
       ..writeByte(2)
       ..write(obj.defaultCurrency)
       ..writeByte(3)
-      ..write(obj.selectedFamilyId);
+      ..write(obj.selectedFamilyId)
+      ..writeByte(4)
+      ..write(obj.hasCompletedOnboarding);
   }
 
   @override

@@ -107,6 +107,7 @@ class MyApp extends StatelessWidget {
               subscriptionRepository: subscriptionRepository,
               labelRepository: labelRepository,
               familyRepository: familyMemberRepository,
+              settingsRepository: settingsRepository,
             );
           },
         ),
@@ -162,8 +163,8 @@ class MyApp extends StatelessWidget {
             themeMode: themeProvider.themeMode,
             theme: themeProvider.lightTheme,
             darkTheme: themeProvider.darkTheme,
-            home: settings.hasCompletedOnboarding 
-                ? const HomeScreen() 
+            home: settings.hasCompletedOnboarding
+                ? const HomeScreen()
                 : WelcomeScreen(settingsRepository: settingsRepo),
           );
         },

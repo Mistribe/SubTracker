@@ -348,6 +348,7 @@ class SubscriptionProvider with ChangeNotifier {
     String? payerFamilyMemberId,
     bool? payedByJointAccount,
     String? familyId,
+    int freeTrialMonths = 0,
   }) async {
     // Validate that a kid is not set as a payer
     // Note: We can't validate if a kid is set as a payer here anymore since we only have the ID
@@ -363,6 +364,7 @@ class SubscriptionProvider with ChangeNotifier {
         // Far future date
         months: months,
         currency: currency ?? _defaultCurrency,
+        freeTrialMonths: freeTrialMonths,
       ),
     ];
 
@@ -471,6 +473,7 @@ class SubscriptionProvider with ChangeNotifier {
     DateTime startDate, {
     DateTime? endDate,
     String? currency,
+    int freeTrialMonths = 0,
   }) async {
     final subscription = subscriptionRepository.get(subscriptionId);
     if (subscription == null) {
@@ -490,6 +493,7 @@ class SubscriptionProvider with ChangeNotifier {
       endDate: endDate,
       months: months,
       currency: detailCurrency,
+      freeTrialMonths: freeTrialMonths,
     );
 
     // Update the subscription

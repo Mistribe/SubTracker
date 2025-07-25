@@ -9,6 +9,12 @@ import '../models/subscription.dart';
 import '../models/label.dart';
 import '../models/currency.dart';
 import '../models/family_member.dart';
+// Widget imports
+import '../widgets/subscription_basic_info_section.dart';
+import '../widgets/subscription_details_section.dart';
+import '../widgets/subscription_family_section.dart';
+import '../widgets/subscription_labels_section.dart';
+import '../widgets/color_selection_dialog.dart';
 
 class SubscriptionFormScreen extends StatefulWidget {
   final Subscription? subscription;
@@ -25,6 +31,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
   late final TextEditingController _priceController;
   late final TextEditingController _customMonthsController;
   late final TextEditingController _recurrenceCountController;
+  late final TextEditingController _freeTrialMonthsController;
   late int _months;
   String _selectedDuration = '1 month'; // Default value
   late DateTime _startDate;
@@ -34,6 +41,8 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
   bool _isLabelsExpanded = false; // Track if labels section is expanded
   bool _isFamilyExpanded = false; // Track if family section is expanded
   bool _useRecurrenceCount = false;
+  bool _useFreeTrial = false; // Track if free trial is enabled
+  int _freeTrialMonths = 1; // Default free trial months
   bool _isEditMode = false;
   bool _isActiveSubscription = true;
   List<FamilyMember> _userFamilyMembers = [];
@@ -80,6 +89,13 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
         _recurrenceCountController = TextEditingController(text: '1');
       }
       _selectedCurrency = currentDetail.currency;
+
+      // Initialize free trial data
+      _freeTrialMonths = currentDetail.freeTrialMonths;
+      _useFreeTrial = _freeTrialMonths > 0;
+      _freeTrialMonthsController = TextEditingController(
+        text: _freeTrialMonths > 0 ? _freeTrialMonths.toString() : '1',
+      );
 
       // Fetch labels from provider
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -139,6 +155,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
       _priceController = TextEditingController();
       _customMonthsController = TextEditingController();
       _recurrenceCountController = TextEditingController(text: '1');
+      _freeTrialMonthsController = TextEditingController(text: '1');
       _months = 1;
       _startDate = DateTime.now();
       _selectedLabels = [];
@@ -391,6 +408,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
               _startDate,
               endDate: _endDate,
               currency: _selectedCurrency,
+              freeTrialMonths: _useFreeTrial ? _freeTrialMonths : 0,
             );
           }
         } else {
@@ -414,6 +432,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                     _payerFamilyMember != null
                 ? familyProvider.selectedFamilyId
                 : null,
+            freeTrialMonths: _useFreeTrial ? _freeTrialMonths : 0,
           );
         }
 
@@ -449,181 +468,24 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
     }
   }
 
-  // Build label chips for selection
-  List<Widget> _buildLabelChips() {
-    final labelProvider = Provider.of<LabelProvider>(context);
-    // Get the latest labels from the provider
-    final allLabels = labelProvider.labels;
-
-    return allLabels.map((label) {
-      final isSelected = _selectedLabels.any(
-        (selectedLabel) => selectedLabel.id == label.id,
-      );
-      return FilterChip(
-        label: Text(label.name),
-        selected: isSelected,
-        onSelected: (selected) {
-          setState(() {
-            if (selected) {
-              _selectedLabels.add(label);
-            } else {
-              _selectedLabels.removeWhere(
-                (selectedLabel) => selectedLabel.id == label.id,
-              );
-            }
-            _isFormModified = true;
-          });
-        },
-        backgroundColor: Color(
-          int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000,
-        ).withValues(alpha: 0.2),
-        selectedColor: Color(
-          int.parse(label.color.substring(1, 7), radix: 16) + 0xFF000000,
-        ).withValues(alpha: 0.7),
-        checkmarkColor: Colors.white,
-      );
-    }).toList();
-  }
-
-  // Build family member chips for selection
-  List<Widget> _buildFamilyMemberChips() {
-    final familyMemberProvider = Provider.of<FamilyProvider>(context);
-    final allFamilyMembers = familyMemberProvider.familyMembers;
-
-    return allFamilyMembers.map((member) {
-      final isSelected = _userFamilyMembers.any(
-        (selectedMember) => selectedMember.id == member.id,
-      );
-      return FilterChip(
-        label: Text(member.name),
-        selected: isSelected,
-        onSelected: (selected) {
-          setState(() {
-            if (selected) {
-              _userFamilyMembers.add(member);
-            } else {
-              _userFamilyMembers.removeWhere(
-                (selectedMember) => selectedMember.id == member.id,
-              );
-            }
-            _isFormModified = true;
-          });
-        },
-        backgroundColor: Theme.of(context).chipTheme.backgroundColor,
-        selectedColor: Theme.of(
-          context,
-        ).colorScheme.primary.withValues(alpha: 0.7),
-        checkmarkColor: Colors.white,
-      );
-    }).toList();
-  }
 
   // Show dialog for adding a custom label
   void _showAddLabelDialog() {
     final nameController = TextEditingController();
     final selectedColor = ValueNotifier<Color>(Colors.blue);
-    final navigator = Navigator.of(context);
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Custom Label'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Label Name',
-                hintText: 'Enter a name for your label',
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('Select Color:'),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: [
-                _buildColorOption(selectedColor, Colors.red),
-                _buildColorOption(selectedColor, Colors.pink),
-                _buildColorOption(selectedColor, Colors.purple),
-                _buildColorOption(selectedColor, Colors.deepPurple),
-                _buildColorOption(selectedColor, Colors.indigo),
-                _buildColorOption(selectedColor, Colors.blue),
-                _buildColorOption(selectedColor, Colors.lightBlue),
-                _buildColorOption(selectedColor, Colors.cyan),
-                _buildColorOption(selectedColor, Colors.teal),
-                _buildColorOption(selectedColor, Colors.green),
-                _buildColorOption(selectedColor, Colors.lightGreen),
-                _buildColorOption(selectedColor, Colors.lime),
-                _buildColorOption(selectedColor, Colors.yellow),
-                _buildColorOption(selectedColor, Colors.amber),
-                _buildColorOption(selectedColor, Colors.orange),
-                _buildColorOption(selectedColor, Colors.deepOrange),
-                _buildColorOption(selectedColor, Colors.brown),
-                _buildColorOption(selectedColor, Colors.grey),
-                _buildColorOption(selectedColor, Colors.blueGrey),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              final name = nameController.text.trim();
-              if (name.isNotEmpty) {
-                final colorHex =
-                    '#${selectedColor.value.toARGB32().toRadixString(16).substring(2)}';
-                Provider.of<LabelProvider>(
-                  context,
-                  listen: false,
-                ).addLabel(name, colorHex).then((_) {
-                  navigator.pop();
-                });
-              }
-            },
-            child: const Text('Add'),
-          ),
-        ],
+      builder: (context) => ColorSelectionDialog(
+        nameController: nameController,
+        selectedColor: selectedColor,
+        onAddLabel: (name, colorHex) {
+          Provider.of<LabelProvider>(
+            context,
+            listen: false,
+          ).addLabel(name, colorHex);
+        },
       ),
-    );
-  }
-
-  // Build a color selection option
-  Widget _buildColorOption(ValueNotifier<Color> selectedColor, Color color) {
-    return ValueListenableBuilder<Color>(
-      valueListenable: selectedColor,
-      builder: (context, value, child) {
-        final isSelected = value == color;
-        return GestureDetector(
-          onTap: () => selectedColor.value = color,
-          child: Container(
-            width: 30,
-            height: 30,
-            margin: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isSelected ? Colors.white : Colors.transparent,
-                width: 2,
-              ),
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 4,
-                      ),
-                    ]
-                  : null,
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -702,315 +564,69 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Basic Information Section Title
-                Padding(
-                  padding: const EdgeInsets.only(left: 4, bottom: 12),
-                  child: Text(
-                    'Basic Information',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ),
 
-                // Basic Information Card
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          controller: _nameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Subscription Name',
-                            hintText: 'e.g., Netflix, Gym Membership',
-                            prefixIcon: Icon(Icons.payment),
-                          ),
-                          textCapitalization: TextCapitalization.words,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter a name';
-                            }
-                            return null;
-                          },
-                        ),
-                        if (!_isEditMode ||
-                            (_isEditMode && _isActiveSubscription))
-                          const SizedBox(height: 16),
-                        if (!_isEditMode ||
-                            (_isEditMode && _isActiveSubscription))
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: 7,
-                                child: TextFormField(
-                                  controller: _priceController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Price',
-                                    hintText: 'Enter the amount',
-                                    prefixIcon: Icon(
-                                      _selectedCurrency == Currency.USD.code
-                                          ? Icons.attach_money
-                                          : Icons.currency_exchange,
-                                    ),
-                                  ),
-                                  enabled:
-                                      !_isEditMode ||
-                                      (_isEditMode && _isActiveSubscription),
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                        decimal: true,
-                                      ),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d+\.?\d{0,2}'),
-                                    ),
-                                  ],
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter a price';
-                                    }
-                                    try {
-                                      final price = double.parse(value);
-                                      if (price <= 0) {
-                                        return 'Price must be greater than zero';
-                                      }
-                                    } catch (e) {
-                                      return 'Please enter a valid number';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                flex: 3,
-                                child: DropdownButtonFormField<String>(
-                                  value: _selectedCurrency,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Currency',
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 15,
-                                    ),
-                                  ),
-                                  items: _currencies
-                                      .map<DropdownMenuItem<String>>((
-                                        String value,
-                                      ) {
-                                        return DropdownMenuItem<String>(
-                                          value: value,
-                                          child: Text(value),
-                                        );
-                                      })
-                                      .toList(),
-                                  onChanged:
-                                      !_isEditMode ||
-                                          (_isEditMode && _isActiveSubscription)
-                                      ? (String? newValue) {
-                                          if (newValue != null) {
-                                            setState(() {
-                                              _selectedCurrency = newValue;
-                                              _isFormModified = true;
-                                            });
-                                          }
-                                        }
-                                      : null,
-                                ),
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
-                  ),
+                // Basic Information Section
+                SubscriptionBasicInfoSection(
+                  nameController: _nameController,
+                  priceController: _priceController,
+                  selectedCurrency: _selectedCurrency,
+                  currencies: _currencies,
+                  isEditMode: _isEditMode,
+                  isActiveSubscription: _isActiveSubscription,
+                  onCurrencyChanged: (String? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _selectedCurrency = newValue;
+                        _isFormModified = true;
+                      });
+                    }
+                  },
                 ),
 
                 if (!_isEditMode || (_isEditMode && _isActiveSubscription)) ...[
                   const SizedBox(height: 24),
 
-                  // Subscription Details Section Title
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4, bottom: 12),
-                    child: Text(
-                      'Subscription Details',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                  ),
-
-                  // Subscription Details Card
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          DropdownButtonFormField<String>(
-                            value: _selectedDuration,
-                            decoration: const InputDecoration(
-                              labelText: 'Subscription Recurrence',
-                              prefixIcon: Icon(Icons.repeat),
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: '1 month',
-                                child: Text('Monthly'),
-                              ),
-                              DropdownMenuItem(
-                                value: '3 months',
-                                child: Text('Quarterly (3 months)'),
-                              ),
-                              DropdownMenuItem(
-                                value: '6 months',
-                                child: Text('Semi-Annual (6 months)'),
-                              ),
-                              DropdownMenuItem(
-                                value: '12 months',
-                                child: Text('Annual (12 months)'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'Custom',
-                                child: Text('Custom'),
-                              ),
-                            ],
-                            onChanged: _handleDurationChange,
-                          ),
-                          if (_selectedDuration == 'Custom')
-                            Padding(
-                              padding: const EdgeInsets.only(top: 16.0),
-                              child: TextFormField(
-                                controller: _customMonthsController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Custom Months',
-                                  hintText: 'Enter number of months',
-                                  prefixIcon: Icon(Icons.calendar_today),
-                                ),
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                                validator: (value) {
-                                  if (_selectedDuration == 'Custom') {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter number of months';
-                                    }
-                                    final months = int.tryParse(value);
-                                    if (months == null || months <= 0) {
-                                      return 'Please enter a valid number';
-                                    }
-                                  }
-                                  return null;
-                                },
-                                onChanged: _handleCustomMonthsChange,
-                              ),
-                            ),
-
-                          const SizedBox(height: 16),
-
-                          // Date picker
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Theme.of(
-                                  context,
-                                ).dividerColor.withValues(alpha: 0.5),
-                              ),
-                            ),
-                            child: ListTile(
-                              leading: Icon(
-                                Icons.calendar_today,
-                                color: Colors.blue.withValues(
-                                  alpha:
-                                      Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? 0.8
-                                      : 1.0,
-                                ),
-                              ),
-                              title: const Text('Start Date'),
-                              subtitle: Text(
-                                '${_startDate.month}/${_startDate.day}/${_startDate.year}',
-                              ),
-                              onTap: () => _selectStartDate(context),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Toggle for recurrence count (only in add mode)
-                          Row(
-                            children: [
-                              Switch(
-                                value: _useRecurrenceCount,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _useRecurrenceCount = value;
-                                    _isFormModified = true;
-                                    if (!value) {
-                                      _recurrenceCountController.text = '1';
-                                    }
-                                  });
-                                },
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Specify number of recurrences',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Theme.of(
-                                    context,
-                                  ).textTheme.bodyLarge?.color,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          // Recurrence count input (shown only if toggle is on)
-                          if (_useRecurrenceCount)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: 8.0,
-                                top: 8.0,
-                              ),
-                              child: TextFormField(
-                                controller: _recurrenceCountController,
-                                decoration: InputDecoration(
-                                  labelText: 'Number of ${_getDurationLabel()}',
-                                  hintText: 'Enter number of recurrences',
-                                  prefixIcon: const Icon(Icons.repeat),
-                                ),
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                                validator: (value) {
-                                  if (_useRecurrenceCount) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter number of recurrences';
-                                    }
-                                    final count = int.tryParse(value);
-                                    if (count == null || count <= 0) {
-                                      return 'Please enter a valid number';
-                                    }
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
+                  // Subscription Details Section
+                  SubscriptionDetailsSection(
+                    selectedDuration: _selectedDuration,
+                    customMonthsController: _customMonthsController,
+                    recurrenceCountController: _recurrenceCountController,
+                    freeTrialMonthsController: _freeTrialMonthsController,
+                    startDate: _startDate,
+                    useRecurrenceCount: _useRecurrenceCount,
+                    useFreeTrial: _useFreeTrial,
+                    isEditMode: _isEditMode,
+                    isActiveSubscription: _isActiveSubscription,
+                    onDurationChanged: _handleDurationChange,
+                    onCustomMonthsChanged: _handleCustomMonthsChange,
+                    onSelectStartDate: _selectStartDate,
+                    onRecurrenceCountToggled: (value) {
+                      setState(() {
+                        _useRecurrenceCount = value;
+                        _isFormModified = true;
+                        if (!value) {
+                          _recurrenceCountController.text = '1';
+                        }
+                      });
+                    },
+                    onFreeTrialToggled: (value) {
+                      setState(() {
+                        _useFreeTrial = value;
+                        _isFormModified = true;
+                        if (!value) {
+                          _freeTrialMonths = 0;
+                        } else {
+                          _freeTrialMonths = int.tryParse(_freeTrialMonthsController.text) ?? 1;
+                        }
+                      });
+                    },
+                    onFreeTrialMonthsChanged: (value) {
+                      setState(() {
+                        _freeTrialMonths = int.tryParse(value) ?? 1;
+                        _isFormModified = true;
+                      });
+                    },
+                    durationLabel: _getDurationLabel(),
                   ),
                 ],
 
@@ -1019,189 +635,48 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                 // Family Section
                 Consumer<FamilyProvider>(
                   builder: (context, familyMemberProvider, _) {
-                    final hasFamilyMembers =
-                        familyMemberProvider.hasFamilyMembers;
-
-                    // If no family members, don't show the section
-                    if (!hasFamilyMembers) {
-                      return const SizedBox.shrink();
-                    }
-
-                    final familyMembers = familyMemberProvider.familyMembers;
-
-                    return Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        children: [
-                          // Collapsible header
-                          InkWell(
-                            onTap: () {
-                              setState(() {
-                                _isFamilyExpanded = !_isFamilyExpanded;
-                              });
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Family',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
-                                    ),
-                                  ),
-                                  Icon(
-                                    _isFamilyExpanded
-                                        ? Icons.keyboard_arrow_up
-                                        : Icons.keyboard_arrow_down,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          // Collapsible content
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            height: _isFamilyExpanded ? null : 0,
-                            child: _isFamilyExpanded
-                                ? Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      16.0,
-                                      0,
-                                      16.0,
-                                      16.0,
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Divider(),
-                                        const Text(
-                                          'Link family members to this subscription',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 16),
-
-                                        // Who uses this subscription
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              'Who uses this subscription',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Wrap(
-                                              spacing: 8.0,
-                                              runSpacing: 8.0,
-                                              children:
-                                                  _buildFamilyMemberChips(),
-                                            ),
-                                          ],
-                                        ),
-
-                                        const SizedBox(height: 16),
-
-                                        // Joint account toggle
-                                        Row(
-                                          children: [
-                                            Switch(
-                                              value: _payedByJointAccount,
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  _payedByJointAccount = value;
-                                                  if (value) {
-                                                    // If joint account is selected, clear the payer
-                                                    _payerFamilyMember = null;
-                                                  }
-                                                  _isFormModified = true;
-                                                });
-                                              },
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              'Paid by joint account',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                color: Theme.of(
-                                                  context,
-                                                ).textTheme.bodyLarge?.color,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-
-                                        const SizedBox(height: 16),
-
-                                        // Who pays for this subscription (only shown if not paid by joint account)
-                                        if (!_payedByJointAccount)
-                                          DropdownButtonFormField<String?>(
-                                            value: _payerFamilyMember?.id,
-                                            decoration: const InputDecoration(
-                                              labelText:
-                                                  'Who pays for this subscription',
-                                              prefixIcon: Icon(
-                                                Icons.account_balance_wallet,
-                                              ),
-                                            ),
-                                            items: [
-                                              const DropdownMenuItem<String?>(
-                                                value: null,
-                                                child: Text('None'),
-                                              ),
-                                              ...familyMembers
-                                                  .where(
-                                                    (member) => !member.isKid,
-                                                  )
-                                                  .map((member) {
-                                                    return DropdownMenuItem<
-                                                      String?
-                                                    >(
-                                                      value: member.id,
-                                                      child: Text(member.name),
-                                                    );
-                                                  }),
-                                            ],
-                                            onChanged: (String? value) {
-                                              setState(() {
-                                                _payerFamilyMember =
-                                                    value == null
-                                                    ? null
-                                                    : familyMemberProvider
-                                                          .getFamilyMemberById(
-                                                            value,
-                                                          );
-                                                _isFormModified = true;
-                                              });
-                                            },
-                                          ),
-                                      ],
-                                    ),
-                                  )
-                                : const SizedBox.shrink(),
-                          ),
-                        ],
-                      ),
+                    return SubscriptionFamilySection(
+                      userFamilyMembers: _userFamilyMembers,
+                      allFamilyMembers: familyMemberProvider.familyMembers,
+                      payerFamilyMember: _payerFamilyMember,
+                      payedByJointAccount: _payedByJointAccount,
+                      isFamilyExpanded: _isFamilyExpanded,
+                      hasFamilyMembers: familyMemberProvider.hasFamilyMembers,
+                      onFamilyExpandedToggle: (value) {
+                        setState(() {
+                          _isFamilyExpanded = value;
+                        });
+                      },
+                      onFamilyMemberToggled: (member, selected) {
+                        setState(() {
+                          if (selected) {
+                            _userFamilyMembers.add(member);
+                          } else {
+                            _userFamilyMembers.removeWhere(
+                              (selectedMember) => selectedMember.id == member.id,
+                            );
+                          }
+                          _isFormModified = true;
+                        });
+                      },
+                      onJointAccountToggled: (value) {
+                        setState(() {
+                          _payedByJointAccount = value;
+                          if (value) {
+                            // If joint account is selected, clear the payer
+                            _payerFamilyMember = null;
+                          }
+                          _isFormModified = true;
+                        });
+                      },
+                      onPayerChanged: (String? value) {
+                        setState(() {
+                          _payerFamilyMember = value == null
+                              ? null
+                              : familyMemberProvider.getFamilyMemberById(value);
+                          _isFormModified = true;
+                        });
+                      },
                     );
                   },
                 ),
@@ -1209,88 +684,32 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
                 const SizedBox(height: 24),
 
                 // Labels Section
-                Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    children: [
-                      // Collapsible header
-                      InkWell(
-                        onTap: () {
-                          setState(() {
-                            _isLabelsExpanded = !_isLabelsExpanded;
-                          });
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Labels',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
-                              Icon(
-                                _isLabelsExpanded
-                                    ? Icons.keyboard_arrow_up
-                                    : Icons.keyboard_arrow_down,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      // Collapsible content
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        height: _isLabelsExpanded ? null : 0,
-                        child: _isLabelsExpanded
-                            ? Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  16.0,
-                                  0,
-                                  16.0,
-                                  16.0,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Divider(),
-                                    const Text(
-                                      'Categorize your subscription',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    Wrap(
-                                      spacing: 8.0,
-                                      runSpacing: 8.0,
-                                      children: _buildLabelChips(),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: TextButton.icon(
-                                        icon: const Icon(Icons.add),
-                                        label: const Text('Add Custom Label'),
-                                        onPressed: _showAddLabelDialog,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                    ],
-                  ),
+                Consumer<LabelProvider>(
+                  builder: (context, labelProvider, _) {
+                    return SubscriptionLabelsSection(
+                      selectedLabels: _selectedLabels,
+                      allLabels: labelProvider.labels,
+                      isLabelsExpanded: _isLabelsExpanded,
+                      onLabelsExpandedToggle: (value) {
+                        setState(() {
+                          _isLabelsExpanded = value;
+                        });
+                      },
+                      onLabelToggled: (label, selected) {
+                        setState(() {
+                          if (selected) {
+                            _selectedLabels.add(label);
+                          } else {
+                            _selectedLabels.removeWhere(
+                              (selectedLabel) => selectedLabel.id == label.id,
+                            );
+                          }
+                          _isFormModified = true;
+                        });
+                      },
+                      onAddCustomLabel: _showAddLabelDialog,
+                    );
+                  },
                 ),
               ],
             ),

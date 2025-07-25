@@ -24,6 +24,7 @@ class SubscriptionPaymentAdapter extends TypeAdapter<SubscriptionPayment> {
       months: fields[4] as int,
       currency: fields[5] as String,
       eTag: fields[8] as String,
+      freeTrialMonths: fields[9] as int,
       createdAt: fields[6] as DateTime?,
       updatedAt: fields[7] as DateTime?,
     );
@@ -32,7 +33,7 @@ class SubscriptionPaymentAdapter extends TypeAdapter<SubscriptionPayment> {
   @override
   void write(BinaryWriter writer, SubscriptionPayment obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -50,7 +51,9 @@ class SubscriptionPaymentAdapter extends TypeAdapter<SubscriptionPayment> {
       ..writeByte(7)
       ..write(obj.updatedAt)
       ..writeByte(8)
-      ..write(obj.eTag);
+      ..write(obj.eTag)
+      ..writeByte(9)
+      ..write(obj.freeTrialMonths);
   }
 
   @override

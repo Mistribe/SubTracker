@@ -38,6 +38,10 @@ class SubscriptionPayment {
   @HiveField(8)
   final String eTag;
 
+  // Number of months for free trial period (0 means no free trial)
+  @HiveField(9)
+  final int freeTrialMonths;
+
   SubscriptionPayment({
     required this.id,
     required this.price,
@@ -46,6 +50,7 @@ class SubscriptionPayment {
     required this.months,
     required this.currency,
     this.eTag = '',
+    this.freeTrialMonths = 0,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) : createdAt = createdAt ?? DateTime.now(),
@@ -120,6 +125,7 @@ class SubscriptionPayment {
     int? months,
     String? currency,
     String? eTag,
+    int? freeTrialMonths,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -131,6 +137,7 @@ class SubscriptionPayment {
       months: months ?? this.months,
       currency: currency ?? this.currency,
       eTag: eTag ?? this.eTag,
+      freeTrialMonths: freeTrialMonths ?? this.freeTrialMonths,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
     );
@@ -144,6 +151,7 @@ class SubscriptionPayment {
       'end_date': endDate?.toUtc().toIso8601String(),
       'months': months,
       'currency': currency,
+      'free_trial_months': freeTrialMonths,
       'etag': eTag,
       'created_at': createdAt.toUtc().toIso8601String(),
       'updated_at': updatedAt.toUtc().toIso8601String(),
@@ -162,6 +170,7 @@ class SubscriptionPayment {
           : null,
       months: json['months'],
       currency: json['currency'] ?? Currency.USD.code,
+      freeTrialMonths: json['free_trial_months'] ?? 0,
       eTag: json['etag'],
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
