@@ -4,6 +4,7 @@ import '../providers/authentication_provider.dart';
 import '../pages/subscription_page.dart';
 import '../pages/family_management_page.dart';
 import '../pages/label_management_page.dart';
+import '../widgets/app_drawer.dart';
 import 'subscription_form_screen.dart';
 import 'settings_screen.dart';
 
@@ -60,13 +61,14 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
       ),
-      drawer: NavigationDrawer(
+      drawer: AppDrawer(
         selectedIndex: _getSelectedIndex(authProvider),
         onDestinationSelected: (index) {
           Navigator.pop(context); // Close the drawer
 
+          // The drawer now handles index adjustment internally
           // Calculate the index of the Settings destination
-          int settingsIndex = authProvider.isAuthenticated ? 3 : 2;
+          int settingsIndex = authProvider.isAuthenticated ? 4 : 3;
 
           // If Settings is selected
           if (index == settingsIndex) {
@@ -100,77 +102,6 @@ class _HomeScreenState extends State<HomeScreen> {
             }
           });
         },
-        children: [
-          // User header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(28, 16, 16, 10),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  child: Icon(
-                    Icons.person,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        authProvider.isAuthenticated
-                            ? authProvider.user?.displayName ??
-                                  authProvider.user?.email ??
-                                  'User'
-                            : 'Anonymous',
-                        style: Theme.of(context).textTheme.titleMedium,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (authProvider.isAuthenticated &&
-                          authProvider.user?.email != null)
-                        Text(
-                          authProvider.user!.email,
-                          style: Theme.of(context).textTheme.bodySmall,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Divider(),
-          // Subscriptions (Home)
-          NavigationDrawerDestination(
-            icon: const Icon(Icons.subscriptions),
-            label: const Text('Subscriptions'),
-            selectedIcon: const Icon(Icons.subscriptions_outlined),
-          ),
-          // Family (only if user is connected)
-          if (authProvider.isAuthenticated)
-            NavigationDrawerDestination(
-              icon: const Icon(Icons.family_restroom),
-              label: const Text('Family'),
-              selectedIcon: const Icon(Icons.family_restroom_outlined),
-            ),
-          // Labels
-          NavigationDrawerDestination(
-            icon: const Icon(Icons.label),
-            label: const Text('Labels'),
-            selectedIcon: const Icon(Icons.label_outline),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: Divider(),
-          ),
-          // Settings
-          NavigationDrawerDestination(
-            icon: const Icon(Icons.settings),
-            label: const Text('Settings'),
-            selectedIcon: const Icon(Icons.settings_outlined),
-          ),
-        ],
       ),
       body: SafeArea(child: _getPageContent()),
       floatingActionButton: _currentPage == HomeScreenPage.subscriptions
