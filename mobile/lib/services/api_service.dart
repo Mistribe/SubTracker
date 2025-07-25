@@ -14,7 +14,7 @@ import 'package:subscription_tracker/services/authentication_service.dart';
 import '../api/models/patch_family_model.dart';
 import '../api/models/patch_subscription_payment_model.dart';
 import '../api/models/subscription_payment_model.dart';
-import '../models/Paginated.dart';
+import '../models/paginated.dart';
 import '../models/family.dart';
 import '../models/subscription.dart';
 import '../models/family_member.dart';
