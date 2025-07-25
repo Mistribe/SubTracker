@@ -12,5 +12,7 @@ type Provider struct {
 	name        string
 	description string
 	iconUrl     string
+	url         string
+	pricingUrl  string
 	labels      []uuid.UUID
 }
