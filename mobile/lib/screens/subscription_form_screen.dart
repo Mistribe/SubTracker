@@ -460,7 +460,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
             content: Text(
               'Error ${_isEditMode ? 'updating' : 'adding'} subscription: ${e.toString()}',
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -472,7 +472,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
   // Show dialog for adding a custom label
   void _showAddLabelDialog() {
     final nameController = TextEditingController();
-    final selectedColor = ValueNotifier<Color>(Colors.blue);
+    final selectedColor = ValueNotifier<Color>(Theme.of(context).colorScheme.primary);
 
     showDialog(
       context: context,
@@ -541,9 +541,7 @@ class _SubscriptionFormScreenState extends State<SubscriptionFormScreen> {
       appBar: AppBar(
         title: Text(
           _isEditMode ? 'Edit Subscription' : 'Add Subscription',
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
-        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: _showUnsavedChangesDialog,

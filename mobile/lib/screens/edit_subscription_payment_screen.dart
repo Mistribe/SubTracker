@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../extensions/color_extensions.dart';
 import '../models/subscription.dart';
 import '../models/subscription_payment.dart';
 import '../models/currency.dart';

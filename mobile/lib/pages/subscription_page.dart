@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:subscription_tracker/providers/label_provider.dart';
+import '../extensions/color_extensions.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/family_provider.dart';
 import '../widgets/subscription_list.dart';
@@ -34,7 +35,7 @@ class SubscriptionPage extends StatelessWidget {
                       'Monthly',
                       subscriptionProvider.formattedMonthlyCost,
                       Icons.calendar_today,
-                      Colors.blue,
+                      Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -46,7 +47,7 @@ class SubscriptionPage extends StatelessWidget {
                       'Annually',
                       subscriptionProvider.formattedAnnualCost,
                       Icons.calendar_month,
-                      Colors.purple,
+                      Theme.of(context).colorScheme.secondary,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -58,7 +59,7 @@ class SubscriptionPage extends StatelessWidget {
                       'Active',
                       '${subscriptionProvider.activePaymentsCount}${subscriptionProvider.notStartedPaymentsCount > 0 ? ' (${subscriptionProvider.notStartedPaymentsCount})' : ''}',
                       Icons.check_circle,
-                      Colors.green,
+                      Theme.of(context).colorScheme.tertiary,
                     ),
                   ),
                 ],
@@ -294,7 +295,6 @@ class SubscriptionPage extends StatelessWidget {
           );
         },
         tooltip: 'Add Subscription',
-        elevation: 4,
         child: const Icon(Icons.add),
       ),
     ),
@@ -638,11 +638,10 @@ class SubscriptionPage extends StatelessWidget {
     IconData icon,
     Color iconColor,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         child: Column(
@@ -653,7 +652,7 @@ class SubscriptionPage extends StatelessWidget {
                 Icon(
                   icon,
                   size: 16,
-                  color: iconColor.withValues(alpha: isDark ? 0.8 : 1.0),
+                  color: colorScheme.primary,
                 ),
                 const SizedBox(width: 6),
                 Text(
@@ -661,9 +660,7 @@ class SubscriptionPage extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.7),
+                    color: colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
               ],
@@ -671,7 +668,11 @@ class SubscriptionPage extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               value,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 16, 
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
               textAlign: TextAlign.center,
             ),
           ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:subscription_tracker/providers/family_provider.dart';
 import 'package:subscription_tracker/providers/label_provider.dart';
+import '../extensions/color_extensions.dart';
 import '../models/currency.dart';
 import '../models/subscription.dart';
 import '../models/subscription_state.dart';

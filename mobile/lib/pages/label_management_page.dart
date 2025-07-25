@@ -103,7 +103,7 @@ class _LabelManagementPageState extends State<LabelManagementPage> {
                       boxShadow: [
                         if (isCurrentColor)
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.4),
+                            color: Theme.of(context).colorScheme.shadow.withOpacity(0.4),
                             blurRadius: 4,
                             spreadRadius: 1,
                           )
@@ -257,7 +257,13 @@ class _LabelManagementPageState extends State<LabelManagementPage> {
                       leading: CircleAvatar(
                         backgroundColor: HexColor.fromHex(label.color),
                         child: label.isDefault
-                            ? const Icon(Icons.lock, color: Colors.white, size: 16)
+                            ? Icon(
+                                Icons.lock, 
+                                color: useWhiteForeground(HexColor.fromHex(label.color)) 
+                                    ? Colors.white 
+                                    : Colors.black, 
+                                size: 16
+                              )
                             : null,
                       ),
                       title: Text(label.name),
@@ -295,6 +301,9 @@ class _LabelManagementPageState extends State<LabelManagementPage> {
                   label: const Text('Add Label'),
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size.fromHeight(50),
+                  ).copyWith(
+                    backgroundColor: MaterialStatePropertyAll(Theme.of(context).colorScheme.primaryContainer),
+                    foregroundColor: MaterialStatePropertyAll(Theme.of(context).colorScheme.onPrimaryContainer),
                   ),
                 ),
               ),

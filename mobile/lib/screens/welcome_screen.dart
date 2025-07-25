@@ -23,10 +23,10 @@ class WelcomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // App logo or icon
-              const Icon(
+              Icon(
                 Icons.account_balance_wallet,
                 size: 80,
-                color: Colors.blue,
+                color: Theme.of(context).colorScheme.primary,
               ),
 
               const SizedBox(height: 24),
@@ -44,12 +44,12 @@ class WelcomeScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // App description
-              const Text(
+              Text(
                 'Track and manage all your recurring payments in one place',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.grey,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                 ),
               ),
 
@@ -80,9 +80,8 @@ class WelcomeScreen extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
                 ),
                 child: const Text(
                   'Login / Create Account',
@@ -109,9 +108,8 @@ class WelcomeScreen extends StatelessWidget {
                 },
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  foregroundColor: Theme.of(context).colorScheme.primary,
+                  side: BorderSide(color: Theme.of(context).colorScheme.outline),
                 ),
                 child: const Text(
                   'Continue Offline',
@@ -122,12 +120,12 @@ class WelcomeScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               // Privacy note
-              const Text(
+              Text(
                 'Your data is stored locally when using offline mode',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                 ),
               ),
             ],
