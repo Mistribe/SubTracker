@@ -46,27 +46,23 @@ class _HomeScreenState extends State<HomeScreen> {
     final authProvider = Provider.of<AuthenticationProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _getPageTitle(),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              );
-            },
-            tooltip: 'Settings',
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text(_getPageTitle())),
       drawer: NavigationDrawer(
         selectedIndex: _getSelectedIndex(authProvider),
         onDestinationSelected: (index) {
           Navigator.pop(context); // Close the drawer
+
+          // Calculate the index of the Settings destination
+          int settingsIndex = authProvider.isAuthenticated ? 3 : 2;
+
+          // If Settings is selected
+          if (index == settingsIndex) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            );
+            return;
+          }
 
           // Adjust index for authenticated vs anonymous users
           int adjustedIndex = index;
@@ -151,11 +147,22 @@ class _HomeScreenState extends State<HomeScreen> {
             label: const Text('Labels'),
             selectedIcon: const Icon(Icons.label_outline),
           ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
+            child: Divider(),
+          ),
+          // Settings
+          NavigationDrawerDestination(
+            icon: const Icon(Icons.settings),
+            label: const Text('Settings'),
+            selectedIcon: const Icon(Icons.settings_outlined),
+          ),
         ],
       ),
       body: SafeArea(child: _getPageContent()),
       floatingActionButton: _currentPage == HomeScreenPage.subscriptions
           ? FloatingActionButton(
+              heroTag: 'home_add_subscription',
               onPressed: () {
                 Navigator.push(
                   context,
@@ -172,6 +179,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   int _getSelectedIndex(AuthenticationProvider authProvider) {
+    // The Settings destination is not part of the HomeScreenPage enum,
+    // so it will never be selected through this method.
+    // It's handled separately in onDestinationSelected.
     switch (_currentPage) {
       case HomeScreenPage.subscriptions:
         return 0;

@@ -330,6 +330,7 @@ class _FamilyManagementScreenState extends State<FamilyManagementScreen> {
       ),
       floatingActionButton: !familyProvider.hasOwnedFamily
           ? FloatingActionButton(
+              heroTag: 'family_management_add',
               onPressed: () => _navigateToAddFamily(context, familyProvider),
               child: const Icon(Icons.add),
             )

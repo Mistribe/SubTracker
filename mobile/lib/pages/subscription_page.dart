@@ -285,6 +285,7 @@ class SubscriptionPage extends StatelessWidget {
       right: 16,
       bottom: 16,
       child: FloatingActionButton(
+          heroTag: 'subscription_page_add',
         onPressed: () {
           Navigator.push(
             context,

@@ -282,6 +282,7 @@ class _LabelManagementScreenState extends State<LabelManagementScreen> {
               },
             ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'label_management_add',
         onPressed: () => _showAddEditLabelDialog(),
         tooltip: 'Add Label',
         child: const Icon(Icons.add),
