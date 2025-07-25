@@ -1,15 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/family_provider.dart';
 import '../providers/authentication_provider.dart';
 import '../pages/subscription_page.dart';
+import '../pages/family_management_page.dart';
+import '../pages/label_management_page.dart';
 import 'subscription_form_screen.dart';
 import 'settings_screen.dart';
-import 'family_management_screen.dart';
-import 'label_management_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+enum HomeScreenPage { subscriptions, family, labels }
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  HomeScreenPage _currentPage = HomeScreenPage.subscriptions;
+
+  Widget _getPageContent() {
+    switch (_currentPage) {
+      case HomeScreenPage.subscriptions:
+        return const SubscriptionPage();
+      case HomeScreenPage.family:
+        return const FamilyManagementPage();
+      case HomeScreenPage.labels:
+        return const LabelManagementPage();
+    }
+  }
+
+  String _getPageTitle() {
+    switch (_currentPage) {
+      case HomeScreenPage.subscriptions:
+        return 'Subscription Tracker';
+      case HomeScreenPage.family:
+        return 'Family Management';
+      case HomeScreenPage.labels:
+        return 'Manage Labels';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,9 +47,9 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Subscription Tracker',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+        title: Text(
+          _getPageTitle(),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         elevation: 0,
         actions: [
@@ -36,6 +66,33 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       drawer: NavigationDrawer(
+        selectedIndex: _getSelectedIndex(authProvider),
+        onDestinationSelected: (index) {
+          Navigator.pop(context); // Close the drawer
+
+          // Adjust index for authenticated vs anonymous users
+          int adjustedIndex = index;
+          if (!authProvider.isAuthenticated && index > 0) {
+            // Skip the Family option for anonymous users
+            adjustedIndex++;
+          }
+
+          setState(() {
+            switch (adjustedIndex) {
+              case 0: // Subscriptions
+                _currentPage = HomeScreenPage.subscriptions;
+                break;
+              case 1: // Family
+                if (authProvider.isAuthenticated) {
+                  _currentPage = HomeScreenPage.family;
+                }
+                break;
+              case 2: // Labels
+                _currentPage = HomeScreenPage.labels;
+                break;
+            }
+          });
+        },
         children: [
           // User header
           Padding(
@@ -81,68 +138,50 @@ class HomeScreen extends StatelessWidget {
           NavigationDrawerDestination(
             icon: const Icon(Icons.subscriptions),
             label: const Text('Subscriptions'),
+            selectedIcon: const Icon(Icons.subscriptions_outlined),
           ),
           // Family (only if user is connected)
           if (authProvider.isAuthenticated)
             NavigationDrawerDestination(
               icon: const Icon(Icons.family_restroom),
               label: const Text('Family'),
+              selectedIcon: const Icon(Icons.family_restroom_outlined),
             ),
           // Labels
           NavigationDrawerDestination(
             icon: const Icon(Icons.label),
             label: const Text('Labels'),
+            selectedIcon: const Icon(Icons.label_outline),
           ),
         ],
-        onDestinationSelected: (index) {
-          Navigator.pop(context); // Close the drawer
-
-          // Adjust index for authenticated vs anonymous users
-          int adjustedIndex = index;
-          if (!authProvider.isAuthenticated && index > 0) {
-            // Skip the Family option for anonymous users
-            adjustedIndex++;
-          }
-
-          switch (adjustedIndex) {
-            case 0: // Subscriptions (Home)
-              // Already on home screen
-              break;
-            case 1: // Family
-              if (authProvider.isAuthenticated) {
+      ),
+      body: SafeArea(child: _getPageContent()),
+      floatingActionButton: _currentPage == HomeScreenPage.subscriptions
+          ? FloatingActionButton(
+              onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const FamilyManagementScreen(),
+                    builder: (context) => const SubscriptionFormScreen(),
                   ),
                 );
-              }
-              break;
-            case 2: // Labels
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const LabelManagementScreen(),
-                ),
-              );
-              break;
-          }
-        },
-      ),
-      body: SafeArea(child: const SubscriptionPage()),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const SubscriptionFormScreen(),
-            ),
-          );
-        },
-        tooltip: 'Add Subscription',
-        elevation: 4,
-        child: const Icon(Icons.add),
-      ),
+              },
+              tooltip: 'Add Subscription',
+              elevation: 4,
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
+  }
+
+  int _getSelectedIndex(AuthenticationProvider authProvider) {
+    switch (_currentPage) {
+      case HomeScreenPage.subscriptions:
+        return 0;
+      case HomeScreenPage.family:
+        return authProvider.isAuthenticated ? 1 : 0;
+      case HomeScreenPage.labels:
+        return authProvider.isAuthenticated ? 2 : 1;
+    }
   }
 }

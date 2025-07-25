@@ -4,6 +4,7 @@ import 'package:subscription_tracker/providers/label_provider.dart';
 import '../providers/subscription_provider.dart';
 import '../providers/family_provider.dart';
 import '../widgets/subscription_list.dart';
+import '../screens/subscription_form_screen.dart';
 
 class SubscriptionPage extends StatelessWidget {
   const SubscriptionPage({super.key});
@@ -13,7 +14,9 @@ class SubscriptionPage extends StatelessWidget {
     final subscriptionProvider = Provider.of<SubscriptionProvider>(context);
     final labelProvider = Provider.of<LabelProvider>(context);
 
-    return Column(
+    return Stack(
+      children: [
+        Column(
       children: [
         // Summary cards with modern design
         Container(
@@ -277,7 +280,26 @@ class SubscriptionPage extends StatelessWidget {
         // Subscription list
         const Expanded(child: SubscriptionList()),
       ],
-    );
+    ),
+    Positioned(
+      right: 16,
+      bottom: 16,
+      child: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SubscriptionFormScreen(),
+            ),
+          );
+        },
+        tooltip: 'Add Subscription',
+        elevation: 4,
+        child: const Icon(Icons.add),
+      ),
+    ),
+  ],
+);
   }
 
   // Show bottom sheet for family member filtering
