@@ -20,9 +20,6 @@ import '../models/subscription.dart';
 import '../models/family_member.dart';
 import '../models/label.dart';
 
-/// Service for handling API requests to the backend
-/// API implementation based on the SubTracker swagger specification
-/// This class delegates API calls to specialized services for each resource group
 class ApiService {
   late final ApiClient _client;
 
