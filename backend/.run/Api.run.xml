@@ -1,15 +1,15 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Api" type="GoApplicationRunConfiguration" factoryName="Go Application">
-    <module name="backend" />
-    <working_directory value="$PROJECT_DIR$" />
-    <envs>
-      <env name="LOGGER_MOD" value="plain" />
-      <env name="DATABASE_DSN" value="host=localhost user=postgres password=postgres dbname=app port=5432" />
-    </envs>
-    <kind value="PACKAGE" />
-    <package value="github.com/oleexo/subtracker/cmd/api" />
-    <directory value="$PROJECT_DIR$" />
-    <filePath value="$PROJECT_DIR$/cmd/api/main.go" />
-    <method v="2" />
-  </configuration>
+    <configuration default="false" name="Api" type="GoApplicationRunConfiguration" factoryName="Go Application">
+        <module name="backend"/>
+        <working_directory value="$PROJECT_DIR$"/>
+        <envs>
+            <env name="LOGGER_MOD" value="plain"/>
+            <env name="DATABASE_DSN" value="host=localhost user=postgres password=postgres dbname=app port=5432"/>
+        </envs>
+        <kind value="PACKAGE"/>
+        <package value="github.com/oleexo/subtracker/cmd/api"/>
+        <directory value="$PROJECT_DIR$"/>
+        <filePath value="$PROJECT_DIR$/cmd/api/main.go"/>
+        <method v="2"/>
+    </configuration>
 </component>

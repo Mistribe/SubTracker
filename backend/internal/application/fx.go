@@ -56,6 +56,7 @@ func BuildApplicationModule() fx.Option {
 			AsCommandHandler[fmlyCommand.CreateFamilyCommand, family.Family](fmlyCommand.NewCreateFamilyCommandHandler),
 			AsCommandHandler[fmlyCommand.UpdateFamilyCommand, family.Family](fmlyCommand.NewUpdateFamilyCommandHandler),
 			AsCommandHandler[fmlyCommand.PatchFamilyCommand, family.Family](fmlyCommand.NewPatchFamilyCommandHandler),
+			AsCommandHandler[fmlyCommand.DeleteFamilyCommand, result.Unit](fmlyCommand.NewDeleteFamilyCommandHandler),
 			AsCommandHandler[fmlyCommand.CreateFamilyMemberCommand, family.Family](fmlyCommand.NewCreateFamilyMemberCommandHandler),
 			AsCommandHandler[fmlyCommand.UpdateFamilyMemberCommand, family.Family](fmlyCommand.NewUpdateFamilyMemberCommandHandler),
 			AsCommandHandler[fmlyCommand.DeleteFamilyMemberCommand, result.Unit](fmlyCommand.NewDeleteFamilyMemberCommandHandler),

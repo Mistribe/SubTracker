@@ -20,11 +20,11 @@ const (
 type Subscription struct {
 	*entity.Base
 
-	familyId            *uuid.UUID
 	name                string
 	payments            *slicesx.Tracked[Payment]
 	labels              *slicesx.Tracked[uuid.UUID]
 	familyMembers       *slicesx.Tracked[uuid.UUID]
+	familyId            *uuid.UUID
 	payerId             *uuid.UUID
 	payedByJointAccount bool
 }

@@ -34,6 +34,7 @@ func BuildRoutesModule() fx.Option {
 			endpoints.NewFamilyCreateEndpoint,
 			endpoints.NewFamilyUpdateEndpoint,
 			endpoints.NewFamilyPatchEndpoint,
+			endpoints.NewFamilyDeleteEndpoint,
 			endpoints.NewFamilyMemberGetAllEndpoint,
 			endpoints.NewFamilyMemberGetEndpoint,
 			endpoints.NewFamilyMemberCreateEndpoint,

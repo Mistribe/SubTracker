@@ -14,8 +14,8 @@ components:
         name:
           type: string
       required:
-        - is_kid
-        - name
+      - is_kid
+      - name
       type: object
     endpoints.createFamilyModel:
       properties:
@@ -29,8 +29,7 @@ components:
         name:
           type: string
       required:
-        - have_joint_account
-        - name
+      - name
       type: object
     endpoints.createLabelModel:
       properties:
@@ -46,8 +45,8 @@ components:
         name:
           type: string
       required:
-        - color
-        - name
+      - color
+      - name
       type: object
     endpoints.createPaymentModel:
       properties:
@@ -99,10 +98,10 @@ components:
           type: array
           uniqueItems: false
       required:
-        - family_members
-        - labels
-        - name
-        - payments
+      - family_members
+      - labels
+      - name
+      - payments
       type: object
     endpoints.createSubscriptionPaymentModel:
       properties:
@@ -124,10 +123,10 @@ components:
           format: date-time
           type: string
       required:
-        - currency
-        - months
-        - price
-        - start_date
+      - currency
+      - months
+      - price
+      - start_date
       type: object
     endpoints.familyMemberModel:
       properties:
@@ -148,13 +147,13 @@ components:
           format: date-time
           type: string
       required:
-        - created_at
-        - etag
-        - family_id
-        - id
-        - is_kid
-        - name
-        - updated_at
+      - created_at
+      - etag
+      - family_id
+      - id
+      - is_kid
+      - name
+      - updated_at
       type: object
     endpoints.familyModel:
       properties:
@@ -180,21 +179,21 @@ components:
           format: date-time
           type: string
       required:
-        - created_at
-        - etag
-        - have_joint_account
-        - id
-        - is_owner
-        - members
-        - name
-        - updated_at
+      - created_at
+      - etag
+      - have_joint_account
+      - id
+      - is_owner
+      - members
+      - name
+      - updated_at
       type: object
     endpoints.httpError:
       properties:
         message:
           type: string
       required:
-        - message
+      - message
       type: object
     endpoints.labelModel:
       properties:
@@ -217,13 +216,13 @@ components:
           format: date-time
           type: string
       required:
-        - color
-        - created_at
-        - etag
-        - id
-        - is_default
-        - name
-        - updated_at
+      - color
+      - created_at
+      - etag
+      - id
+      - is_default
+      - name
+      - updated_at
       type: object
     endpoints.paginatedResponseModel-endpoints_familyModel:
       properties:
@@ -237,9 +236,9 @@ components:
         total:
           type: integer
       required:
-        - data
-        - length
-        - total
+      - data
+      - length
+      - total
       type: object
     endpoints.paginatedResponseModel-endpoints_labelModel:
       properties:
@@ -253,9 +252,9 @@ components:
         total:
           type: integer
       required:
-        - data
-        - length
-        - total
+      - data
+      - length
+      - total
       type: object
     endpoints.paginatedResponseModel-endpoints_subscriptionModel:
       properties:
@@ -269,9 +268,9 @@ components:
         total:
           type: integer
       required:
-        - data
-        - length
-        - total
+      - data
+      - length
+      - total
       type: object
     endpoints.patchFamilyMemberModel:
       description: Model for updating family member details
@@ -293,8 +292,8 @@ components:
           format: date-time
           type: string
       required:
-        - is_kid
-        - name
+      - is_kid
+      - name
       type: object
     endpoints.patchFamilyModel:
       description: Model for updating family details
@@ -319,10 +318,8 @@ components:
           format: date-time
           type: string
       required:
-        - have_joint_account
-        - id
-        - members
-        - name
+      - id
+      - name
       type: object
     endpoints.patchPaymentModel:
       description: Payment update model
@@ -345,10 +342,10 @@ components:
           format: date-time
           type: string
       required:
-        - currency
-        - months
-        - price
-        - start_date
+      - currency
+      - months
+      - price
+      - start_date
       type: object
     endpoints.patchSubscriptionModel:
       description: Subscription update model
@@ -382,44 +379,10 @@ components:
           format: date-time
           type: string
       required:
-        - family_members
-        - labels
-        - name
-        - payments
-      type: object
-    endpoints.paymentModel:
-      properties:
-        created_at:
-          format: date-time
-          type: string
-        currency:
-          type: string
-        end_date:
-          format: date-time
-          type: string
-        etag:
-          type: string
-        id:
-          type: string
-        months:
-          type: integer
-        price:
-          type: number
-        start_date:
-          format: date-time
-          type: string
-        updated_at:
-          format: date-time
-          type: string
-      required:
-        - created_at
-        - currency
-        - etag
-        - id
-        - months
-        - price
-        - start_date
-        - updated_at
+      - family_members
+      - labels
+      - name
+      - payments
       type: object
     endpoints.subscriptionModel:
       properties:
@@ -450,22 +413,56 @@ components:
           type: string
         payments:
           items:
-            $ref: '#/components/schemas/endpoints.paymentModel'
+            $ref: '#/components/schemas/endpoints.subscriptionPaymentModel'
           type: array
           uniqueItems: false
         updated_at:
           format: date-time
           type: string
       required:
-        - created_at
-        - etag
-        - family_members
-        - id
-        - labels
-        - name
-        - payed_by_joint_account
-        - payments
-        - updated_at
+      - created_at
+      - etag
+      - family_members
+      - id
+      - labels
+      - name
+      - payed_by_joint_account
+      - payments
+      - updated_at
+      type: object
+    endpoints.subscriptionPaymentModel:
+      properties:
+        created_at:
+          format: date-time
+          type: string
+        currency:
+          type: string
+        end_date:
+          format: date-time
+          type: string
+        etag:
+          type: string
+        id:
+          type: string
+        months:
+          type: integer
+        price:
+          type: number
+        start_date:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+      - created_at
+      - currency
+      - etag
+      - id
+      - months
+      - price
+      - start_date
+      - updated_at
       type: object
     endpoints.updateFamilyMemberModel:
       properties:
@@ -479,8 +476,8 @@ components:
           format: date-time
           type: string
       required:
-        - id_kid
-        - name
+      - id_kid
+      - name
       type: object
     endpoints.updateFamilyModel:
       properties:
@@ -492,8 +489,7 @@ components:
           format: date-time
           type: string
       required:
-        - have_joint_account
-        - name
+      - name
       type: object
     endpoints.updateLabelModel:
       properties:
@@ -505,8 +501,8 @@ components:
           format: date-time
           type: string
       required:
-        - color
-        - name
+      - color
+      - name
       type: object
     endpoints.updatePaymentModel:
       properties:
@@ -526,10 +522,10 @@ components:
           format: date-time
           type: string
       required:
-        - currency
-        - months
-        - price
-        - start_date
+      - currency
+      - months
+      - price
+      - start_date
       type: object
     endpoints.updateSubscriptionModel:
       properties:
@@ -555,9 +551,9 @@ components:
           format: date-time
           type: string
       required:
-        - family_members
-        - labels
-        - name
+      - family_members
+      - labels
+      - name
       type: object
 externalDocs:
   description: ""
@@ -590,21 +586,21 @@ paths:
           description: OK
       summary: Get default labels
       tags:
-        - label
+      - label
   /families:
     get:
       description: Get all family members
       parameters:
-        - description: Number of items per page
-          in: query
-          name: size
-          schema:
-            type: integer
-        - description: Page number
-          in: query
-          name: page
-          schema:
-            type: integer
+      - description: Number of items per page
+        in: query
+        name: size
+        schema:
+          type: integer
+      - description: Page number
+        in: query
+        name: page
+        schema:
+          type: integer
       responses:
         "200":
           content:
@@ -620,7 +616,7 @@ paths:
           description: Bad Request
       summary: Get all family members
       tags:
-        - family
+      - family
     patch:
       description: Patch family with members
       requestBody:
@@ -651,7 +647,7 @@ paths:
           description: Unauthorized
       summary: Patch family with members
       tags:
-        - Family
+      - Family
     post:
       description: Create a new family
       requestBody:
@@ -676,17 +672,44 @@ paths:
           description: Bad Request
       summary: Create a new family
       tags:
-        - family
+      - family
   /families/{familyId}:
+    delete:
+      description: Delete family by ID
+      parameters:
+      - description: Family ID
+        in: path
+        name: familyId
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Bad Request
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Not Found
+      summary: Delete family by ID
+      tags:
+      - family
     get:
       description: Get family member by ID
       parameters:
-        - description: Family member ID
-          in: path
-          name: familyId
-          required: true
-          schema:
-            type: string
+      - description: Family member ID
+        in: path
+        name: familyId
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -708,16 +731,16 @@ paths:
           description: Not Found
       summary: Get family member by ID
       tags:
-        - family
+      - family
     put:
       description: Update a family
       parameters:
-        - description: Family member ID
-          in: path
-          name: familyId
-          required: true
-          schema:
-            type: string
+      - description: Family member ID
+        in: path
+        name: familyId
+        required: true
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -740,7 +763,7 @@ paths:
           description: Bad Request
       summary: Update a family
       tags:
-        - family
+      - family
   /families/{familyId}/members:
     post:
       description: Add a new family member
@@ -766,17 +789,17 @@ paths:
           description: Bad Request
       summary: Add a new family member
       tags:
-        - family
+      - family
   /families/{familyId}/members/{id}:
     delete:
       description: Delete family member by ID
       parameters:
-        - description: Family member ID
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
+      - description: Family member ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
       responses:
         "204":
           description: No Content
@@ -794,16 +817,16 @@ paths:
           description: Not Found
       summary: Delete family member by ID
       tags:
-        - family
+      - family
     put:
       description: Update family member by ID
       parameters:
-        - description: Family member ID
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
+      - description: Family member ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -832,26 +855,26 @@ paths:
           description: Not Found
       summary: Update family member by ID
       tags:
-        - family
+      - family
   /labels:
     get:
       description: Get all labels
       parameters:
-        - description: Include default labels
-          in: query
-          name: with_default
-          schema:
-            type: boolean
-        - description: Number of items per page
-          in: query
-          name: size
-          schema:
-            type: integer
-        - description: Page number
-          in: query
-          name: page
-          schema:
-            type: integer
+      - description: Include default labels
+        in: query
+        name: with_default
+        schema:
+          type: boolean
+      - description: Number of items per page
+        in: query
+        name: size
+        schema:
+          type: integer
+      - description: Page number
+        in: query
+        name: page
+        schema:
+          type: integer
       responses:
         "200":
           content:
@@ -867,7 +890,7 @@ paths:
           description: Bad Request
       summary: Get all labels
       tags:
-        - label
+      - label
     post:
       description: Create a new label
       requestBody:
@@ -892,17 +915,17 @@ paths:
           description: Bad Request
       summary: Create a new label
       tags:
-        - label
+      - label
   /labels/{id}:
     delete:
       description: Delete label by ID
       parameters:
-        - description: Label ID
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
+      - description: Label ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
       responses:
         "204":
           description: No Content
@@ -920,16 +943,16 @@ paths:
           description: Not Found
       summary: Delete label by ID
       tags:
-        - label
+      - label
     get:
       description: Get label by ID
       parameters:
-        - description: Label ID
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
+      - description: Label ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -951,16 +974,16 @@ paths:
           description: Not Found
       summary: Get label by ID
       tags:
-        - label
+      - label
     put:
       description: Update label by ID
       parameters:
-        - description: Label ID
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
+      - description: Label ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -989,21 +1012,21 @@ paths:
           description: Not Found
       summary: Update label by ID
       tags:
-        - label
+      - label
   /subscriptions:
     get:
       description: Get all subscriptions
       parameters:
-        - description: Number of items per page
-          in: query
-          name: size
-          schema:
-            type: integer
-        - description: Page number
-          in: query
-          name: page
-          schema:
-            type: integer
+      - description: Number of items per page
+        in: query
+        name: size
+        schema:
+          type: integer
+      - description: Page number
+        in: query
+        name: page
+        schema:
+          type: integer
       responses:
         "200":
           content:
@@ -1019,7 +1042,7 @@ paths:
           description: Bad Request
       summary: Get all subscriptions
       tags:
-        - subscription
+      - subscription
     patch:
       description: Update an existing subscription with new details
       requestBody:
@@ -1044,7 +1067,7 @@ paths:
           description: Invalid request
       summary: Update subscription
       tags:
-        - subscriptions
+      - subscriptions
     post:
       description: Create a new subscription
       requestBody:
@@ -1069,17 +1092,17 @@ paths:
           description: Bad Request
       summary: Create a new subscription
       tags:
-        - subscription
+      - subscription
   /subscriptions/{id}:
     delete:
       description: Delete an existing subscription
       parameters:
-        - description: Subscription ID
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
+      - description: Subscription ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
       responses:
         "204":
           description: No Content
@@ -1091,16 +1114,16 @@ paths:
           description: Bad Request
       summary: Delete an existing subscription
       tags:
-        - subscription
+      - subscription
     get:
       description: Get subscription by ID
       parameters:
-        - description: Subscription ID
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
+      - description: Subscription ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           content:
@@ -1122,16 +1145,16 @@ paths:
           description: Not Found
       summary: Get subscription by ID
       tags:
-        - subscription
+      - subscription
     put:
       description: Update an existing subscription
       parameters:
-        - description: Subscription ID
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
+      - description: Subscription ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1154,23 +1177,23 @@ paths:
           description: Bad Request
       summary: Update an existing subscription
       tags:
-        - subscription
+      - subscription
   /subscriptions/{id}/payments/{paymentId}:
     delete:
       description: Delete a subscription payment
       parameters:
-        - description: Subscription ID
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-        - description: Payment ID
-          in: path
-          name: paymentId
-          required: true
-          schema:
-            type: string
+      - description: Subscription ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      - description: Payment ID
+        in: path
+        name: paymentId
+        required: true
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1187,22 +1210,22 @@ paths:
           description: Bad Request
       summary: Delete a subscription payment
       tags:
-        - subscription
+      - subscription
     put:
       description: Update payment details for a specific subscription
       parameters:
-        - description: Subscription ID
-          in: path
-          name: id
-          required: true
-          schema:
-            type: string
-        - description: Payment ID
-          in: path
-          name: paymentId
-          required: true
-          schema:
-            type: string
+      - description: Subscription ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      - description: Payment ID
+        in: path
+        name: paymentId
+        required: true
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1231,17 +1254,17 @@ paths:
           description: Not Found
       summary: Update subscription payment
       tags:
-        - subscription
+      - subscription
   /subscriptions/{subscription_id}/payments:
     post:
       description: Create a new subscription payment
       parameters:
-        - description: Subscription ID
-          in: path
-          name: subscription_id
-          required: true
-          schema:
-            type: string
+      - description: Subscription ID
+        in: path
+        name: subscription_id
+        required: true
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
@@ -1264,9 +1287,9 @@ paths:
           description: Bad Request
       summary: Create a new subscription payment
       tags:
-        - subscription
+      - subscription
 servers:
-  - description: Production server
-    url: https://api.subtracker.mistribe.com
-  - description: Development server
-    url: http://localhost:8080
+- description: Production server
+  url: https://api.subtracker.mistribe.com
+- description: Development server
+  url: http://localhost:8080

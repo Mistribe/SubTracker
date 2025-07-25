@@ -61,7 +61,7 @@ func NewSubscriptionEndpointGroup(
 	}
 }
 
-type paymentModel struct {
+type subscriptionPaymentModel struct {
 	Id        string     `json:"id" binding:"required"`
 	Price     float64    `json:"price" binding:"required"`
 	StartDate time.Time  `json:"start_date" binding:"required" format:"date-time"`
@@ -74,21 +74,21 @@ type paymentModel struct {
 }
 
 type subscriptionModel struct {
-	Id                  string         `json:"id" binding:"required"`
-	Name                string         `json:"name" binding:"required"`
-	Payments            []paymentModel `json:"payments" binding:"required"`
-	Labels              []string       `json:"labels" binding:"required"`
-	FamilyMembers       []string       `json:"family_members" binding:"required"`
-	PayerId             *string        `json:"payer_id_id,omitempty"`
-	FamilyId            *string        `json:"family_id,omitempty"`
-	PayedByJointAccount bool           `json:"payed_by_joint_account" binding:"required"`
-	CreatedAt           time.Time      `json:"created_at" binding:"required" format:"date-time"`
-	UpdatedAt           time.Time      `json:"updated_at" binding:"required" format:"date-time"`
-	Etag                string         `json:"etag" binding:"required"`
+	Id                  string                     `json:"id" binding:"required"`
+	Name                string                     `json:"name" binding:"required"`
+	Payments            []subscriptionPaymentModel `json:"payments" binding:"required"`
+	Labels              []string                   `json:"labels" binding:"required"`
+	FamilyMembers       []string                   `json:"family_members" binding:"required"`
+	PayerId             *string                    `json:"payer_id_id,omitempty"`
+	FamilyId            *string                    `json:"family_id,omitempty"`
+	PayedByJointAccount bool                       `json:"payed_by_joint_account" binding:"required"`
+	CreatedAt           time.Time                  `json:"created_at" binding:"required" format:"date-time"`
+	UpdatedAt           time.Time                  `json:"updated_at" binding:"required" format:"date-time"`
+	Etag                string                     `json:"etag" binding:"required"`
 }
 
-func newPaymentModel(source subscription.Payment) paymentModel {
-	return paymentModel{
+func newPaymentModel(source subscription.Payment) subscriptionPaymentModel {
+	return subscriptionPaymentModel{
 		Id:        source.Id().String(),
 		Price:     source.Price(),
 		StartDate: source.StartDate(),
