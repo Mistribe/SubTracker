@@ -26,7 +26,7 @@ func NewSubscriptionPatchEndpoint(handler core.CommandHandler[command.PatchSubsc
 }
 
 // @Description	Payment update model
-type patchPaymentModel struct {
+type patchSubscriptionPaymentModel struct {
 	Id        *string    `json:"id,omitempty"`
 	Price     float64    `json:"price" binding:"required"`
 	StartDate time.Time  `json:"start_date" binding:"required" format:"date-time"`
@@ -36,7 +36,7 @@ type patchPaymentModel struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
-func (m patchPaymentModel) ToPayment(subscriptionId uuid.UUID) (subscription.Payment, error) {
+func (m patchSubscriptionPaymentModel) ToPayment(subscriptionId uuid.UUID) (subscription.Payment, error) {
 	var id uuid.UUID
 	var err error
 	var endDate option.Option[time.Time]
@@ -67,15 +67,15 @@ func (m patchPaymentModel) ToPayment(subscriptionId uuid.UUID) (subscription.Pay
 
 // @Description	Subscription update model
 type patchSubscriptionModel struct {
-	Id                  *string             `json:"id,omitempty"`
-	FamilyId            *string             `json:"family_id,omitempty"`
-	Name                string              `json:"name" binding:"required"`
-	Payments            []patchPaymentModel `json:"payments" binding:"required"`
-	Labels              []string            `json:"labels" binding:"required"`
-	FamilyMembers       []string            `json:"family_members" binding:"required"`
-	PayerId             *string             `json:"payer_id,omitempty"`
-	PayedByJointAccount bool                `json:"payed_by_joint_account,omitempty"`
-	UpdatedAt           *time.Time          `json:"updated_at,omitempty" format:"date-time"`
+	Id                  *string                         `json:"id,omitempty"`
+	FamilyId            *string                         `json:"family_id,omitempty"`
+	Name                string                          `json:"name" binding:"required"`
+	Payments            []patchSubscriptionPaymentModel `json:"payments" binding:"required"`
+	Labels              []string                        `json:"labels" binding:"required"`
+	FamilyMembers       []string                        `json:"family_members" binding:"required"`
+	PayerId             *string                         `json:"payer_id,omitempty"`
+	PayedByJointAccount bool                            `json:"payed_by_joint_account,omitempty"`
+	UpdatedAt           *time.Time                      `json:"updated_at,omitempty" format:"date-time"`
 }
 
 func (m patchSubscriptionModel) Command() result.Result[command.PatchSubscriptionCommand] {
@@ -106,7 +106,7 @@ func (m patchSubscriptionModel) Command() result.Result[command.PatchSubscriptio
 	if err != nil {
 		return result.Fail[command.PatchSubscriptionCommand](err)
 	}
-	payments, err := ext.MapErr(m.Payments, func(value patchPaymentModel) (subscription.Payment, error) {
+	payments, err := ext.MapErr(m.Payments, func(value patchSubscriptionPaymentModel) (subscription.Payment, error) {
 		return value.ToPayment(id)
 	})
 	if err != nil {
