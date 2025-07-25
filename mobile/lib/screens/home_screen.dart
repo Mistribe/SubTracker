@@ -46,7 +46,20 @@ class _HomeScreenState extends State<HomeScreen> {
     final authProvider = Provider.of<AuthenticationProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(_getPageTitle())),
+      appBar: AppBar(
+        title: Text(_getPageTitle()),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            );
+          },
+        ),
+      ),
       drawer: NavigationDrawer(
         selectedIndex: _getSelectedIndex(authProvider),
         onDestinationSelected: (index) {
