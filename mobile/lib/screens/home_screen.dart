@@ -5,6 +5,7 @@ import '../pages/subscription_page.dart';
 import '../pages/family_management_page.dart';
 import '../pages/label_management_page.dart';
 import '../widgets/app_drawer.dart';
+import '../animations/page_transitions.dart';
 import 'subscription_form_screen.dart';
 import 'settings_screen.dart';
 
@@ -19,15 +20,61 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   HomeScreenPage _currentPage = HomeScreenPage.subscriptions;
+  HomeScreenPage _previousPage = HomeScreenPage.subscriptions;
 
   Widget _getPageContent() {
+    // Use a key based on the current page to trigger the AnimatedSwitcher
+    final Widget pageContent;
     switch (_currentPage) {
       case HomeScreenPage.subscriptions:
-        return const SubscriptionPage();
+        pageContent = const SubscriptionPage();
+        break;
       case HomeScreenPage.family:
-        return const FamilyManagementPage();
+        pageContent = const FamilyManagementPage();
+        break;
       case HomeScreenPage.labels:
-        return const LabelManagementPage();
+        pageContent = const LabelManagementPage();
+        break;
+    }
+
+    // Determine the slide direction based on the page index change
+    final bool slideFromRight = _getPageIndex(_currentPage) > _getPageIndex(_previousPage);
+
+    // Wrap the content in AnimatedSwitcher for smooth transitions
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        // Create a slide and fade transition with direction based on navigation
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: Offset(slideFromRight ? 0.3 : -0.3, 0.0),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            )),
+            child: child,
+          ),
+        );
+      },
+      child: KeyedSubtree(
+        key: ValueKey<HomeScreenPage>(_currentPage),
+        child: pageContent,
+      ),
+    );
+  }
+
+  // Helper method to get the index of a page for direction comparison
+  int _getPageIndex(HomeScreenPage page) {
+    switch (page) {
+      case HomeScreenPage.subscriptions:
+        return 0;
+      case HomeScreenPage.family:
+        return 1;
+      case HomeScreenPage.labels:
+        return 2;
     }
   }
 
@@ -73,7 +120,9 @@ class _HomeScreenState extends State<HomeScreen> {
           if (index == settingsIndex) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              PageTransitions.depthSharedAxisTransition(
+                page: const SettingsScreen(),
+              ),
             );
             return;
           }
@@ -86,6 +135,9 @@ class _HomeScreenState extends State<HomeScreen> {
           }
 
           setState(() {
+            // Store the current page as previous before changing
+            _previousPage = _currentPage;
+
             switch (adjustedIndex) {
               case 0: // Subscriptions
                 _currentPage = HomeScreenPage.subscriptions;
@@ -109,8 +161,8 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const SubscriptionFormScreen(),
+                  PageTransitions.depthSharedAxisTransition(
+                    page: const SubscriptionFormScreen(),
                   ),
                 );
               },

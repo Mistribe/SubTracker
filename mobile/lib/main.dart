@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:subscription_tracker/models/family.dart';
 import 'package:subscription_tracker/models/subscription_payment.dart';
 import 'package:subscription_tracker/services/authentication_service.dart';
+import 'animations/page_transitions.dart';
 import 'models/subscription.dart';
 import 'models/settings.dart';
 import 'models/label.dart';
@@ -163,6 +164,26 @@ class MyApp extends StatelessWidget {
             themeMode: themeProvider.themeMode,
             theme: themeProvider.lightTheme,
             darkTheme: themeProvider.darkTheme,
+            // Add custom page transitions for the entire app
+            onGenerateRoute: (routeSettings) {
+              // Default page transitions for all routes
+              Widget page;
+
+              // For the initial route, use the home property's value
+              if (routeSettings.name == '/') {
+                page = settings.hasCompletedOnboarding
+                    ? const HomeScreen()
+                    : WelcomeScreen(settingsRepository: settingsRepo);
+
+                return PageTransitions.depthSharedAxisTransition(
+                  page: page,
+                  settings: routeSettings,
+                );
+              }
+
+              // For other named routes if needed
+              return null;
+            },
             home: settings.hasCompletedOnboarding
                 ? const HomeScreen()
                 : WelcomeScreen(settingsRepository: settingsRepo),
