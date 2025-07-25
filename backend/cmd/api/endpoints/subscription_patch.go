@@ -134,7 +134,7 @@ func (m patchSubscriptionModel) Command() result.Result[command.PatchSubscriptio
 //
 //	@Summary		Update subscription
 //	@Description	Update an existing subscription with new details
-//	@Tags			subscriptions
+//	@Tags			subscription
 //	@Accept			json
 //	@Produce		json
 //	@Param			subscription	body		patchSubscriptionModel	true	"Subscription details to update"

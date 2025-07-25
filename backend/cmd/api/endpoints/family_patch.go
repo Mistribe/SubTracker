@@ -105,7 +105,7 @@ func (m patchFamilyModel) Command(ownerId string) result.Result[command.PatchFam
 //
 //	@Summary		Patch family with members
 //	@Description	Patch family with members
-//	@Tags			Family
+//	@Tags			family
 //	@Accept			json
 //	@Produce		json
 //	@Param			family	body		patchFamilyModel	true	"Family update data"

@@ -27,7 +27,7 @@ func NewDefaultLabelEndpoint(handler core.QueryHandler[query.DefaultLabelQuery, 
 //	@Tags			label
 //	@Produce		json
 //	@Success		200	{array}	labelModel
-//	@Router			/default [get]
+//	@Router			/labels/default [get]
 func (e DefaultLabelEndpoint) Handle(c *gin.Context) {
 	r := e.handler.Handle(c, query.DefaultLabelQuery{})
 	handleResponse(c,
