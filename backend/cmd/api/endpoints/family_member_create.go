@@ -13,7 +13,6 @@ import (
 	"github.com/oleexo/subtracker/internal/application/family/command"
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/pkg/ext"
-	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
@@ -25,7 +24,7 @@ type createFamilyMemberModel struct {
 	Id        *string    `json:"id,omitempty"`
 	Name      string     `json:"name" binding:"required"`
 	Email     *string    `json:"email,omitempty"`
-	IsKid     bool       `json:"is_kid" binding:"required"`
+	IsKid     bool       `json:"is_kid,omitempty"`
 	CreatedAt *time.Time `json:"created_at,omitempty" format:"date-time"`
 }
 
@@ -33,10 +32,6 @@ func (m createFamilyMemberModel) ToFamilyMember(familyId uuid.UUID) result.Resul
 	var id uuid.UUID
 	var err error
 	var createdAt time.Time
-	email := option.None[string]()
-	if m.Email != nil {
-		email = option.Some(*m.Email)
-	}
 	id, err = parseUuidOrNew(m.Id)
 	if err != nil {
 		return result.Fail[family.Member](err)
@@ -44,15 +39,16 @@ func (m createFamilyMemberModel) ToFamilyMember(familyId uuid.UUID) result.Resul
 
 	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
 
-	return family.NewMember(
+	return result.Success(family.NewMemberWithoutValidation(
 		id,
 		familyId,
 		m.Name,
-		email,
+		m.Email,
 		m.IsKid,
 		createdAt,
 		createdAt,
-	)
+		false,
+	))
 }
 
 func (m createFamilyMemberModel) Command(familyId uuid.UUID) result.Result[command.CreateFamilyMemberCommand] {

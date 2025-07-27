@@ -14,7 +14,6 @@ components:
         name:
           type: string
       required:
-      - is_kid
       - name
       type: object
     endpoints.createFamilyModel:
