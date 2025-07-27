@@ -60,7 +60,11 @@ func NewMemberWithoutValidation(
 	isExists bool) Member {
 	if email != nil {
 		trimEmail := strings.TrimSpace(*email)
-		email = &trimEmail
+		if trimEmail != "" {
+			email = &trimEmail
+		} else {
+			email = nil
+		}
 	}
 	return Member{
 		Base:     entity.NewBase(id, createdAt, updatedAt, true, isExists),
@@ -94,7 +98,7 @@ func (m *Member) ETag() string {
 }
 
 func (m *Member) Validate() error {
-	if m.email != nil {
+	if m.email != nil && *m.email != "" {
 		if !emailRegex.MatchString(*m.email) {
 			return errors.New("invalid email format")
 		}
