@@ -1,29 +1,17 @@
 import {useState} from "react";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle
-} from "@/components/ui/card";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow
-} from "@/components/ui/table";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {Button} from "@/components/ui/button";
-import {PlusIcon, Loader2, CheckIcon, XIcon} from "lucide-react";
+import {CheckIcon, Loader2, XIcon} from "lucide-react";
 import Family from "@/models/family.ts";
 import {useApiClient} from "@/hooks/use-api-client.ts";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import type {FamilyModel, PatchFamilyModel} from "@/api/models";
-import {CreateFamilyDialog} from "@/components/CreateFamilyDialog";
+import {CreateFamilyDialog} from "@/components/dialogs/CreateFamilyDialog.tsx";
 import {Badge} from "@/components/ui/badge";
 import {Input} from "@/components/ui/input";
 import {Checkbox} from "@/components/ui/checkbox";
+import {AddFamilyMemberDialog} from "@/components/dialogs/AddFamilyMemberDialog.tsx";
 
 const FamiliesPage = () => {
     const {apiClient} = useApiClient();
@@ -53,28 +41,28 @@ const FamiliesPage = () => {
     // Function to save changes
     const saveChanges = async (family: Family) => {
         if (!apiClient) return;
-        
+
         try {
             setIsUpdating(true);
-            
+
             // Only update if values have changed
             if (editedName === family.name && editedJointAccount === family.haveJointAccount) {
                 cancelEditing();
                 return;
             }
-            
+
             const patchModel: Partial<PatchFamilyModel> = {
                 id: family.id,
                 name: editedName,
                 haveJointAccount: editedJointAccount,
                 updatedAt: new Date()
             };
-            
+
             await apiClient.families.patch(patchModel);
-            
+
             // Invalidate and refetch the families query
-            await queryClient.invalidateQueries({ queryKey: ['families'] });
-            
+            await queryClient.invalidateQueries({queryKey: ['families']});
+
             // Reset editing state
             cancelEditing();
         } catch (error) {
@@ -161,7 +149,7 @@ const FamiliesPage = () => {
                                         {editingFamilyId === family.id ? (
                                             <div className="flex flex-col gap-2">
                                                 <div className="flex items-center gap-2">
-                                                    <Input 
+                                                    <Input
                                                         value={editedName}
                                                         onChange={(e) => setEditedName(e.target.value)}
                                                         className="w-full"
@@ -169,12 +157,12 @@ const FamiliesPage = () => {
                                                     />
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <Checkbox 
+                                                    <Checkbox
                                                         id={`joint-account-${family.id}`}
                                                         checked={editedJointAccount}
                                                         onCheckedChange={(checked) => setEditedJointAccount(!!checked)}
                                                     />
-                                                    <label 
+                                                    <label
                                                         htmlFor={`joint-account-${family.id}`}
                                                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                                     >
@@ -197,42 +185,39 @@ const FamiliesPage = () => {
                                     <div className="flex gap-2">
                                         {editingFamilyId === family.id ? (
                                             <>
-                                                <Button 
-                                                    variant="outline" 
+                                                <Button
+                                                    variant="outline"
                                                     size="sm"
                                                     onClick={() => saveChanges(family)}
                                                     disabled={isUpdating}
                                                 >
                                                     {isUpdating ? (
-                                                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                                        <Loader2 className="h-4 w-4 animate-spin mr-2"/>
                                                     ) : (
-                                                        <CheckIcon className="h-4 w-4 mr-2" />
+                                                        <CheckIcon className="h-4 w-4 mr-2"/>
                                                     )}
                                                     Save
                                                 </Button>
-                                                <Button 
-                                                    variant="outline" 
+                                                <Button
+                                                    variant="outline"
                                                     size="sm"
                                                     onClick={cancelEditing}
                                                     disabled={isUpdating}
                                                 >
-                                                    <XIcon className="h-4 w-4 mr-2" />
+                                                    <XIcon className="h-4 w-4 mr-2"/>
                                                     Cancel
                                                 </Button>
                                             </>
                                         ) : (
                                             <>
-                                                <Button 
-                                                    variant="outline" 
+                                                <Button
+                                                    variant="outline"
                                                     size="sm"
                                                     onClick={() => startEditing(family)}
                                                 >
                                                     Edit
                                                 </Button>
-                                                <Button variant="outline" size="sm">
-                                                    <PlusIcon className="h-4 w-4 mr-2"/>
-                                                    Add Member
-                                                </Button>
+                                                <AddFamilyMemberDialog familyId={family.id}/>
                                             </>
                                         )}
                                     </div>
