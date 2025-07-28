@@ -48,11 +48,6 @@ func NewFamily(
 	}
 }
 
-func (f *family) Validate() error {
-
-	return nil
-}
-
 func (f *family) GetValidationErrors() validationx.Errors {
 	var errors validationx.Errors
 

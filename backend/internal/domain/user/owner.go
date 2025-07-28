@@ -41,7 +41,7 @@ type Owner interface {
 }
 
 type familyOwner struct {
-	entity.Entity
+	*entity.Base
 
 	familyId uuid.UUID
 }
@@ -52,7 +52,7 @@ func NewFamilyOwner(
 	createdAt time.Time,
 	updatedAt time.Time) Owner {
 	return &familyOwner{
-		Entity:   entity.NewBase(id, createdAt, updatedAt, true, false),
+		Base:     entity.NewBase(id, createdAt, updatedAt, true, false),
 		familyId: familyId,
 	}
 }
@@ -73,17 +73,23 @@ func (o familyOwner) Equal(other Owner) bool {
 	if other == nil {
 		return false
 	}
-	if other.Type() != FamilyOwner {
-		return false
+
+	return o.ETag() == other.ETag()
+}
+
+func (o familyOwner) ETagFields() []interface{} {
+	return []interface{}{
+		o.familyId.String(),
+		FamilyOwner.String(),
 	}
-	return o.Id() == other.Id() &&
-		o.familyId == other.FamilyId() &&
-		o.CreatedAt() == other.CreatedAt() &&
-		o.UpdatedAt() == other.UpdatedAt()
+
+}
+func (o familyOwner) ETag() string {
+	return entity.CalculateETag(o, o.Base)
 }
 
 type personalOwner struct {
-	entity.Entity
+	*entity.Base
 
 	ownerId string
 }
@@ -94,7 +100,7 @@ func NewPersonalOwner(
 	createdAt time.Time,
 	updatedAt time.Time) Owner {
 	return &personalOwner{
-		Entity:  entity.NewBase(id, createdAt, updatedAt, true, false),
+		Base:    entity.NewBase(id, createdAt, updatedAt, true, false),
 		ownerId: ownerId,
 	}
 }
@@ -115,11 +121,17 @@ func (o personalOwner) Equal(other Owner) bool {
 	if other == nil {
 		return false
 	}
-	if other.Type() != PersonalOwner {
-		return false
+
+	return o.ETag() == other.ETag()
+}
+
+func (o personalOwner) ETagFields() []interface{} {
+	return []interface{}{
+		o.ownerId,
+		PersonalOwner.String(),
 	}
-	return o.Id() == other.Id() &&
-		o.ownerId == other.OwnerId() &&
-		o.CreatedAt() == other.CreatedAt() &&
-		o.UpdatedAt() == other.UpdatedAt()
+
+}
+func (o personalOwner) ETag() string {
+	return entity.CalculateETag(o, o.Base)
 }

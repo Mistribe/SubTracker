@@ -6,63 +6,47 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/family"
-	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/pkg/langext/option"
+	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
 func createSubscription(
 	ctx context.Context,
-	labelRepository label.Repository,
 	familyRepository family.Repository,
 	newSubscription subscription.Subscription,
 ) (subscription.Subscription, error) {
-	if err := ensureLabelsExists(ctx, labelRepository, newSubscription.Labels().Values()); err != nil {
-		return newSubscription, err
-	}
-	if err := ensureFamilyMemberExists(ctx, familyRepository, newSubscription.FamilyId(),
-		newSubscription.FamilyMembers().Values()); err != nil {
-		return newSubscription, err
+	if newSubscription.Owner().Type() == user.FamilyOwner {
+		familyId := newSubscription.Owner().FamilyId()
+
+		var members []uuid.UUID
+		if newSubscription.ServiceUsers() != nil && newSubscription.ServiceUsers().Len() > 0 {
+			members = newSubscription.ServiceUsers().Values()
+		}
+		if newSubscription.Payer() != nil && newSubscription.Payer().Type() == subscription.FamilyMemberPayer {
+			members = append(members, newSubscription.Payer().MemberId())
+		}
+		if err := ensureFamilyMemberExists(ctx, familyRepository, familyId, members); err != nil {
+			return newSubscription, err
+		}
 	}
 
 	return newSubscription, nil
 }
 
-func ensureLabelsExists(
+func ensureFamilyMemberExists(
 	ctx context.Context,
-	labelRepository label.Repository,
-	labels []uuid.UUID) error {
-	if len(labels) == 0 {
+	familyRepository family.Repository,
+	familyId uuid.UUID,
+	members []uuid.UUID) error {
+	if len(members) == 0 {
 		return nil
 	}
-	exists, err := labelRepository.Exists(ctx, labels...)
+	exists, err := familyRepository.MemberExists(ctx, familyId, members...)
 	if err != nil {
 		return err
 	}
 	if exists {
 		return nil
 	}
-	return label.ErrLabelNotFound
-}
-
-func ensureFamilyMemberExists(
-	ctx context.Context,
-	familyRepository family.Repository,
-	familyId option.Option[uuid.UUID],
-	members []uuid.UUID) error {
-	return option.Match(familyId, func(familyId uuid.UUID) error {
-		if len(members) == 0 {
-			return nil
-		}
-		exists, err := familyRepository.MemberExists(ctx, familyId, members...)
-		if err != nil {
-			return err
-		}
-		if exists {
-			return nil
-		}
-		return family.ErrFamilyMemberNotFound
-	}, func() error {
-		return nil
-	})
+	return family.ErrFamilyMemberNotFound
 }

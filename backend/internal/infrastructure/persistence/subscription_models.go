@@ -4,13 +4,16 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/oleexo/subtracker/internal/domain/subscription"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 type subscriptionPayerSqlModel struct {
 	baseSqlModel
 
-	FamilyId       *uuid.UUID            `gorm:"type:uuid"`
-	Family         *familySqlModel       `gorm:"foreignKey:FamilyId;references:Id"`
+	FamilyId       uuid.UUID             `gorm:"type:uuid;not null"`
+	Family         familySqlModel        `gorm:"foreignKey:FamilyId;references:Id"`
 	FamilyMemberId *uuid.UUID            `gorm:"type:uuid"`
 	FamilyMember   *familyMemberSqlModel `gorm:"foreignKey:FamilyMemberId;references:Id"`
 	SubscriptionId uuid.UUID             `gorm:"type:uuid;not null"`
@@ -19,6 +22,20 @@ type subscriptionPayerSqlModel struct {
 
 func (s subscriptionPayerSqlModel) TableName() string {
 	return "subscription_payers"
+}
+
+func newSubscriptionPayerSqlModel(subscriptionId uuid.UUID, source subscription.Payer) subscriptionPayerSqlModel {
+	model := subscriptionPayerSqlModel{
+		baseSqlModel:   newBaseSqlModel(source),
+		FamilyId:       source.FamilyId(),
+		SubscriptionId: subscriptionId,
+	}
+
+	if source.Type() == subscription.FamilyMemberPayer {
+		memberId := source.MemberId()
+		model.FamilyMemberId = &memberId
+	}
+	return model
 }
 
 type subscriptionServiceUserModel struct {
@@ -32,6 +49,13 @@ func (s subscriptionServiceUserModel) TableName() string {
 	return "subscription_service_users"
 }
 
+func newSubscriptionServiceUserModel(familyMemberId uuid.UUID, subscriptionId uuid.UUID) subscriptionServiceUserModel {
+	return subscriptionServiceUserModel{
+		FamilyMemberId: familyMemberId,
+		SubscriptionId: subscriptionId,
+	}
+}
+
 type subscriptionSqlModel struct {
 	baseSqlModel
 
@@ -41,10 +65,10 @@ type subscriptionSqlModel struct {
 	Provider         providerSqlModel           `gorm:"foreignKey:ProviderId;references:Id"`
 	PlanId           uuid.UUID                  `gorm:"type:uuid;not null"`
 	Plan             providerPlanSqlModel       `gorm:"foreignKey:PlanId;references:Id"`
-	PriceId          *uuid.UUID                 `gorm:"type:uuid"`
+	PriceId          uuid.UUID                  `gorm:"type:uuid;not null"`
 	Price            providerPriceSqlModel      `gorm:"foreignKey:PriceId;references:Id"`
-	OwnerId          *uuid.UUID                 `gorm:"type:uuid"`
-	Owner            *ownerSqlModel             `gorm:"foreignKey:OwnerId;references:Id"`
+	OwnerId          uuid.UUID                  `gorm:"type:uuid;not null"`
+	Owner            ownerSqlModel              `gorm:"foreignKey:OwnerId;references:Id"`
 	PayerId          *uuid.UUID                 `gorm:"type:uuid"`
 	Payer            *subscriptionPayerSqlModel `gorm:"foreignKey:SubscriptionId;references:Id"`
 	StartDate        time.Time                  `gorm:"type:timestamp;not null"`
@@ -57,4 +81,93 @@ type subscriptionSqlModel struct {
 
 func (s subscriptionSqlModel) TableName() string {
 	return "subscriptions"
+}
+
+func newSubscriptionSqlModel(source subscription.Subscription) subscriptionSqlModel {
+	model := subscriptionSqlModel{
+		baseSqlModel:     newBaseSqlModel(source),
+		FriendlyName:     source.FriendlyName(),
+		FreeTrialDays:    source.FreeTrialDays(),
+		ProviderId:       source.ServiceProviderId(),
+		PlanId:           source.PlanId(),
+		PriceId:          source.PriceId(),
+		StartDate:        source.StartDate(),
+		EndDate:          source.EndDate(),
+		OwnerId:          source.Owner().Id(),
+		Recurrency:       source.Recurrency().String(),
+		CustomRecurrency: source.CustomRecurrency(),
+	}
+
+	if source.Payer() != nil {
+		payerId := source.Payer().Id()
+		model.PayerId = &payerId
+	}
+
+	return model
+}
+
+func newPayer(source subscriptionPayerSqlModel) subscription.Payer {
+	payerType, err := subscription.ParsePayerType(source.Subscription.Recurrency)
+	if err != nil {
+		panic(err)
+	}
+
+	var payer subscription.Payer
+	switch payerType {
+	case subscription.FamilyPayer:
+		payer = subscription.NewFamilyPayer(source.Id,
+			source.FamilyId,
+			source.CreatedAt,
+			source.UpdatedAt)
+	case subscription.FamilyMemberPayer:
+		if source.FamilyMemberId == nil {
+			panic("family member id is nil for family member payer")
+		}
+		payer = subscription.NewFamilyMemberPayer(source.Id,
+			source.FamilyId,
+			*source.FamilyMemberId,
+			source.CreatedAt,
+			source.UpdatedAt)
+	default:
+		panic("unknown payer type")
+	}
+	payer.Clean()
+	return payer
+}
+
+func newSubscription(source subscriptionSqlModel) subscription.Subscription {
+	var payer subscription.Payer
+	if source.Payer != nil {
+		payer = newPayer(*source.Payer)
+	}
+	var serviceUsers []uuid.UUID
+	if source.ServiceUsers != nil && len(source.ServiceUsers) > 0 {
+		serviceUsers = slicesx.Map(source.ServiceUsers, func(su subscriptionServiceUserModel) uuid.UUID {
+			return su.FamilyMemberId
+		})
+	}
+	recurrency, err := subscription.ParseRecurrencyType(source.Recurrency)
+	if err != nil {
+		panic(err)
+	}
+
+	sub := subscription.NewSubscription(
+		source.Id,
+		source.FriendlyName,
+		source.FreeTrialDays,
+		source.ProviderId,
+		source.PlanId,
+		source.PriceId,
+		newOwner(source.Owner),
+		payer,
+		serviceUsers,
+		source.StartDate,
+		source.EndDate,
+		recurrency,
+		source.CustomRecurrency,
+		source.CreatedAt,
+		source.UpdatedAt,
+	)
+	sub.Clean()
+	return sub
 }

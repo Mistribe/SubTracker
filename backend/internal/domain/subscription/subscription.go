@@ -8,6 +8,7 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/slicesx"
+	"github.com/oleexo/subtracker/pkg/validationx"
 	"github.com/oleexo/subtracker/pkg/x"
 )
 
@@ -27,7 +28,7 @@ type Subscription interface {
 	PriceId() uuid.UUID
 	Owner() user.Owner
 	Payer() Payer
-	ServiceUsers() slicesx.Tracked[uuid.UUID]
+	ServiceUsers() *slicesx.Tracked[uuid.UUID]
 	StartDate() time.Time
 	EndDate() *time.Time
 	Recurrency() RecurrencyType
@@ -42,6 +43,9 @@ type Subscription interface {
 	SetEndDate(endDate *time.Time)
 	SetRecurrency(recurrency RecurrencyType)
 	SetCustomRecurrency(customRecurrency *uint)
+
+	Equal(other Subscription) bool
+	GetValidationErrors() validationx.Errors
 }
 
 type subscription struct {
@@ -123,8 +127,8 @@ func (s *subscription) Payer() Payer {
 	return s.payer
 }
 
-func (s *subscription) ServiceUsers() slicesx.Tracked[uuid.UUID] {
-	return *s.serviceUsers
+func (s *subscription) ServiceUsers() *slicesx.Tracked[uuid.UUID] {
+	return s.serviceUsers
 }
 
 func (s *subscription) StartDate() time.Time {
@@ -186,4 +190,50 @@ func (s *subscription) SetRecurrency(recurrency RecurrencyType) {
 func (s *subscription) SetCustomRecurrency(customRecurrency *uint) {
 	s.customRecurrency = customRecurrency
 	s.SetAsDirty()
+}
+
+func (s *subscription) ETagFields() []interface{} {
+	fields := []interface{}{
+		s.friendlyName,
+		s.freeTrialDays,
+		s.serviceProviderId,
+		s.planId,
+		s.priceId,
+		s.owner.ETag(),
+		s.payer.ETag(),
+		s.serviceUsers,
+		s.startDate,
+		s.endDate,
+		s.recurrency.String(),
+		s.customRecurrency,
+	}
+
+	if s.payer != nil {
+		fields = append(fields, s.payer.ETag())
+	}
+
+	if s.serviceUsers != nil && s.serviceUsers.Len() > 0 {
+		fields = append(fields, slicesx.Map(s.serviceUsers.Values(), func(su uuid.UUID) string {
+			return su.String()
+		}))
+	}
+
+	return fields
+}
+func (s *subscription) ETag() string {
+	return entity.CalculateETag(s, s.Base)
+}
+
+func (s *subscription) Equal(other Subscription) bool {
+	if other == nil {
+		return false
+	}
+
+	return s.ETag() == other.ETag()
+}
+
+func (s *subscription) GetValidationErrors() validationx.Errors {
+	var errors validationx.Errors
+	// todo
+	return errors
 }

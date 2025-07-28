@@ -19,7 +19,6 @@ func newLabelTask(labelRepository label.Repository) *LabelTask {
 }
 
 func (l LabelTask) OnStart(ctx context.Context) error {
-	// todo get all with limit 1 (no need to get all the database)
 	lbls, err := l.labelRepository.GetDefaults(ctx)
 	if err != nil {
 		return err
@@ -28,7 +27,7 @@ func (l LabelTask) OnStart(ctx context.Context) error {
 		return nil
 	}
 	for _, lbl := range getDefaultLabels() {
-		if err := l.labelRepository.Save(ctx, &lbl); err != nil {
+		if err := l.labelRepository.Save(ctx, lbl); err != nil {
 			return err
 		}
 	}

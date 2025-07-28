@@ -20,7 +20,6 @@ func NewDatabaseContext(
 	cfg config.Configuration,
 	logger *slog.Logger) *DatabaseContext {
 	dsn := cfg.GetString("DATABASE_DSN")
-	//	dsn := "host=localhost user=postgres password=postgres dbname=app port=5432"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: sloggorm.New(
 			sloggorm.WithLogger(logger),
@@ -88,12 +87,11 @@ func newRepositoryTask(repository *DatabaseContext) *DatabaseContextTask {
 func (r DatabaseContextTask) OnStart(_ context.Context) error {
 	if err := r.repository.db.AutoMigrate(
 		&subscriptionSqlModel{},
-		&labelSqlModel{},
-		&familyMemberSqlModel{},
-		&familySqlModel{},
-		&subscriptionPaymentModel{},
 		&subscriptionServiceUserModel{},
-		&subscriptionLabelModel{},
+		&subscriptionPayerSqlModel{},
+		&labelSqlModel{},
+		&familySqlModel{},
+		&familyMemberSqlModel{},
 		&providerSqlModel{},
 		&providerLabelSqlModel{},
 		&providerPlanSqlModel{},

@@ -21,4 +21,6 @@ var (
 	ErrCannotHaveFamilyMembersWithoutFamily = errors.New("cannot have family members without a family")
 	ErrPayerAndJointAccountConflict         = errors.New("subscription cannot have both payer and joint account payment")
 	ErrNoFamilyDefined                      = errors.New("no family defined")
+	ErrUnknownPayerType                     = errors.New("unknown payer type")
+	ErrUnknownRecurrencyType                = errors.New("unknown recurrency type")
 )
