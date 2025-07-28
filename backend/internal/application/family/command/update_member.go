@@ -15,7 +15,7 @@ type UpdateFamilyMemberCommand struct {
 	Id        uuid.UUID
 	FamilyId  uuid.UUID
 	Name      string
-	Email     option.Option[string]
+	Email     *string
 	IsKid     bool
 	UpdatedAt option.Option[time.Time]
 }
@@ -37,12 +37,11 @@ func (h UpdateFamilyMemberCommandHandler) Handle(
 	}
 
 	return option.Match(famOpt, func(fam family.Family) result.Result[family.Family] {
-		return option.Match(fam.GetMember(command.Id),
-			func(mbr family.Member) result.Result[family.Family] {
-				return h.updateFamilyMember(ctx, command, fam, mbr)
-			}, func() result.Result[family.Family] {
-				return result.Fail[family.Family](family.ErrFamilyMemberNotFound)
-			})
+		mbr := fam.GetMember(command.Id)
+		if mbr == nil {
+			result.Fail[family.Family](family.ErrFamilyMemberNotFound)
+		}
+		return h.updateFamilyMember(ctx, command, fam, mbr)
 
 	}, func() result.Result[family.Family] {
 		return result.Fail[family.Family](family.ErrFamilyNotFound)
@@ -72,19 +71,15 @@ func (h UpdateFamilyMemberCommandHandler) updateFamilyMember(
 		mbr.SetUpdatedAt(time.Now())
 	})
 
-	if err := mbr.Validate(); err != nil {
-		return result.Fail[family.Family](err)
-	}
-
 	if err := fam.UpdateMember(mbr); err != nil {
 		return result.Fail[family.Family](err)
 	}
 
-	if err := fam.Validate(); err != nil {
+	if err := fam.GetValidationErrors(); err != nil {
 		return result.Fail[family.Family](err)
 	}
 
-	if err := h.repository.Save(ctx, &fam); err != nil {
+	if err := h.repository.Save(ctx, fam); err != nil {
 		return result.Fail[family.Family](err)
 	}
 

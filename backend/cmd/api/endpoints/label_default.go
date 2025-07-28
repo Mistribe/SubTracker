@@ -9,14 +9,14 @@ import (
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/label/query"
 	"github.com/oleexo/subtracker/internal/domain/label"
-	"github.com/oleexo/subtracker/pkg/ext"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 type DefaultLabelEndpoint struct {
-	handler core.QueryHandler[query.DefaultLabelQuery, []label.Label]
+	handler core.QueryHandler[query.DefaultLabelQuery, []label.label]
 }
 
-func NewDefaultLabelEndpoint(handler core.QueryHandler[query.DefaultLabelQuery, []label.Label]) *DefaultLabelEndpoint {
+func NewDefaultLabelEndpoint(handler core.QueryHandler[query.DefaultLabelQuery, []label.label]) *DefaultLabelEndpoint {
 	return &DefaultLabelEndpoint{handler: handler}
 }
 
@@ -32,10 +32,10 @@ func (e DefaultLabelEndpoint) Handle(c *gin.Context) {
 	r := e.handler.Handle(c, query.DefaultLabelQuery{})
 	handleResponse(c,
 		r,
-		withMapping[[]label.Label](func(lbls []label.Label) any {
-			return ext.Map[label.Label, labelModel](
+		withMapping[[]label.label](func(lbls []label.label) any {
+			return slicesx.Map[label.label, labelModel](
 				lbls,
-				func(lbl label.Label) labelModel {
+				func(lbl label.label) labelModel {
 					return newLabelModel(lbl)
 				},
 			)

@@ -62,7 +62,7 @@ type labelModel struct {
 	Etag      string    `json:"etag" binding:"required"`
 }
 
-func newLabelModel(source label.Label) labelModel {
+func newLabelModel(source label.label) labelModel {
 	return labelModel{
 		Id:        source.Id().String(),
 		Name:      source.Name(),

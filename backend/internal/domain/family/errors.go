@@ -12,4 +12,5 @@ var (
 	ErrNameTooLong            = errors.New("name must be less than 100 characters")
 	ErrFamilyAlreadyExists    = errors.New("family already exists")
 	ErrOnlyOwnerCanEditFamily = errors.New("only the owner can edit the family")
+	ErrDuplicateMember        = errors.New("member with the same ID or email already exists")
 )

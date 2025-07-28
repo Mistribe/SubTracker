@@ -14,17 +14,17 @@ import (
 func TestNewLabel_Success(t *testing.T) {
 	// Given
 	id := uuid.New()
-	name := "Test Label"
+	name := "Test label"
 	isDefault := true
 	color := "#FF0000"
 	createdAt := time.Now()
 	updatedAt := time.Now()
 
 	// When
-	lbl := label.NewLabelWithoutValidation(id, name, isDefault, color, createdAt, updatedAt)
+	lbl := label.NewLabel(id, name, isDefault, color, createdAt, updatedAt)
 
 	// Then
-	require.Nil(t, lbl.Validate(), "Label should be valid")
+	require.Nil(t, lbl.Validate(), "label should be valid")
 
 	assert.Equal(t, id, lbl.Id())
 	assert.Equal(t, name, lbl.Name())
@@ -53,13 +53,13 @@ func TestNewLabel_WithValidColors(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			// Given
 			id := uuid.New()
-			name := "Test Label"
+			name := "Test label"
 			isDefault := false
 			createdAt := time.Now()
 			updatedAt := time.Now()
 
 			// When
-			lbl := label.NewLabelWithoutValidation(id, name, isDefault, tc.color, createdAt, updatedAt)
+			lbl := label.NewLabel(id, name, isDefault, tc.color, createdAt, updatedAt)
 
 			// Then
 			assert.Nil(t, lbl.Validate(), "Color %s should be valid", tc.color)
@@ -89,13 +89,13 @@ func TestNewLabel_WithInvalidColors(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			// Given
 			id := uuid.New()
-			name := "Test Label"
+			name := "Test label"
 			isDefault := false
 			createdAt := time.Now()
 			updatedAt := time.Now()
 
 			// When
-			lbl := label.NewLabelWithoutValidation(id, name, isDefault, tc.color, createdAt, updatedAt)
+			lbl := label.NewLabel(id, name, isDefault, tc.color, createdAt, updatedAt)
 
 			// Then
 			assert.NotNil(t, lbl.Validate(), "Color %s should be invalid", tc.color)
@@ -128,7 +128,7 @@ func TestNewLabel_WithInvalidNames(t *testing.T) {
 			updatedAt := time.Now()
 
 			// When
-			lbl := label.NewLabelWithoutValidation(id, tc.labelName, isDefault, color, createdAt, updatedAt)
+			lbl := label.NewLabel(id, tc.labelName, isDefault, color, createdAt, updatedAt)
 
 			// Then
 			assert.NotNil(t, lbl.Validate())
@@ -144,9 +144,9 @@ func TestNewLabel_WithValidNames(t *testing.T) {
 	}{
 		{"single character", "A"},
 		{"normal name", "Work"},
-		{"name with spaces", "Work Label"},
-		{"name with numbers", "Label 123"},
-		{"name with special chars", "Label @#$%"},
+		{"name with spaces", "Work label"},
+		{"name with numbers", "label 123"},
+		{"name with special chars", "label @#$%"},
 		{"exactly 100 characters", string(make([]rune, 100))},
 		{"name with leading/trailing spaces", "  Work  "},
 	}
@@ -161,7 +161,7 @@ func TestNewLabel_WithValidNames(t *testing.T) {
 			updatedAt := time.Now()
 
 			// When
-			lbl := label.NewLabelWithoutValidation(id, tc.labelName, isDefault, color, createdAt, updatedAt)
+			lbl := label.NewLabel(id, tc.labelName, isDefault, color, createdAt, updatedAt)
 
 			// Then
 			assert.Nil(t, lbl.Validate(), "Name '%s' should be valid", tc.labelName)
@@ -179,7 +179,7 @@ func TestNewLabelWithoutValidation(t *testing.T) {
 	updatedAt := time.Now()
 
 	// When
-	lbl := label.NewLabelWithoutValidation(id, name, isDefault, color, createdAt, updatedAt)
+	lbl := label.NewLabel(id, name, isDefault, color, createdAt, updatedAt)
 
 	// Then
 	assert.Equal(t, id, lbl.Id())
@@ -193,13 +193,13 @@ func TestNewLabelWithoutValidation(t *testing.T) {
 func TestLabel_Getters(t *testing.T) {
 	// Given
 	id := uuid.New()
-	name := "Test Label"
+	name := "Test label"
 	isDefault := true
 	color := "#FF0000"
 	createdAt := time.Now()
 	updatedAt := time.Now()
 
-	lbl := label.NewLabelWithoutValidation(id, name, isDefault, color, createdAt, updatedAt)
+	lbl := label.NewLabel(id, name, isDefault, color, createdAt, updatedAt)
 
 	// When & Then
 	assert.Equal(t, id, lbl.Id())
@@ -212,7 +212,7 @@ func TestLabel_Getters(t *testing.T) {
 
 func TestLabel_SetName(t *testing.T) {
 	// Given
-	lbl := label.NewLabelWithoutValidation(uuid.New(), "Original", false, "#FF0000", time.Now(), time.Now())
+	lbl := label.NewLabel(uuid.New(), "Original", false, "#FF0000", time.Now(), time.Now())
 	newName := "New Name"
 
 	// When
@@ -224,7 +224,7 @@ func TestLabel_SetName(t *testing.T) {
 
 func TestLabel_SetIsDefault(t *testing.T) {
 	// Given
-	lbl := label.NewLabelWithoutValidation(uuid.New(), "Test", false, "#FF0000", time.Now(), time.Now())
+	lbl := label.NewLabel(uuid.New(), "Test", false, "#FF0000", time.Now(), time.Now())
 
 	// When
 	lbl.SetIsDefault(true)
@@ -241,7 +241,7 @@ func TestLabel_SetIsDefault(t *testing.T) {
 
 func TestLabel_SetColor(t *testing.T) {
 	// Given
-	lbl := label.NewLabelWithoutValidation(uuid.New(), "Test", false, "#FF0000", time.Now(), time.Now())
+	lbl := label.NewLabel(uuid.New(), "Test", false, "#FF0000", time.Now(), time.Now())
 	newColor := "#00FF00"
 
 	// When
@@ -254,7 +254,7 @@ func TestLabel_SetColor(t *testing.T) {
 func TestLabel_SetUpdatedAt(t *testing.T) {
 	// Given
 	originalTime := time.Now()
-	lbl := label.NewLabelWithoutValidation(uuid.New(), "Test", false, "#FF0000", time.Now(), originalTime)
+	lbl := label.NewLabel(uuid.New(), "Test", false, "#FF0000", time.Now(), originalTime)
 	newTime := time.Now().Add(time.Hour)
 
 	// When
@@ -266,7 +266,7 @@ func TestLabel_SetUpdatedAt(t *testing.T) {
 
 func TestLabel_Validate_Success(t *testing.T) {
 	// Given
-	lbl := label.NewLabelWithoutValidation(uuid.New(), "Valid Name", false, "#FF0000", time.Now(), time.Now())
+	lbl := label.NewLabel(uuid.New(), "Valid Name", false, "#FF0000", time.Now(), time.Now())
 
 	// When
 	err := lbl.Validate()
@@ -289,7 +289,7 @@ func TestLabel_Validate_NameErrors(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Given
-			lbl := label.NewLabelWithoutValidation(uuid.New(), tc.labelName, false, "#FF0000", time.Now(), time.Now())
+			lbl := label.NewLabel(uuid.New(), tc.labelName, false, "#FF0000", time.Now(), time.Now())
 
 			// When
 			err := lbl.Validate()
@@ -313,7 +313,7 @@ func TestLabel_Validate_ColorErrors(t *testing.T) {
 	for _, color := range testCases {
 		t.Run("invalid color: "+color, func(t *testing.T) {
 			// Given
-			lbl := label.NewLabelWithoutValidation(uuid.New(), "Valid Name", false, color, time.Now(), time.Now())
+			lbl := label.NewLabel(uuid.New(), "Valid Name", false, color, time.Now(), time.Now())
 
 			// When
 			err := lbl.Validate()
@@ -326,7 +326,7 @@ func TestLabel_Validate_ColorErrors(t *testing.T) {
 
 func TestLabel_Validate_AfterSetters(t *testing.T) {
 	// Given
-	lbl := label.NewLabelWithoutValidation(uuid.New(), "Valid Name", false, "#FF0000", time.Now(), time.Now())
+	lbl := label.NewLabel(uuid.New(), "Valid Name", false, "#FF0000", time.Now(), time.Now())
 
 	// When setting invalid name
 	lbl.SetName("")
@@ -358,7 +358,7 @@ func TestLabel_EdgeCases(t *testing.T) {
 		for i := range name {
 			name = name[:i] + "a" + name[i+1:]
 		}
-		lbl := label.NewLabelWithoutValidation(uuid.New(), name, false, "#FF0000", time.Now(), time.Now())
+		lbl := label.NewLabel(uuid.New(), name, false, "#FF0000", time.Now(), time.Now())
 
 		// When
 		err := lbl.Validate()
@@ -373,7 +373,7 @@ func TestLabel_EdgeCases(t *testing.T) {
 		for i := range name {
 			name = name[:i] + "a" + name[i+1:]
 		}
-		lbl := label.NewLabelWithoutValidation(uuid.New(), name, false, "#FF0000", time.Now(), time.Now())
+		lbl := label.NewLabel(uuid.New(), name, false, "#FF0000", time.Now(), time.Now())
 
 		// When
 		err := lbl.Validate()
@@ -385,7 +385,7 @@ func TestLabel_EdgeCases(t *testing.T) {
 	t.Run("zero uuid", func(t *testing.T) {
 		// Given
 		var zeroUUID uuid.UUID
-		lbl := label.NewLabelWithoutValidation(zeroUUID, "Valid Name", false, "#FF0000", time.Now(), time.Now())
+		lbl := label.NewLabel(zeroUUID, "Valid Name", false, "#FF0000", time.Now(), time.Now())
 
 		// When
 		err := lbl.Validate()
@@ -398,7 +398,7 @@ func TestLabel_EdgeCases(t *testing.T) {
 	t.Run("zero times", func(t *testing.T) {
 		// Given
 		var zeroTime time.Time
-		lbl := label.NewLabelWithoutValidation(uuid.New(), "Valid Name", false, "#FF0000", zeroTime, zeroTime)
+		lbl := label.NewLabel(uuid.New(), "Valid Name", false, "#FF0000", zeroTime, zeroTime)
 
 		// When
 		err := lbl.Validate()

@@ -1,7 +1,6 @@
 package family
 
 import (
-	"errors"
 	"regexp"
 	"strings"
 	"time"
@@ -9,13 +8,28 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/pkg/langext/option"
-	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/oleexo/subtracker/pkg/validationx"
 )
 
 var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 
-type Member struct {
+type Member interface {
+	entity.Entity
+	entity.ETagEntity
+
+	Name() string
+	IsKid() bool
+	SetName(string)
+	SetAsKid()
+	SetAsAdult()
+	Email() *string
+	SetEmail(*string)
+	FamilyId() uuid.UUID
+	Equal(member Member) bool
+	GetValidationErrors() validationx.Errors
+}
+
+type member struct {
 	*entity.Base
 
 	familyId uuid.UUID
@@ -29,35 +43,10 @@ func NewMember(
 	id uuid.UUID,
 	familyId uuid.UUID,
 	name string,
-	email option.Option[string],
-	isKid bool,
-	createdAt time.Time,
-	updatedAt time.Time) result.Result[Member] {
-	mbr := NewMemberWithoutValidation(id,
-		familyId,
-		strings.TrimSpace(name),
-		email.Value(),
-		isKid,
-		createdAt,
-		updatedAt,
-		false)
-
-	if err := mbr.Validate(); err != nil {
-		return result.Fail[Member](err)
-	}
-
-	return result.Success(mbr)
-}
-
-func NewMemberWithoutValidation(
-	id uuid.UUID,
-	familyId uuid.UUID,
-	name string,
 	email *string,
 	isKid bool,
 	createdAt time.Time,
-	updatedAt time.Time,
-	isExists bool) Member {
+	updatedAt time.Time) Member {
 	if email != nil {
 		trimEmail := strings.TrimSpace(*email)
 		if trimEmail != "" {
@@ -66,8 +55,8 @@ func NewMemberWithoutValidation(
 			email = nil
 		}
 	}
-	return Member{
-		Base:     entity.NewBase(id, createdAt, updatedAt, true, isExists),
+	return &member{
+		Base:     entity.NewBase(id, createdAt, updatedAt, true, false),
 		familyId: familyId,
 		name:     strings.TrimSpace(name),
 		email:    email,
@@ -76,15 +65,15 @@ func NewMemberWithoutValidation(
 	}
 }
 
-func (m *Member) Name() string {
+func (m *member) Name() string {
 	return m.name
 }
 
-func (m *Member) IsKid() bool {
+func (m *member) IsKid() bool {
 	return m.isKid
 }
 
-func (m *Member) ETagFields() []interface{} {
+func (m *member) ETagFields() []interface{} {
 	return []interface{}{
 		m.familyId.String(),
 		m.name,
@@ -93,75 +82,61 @@ func (m *Member) ETagFields() []interface{} {
 		m.isKid,
 	}
 }
-func (m *Member) ETag() string {
+func (m *member) ETag() string {
 	return entity.CalculateETag(m, m.Base)
 }
 
-func (m *Member) Validate() error {
+func (m *member) GetValidationErrors() validationx.Errors {
+	var errors validationx.Errors
+
 	if m.email != nil && *m.email != "" {
 		if !emailRegex.MatchString(*m.email) {
-			return errors.New("invalid email format")
+			errors = append(errors, validationx.NewError("email", "invalid email format"))
 		}
 	}
 	if m.name == "" {
-		return errors.New("name is empty")
+		errors = append(errors, validationx.NewError("name", "name is empty"))
 	}
+
+	if errors.HasErrors() {
+		return errors
+	}
+
 	return nil
 }
 
-func (m *Member) SetName(name string) {
+func (m *member) SetName(name string) {
 	m.name = name
 	m.SetAsDirty()
 }
 
-func (m *Member) SetAsKid() {
+func (m *member) SetAsKid() {
 	m.isKid = true
 	m.SetAsDirty()
 }
 
-func (m *Member) SetAsAdult() {
+func (m *member) SetAsAdult() {
 	m.isKid = false
 	m.SetAsDirty()
 }
 
-func (m *Member) Email() option.Option[string] {
-	return option.New(m.email)
+func (m *member) Email() *string {
+	return m.email
 }
 
-func (m *Member) SetEmail(email option.Option[string]) {
-	m.email = email.Value()
+func (m *member) SetEmail(email *string) {
+	m.email = email
 	m.SetAsDirty()
 }
 
-func (m *Member) FamilyId() uuid.UUID {
+func (m *member) FamilyId() uuid.UUID {
 	return m.familyId
 }
 
-func (m *Member) Equal(member Member) bool {
-	if !m.Base.Equal(*member.Base) ||
-		m.familyId != member.familyId ||
-		m.name != member.name ||
-		m.isKid != member.isKid {
+func (m *member) Equal(other Member) bool {
+	if other == nil {
 		return false
 	}
 
-	if (m.email == nil && member.email != nil) ||
-		(m.email != nil && member.email == nil) {
-		return false
-	}
-
-	if m.email != nil && member.email != nil && *m.email != *member.email {
-		return false
-	}
-
-	if (m.userId == nil && member.userId != nil) ||
-		(m.userId != nil && member.userId == nil) {
-		return false
-	}
-
-	if m.userId != nil && member.userId != nil && *m.userId != *member.userId {
-		return false
-	}
-
-	return true
+	return m.ETag() == other.ETag()
 }

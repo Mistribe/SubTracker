@@ -21,9 +21,6 @@ func NewPatchFamilyCommandHandler(familyRepository family.Repository) *PatchFami
 }
 
 func (h PatchFamilyCommandHandler) Handle(ctx context.Context, cmd PatchFamilyCommand) result.Result[family.Family] {
-	if err := cmd.Family.Validate(); err != nil {
-		return result.Fail[family.Family](err)
-	}
 	famOpt, err := h.repository.GetById(ctx, cmd.Family.Id())
 	if err != nil {
 		return result.Fail[family.Family](err)
@@ -38,7 +35,10 @@ func (h PatchFamilyCommandHandler) Handle(ctx context.Context, cmd PatchFamilyCo
 func (h PatchFamilyCommandHandler) createFamily(
 	ctx context.Context,
 	cmd PatchFamilyCommand) result.Result[family.Family] {
-	if err := h.repository.Save(ctx, &cmd.Family); err != nil {
+	if err := cmd.Family.GetValidationErrors(); err != nil {
+		return result.Fail[family.Family](err)
+	}
+	if err := h.repository.Save(ctx, cmd.Family); err != nil {
 		return result.Fail[family.Family](err)
 	}
 
@@ -53,7 +53,6 @@ func (h PatchFamilyCommandHandler) patchFamily(
 		return result.Fail[family.Family](err)
 	}
 	fam.SetName(cmd.Family.Name())
-	fam.SetHaveJointAccount(cmd.Family.HaveJointAccount())
 	fam.SetUpdatedAt(cmd.Family.UpdatedAt())
 
 	for mbr := range fam.Members().It() {
@@ -80,11 +79,11 @@ func (h PatchFamilyCommandHandler) patchFamily(
 		}
 	}
 
-	if err := fam.Validate(); err != nil {
+	if err := fam.GetValidationErrors(); err != nil {
 		return result.Fail[family.Family](err)
 	}
 
-	if err := h.repository.Save(ctx, &fam); err != nil {
+	if err := h.repository.Save(ctx, fam); err != nil {
 		return result.Fail[family.Family](err)
 	}
 

@@ -12,10 +12,10 @@ import (
 )
 
 type LabelGetAllEndpoint struct {
-	handler core.QueryHandler[query.FindAllQuery, core.PaginatedResponse[label.Label]]
+	handler core.QueryHandler[query.FindAllQuery, core.PaginatedResponse[label.label]]
 }
 
-func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, core.PaginatedResponse[label.Label]]) *LabelGetAllEndpoint {
+func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, core.PaginatedResponse[label.label]]) *LabelGetAllEndpoint {
 	return &LabelGetAllEndpoint{handler: handler}
 }
 
@@ -27,7 +27,7 @@ func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, core.P
 //	@Produce		json
 //	@Param			with_default	query		boolean	false	"Include default labels"
 //	@Param			size			query		integer	false	"Number of items per page"
-//	@Param			page			query		integer	false	"Page number"
+//	@Param			page			query		integer	false	"Offset number"
 //	@Success		200				{object}	paginatedResponseModel[labelModel]
 //	@Failure		400				{object}	httpError
 //	@Router			/labels [get]
@@ -45,7 +45,7 @@ func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
 	r := e.handler.Handle(c, q)
 	handleResponse(c,
 		r,
-		withMapping[core.PaginatedResponse[label.Label]](func(paginatedResult core.PaginatedResponse[label.Label]) any {
+		withMapping[core.PaginatedResponse[label.label]](func(paginatedResult core.PaginatedResponse[label.label]) any {
 			return newPaginatedResponseModel(paginatedResult, newLabelModel)
 		}))
 }

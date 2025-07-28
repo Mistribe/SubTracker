@@ -21,7 +21,7 @@ func NewCreateLabelCommandHandler(repository label.Repository) *CreateLabelComma
 }
 
 func (h CreateLabelCommandHandler) Handle(ctx context.Context, command CreateLabelCommand) result.Result[label.Label] {
-	existingLabelOpt, err := h.repository.Get(ctx, command.Label.Id())
+	existingLabelOpt, err := h.repository.GetById(ctx, command.Label.Id())
 	if err != nil {
 		return result.Fail[label.Label](err)
 	}
@@ -38,8 +38,8 @@ func (h CreateLabelCommandHandler) Handle(ctx context.Context, command CreateLab
 
 func (h CreateLabelCommandHandler) createLabel(
 	ctx context.Context, command CreateLabelCommand) result.Result[label.Label] {
-	r := label.NewLabel(command.Label.Id(),
-		command.Label.OwnerId(),
+	lbl := label.NewLabel(command.Label.Id(),
+		command.Label.Owner(),
 		command.Label.Name(),
 		false,
 		command.Label.Color(),
@@ -47,13 +47,12 @@ func (h CreateLabelCommandHandler) createLabel(
 		command.Label.CreatedAt(),
 	)
 
-	return result.Bind[label.Label, label.Label](r,
-		func(value label.Label) result.Result[label.Label] {
-			// todo make a new label not from input
-			if err := h.repository.Save(ctx, &value); err != nil {
-				return result.Fail[label.Label](err)
-			}
-			return result.Success(value)
-		},
-	)
+	if err := lbl.GetValidationErrors(); err != nil {
+		return result.Fail[label.Label](err)
+	}
+
+	if err := h.repository.Save(ctx, lbl); err != nil {
+		return result.Fail[label.Label](err)
+	}
+	return result.Success(lbl)
 }

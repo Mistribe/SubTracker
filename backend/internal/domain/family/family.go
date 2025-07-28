@@ -1,122 +1,109 @@
 package family
 
 import (
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/pkg/langext/option"
-	"github.com/oleexo/subtracker/pkg/langext/result"
 	"github.com/oleexo/subtracker/pkg/slicesx"
+	"github.com/oleexo/subtracker/pkg/validationx"
 )
 
-type Family struct {
+type Family interface {
+	entity.Entity
+	entity.ETagEntity
+
+	Name() string
+	SetName(name string)
+	OwnerId() string
+	Members() *slicesx.Tracked[Member]
+	AddMember(member Member) error
+	GetMember(id uuid.UUID) Member
+	UpdateMember(member Member) error
+	ContainsMember(id uuid.UUID) bool
+	Equal(family Family) bool
+	GetValidationErrors() validationx.Errors
+}
+type family struct {
 	*entity.Base
 
-	ownerId          string
-	name             string
-	members          *slicesx.Tracked[Member]
-	haveJointAccount bool
+	ownerId string
+	name    string
+	members *slicesx.Tracked[Member]
 }
-
-var ErrDuplicateMember = errors.New("member with the same ID or email already exists")
 
 func NewFamily(
 	id uuid.UUID,
 	ownerId string,
 	name string,
-	haveJointAccount bool,
-	createdAt time.Time,
-	updatedAt time.Time) result.Result[Family] {
-	f := NewFamilyWithoutValidation(id, ownerId, name, haveJointAccount, nil, createdAt, updatedAt, false)
-
-	if err := f.Validate(); err != nil {
-		return result.Fail[Family](err)
-	}
-	return result.Success(f)
-}
-
-func memberUniqueComparer(a Member, b Member) bool {
-	return a.Id() == b.Id()
-}
-
-func memberComparer(a Member, b Member) bool {
-	return a.Equal(b)
-}
-
-func NewFamilyWithoutValidation(
-	id uuid.UUID,
-	ownerId string,
-	name string,
-	haveJointAccount bool,
 	members []Member,
 	createdAt time.Time,
-	updatedAt time.Time,
-	isExists bool) Family {
-	return Family{
-		Base:             entity.NewBase(id, createdAt, updatedAt, true, isExists),
-		ownerId:          ownerId,
-		name:             name,
-		members:          slicesx.NewTracked(members, memberUniqueComparer, memberComparer),
-		haveJointAccount: haveJointAccount,
+	updatedAt time.Time) Family {
+	return &family{
+		Base:    entity.NewBase(id, createdAt, updatedAt, true, false),
+		ownerId: ownerId,
+		name:    name,
+		members: slicesx.NewTracked(members, memberUniqueComparer, memberComparer),
 	}
 }
 
-func (f *Family) Validate() error {
+func (f *family) Validate() error {
+
+	return nil
+}
+
+func (f *family) GetValidationErrors() validationx.Errors {
+	var errors validationx.Errors
+
 	if f.name == "" {
-		return ErrNameRequired
+		errors = append(errors, validationx.NewError("name", "name is empty"))
 	}
 	if len(f.name) < 3 {
-		return ErrNameTooShort
+		errors = append(errors, validationx.NewError("name", "name must be at least 3 characters long"))
 	}
 	if len(f.name) > 100 {
-		return ErrNameTooLong
+		errors = append(errors, validationx.NewError("name", "name cannot be longer than 100 characters"))
 	}
 
 	emailMap := make(map[string]bool)
 	idMap := make(map[uuid.UUID]bool)
 
-	for member := range f.members.It() {
-		if idMap[member.Id()] {
-			return ErrDuplicateMember
+	for mbr := range f.members.It() {
+		if idMap[mbr.Id()] {
+			errors = append(errors, validationx.NewError("members", "duplicate member id"))
 		}
-		idMap[member.Id()] = true
-
-		if err := option.Match(member.Email(), func(email string) error {
-			if emailMap[email] {
-				return ErrDuplicateMember
+		idMap[mbr.Id()] = true
+		if mbr.Email() != nil {
+			if emailMap[*mbr.Email()] {
+				errors = append(errors, validationx.NewError("members", "duplicate member email"))
 			}
-			emailMap[email] = true
-			return nil
-		}, func() error {
-			return nil
-		}); err != nil {
-			return err
+			emailMap[*mbr.Email()] = true
 		}
+
+		errors = append(errors, mbr.GetValidationErrors()...)
+	}
+
+	if errors.HasErrors() {
+		return errors
 	}
 
 	return nil
 }
 
-func (f *Family) HaveJointAccount() bool {
-	return f.haveJointAccount
-}
-
-func (f *Family) Name() string {
+func (f *family) Name() string {
 	return f.name
 }
 
-func (f *Family) OwnerId() string {
+func (f *family) OwnerId() string {
 	return f.ownerId
 }
 
-func (f *Family) Members() *slicesx.Tracked[Member] {
+func (f *family) Members() *slicesx.Tracked[Member] {
 	return f.members
 }
 
-func (f *Family) AddMember(member Member) error {
+func (f *family) AddMember(member Member) error {
 	if f.isDuplicateMember(member) {
 		return ErrDuplicateMember
 	}
@@ -126,29 +113,29 @@ func (f *Family) AddMember(member Member) error {
 	return nil
 }
 
-func (f *Family) isDuplicateMember(member Member) bool {
+func (f *family) isDuplicateMember(member Member) bool {
 	for m := range f.members.It() {
 		if m.Id() == member.Id() {
 			return true
 		}
-		if m.Email().IsSome() && member.Email().IsSome() && m.Email().Value() == member.Email().Value() {
+		if m.Email() != nil && member.Email() != nil && m.Email() == member.Email() {
 			return true
 		}
 	}
 	return false
 }
 
-func (f *Family) GetMember(id uuid.UUID) option.Option[Member] {
+func (f *family) GetMember(id uuid.UUID) Member {
 	for m := range f.members.It() {
 		if m.Id() == id {
-			return option.Some(m)
+			return m
 		}
 	}
 
-	return option.None[Member]()
+	return nil
 }
 
-func (f *Family) UpdateMember(member Member) error {
+func (f *family) UpdateMember(member Member) error {
 	if !f.members.Update(member) {
 		return ErrFamilyMemberNotFound
 
@@ -157,7 +144,7 @@ func (f *Family) UpdateMember(member Member) error {
 	return nil
 }
 
-func (f *Family) ContainsMember(id uuid.UUID) bool {
+func (f *family) ContainsMember(id uuid.UUID) bool {
 	for m := range f.members.It() {
 		if m.Id() == id {
 			return true
@@ -167,52 +154,31 @@ func (f *Family) ContainsMember(id uuid.UUID) bool {
 	return false
 }
 
-func (f *Family) SetHaveJointAccount(haveJointAccount bool) {
-	f.haveJointAccount = haveJointAccount
-	f.SetAsDirty()
-}
-
-func (f *Family) SetName(name string) {
+func (f *family) SetName(name string) {
 	f.name = name
 	f.SetAsDirty()
 }
 
-func (f *Family) Equal(family Family) bool {
-	if !f.Base.Equal(*family.Base) ||
-		f.ownerId != family.ownerId ||
-		f.name != family.name ||
-		f.haveJointAccount != family.haveJointAccount ||
-		f.members.Len() != family.members.Len() {
+func (f *family) Equal(other Family) bool {
+	if other == nil {
 		return false
 	}
 
-	memberMap := make(map[uuid.UUID]Member)
-	for member := range f.members.It() {
-		memberMap[member.Id()] = member
-	}
-
-	for member := range family.members.It() {
-		if existingMember, ok := memberMap[member.Id()]; !ok || !existingMember.Equal(member) {
-			return false
-		}
-	}
-
-	return true
+	return f.ETag() == other.ETag()
 }
 
-func (f *Family) ETagFields() []interface{} {
+func (f *family) ETagFields() []interface{} {
 	fields := []interface{}{
 		f.ownerId,
-		f.haveJointAccount,
 		f.name,
 	}
 
-	for member := range f.members.It() {
-		fields = append(fields, member.ETagFields()...)
+	for mbr := range f.members.It() {
+		fields = append(fields, mbr.ETagFields()...)
 	}
 
 	return fields
 }
-func (f *Family) ETag() string {
+func (f *family) ETag() string {
 	return entity.CalculateETag(f, f.Base)
 }

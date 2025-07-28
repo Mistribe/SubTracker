@@ -23,7 +23,7 @@ type FamilyGetAllEndpoint struct {
 // @Tags			family
 // @Produce		json
 // @Param			size	query		integer	false	"Number of items per page"
-// @Param			page	query		integer	false	"Page number"
+// @Param			page	query		integer	false	"Offset number"
 // @Success		200		{object}	paginatedResponseModel[familyModel]
 // @Failure		400		{object}	httpError
 // @Router			/families [get]

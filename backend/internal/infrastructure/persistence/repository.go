@@ -2,112 +2,43 @@ package persistence
 
 import (
 	"context"
-	"errors"
-	"log/slog"
-	"time"
 
-	"github.com/Oleexo/config-go"
 	"github.com/google/uuid"
-	sloggorm "github.com/orandin/slog-gorm"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+
+	"github.com/oleexo/subtracker/internal/domain/entity"
+	"github.com/oleexo/subtracker/pkg/langext/option"
 )
 
-type BaseModel struct {
-	Id        uuid.UUID `gorm:"primaryKey;type:uuid"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Etag      string
-}
-type Repository struct {
-	db *gorm.DB
+type Repository[TEntity entity.Entity] struct {
+	db *DatabaseContext
 }
 
-func NewRepository(
-	cfg config.Configuration,
-	logger *slog.Logger) *Repository {
-	dsn := cfg.GetString("DATABASE_DSN")
-	//	dsn := "host=localhost user=postgres password=postgres dbname=app port=5432"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: sloggorm.New(
-			sloggorm.WithLogger(logger),
-			sloggorm.WithTraceAll(), // Log all SQL queries
-		),
-	})
-	if err != nil {
-		panic(err)
-	}
-	// Get the underlying SQL database connection
-	sqlDB, err := db.DB()
-	if err != nil {
-		panic(err)
-	}
-
-	// Configure connection pool settings
-	sqlDB.SetMaxOpenConns(25)                  // Maximum number of open connections
-	sqlDB.SetMaxIdleConns(5)                   // Maximum number of idle connections
-	sqlDB.SetConnMaxLifetime(time.Hour)        // Maximum connection lifetime
-	sqlDB.SetConnMaxIdleTime(30 * time.Minute) // Maximum connection idle time
-
-	return &Repository{
-		db: db,
-	}
+func (r Repository[TEntity]) GetById(ctx context.Context, entityId uuid.UUID) (option.Option[TEntity], error) {
+	//TODO implement me
+	panic("implement me")
 }
 
-func (r Repository) GetDB() *gorm.DB {
-	return r.db
+func (r Repository[TEntity]) GetAll(ctx context.Context, f ...entity.QueryParameterFunc) ([]TEntity, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
-func (r Repository) Close() error {
-	if r.db != nil {
-		sqlDB, err := r.db.DB()
-		if err != nil {
-			return err
-		}
-		return sqlDB.Close()
-	}
-	return nil
+func (r Repository[TEntity]) GetAllCount(ctx context.Context) (int64, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
-func (r Repository) Ping() error {
-	if r.db != nil {
-		sqlDB, err := r.db.DB()
-		if err != nil {
-			return err
-		}
-		return sqlDB.Ping()
-	}
-	return errors.New("database connection is nil")
+func (r Repository[TEntity]) Save(ctx context.Context, entity TEntity) error {
+	//TODO implement me
+	panic("implement me")
 }
 
-type RepositoryTask struct {
-	repository *Repository
+func (r Repository[TEntity]) Delete(ctx context.Context, entityId uuid.UUID) (bool, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
-func (r RepositoryTask) Priority() int {
-	return -1
-}
-
-func newRepositoryTask(repository *Repository) *RepositoryTask {
-	return &RepositoryTask{repository: repository}
-}
-
-func (r RepositoryTask) OnStart(_ context.Context) error {
-	if err := r.repository.db.AutoMigrate(
-		&subscriptionModel{},
-		&labelModel{},
-		&familyMemberModel{},
-		&familyModel{},
-		&subscriptionPaymentModel{},
-		&subscriptionFamilyMemberModel{},
-		&subscriptionLabelModel{},
-	); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (r RepositoryTask) OnStop(_ context.Context) error {
-	return r.repository.Close()
+func (r Repository[TEntity]) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
+	//TODO implement me
+	panic("implement me")
 }

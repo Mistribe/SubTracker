@@ -8,10 +8,13 @@ import (
 	fmlyQuery "github.com/oleexo/subtracker/internal/application/family/query"
 	lblCommand "github.com/oleexo/subtracker/internal/application/label/command"
 	lblQuery "github.com/oleexo/subtracker/internal/application/label/query"
+	proCommand "github.com/oleexo/subtracker/internal/application/provider/command"
+	proQuery "github.com/oleexo/subtracker/internal/application/provider/query"
 	subCommand "github.com/oleexo/subtracker/internal/application/subscription/command"
 	subQuery "github.com/oleexo/subtracker/internal/application/subscription/query"
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/internal/domain/label"
+	"github.com/oleexo/subtracker/internal/domain/provider"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
@@ -31,6 +34,12 @@ func AsQueryHandler[TQuery core.Query, TResult any](f any) any {
 func BuildApplicationModule() fx.Option {
 	return fx.Module("application",
 		fx.Provide(
+			AsQueryHandler[proQuery.FindOneQuery, provider.Provider](proQuery.NewFindOneQueryHandler),
+			AsQueryHandler[proQuery.FindAllQuery, core.PaginatedResponse[provider.Provider]](proQuery.NewFindAllQueryHandler),
+			AsCommandHandler[proCommand.CreateCommand, provider.Provider](proCommand.NewCreateCommandHandler),
+			AsCommandHandler[proCommand.UpdateCommand, provider.Provider](proCommand.NewUpdateCommandHandler),
+			AsCommandHandler[proCommand.DeleteCommand, result.Unit](proCommand.NewDeleteCommandHandler),
+
 			AsQueryHandler[subQuery.FindOneQuery, subscription.Subscription](subQuery.NewFindOneQueryHandler),
 			AsQueryHandler[subQuery.FindAllQuery, core.PaginatedResponse[subscription.Subscription]](subQuery.NewFindAllQueryHandler),
 
@@ -42,12 +51,12 @@ func BuildApplicationModule() fx.Option {
 			AsCommandHandler[subCommand.UpdatePaymentCommand, subscription.Subscription](subCommand.NewUpdatePaymentCommandHandler),
 			AsCommandHandler[subCommand.DeletePaymentCommand, result.Unit](subCommand.NewDeletePaymentCommandHandler),
 
-			AsQueryHandler[lblQuery.FindAllQuery, core.PaginatedResponse[label.Label]](lblQuery.NewFindAllQueryHandler),
-			AsQueryHandler[lblQuery.FindOneQuery, label.Label](lblQuery.NewFindOneQueryHandler),
-			AsQueryHandler[lblQuery.DefaultLabelQuery, []label.Label](lblQuery.NewDefaultLabelQueryHandler),
+			AsQueryHandler[lblQuery.FindAllQuery, core.PaginatedResponse[label.label]](lblQuery.NewFindAllQueryHandler),
+			AsQueryHandler[lblQuery.FindOneQuery, label.label](lblQuery.NewFindOneQueryHandler),
+			AsQueryHandler[lblQuery.DefaultLabelQuery, []label.label](lblQuery.NewDefaultLabelQueryHandler),
 
-			AsCommandHandler[lblCommand.CreateLabelCommand, label.Label](lblCommand.NewCreateLabelCommandHandler),
-			AsCommandHandler[lblCommand.UpdateLabelCommand, label.Label](lblCommand.NewUpdateLabelCommandHandler),
+			AsCommandHandler[lblCommand.CreateLabelCommand, label.label](lblCommand.NewCreateLabelCommandHandler),
+			AsCommandHandler[lblCommand.UpdateLabelCommand, label.label](lblCommand.NewUpdateLabelCommandHandler),
 			AsCommandHandler[lblCommand.DeleteLabelCommand, result.Unit](lblCommand.NewDeleteLabelCommandHandler),
 
 			AsQueryHandler[fmlyQuery.FindAllQuery, core.PaginatedResponse[family.Family]](fmlyQuery.NewFindAllQueryHandler),

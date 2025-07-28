@@ -81,7 +81,14 @@ func (d *Tracked[T]) Updated() iter.Seq[T] {
 func (d *Tracked[T]) Clear() {
 	d._added = nil
 	d._removed = nil
+	d._updated = nil
 	d._values = nil
+}
+
+func (d *Tracked[T]) ClearChanges() {
+	d._added = nil
+	d._removed = nil
+	d._updated = nil
 }
 
 func (d *Tracked[T]) Len() int {

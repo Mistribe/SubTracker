@@ -10,34 +10,23 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/pkg/ext"
 	"github.com/oleexo/subtracker/pkg/langext/option"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 type subscriptionLabelModel struct {
-	LabelId      uuid.UUID         `gorm:"primaryKey;type:uuid;not null"`
-	Label        labelModel        `gorm:"foreignKey:LabelId;references:Id"`
-	SubId        uuid.UUID         `gorm:"primaryKey;type:uuid;not null"`
-	Subscription subscriptionModel `gorm:"foreignKey:SubId;references:Id"`
+	LabelId      uuid.UUID            `gorm:"primaryKey;type:uuid;not null"`
+	Label        labelSqlModel        `gorm:"foreignKey:LabelId;references:Id"`
+	SubId        uuid.UUID            `gorm:"primaryKey;type:uuid;not null"`
+	Subscription subscriptionSqlModel `gorm:"foreignKey:SubscriptionId;references:Id"`
 }
 
 func (s subscriptionLabelModel) TableName() string {
 	return "subscription_labels"
 }
 
-type subscriptionFamilyMemberModel struct {
-	FamilyMemberId uuid.UUID         `gorm:"primaryKey;type:uuid;not null"`
-	FamilyMember   familyMemberModel `gorm:"foreignKey:FamilyMemberId;references:Id"`
-	SubId          uuid.UUID         `gorm:"primaryKey;type:uuid;not null"`
-	Subscription   subscriptionModel `gorm:"foreignKey:SubId;references:Id"`
-}
-
-func (s subscriptionFamilyMemberModel) TableName() string {
-	return "subscription_family_members"
-}
-
 type subscriptionPaymentModel struct {
-	BaseModel
+	baseSqlModel
 	SubId     uuid.UUID  `gorm:"type:uuid;not null"`
 	Price     float64    `gorm:"type:numeric(10,2);not null"`
 	StartDate time.Time  `gorm:"type:timestamp;not null"`
@@ -50,28 +39,11 @@ func (s subscriptionPaymentModel) TableName() string {
 	return "subscription_payments"
 }
 
-type subscriptionModel struct {
-	BaseModel
-	Name                string                          `gorm:"type:varchar(100);not null"`
-	Payments            []subscriptionPaymentModel      `gorm:"foreignKey:SubId;references:Id;constraint:OnDelete:CASCADE"`
-	Labels              []subscriptionLabelModel        `gorm:"foreignKey:SubId;references:Id;constraint:OnDelete:CASCADE"`
-	FamilyMembers       []subscriptionFamilyMemberModel `gorm:"foreignKey:SubId;references:Id;constraint:OnDelete:CASCADE"`
-	PayerId             *uuid.UUID                      `gorm:"type:uuid"`
-	Payer               *familyMemberModel              `gorm:"foreignKey:PayerId;references:Id"`
-	PayedByJointAccount bool                            `gorm:"type:boolean;not null;default:false"`
-	FamilyId            *uuid.UUID                      `gorm:"type:uuid"`
-	Family              *familyModel                    `gorm:"foreignKey:FamilyId;references:Id"`
-}
-
-func (s subscriptionModel) TableName() string {
-	return "subscriptions"
-}
-
 type SubscriptionRepository struct {
-	repository *Repository
+	repository *DatabaseContext
 }
 
-func NewSubscriptionRepository(repository *Repository) *SubscriptionRepository {
+func NewSubscriptionRepository(repository *DatabaseContext) *SubscriptionRepository {
 	return &SubscriptionRepository{
 		repository: repository,
 	}
@@ -79,7 +51,7 @@ func NewSubscriptionRepository(repository *Repository) *SubscriptionRepository {
 
 func (r SubscriptionRepository) toPaymentModel(source subscription.Payment) subscriptionPaymentModel {
 	return subscriptionPaymentModel{
-		BaseModel: BaseModel{
+		baseSqlModel: baseSqlModel{
 			Id:        source.Id(),
 			CreatedAt: source.CreatedAt(),
 			UpdatedAt: source.UpdatedAt(),
@@ -98,9 +70,9 @@ func (r SubscriptionRepository) toPaymentModel(source subscription.Payment) subs
 	}
 }
 
-func (r SubscriptionRepository) toModel(source *subscription.Subscription) subscriptionModel {
-	return subscriptionModel{
-		BaseModel: BaseModel{
+func (r SubscriptionRepository) toModel(source *subscription.Subscription) subscriptionSqlModel {
+	return subscriptionSqlModel{
+		baseSqlModel: baseSqlModel{
 			Id:        source.Id(),
 			CreatedAt: source.CreatedAt(),
 			UpdatedAt: source.UpdatedAt(),
@@ -124,8 +96,8 @@ func (r SubscriptionRepository) toModel(source *subscription.Subscription) subsc
 	}
 }
 
-func (r SubscriptionRepository) toEntity(source subscriptionModel) subscription.Subscription {
-	payments := ext.Map(source.Payments, func(source subscriptionPaymentModel) subscription.Payment {
+func (r SubscriptionRepository) toEntity(source subscriptionSqlModel) subscription.Subscription {
+	payments := slicesx.Map(source.Payments, func(source subscriptionPaymentModel) subscription.Payment {
 		return subscription.NewPaymentWithoutValidation(
 			source.Id,
 			source.Price,
@@ -139,10 +111,10 @@ func (r SubscriptionRepository) toEntity(source subscriptionModel) subscription.
 			true,
 		)
 	})
-	labels := ext.Map(source.Labels, func(source subscriptionLabelModel) uuid.UUID {
+	labels := slicesx.Map(source.Labels, func(source subscriptionLabelModel) uuid.UUID {
 		return source.LabelId
 	})
-	familyMembers := ext.Map(source.FamilyMembers, func(source subscriptionFamilyMemberModel) uuid.UUID {
+	familyMembers := slicesx.Map(source.FamilyMembers, func(source subscriptionServiceUserModel) uuid.UUID {
 		return source.FamilyMemberId
 	})
 	sub := subscription.NewSubscriptionWithoutValidation(
@@ -165,7 +137,7 @@ func (r SubscriptionRepository) toEntity(source subscriptionModel) subscription.
 func (r SubscriptionRepository) Get(ctx context.Context, id uuid.UUID) (
 	option.Option[subscription.Subscription],
 	error) {
-	var model subscriptionModel
+	var model subscriptionSqlModel
 	result := r.repository.db.WithContext(ctx).
 		Preload("Payments").
 		Preload("Labels").
@@ -181,7 +153,7 @@ func (r SubscriptionRepository) Get(ctx context.Context, id uuid.UUID) (
 }
 
 func (r SubscriptionRepository) GetAll(ctx context.Context, size, page int) ([]subscription.Subscription, error) {
-	var models []subscriptionModel
+	var models []subscriptionSqlModel
 	if result := r.repository.db.WithContext(ctx).
 		Preload("Payments").
 		Preload("Labels").
@@ -201,7 +173,7 @@ func (r SubscriptionRepository) GetAll(ctx context.Context, size, page int) ([]s
 func (r SubscriptionRepository) GetAllCount(ctx context.Context) (int64, error) {
 	var count int64
 	if result := r.repository.db.WithContext(ctx).
-		Model(&subscriptionModel{}).
+		Model(&subscriptionSqlModel{}).
 		Count(&count); result.Error != nil {
 		return 0, result.Error
 	}
@@ -364,9 +336,9 @@ func (r SubscriptionRepository) createSubscriptionFamilyMember(
 	ctx context.Context,
 	subscriptionId uuid.UUID,
 	familyMemberId uuid.UUID) error {
-	dbFamilyMemberLink := subscriptionFamilyMemberModel{
+	dbFamilyMemberLink := subscriptionServiceUserModel{
 		FamilyMemberId: familyMemberId,
-		SubId:          subscriptionId,
+		SubscriptionId: subscriptionId,
 	}
 
 	if result := r.repository.db.WithContext(ctx).Create(&dbFamilyMemberLink); result.Error != nil {
@@ -379,9 +351,9 @@ func (r SubscriptionRepository) updateSubscriptionFamilyMember(
 	ctx context.Context,
 	subscriptionId uuid.UUID,
 	familyMemberId uuid.UUID) error {
-	dbFamilyMemberLink := subscriptionFamilyMemberModel{
+	dbFamilyMemberLink := subscriptionServiceUserModel{
 		FamilyMemberId: familyMemberId,
-		SubId:          subscriptionId,
+		SubscriptionId: subscriptionId,
 	}
 
 	if result := r.repository.db.WithContext(ctx).Save(&dbFamilyMemberLink); result.Error != nil {
@@ -394,9 +366,9 @@ func (r SubscriptionRepository) deleteSubscriptionFamilyMember(
 	ctx context.Context,
 	subscriptionId uuid.UUID,
 	familyMemberId uuid.UUID) error {
-	dbFamilyMemberLink := subscriptionFamilyMemberModel{
+	dbFamilyMemberLink := subscriptionServiceUserModel{
 		FamilyMemberId: familyMemberId,
-		SubId:          subscriptionId,
+		SubscriptionId: subscriptionId,
 	}
 
 	if result := r.repository.db.WithContext(ctx).Delete(&dbFamilyMemberLink); result.Error != nil {
@@ -406,7 +378,7 @@ func (r SubscriptionRepository) deleteSubscriptionFamilyMember(
 }
 
 func (r SubscriptionRepository) Delete(ctx context.Context, subscriptionId uuid.UUID) error {
-	if result := r.repository.db.WithContext(ctx).Delete(&subscriptionModel{}, subscriptionId); result.Error != nil {
+	if result := r.repository.db.WithContext(ctx).Delete(&subscriptionSqlModel{}, subscriptionId); result.Error != nil {
 		return result.Error
 	}
 	return nil

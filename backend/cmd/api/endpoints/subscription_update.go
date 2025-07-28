@@ -10,9 +10,9 @@ import (
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/subscription/command"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/pkg/ext"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 type SubscriptionUpdateEndpoint struct {
@@ -35,12 +35,12 @@ func (m updateSubscriptionModel) Command(id uuid.UUID) result.Result[command.Upd
 	var payer option.Option[uuid.UUID]
 	var err error
 
-	labels, err = ext.MapErr(m.Labels, uuid.Parse)
+	labels, err = slicesx.MapErr(m.Labels, uuid.Parse)
 	if err != nil {
 		return result.Fail[command.UpdateSubscriptionCommand](err)
 	}
 
-	familyMembers, err = ext.MapErr(m.FamilyMembers, uuid.Parse)
+	familyMembers, err = slicesx.MapErr(m.FamilyMembers, uuid.Parse)
 	if err != nil {
 		return result.Fail[command.UpdateSubscriptionCommand](err)
 	}

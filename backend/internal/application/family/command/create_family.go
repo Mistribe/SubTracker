@@ -23,9 +23,6 @@ func NewCreateFamilyCommandHandler(repository family.Repository) *CreateFamilyCo
 }
 
 func (h CreateFamilyCommandHandler) Handle(ctx context.Context, cmd CreateFamilyCommand) result.Result[family.Family] {
-	if err := cmd.Family.Validate(); err != nil {
-		return result.Fail[family.Family](err)
-	}
 	famOpt, err := h.repository.GetById(ctx, cmd.Family.Id())
 	if err != nil {
 		return result.Fail[family.Family](err)
@@ -43,7 +40,10 @@ func (h CreateFamilyCommandHandler) Handle(ctx context.Context, cmd CreateFamily
 func (h CreateFamilyCommandHandler) createFamily(
 	ctx context.Context,
 	cmd CreateFamilyCommand) result.Result[family.Family] {
-	if err := h.repository.Save(ctx, &cmd.Family); err != nil {
+	if err := cmd.Family.GetValidationErrors(); err != nil {
+		return result.Fail[family.Family](err)
+	}
+	if err := h.repository.Save(ctx, cmd.Family); err != nil {
 		return result.Fail[family.Family](err)
 	}
 

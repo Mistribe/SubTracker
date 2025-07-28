@@ -2,7 +2,7 @@ package endpoints
 
 import (
 	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/pkg/ext"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 type paginatedResponseModel[TValue any] struct {
@@ -15,7 +15,7 @@ func newPaginatedResponseModel[TValue any, TOut any](
 	p core.PaginatedResponse[TValue],
 	mapper func(TValue) TOut) paginatedResponseModel[TOut] {
 	return paginatedResponseModel[TOut]{
-		Data:   ext.Map(p.Data(), mapper),
+		Data:   slicesx.Map(p.Data(), mapper),
 		Length: p.Length(),
 		Total:  p.Total(),
 	}

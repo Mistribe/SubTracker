@@ -10,21 +10,15 @@ import (
 
 type FindAllQuery struct {
 	WithDefault bool
-	Size        int
-	Page        int
+	Limit       int
+	Offset      int
 }
 
-func NewFindAllQuery(withDefault bool, size int, page int) FindAllQuery {
-	if size < 0 {
-		size = 10
-	}
-	if page < 1 {
-		page = 1
-	}
+func NewFindAllQuery(withDefault bool, size int, offset int) FindAllQuery {
 	return FindAllQuery{
 		WithDefault: withDefault,
-		Size:        size,
-		Page:        page,
+		Limit:       size,
+		Offset:      offset,
 	}
 }
 
@@ -39,11 +33,12 @@ func NewFindAllQueryHandler(repository label.Repository) *FindAllQueryHandler {
 func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[core.PaginatedResponse[label.Label]] {
-	lbs, err := h.repository.GetAll(ctx, query.Size, query.Page, query.WithDefault)
+	params := label.NewQueryParameters(query.Limit, query.Offset, query.WithDefault)
+	lbs, err := h.repository.GetAll(ctx, params)
 	if err != nil {
 		return result.Fail[core.PaginatedResponse[label.Label]](err)
 	}
-	total, err := h.repository.GetAllCount(ctx, query.WithDefault)
+	total, err := h.repository.GetAllCount(ctx, params)
 	if err != nil {
 		return result.Fail[core.PaginatedResponse[label.Label]](err)
 	}

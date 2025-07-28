@@ -9,6 +9,7 @@ import (
 	"github.com/oleexo/subtracker/cmd/api/middlewares"
 	"github.com/oleexo/subtracker/pkg/ext"
 	"github.com/oleexo/subtracker/pkg/langext/option"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 
 	"github.com/gin-gonic/gin"
 
@@ -105,9 +106,9 @@ func newSubscriptionModel(source subscription.Subscription) subscriptionModel {
 	return subscriptionModel{
 		Id:                  source.Id().String(),
 		Name:                source.Name(),
-		Payments:            ext.Map(source.Payments().Values(), newPaymentModel),
-		Labels:              ext.Map(source.Labels().Values(), ext.UuidToString),
-		FamilyMembers:       ext.Map(source.FamilyMembers().Values(), ext.UuidToString),
+		Payments:            slicesx.Map(source.Payments().Values(), newPaymentModel),
+		Labels:              slicesx.Map(source.Labels().Values(), ext.UuidToString),
+		FamilyMembers:       slicesx.Map(source.FamilyMembers().Values(), ext.UuidToString),
 		PayerId:             option.Map[uuid.UUID, string](source.Payer(), ext.UuidToString).Value(),
 		FamilyId:            option.Map[uuid.UUID, string](source.FamilyId(), ext.UuidToString).Value(),
 		PayedByJointAccount: source.PayedByJointAccount(),

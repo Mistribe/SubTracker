@@ -7,6 +7,8 @@ import (
 )
 
 type Entity interface {
+	ETagEntity
+
 	Id() uuid.UUID
 	CreatedAt() time.Time
 	UpdatedAt() time.Time
@@ -15,7 +17,6 @@ type Entity interface {
 	SetUpdatedAt(updatedAt time.Time)
 	SetAsDirty()
 	IsExists() bool
-	Equal(other Base) bool
 }
 
 type ETagEntity interface {

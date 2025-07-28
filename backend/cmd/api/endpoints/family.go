@@ -95,7 +95,7 @@ type familyMemberModel struct {
 	Etag      string    `json:"etag" binding:"required"`
 }
 
-func newFamilyMemberModel(source family.Member) familyMemberModel {
+func newFamilyMemberModel(source family.member) familyMemberModel {
 	return familyMemberModel{
 		Id:        source.Id().String(),
 		Name:      source.Name(),

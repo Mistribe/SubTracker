@@ -53,7 +53,6 @@ func (h *updateFamilyCommandHandler) updateFamily(
 		return result.Fail[family.Family](err)
 	}
 	fam.SetName(cmd.Name)
-	fam.SetHaveJointAccount(cmd.HaveJointAccount)
 
 	cmd.UpdatedAt.IfSome(func(updatedAt time.Time) {
 		fam.SetUpdatedAt(updatedAt)
@@ -62,11 +61,11 @@ func (h *updateFamilyCommandHandler) updateFamily(
 		fam.SetUpdatedAt(time.Now())
 	})
 
-	if err := fam.Validate(); err != nil {
+	if err := fam.GetValidationErrors(); err != nil {
 		return result.Fail[family.Family](err)
 	}
 
-	if err := h.repository.Save(ctx, &fam); err != nil {
+	if err := h.repository.Save(ctx, fam); err != nil {
 		return result.Fail[family.Family](err)
 	}
 

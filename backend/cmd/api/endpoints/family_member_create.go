@@ -28,18 +28,18 @@ type createFamilyMemberModel struct {
 	CreatedAt *time.Time `json:"created_at,omitempty" format:"date-time"`
 }
 
-func (m createFamilyMemberModel) ToFamilyMember(familyId uuid.UUID) result.Result[family.Member] {
+func (m createFamilyMemberModel) ToFamilyMember(familyId uuid.UUID) result.Result[family.member] {
 	var id uuid.UUID
 	var err error
 	var createdAt time.Time
 	id, err = parseUuidOrNew(m.Id)
 	if err != nil {
-		return result.Fail[family.Member](err)
+		return result.Fail[family.member](err)
 	}
 
 	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
 
-	return result.Success(family.NewMemberWithoutValidation(
+	return result.Success(family.NewMember(
 		id,
 		familyId,
 		m.Name,
@@ -52,9 +52,9 @@ func (m createFamilyMemberModel) ToFamilyMember(familyId uuid.UUID) result.Resul
 }
 
 func (m createFamilyMemberModel) Command(familyId uuid.UUID) result.Result[command.CreateFamilyMemberCommand] {
-	return result.Bind[family.Member, command.CreateFamilyMemberCommand](
+	return result.Bind[family.member, command.CreateFamilyMemberCommand](
 		m.ToFamilyMember(familyId),
-		func(fm family.Member) result.Result[command.CreateFamilyMemberCommand] {
+		func(fm family.member) result.Result[command.CreateFamilyMemberCommand] {
 			return result.Success(command.CreateFamilyMemberCommand{
 				Member: fm,
 			})

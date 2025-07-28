@@ -1,4 +1,4 @@
-package ext
+package slicesx
 
 func Map[TIn any, TOut any](source []TIn, f func(TIn) TOut) []TOut {
 	result := make([]TOut, len(source))
@@ -18,4 +18,12 @@ func MapErr[TIn any, TOut any](source []TIn, f func(TIn) (TOut, error)) ([]TOut,
 		result[i] = r
 	}
 	return result, nil
+}
+
+func SelectMany[TIn any, TOut any](source []TIn, f func(TIn) []TOut) []TOut {
+	result := make([]TOut, 0)
+	for _, v := range source {
+		result = append(result, f(v)...)
+	}
+	return result
 }

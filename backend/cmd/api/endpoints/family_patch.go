@@ -13,6 +13,7 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/ext"
 	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 type FamilyPatchEndpoint struct {
@@ -27,7 +28,7 @@ func NewFamilyPatchEndpoint(handler core.CommandHandler[command.PatchFamilyComma
 type patchFamilyMemberModel struct {
 	// Optional member ID. If not provided, new member will be created
 	Id *string `json:"id,omitempty"`
-	// Member's name
+	// member's name
 	Name string `json:"name" binding:"required"`
 	// Optional email address
 	Email *string `json:"email,omitempty"`
@@ -37,17 +38,17 @@ type patchFamilyMemberModel struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
-func (m patchFamilyMemberModel) Command(familyId uuid.UUID) (family.Member, error) {
+func (m patchFamilyMemberModel) Command(familyId uuid.UUID) (family.member, error) {
 	var id uuid.UUID
 	var err error
 
 	id, err = parseUuidOrNew(m.Id)
 	if err != nil {
-		return family.Member{}, err
+		return family.member{}, err
 	}
 	updatedAt := ext.ValueOrDefault(m.UpdatedAt, time.Now())
 
-	return family.NewMemberWithoutValidation(
+	return family.NewMember(
 		id,
 		familyId,
 		m.Name,
@@ -80,7 +81,7 @@ func (m patchFamilyModel) Command(ownerId string) result.Result[command.PatchFam
 		return result.Fail[command.PatchFamilyCommand](err)
 	}
 	updatedAt := ext.ValueOrDefault(m.UpdatedAt, time.Now())
-	members, err := ext.MapErr(m.Members, func(member patchFamilyMemberModel) (family.Member, error) {
+	members, err := slicesx.MapErr(m.Members, func(member patchFamilyMemberModel) (family.member, error) {
 		return member.Command(familyId)
 	})
 	if err != nil {

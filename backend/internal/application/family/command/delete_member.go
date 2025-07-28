@@ -26,36 +26,36 @@ func NewDeleteFamilyMemberCommandHandler(repository family.Repository) *DeleteFa
 
 func (h DeleteFamilyMemberCommandHandler) Handle(
 	ctx context.Context,
-	command DeleteFamilyMemberCommand) result.Result[result.Unit] {
+	command DeleteFamilyMemberCommand) result.Result[bool] {
 	famOpt, err := h.repository.GetById(ctx, command.FamilyId)
 	if err != nil {
-		return result.Fail[result.Unit](err)
+		return result.Fail[bool](err)
 	}
 
-	return option.Match(famOpt, func(fam family.Family) result.Result[result.Unit] {
+	return option.Match(famOpt, func(fam family.Family) result.Result[bool] {
 		return h.deleteMember(ctx, command, fam)
-	}, func() result.Result[result.Unit] {
-		return result.Fail[result.Unit](family.ErrFamilyNotFound)
+	}, func() result.Result[bool] {
+		return result.Fail[bool](family.ErrFamilyNotFound)
 	})
 }
 
 func (h DeleteFamilyMemberCommandHandler) deleteMember(
 	ctx context.Context, command DeleteFamilyMemberCommand,
-	fam family.Family) result.Result[result.Unit] {
+	fam family.Family) result.Result[bool] {
 	if err := ensureOwnerIsEditor(ctx, fam.OwnerId()); err != nil {
-		return result.Fail[result.Unit](err)
+		return result.Fail[bool](err)
 	}
 	if !fam.ContainsMember(command.Id) {
-		return result.Fail[result.Unit](family.ErrFamilyMemberNotFound)
+		return result.Fail[bool](family.ErrFamilyMemberNotFound)
 	}
 
-	if err := fam.Validate(); err != nil {
-		return result.Fail[result.Unit](err)
+	if err := fam.GetValidationErrors(); err != nil {
+		return result.Fail[bool](err)
 	}
 
-	if err := h.repository.Save(ctx, &fam); err != nil {
-		return result.Fail[result.Unit](err)
+	if err := h.repository.Save(ctx, fam); err != nil {
+		return result.Fail[bool](err)
 	}
 
-	return result.Void()
+	return result.Success(true)
 }

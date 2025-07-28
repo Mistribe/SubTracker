@@ -4,17 +4,18 @@ import (
 	"context"
 
 	"github.com/oleexo/subtracker/internal/application/core"
+	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type FindAllQuery struct {
-	Size int
-	Page int
+	Limit  int
+	Offset int
 }
 
 func NewFindAllQuery(size int, page int) FindAllQuery {
-	return FindAllQuery{Size: size, Page: page}
+	return FindAllQuery{Limit: size, Offset: page}
 }
 
 type FindAllQueryHandler struct {
@@ -28,7 +29,8 @@ func NewFindAllQueryHandler(repository family.Repository) *FindAllQueryHandler {
 func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[core.PaginatedResponse[family.Family]] {
-	families, err := h.repository.GetAll(ctx, query.Size, query.Page)
+	parameters := entity.NewQueryParameters(query.Limit, query.Offset)
+	families, err := h.repository.GetAll(ctx, parameters)
 	if err != nil {
 		return result.Fail[core.PaginatedResponse[family.Family]](err)
 	}

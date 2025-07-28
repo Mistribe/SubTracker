@@ -17,7 +17,7 @@ import (
 )
 
 type LabelCreateEndpoint struct {
-	handler core.CommandHandler[command.CreateLabelCommand, label.Label]
+	handler core.CommandHandler[command.CreateLabelCommand, label.label]
 }
 
 type createLabelModel struct {
@@ -28,14 +28,14 @@ type createLabelModel struct {
 	CreatedAt *time.Time `json:"created_at,omitempty" format:"date-time"`
 }
 
-func (m createLabelModel) ToLabel(userId string) result.Result[label.Label] {
+func (m createLabelModel) ToLabel(userId string) result.Result[label.label] {
 	var id uuid.UUID
 	var err error
 	var createdAt time.Time
 
 	id, err = parseUuidOrNew(m.Id)
 	if err != nil {
-		return result.Fail[label.Label](err)
+		return result.Fail[label.label](err)
 	}
 
 	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
@@ -53,9 +53,9 @@ func (m createLabelModel) ToLabel(userId string) result.Result[label.Label] {
 }
 
 func (m createLabelModel) Command(userId string) result.Result[command.CreateLabelCommand] {
-	return result.Bind[label.Label, command.CreateLabelCommand](
+	return result.Bind[label.label, command.CreateLabelCommand](
 		m.ToLabel(userId),
-		func(lbl label.Label) result.Result[command.CreateLabelCommand] {
+		func(lbl label.label) result.Result[command.CreateLabelCommand] {
 			return result.Success(command.CreateLabelCommand{
 				Label: lbl,
 			})
@@ -68,7 +68,7 @@ func (m createLabelModel) Command(userId string) result.Result[command.CreateLab
 // @Tags			label
 // @Accept			json
 // @Produce		json
-// @Param			label	body		createLabelModel	true	"Label data"
+// @Param			label	body		createLabelModel	true	"label data"
 // @Success		201		{object}	labelModel
 // @Failure		400		{object}	httpError
 // @Router			/labels [post]
@@ -96,8 +96,8 @@ func (l LabelCreateEndpoint) Handle(c *gin.Context) {
 			r := l.handler.Handle(c, cmd)
 			handleResponse(c,
 				r,
-				withStatus[label.Label](http.StatusCreated),
-				withMapping[label.Label](func(lbl label.Label) any {
+				withStatus[label.label](http.StatusCreated),
+				withMapping[label.label](func(lbl label.label) any {
 					return newLabelModel(lbl)
 				}))
 			return result.Unit{}
@@ -124,7 +124,7 @@ func (l LabelCreateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewLabelCreateEndpoint(handler core.CommandHandler[command.CreateLabelCommand, label.Label]) *LabelCreateEndpoint {
+func NewLabelCreateEndpoint(handler core.CommandHandler[command.CreateLabelCommand, label.label]) *LabelCreateEndpoint {
 	return &LabelCreateEndpoint{
 		handler: handler,
 	}

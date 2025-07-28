@@ -23,10 +23,13 @@ func NewDeleteFamilyCommandHandler(repository family.Repository) *DeleteFamilyCo
 
 func (h DeleteFamilyCommandHandler) Handle(
 	ctx context.Context,
-	command DeleteFamilyCommand) result.Result[result.Unit] {
-	err := h.repository.Delete(ctx, command.FamilyId)
+	command DeleteFamilyCommand) result.Result[bool] {
+	ok, err := h.repository.Delete(ctx, command.FamilyId)
 	if err != nil {
-		return result.Fail[result.Unit](err)
+		return result.Fail[bool](err)
 	}
-	return result.Void()
+	if !ok {
+		return result.Fail[bool](family.ErrFamilyNotFound)
+	}
+	return result.Success(true)
 }

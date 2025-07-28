@@ -16,7 +16,7 @@ import (
 )
 
 type LabelUpdateEndpoint struct {
-	handler core.CommandHandler[command.UpdateLabelCommand, label.Label]
+	handler core.CommandHandler[command.UpdateLabelCommand, label.label]
 }
 
 type updateLabelModel struct {
@@ -47,8 +47,8 @@ func (m updateLabelModel) Command(id uuid.UUID) result.Result[command.UpdateLabe
 //	@Tags			label
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path		string				true	"Label ID"
-//	@Param			label	body		updateLabelModel	true	"Label data"
+//	@Param			id		path		string				true	"label ID"
+//	@Param			label	body		updateLabelModel	true	"label data"
 //	@Success		200		{object}	labelModel
 //	@Failure		400		{object}	httpError
 //	@Failure		404		{object}	httpError
@@ -83,7 +83,7 @@ func (l LabelUpdateEndpoint) Handle(c *gin.Context) {
 			r := l.handler.Handle(c, cmd)
 			handleResponse(c,
 				r,
-				withMapping[label.Label](func(lbl label.Label) any {
+				withMapping[label.label](func(lbl label.label) any {
 					return newLabelModel(lbl)
 				}))
 			return result.Unit{}
@@ -110,7 +110,7 @@ func (l LabelUpdateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewLabelUpdateEndpoint(handler core.CommandHandler[command.UpdateLabelCommand, label.Label]) *LabelUpdateEndpoint {
+func NewLabelUpdateEndpoint(handler core.CommandHandler[command.UpdateLabelCommand, label.label]) *LabelUpdateEndpoint {
 	return &LabelUpdateEndpoint{
 		handler: handler,
 	}

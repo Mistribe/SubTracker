@@ -3,29 +3,41 @@ package persistence
 import (
 	"context"
 
+	"gorm.io/gorm"
+
 	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
-func saveTrackedSlice[T comparable](
+func saveTrackedSlice[TEntity comparable, TSqlModel any](
 	ctx context.Context,
-	s *slicesx.Tracked[T],
-	createFunc func(context.Context, T) error,
-	updateFunc func(context.Context, T) error,
-	deleteFunc func(context.Context, T) error,
+	db *gorm.DB,
+	s *slicesx.Tracked[TEntity],
+	mapFunc func(TEntity) TSqlModel,
+	omit ...string,
 ) error {
+	var model TSqlModel
+
+	var addedSqlModels []TSqlModel
 	for add := range s.Added() {
-		if err := createFunc(ctx, add); err != nil {
-			return err
-		}
+		addedSqlModels = append(addedSqlModels, mapFunc(add))
+	}
+	baseRequest := db.WithContext(ctx).Model(&model)
+	if omit != nil && len(omit) > 0 {
+		baseRequest = baseRequest.Omit(omit...)
+	}
+	if err := baseRequest.Create(&addedSqlModels).Error; err != nil {
+		return err
 	}
 	for remove := range s.Removed() {
-		if err := deleteFunc(ctx, remove); err != nil {
+		model = mapFunc(remove)
+		if err := baseRequest.Delete(&model).Error; err != nil {
 			return err
 		}
 	}
 
 	for update := range s.Updated() {
-		if err := updateFunc(ctx, update); err != nil {
+		model = mapFunc(update)
+		if err := baseRequest.Save(&model).Error; err != nil {
 			return err
 		}
 	}

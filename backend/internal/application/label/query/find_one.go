@@ -29,7 +29,7 @@ func NewFindOneQueryHandler(repository label.Repository) *FindOneQueryHandler {
 }
 
 func (h FindOneQueryHandler) Handle(ctx context.Context, query FindOneQuery) result.Result[label.Label] {
-	lb, err := h.repository.Get(ctx, query.ID)
+	lb, err := h.repository.GetById(ctx, query.ID)
 	if err != nil {
 		return result.Fail[label.Label](err)
 	}

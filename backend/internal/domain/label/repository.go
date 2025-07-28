@@ -3,17 +3,28 @@ package label
 import (
 	"context"
 
-	"github.com/google/uuid"
-
-	"github.com/oleexo/subtracker/pkg/langext/option"
+	"github.com/oleexo/subtracker/internal/domain/entity"
 )
 
+type QueryParameters struct {
+	entity.QueryParameters
+
+	WithDefaults bool
+}
+
+func NewQueryParameters(limit, offset int, withDefaults bool) QueryParameters {
+	return QueryParameters{
+		QueryParameters: entity.QueryParameters{
+			Limit:  limit,
+			Offset: offset,
+		}, WithDefaults: withDefaults,
+	}
+}
+
 type Repository interface {
-	Get(ctx context.Context, id uuid.UUID) (option.Option[Label], error)
-	GetAll(ctx context.Context, size int, page int, withDefault bool) ([]Label, error)
+	entity.Repository[Label]
+
 	GetDefaults(ctx context.Context) ([]Label, error)
-	Save(ctx context.Context, label *Label) error
-	Delete(ctx context.Context, id uuid.UUID) error
-	Exists(ctx context.Context, ids ...uuid.UUID) (bool, error)
-	GetAllCount(ctx context.Context, withDefault bool) (int64, error)
+	GetAll(ctx context.Context, parameters QueryParameters) ([]Label, error)
+	GetAllCount(ctx context.Context, parameters QueryParameters) (int64, error)
 }

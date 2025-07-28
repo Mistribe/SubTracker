@@ -174,23 +174,23 @@ func (_c *MockRepository_Exists_Call) RunAndReturn(run func(ctx context.Context,
 }
 
 // Get provides a mock function for the type MockRepository
-func (_mock *MockRepository) Get(ctx context.Context, id uuid.UUID) (option.Option[label.Label], error) {
+func (_mock *MockRepository) Get(ctx context.Context, id uuid.UUID) (option.Option[label.label], error) {
 	ret := _mock.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Get")
 	}
 
-	var r0 option.Option[label.Label]
+	var r0 option.Option[label.label]
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (option.Option[label.Label], error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (option.Option[label.label], error)); ok {
 		return returnFunc(ctx, id)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) option.Option[label.Label]); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) option.Option[label.label]); ok {
 		r0 = returnFunc(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(option.Option[label.Label])
+			r0 = ret.Get(0).(option.Option[label.label])
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
@@ -231,34 +231,34 @@ func (_c *MockRepository_Get_Call) Run(run func(ctx context.Context, id uuid.UUI
 	return _c
 }
 
-func (_c *MockRepository_Get_Call) Return(option1 option.Option[label.Label], err error) *MockRepository_Get_Call {
+func (_c *MockRepository_Get_Call) Return(option1 option.Option[label.label], err error) *MockRepository_Get_Call {
 	_c.Call.Return(option1, err)
 	return _c
 }
 
-func (_c *MockRepository_Get_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (option.Option[label.Label], error)) *MockRepository_Get_Call {
+func (_c *MockRepository_Get_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (option.Option[label.label], error)) *MockRepository_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetAll provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetAll(ctx context.Context) ([]label.Label, error) {
+func (_mock *MockRepository) GetAll(ctx context.Context) ([]label.label, error) {
 	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAll")
 	}
 
-	var r0 []label.Label
+	var r0 []label.label
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]label.Label, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]label.label, error)); ok {
 		return returnFunc(ctx)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) []label.Label); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) []label.label); ok {
 		r0 = returnFunc(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]label.Label)
+			r0 = ret.Get(0).([]label.label)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
@@ -293,18 +293,18 @@ func (_c *MockRepository_GetAll_Call) Run(run func(ctx context.Context)) *MockRe
 	return _c
 }
 
-func (_c *MockRepository_GetAll_Call) Return(labels []label.Label, err error) *MockRepository_GetAll_Call {
+func (_c *MockRepository_GetAll_Call) Return(labels []label.label, err error) *MockRepository_GetAll_Call {
 	_c.Call.Return(labels, err)
 	return _c
 }
 
-func (_c *MockRepository_GetAll_Call) RunAndReturn(run func(ctx context.Context) ([]label.Label, error)) *MockRepository_GetAll_Call {
+func (_c *MockRepository_GetAll_Call) RunAndReturn(run func(ctx context.Context) ([]label.label, error)) *MockRepository_GetAll_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Save provides a mock function for the type MockRepository
-func (_mock *MockRepository) Save(ctx context.Context, label1 label.Label) error {
+func (_mock *MockRepository) Save(ctx context.Context, label1 label.label) error {
 	ret := _mock.Called(ctx, label1)
 
 	if len(ret) == 0 {
@@ -312,7 +312,7 @@ func (_mock *MockRepository) Save(ctx context.Context, label1 label.Label) error
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, label.Label) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, label.label) error); ok {
 		r0 = returnFunc(ctx, label1)
 	} else {
 		r0 = ret.Error(0)
@@ -327,20 +327,20 @@ type MockRepository_Save_Call struct {
 
 // Save is a helper method to define mock.On call
 //   - ctx context.Context
-//   - label1 label.Label
+//   - label1 label.label
 func (_e *MockRepository_Expecter) Save(ctx interface{}, label1 interface{}) *MockRepository_Save_Call {
 	return &MockRepository_Save_Call{Call: _e.mock.On("Save", ctx, label1)}
 }
 
-func (_c *MockRepository_Save_Call) Run(run func(ctx context.Context, label1 label.Label)) *MockRepository_Save_Call {
+func (_c *MockRepository_Save_Call) Run(run func(ctx context.Context, label1 label.label)) *MockRepository_Save_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 label.Label
+		var arg1 label.label
 		if args[1] != nil {
-			arg1 = args[1].(label.Label)
+			arg1 = args[1].(label.label)
 		}
 		run(
 			arg0,
@@ -355,7 +355,7 @@ func (_c *MockRepository_Save_Call) Return(err error) *MockRepository_Save_Call 
 	return _c
 }
 
-func (_c *MockRepository_Save_Call) RunAndReturn(run func(ctx context.Context, label1 label.Label) error) *MockRepository_Save_Call {
+func (_c *MockRepository_Save_Call) RunAndReturn(run func(ctx context.Context, label1 label.label) error) *MockRepository_Save_Call {
 	_c.Call.Return(run)
 	return _c
 }

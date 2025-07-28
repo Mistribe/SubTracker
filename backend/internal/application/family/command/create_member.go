@@ -3,13 +3,16 @@ package command
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type CreateFamilyMemberCommand struct {
-	Member family.Member
+	FamilyId uuid.UUID
+	Member   family.Member
 }
 
 type CreateFamilyMemberCommandHandler struct {
@@ -23,10 +26,7 @@ func NewCreateFamilyMemberCommandHandler(repository family.Repository) *CreateFa
 func (h CreateFamilyMemberCommandHandler) Handle(
 	ctx context.Context,
 	command CreateFamilyMemberCommand) result.Result[family.Family] {
-	if err := command.Member.Validate(); err != nil {
-		return result.Fail[family.Family](err)
-	}
-	famOpt, err := h.repository.GetById(ctx, command.Member.FamilyId())
+	famOpt, err := h.repository.GetById(ctx, command.FamilyId)
 	if err != nil {
 		return result.Fail[family.Family](err)
 	}
@@ -48,11 +48,11 @@ func (h CreateFamilyMemberCommandHandler) addFamilyMemberToFamily(
 		return result.Success(fam)
 	}
 
-	if err := fam.Validate(); err != nil {
+	if err := fam.GetValidationErrors(); err != nil {
 		return result.Fail[family.Family](err)
 	}
 
-	if err := h.repository.Save(ctx, &fam); err != nil {
+	if err := h.repository.Save(ctx, fam); err != nil {
 		return result.Fail[family.Family](err)
 	}
 

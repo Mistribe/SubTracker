@@ -15,6 +15,7 @@ import (
 	"github.com/oleexo/subtracker/pkg/ext"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 type SubscriptionPatchEndpoint struct {
@@ -89,11 +90,11 @@ func (m patchSubscriptionModel) Command() result.Result[command.PatchSubscriptio
 	if err != nil {
 		return result.Fail[command.PatchSubscriptionCommand](err)
 	}
-	labels, err = ext.MapErr(m.Labels, uuid.Parse)
+	labels, err = slicesx.MapErr(m.Labels, uuid.Parse)
 	if err != nil {
 		return result.Fail[command.PatchSubscriptionCommand](err)
 	}
-	familyMembers, err = ext.MapErr(m.FamilyMembers, uuid.Parse)
+	familyMembers, err = slicesx.MapErr(m.FamilyMembers, uuid.Parse)
 	if err != nil {
 		return result.Fail[command.PatchSubscriptionCommand](err)
 	}
@@ -106,9 +107,10 @@ func (m patchSubscriptionModel) Command() result.Result[command.PatchSubscriptio
 	if err != nil {
 		return result.Fail[command.PatchSubscriptionCommand](err)
 	}
-	payments, err := ext.MapErr(m.Payments, func(value patchSubscriptionPaymentModel) (subscription.Payment, error) {
-		return value.ToPayment(id)
-	})
+	payments, err := slicesx.MapErr(m.Payments,
+		func(value patchSubscriptionPaymentModel) (subscription.Payment, error) {
+			return value.ToPayment(id)
+		})
 	if err != nil {
 		return result.Fail[command.PatchSubscriptionCommand](err)
 	}

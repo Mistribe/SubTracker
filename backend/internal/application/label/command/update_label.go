@@ -27,7 +27,7 @@ func NewUpdateLabelCommandHandler(repository label.Repository) *UpdateLabelComma
 }
 
 func (h UpdateLabelCommandHandler) Handle(ctx context.Context, command UpdateLabelCommand) result.Result[label.Label] {
-	labelOpt, err := h.repository.Get(ctx, command.Id)
+	labelOpt, err := h.repository.GetById(ctx, command.Id)
 	if err != nil {
 		return result.Fail[label.Label](err)
 	}
@@ -52,11 +52,11 @@ func (h UpdateLabelCommandHandler) updateLabel(
 		lbl.SetUpdatedAt(time.Now())
 	})
 
-	if err := lbl.Validate(); err != nil {
+	if err := lbl.GetValidationErrors(); err != nil {
 		return result.Fail[label.Label](err)
 	}
 
-	if err := h.repository.Save(ctx, &lbl); err != nil {
+	if err := h.repository.Save(ctx, lbl); err != nil {
 		return result.Fail[label.Label](err)
 	}
 
