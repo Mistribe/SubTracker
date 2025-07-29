@@ -41,6 +41,7 @@ func BuildApplicationModule() fx.Option {
 			AsCommandHandler[proCommand.UpdateProviderCommand, provider.Provider](proCommand.NewUpdateProviderCommandHandler),
 			AsCommandHandler[proCommand.UpdatePlanCommand, provider.Plan](proCommand.NewUpdatePlanCommandHandler),
 			AsCommandHandler[proCommand.UpdatePriceCommand, provider.Price](proCommand.NewUpdatePriceCommandHandler),
+			AsCommandHandler[proCommand.PatchProviderCommand, provider.Provider](proCommand.NewPatchProviderCommandHandler),
 			AsCommandHandler[proCommand.DeleteProviderCommand, bool](proCommand.NewDeleteProviderCommandHandler),
 			AsCommandHandler[proCommand.DeletePlanCommand, bool](proCommand.NewDeletePlanCommandHandler),
 			AsCommandHandler[proCommand.DeletePriceCommand, bool](proCommand.NewDeletePriceCommandHandler),
