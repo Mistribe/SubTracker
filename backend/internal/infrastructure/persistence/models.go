@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -8,22 +9,22 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/entity"
 )
 
-type baseSqlModel struct {
-	Id        uuid.UUID `gorm:"primaryKey;type:uuid"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Etag      string
+type BaseSqlModel struct {
+	Id        uuid.UUID `gorm:"primaryKey;type:uuid;not null"`
+	CreatedAt time.Time `gorm:"not null"`
+	UpdatedAt time.Time `gorm:"not null"`
+	Etag      string    `gorm:"not null;uniqueIndex:idx_etag"`
 }
 
-type baseOwnerSqlModel struct {
+type BaseOwnerSqlModel struct {
 	OwnerType     string          `gorm:"type:varchar(20);not null"`
 	OwnerFamilyId *uuid.UUID      `gorm:"type:uuid"`
-	OwnerFamily   *familySqlModel `gorm:"foreignKey:OwnerFamilyId;references:Id"`
-	OwnerUserId   *string         `gorm:"type:varchar(20);not null"`
+	OwnerFamily   *FamilySqlModel `gorm:"foreignKey:OwnerFamilyId;references:Id"`
+	OwnerUserId   sql.NullString  `gorm:"type:varchar(20)"`
 }
 
-func newBaseSqlModel(entity entity.Entity) baseSqlModel {
-	return baseSqlModel{
+func newBaseSqlModel(entity entity.Entity) BaseSqlModel {
+	return BaseSqlModel{
 		Id:        entity.Id(),
 		CreatedAt: entity.CreatedAt(),
 		UpdatedAt: entity.UpdatedAt(),

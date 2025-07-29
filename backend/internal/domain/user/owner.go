@@ -25,6 +25,8 @@ func ParseOwnerType(input string) (OwnerType, error) {
 		return PersonalOwner, nil
 	case string(FamilyOwner):
 		return FamilyOwner, nil
+	case string(SystemOwner):
+		return SystemOwner, nil
 	default:
 		return UnknownOwner, ErrUnknownOwnerType
 	}

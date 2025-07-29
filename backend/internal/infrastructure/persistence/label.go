@@ -22,7 +22,7 @@ func NewLabelRepository(repository *DatabaseContext) *LabelRepository {
 }
 
 func (r LabelRepository) GetById(ctx context.Context, labelId uuid.UUID) (label.Label, error) {
-	var model labelSqlModel
+	var model LabelSqlModel
 	if err := r.repository.db.WithContext(ctx).First(&model, labelId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -39,7 +39,7 @@ func (r LabelRepository) GetAll(ctx context.Context, parameters label.QueryParam
 	if !ok {
 		return nil, nil
 	}
-	var labels []labelSqlModel
+	var labels []LabelSqlModel
 	query := r.repository.db.WithContext(ctx)
 
 	if parameters.WithDefaults {
@@ -70,8 +70,8 @@ func (r LabelRepository) GetAllCount(ctx context.Context, parameters label.Query
 	if !ok {
 		return 0, nil
 	}
-	var labels []labelSqlModel
-	query := r.repository.db.WithContext(ctx).Model(&labelSqlModel{})
+	var labels []LabelSqlModel
+	query := r.repository.db.WithContext(ctx).Model(&LabelSqlModel{})
 
 	if parameters.WithDefaults {
 		query = query.Where("owner_id = ? OR (owner_id is null AND is_default = ?)", userId, true)
@@ -90,17 +90,19 @@ func (r LabelRepository) GetAllCount(ctx context.Context, parameters label.Query
 }
 
 func (r LabelRepository) GetDefaults(ctx context.Context) ([]label.Label, error) {
-	var labels []labelSqlModel
-	if result := r.repository.db.WithContext(ctx).Where("is_default = ?", true).Find(&labels); result.Error != nil {
+	var labelModels []LabelSqlModel
+	query := r.repository.db.WithContext(ctx).Where("owner_type = ?", user.SystemOwner)
+	result := query.Find(&labelModels)
+	if result.Error != nil {
 		return nil, result.Error
 	}
-	result := make([]label.Label, 0, len(labels))
-	for _, model := range labels {
+	labels := make([]label.Label, 0, len(labelModels))
+	for _, model := range labelModels {
 		lbl := newLabel(model)
 		lbl.Clean()
-		result = append(result)
+		labels = append(labels, lbl)
 	}
-	return result, nil
+	return labels, nil
 }
 
 func (r LabelRepository) Save(ctx context.Context, lbl label.Label) error {
@@ -133,7 +135,7 @@ func (r LabelRepository) update(ctx context.Context, lbl label.Label) error {
 }
 
 func (r LabelRepository) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
-	result := r.repository.db.WithContext(ctx).Delete(&labelSqlModel{}, id)
+	result := r.repository.db.WithContext(ctx).Delete(&LabelSqlModel{}, id)
 	if result.Error != nil {
 		return false, result.Error
 	}
@@ -148,12 +150,12 @@ func (r LabelRepository) Delete(ctx context.Context, id uuid.UUID) (bool, error)
 func (r LabelRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
 	var count int64
 	if len(ids) == 1 {
-		result := r.repository.db.WithContext(ctx).Model(&labelSqlModel{}).Where("id = ?", ids[0]).Count(&count)
+		result := r.repository.db.WithContext(ctx).Model(&LabelSqlModel{}).Where("id = ?", ids[0]).Count(&count)
 		if result.Error != nil {
 			return false, result.Error
 		}
 	} else {
-		result := r.repository.db.WithContext(ctx).Model(&labelSqlModel{}).Where("id IN ?", ids).Count(&count)
+		result := r.repository.db.WithContext(ctx).Model(&LabelSqlModel{}).Where("id IN ?", ids).Count(&count)
 		if result.Error != nil {
 			return false, result.Error
 		}

@@ -53,7 +53,6 @@ func (g LabelEndpointGroup) Middlewares() []gin.HandlerFunc {
 type labelModel struct {
 	Id        string      `json:"id" binding:"required"`
 	Name      string      `json:"name" binding:"required"`
-	IsDefault bool        `json:"is_default" binding:"required"`
 	Color     string      `json:"color" binding:"required"`
 	Owner     *ownerModel `json:"owner,omitempty"`
 	CreatedAt time.Time   `json:"created_at" binding:"required" format:"date-time"`
@@ -65,7 +64,6 @@ func newLabelModel(source label.Label) labelModel {
 	model := labelModel{
 		Id:        source.Id().String(),
 		Name:      source.Name(),
-		IsDefault: source.IsDefault(),
 		Color:     source.Color(),
 		CreatedAt: source.CreatedAt(),
 		UpdatedAt: source.UpdatedAt(),

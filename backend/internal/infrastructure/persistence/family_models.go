@@ -8,26 +8,39 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/family"
 )
 
-type familySqlModel struct {
-	baseSqlModel
+type FamilySqlModel struct {
+	BaseSqlModel `gorm:"embedded"`
+
 	Name    string                 `gorm:"type:varchar(100);not null"`
 	OwnerId string                 `gorm:"type:varchar(100);not null"`
-	Members []familyMemberSqlModel `gorm:"foreignKey:FamilyId;references:Id"`
+	Members []FamilyMemberSqlModel `gorm:"foreignKey:FamilyId;references:Id"`
 }
 
-func (f familySqlModel) TableName() string {
+func (f FamilySqlModel) TableName() string {
 	return "families"
 }
 
-func newFamilySqlModel(source family.Family) familySqlModel {
-	return familySqlModel{
-		baseSqlModel: newBaseSqlModel(source),
+type FamilyMemberSqlModel struct {
+	BaseSqlModel `gorm:"embedded"`
+
+	Name     string         `gorm:"type:varchar(100);not null"`
+	FamilyId uuid.UUID      `gorm:"type:uuid;not null"`
+	UserId   sql.NullString `gorm:"type:varchar(100)"`
+	IsKid    bool           `gorm:"type:boolean;not null;default:false"`
+}
+
+func (f FamilyMemberSqlModel) TableName() string {
+	return "family_members"
+}
+func newFamilySqlModel(source family.Family) FamilySqlModel {
+	return FamilySqlModel{
+		BaseSqlModel: newBaseSqlModel(source),
 		Name:         source.Name(),
 		OwnerId:      source.OwnerId(),
 	}
 }
 
-func newFamily(source familySqlModel) family.Family {
+func newFamily(source FamilySqlModel) family.Family {
 	members := make([]family.Member, 0, len(source.Members))
 	for _, member := range source.Members {
 		members = append(members, newFamilyMember(member))
@@ -45,20 +58,7 @@ func newFamily(source familySqlModel) family.Family {
 	return fam
 }
 
-type familyMemberSqlModel struct {
-	baseSqlModel
-	Name     string         `gorm:"type:varchar(100);not null"`
-	FamilyId uuid.UUID      `gorm:"type:uuid;not null"`
-	Family   familySqlModel `gorm:"foreignKey:FamilyId;references:Id"`
-	UserId   sql.NullString `gorm:"type:varchar(100)"`
-	IsKid    bool           `gorm:"type:boolean;not null;default:false"`
-}
-
-func (f familyMemberSqlModel) TableName() string {
-	return "family_members"
-}
-
-func newFamilyMember(source familyMemberSqlModel) family.Member {
+func newFamilyMember(source FamilyMemberSqlModel) family.Member {
 	mbr := family.NewMember(
 		source.Id,
 		source.FamilyId,
@@ -74,9 +74,9 @@ func newFamilyMember(source familyMemberSqlModel) family.Member {
 	return mbr
 }
 
-func newFamilyMemberSqlModel(source family.Member) familyMemberSqlModel {
-	model := familyMemberSqlModel{
-		baseSqlModel: baseSqlModel{
+func newFamilyMemberSqlModel(source family.Member) FamilyMemberSqlModel {
+	model := FamilyMemberSqlModel{
+		BaseSqlModel: BaseSqlModel{
 			Id:        source.Id(),
 			CreatedAt: source.CreatedAt(),
 			UpdatedAt: source.UpdatedAt(),

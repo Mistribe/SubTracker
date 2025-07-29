@@ -34,7 +34,8 @@ type EchoServerParams struct {
 
 func registerRouteGroups(e *gin.Engine, routeGroups []ginfx2.RouteGroup) {
 	for _, group := range routeGroups {
-		routeGroup := e.Group(group.Prefix())
+		routePrefix := group.Prefix()
+		routeGroup := e.Group(routePrefix)
 		for _, m := range group.Middlewares() {
 			routeGroup.Use(m)
 		}

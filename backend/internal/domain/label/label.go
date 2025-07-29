@@ -22,11 +22,9 @@ type Label interface {
 
 	Name() string
 	Owner() user.Owner
-	IsDefault() bool
 	Color() string
 	GetValidationErrors() validationx.Errors
 	SetName(name string)
-	SetIsDefault(isDefault bool)
 	SetColor(color string)
 	Equal(other Label) bool
 }
@@ -44,16 +42,14 @@ func NewLabel(
 	id uuid.UUID,
 	owner user.Owner,
 	name string,
-	isDefault bool,
 	color string,
 	createdAt time.Time,
 	updatedAt time.Time) Label {
 	return &label{
-		Base:      entity.NewBase(id, createdAt, updatedAt, true, false),
-		owner:     owner,
-		name:      strings.TrimSpace(name),
-		isDefault: isDefault,
-		color:     strings.TrimSpace(color),
+		Base:  entity.NewBase(id, createdAt, updatedAt, true, false),
+		owner: owner,
+		name:  strings.TrimSpace(name),
+		color: strings.TrimSpace(color),
 	}
 }
 
@@ -63,10 +59,6 @@ func (l *label) Name() string {
 
 func (l *label) Owner() user.Owner {
 	return l.owner
-}
-
-func (l *label) IsDefault() bool {
-	return l.isDefault
 }
 
 func (l *label) Color() string {
@@ -99,11 +91,6 @@ func (l *label) GetValidationErrors() validationx.Errors {
 
 func (l *label) SetName(name string) {
 	l.name = name
-	l.SetAsDirty()
-}
-
-func (l *label) SetIsDefault(isDefault bool) {
-	l.isDefault = isDefault
 	l.SetAsDirty()
 }
 

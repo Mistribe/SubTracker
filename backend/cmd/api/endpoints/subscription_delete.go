@@ -8,11 +8,10 @@ import (
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/subscription/command"
-	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type SubscriptionDeleteEndpoint struct {
-	handler core.CommandHandler[command.DeleteSubscriptionCommand, result.Unit]
+	handler core.CommandHandler[command.DeleteSubscriptionCommand, bool]
 }
 
 // Handle godoc
@@ -55,7 +54,7 @@ func (s SubscriptionDeleteEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewSubscriptionDeleteEndpoint(handler core.CommandHandler[command.DeleteSubscriptionCommand, result.Unit]) *SubscriptionDeleteEndpoint {
+func NewSubscriptionDeleteEndpoint(handler core.CommandHandler[command.DeleteSubscriptionCommand, bool]) *SubscriptionDeleteEndpoint {
 	return &SubscriptionDeleteEndpoint{
 		handler: handler,
 	}

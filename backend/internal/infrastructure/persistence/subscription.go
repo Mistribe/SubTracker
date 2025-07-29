@@ -22,7 +22,7 @@ func NewSubscriptionRepository(repository *DatabaseContext) *SubscriptionReposit
 }
 
 func (r SubscriptionRepository) GetById(ctx context.Context, id uuid.UUID) (subscription.Subscription, error) {
-	var model subscriptionSqlModel
+	var model SubscriptionSqlModel
 	result := r.repository.db.WithContext(ctx).
 		Preload("Owner").
 		Preload("Payer").
@@ -38,7 +38,7 @@ func (r SubscriptionRepository) GetById(ctx context.Context, id uuid.UUID) (subs
 
 func (r SubscriptionRepository) GetAll(ctx context.Context,
 	parameters entity.QueryParameters) ([]subscription.Subscription, error) {
-	var models []subscriptionSqlModel
+	var models []SubscriptionSqlModel
 	query := r.repository.db.WithContext(ctx).
 		Preload("Owner").
 		Preload("Payer").
@@ -66,7 +66,7 @@ func (r SubscriptionRepository) GetAll(ctx context.Context,
 func (r SubscriptionRepository) GetAllCount(ctx context.Context) (int64, error) {
 	var count int64
 	if result := r.repository.db.WithContext(ctx).
-		Model(&subscriptionSqlModel{}).
+		Model(&SubscriptionSqlModel{}).
 		Count(&count); result.Error != nil {
 		return 0, result.Error
 	}
@@ -101,7 +101,7 @@ func (r SubscriptionRepository) Save(ctx context.Context, dirtySubscription subs
 	if dirtySubscription.ServiceUsers().HasChanges() {
 		if err := saveTrackedSlice(ctx, r.repository.db,
 			dirtySubscription.ServiceUsers(),
-			func(serviceUser uuid.UUID) subscriptionServiceUserModel {
+			func(serviceUser uuid.UUID) SubscriptionServiceUserModel {
 				return newSubscriptionServiceUserModel(serviceUser, dirtySubscription.Id())
 			}); err != nil {
 			return err
@@ -113,7 +113,7 @@ func (r SubscriptionRepository) Save(ctx context.Context, dirtySubscription subs
 }
 
 func (r SubscriptionRepository) Delete(ctx context.Context, subscriptionId uuid.UUID) (bool, error) {
-	result := r.repository.db.WithContext(ctx).Delete(&subscriptionSqlModel{}, subscriptionId)
+	result := r.repository.db.WithContext(ctx).Delete(&SubscriptionSqlModel{}, subscriptionId)
 	if result.Error != nil {
 		return false, result.Error
 	}
@@ -126,7 +126,7 @@ func (r SubscriptionRepository) Delete(ctx context.Context, subscriptionId uuid.
 func (r SubscriptionRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
 	var count int64
 	if result := r.repository.db.WithContext(ctx).
-		Model(&subscriptionSqlModel{}).
+		Model(&SubscriptionSqlModel{}).
 		Where("id IN ?", ids).
 		Count(&count); result.Error != nil {
 		return false, result.Error

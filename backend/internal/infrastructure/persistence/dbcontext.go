@@ -86,15 +86,15 @@ func newRepositoryTask(repository *DatabaseContext) *DatabaseContextTask {
 
 func (r DatabaseContextTask) OnStart(_ context.Context) error {
 	if err := r.repository.db.AutoMigrate(
-		&subscriptionSqlModel{},
-		&subscriptionServiceUserModel{},
-		&labelSqlModel{},
-		&familySqlModel{},
-		&familyMemberSqlModel{},
-		&providerSqlModel{},
+		&FamilySqlModel{},
+		&FamilyMemberSqlModel{},
+		&LabelSqlModel{},
+		&ProviderSqlModel{},
 		&providerLabelSqlModel{},
 		&providerPlanSqlModel{},
 		&providerPriceSqlModel{},
+		&SubscriptionSqlModel{},
+		&SubscriptionServiceUserModel{},
 	); err != nil {
 		return err
 	}

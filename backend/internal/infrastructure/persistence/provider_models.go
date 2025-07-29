@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -11,13 +12,13 @@ import (
 )
 
 type providerPriceSqlModel struct {
-	baseSqlModel
+	BaseSqlModel `gorm:"embedded"`
 
-	StartDate time.Time
+	StartDate time.Time `gorm:"not null"`
 	EndDate   *time.Time
-	Currency  string
-	Amount    float64
-	PlanId    uuid.UUID
+	Currency  string    `gorm:"type:varchar(3);not null"`
+	Amount    float64   `gorm:"not null"`
+	PlanId    uuid.UUID `gorm:"type:uuid;not null"`
 }
 
 func (p providerPriceSqlModel) TableName() string {
@@ -26,7 +27,7 @@ func (p providerPriceSqlModel) TableName() string {
 
 func newProviderPriceSqlModel(planId uuid.UUID, source provider.Price) providerPriceSqlModel {
 	return providerPriceSqlModel{
-		baseSqlModel: newBaseSqlModel(source),
+		BaseSqlModel: newBaseSqlModel(source),
 		StartDate:    source.StartDate(),
 		EndDate:      source.EndDate(),
 		Currency:     source.Currency().String(),
@@ -48,10 +49,10 @@ func newProviderPrice(model providerPriceSqlModel) provider.Price {
 }
 
 type providerPlanSqlModel struct {
-	baseSqlModel
+	BaseSqlModel `gorm:"embedded"`
 
-	Name        *string                 `gorm:"type:varchar(100)"`
-	Description *string                 `gorm:"type:varchar(255)"`
+	Name        sql.NullString          `gorm:"type:varchar(100)"`
+	Description sql.NullString          `gorm:"type:varchar(255)"`
 	Prices      []providerPriceSqlModel `gorm:"foreignKey:PlanId;references:Id;constraint:OnDelete:CASCADE"`
 	ProviderId  uuid.UUID               `gorm:"type:uuid;not null"`
 }
@@ -61,12 +62,34 @@ func (p providerPlanSqlModel) TableName() string {
 }
 
 func newProviderPlanSqlModel(providerId uuid.UUID, source provider.Plan) providerPlanSqlModel {
-	return providerPlanSqlModel{
-		baseSqlModel: newBaseSqlModel(source),
-		Name:         source.Name(),
-		Description:  source.Description(),
+	model := providerPlanSqlModel{
+		BaseSqlModel: newBaseSqlModel(source),
 		ProviderId:   providerId,
 	}
+
+	if source.Name() != nil {
+		model.Name = sql.NullString{
+			String: *source.Name(),
+			Valid:  true,
+		}
+	} else {
+		model.Name = sql.NullString{
+			Valid: false,
+		}
+	}
+
+	if source.Description() != nil {
+		model.Description = sql.NullString{
+			String: *source.Description(),
+			Valid:  true,
+		}
+	} else {
+		model.Description = sql.NullString{
+			Valid: false,
+		}
+	}
+
+	return model
 }
 
 func newProviderPlan(model providerPlanSqlModel) provider.Plan {
@@ -77,10 +100,11 @@ func newProviderPlan(model providerPlanSqlModel) provider.Plan {
 			prices[i] = newProviderPrice(price)
 		}
 	}
+
 	return provider.NewPlan(
 		model.Id,
-		model.Name,
-		model.Description,
+		sqlNullToString(model.Name),
+		sqlNullToString(model.Description),
 		prices,
 		model.CreatedAt,
 		model.UpdatedAt,
@@ -88,10 +112,8 @@ func newProviderPlan(model providerPlanSqlModel) provider.Plan {
 }
 
 type providerLabelSqlModel struct {
-	LabelId    uuid.UUID        `gorm:"primaryKey;type:uuid;not null"`
-	Label      labelSqlModel    `gorm:"foreignKey:LabelId;references:Id"`
-	ProviderId uuid.UUID        `gorm:"primaryKey;type:uuid;not null"`
-	Provider   providerSqlModel `gorm:"foreignKey:ProviderId;references:Id"`
+	LabelId    uuid.UUID `gorm:"primaryKey;type:uuid;not null"`
+	ProviderId uuid.UUID `gorm:"primaryKey;type:uuid;not null"`
 }
 
 func (p providerLabelSqlModel) TableName() string {
@@ -105,31 +127,31 @@ func newProviderLabelSqlModel(providerId uuid.UUID, labelId uuid.UUID) providerL
 	}
 }
 
-type providerSqlModel struct {
-	baseSqlModel
-	baseOwnerSqlModel
+type ProviderSqlModel struct {
+	BaseSqlModel      `gorm:"embedded"`
+	BaseOwnerSqlModel `gorm:"embedded"`
 
 	Name           string                  `gorm:"type:varchar(100);not null"`
-	Description    *string                 `gorm:"type:varchar(255)"`
-	IconUrl        *string                 `gorm:"type:varchar(255)"`
-	Url            *string                 `gorm:"type:varchar(255)"`
-	PricingPageUrl *string                 `gorm:"type:varchar(255)"`
-	Labels         []providerLabelSqlModel `gorm:"foreignKey:ProviderId;references:Id;constraint:OnDelete:CASCADE"`
+	Description    sql.NullString          `gorm:"type:varchar(255)"`
+	IconUrl        sql.NullString          `gorm:"type:varchar(255)"`
+	Url            sql.NullString          `gorm:"type:varchar(255)"`
+	PricingPageUrl sql.NullString          `gorm:"type:varchar(255)"`
+	Labels         []providerLabelSqlModel `gorm:"many2many:provider_labels;joinForeignKey:ProviderId;joinReferences:LabelId"`
 	Plans          []providerPlanSqlModel  `gorm:"foreignKey:ProviderId;references:Id;constraint:OnDelete:CASCADE"`
 }
 
-func (p providerSqlModel) TableName() string {
+func (p ProviderSqlModel) TableName() string {
 	return "providers"
 }
 
-func newProviderSqlModel(source provider.Provider) providerSqlModel {
-	model := providerSqlModel{
-		baseSqlModel:   newBaseSqlModel(source),
+func newProviderSqlModel(source provider.Provider) ProviderSqlModel {
+	model := ProviderSqlModel{
+		BaseSqlModel:   newBaseSqlModel(source),
 		Name:           source.Name(),
-		Description:    source.Description(),
-		IconUrl:        source.IconUrl(),
-		Url:            source.Url(),
-		PricingPageUrl: source.PricingPageUrl(),
+		Description:    stringToSqlNull(source.Description()),
+		IconUrl:        stringToSqlNull(source.IconUrl()),
+		Url:            stringToSqlNull(source.Url()),
+		PricingPageUrl: stringToSqlNull(source.PricingPageUrl()),
 	}
 
 	model.OwnerType = source.Owner().Type().String()
@@ -140,18 +162,18 @@ func newProviderSqlModel(source provider.Provider) providerSqlModel {
 		break
 	case user.PersonalOwner:
 		userId := source.Owner().UserId()
-		model.OwnerUserId = &userId
+		model.OwnerUserId = stringToSqlNull(&userId)
 		break
 	}
 	return model
 }
 
-func newProvider(model providerSqlModel) provider.Provider {
+func newProvider(model ProviderSqlModel) provider.Provider {
 	ownerType, err := user.ParseOwnerType(model.OwnerType)
 	if err != nil {
 		panic(err)
 	}
-	owner := user.NewOwner(ownerType, model.OwnerFamilyId, model.OwnerUserId)
+	owner := user.NewOwner(ownerType, model.OwnerFamilyId, sqlNullToString(model.OwnerUserId))
 	var labels []uuid.UUID
 	if model.Labels != nil && len(model.Labels) > 0 {
 		labels = make([]uuid.UUID, len(model.Labels))
@@ -171,10 +193,10 @@ func newProvider(model providerSqlModel) provider.Provider {
 	return provider.NewProvider(
 		model.Id,
 		model.Name,
-		model.Description,
-		model.IconUrl,
-		model.Url,
-		model.PricingPageUrl,
+		sqlNullToString(model.Description),
+		sqlNullToString(model.IconUrl),
+		sqlNullToString(model.Url),
+		sqlNullToString(model.PricingPageUrl),
 		labels,
 		plans,
 		owner,

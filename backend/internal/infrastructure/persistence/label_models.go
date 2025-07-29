@@ -1,34 +1,34 @@
 package persistence
 
 import (
+	"database/sql"
+
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
-type labelSqlModel struct {
-	baseSqlModel
-	baseOwnerSqlModel
+type LabelSqlModel struct {
+	BaseSqlModel      `gorm:"embedded"`
+	BaseOwnerSqlModel `gorm:"embedded"`
 
-	Name      string `gorm:"type:varchar(100);not null"`
-	Color     string `gorm:"type:varchar(20);not null"`
-	IsDefault bool   `gorm:"type:boolean;not null;default:false;index"`
+	Name  string `gorm:"type:varchar(100);not null"`
+	Color string `gorm:"type:varchar(20);not null"`
 }
 
-func (l labelSqlModel) TableName() string {
+func (l LabelSqlModel) TableName() string {
 	return "labels"
 }
 
-func newLabelSqlModel(source label.Label) labelSqlModel {
-	model := labelSqlModel{
-		baseSqlModel: baseSqlModel{
+func newLabelSqlModel(source label.Label) LabelSqlModel {
+	model := LabelSqlModel{
+		BaseSqlModel: BaseSqlModel{
 			Id:        source.Id(),
 			CreatedAt: source.CreatedAt(),
 			UpdatedAt: source.UpdatedAt(),
 			Etag:      source.ETag(),
 		},
-		Name:      source.Name(),
-		Color:     source.Color(),
-		IsDefault: source.IsDefault(),
+		Name:  source.Name(),
+		Color: source.Color(),
 	}
 
 	model.OwnerType = source.Owner().Type().String()
@@ -39,24 +39,30 @@ func newLabelSqlModel(source label.Label) labelSqlModel {
 		break
 	case user.PersonalOwner:
 		userId := source.Owner().UserId()
-		model.OwnerUserId = &userId
+		model.OwnerUserId = sql.NullString{
+			String: userId,
+			Valid:  true,
+		}
 		break
 	}
 
 	return model
 }
 
-func newLabel(source labelSqlModel) label.Label {
+func newLabel(source LabelSqlModel) label.Label {
 	ownerType, err := user.ParseOwnerType(source.OwnerType)
 	if err != nil {
 		panic(err)
 	}
-	owner := user.NewOwner(ownerType, source.OwnerFamilyId, source.OwnerUserId)
+	var ownerFamilyId *string
+	if source.OwnerUserId.Valid {
+		ownerFamilyId = &source.OwnerUserId.String
+	}
+	owner := user.NewOwner(ownerType, source.OwnerFamilyId, ownerFamilyId)
 	lbl := label.NewLabel(
 		source.Id,
 		owner,
 		source.Name,
-		source.IsDefault,
 		source.Color,
 		source.CreatedAt,
 		source.UpdatedAt,

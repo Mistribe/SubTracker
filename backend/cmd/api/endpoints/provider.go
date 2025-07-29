@@ -32,11 +32,17 @@ func (s ProviderEndpointGroup) Middlewares() []gin.HandlerFunc {
 func NewProviderEndpointGroup(
 	getEndpoint *ProviderGetEndpoint,
 	getAllEndpoint *ProviderGetAllEndpoint,
-	authenticationMiddleware *middlewares.AuthenticationMiddleware) *SubscriptionEndpointGroup {
-	return &SubscriptionEndpointGroup{
+	createEndpoint *ProviderCreateEndpoint,
+	updateEndpoint *ProviderUpdateEndpoint,
+	deleteEndpoint *ProviderDeleteEndpoint,
+	authenticationMiddleware *middlewares.AuthenticationMiddleware) *ProviderEndpointGroup {
+	return &ProviderEndpointGroup{
 		routes: []ginfx.Route{
 			getEndpoint,
 			getAllEndpoint,
+			createEndpoint,
+			updateEndpoint,
+			deleteEndpoint,
 		},
 		middlewares: []gin.HandlerFunc{
 			authenticationMiddleware.Middleware(),

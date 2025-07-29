@@ -22,7 +22,6 @@ type LabelCreateEndpoint struct {
 type createLabelModel struct {
 	Id        *string    `json:"id,omitempty"`
 	Name      string     `json:"name" binding:"required"`
-	IsDefault *bool      `json:"is_default,omitempty"`
 	Color     string     `json:"color" binding:"required"`
 	OwnerType string     `json:"owner_type" binding:"required"`
 	FamilyId  *string    `json:"family_id,omitempty"`
@@ -45,7 +44,6 @@ func (m createLabelModel) ToLabel(userId string) (label.Label, error) {
 	}
 
 	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
-	isDefault := ext.ValueOrDefault(m.IsDefault, false)
 	var familyId *uuid.UUID
 	if m.FamilyId != nil {
 		fid, err := uuid.Parse(*m.FamilyId)
@@ -60,7 +58,6 @@ func (m createLabelModel) ToLabel(userId string) (label.Label, error) {
 		id,
 		owner,
 		m.Name,
-		isDefault,
 		strings.ToUpper(m.Color),
 		createdAt,
 		createdAt,

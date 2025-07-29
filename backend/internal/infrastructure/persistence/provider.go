@@ -26,7 +26,7 @@ func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (
 	if !ok {
 		return nil, nil
 	}
-	var model providerSqlModel
+	var model ProviderSqlModel
 	result := r.repository.db.WithContext(ctx).
 		Preload("Labels").
 		Preload("Plans").
@@ -52,7 +52,7 @@ func (r ProviderRepository) GetAll(ctx context.Context, parameters entity.QueryP
 		return nil, nil
 	}
 
-	var providerSqlModels []providerSqlModel
+	var providerSqlModels []ProviderSqlModel
 	query := r.repository.db.WithContext(ctx).
 		Preload("Labels").
 		Preload("Plans").
@@ -81,7 +81,7 @@ func (r ProviderRepository) GetAll(ctx context.Context, parameters entity.QueryP
 func (r ProviderRepository) GetAllCount(ctx context.Context) (int64, error) {
 	var count int64
 	result := r.repository.db.WithContext(ctx).
-		Model(&providerSqlModel{}).
+		Model(&ProviderSqlModel{}).
 		// todo add filter by owner
 		Count(&count)
 	if result.Error != nil {
@@ -102,7 +102,7 @@ func (r ProviderRepository) Save(ctx context.Context, dirtyProvider provider.Pro
 }
 
 func (r ProviderRepository) Delete(ctx context.Context, providerId uuid.UUID) (bool, error) {
-	result := r.repository.db.WithContext(ctx).Delete(&providerSqlModel{}, providerId)
+	result := r.repository.db.WithContext(ctx).Delete(&ProviderSqlModel{}, providerId)
 	if result.Error != nil {
 		return false, result.Error
 	}
@@ -115,7 +115,7 @@ func (r ProviderRepository) Delete(ctx context.Context, providerId uuid.UUID) (b
 func (r ProviderRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
 	var count int64
 	result := r.repository.db.WithContext(ctx).
-		Model(&providerSqlModel{}).
+		Model(&ProviderSqlModel{}).
 		Where("id IN ?", ids).
 		Count(&count)
 	if result.Error != nil {
