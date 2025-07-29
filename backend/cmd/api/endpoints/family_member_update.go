@@ -22,30 +22,24 @@ type FamilyMemberUpdateEndpoint struct {
 
 type updateFamilyMemberModel struct {
 	Name      string     `json:"name" binding:"required"`
-	Email     *string    `json:"email,omitempty"`
 	IsKid     bool       `json:"id_kid" binding:"required"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
-func (m updateFamilyMemberModel) Command(familyId, memberId uuid.UUID) result.Result[command.UpdateFamilyMemberCommand] {
-	email := option.None[string]()
-	if m.Email != nil {
-		email = option.Some(*m.Email)
-	}
+func (m updateFamilyMemberModel) Command(familyId, memberId uuid.UUID) (command.UpdateFamilyMemberCommand, error) {
 
 	updatedAt := option.None[time.Time]()
 	if m.UpdatedAt != nil {
 		updatedAt = option.Some(*m.UpdatedAt)
 	}
 
-	return result.Success(command.UpdateFamilyMemberCommand{
+	return command.UpdateFamilyMemberCommand{
 		FamilyId:  familyId,
 		Id:        memberId,
 		Name:      m.Name,
-		Email:     email,
 		IsKid:     m.IsKid,
 		UpdatedAt: updatedAt,
-	})
+	}, nil
 }
 
 // Handle godoc
@@ -102,24 +96,21 @@ func (f FamilyMemberUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	cmd := model.Command(familyId, id)
-	result.Match[command.UpdateFamilyMemberCommand, result.Unit](cmd,
-		func(cmd command.UpdateFamilyMemberCommand) result.Unit {
-			r := f.handler.Handle(c, cmd)
-			handleResponse(c,
-				r,
-				withMapping[family.Family](func(mbr family.Family) any {
-					return newFamilyModel(userId, mbr)
-				}))
-			return result.Unit{}
-		},
-		func(err error) result.Unit {
-			c.JSON(http.StatusBadRequest, httpError{
-				Message: err.Error(),
-			})
-			return result.Unit{}
+	cmd, err := model.Command(familyId, id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httpError{
+			Message: err.Error(),
 		})
+		c.Abort()
+		return
+	}
 
+	r := f.handler.Handle(c, cmd)
+	handleResponse(c,
+		r,
+		withMapping[family.Family](func(mbr family.Family) any {
+			return newFamilyModel(userId, mbr)
+		}))
 }
 
 func (f FamilyMemberUpdateEndpoint) Pattern() []string {

@@ -72,7 +72,6 @@ func (h PatchFamilyCommandHandler) patchFamily(
 				existingMember.SetAsAdult()
 			}
 			existingMember.SetName(mbr.Name())
-			existingMember.SetEmail(mbr.Email())
 			existingMember.SetUpdatedAt(mbr.UpdatedAt())
 
 			fam.Members().Update(existingMember)

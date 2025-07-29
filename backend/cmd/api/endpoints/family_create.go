@@ -13,7 +13,6 @@ import (
 	"github.com/oleexo/subtracker/internal/application/family/command"
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/pkg/ext"
-	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type FamilyCreateEndpoint struct {
@@ -27,36 +26,51 @@ type createFamilyModel struct {
 	CreatedAt        *time.Time `json:"created_at,omitempty" format:"date-time"`
 }
 
-func (m createFamilyModel) ToFamily(ownerId string) result.Result[family.Family] {
-	var id uuid.UUID
+func (m createFamilyModel) ToFamily(ownerId string) (family.Family, error) {
+	var familyId uuid.UUID
 	var err error
 	var createdAt time.Time
 
-	id, err = parseUuidOrNew(m.Id)
+	familyId, err = parseUuidOrNew(m.Id)
 	if err != nil {
-		return result.Fail[family.Family](err)
+		return nil, err
 	}
 
 	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
 
+	creatorId, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+	creator := family.NewMember(creatorId,
+		familyId,
+		"Owner", // todo replace with name from token,
+		false,
+		time.Now(),
+		time.Now(),
+	)
+	creator.SetUserId(&ownerId)
 	return family.NewFamily(
-		id,
+		familyId,
 		ownerId,
 		m.Name,
-		m.HaveJointAccount,
+		[]family.Member{
+			creator,
+		},
 		createdAt,
 		createdAt,
-	)
+	), nil
 }
 
-func (m createFamilyModel) Command(ownerId string) result.Result[command.CreateFamilyCommand] {
-	return result.Bind[family.Family, command.CreateFamilyCommand](
-		m.ToFamily(ownerId),
-		func(f family.Family) result.Result[command.CreateFamilyCommand] {
-			return result.Success(command.CreateFamilyCommand{
-				Family: f,
-			})
-		})
+func (m createFamilyModel) Command(ownerId string) (command.CreateFamilyCommand, error) {
+	fam, err := m.ToFamily(ownerId)
+	if err != nil {
+		return command.CreateFamilyCommand{}, err
+	}
+	return command.CreateFamilyCommand{
+		Family: fam,
+	}, nil
+
 }
 
 // Handle godoc
@@ -86,24 +100,21 @@ func (f FamilyCreateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	cmd := model.Command(userId)
-	result.Match[command.CreateFamilyCommand, result.Unit](cmd,
-		func(cmd command.CreateFamilyCommand) result.Unit {
-			r := f.handler.Handle(c, cmd)
-			handleResponse(c,
-				r,
-				withStatus[family.Family](http.StatusCreated),
-				withMapping[family.Family](func(f family.Family) any {
-					return newFamilyModel(userId, f)
-				}))
-			return result.Unit{}
-		},
-		func(err error) result.Unit {
-			c.JSON(http.StatusBadRequest, httpError{
-				Message: err.Error(),
-			})
-			return result.Unit{}
+	cmd, err := model.Command(userId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httpError{
+			Message: err.Error(),
 		})
+		c.Abort()
+		return
+	}
+	r := f.handler.Handle(c, cmd)
+	handleResponse(c,
+		r,
+		withStatus[family.Family](http.StatusCreated),
+		withMapping[family.Family](func(f family.Family) any {
+			return newFamilyModel(userId, f)
+		}))
 }
 
 func (f FamilyCreateEndpoint) Pattern() []string {

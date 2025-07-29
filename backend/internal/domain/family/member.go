@@ -22,8 +22,7 @@ type Member interface {
 	SetName(string)
 	SetAsKid()
 	SetAsAdult()
-	Email() *string
-	SetEmail(*string)
+	SetUserId(*string)
 	FamilyId() uuid.UUID
 	Equal(member Member) bool
 	GetValidationErrors() validationx.Errors
@@ -34,7 +33,6 @@ type member struct {
 
 	familyId uuid.UUID
 	name     string
-	email    *string
 	userId   *string
 	isKid    bool
 }
@@ -43,23 +41,13 @@ func NewMember(
 	id uuid.UUID,
 	familyId uuid.UUID,
 	name string,
-	email *string,
 	isKid bool,
 	createdAt time.Time,
 	updatedAt time.Time) Member {
-	if email != nil {
-		trimEmail := strings.TrimSpace(*email)
-		if trimEmail != "" {
-			email = &trimEmail
-		} else {
-			email = nil
-		}
-	}
 	return &member{
 		Base:     entity.NewBase(id, createdAt, updatedAt, true, false),
 		familyId: familyId,
 		name:     strings.TrimSpace(name),
-		email:    email,
 		userId:   nil,
 		isKid:    isKid,
 	}
@@ -73,11 +61,18 @@ func (m *member) IsKid() bool {
 	return m.isKid
 }
 
+func (m *member) SetUserId(userId *string) {
+	if m.userId == userId {
+		return
+	}
+	m.userId = userId
+	m.SetAsDirty()
+}
+
 func (m *member) ETagFields() []interface{} {
 	return []interface{}{
 		m.familyId.String(),
 		m.name,
-		m.email,
 		m.userId,
 		m.isKid,
 	}
@@ -89,11 +84,6 @@ func (m *member) ETag() string {
 func (m *member) GetValidationErrors() validationx.Errors {
 	var errors validationx.Errors
 
-	if m.email != nil && *m.email != "" {
-		if !emailRegex.MatchString(*m.email) {
-			errors = append(errors, validationx.NewError("email", "invalid email format"))
-		}
-	}
 	if m.name == "" {
 		errors = append(errors, validationx.NewError("name", "name is empty"))
 	}
@@ -117,15 +107,6 @@ func (m *member) SetAsKid() {
 
 func (m *member) SetAsAdult() {
 	m.isKid = false
-	m.SetAsDirty()
-}
-
-func (m *member) Email() *string {
-	return m.email
-}
-
-func (m *member) SetEmail(email *string) {
-	m.email = email
 	m.SetAsDirty()
 }
 

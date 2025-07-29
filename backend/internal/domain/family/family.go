@@ -61,7 +61,6 @@ func (f *family) GetValidationErrors() validationx.Errors {
 		errors = append(errors, validationx.NewError("name", "name cannot be longer than 100 characters"))
 	}
 
-	emailMap := make(map[string]bool)
 	idMap := make(map[uuid.UUID]bool)
 
 	for mbr := range f.members.It() {
@@ -69,12 +68,6 @@ func (f *family) GetValidationErrors() validationx.Errors {
 			errors = append(errors, validationx.NewError("members", "duplicate member id"))
 		}
 		idMap[mbr.Id()] = true
-		if mbr.Email() != nil {
-			if emailMap[*mbr.Email()] {
-				errors = append(errors, validationx.NewError("members", "duplicate member email"))
-			}
-			emailMap[*mbr.Email()] = true
-		}
 
 		errors = append(errors, mbr.GetValidationErrors()...)
 	}
@@ -111,9 +104,6 @@ func (f *family) AddMember(member Member) error {
 func (f *family) isDuplicateMember(member Member) bool {
 	for m := range f.members.It() {
 		if m.Id() == member.Id() {
-			return true
-		}
-		if m.Email() != nil && member.Email() != nil && m.Email() == member.Email() {
 			return true
 		}
 	}

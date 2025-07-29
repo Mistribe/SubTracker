@@ -12,7 +12,7 @@ import (
 )
 
 type FamilyMemberDeleteEndpoint struct {
-	handler core.CommandHandler[command.DeleteFamilyMemberCommand, result.Unit]
+	handler core.CommandHandler[command.DeleteFamilyMemberCommand, bool]
 }
 
 // Handle godoc
@@ -63,7 +63,7 @@ func (f FamilyMemberDeleteEndpoint) Handle(c *gin.Context) {
 	}
 
 	r := f.handler.Handle(c, cmd)
-	handleResponse(c, r, withNoContent[result.Unit]())
+	handleResponse(c, r, withNoContent[bool]())
 }
 
 func (f FamilyMemberDeleteEndpoint) Pattern() []string {
@@ -80,7 +80,7 @@ func (f FamilyMemberDeleteEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewFamilyMemberDeleteEndpoint(handler core.CommandHandler[command.DeleteFamilyMemberCommand, result.Unit]) *FamilyMemberDeleteEndpoint {
+func NewFamilyMemberDeleteEndpoint(handler core.CommandHandler[command.DeleteFamilyMemberCommand, bool]) *FamilyMemberDeleteEndpoint {
 	return &FamilyMemberDeleteEndpoint{
 		handler: handler,
 	}

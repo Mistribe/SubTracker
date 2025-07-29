@@ -15,7 +15,6 @@ type UpdateFamilyMemberCommand struct {
 	Id        uuid.UUID
 	FamilyId  uuid.UUID
 	Name      string
-	Email     *string
 	IsKid     bool
 	UpdatedAt option.Option[time.Time]
 }
@@ -62,7 +61,6 @@ func (h UpdateFamilyMemberCommandHandler) updateFamilyMember(
 	} else {
 		mbr.SetAsAdult()
 	}
-	mbr.SetEmail(command.Email)
 
 	command.UpdatedAt.IfSome(func(updatedAt time.Time) {
 		mbr.SetUpdatedAt(updatedAt)

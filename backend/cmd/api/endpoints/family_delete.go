@@ -8,14 +8,13 @@ import (
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/family/command"
-	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type FamilyDeleteEndpoint struct {
-	handler core.CommandHandler[command.DeleteFamilyCommand, result.Unit]
+	handler core.CommandHandler[command.DeleteFamilyCommand, bool]
 }
 
-func NewFamilyDeleteEndpoint(handler core.CommandHandler[command.DeleteFamilyCommand, result.Unit]) *FamilyDeleteEndpoint {
+func NewFamilyDeleteEndpoint(handler core.CommandHandler[command.DeleteFamilyCommand, bool]) *FamilyDeleteEndpoint {
 	return &FamilyDeleteEndpoint{handler: handler}
 }
 
@@ -51,7 +50,7 @@ func (e FamilyDeleteEndpoint) Handle(c *gin.Context) {
 	}
 
 	r := e.handler.Handle(c, cmd)
-	handleResponse(c, r, withNoContent[result.Unit]())
+	handleResponse(c, r, withNoContent[bool]())
 }
 
 func (e FamilyDeleteEndpoint) Pattern() []string {

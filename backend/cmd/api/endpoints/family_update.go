@@ -22,30 +22,16 @@ type FamilyUpdateEndpoint struct {
 }
 
 type updateFamilyModel struct {
-	Name             string     `json:"name" binding:"required"`
-	HaveJointAccount bool       `json:"have_joint_account,omitempty"`
-	UpdatedAt        *time.Time `json:"updated_at,omitempty" format:"date-time"`
+	Name      string     `json:"name" binding:"required"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
-func (m updateFamilyModel) ToFamily(id uuid.UUID, ownerId string, createdAt time.Time) result.Result[family.Family] {
-	updatedAt := ext.ValueOrDefault(m.UpdatedAt, time.Now())
-	return family.NewFamily(
-		id,
-		ownerId,
-		m.Name,
-		m.HaveJointAccount,
-		createdAt,
-		updatedAt,
-	)
-}
-
-func (m updateFamilyModel) Command(familyId uuid.UUID) result.Result[command.UpdateFamilyCommand] {
-	return result.Success(command.UpdateFamilyCommand{
-		Id:               familyId,
-		Name:             m.Name,
-		UpdatedAt:        option.Some[time.Time](ext.ValueOrDefault[time.Time](m.UpdatedAt, time.Now())),
-		HaveJointAccount: m.HaveJointAccount,
-	})
+func (m updateFamilyModel) Command(familyId uuid.UUID) (command.UpdateFamilyCommand, error) {
+	return command.UpdateFamilyCommand{
+		Id:        familyId,
+		Name:      m.Name,
+		UpdatedAt: option.Some[time.Time](ext.ValueOrDefault[time.Time](m.UpdatedAt, time.Now())),
+	}, nil
 
 }
 
@@ -86,24 +72,21 @@ func (f FamilyUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	cmd := model.Command(familyId)
-	result.Match[command.UpdateFamilyCommand, result.Unit](cmd,
-		func(cmd command.UpdateFamilyCommand) result.Unit {
-			r := f.handler.Handle(c, cmd)
-			handleResponse(c,
-				r,
-				withStatus[family.Family](http.StatusOK),
-				withMapping[family.Family](func(f family.Family) any {
-					return newFamilyModel(userId, f)
-				}))
-			return result.Unit{}
-		},
-		func(err error) result.Unit {
-			c.JSON(http.StatusBadRequest, httpError{
-				Message: err.Error(),
-			})
-			return result.Unit{}
+	cmd, err := model.Command(familyId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httpError{
+			Message: err.Error(),
 		})
+		c.Abort()
+		return
+	}
+	r := f.handler.Handle(c, cmd)
+	handleResponse(c,
+		r,
+		withStatus[family.Family](http.StatusOK),
+		withMapping[family.Family](func(f family.Family) any {
+			return newFamilyModel(userId, f)
+		}))
 }
 
 func (f FamilyUpdateEndpoint) Pattern() []string {

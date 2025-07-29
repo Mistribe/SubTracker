@@ -12,10 +12,9 @@ import (
 )
 
 type UpdateFamilyCommand struct {
-	Id               uuid.UUID
-	Name             string
-	UpdatedAt        option.Option[time.Time]
-	HaveJointAccount bool
+	Id        uuid.UUID
+	Name      string
+	UpdatedAt option.Option[time.Time]
 }
 
 type UpdateFamilyCommandHandler interface {

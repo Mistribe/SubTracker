@@ -28,37 +28,36 @@ type createFamilyMemberModel struct {
 	CreatedAt *time.Time `json:"created_at,omitempty" format:"date-time"`
 }
 
-func (m createFamilyMemberModel) ToFamilyMember(familyId uuid.UUID) result.Result[family.member] {
+func (m createFamilyMemberModel) ToFamilyMember(familyId uuid.UUID) (family.Member, error) {
 	var id uuid.UUID
 	var err error
 	var createdAt time.Time
 	id, err = parseUuidOrNew(m.Id)
 	if err != nil {
-		return result.Fail[family.member](err)
+		return nil, err
 	}
 
 	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
 
-	return result.Success(family.NewMember(
+	return family.NewMember(
 		id,
 		familyId,
 		m.Name,
-		m.Email,
 		m.IsKid,
 		createdAt,
 		createdAt,
-		false,
-	))
+	), nil
 }
 
-func (m createFamilyMemberModel) Command(familyId uuid.UUID) result.Result[command.CreateFamilyMemberCommand] {
-	return result.Bind[family.member, command.CreateFamilyMemberCommand](
-		m.ToFamilyMember(familyId),
-		func(fm family.member) result.Result[command.CreateFamilyMemberCommand] {
-			return result.Success(command.CreateFamilyMemberCommand{
-				Member: fm,
-			})
-		})
+func (m createFamilyMemberModel) Command(familyId uuid.UUID) (command.CreateFamilyMemberCommand, error) {
+	fam, err := m.ToFamilyMember(familyId)
+	if err != nil {
+		return command.CreateFamilyMemberCommand{}, err
+	}
+	return command.CreateFamilyMemberCommand{
+		Member: fam,
+	}, nil
+
 }
 
 // Handle godoc
@@ -97,24 +96,21 @@ func (f FamilyMemberCreateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	cmd := model.Command(familyId)
-	result.Match[command.CreateFamilyMemberCommand, result.Unit](cmd,
-		func(cmd command.CreateFamilyMemberCommand) result.Unit {
-			r := f.handler.Handle(c, cmd)
-			handleResponse(c,
-				r,
-				withStatus[family.Family](http.StatusCreated),
-				withMapping[family.Family](func(fm family.Family) any {
-					return newFamilyModel(userId, fm)
-				}))
-			return result.Unit{}
-		},
-		func(err error) result.Unit {
-			c.JSON(http.StatusBadRequest, httpError{
-				Message: err.Error(),
-			})
-			return result.Unit{}
+	cmd, err := model.Command(familyId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httpError{
+			Message: err.Error(),
 		})
+		c.Abort()
+		return
+	}
+	r := f.handler.Handle(c, cmd)
+	handleResponse(c,
+		r,
+		withStatus[family.Family](http.StatusCreated),
+		withMapping[family.Family](func(fm family.Family) any {
+			return newFamilyModel(userId, fm)
+		}))
 }
 
 func (f FamilyMemberCreateEndpoint) Pattern() []string {

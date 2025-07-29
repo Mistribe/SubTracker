@@ -30,21 +30,19 @@ type patchFamilyMemberModel struct {
 	Id *string `json:"id,omitempty"`
 	// member's name
 	Name string `json:"name" binding:"required"`
-	// Optional email address
-	Email *string `json:"email,omitempty"`
 	// Indicates if the member is a kid
 	IsKid bool `json:"is_kid" binding:"required"`
 	// Optional timestamp of the last update
 	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
-func (m patchFamilyMemberModel) Command(familyId uuid.UUID) (family.member, error) {
+func (m patchFamilyMemberModel) Command(familyId uuid.UUID) (family.Member, error) {
 	var id uuid.UUID
 	var err error
 
 	id, err = parseUuidOrNew(m.Id)
 	if err != nil {
-		return family.member{}, err
+		return nil, err
 	}
 	updatedAt := ext.ValueOrDefault(m.UpdatedAt, time.Now())
 
@@ -52,11 +50,9 @@ func (m patchFamilyMemberModel) Command(familyId uuid.UUID) (family.member, erro
 		id,
 		familyId,
 		m.Name,
-		m.Email,
 		m.IsKid,
 		updatedAt,
 		updatedAt,
-		false,
 	), nil
 
 }
@@ -75,31 +71,29 @@ type patchFamilyModel struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
-func (m patchFamilyModel) Command(ownerId string) result.Result[command.PatchFamilyCommand] {
+func (m patchFamilyModel) Command(ownerId string) (command.PatchFamilyCommand, error) {
 	familyId, err := parseUuidOrNew(m.Id)
 	if err != nil {
-		return result.Fail[command.PatchFamilyCommand](err)
+		return command.PatchFamilyCommand{}, err
 	}
 	updatedAt := ext.ValueOrDefault(m.UpdatedAt, time.Now())
-	members, err := slicesx.MapErr(m.Members, func(member patchFamilyMemberModel) (family.member, error) {
+	members, err := slicesx.MapErr(m.Members, func(member patchFamilyMemberModel) (family.Member, error) {
 		return member.Command(familyId)
 	})
 	if err != nil {
-		return result.Fail[command.PatchFamilyCommand](err)
+		return command.PatchFamilyCommand{}, err
 	}
-	fam := family.NewFamilyWithoutValidation(
+	fam := family.NewFamily(
 		familyId,
 		ownerId,
 		m.Name,
-		m.HaveJointAccount,
 		members,
 		updatedAt,
 		updatedAt,
-		false,
 	)
-	return result.Success(command.PatchFamilyCommand{
+	return command.PatchFamilyCommand{
 		Family: fam,
-	})
+	}, nil
 }
 
 // Handle
@@ -131,24 +125,21 @@ func (e FamilyPatchEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	cmd := model.Command(userId)
-	result.Match[command.PatchFamilyCommand, result.Unit](cmd,
-		func(cmd command.PatchFamilyCommand) result.Unit {
-			r := e.handler.Handle(c, cmd)
-			handleResponse(c,
-				r,
-				withStatus[family.Family](http.StatusOK),
-				withMapping[family.Family](func(f family.Family) any {
-					return newFamilyModel(userId, f)
-				}))
-			return result.Unit{}
-		},
-		func(err error) result.Unit {
-			c.JSON(http.StatusBadRequest, httpError{
-				Message: err.Error(),
-			})
-			return result.Unit{}
+	cmd, err := model.Command(userId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httpError{
+			Message: err.Error(),
 		})
+		c.Abort()
+		return
+	}
+	r := e.handler.Handle(c, cmd)
+	handleResponse(c,
+		r,
+		withStatus[family.Family](http.StatusOK),
+		withMapping[family.Family](func(f family.Family) any {
+			return newFamilyModel(userId, f)
+		}))
 }
 
 func (e FamilyPatchEndpoint) Pattern() []string {

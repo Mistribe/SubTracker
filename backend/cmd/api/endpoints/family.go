@@ -74,14 +74,13 @@ func newFamilyModel(userId string, source family.Family) familyModel {
 	}
 
 	return familyModel{
-		Id:               source.Id().String(),
-		Name:             source.Name(),
-		IsOwner:          source.OwnerId() == userId,
-		Members:          members,
-		HaveJointAccount: source.HaveJointAccount(),
-		CreatedAt:        source.CreatedAt(),
-		UpdatedAt:        source.UpdatedAt(),
-		Etag:             source.ETag(),
+		Id:        source.Id().String(),
+		Name:      source.Name(),
+		IsOwner:   source.OwnerId() == userId,
+		Members:   members,
+		CreatedAt: source.CreatedAt(),
+		UpdatedAt: source.UpdatedAt(),
+		Etag:      source.ETag(),
 	}
 }
 
@@ -95,7 +94,7 @@ type familyMemberModel struct {
 	Etag      string    `json:"etag" binding:"required"`
 }
 
-func newFamilyMemberModel(source family.member) familyMemberModel {
+func newFamilyMemberModel(source family.Member) familyMemberModel {
 	return familyMemberModel{
 		Id:        source.Id().String(),
 		Name:      source.Name(),
