@@ -38,7 +38,7 @@ type Subscription interface {
 	SetFreeTrialDays(days *uint)
 	SetOwner(owner user.Owner)
 	SetPayer(payer Payer)
-	SetServiceUser(familyMembers []uuid.UUID)
+	SetServiceUsers(familyMembers []uuid.UUID)
 	SetStartDate(startDate time.Time)
 	SetEndDate(endDate *time.Time)
 	SetRecurrency(recurrency RecurrencyType)
@@ -167,7 +167,7 @@ func (s *subscription) SetPayer(payer Payer) {
 	s.SetAsDirty()
 }
 
-func (s *subscription) SetServiceUser(familyMembers []uuid.UUID) {
+func (s *subscription) SetServiceUsers(familyMembers []uuid.UUID) {
 	s.serviceUsers = slicesx.NewTracked(familyMembers, x.UuidUniqueComparer, x.UuidComparer)
 	s.SetAsDirty()
 }

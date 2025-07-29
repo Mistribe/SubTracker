@@ -2,6 +2,7 @@ package query
 
 import (
 	"context"
+	"github.com/oleexo/subtracker/internal/domain/entity"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
@@ -9,14 +10,14 @@ import (
 )
 
 type FindAllQuery struct {
-	Size int
-	Page int
+	Limit  int
+	Offset int
 }
 
 func NewFindAllQuery(size, page int) FindAllQuery {
 	return FindAllQuery{
-		Size: size,
-		Page: page,
+		Limit:  size,
+		Offset: page,
 	}
 }
 
@@ -31,7 +32,8 @@ func NewFindAllQueryHandler(repository subscription.Repository) *FindAllQueryHan
 func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[core.PaginatedResponse[subscription.Subscription]] {
-	subs, err := h.repository.GetAll(ctx, query.Size, query.Page)
+	parameters := entity.NewQueryParameters(query.Limit, query.Offset)
+	subs, err := h.repository.GetAll(ctx, parameters)
 	if err != nil {
 		return result.Fail[core.PaginatedResponse[subscription.Subscription]](err)
 	}

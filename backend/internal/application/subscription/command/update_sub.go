@@ -2,54 +2,40 @@ package command
 
 import (
 	"context"
-	"time"
-
-	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/family"
-	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type UpdateSubscriptionCommand struct {
-	Id                  uuid.UUID
-	Name                string
-	Labels              []uuid.UUID
-	FamilyId            option.Option[uuid.UUID]
-	FamilyMembers       []uuid.UUID
-	PayerId             option.Option[uuid.UUID]
-	PayedByJointAccount bool
-	UpdatedAt           option.Option[time.Time]
+	Subscription subscription.Subscription
 }
 
 type UpdateSubscriptionCommandHandler struct {
 	subscriptionRepository subscription.Repository
-	labelRepository        label.Repository
 	familyRepository       family.Repository
 }
 
 func NewUpdateSubscriptionCommandHandler(
 	subscriptionRepository subscription.Repository,
-	labelRepository label.Repository,
 	familyRepository family.Repository) *UpdateSubscriptionCommandHandler {
 	return &UpdateSubscriptionCommandHandler{
 		subscriptionRepository: subscriptionRepository,
-		labelRepository:        labelRepository,
 		familyRepository:       familyRepository,
 	}
 }
 
 func (h UpdateSubscriptionCommandHandler) Handle(
 	ctx context.Context,
-	command UpdateSubscriptionCommand) result.Result[subscription.Subscription] {
-	subOpt, err := h.subscriptionRepository.Get(ctx, command.Id)
+	cmd UpdateSubscriptionCommand) result.Result[subscription.Subscription] {
+	subOpt, err := h.subscriptionRepository.GetById(ctx, cmd.Subscription.Id())
 	if err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 	return option.Match(subOpt, func(sub subscription.Subscription) result.Result[subscription.Subscription] {
-		return h.updateSubscription(ctx, command, sub)
+		return h.updateSubscription(ctx, cmd, sub)
 	}, func() result.Result[subscription.Subscription] {
 		return result.Fail[subscription.Subscription](subscription.ErrSubscriptionNotFound)
 	})
@@ -57,35 +43,28 @@ func (h UpdateSubscriptionCommandHandler) Handle(
 
 func (h UpdateSubscriptionCommandHandler) updateSubscription(
 	ctx context.Context,
-	command UpdateSubscriptionCommand,
+	cmd UpdateSubscriptionCommand,
 	sub subscription.Subscription) result.Result[subscription.Subscription] {
-	if err := ensureLabelsExists(ctx, h.labelRepository, command.Labels); err != nil {
+	if err := ensureRelatedEntityExists(ctx, h.familyRepository, cmd.Subscription); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	if err := ensureFamilyMemberExists(ctx, h.familyRepository, command.FamilyId, command.FamilyMembers); err != nil {
+	sub.SetFriendlyName(cmd.Subscription.FriendlyName())
+	sub.SetFreeTrialDays(cmd.Subscription.FreeTrialDays())
+	sub.SetOwner(cmd.Subscription.Owner())
+	sub.SetPayer(cmd.Subscription.Payer())
+	sub.SetServiceUsers(cmd.Subscription.ServiceUsers().Values())
+	sub.SetStartDate(cmd.Subscription.StartDate())
+	sub.SetEndDate(cmd.Subscription.EndDate())
+	sub.SetRecurrency(cmd.Subscription.Recurrency())
+	sub.SetCustomRecurrency(cmd.Subscription.CustomRecurrency())
+	sub.SetUpdatedAt(cmd.Subscription.UpdatedAt())
+
+	if err := sub.GetValidationErrors(); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	sub.SetName(command.Name)
-	sub.SetLabels(command.Labels)
-	sub.SetFamilyMembers(command.FamilyMembers)
-	sub.SetPayer(command.PayerId)
-	sub.SetPayedByJointAccount(command.PayedByJointAccount)
-	sub.SetFamilyId(command.FamilyId)
-
-	command.UpdatedAt.IfSome(func(updatedAt time.Time) {
-		sub.SetUpdatedAt(updatedAt)
-	})
-	command.UpdatedAt.IfNone(func() {
-		sub.SetUpdatedAt(time.Now())
-	})
-
-	if err := sub.Validate(); err != nil {
-		return result.Fail[subscription.Subscription](err)
-	}
-
-	if err := h.subscriptionRepository.Save(ctx, &sub); err != nil {
+	if err := h.subscriptionRepository.Save(ctx, sub); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 

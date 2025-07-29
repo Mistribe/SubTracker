@@ -10,11 +10,11 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
-func createSubscription(
+func ensureRelatedEntityExists(
 	ctx context.Context,
 	familyRepository family.Repository,
 	newSubscription subscription.Subscription,
-) (subscription.Subscription, error) {
+) error {
 	if newSubscription.Owner().Type() == user.FamilyOwner {
 		familyId := newSubscription.Owner().FamilyId()
 
@@ -26,11 +26,11 @@ func createSubscription(
 			members = append(members, newSubscription.Payer().MemberId())
 		}
 		if err := ensureFamilyMemberExists(ctx, familyRepository, familyId, members); err != nil {
-			return newSubscription, err
+			return err
 		}
 	}
 
-	return newSubscription, nil
+	return nil
 }
 
 func ensureFamilyMemberExists(

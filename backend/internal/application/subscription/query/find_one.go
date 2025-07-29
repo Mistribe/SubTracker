@@ -27,7 +27,7 @@ func NewFindOneQueryHandler(repository subscription.Repository) *FindOneQueryHan
 }
 
 func (h FindOneQueryHandler) Handle(ctx context.Context, query FindOneQuery) result.Result[subscription.Subscription] {
-	subOpt, err := h.repository.Get(ctx, query.id)
+	subOpt, err := h.repository.GetById(ctx, query.id)
 	if err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
