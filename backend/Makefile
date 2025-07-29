@@ -9,7 +9,7 @@ openapi:
 openapi-fmt:
 	@swag fmt -d ./cmd/api/
 build:
-	go build -v -o ./tmp/api ./cmd/api/main.go
+	go build -v -o ./tmp/api ./cmd/api/
 
 test:
 	go test -v ./...
