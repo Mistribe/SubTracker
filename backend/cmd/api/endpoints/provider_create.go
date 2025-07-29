@@ -24,37 +24,6 @@ func NewProviderCreateEndpoint(handler core.CommandHandler[command.CreateProvide
 	return &ProviderCreateEndpoint{handler: handler}
 }
 
-// @Description Price information for a plan
-type createPriceModel struct {
-	Id        *string    `json:"id,omitempty"`
-	Currency  string     `json:"currency" binding:"required"`
-	StartDate time.Time  `json:"start_date" binding:"required" format:"date-time"`
-	EndDate   *time.Time `json:"end_date,omitempty" format:"date-time"`
-	Amount    float64    `json:"amount" binding:"required"`
-	CreatedAt *time.Time `json:"created_at,omitempty" format:"date-time"`
-}
-
-func (m createPriceModel) Price() (provider.Price, error) {
-	id, err := parseUuidOrNew(m.Id)
-	if err != nil {
-		return nil, err
-	}
-	cry, err := currency.ParseISO(m.Currency)
-	if err != nil {
-		return nil, err
-	}
-	createdAt := ext.ValueOrDefault(m.CreatedAt, time.Now())
-
-	return provider.NewPrice(
-		id,
-		m.StartDate,
-		m.EndDate,
-		cry,
-		m.Amount,
-		createdAt,
-		createdAt), nil
-}
-
 // @Description Plan information for a provider
 type createPlanModel struct {
 	Id          *string            `json:"id,omitempty"`
