@@ -23,7 +23,7 @@ func BuildPersistenceModule() fx.Option {
 			AsRepository[subscription.Repository](NewSubscriptionRepository),
 			AsRepository[family.Repository](NewFamilyRepository),
 			AsRepository[label.Repository](NewLabelRepository),
-			AsRepository[provider.Provider](NewProviderRepository),
+			AsRepository[provider.Repository](NewProviderRepository),
 			startup.AsStartupTask(newLabelTask),
 			startup.AsStartupTask(newRepositoryTask),
 		),

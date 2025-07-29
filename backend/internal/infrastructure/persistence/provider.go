@@ -21,9 +21,7 @@ func NewProviderRepository(repository *DatabaseContext) *ProviderRepository {
 	return &ProviderRepository{repository: repository}
 }
 
-func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (
-	provider.Provider,
-	error) {
+func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (provider.Provider, error) {
 	_, ok := user.FromContext(ctx)
 	if !ok {
 		return nil, nil

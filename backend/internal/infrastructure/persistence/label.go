@@ -132,11 +132,17 @@ func (r LabelRepository) update(ctx context.Context, lbl label.Label) error {
 	return nil
 }
 
-func (r LabelRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	if result := r.repository.db.WithContext(ctx).Delete(&labelSqlModel{}, id); result.Error != nil {
-		return result.Error
+func (r LabelRepository) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
+	result := r.repository.db.WithContext(ctx).Delete(&labelSqlModel{}, id)
+	if result.Error != nil {
+		return false, result.Error
 	}
-	return nil
+
+	if result.RowsAffected == 0 {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func (r LabelRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
