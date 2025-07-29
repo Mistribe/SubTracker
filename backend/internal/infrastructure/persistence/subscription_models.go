@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"github.com/oleexo/subtracker/internal/domain/user"
 	"time"
 
 	"github.com/google/uuid"
@@ -58,6 +59,7 @@ func newSubscriptionServiceUserModel(familyMemberId uuid.UUID, subscriptionId uu
 
 type subscriptionSqlModel struct {
 	baseSqlModel
+	baseOwnerSqlModel
 
 	FriendlyName     *string                    `gorm:"type:varchar(100)"`
 	FreeTrialDays    *uint                      `gorm:"type:integer;default:0"`
@@ -67,8 +69,6 @@ type subscriptionSqlModel struct {
 	Plan             providerPlanSqlModel       `gorm:"foreignKey:PlanId;references:Id"`
 	PriceId          uuid.UUID                  `gorm:"type:uuid;not null"`
 	Price            providerPriceSqlModel      `gorm:"foreignKey:PriceId;references:Id"`
-	OwnerId          uuid.UUID                  `gorm:"type:uuid;not null"`
-	Owner            ownerSqlModel              `gorm:"foreignKey:OwnerId;references:Id"`
 	PayerId          *uuid.UUID                 `gorm:"type:uuid"`
 	Payer            *subscriptionPayerSqlModel `gorm:"foreignKey:SubscriptionId;references:Id"`
 	StartDate        time.Time                  `gorm:"type:timestamp;not null"`
@@ -93,7 +93,6 @@ func newSubscriptionSqlModel(source subscription.Subscription) subscriptionSqlMo
 		PriceId:          source.PriceId(),
 		StartDate:        source.StartDate(),
 		EndDate:          source.EndDate(),
-		OwnerId:          source.Owner().Id(),
 		Recurrency:       source.Recurrency().String(),
 		CustomRecurrency: source.CustomRecurrency(),
 	}
@@ -101,6 +100,18 @@ func newSubscriptionSqlModel(source subscription.Subscription) subscriptionSqlMo
 	if source.Payer() != nil {
 		payerId := source.Payer().Id()
 		model.PayerId = &payerId
+	}
+
+	model.OwnerType = source.Owner().Type().String()
+	switch source.Owner().Type() {
+	case user.FamilyOwner:
+		familyId := source.Owner().FamilyId()
+		model.OwnerFamilyId = &familyId
+		break
+	case user.PersonalOwner:
+		userId := source.Owner().UserId()
+		model.OwnerUserId = &userId
+		break
 	}
 
 	return model
@@ -151,6 +162,12 @@ func newSubscription(source subscriptionSqlModel) subscription.Subscription {
 		panic(err)
 	}
 
+	ownerType, err := user.ParseOwnerType(source.OwnerType)
+	if err != nil {
+		panic(err)
+	}
+	owner := user.NewOwner(ownerType, source.OwnerFamilyId, source.OwnerUserId)
+
 	sub := subscription.NewSubscription(
 		source.Id,
 		source.FriendlyName,
@@ -158,7 +175,7 @@ func newSubscription(source subscriptionSqlModel) subscription.Subscription {
 		source.ProviderId,
 		source.PlanId,
 		source.PriceId,
-		newOwner(source.Owner),
+		owner,
 		payer,
 		serviceUsers,
 		source.StartDate,

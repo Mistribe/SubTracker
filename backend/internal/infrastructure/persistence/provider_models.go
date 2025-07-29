@@ -107,14 +107,13 @@ func newProviderLabelSqlModel(providerId uuid.UUID, labelId uuid.UUID) providerL
 
 type providerSqlModel struct {
 	baseSqlModel
+	baseOwnerSqlModel
 
 	Name           string                  `gorm:"type:varchar(100);not null"`
 	Description    *string                 `gorm:"type:varchar(255)"`
 	IconUrl        *string                 `gorm:"type:varchar(255)"`
 	Url            *string                 `gorm:"type:varchar(255)"`
 	PricingPageUrl *string                 `gorm:"type:varchar(255)"`
-	OwnerId        *uuid.UUID              `gorm:"type:uuid"`
-	Owner          *ownerSqlModel          `gorm:"foreignKey:OwnerId;references:Id"`
 	Labels         []providerLabelSqlModel `gorm:"foreignKey:ProviderId;references:Id;constraint:OnDelete:CASCADE"`
 	Plans          []providerPlanSqlModel  `gorm:"foreignKey:ProviderId;references:Id;constraint:OnDelete:CASCADE"`
 }
@@ -133,18 +132,26 @@ func newProviderSqlModel(source provider.Provider) providerSqlModel {
 		PricingPageUrl: source.PricingPageUrl(),
 	}
 
-	if source.Owner() != nil {
-		ownerId := source.Owner().Id()
-		model.OwnerId = &ownerId
+	model.OwnerType = source.Owner().Type().String()
+	switch source.Owner().Type() {
+	case user.FamilyOwner:
+		familyId := source.Owner().FamilyId()
+		model.OwnerFamilyId = &familyId
+		break
+	case user.PersonalOwner:
+		userId := source.Owner().UserId()
+		model.OwnerUserId = &userId
+		break
 	}
 	return model
 }
 
 func newProvider(model providerSqlModel) provider.Provider {
-	var owner user.Owner
-	if model.Owner != nil {
-		owner = newOwner(*model.Owner)
+	ownerType, err := user.ParseOwnerType(model.OwnerType)
+	if err != nil {
+		panic(err)
 	}
+	owner := user.NewOwner(ownerType, model.OwnerFamilyId, model.OwnerUserId)
 	var labels []uuid.UUID
 	if model.Labels != nil && len(model.Labels) > 0 {
 		labels = make([]uuid.UUID, len(model.Labels))

@@ -16,7 +16,7 @@ import (
 )
 
 type LabelUpdateEndpoint struct {
-	handler core.CommandHandler[command.UpdateLabelCommand, label.label]
+	handler core.CommandHandler[command.UpdateLabelCommand, label.Label]
 }
 
 type updateLabelModel struct {
@@ -25,19 +25,19 @@ type updateLabelModel struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
-func (m updateLabelModel) Command(id uuid.UUID) result.Result[command.UpdateLabelCommand] {
+func (m updateLabelModel) Command(id uuid.UUID) (command.UpdateLabelCommand, error) {
 	updatedAt := option.None[time.Time]()
 
 	if m.UpdatedAt != nil {
 		updatedAt = option.Some(*m.UpdatedAt)
 	}
 
-	return result.Success(command.UpdateLabelCommand{
+	return command.UpdateLabelCommand{
 		Id:        id,
 		Name:      m.Name,
 		Color:     strings.ToUpper(m.Color),
 		UpdatedAt: updatedAt,
-	})
+	}, nil
 }
 
 // Handle godoc
@@ -77,23 +77,20 @@ func (l LabelUpdateEndpoint) Handle(c *gin.Context) {
 		})
 		return
 	}
-
-	result.Match[command.UpdateLabelCommand, result.Unit](model.Command(id),
-		func(cmd command.UpdateLabelCommand) result.Unit {
-			r := l.handler.Handle(c, cmd)
-			handleResponse(c,
-				r,
-				withMapping[label.label](func(lbl label.label) any {
-					return newLabelModel(lbl)
-				}))
-			return result.Unit{}
-		},
-		func(err error) result.Unit {
-			c.JSON(http.StatusBadRequest, httpError{
-				Message: err.Error(),
-			})
-			return result.Unit{}
+	cmd, err := model.Command(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httpError{
+			Message: err.Error(),
 		})
+		c.Abort()
+		return
+	}
+	r := l.handler.Handle(c, cmd)
+	handleResponse(c,
+		r,
+		withMapping[label.Label](func(lbl label.Label) any {
+			return newLabelModel(lbl)
+		}))
 }
 
 func (l LabelUpdateEndpoint) Pattern() []string {
@@ -110,7 +107,7 @@ func (l LabelUpdateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewLabelUpdateEndpoint(handler core.CommandHandler[command.UpdateLabelCommand, label.label]) *LabelUpdateEndpoint {
+func NewLabelUpdateEndpoint(handler core.CommandHandler[command.UpdateLabelCommand, label.Label]) *LabelUpdateEndpoint {
 	return &LabelUpdateEndpoint{
 		handler: handler,
 	}

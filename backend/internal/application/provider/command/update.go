@@ -51,7 +51,7 @@ func (h UpdateCommandHandler) update(
 	}
 
 	if in.Owner().Type() == user.PersonalOwner &&
-		in.Owner().OwnerId() != userId {
+		in.Owner().UserId() != userId {
 		return result.Fail[provider.Provider](provider.ErrOnlyOwnerCanEdit)
 	}
 

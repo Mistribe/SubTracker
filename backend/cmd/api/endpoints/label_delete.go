@@ -12,7 +12,7 @@ import (
 )
 
 type LabelDeleteEndpoint struct {
-	handler core.CommandHandler[command.DeleteLabelCommand, result.Unit]
+	handler core.CommandHandler[command.DeleteLabelCommand, bool]
 }
 
 // Handle godoc
@@ -47,7 +47,7 @@ func (l LabelDeleteEndpoint) Handle(c *gin.Context) {
 	}
 
 	r := l.handler.Handle(c, cmd)
-	handleResponse(c, r, withNoContent[result.Unit]())
+	handleResponse(c, r, withNoContent[bool]())
 }
 
 func (l LabelDeleteEndpoint) Pattern() []string {
@@ -64,7 +64,7 @@ func (l LabelDeleteEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewLabelDeleteEndpoint(handler core.CommandHandler[command.DeleteLabelCommand, result.Unit]) *LabelDeleteEndpoint {
+func NewLabelDeleteEndpoint(handler core.CommandHandler[command.DeleteLabelCommand, bool]) *LabelDeleteEndpoint {
 	return &LabelDeleteEndpoint{
 		handler: handler,
 	}

@@ -11,7 +11,7 @@ import (
 )
 
 type LabelGetEndpoint struct {
-	handler core.QueryHandler[query.FindOneQuery, label.label]
+	handler core.QueryHandler[query.FindOneQuery, label.Label]
 }
 
 // Handle godoc
@@ -36,7 +36,7 @@ func (s LabelGetEndpoint) Handle(c *gin.Context) {
 	r := s.handler.Handle(c, q)
 	handleResponse(c,
 		r,
-		withMapping[label.label](func(lab label.label) any {
+		withMapping[label.Label](func(lab label.Label) any {
 			return newLabelModel(lab)
 		}))
 }

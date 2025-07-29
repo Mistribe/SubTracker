@@ -1,19 +1,17 @@
 package persistence
 
 import (
-	"github.com/google/uuid"
-
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
 type labelSqlModel struct {
 	baseSqlModel
-	OwnerId   *uuid.UUID     `gorm:"type:uuid"`
-	Owner     *ownerSqlModel `gorm:"foreignKey:OwnerId;references:Id"`
-	Name      string         `gorm:"type:varchar(100);not null"`
-	Color     string         `gorm:"type:varchar(20);not null"`
-	IsDefault bool           `gorm:"type:boolean;not null;default:false;index"`
+	baseOwnerSqlModel
+
+	Name      string `gorm:"type:varchar(100);not null"`
+	Color     string `gorm:"type:varchar(20);not null"`
+	IsDefault bool   `gorm:"type:boolean;not null;default:false;index"`
 }
 
 func (l labelSqlModel) TableName() string {
@@ -33,19 +31,27 @@ func newLabelSqlModel(source label.Label) labelSqlModel {
 		IsDefault: source.IsDefault(),
 	}
 
-	if source.Owner() != nil {
-		ownerId := source.Owner().Id()
-		model.OwnerId = &ownerId
+	model.OwnerType = source.Owner().Type().String()
+	switch source.Owner().Type() {
+	case user.FamilyOwner:
+		familyId := source.Owner().FamilyId()
+		model.OwnerFamilyId = &familyId
+		break
+	case user.PersonalOwner:
+		userId := source.Owner().UserId()
+		model.OwnerUserId = &userId
+		break
 	}
 
 	return model
 }
 
 func newLabel(source labelSqlModel) label.Label {
-	var owner user.Owner
-	if source.Owner != nil {
-		owner = newOwner(*source.Owner)
+	ownerType, err := user.ParseOwnerType(source.OwnerType)
+	if err != nil {
+		panic(err)
 	}
+	owner := user.NewOwner(ownerType, source.OwnerFamilyId, source.OwnerUserId)
 	lbl := label.NewLabel(
 		source.Id,
 		owner,

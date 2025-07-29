@@ -13,11 +13,10 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/ext"
-	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type LabelCreateEndpoint struct {
-	handler core.CommandHandler[command.CreateLabelCommand, label.label]
+	handler core.CommandHandler[command.CreateLabelCommand, label.Label]
 }
 
 type createLabelModel struct {
@@ -25,22 +24,30 @@ type createLabelModel struct {
 	Name      string     `json:"name" binding:"required"`
 	IsDefault *bool      `json:"is_default,omitempty"`
 	Color     string     `json:"color" binding:"required"`
+	OwnerType string     `json:"owner_type" binding:"required"`
+	FamilyId  *string    `json:"family_id,omitempty"`
 	CreatedAt *time.Time `json:"created_at,omitempty" format:"date-time"`
 }
 
-func (m createLabelModel) ToLabel(userId string) result.Result[label.label] {
+func (m createLabelModel) ToLabel(userId string) (label.Label, error) {
 	var id uuid.UUID
 	var err error
 	var createdAt time.Time
 
 	id, err = parseUuidOrNew(m.Id)
 	if err != nil {
-		return result.Fail[label.label](err)
+		return nil, err
+	}
+
+	ownerType, err := user.ParseOwnerType(m.OwnerType)
+	if err != nil {
+		return nil, err
 	}
 
 	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
 	isDefault := ext.ValueOrDefault(m.IsDefault, false)
 
+	owner := user.NewPersonalOwner("", userId, time.Now(), time.Now())
 	return label.NewLabel(
 		id,
 		&userId,
@@ -49,17 +56,17 @@ func (m createLabelModel) ToLabel(userId string) result.Result[label.label] {
 		strings.ToUpper(m.Color),
 		createdAt,
 		createdAt,
-	)
+	), nil
 }
 
-func (m createLabelModel) Command(userId string) result.Result[command.CreateLabelCommand] {
-	return result.Bind[label.label, command.CreateLabelCommand](
-		m.ToLabel(userId),
-		func(lbl label.label) result.Result[command.CreateLabelCommand] {
-			return result.Success(command.CreateLabelCommand{
-				Label: lbl,
-			})
-		})
+func (m createLabelModel) Command(userId string) (command.CreateLabelCommand, error) {
+	lbl, err := m.ToLabel(userId)
+	if err != nil {
+		return command.CreateLabelCommand{}, err
+	}
+	return command.CreateLabelCommand{
+		Label: lbl,
+	}, nil
 }
 
 // Handle godoc
@@ -89,25 +96,22 @@ func (l LabelCreateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	cmd := model.Command(userId)
-
-	result.Match[command.CreateLabelCommand, result.Unit](cmd,
-		func(cmd command.CreateLabelCommand) result.Unit {
-			r := l.handler.Handle(c, cmd)
-			handleResponse(c,
-				r,
-				withStatus[label.label](http.StatusCreated),
-				withMapping[label.label](func(lbl label.label) any {
-					return newLabelModel(lbl)
-				}))
-			return result.Unit{}
-		},
-		func(err error) result.Unit {
-			c.JSON(http.StatusBadRequest, httpError{
-				Message: err.Error(),
-			})
-			return result.Unit{}
+	cmd, err := model.Command(userId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httpError{
+			Message: err.Error(),
 		})
+		c.Abort()
+		return
+	}
+
+	r := l.handler.Handle(c, cmd)
+	handleResponse(c,
+		r,
+		withStatus[label.Label](http.StatusCreated),
+		withMapping[label.Label](func(lbl label.Label) any {
+			return newLabelModel(lbl)
+		}))
 }
 
 func (l LabelCreateEndpoint) Pattern() []string {
@@ -124,7 +128,7 @@ func (l LabelCreateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewLabelCreateEndpoint(handler core.CommandHandler[command.CreateLabelCommand, label.label]) *LabelCreateEndpoint {
+func NewLabelCreateEndpoint(handler core.CommandHandler[command.CreateLabelCommand, label.Label]) *LabelCreateEndpoint {
 	return &LabelCreateEndpoint{
 		handler: handler,
 	}

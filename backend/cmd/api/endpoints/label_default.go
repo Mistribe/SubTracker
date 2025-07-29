@@ -13,10 +13,10 @@ import (
 )
 
 type DefaultLabelEndpoint struct {
-	handler core.QueryHandler[query.DefaultLabelQuery, []label.label]
+	handler core.QueryHandler[query.DefaultLabelQuery, []label.Label]
 }
 
-func NewDefaultLabelEndpoint(handler core.QueryHandler[query.DefaultLabelQuery, []label.label]) *DefaultLabelEndpoint {
+func NewDefaultLabelEndpoint(handler core.QueryHandler[query.DefaultLabelQuery, []label.Label]) *DefaultLabelEndpoint {
 	return &DefaultLabelEndpoint{handler: handler}
 }
 
@@ -32,10 +32,10 @@ func (e DefaultLabelEndpoint) Handle(c *gin.Context) {
 	r := e.handler.Handle(c, query.DefaultLabelQuery{})
 	handleResponse(c,
 		r,
-		withMapping[[]label.label](func(lbls []label.label) any {
-			return slicesx.Map[label.label, labelModel](
+		withMapping[[]label.Label](func(lbls []label.Label) any {
+			return slicesx.Map[label.Label, labelModel](
 				lbls,
-				func(lbl label.label) labelModel {
+				func(lbl label.Label) labelModel {
 					return newLabelModel(lbl)
 				},
 			)

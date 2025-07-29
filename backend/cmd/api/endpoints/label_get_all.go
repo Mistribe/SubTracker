@@ -12,10 +12,10 @@ import (
 )
 
 type LabelGetAllEndpoint struct {
-	handler core.QueryHandler[query.FindAllQuery, core.PaginatedResponse[label.label]]
+	handler core.QueryHandler[query.FindAllQuery, core.PaginatedResponse[label.Label]]
 }
 
-func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, core.PaginatedResponse[label.label]]) *LabelGetAllEndpoint {
+func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, core.PaginatedResponse[label.Label]]) *LabelGetAllEndpoint {
 	return &LabelGetAllEndpoint{handler: handler}
 }
 
@@ -45,7 +45,7 @@ func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
 	r := e.handler.Handle(c, q)
 	handleResponse(c,
 		r,
-		withMapping[core.PaginatedResponse[label.label]](func(paginatedResult core.PaginatedResponse[label.label]) any {
+		withMapping[core.PaginatedResponse[label.Label]](func(paginatedResult core.PaginatedResponse[label.Label]) any {
 			return newPaginatedResponseModel(paginatedResult, newLabelModel)
 		}))
 }
