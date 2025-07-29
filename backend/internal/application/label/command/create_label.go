@@ -2,9 +2,10 @@ package command
 
 import (
 	"context"
+	"github.com/oleexo/subtracker/internal/domain/family"
+	"github.com/oleexo/subtracker/internal/domain/user"
 
 	"github.com/oleexo/subtracker/internal/domain/label"
-	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
@@ -13,27 +14,36 @@ type CreateLabelCommand struct {
 }
 
 type CreateLabelCommandHandler struct {
-	repository label.Repository
+	labelRepository  label.Repository
+	familyRepository family.Repository
 }
 
-func NewCreateLabelCommandHandler(repository label.Repository) *CreateLabelCommandHandler {
-	return &CreateLabelCommandHandler{repository: repository}
+func NewCreateLabelCommandHandler(labelRepository label.Repository,
+	familyRepository family.Repository) *CreateLabelCommandHandler {
+	return &CreateLabelCommandHandler{
+		labelRepository:  labelRepository,
+		familyRepository: familyRepository,
+	}
 }
 
 func (h CreateLabelCommandHandler) Handle(ctx context.Context, command CreateLabelCommand) result.Result[label.Label] {
-	existingLabelOpt, err := h.repository.GetById(ctx, command.Label.Id())
+	existingLabel, err := h.labelRepository.GetById(ctx, command.Label.Id())
 	if err != nil {
 		return result.Fail[label.Label](err)
 	}
 
-	return option.Match(existingLabelOpt, func(existingLabel label.Label) result.Result[label.Label] {
+	err = user.EnsureOwnership(ctx, h.familyRepository, command.Label.Owner())
+	if err != nil {
+		return result.Fail[label.Label](err)
+	}
+	if existingLabel != nil {
 		if existingLabel.Equal(command.Label) {
 			return result.Success(command.Label)
 		}
 		return result.Fail[label.Label](label.ErrLabelAlreadyExists)
-	}, func() result.Result[label.Label] {
-		return h.createLabel(ctx, command)
-	})
+	}
+
+	return h.createLabel(ctx, command)
 }
 
 func (h CreateLabelCommandHandler) createLabel(
@@ -51,7 +61,7 @@ func (h CreateLabelCommandHandler) createLabel(
 		return result.Fail[label.Label](err)
 	}
 
-	if err := h.repository.Save(ctx, lbl); err != nil {
+	if err := h.labelRepository.Save(ctx, lbl); err != nil {
 		return result.Fail[label.Label](err)
 	}
 	return result.Success(lbl)

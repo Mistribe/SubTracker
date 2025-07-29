@@ -8,7 +8,6 @@ import (
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/label/command"
-	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type LabelDeleteEndpoint struct {

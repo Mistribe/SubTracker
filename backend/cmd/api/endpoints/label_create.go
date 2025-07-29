@@ -46,11 +46,19 @@ func (m createLabelModel) ToLabel(userId string) (label.Label, error) {
 
 	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
 	isDefault := ext.ValueOrDefault(m.IsDefault, false)
+	var familyId *uuid.UUID
+	if m.FamilyId != nil {
+		fid, err := uuid.Parse(*m.FamilyId)
+		if err != nil {
+			return nil, err
+		}
+		familyId = &fid
+	}
 
-	owner := user.NewPersonalOwner("", userId, time.Now(), time.Now())
+	owner := user.NewOwner(ownerType, familyId, &userId)
 	return label.NewLabel(
 		id,
-		&userId,
+		owner,
 		m.Name,
 		isDefault,
 		strings.ToUpper(m.Color),

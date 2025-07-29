@@ -2,6 +2,8 @@ package command
 
 import (
 	"context"
+	"github.com/oleexo/subtracker/internal/domain/family"
+	"github.com/oleexo/subtracker/internal/domain/user"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,23 +21,33 @@ type UpdateLabelCommand struct {
 }
 
 type UpdateLabelCommandHandler struct {
-	repository label.Repository
+	labelRepository  label.Repository
+	familyRepository family.Repository
 }
 
-func NewUpdateLabelCommandHandler(repository label.Repository) *UpdateLabelCommandHandler {
-	return &UpdateLabelCommandHandler{repository: repository}
+func NewUpdateLabelCommandHandler(labelRepository label.Repository,
+	familyRepository family.Repository) *UpdateLabelCommandHandler {
+	return &UpdateLabelCommandHandler{
+		labelRepository:  labelRepository,
+		familyRepository: familyRepository,
+	}
 }
 
 func (h UpdateLabelCommandHandler) Handle(ctx context.Context, command UpdateLabelCommand) result.Result[label.Label] {
-	labelOpt, err := h.repository.GetById(ctx, command.Id)
+	existingLabel, err := h.labelRepository.GetById(ctx, command.Id)
 	if err != nil {
 		return result.Fail[label.Label](err)
 	}
-	return option.Match(labelOpt, func(in label.Label) result.Result[label.Label] {
-		return h.updateLabel(ctx, command, in)
-	}, func() result.Result[label.Label] {
+
+	if existingLabel == nil {
 		return result.Fail[label.Label](label.ErrLabelNotFound)
-	})
+	}
+	err = user.EnsureOwnership(ctx, h.familyRepository, existingLabel.Owner())
+	if err != nil {
+		return result.Fail[label.Label](err)
+	}
+
+	return h.updateLabel(ctx, command, existingLabel)
 }
 
 func (h UpdateLabelCommandHandler) updateLabel(
@@ -56,7 +68,7 @@ func (h UpdateLabelCommandHandler) updateLabel(
 		return result.Fail[label.Label](err)
 	}
 
-	if err := h.repository.Save(ctx, lbl); err != nil {
+	if err := h.labelRepository.Save(ctx, lbl); err != nil {
 		return result.Fail[label.Label](err)
 	}
 

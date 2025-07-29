@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-
-	"github.com/oleexo/subtracker/pkg/langext/option"
 )
 
 type QueryParameters struct {
@@ -21,7 +19,7 @@ func NewQueryParameters(limit, offset int) QueryParameters {
 }
 
 type Repository[TEntity Entity] interface {
-	GetById(ctx context.Context, entityId uuid.UUID) (option.Option[TEntity], error)
+	GetById(ctx context.Context, entityId uuid.UUID) (TEntity, error)
 	Save(ctx context.Context, entity TEntity) error
 	Delete(ctx context.Context, entityId uuid.UUID) (bool, error)
 	Exists(ctx context.Context, ids ...uuid.UUID) (bool, error)

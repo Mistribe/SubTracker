@@ -40,9 +40,6 @@ func NewSubscriptionEndpointGroup(
 	updateEndpoint *SubscriptionUpdateEndpoint,
 	deleteEndpoint *SubscriptionDeleteEndpoint,
 	patchEndpoint *SubscriptionPatchEndpoint,
-	createPaymentEndpoint *SubscriptionPaymentCreateEndpoint,
-	updatePaymentEndpoint *SubscriptionPaymentUpdateEndpoint,
-	deletePaymentEndpoint *SubscriptionPaymentDeleteEndpoint,
 	authenticationMiddleware *middlewares.AuthenticationMiddleware) *SubscriptionEndpointGroup {
 	return &SubscriptionEndpointGroup{
 		routes: []ginfx.Route{
@@ -52,9 +49,6 @@ func NewSubscriptionEndpointGroup(
 			updateEndpoint,
 			deleteEndpoint,
 			patchEndpoint,
-			createPaymentEndpoint,
-			updatePaymentEndpoint,
-			deletePaymentEndpoint,
 		},
 		middlewares: []gin.HandlerFunc{
 			authenticationMiddleware.Middleware(),
@@ -62,44 +56,16 @@ func NewSubscriptionEndpointGroup(
 	}
 }
 
-type subscriptionPaymentModel struct {
-	Id        string     `json:"id" binding:"required"`
-	Price     float64    `json:"price" binding:"required"`
-	StartDate time.Time  `json:"start_date" binding:"required" format:"date-time"`
-	EndDate   *time.Time `json:"end_date,omitempty" format:"date-time"`
-	Months    int        `json:"months" binding:"required"`
-	Currency  string     `json:"currency" binding:"required"`
-	CreatedAt time.Time  `json:"created_at" binding:"required" format:"date-time"`
-	UpdatedAt time.Time  `json:"updated_at" binding:"required" format:"date-time"`
-	Etag      string     `json:"etag" binding:"required"`
-}
-
 type subscriptionModel struct {
-	Id                  string                     `json:"id" binding:"required"`
-	Name                string                     `json:"name" binding:"required"`
-	Payments            []subscriptionPaymentModel `json:"payments" binding:"required"`
-	Labels              []string                   `json:"labels" binding:"required"`
-	FamilyMembers       []string                   `json:"family_members" binding:"required"`
-	PayerId             *string                    `json:"payer_id_id,omitempty"`
-	FamilyId            *string                    `json:"family_id,omitempty"`
-	PayedByJointAccount bool                       `json:"payed_by_joint_account" binding:"required"`
-	CreatedAt           time.Time                  `json:"created_at" binding:"required" format:"date-time"`
-	UpdatedAt           time.Time                  `json:"updated_at" binding:"required" format:"date-time"`
-	Etag                string                     `json:"etag" binding:"required"`
-}
-
-func newPaymentModel(source subscription.Payment) subscriptionPaymentModel {
-	return subscriptionPaymentModel{
-		Id:        source.Id().String(),
-		Price:     source.Price(),
-		StartDate: source.StartDate(),
-		EndDate:   source.EndDate().Value(),
-		Months:    source.Months(),
-		Currency:  source.Currency().String(),
-		CreatedAt: source.CreatedAt(),
-		UpdatedAt: source.UpdatedAt(),
-		Etag:      source.ETag(),
-	}
+	Id                  string    `json:"id" binding:"required"`
+	Labels              []string  `json:"labels" binding:"required"`
+	FamilyMembers       []string  `json:"family_members" binding:"required"`
+	PayerId             *string   `json:"payer_id_id,omitempty"`
+	FamilyId            *string   `json:"family_id,omitempty"`
+	PayedByJointAccount bool      `json:"payed_by_joint_account" binding:"required"`
+	CreatedAt           time.Time `json:"created_at" binding:"required" format:"date-time"`
+	UpdatedAt           time.Time `json:"updated_at" binding:"required" format:"date-time"`
+	Etag                string    `json:"etag" binding:"required"`
 }
 
 func newSubscriptionModel(source subscription.Subscription) subscriptionModel {

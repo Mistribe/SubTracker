@@ -2,6 +2,8 @@ package command
 
 import (
 	"context"
+	"github.com/oleexo/subtracker/internal/domain/family"
+	"github.com/oleexo/subtracker/internal/domain/user"
 
 	"github.com/google/uuid"
 
@@ -14,15 +16,20 @@ type DeleteLabelCommand struct {
 }
 
 type DeleteLabelCommandHandler struct {
-	repository label.Repository
+	labelRepository  label.Repository
+	familyRepository family.Repository
 }
 
-func NewDeleteLabelCommandHandler(repository label.Repository) *DeleteLabelCommandHandler {
-	return &DeleteLabelCommandHandler{repository: repository}
+func NewDeleteLabelCommandHandler(labelRepository label.Repository,
+	familyRepository family.Repository) *DeleteLabelCommandHandler {
+	return &DeleteLabelCommandHandler{
+		labelRepository:  labelRepository,
+		familyRepository: familyRepository,
+	}
 }
 
 func (h DeleteLabelCommandHandler) Handle(ctx context.Context, command DeleteLabelCommand) result.Result[bool] {
-	existingLabel, err := h.repository.GetById(ctx, command.Id)
+	existingLabel, err := h.labelRepository.GetById(ctx, command.Id)
 	if err != nil {
 		return result.Fail[bool](err)
 	}
@@ -30,7 +37,12 @@ func (h DeleteLabelCommandHandler) Handle(ctx context.Context, command DeleteLab
 		return result.Fail[bool](label.ErrLabelNotFound)
 	}
 
-	ok, err := h.repository.Delete(ctx, command.Id)
+	err = user.EnsureOwnership(ctx, h.familyRepository, existingLabel.Owner())
+	if err != nil {
+		return result.Fail[bool](err)
+	}
+
+	ok, err := h.labelRepository.Delete(ctx, command.Id)
 	if err != nil {
 		return result.Fail[bool](err)
 	}
