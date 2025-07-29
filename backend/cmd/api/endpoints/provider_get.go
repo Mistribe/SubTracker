@@ -18,6 +18,17 @@ func NewProviderGetEndpoint(handler core.QueryHandler[query.FindOneQuery, provid
 	return &ProviderGetEndpoint{handler: handler}
 }
 
+// Handle godoc
+//
+// @Summary Get provider by ID
+// @Description Returns a single provider by its ID
+// @Tags providers
+// @Accept json
+// @Produce json
+// @Param providerId path string true "Provider ID" format(uuid)
+// @Success 200 {object} ProviderModel
+// @Failure 400 {object} httpError
+// @Router /api/v1/providers/{providerId} [get]
 func (e ProviderGetEndpoint) Handle(c *gin.Context) {
 	id, err := paramAsUuid(c, "providerId")
 	if err != nil {

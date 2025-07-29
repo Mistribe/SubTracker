@@ -5,9 +5,9 @@ install-deps:
 	go install github.com/vektra/mockery/v3@v3.5.0
 
 openapi:
-	@swag init -d ./cmd/api/ -o ./cmd/api/docs --v3.1
-openapi-fmt:
 	@swag fmt -d ./cmd/api/
+	@swag init -d ./cmd/api/ -o ./cmd/api/docs --v3.1
+
 build:
 	go build -v -o ./tmp/api ./cmd/api/
 

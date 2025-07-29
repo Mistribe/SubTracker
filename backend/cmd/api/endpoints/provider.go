@@ -53,22 +53,24 @@ func NewProviderEndpointGroup(
 type priceModel struct {
 	Id        string     `json:"id" binding:"required"`
 	Currency  string     `json:"currency" binding:"required"`
-	StartDate time.Time  `json:"start_date" binding:"required"`
-	EndDate   *time.Time `json:"end_date,omitempty"`
+	StartDate time.Time  `json:"start_date" binding:"required" format:"date-time"`
+	EndDate   *time.Time `json:"end_date,omitempty" format:"date-time"`
 	Amount    float64    `json:"amount" binding:"required"`
-	CreatedAt string     `json:"created_at" binding:"required"`
-	UpdatedAt string     `json:"updated_at" binding:"required"`
+	CreatedAt time.Time  `json:"created_at" binding:"required" format:"date-time"`
+	UpdatedAt time.Time  `json:"updated_at" binding:"required" format:"date-time"`
 	Etag      string     `json:"etag" binding:"required"`
 }
+
 type planModel struct {
 	Id          string       `json:"id" binding:"required"`
 	Name        *string      `json:"name,omitempty"`
 	Description *string      `json:"description,omitempty"`
 	Prices      []priceModel `json:"prices" binding:"required"`
-	CreatedAt   string       `json:"created_at" binding:"required"`
-	UpdatedAt   string       `json:"updated_at" binding:"required"`
+	CreatedAt   time.Time    `json:"created_at" binding:"required" format:"date-time"`
+	UpdatedAt   time.Time    `json:"updated_at" binding:"required" format:"date-time"`
 	Etag        string       `json:"etag" binding:"required"`
 }
+
 type providerModel struct {
 	Id             string      `json:"id" binding:"required"`
 	Name           string      `json:"name" binding:"required"`
@@ -79,8 +81,8 @@ type providerModel struct {
 	Labels         []string    `json:"labels" binding:"required"`
 	Plans          []planModel `json:"plans" binding:"required"`
 	Owner          *ownerModel `json:"owner,omitempty"`
-	CreatedAt      string      `json:"created_at" binding:"required"`
-	UpdatedAt      string      `json:"updated_at" binding:"required"`
+	CreatedAt      time.Time   `json:"created_at" binding:"required" format:"date-time"`
+	UpdatedAt      time.Time   `json:"updated_at" binding:"required" format:"date-time"`
 	Etag           string      `json:"etag" binding:"required"`
 }
 
@@ -95,8 +97,8 @@ func newProviderModel(source provider.Provider) providerModel {
 		PricingPageUrl: source.PricingPageUrl(),
 		Labels:         slicesx.Map(source.Labels().Values(), func(id uuid.UUID) string { return id.String() }),
 		Plans:          slicesx.Map(source.Plans().Values(), newPlanModel),
-		CreatedAt:      source.CreatedAt().String(),
-		UpdatedAt:      source.UpdatedAt().String(),
+		CreatedAt:      source.CreatedAt(),
+		UpdatedAt:      source.UpdatedAt(),
 		Etag:           source.ETag(),
 	}
 
@@ -114,8 +116,8 @@ func newPlanModel(source provider.Plan) planModel {
 		Name:        source.Name(),
 		Description: source.Description(),
 		Prices:      slicesx.Map(source.Prices().Values(), newPriceModel),
-		CreatedAt:   source.CreatedAt().String(),
-		UpdatedAt:   source.UpdatedAt().String(),
+		CreatedAt:   source.CreatedAt(),
+		UpdatedAt:   source.UpdatedAt(),
 		Etag:        source.ETag(),
 	}
 }
@@ -127,8 +129,8 @@ func newPriceModel(source provider.Price) priceModel {
 		StartDate: source.StartDate(),
 		EndDate:   source.EndDate(),
 		Amount:    source.Amount(),
-		CreatedAt: source.CreatedAt().String(),
-		UpdatedAt: source.UpdatedAt().String(),
+		CreatedAt: source.CreatedAt(),
+		UpdatedAt: source.UpdatedAt(),
 		Etag:      source.ETag(),
 	}
 }

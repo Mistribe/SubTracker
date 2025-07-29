@@ -35,9 +35,15 @@ func BuildApplicationModule() fx.Option {
 		fx.Provide(
 			AsQueryHandler[proQuery.FindOneQuery, provider.Provider](proQuery.NewFindOneQueryHandler),
 			AsQueryHandler[proQuery.FindAllQuery, core.PaginatedResponse[provider.Provider]](proQuery.NewFindAllQueryHandler),
-			AsCommandHandler[proCommand.CreateProviderCommand, provider.Provider](proCommand.NewCreateCommandHandler),
-			AsCommandHandler[proCommand.UpdateProviderCommand, provider.Provider](proCommand.NewUpdateCommandHandler),
-			AsCommandHandler[proCommand.DeleteProviderCommand, bool](proCommand.NewDeleteCommandHandler),
+			AsCommandHandler[proCommand.CreateProviderCommand, provider.Provider](proCommand.NewCreateProviderCommandHandler),
+			AsCommandHandler[proCommand.CreatePlanCommand, provider.Plan](proCommand.NewCreatePlanCommandHandler),
+			AsCommandHandler[proCommand.CreatePriceCommand, provider.Price](proCommand.NewCreatePriceCommandHandler),
+			AsCommandHandler[proCommand.UpdateProviderCommand, provider.Provider](proCommand.NewUpdateProviderCommandHandler),
+			AsCommandHandler[proCommand.UpdatePlanCommand, provider.Plan](proCommand.NewUpdatePlanCommandHandler),
+			AsCommandHandler[proCommand.UpdatePriceCommand, provider.Price](proCommand.NewUpdatePriceCommandHandler),
+			AsCommandHandler[proCommand.DeleteProviderCommand, bool](proCommand.NewDeleteProviderCommandHandler),
+			AsCommandHandler[proCommand.DeletePlanCommand, bool](proCommand.NewDeletePlanCommandHandler),
+			AsCommandHandler[proCommand.DeletePriceCommand, bool](proCommand.NewDeletePriceCommandHandler),
 
 			AsQueryHandler[subQuery.FindOneQuery, subscription.Subscription](subQuery.NewFindOneQueryHandler),
 			AsQueryHandler[subQuery.FindAllQuery, core.PaginatedResponse[subscription.Subscription]](subQuery.NewFindAllQueryHandler),

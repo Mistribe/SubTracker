@@ -3,6 +3,8 @@ package provider
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/domain/entity"
 )
 
@@ -11,4 +13,6 @@ type Repository interface {
 
 	GetAll(ctx context.Context, parameters entity.QueryParameters) ([]Provider, error)
 	GetAllCount(ctx context.Context) (int64, error)
+	DeletePlan(ctx context.Context, planId uuid.UUID) (bool, error)
+	DeletePrice(ctx context.Context, id uuid.UUID) (bool, error)
 }

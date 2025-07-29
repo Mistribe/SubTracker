@@ -37,6 +37,10 @@ type Provider interface {
 	SetPlans(plans []Plan)
 	Equal(other Provider) bool
 	GetValidationErrors() validationx.Errors
+	ContainsPlan(planId uuid.UUID) bool
+	AddPlan(plan Plan) bool
+	GetPlanById(planId uuid.UUID) Plan
+	RemovePlanById(planId uuid.UUID) bool
 }
 
 type provider struct {
@@ -75,6 +79,43 @@ func NewProvider(
 		plans:          slicesx.NewTracked(plans, planUniqueComparer, planComparer),
 		owner:          owner,
 	}
+}
+
+func (p *provider) RemovePlanById(planId uuid.UUID) bool {
+	pl := p.GetPlanById(planId)
+	if pl == nil {
+		return false
+	}
+
+	return p.plans.Remove(pl)
+}
+
+func (p *provider) GetPlanById(planId uuid.UUID) Plan {
+	for pl := range p.plans.It() {
+		if pl.Id() == planId {
+			return pl
+		}
+	}
+
+	return nil
+}
+
+func (p *provider) ContainsPlan(planId uuid.UUID) bool {
+	for pl := range p.plans.It() {
+		if pl.Id() == planId {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (p *provider) AddPlan(plan Plan) bool {
+	if p.plans.Add(plan) {
+		p.SetAsDirty()
+		return true
+	}
+	return false
 }
 
 func (p *provider) Name() string {

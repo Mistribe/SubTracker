@@ -23,7 +23,7 @@ type DeleteCommandHandler struct {
 	repository provider.Repository
 }
 
-func NewDeleteCommandHandler(repository provider.Repository) *DeleteCommandHandler {
+func NewDeleteProviderCommandHandler(repository provider.Repository) *DeleteCommandHandler {
 	return &DeleteCommandHandler{repository: repository}
 }
 

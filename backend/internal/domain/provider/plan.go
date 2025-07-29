@@ -23,27 +23,31 @@ type Plan interface {
 	entity.Entity
 	entity.ETagEntity
 
-	Name() *string
-	SetName(name *string)
+	Name() string
+	SetName(name string)
 	Description() *string
 	SetDescription(description *string)
 	Prices() *slicesx.Tracked[Price]
 	SetPrices(prices []Price)
 	Equal(other Plan) bool
 	GetValidationErrors() validationx.Errors
+	ContainsPrice(priceId uuid.UUID) bool
+	AddPrice(price Price) bool
+	GetPriceById(priceId uuid.UUID) Price
+	RemovePriceById(priceId uuid.UUID) bool
 }
 
 type plan struct {
 	*entity.Base
 
-	name        *string
+	name        string
 	description *string
 	prices      *slicesx.Tracked[Price]
 }
 
 func NewPlan(
 	id uuid.UUID,
-	name *string,
+	name string,
 	description *string,
 	prices []Price,
 	createdAt time.Time,
@@ -57,11 +61,47 @@ func NewPlan(
 	}
 }
 
-func (p *plan) Name() *string {
+func (p *plan) RemovePriceById(priceId uuid.UUID) bool {
+	pr := p.GetPriceById(priceId)
+	if pr == nil {
+		return false
+	}
+
+	return p.prices.Remove(pr)
+}
+
+func (p *plan) AddPrice(price Price) bool {
+	if p.prices.Add(price) {
+		p.SetAsDirty()
+		return true
+	}
+	return false
+}
+
+func (p *plan) GetPriceById(priceId uuid.UUID) Price {
+	for pr := range p.prices.It() {
+		if pr.Id() == priceId {
+			return pr
+		}
+	}
+
+	return nil
+}
+
+func (p *plan) ContainsPrice(priceId uuid.UUID) bool {
+	for pr := range p.prices.It() {
+		if pr.Id() == priceId {
+			return true
+		}
+	}
+
+	return false
+}
+func (p *plan) Name() string {
 	return p.name
 }
 
-func (p *plan) SetName(name *string) {
+func (p *plan) SetName(name string) {
 	p.name = name
 	p.SetAsDirty()
 }
@@ -112,7 +152,7 @@ func (p *plan) Equal(other Plan) bool {
 func (p *plan) GetValidationErrors() validationx.Errors {
 	var errors validationx.Errors
 
-	if p.name == nil || strings.TrimSpace(*p.name) == "" {
+	if strings.TrimSpace(p.name) == "" {
 		errors = append(errors, validationx.NewError("name", "name is required and cannot be empty"))
 	}
 

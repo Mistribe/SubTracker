@@ -12,7 +12,6 @@ import (
 	"github.com/oleexo/subtracker/internal/application/label/command"
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/user"
-	"github.com/oleexo/subtracker/pkg/ext"
 )
 
 type LabelCreateEndpoint struct {
@@ -20,12 +19,11 @@ type LabelCreateEndpoint struct {
 }
 
 type createLabelModel struct {
-	Id        *string    `json:"id,omitempty"`
-	Name      string     `json:"name" binding:"required"`
-	Color     string     `json:"color" binding:"required"`
-	OwnerType string     `json:"owner_type" binding:"required"`
-	FamilyId  *string    `json:"family_id,omitempty"`
-	CreatedAt *time.Time `json:"created_at,omitempty" format:"date-time"`
+	Id        *string            `json:"id,omitempty"`
+	Name      string             `json:"name" binding:"required"`
+	Color     string             `json:"color" binding:"required"`
+	Owner     editableOwnerModel `json:"owner" binding:"required"`
+	CreatedAt *time.Time         `json:"created_at,omitempty" format:"date-time"`
 }
 
 func (m createLabelModel) ToLabel(userId string) (label.Label, error) {
@@ -38,22 +36,10 @@ func (m createLabelModel) ToLabel(userId string) (label.Label, error) {
 		return nil, err
 	}
 
-	ownerType, err := user.ParseOwnerType(m.OwnerType)
+	owner, err := m.Owner.Owner(userId)
 	if err != nil {
 		return nil, err
 	}
-
-	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
-	var familyId *uuid.UUID
-	if m.FamilyId != nil {
-		fid, err := uuid.Parse(*m.FamilyId)
-		if err != nil {
-			return nil, err
-		}
-		familyId = &fid
-	}
-
-	owner := user.NewOwner(ownerType, familyId, &userId)
 	return label.NewLabel(
 		id,
 		owner,

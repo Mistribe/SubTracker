@@ -112,6 +112,28 @@ func (r ProviderRepository) Delete(ctx context.Context, providerId uuid.UUID) (b
 	return true, nil
 }
 
+func (r ProviderRepository) DeletePlan(ctx context.Context, planId uuid.UUID) (bool, error) {
+	result := r.repository.db.WithContext(ctx).Delete(&providerPlanSqlModel{}, planId)
+	if result.Error != nil {
+		return false, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (r ProviderRepository) DeletePrice(ctx context.Context, priceId uuid.UUID) (bool, error) {
+	result := r.repository.db.WithContext(ctx).Delete(&providerPriceSqlModel{}, priceId)
+	if result.Error != nil {
+		return false, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return false, nil
+	}
+	return true, nil
+}
+
 func (r ProviderRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
 	var count int64
 	result := r.repository.db.WithContext(ctx).

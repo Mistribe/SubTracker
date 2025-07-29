@@ -75,7 +75,7 @@ type editableSubscriptionModel struct {
 	ServiceUsers      []string   `json:"service_users,omitempty"`
 	StartDate         time.Time  `json:"start_date" binding:"required" format:"date-time"`
 	EndDate           *time.Time `json:"end_date,omitempty" format:"date-time"`
-	Recurrency        string     `json:"recurrency binding:"required""`
+	Recurrency        string     `json:"recurrency" binding:"required"`
 	CustomRecurrency  *uint      `json:"custom_recurrency,omitempty"`
 }
 type subscriptionModel struct {
