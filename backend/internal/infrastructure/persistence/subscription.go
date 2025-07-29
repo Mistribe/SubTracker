@@ -9,7 +9,6 @@ import (
 
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 )
 
@@ -112,61 +111,7 @@ func (r SubscriptionRepository) Save(ctx context.Context, dirtySubscription subs
 		}
 	}
 
-	if err := r.saveOwner(ctx, dirtySubscription.Owner()); err != nil {
-		return err
-	}
-
-	if dirtySubscription.Payer() != nil {
-		// todo find a way to remove payer if it is nil
-		if err := r.savePayer(ctx, dirtySubscription.Id(), dirtySubscription.Payer()); err != nil {
-			return err
-		}
-	}
-
 	dirtySubscription.Clean()
-	return nil
-}
-
-func (r SubscriptionRepository) saveOwner(ctx context.Context, owner user.Owner) error {
-	if !owner.IsDirty() {
-		return nil
-	}
-	model := newOwnerSqlModel(owner)
-	var result *gorm.DB
-	if owner.IsExists() {
-		result = r.repository.db.WithContext(ctx).Save(&model)
-	} else {
-		result = r.repository.db.WithContext(ctx).Create(&model)
-	}
-
-	if result.Error != nil {
-		return result.Error
-	}
-
-	owner.Clean()
-	return nil
-}
-
-func (r SubscriptionRepository) savePayer(ctx context.Context,
-	subscriptionId uuid.UUID,
-	payer subscription.Payer) error {
-	if !payer.IsDirty() {
-		return nil
-	}
-
-	var result *gorm.DB
-	model := newSubscriptionPayerSqlModel(subscriptionId, payer)
-	if payer.IsExists() {
-		result = r.repository.db.WithContext(ctx).Save(&model)
-	} else {
-		result = r.repository.db.WithContext(ctx).Create(&model)
-	}
-
-	if result.Error != nil {
-		return result.Error
-	}
-
-	payer.Clean()
 	return nil
 }
 

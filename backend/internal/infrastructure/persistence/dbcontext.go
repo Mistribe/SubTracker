@@ -88,7 +88,6 @@ func (r DatabaseContextTask) OnStart(_ context.Context) error {
 	if err := r.repository.db.AutoMigrate(
 		&subscriptionSqlModel{},
 		&subscriptionServiceUserModel{},
-		&subscriptionPayerSqlModel{},
 		&labelSqlModel{},
 		&familySqlModel{},
 		&familyMemberSqlModel{},

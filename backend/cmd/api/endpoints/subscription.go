@@ -7,8 +7,6 @@ import (
 
 	"github.com/oleexo/subtracker/cmd/api/ginfx"
 	"github.com/oleexo/subtracker/cmd/api/middlewares"
-	"github.com/oleexo/subtracker/pkg/ext"
-	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 
 	"github.com/gin-gonic/gin"
@@ -56,30 +54,82 @@ func NewSubscriptionEndpointGroup(
 	}
 }
 
+type editableSubscriptionPayerModel struct {
+	Type     string  `json:"type" binding:"required"`
+	FamilyId string  `json:"family_id" binding:"required"`
+	MemberId *string `json:"memberId,omitempty"`
+}
+type subscriptionPayerModel struct {
+	editableSubscriptionPayerModel
+
+	Etag string `json:"etag" binding:"required"`
+}
+
+type editableSubscriptionModel struct {
+	FriendlyName      *string    `json:"friendly_name,omitempty"`
+	FreeTrialDays     *uint      `json:"free_trial_days,omitempty"`
+	ServiceProviderId string     `json:"service_provider_id" binding:"required"`
+	PlanId            string     `json:"plan_id" binding:"required"`
+	PriceId           string     `json:"price_id" binding:"required"`
+	OwnerType         string     `json:"owner_type" binding:"required"`
+	FamilyId          *string    `json:"family_id,omitempty"`
+	ServiceUsers      []string   `json:"service_users,omitempty"`
+	StartDate         time.Time  `json:"start_date" binding:"required" format:"date-time"`
+	EndDate           *time.Time `json:"end_date,omitempty" format:"date-time"`
+	Recurrency        string     `json:"recurrency binding:"required""`
+	CustomRecurrency  *uint      `json:"custom_recurrency,omitempty"`
+}
 type subscriptionModel struct {
-	Id                  string    `json:"id" binding:"required"`
-	Labels              []string  `json:"labels" binding:"required"`
-	FamilyMembers       []string  `json:"family_members" binding:"required"`
-	PayerId             *string   `json:"payer_id_id,omitempty"`
-	FamilyId            *string   `json:"family_id,omitempty"`
-	PayedByJointAccount bool      `json:"payed_by_joint_account" binding:"required"`
-	CreatedAt           time.Time `json:"created_at" binding:"required" format:"date-time"`
-	UpdatedAt           time.Time `json:"updated_at" binding:"required" format:"date-time"`
-	Etag                string    `json:"etag" binding:"required"`
+	editableSubscriptionModel
+
+	Id        string                  `json:"id" binding:"required"`
+	Payer     *subscriptionPayerModel `json:"payer,omitempty"`
+	CreatedAt time.Time               `json:"created_at" binding:"required" format:"date-time"`
+	UpdatedAt time.Time               `json:"updated_at" binding:"required" format:"date-time"`
+	Etag      string                  `json:"etag" binding:"required"`
+}
+
+func newSubscriptionPayerModel(source subscription.Payer) subscriptionPayerModel {
+	model := subscriptionPayerModel{
+		editableSubscriptionPayerModel: editableSubscriptionPayerModel{
+			Type:     source.Type().String(),
+			FamilyId: source.FamilyId().String(),
+		},
+		Etag: source.ETag(),
+	}
+
+	if source.Type() == subscription.FamilyMemberPayer {
+		memberId := source.MemberId().String()
+		model.MemberId = &memberId
+	}
+	return model
 }
 
 func newSubscriptionModel(source subscription.Subscription) subscriptionModel {
+	var payerModel subscriptionPayerModel
+	if source.Payer() != nil {
+		payerModel = newSubscriptionPayerModel(source.Payer())
+	}
+	serviceUsers := slicesx.Map(source.ServiceUsers().Values(), func(in uuid.UUID) string {
+		return in.String()
+	})
 	return subscriptionModel{
-		Id:                  source.Id().String(),
-		Name:                source.Name(),
-		Payments:            slicesx.Map(source.Payments().Values(), newPaymentModel),
-		Labels:              slicesx.Map(source.Labels().Values(), ext.UuidToString),
-		FamilyMembers:       slicesx.Map(source.FamilyMembers().Values(), ext.UuidToString),
-		PayerId:             option.Map[uuid.UUID, string](source.Payer(), ext.UuidToString).Value(),
-		FamilyId:            option.Map[uuid.UUID, string](source.FamilyId(), ext.UuidToString).Value(),
-		PayedByJointAccount: source.PayedByJointAccount(),
-		CreatedAt:           source.CreatedAt(),
-		UpdatedAt:           source.UpdatedAt(),
-		Etag:                source.ETag(),
+		editableSubscriptionModel: editableSubscriptionModel{
+			FriendlyName:      source.FriendlyName(),
+			FreeTrialDays:     source.FreeTrialDays(),
+			ServiceProviderId: source.ServiceProviderId().String(),
+			PlanId:            source.PlanId().String(),
+			PriceId:           source.PriceId().String(),
+			ServiceUsers:      serviceUsers,
+			StartDate:         source.StartDate(),
+			EndDate:           source.EndDate(),
+			Recurrency:        source.Recurrency().String(),
+			CustomRecurrency:  source.CustomRecurrency(),
+		},
+		Id:        source.Id().String(),
+		Payer:     &payerModel,
+		CreatedAt: source.CreatedAt(),
+		UpdatedAt: source.UpdatedAt(),
+		Etag:      source.ETag(),
 	}
 }

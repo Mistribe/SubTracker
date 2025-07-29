@@ -14,7 +14,6 @@ import (
 	"github.com/oleexo/subtracker/internal/application/family/command"
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/pkg/ext"
-	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type FamilyUpdateEndpoint struct {

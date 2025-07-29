@@ -22,6 +22,7 @@ type Subscription interface {
 	entity.ETagEntity
 
 	FriendlyName() *string
+	FamilyId() *uuid.UUID
 	FreeTrialDays() *uint
 	ServiceProviderId() uuid.UUID
 	PlanId() uuid.UUID
@@ -35,6 +36,7 @@ type Subscription interface {
 	CustomRecurrency() *uint
 
 	SetFriendlyName(name *string)
+	SetFamilyId(*uuid.UUID)
 	SetFreeTrialDays(days *uint)
 	SetOwner(owner user.Owner)
 	SetPayer(payer Payer)
@@ -52,6 +54,7 @@ type subscription struct {
 	*entity.Base
 
 	friendlyName      *string
+	familyId          *uuid.UUID
 	freeTrialDays     *uint
 	serviceProviderId uuid.UUID
 	planId            uuid.UUID
@@ -105,6 +108,18 @@ func (s *subscription) FriendlyName() *string {
 
 func (s *subscription) FreeTrialDays() *uint {
 	return s.freeTrialDays
+}
+
+func (s *subscription) FamilyId() *uuid.UUID {
+	return s.familyId
+}
+
+func (s *subscription) SetFamilyId(id *uuid.UUID) {
+	if s.familyId == id {
+		return
+	}
+	s.familyId = id
+	s.SetAsDirty()
 }
 
 func (s *subscription) ServiceProviderId() uuid.UUID {

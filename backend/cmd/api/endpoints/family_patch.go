@@ -12,7 +12,6 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/ext"
-	"github.com/oleexo/subtracker/pkg/langext/result"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 

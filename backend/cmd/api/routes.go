@@ -18,9 +18,6 @@ func BuildRoutesModule() fx.Option {
 			endpoints.NewSubscriptionUpdateEndpoint,
 			endpoints.NewSubscriptionDeleteEndpoint,
 			endpoints.NewSubscriptionPatchEndpoint,
-			endpoints.NewSubscriptionPaymentCreateEndpoint,
-			endpoints.NewSubscriptionPaymentUpdateEndpoint,
-			endpoints.NewSubscriptionPaymentDeleteEndpoint,
 			ginfx.AsRouteGroup(endpoints.NewSubscriptionEndpointGroup),
 
 			endpoints.NewLabelGetAllEndpoint,

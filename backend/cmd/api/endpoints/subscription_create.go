@@ -1,21 +1,18 @@
 package endpoints
 
 import (
+	"errors"
+	"github.com/oleexo/subtracker/internal/domain/user"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"golang.org/x/text/currency"
-
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/subscription/command"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 	"github.com/oleexo/subtracker/pkg/ext"
-	"github.com/oleexo/subtracker/pkg/langext/option"
-	"github.com/oleexo/subtracker/pkg/langext/result"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
@@ -27,113 +24,102 @@ func NewSubscriptionCreateEndpoint(handler core.CommandHandler[command.CreateSub
 	return &SubscriptionCreateEndpoint{handler: handler}
 }
 
-type createPaymentModel struct {
-	Id        *string    `json:"id,omitempty"`
-	Price     float64    `json:"price"`
-	StartDate time.Time  `json:"start_date" format:"date-time"`
-	EndDate   *time.Time `json:"end_date,omitempty" format:"date-time"`
-	Months    int        `json:"months"`
-	Currency  string     `json:"currency"`
-	CreatedAt *time.Time `json:"created_at,omitempty" format:"date-time"`
-}
-
-func (m createPaymentModel) ToPayment(subscriptionId uuid.UUID) result.Result[subscription.Payment] {
-	var id uuid.UUID
-	var err error
-	var endDate option.Option[time.Time]
-	var createdAt time.Time
-
-	id, err = parseUuidOrNew(m.Id)
-	if err != nil {
-		return result.Fail[subscription.Payment](err)
-	}
-	endDate = option.New(m.EndDate)
-	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
-
-	paymentCurrency, err := currency.ParseISO(strings.TrimSpace(m.Currency))
-	if err != nil {
-		return result.Fail[subscription.Payment](err)
-	}
-
-	return subscription.NewPayment(
-		id,
-		m.Price,
-		m.StartDate,
-		endDate,
-		m.Months,
-		paymentCurrency,
-		subscriptionId,
-		createdAt,
-		createdAt,
-	)
-}
-
 type createSubscriptionModel struct {
-	Id                  *string              `json:"id,omitempty"`
-	FamilyId            *string              `json:"family_id,omitempty"`
-	Name                string               `json:"name" binding:"required"`
-	Payments            []createPaymentModel `json:"payments" binding:"required"`
-	Labels              []string             `json:"labels" binding:"required"`
-	FamilyMembers       []string             `json:"family_members" binding:"required"`
-	PayerId             *string              `json:"payer_id,omitempty"`
-	PayedByJointAccount bool                 `json:"payed_by_joint_account,omitempty"`
-	CreatedAt           *time.Time           `json:"created_at,omitempty"`
+	editableSubscriptionModel
+
+	Id            *string    `json:"id,omitempty"`
+	PayerType     *string    `json:"payer_type,omitempty"`
+	PayerMemberId *string    `json:"payer_memberId,omitempty"`
+	CreatedAt     *time.Time `json:"created_at,omitempty"`
 }
 
-func (m createSubscriptionModel) ToSubscription() result.Result[subscription.Subscription] {
-	var id uuid.UUID
-	var labels []uuid.UUID
-	var familyMembers []uuid.UUID
-	var payerId option.Option[uuid.UUID]
-	var createdAt time.Time
-	var err error
-	id, err = parseUuidOrNew(m.Id)
+func (m createSubscriptionModel) Subscription(userId string) (subscription.Subscription, error) {
+	id, err := parseUuidOrNew(m.Id)
 	if err != nil {
-		return result.Fail[subscription.Subscription](err)
+		return nil, err
 	}
-	paymentRes := slicesx.Map(m.Payments, func(in createPaymentModel) result.Result[subscription.Payment] {
-		return in.ToPayment(id)
+	serviceProviderId, err := uuid.Parse(m.ServiceProviderId)
+	if err != nil {
+		return nil, err
+	}
+	planId, err := uuid.Parse(m.PlanId)
+	if err != nil {
+		return nil, err
+	}
+	priceId, err := uuid.Parse(m.PriceId)
+	if err != nil {
+		return nil, err
+	}
+	ownerType, err := user.ParseOwnerType(m.OwnerType)
+	if err != nil {
+		return nil, err
+	}
+	var familyId *uuid.UUID
+	if m.FamilyId != nil {
+		fid, err := uuid.Parse(*m.FamilyId)
+		if err != nil {
+			return nil, err
+		}
+		familyId = &fid
+	}
+	owner := user.NewOwner(ownerType, familyId, &userId)
+	createdAt := ext.ValueOrDefault(m.CreatedAt, time.Now())
+	var payer subscription.Payer
+	if m.PayerType != nil {
+		if familyId == nil {
+			return nil, errors.New("missing family_id for adding a payer")
+		}
+		payerType, err := subscription.ParsePayerType(*m.PayerType)
+		if err != nil {
+			return nil, err
+		}
+		var memberId *uuid.UUID
+		if m.PayerMemberId != nil {
+			mbrId, err := uuid.Parse(*m.PayerMemberId)
+			if err != nil {
+				return nil, err
+			}
+			memberId = &mbrId
+		}
+		payer = subscription.NewPayer(payerType, *familyId, memberId)
+	}
+	recurrency, err := subscription.ParseRecurrencyType(m.Recurrency)
+	if err != nil {
+		return nil, err
+	}
+	serviceUsers, err := slicesx.MapErr(m.ServiceUsers, func(in string) (uuid.UUID, error) {
+		return uuid.Parse(in)
 	})
-	labels, err = slicesx.MapErr(m.Labels, uuid.Parse)
 	if err != nil {
-		return result.Fail[subscription.Subscription](err)
+		return nil, err
 	}
-	familyMembers, err = slicesx.MapErr(m.FamilyMembers, uuid.Parse)
-	if err != nil {
-		return result.Fail[subscription.Subscription](err)
-	}
-	payerId, err = option.ParseNew(m.PayerId, uuid.Parse)
-	if err != nil {
-		return result.Fail[subscription.Subscription](err)
-	}
-	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
-	familyId, err := option.ParseNew(m.FamilyId, uuid.Parse)
-
-	return result.BindReduce(paymentRes, func(value []subscription.Payment) result.Result[subscription.Subscription] {
-		return subscription.NewSubscription(
-			id,
-			familyId,
-			m.Name,
-			value,
-			labels,
-			familyMembers,
-			payerId,
-			m.PayedByJointAccount,
-			createdAt,
-			createdAt,
-		)
-	})
-
+	return subscription.NewSubscription(
+		id,
+		m.FriendlyName,
+		m.FreeTrialDays,
+		serviceProviderId,
+		planId,
+		priceId,
+		owner,
+		payer,
+		serviceUsers,
+		m.StartDate,
+		m.EndDate,
+		recurrency,
+		m.CustomRecurrency,
+		createdAt,
+		createdAt,
+	), nil
 }
 
-func (m createSubscriptionModel) Command() result.Result[command.CreateSubscriptionCommand] {
-	return result.Bind[subscription.Subscription, command.CreateSubscriptionCommand](
-		m.ToSubscription(),
-		func(sub subscription.Subscription) result.Result[command.CreateSubscriptionCommand] {
-			return result.Success(command.CreateSubscriptionCommand{
-				Subscription: sub,
-			})
-		})
+func (m createSubscriptionModel) Command(userId string) (command.CreateSubscriptionCommand, error) {
+	sub, err := m.Subscription(userId)
+	if err != nil {
+		return command.CreateSubscriptionCommand{}, err
+	}
+	return command.CreateSubscriptionCommand{
+		Subscription: sub,
+	}, nil
 }
 
 // Handle godoc
@@ -156,23 +142,29 @@ func (s SubscriptionCreateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	result.Match[command.CreateSubscriptionCommand, result.Unit](model.Command(),
-		func(cmd command.CreateSubscriptionCommand) result.Unit {
-			r := s.handler.Handle(c, cmd)
-			handleResponse(c,
-				r,
-				withStatus[subscription.Subscription](http.StatusCreated),
-				withMapping[subscription.Subscription](func(sub subscription.Subscription) any {
-					return newSubscriptionModel(sub)
-				}))
-			return result.Unit{}
-		},
-		func(err error) result.Unit {
-			c.JSON(http.StatusBadRequest, httpError{
-				Message: err.Error(),
-			})
-			return result.Unit{}
+	userId, ok := user.FromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, httpError{
+			Message: "invalid user id",
 		})
+		return
+	}
+
+	cmd, err := model.Command(userId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httpError{
+			Message: err.Error(),
+		})
+		c.Abort()
+		return
+	}
+	r := s.handler.Handle(c, cmd)
+	handleResponse(c,
+		r,
+		withStatus[subscription.Subscription](http.StatusCreated),
+		withMapping[subscription.Subscription](func(sub subscription.Subscription) any {
+			return newSubscriptionModel(sub)
+		}))
 
 }
 

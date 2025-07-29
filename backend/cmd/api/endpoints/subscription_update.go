@@ -1,6 +1,9 @@
 package endpoints
 
 import (
+	"errors"
+	"github.com/oleexo/subtracker/internal/domain/user"
+	"github.com/oleexo/subtracker/pkg/ext"
 	"net/http"
 	"time"
 
@@ -10,8 +13,6 @@ import (
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/subscription/command"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/pkg/langext/option"
-	"github.com/oleexo/subtracker/pkg/langext/result"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
@@ -20,51 +21,95 @@ type SubscriptionUpdateEndpoint struct {
 }
 
 type updateSubscriptionModel struct {
-	Name                string     `json:"name" binding:"required"`
-	Labels              []string   `json:"labels" binding:"required"`
-	FamilyMembers       []string   `json:"family_members" binding:"required"`
-	FamilyId            *string    `json:"family_id,omitempty"`
-	PayerId             *string    `json:"payer_id,omitempty"`
-	PayedByJointAccount bool       `json:"payed_by_joint_account,omitempty"`
-	UpdatedAt           *time.Time `json:"updated_at,omitempty" format:"date-time"`
+	editableSubscriptionModel
+	PayerType     *string    `json:"payer_type,omitempty"`
+	PayerMemberId *string    `json:"payer_memberId,omitempty"`
+	UpdatedAt     *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
-func (m updateSubscriptionModel) Command(id uuid.UUID) result.Result[command.UpdateSubscriptionCommand] {
-	var labels []uuid.UUID
-	var familyMembers []uuid.UUID
-	var payer option.Option[uuid.UUID]
-	var err error
-
-	labels, err = slicesx.MapErr(m.Labels, uuid.Parse)
+func (m updateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (subscription.Subscription, error) {
+	serviceProviderId, err := uuid.Parse(m.ServiceProviderId)
 	if err != nil {
-		return result.Fail[command.UpdateSubscriptionCommand](err)
+		return nil, err
 	}
-
-	familyMembers, err = slicesx.MapErr(m.FamilyMembers, uuid.Parse)
+	planId, err := uuid.Parse(m.PlanId)
 	if err != nil {
-		return result.Fail[command.UpdateSubscriptionCommand](err)
+		return nil, err
 	}
-
-	payer, err = option.ParseNew(m.PayerId, uuid.Parse)
+	priceId, err := uuid.Parse(m.PriceId)
 	if err != nil {
-		return result.Fail[command.UpdateSubscriptionCommand](err)
+		return nil, err
 	}
-
-	familyId, err := option.ParseNew(m.FamilyId, uuid.Parse)
+	ownerType, err := user.ParseOwnerType(m.OwnerType)
 	if err != nil {
-		return result.Fail[command.UpdateSubscriptionCommand](err)
+		return nil, err
 	}
-
-	return result.Success(command.UpdateSubscriptionCommand{
-		Id:                  id,
-		Name:                m.Name,
-		Labels:              labels,
-		FamilyMembers:       familyMembers,
-		PayerId:             payer,
-		PayedByJointAccount: m.PayedByJointAccount,
-		UpdatedAt:           option.New(m.UpdatedAt),
-		FamilyId:            familyId,
+	var familyId *uuid.UUID
+	if m.FamilyId != nil {
+		fid, err := uuid.Parse(*m.FamilyId)
+		if err != nil {
+			return nil, err
+		}
+		familyId = &fid
+	}
+	owner := user.NewOwner(ownerType, familyId, &userId)
+	updatedAt := ext.ValueOrDefault(m.UpdatedAt, time.Now())
+	var payer subscription.Payer
+	if m.PayerType != nil {
+		if familyId == nil {
+			return nil, errors.New("missing family_id for adding a payer")
+		}
+		payerType, err := subscription.ParsePayerType(*m.PayerType)
+		if err != nil {
+			return nil, err
+		}
+		var memberId *uuid.UUID
+		if m.PayerMemberId != nil {
+			mbrId, err := uuid.Parse(*m.PayerMemberId)
+			if err != nil {
+				return nil, err
+			}
+			memberId = &mbrId
+		}
+		payer = subscription.NewPayer(payerType, *familyId, memberId)
+	}
+	recurrency, err := subscription.ParseRecurrencyType(m.Recurrency)
+	if err != nil {
+		return nil, err
+	}
+	serviceUsers, err := slicesx.MapErr(m.ServiceUsers, func(in string) (uuid.UUID, error) {
+		return uuid.Parse(in)
 	})
+	if err != nil {
+		return nil, err
+	}
+	return subscription.NewSubscription(
+		subId,
+		m.FriendlyName,
+		m.FreeTrialDays,
+		serviceProviderId,
+		planId,
+		priceId,
+		owner,
+		payer,
+		serviceUsers,
+		m.StartDate,
+		m.EndDate,
+		recurrency,
+		m.CustomRecurrency,
+		updatedAt,
+		updatedAt,
+	), nil
+}
+
+func (m updateSubscriptionModel) Command(userId string, id uuid.UUID) (command.UpdateSubscriptionCommand, error) {
+	sub, err := m.Subscription(userId, id)
+	if err != nil {
+		return command.UpdateSubscriptionCommand{}, err
+	}
+	return command.UpdateSubscriptionCommand{
+		Subscription: sub,
+	}, nil
 }
 
 // Handle godoc
@@ -96,22 +141,28 @@ func (s SubscriptionUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	result.Match[command.UpdateSubscriptionCommand, result.Unit](model.Command(id),
-		func(cmd command.UpdateSubscriptionCommand) result.Unit {
-			r := s.handler.Handle(c, cmd)
-			handleResponse(c,
-				r,
-				withMapping[subscription.Subscription](func(sub subscription.Subscription) any {
-					return newSubscriptionModel(sub)
-				}))
-			return result.Unit{}
-		},
-		func(err error) result.Unit {
-			c.JSON(http.StatusBadRequest, httpError{
-				Message: err.Error(),
-			})
-			return result.Unit{}
+	userId, ok := user.FromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, httpError{
+			Message: "invalid user id",
 		})
+		return
+	}
+
+	cmd, err := model.Command(userId, id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httpError{
+			Message: err.Error(),
+		})
+		c.Abort()
+		return
+	}
+	r := s.handler.Handle(c, cmd)
+	handleResponse(c,
+		r,
+		withMapping[subscription.Subscription](func(sub subscription.Subscription) any {
+			return newSubscriptionModel(sub)
+		}))
 }
 
 func (s SubscriptionUpdateEndpoint) Pattern() []string {
