@@ -9,12 +9,12 @@ import (
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
-type DeleteCommand struct {
+type DeleteProviderCommand struct {
 	ProviderId uuid.UUID
 }
 
-func NewDeleteCommand(providerId uuid.UUID) DeleteCommand {
-	return DeleteCommand{
+func NewDeleteProviderCommand(providerId uuid.UUID) DeleteProviderCommand {
+	return DeleteProviderCommand{
 		ProviderId: providerId,
 	}
 }
@@ -27,7 +27,7 @@ func NewDeleteCommandHandler(repository provider.Repository) *DeleteCommandHandl
 	return &DeleteCommandHandler{repository: repository}
 }
 
-func (h DeleteCommandHandler) Handle(ctx context.Context, cmd DeleteCommand) result.Result[bool] {
+func (h DeleteCommandHandler) Handle(ctx context.Context, cmd DeleteProviderCommand) result.Result[bool] {
 	ok, err := h.repository.Delete(ctx, cmd.ProviderId)
 	if err != nil {
 		return result.Fail[bool](err)

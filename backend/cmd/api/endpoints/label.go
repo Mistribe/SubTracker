@@ -51,18 +51,18 @@ func (g LabelEndpointGroup) Middlewares() []gin.HandlerFunc {
 }
 
 type labelModel struct {
-	Id         string    `json:"id" binding:"required"`
-	Name       string    `json:"name" binding:"required"`
-	IsDefault  bool      `json:"is_default" binding:"required"`
-	Color      string    `json:"color" binding:"required"`
-	IsEditable bool      `json:"is_editable" binding:"required"`
-	CreatedAt  time.Time `json:"created_at" binding:"required" format:"date-time"`
-	UpdatedAt  time.Time `json:"updated_at" binding:"required" format:"date-time"`
-	Etag       string    `json:"etag" binding:"required"`
+	Id        string      `json:"id" binding:"required"`
+	Name      string      `json:"name" binding:"required"`
+	IsDefault bool        `json:"is_default" binding:"required"`
+	Color     string      `json:"color" binding:"required"`
+	Owner     *ownerModel `json:"owner,omitempty"`
+	CreatedAt time.Time   `json:"created_at" binding:"required" format:"date-time"`
+	UpdatedAt time.Time   `json:"updated_at" binding:"required" format:"date-time"`
+	Etag      string      `json:"etag" binding:"required"`
 }
 
 func newLabelModel(source label.Label) labelModel {
-	return labelModel{
+	model := labelModel{
 		Id:        source.Id().String(),
 		Name:      source.Name(),
 		IsDefault: source.IsDefault(),
@@ -71,4 +71,11 @@ func newLabelModel(source label.Label) labelModel {
 		UpdatedAt: source.UpdatedAt(),
 		Etag:      source.ETag(),
 	}
+
+	if source.Owner() != nil {
+		owner := newOwnerModel(source.Owner())
+		model.Owner = &owner
+	}
+
+	return model
 }

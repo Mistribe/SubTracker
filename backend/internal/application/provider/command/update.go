@@ -8,12 +8,12 @@ import (
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
-type UpdateCommand struct {
+type UpdateProviderCommand struct {
 	Provider provider.Provider
 }
 
-func NewUpdateCommand(provider provider.Provider) UpdateCommand {
-	return UpdateCommand{
+func NewUpdateProviderCommand(provider provider.Provider) UpdateProviderCommand {
+	return UpdateProviderCommand{
 		Provider: provider,
 	}
 }
@@ -26,7 +26,7 @@ func NewUpdateCommandHandler(repository provider.Repository) *UpdateCommandHandl
 	return &UpdateCommandHandler{repository: repository}
 }
 
-func (h UpdateCommandHandler) Handle(ctx context.Context, cmd UpdateCommand) result.Result[provider.Provider] {
+func (h UpdateCommandHandler) Handle(ctx context.Context, cmd UpdateProviderCommand) result.Result[provider.Provider] {
 	prvdr, err := h.repository.GetById(ctx, cmd.Provider.Id())
 	if err != nil {
 		return result.Fail[provider.Provider](err)
@@ -42,7 +42,7 @@ func (h UpdateCommandHandler) Handle(ctx context.Context, cmd UpdateCommand) res
 
 func (h UpdateCommandHandler) update(
 	ctx context.Context,
-	cmd UpdateCommand,
+	cmd UpdateProviderCommand,
 	in provider.Provider) result.Result[provider.Provider] {
 
 	userId, ok := user.FromContext(ctx)

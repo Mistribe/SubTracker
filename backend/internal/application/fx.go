@@ -35,9 +35,9 @@ func BuildApplicationModule() fx.Option {
 		fx.Provide(
 			AsQueryHandler[proQuery.FindOneQuery, provider.Provider](proQuery.NewFindOneQueryHandler),
 			AsQueryHandler[proQuery.FindAllQuery, core.PaginatedResponse[provider.Provider]](proQuery.NewFindAllQueryHandler),
-			AsCommandHandler[proCommand.CreateCommand, provider.Provider](proCommand.NewCreateCommandHandler),
-			AsCommandHandler[proCommand.UpdateCommand, provider.Provider](proCommand.NewUpdateCommandHandler),
-			AsCommandHandler[proCommand.DeleteCommand, bool](proCommand.NewDeleteCommandHandler),
+			AsCommandHandler[proCommand.CreateProviderCommand, provider.Provider](proCommand.NewCreateCommandHandler),
+			AsCommandHandler[proCommand.UpdateProviderCommand, provider.Provider](proCommand.NewUpdateCommandHandler),
+			AsCommandHandler[proCommand.DeleteProviderCommand, bool](proCommand.NewDeleteCommandHandler),
 
 			AsQueryHandler[subQuery.FindOneQuery, subscription.Subscription](subQuery.NewFindOneQueryHandler),
 			AsQueryHandler[subQuery.FindAllQuery, core.PaginatedResponse[subscription.Subscription]](subQuery.NewFindAllQueryHandler),

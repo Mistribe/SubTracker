@@ -7,12 +7,12 @@ import (
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
-type CreateCommand struct {
+type CreateProviderCommand struct {
 	Provider provider.Provider
 }
 
-func NewCreateCommand(provider provider.Provider) CreateCommand {
-	return CreateCommand{
+func NewCreateProviderCommand(provider provider.Provider) CreateProviderCommand {
+	return CreateProviderCommand{
 		Provider: provider,
 	}
 }
@@ -25,7 +25,7 @@ func NewCreateCommandHandler(repository provider.Repository) *CreateCommandHandl
 	return &CreateCommandHandler{repository: repository}
 }
 
-func (h CreateCommandHandler) Handle(ctx context.Context, cmd CreateCommand) result.Result[provider.Provider] {
+func (h CreateCommandHandler) Handle(ctx context.Context, cmd CreateProviderCommand) result.Result[provider.Provider] {
 	exists, err := h.repository.Exists(ctx, cmd.Provider.Id())
 	if err != nil {
 		return result.Fail[provider.Provider](err)

@@ -71,8 +71,7 @@ type editableSubscriptionModel struct {
 	ServiceProviderId string     `json:"service_provider_id" binding:"required"`
 	PlanId            string     `json:"plan_id" binding:"required"`
 	PriceId           string     `json:"price_id" binding:"required"`
-	OwnerType         string     `json:"owner_type" binding:"required"`
-	FamilyId          *string    `json:"family_id,omitempty"`
+	Owner             ownerModel `json:"owner" binding:"required"`
 	ServiceUsers      []string   `json:"service_users,omitempty"`
 	StartDate         time.Time  `json:"start_date" binding:"required" format:"date-time"`
 	EndDate           *time.Time `json:"end_date,omitempty" format:"date-time"`
@@ -121,6 +120,7 @@ func newSubscriptionModel(source subscription.Subscription) subscriptionModel {
 			PlanId:            source.PlanId().String(),
 			PriceId:           source.PriceId().String(),
 			ServiceUsers:      serviceUsers,
+			Owner:             newOwnerModel(source.Owner()),
 			StartDate:         source.StartDate(),
 			EndDate:           source.EndDate(),
 			Recurrency:        source.Recurrency().String(),

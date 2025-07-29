@@ -2,10 +2,11 @@ package endpoints
 
 import (
 	"errors"
-	"github.com/oleexo/subtracker/internal/domain/user"
-	"github.com/oleexo/subtracker/pkg/ext"
 	"net/http"
 	"time"
+
+	"github.com/oleexo/subtracker/internal/domain/user"
+	"github.com/oleexo/subtracker/pkg/ext"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -40,13 +41,13 @@ func (m updateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (s
 	if err != nil {
 		return nil, err
 	}
-	ownerType, err := user.ParseOwnerType(m.OwnerType)
+	ownerType, err := user.ParseOwnerType(m.Owner.Type)
 	if err != nil {
 		return nil, err
 	}
 	var familyId *uuid.UUID
-	if m.FamilyId != nil {
-		fid, err := uuid.Parse(*m.FamilyId)
+	if m.Owner.FamilyId != nil {
+		fid, err := uuid.Parse(*m.Owner.FamilyId)
 		if err != nil {
 			return nil, err
 		}
