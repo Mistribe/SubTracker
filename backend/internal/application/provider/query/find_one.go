@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/provider"
-	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
@@ -29,14 +28,13 @@ func NewFindOneQueryHandler(repository provider.Repository) *FindOneQueryHandler
 }
 
 func (h FindOneQueryHandler) Handle(ctx context.Context, query FindOneQuery) result.Result[provider.Provider] {
-	providerOpt, err := h.repository.GetById(ctx, query.ProviderId)
+	prvdr, err := h.repository.GetById(ctx, query.ProviderId)
 	if err != nil {
 		return result.Fail[provider.Provider](err)
 	}
 
-	return option.Match(providerOpt, func(in provider.Provider) result.Result[provider.Provider] {
-		return result.Success(in)
-	}, func() result.Result[provider.Provider] {
+	if prvdr == nil {
 		return result.Fail[provider.Provider](provider.ErrProviderNotFound)
-	})
+	}
+	return result.Success(prvdr)
 }

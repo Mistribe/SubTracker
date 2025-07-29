@@ -96,7 +96,6 @@ func (r DatabaseContextTask) OnStart(_ context.Context) error {
 		&providerLabelSqlModel{},
 		&providerPlanSqlModel{},
 		&providerPriceSqlModel{},
-		&ownerSqlModel{},
 	); err != nil {
 		return err
 	}

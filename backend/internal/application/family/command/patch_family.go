@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/oleexo/subtracker/internal/domain/family"
-	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
@@ -21,15 +20,14 @@ func NewPatchFamilyCommandHandler(familyRepository family.Repository) *PatchFami
 }
 
 func (h PatchFamilyCommandHandler) Handle(ctx context.Context, cmd PatchFamilyCommand) result.Result[family.Family] {
-	famOpt, err := h.repository.GetById(ctx, cmd.Family.Id())
+	fam, err := h.repository.GetById(ctx, cmd.Family.Id())
 	if err != nil {
 		return result.Fail[family.Family](err)
 	}
-	return option.Match(famOpt, func(fam family.Family) result.Result[family.Family] {
-		return h.patchFamily(ctx, cmd, fam)
-	}, func() result.Result[family.Family] {
+	if fam == nil {
 		return h.createFamily(ctx, cmd)
-	})
+	}
+	return h.patchFamily(ctx, cmd, fam)
 }
 
 func (h PatchFamilyCommandHandler) createFamily(

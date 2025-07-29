@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
@@ -27,16 +26,14 @@ func NewFindOneQueryHandler(repository subscription.Repository) *FindOneQueryHan
 }
 
 func (h FindOneQueryHandler) Handle(ctx context.Context, query FindOneQuery) result.Result[subscription.Subscription] {
-	subOpt, err := h.repository.GetById(ctx, query.id)
+	sub, err := h.repository.GetById(ctx, query.id)
 	if err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	return option.Match[subscription.Subscription, result.Result[subscription.Subscription]](subOpt,
-		func(value subscription.Subscription) result.Result[subscription.Subscription] {
-			return result.Success(value)
-		},
-		func() result.Result[subscription.Subscription] {
-			return result.Fail[subscription.Subscription](subscription.ErrSubscriptionNotFound)
-		})
+	if sub == nil {
+		return result.Fail[subscription.Subscription](subscription.ErrSubscriptionNotFound)
+	}
+
+	return result.Success(sub)
 }

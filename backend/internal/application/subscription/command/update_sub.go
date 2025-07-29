@@ -5,7 +5,6 @@ import (
 
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
@@ -30,15 +29,14 @@ func NewUpdateSubscriptionCommandHandler(
 func (h UpdateSubscriptionCommandHandler) Handle(
 	ctx context.Context,
 	cmd UpdateSubscriptionCommand) result.Result[subscription.Subscription] {
-	subOpt, err := h.subscriptionRepository.GetById(ctx, cmd.Subscription.Id())
+	sub, err := h.subscriptionRepository.GetById(ctx, cmd.Subscription.Id())
 	if err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
-	return option.Match(subOpt, func(sub subscription.Subscription) result.Result[subscription.Subscription] {
-		return h.updateSubscription(ctx, cmd, sub)
-	}, func() result.Result[subscription.Subscription] {
+	if sub == nil {
 		return result.Fail[subscription.Subscription](subscription.ErrSubscriptionNotFound)
-	})
+	}
+	return h.updateSubscription(ctx, cmd, sub)
 }
 
 func (h UpdateSubscriptionCommandHandler) updateSubscription(

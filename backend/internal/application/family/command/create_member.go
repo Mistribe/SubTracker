@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/family"
-	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
@@ -26,16 +25,16 @@ func NewCreateFamilyMemberCommandHandler(repository family.Repository) *CreateFa
 func (h CreateFamilyMemberCommandHandler) Handle(
 	ctx context.Context,
 	command CreateFamilyMemberCommand) result.Result[family.Family] {
-	famOpt, err := h.repository.GetById(ctx, command.FamilyId)
+	fam, err := h.repository.GetById(ctx, command.FamilyId)
 	if err != nil {
 		return result.Fail[family.Family](err)
 	}
-
-	return option.Match(famOpt, func(fam family.Family) result.Result[family.Family] {
-		return h.addFamilyMemberToFamily(ctx, command, fam)
-	}, func() result.Result[family.Family] {
+	if fam == nil {
 		return result.Fail[family.Family](family.ErrFamilyNotFound)
-	})
+
+	}
+
+	return h.addFamilyMemberToFamily(ctx, command, fam)
 }
 
 func (h CreateFamilyMemberCommandHandler) addFamilyMemberToFamily(

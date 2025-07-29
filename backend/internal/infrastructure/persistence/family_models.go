@@ -50,7 +50,6 @@ type familyMemberSqlModel struct {
 	Name     string         `gorm:"type:varchar(100);not null"`
 	FamilyId uuid.UUID      `gorm:"type:uuid;not null"`
 	Family   familySqlModel `gorm:"foreignKey:FamilyId;references:Id"`
-	Email    sql.NullString `gorm:"type:varchar(100)"`
 	UserId   sql.NullString `gorm:"type:varchar(100)"`
 	IsKid    bool           `gorm:"type:boolean;not null;default:false"`
 }
@@ -60,21 +59,17 @@ func (f familyMemberSqlModel) TableName() string {
 }
 
 func newFamilyMember(source familyMemberSqlModel) family.Member {
-	var email *string
-	if source.Email.Valid {
-		email = &source.Email.String
-	} else {
-		email = nil
-	}
 	mbr := family.NewMember(
 		source.Id,
 		source.FamilyId,
 		source.Name,
-		email,
 		source.IsKid,
 		source.CreatedAt,
 		source.UpdatedAt,
 	)
+	if source.UserId.Valid {
+		mbr.SetUserId(&source.UserId.String)
+	}
 	mbr.Clean()
 	return mbr
 }
@@ -92,13 +87,13 @@ func newFamilyMemberSqlModel(source family.Member) familyMemberSqlModel {
 		FamilyId: source.FamilyId(),
 	}
 
-	if source.Email() != nil {
-		model.Email = sql.NullString{
-			String: *source.Email(),
+	if source.UserId() != nil {
+		model.UserId = sql.NullString{
+			String: *source.UserId(),
 			Valid:  true,
 		}
 	} else {
-		model.Email = sql.NullString{
+		model.UserId = sql.NullString{
 			Valid: false,
 		}
 	}

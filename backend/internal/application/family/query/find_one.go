@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/family"
-	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
@@ -30,12 +29,8 @@ func (h FindOneQueryHandler) Handle(
 		return result.Fail[family.Family](err)
 	}
 
-	return option.Match[family.Family, result.Result[family.Family]](member,
-		func(in family.Family) result.Result[family.Family] {
-			return result.Success(in)
-		},
-		func() result.Result[family.Family] {
-			return result.Fail[family.Family](family.ErrFamilyNotFound)
-		},
-	)
+	if member == nil {
+		return result.Fail[family.Family](family.ErrFamilyNotFound)
+	}
+	return result.Success(member)
 }

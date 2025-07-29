@@ -30,21 +30,21 @@ func NewUpdateFamilyMemberCommandHandler(repository family.Repository) *UpdateFa
 func (h UpdateFamilyMemberCommandHandler) Handle(
 	ctx context.Context,
 	command UpdateFamilyMemberCommand) result.Result[family.Family] {
-	famOpt, err := h.repository.GetById(ctx, command.FamilyId)
+	fam, err := h.repository.GetById(ctx, command.FamilyId)
 	if err != nil {
 		return result.Fail[family.Family](err)
 	}
 
-	return option.Match(famOpt, func(fam family.Family) result.Result[family.Family] {
-		mbr := fam.GetMember(command.Id)
-		if mbr == nil {
-			result.Fail[family.Family](family.ErrFamilyMemberNotFound)
-		}
-		return h.updateFamilyMember(ctx, command, fam, mbr)
-
-	}, func() result.Result[family.Family] {
+	if fam == nil {
 		return result.Fail[family.Family](family.ErrFamilyNotFound)
-	})
+
+	}
+
+	mbr := fam.GetMember(command.Id)
+	if mbr == nil {
+		result.Fail[family.Family](family.ErrFamilyMemberNotFound)
+	}
+	return h.updateFamilyMember(ctx, command, fam, mbr)
 }
 
 func (h UpdateFamilyMemberCommandHandler) updateFamilyMember(

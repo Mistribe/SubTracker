@@ -19,6 +19,7 @@ type Member interface {
 
 	Name() string
 	IsKid() bool
+	UserId() *string
 	SetName(string)
 	SetAsKid()
 	SetAsAdult()
@@ -59,6 +60,10 @@ func (m *member) Name() string {
 
 func (m *member) IsKid() bool {
 	return m.isKid
+}
+
+func (m *member) UserId() *string {
+	return m.userId
 }
 
 func (m *member) SetUserId(userId *string) {

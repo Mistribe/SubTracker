@@ -32,16 +32,15 @@ func NewUpdateFamilyCommandHandler(repository family.Repository) UpdateFamilyCom
 }
 
 func (h *updateFamilyCommandHandler) Handle(ctx context.Context, cmd UpdateFamilyCommand) result.Result[family.Family] {
-	famOpt, err := h.repository.GetById(ctx, cmd.Id)
+	fam, err := h.repository.GetById(ctx, cmd.Id)
 	if err != nil {
 		return result.Fail[family.Family](err)
 	}
-
-	return option.Match(famOpt, func(fam family.Family) result.Result[family.Family] {
-		return h.updateFamily(ctx, cmd, fam)
-	}, func() result.Result[family.Family] {
+	if fam == nil {
 		return result.Fail[family.Family](family.ErrFamilyNotFound)
-	})
+
+	}
+	return h.updateFamily(ctx, cmd, fam)
 
 }
 

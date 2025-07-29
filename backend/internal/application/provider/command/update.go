@@ -5,7 +5,6 @@ import (
 
 	"github.com/oleexo/subtracker/internal/domain/provider"
 	"github.com/oleexo/subtracker/internal/domain/user"
-	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
@@ -28,16 +27,17 @@ func NewUpdateCommandHandler(repository provider.Repository) *UpdateCommandHandl
 }
 
 func (h UpdateCommandHandler) Handle(ctx context.Context, cmd UpdateCommand) result.Result[provider.Provider] {
-	providerOpt, err := h.repository.GetById(ctx, cmd.Provider.Id())
+	prvdr, err := h.repository.GetById(ctx, cmd.Provider.Id())
 	if err != nil {
 		return result.Fail[provider.Provider](err)
 	}
 
-	return option.Match(providerOpt, func(in provider.Provider) result.Result[provider.Provider] {
-		return h.update(ctx, cmd, in)
-	}, func() result.Result[provider.Provider] {
+	if prvdr == nil {
 		return result.Fail[provider.Provider](provider.ErrProviderNotFound)
-	})
+
+	}
+
+	return h.update(ctx, cmd, prvdr)
 }
 
 func (h UpdateCommandHandler) update(

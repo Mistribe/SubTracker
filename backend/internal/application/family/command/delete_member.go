@@ -5,8 +5,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/oleexo/subtracker/pkg/langext/option"
-
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
@@ -27,16 +25,15 @@ func NewDeleteFamilyMemberCommandHandler(repository family.Repository) *DeleteFa
 func (h DeleteFamilyMemberCommandHandler) Handle(
 	ctx context.Context,
 	command DeleteFamilyMemberCommand) result.Result[bool] {
-	famOpt, err := h.repository.GetById(ctx, command.FamilyId)
+	fam, err := h.repository.GetById(ctx, command.FamilyId)
 	if err != nil {
 		return result.Fail[bool](err)
 	}
 
-	return option.Match(famOpt, func(fam family.Family) result.Result[bool] {
-		return h.deleteMember(ctx, command, fam)
-	}, func() result.Result[bool] {
+	if fam == nil {
 		return result.Fail[bool](family.ErrFamilyNotFound)
-	})
+	}
+	return h.deleteMember(ctx, command, fam)
 }
 
 func (h DeleteFamilyMemberCommandHandler) deleteMember(
