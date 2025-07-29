@@ -9,7 +9,6 @@ import (
 
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/user"
-	"github.com/oleexo/subtracker/pkg/langext/option"
 )
 
 type LabelRepository struct {
@@ -22,17 +21,17 @@ func NewLabelRepository(repository *DatabaseContext) *LabelRepository {
 	}
 }
 
-func (r LabelRepository) GetById(ctx context.Context, labelId uuid.UUID) (option.Option[label.Label], error) {
+func (r LabelRepository) GetById(ctx context.Context, labelId uuid.UUID) (label.Label, error) {
 	var model labelSqlModel
 	if err := r.repository.db.WithContext(ctx).First(&model, labelId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return option.None[label.Label](), nil
+			return nil, nil
 		}
-		return option.None[label.Label](), err
+		return nil, err
 	}
 	lbl := newLabel(model)
 	lbl.Clean()
-	return option.Some(lbl), nil
+	return lbl, nil
 }
 
 func (r LabelRepository) GetAll(ctx context.Context, parameters label.QueryParameters) ([]label.Label, error) {

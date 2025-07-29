@@ -10,7 +10,6 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/internal/domain/provider"
 	"github.com/oleexo/subtracker/internal/domain/user"
-	"github.com/oleexo/subtracker/pkg/langext/option"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
@@ -23,11 +22,11 @@ func NewProviderRepository(repository *DatabaseContext) *ProviderRepository {
 }
 
 func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (
-	option.Option[provider.Provider],
+	provider.Provider,
 	error) {
 	_, ok := user.FromContext(ctx)
 	if !ok {
-		return option.None[provider.Provider](), nil
+		return nil, nil
 	}
 	var model providerSqlModel
 	result := r.repository.db.WithContext(ctx).
@@ -38,13 +37,13 @@ func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (
 		First(&model, providerId)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return option.None[provider.Provider](), nil
+			return nil, nil
 		}
-		return option.None[provider.Provider](), result.Error
+		return nil, result.Error
 	}
 	p := newProvider(model)
 	p.Clean()
-	return option.Some(p), nil
+	return p, nil
 }
 
 func (r ProviderRepository) GetAll(ctx context.Context, parameters entity.QueryParameters) (

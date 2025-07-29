@@ -9,7 +9,6 @@ import (
 
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/pkg/langext/option"
 )
 
 type SubscriptionRepository struct {
@@ -22,9 +21,7 @@ func NewSubscriptionRepository(repository *DatabaseContext) *SubscriptionReposit
 	}
 }
 
-func (r SubscriptionRepository) Get(ctx context.Context, id uuid.UUID) (
-	option.Option[subscription.Subscription],
-	error) {
+func (r SubscriptionRepository) GetById(ctx context.Context, id uuid.UUID) (subscription.Subscription, error) {
 	var model subscriptionSqlModel
 	result := r.repository.db.WithContext(ctx).
 		Preload("Owner").
@@ -32,11 +29,11 @@ func (r SubscriptionRepository) Get(ctx context.Context, id uuid.UUID) (
 		First(&model, id)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return option.None[subscription.Subscription](), nil
+			return nil, nil
 		}
-		return option.None[subscription.Subscription](), result.Error
+		return nil, result.Error
 	}
-	return option.Some(newSubscription(model)), nil
+	return newSubscription(model), nil
 }
 
 func (r SubscriptionRepository) GetAll(ctx context.Context,
@@ -124,4 +121,15 @@ func (r SubscriptionRepository) Delete(ctx context.Context, subscriptionId uuid.
 		return false, nil
 	}
 	return true, nil
+}
+
+func (r SubscriptionRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
+	var count int64
+	if result := r.repository.db.WithContext(ctx).
+		Model(&subscriptionSqlModel{}).
+		Where("id IN ?", ids).
+		Count(&count); result.Error != nil {
+		return false, result.Error
+	}
+	return count == int64(len(ids)), nil
 }
