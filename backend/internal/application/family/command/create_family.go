@@ -3,6 +3,9 @@ package command
 import (
 	"context"
 
+	"github.com/google/uuid"
+
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
@@ -12,17 +15,20 @@ type CreateFamilyCommand struct {
 }
 
 type CreateFamilyCommandHandler struct {
-	repository family.Repository
+	familyRepository family.Repository
+	authService      auth.Service
 }
 
-func NewCreateFamilyCommandHandler(repository family.Repository) *CreateFamilyCommandHandler {
+func NewCreateFamilyCommandHandler(familyRepository family.Repository,
+	authService auth.Service) *CreateFamilyCommandHandler {
 	return &CreateFamilyCommandHandler{
-		repository: repository,
+		familyRepository: familyRepository,
+		authService:      authService,
 	}
 }
 
 func (h CreateFamilyCommandHandler) Handle(ctx context.Context, cmd CreateFamilyCommand) result.Result[family.Family] {
-	fam, err := h.repository.GetById(ctx, cmd.Family.Id())
+	fam, err := h.familyRepository.GetById(ctx, cmd.Family.Id())
 	if err != nil {
 		return result.Fail[family.Family](err)
 	}
@@ -39,10 +45,30 @@ func (h CreateFamilyCommandHandler) Handle(ctx context.Context, cmd CreateFamily
 func (h CreateFamilyCommandHandler) createFamily(
 	ctx context.Context,
 	cmd CreateFamilyCommand) result.Result[family.Family] {
+
+	userId := h.authService.MustGetUserId(ctx)
+	memberId, err := uuid.NewV7()
+	if err != nil {
+		return result.Fail[family.Family](err)
+	}
+
+	creator := family.NewMember(
+		memberId,
+		cmd.Family.Id(),
+		"You",
+		false,
+		cmd.Family.CreatedAt(),
+		cmd.Family.UpdatedAt(),
+	)
+	creator.SetUserId(&userId)
+
+	if err := cmd.Family.AddMember(creator); err != nil {
+		return result.Fail[family.Family](err)
+	}
 	if err := cmd.Family.GetValidationErrors(); err != nil {
 		return result.Fail[family.Family](err)
 	}
-	if err := h.repository.Save(ctx, cmd.Family); err != nil {
+	if err := h.familyRepository.Save(ctx, cmd.Family); err != nil {
 		return result.Fail[family.Family](err)
 	}
 

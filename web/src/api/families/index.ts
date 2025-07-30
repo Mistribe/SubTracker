@@ -74,18 +74,18 @@ export interface FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesReque
  */
 export interface FamiliesRequestBuilderGetQueryParameters {
     /**
-     * Page number (default: 1)
-     */
-    page?: number;
-    /**
      * Number of items per page (default: 10)
      */
-    size?: number;
+    limit?: number;
+    /**
+     * Page number (default: 1)
+     */
+    offset?: number;
 }
 /**
  * Uri template for the request builder.
  */
-export const FamiliesRequestBuilderUriTemplate = "{+baseurl}/families{?page*,size*}";
+export const FamiliesRequestBuilderUriTemplate = "{+baseurl}/families{?limit*,offset*}";
 /**
  * Metadata for all the navigation properties in the request builder.
  */

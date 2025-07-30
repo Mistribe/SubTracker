@@ -15,8 +15,8 @@ const FamiliesPage = () => {
     const {apiClient} = useApiClient();
     const queryClient = useQueryClient();
 
-    const [page] = useState(1);
-    const [pageSize] = useState(10);
+    const [offset] = useState(0);
+    const [limit] = useState(10);
     const [editingFamilyId, setEditingFamilyId] = useState<string | null>(null);
     const [editedName, setEditedName] = useState<string>("");
     const [isUpdating, setIsUpdating] = useState<boolean>(false);
@@ -79,8 +79,8 @@ const FamiliesPage = () => {
             }
             const result = await apiClient.families.get({
                 queryParameters: {
-                    page: page,
-                    size: pageSize
+                    offset: offset,
+                    limit: limit
                 }
             });
             if (result && result.data) {

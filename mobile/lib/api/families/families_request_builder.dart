@@ -26,11 +26,11 @@ class FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesRequestBuilder> 
     /// Instantiates a new [FamiliesRequestBuilder] and sets the default values.
     ///  [pathParameters] Path parameters for the request
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    FamiliesRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/families{?page*,size*}", pathParameters) ;
+    FamiliesRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/families{?limit*,offset*}", pathParameters) ;
     /// Instantiates a new [FamiliesRequestBuilder] and sets the default values.
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    FamiliesRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/families{?page*,size*}", {RequestInformation.rawUrlKey : rawUrl}) ;
+    FamiliesRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/families{?limit*,offset*}", {RequestInformation.rawUrlKey : rawUrl}) ;
     /// Retrieve a paginated list of families for the authenticated user
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<PaginatedResponseModelEndpointsFamilyModel?> getAsync([void Function(RequestConfiguration<FamiliesRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
