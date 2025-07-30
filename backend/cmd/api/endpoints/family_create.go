@@ -19,6 +19,7 @@ type FamilyCreateEndpoint struct {
 	handler core.CommandHandler[command.CreateFamilyCommand, family.Family]
 }
 
+// @name CreateFamily
 type createFamilyModel struct {
 	Id               *string    `json:"id,omitempty"`
 	Name             string     `json:"name" binding:"required"`

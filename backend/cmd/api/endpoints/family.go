@@ -56,6 +56,7 @@ func (g FamilyEndpointGroup) Middlewares() []gin.HandlerFunc {
 	return g.middlewares
 }
 
+// @name family
 type familyModel struct {
 	Id               string              `json:"id" binding:"required"`
 	Name             string              `json:"name" binding:"required"`
@@ -84,6 +85,7 @@ func newFamilyModel(userId string, source family.Family) familyModel {
 	}
 }
 
+// @name familyMember
 type familyMemberModel struct {
 	Id        string    `json:"id" binding:"required"`
 	Name      string    `json:"name" binding:"required"`
