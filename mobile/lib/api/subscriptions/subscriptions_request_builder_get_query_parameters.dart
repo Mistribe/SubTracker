@@ -4,7 +4,7 @@ import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 /// auto generated
 /// Get all subscriptions
 class SubscriptionsRequestBuilderGetQueryParameters implements AbstractQueryParameters {
-    ///  Page number
+    ///  Offset number
     int? page;
     ///  Number of items per page
     int? size;

@@ -1,5 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
+import './owner_model.dart';
 
 /// auto generated
 class LabelModel implements AdditionalDataHolder, Parsable {
@@ -8,17 +9,17 @@ class LabelModel implements AdditionalDataHolder, Parsable {
     Map<String, Object?> additionalData;
     ///  The color property
     String? color;
-    ///  CreatedAt date and time the label was created
+    ///  The created_at property
     DateTime? createdAt;
     ///  The etag property
     String? etag;
     ///  The id property
     String? id;
-    ///  The is_default property
-    bool? isDefault;
     ///  The name property
     String? name;
-    ///  UpdatedAt date and time the label was last updated
+    ///  The owner property
+    OwnerModel? owner;
+    ///  The updated_at property
     DateTime? updatedAt;
     /// Instantiates a new [LabelModel] and sets the default values.
     LabelModel() :  
@@ -36,8 +37,8 @@ class LabelModel implements AdditionalDataHolder, Parsable {
         deserializerMap['created_at'] = (node) => createdAt = node.getDateTimeValue();
         deserializerMap['etag'] = (node) => etag = node.getStringValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
-        deserializerMap['is_default'] = (node) => isDefault = node.getBoolValue();
         deserializerMap['name'] = (node) => name = node.getStringValue();
+        deserializerMap['owner'] = (node) => owner = node.getObjectValue<OwnerModel>(OwnerModel.createFromDiscriminatorValue);
         deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
     }
@@ -49,8 +50,8 @@ class LabelModel implements AdditionalDataHolder, Parsable {
         writer.writeDateTimeValue('created_at', createdAt);
         writer.writeStringValue('etag', etag);
         writer.writeStringValue('id', id);
-        writer.writeBoolValue('is_default', value:isDefault);
         writer.writeStringValue('name', name);
+        writer.writeObjectValue<OwnerModel>('owner', owner);
         writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
     }

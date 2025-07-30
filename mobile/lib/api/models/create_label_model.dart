@@ -1,5 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
+import './editable_owner_model.dart';
 
 /// auto generated
 class CreateLabelModel implements AdditionalDataHolder, Parsable {
@@ -12,10 +13,10 @@ class CreateLabelModel implements AdditionalDataHolder, Parsable {
     DateTime? createdAt;
     ///  The id property
     String? id;
-    ///  The is_default property
-    bool? isDefault;
     ///  The name property
     String? name;
+    ///  The owner property
+    EditableOwnerModel? owner;
     /// Instantiates a new [CreateLabelModel] and sets the default values.
     CreateLabelModel() :  
         additionalData = {};
@@ -31,8 +32,8 @@ class CreateLabelModel implements AdditionalDataHolder, Parsable {
         deserializerMap['color'] = (node) => color = node.getStringValue();
         deserializerMap['created_at'] = (node) => createdAt = node.getDateTimeValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
-        deserializerMap['is_default'] = (node) => isDefault = node.getBoolValue();
         deserializerMap['name'] = (node) => name = node.getStringValue();
+        deserializerMap['owner'] = (node) => owner = node.getObjectValue<EditableOwnerModel>(EditableOwnerModel.createFromDiscriminatorValue);
         return deserializerMap;
     }
     /// Serializes information the current object
@@ -42,8 +43,8 @@ class CreateLabelModel implements AdditionalDataHolder, Parsable {
         writer.writeStringValue('color', color);
         writer.writeDateTimeValue('created_at', createdAt);
         writer.writeStringValue('id', id);
-        writer.writeBoolValue('is_default', value:isDefault);
         writer.writeStringValue('name', name);
+        writer.writeObjectValue<EditableOwnerModel>('owner', owner);
         writer.writeAdditionalData(additionalData);
     }
 }

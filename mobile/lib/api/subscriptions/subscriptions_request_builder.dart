@@ -5,18 +5,18 @@ import '../models/http_error.dart';
 import '../models/paginated_response_model_endpoints_subscription_model.dart';
 import '../models/patch_subscription_model.dart';
 import '../models/subscription_model.dart';
-import './item/item_request_builder.dart';
+import './item/with_subscription_item_request_builder.dart';
 import './subscriptions_request_builder_get_query_parameters.dart';
 
 /// auto generated
 /// Builds and executes requests for operations under \subscriptions
 class SubscriptionsRequestBuilder extends BaseRequestBuilder<SubscriptionsRequestBuilder> {
     /// Gets an item from the ApiSdk.subscriptions.item collection
-    ///  [id] Subscription ID
-    ItemRequestBuilder byId(String id) {
+    ///  [subscriptionId] Subscription ID
+    WithSubscriptionItemRequestBuilder bySubscriptionId(String subscriptionId) {
         var urlTplParams = Map.of(pathParameters);
-        urlTplParams.putIfAbsent('%2Did', () => id);
-        return ItemRequestBuilder(urlTplParams, requestAdapter);
+        urlTplParams.putIfAbsent('subscriptionId', () => subscriptionId);
+        return WithSubscriptionItemRequestBuilder(urlTplParams, requestAdapter);
     }
     /// Clones the requestbuilder.
     @override
@@ -41,7 +41,7 @@ class SubscriptionsRequestBuilder extends BaseRequestBuilder<SubscriptionsReques
         return await requestAdapter.send<PaginatedResponseModelEndpointsSubscriptionModel>(requestInfo, PaginatedResponseModelEndpointsSubscriptionModel.createFromDiscriminatorValue, errorMapping);
     }
     /// Update an existing subscription with new details
-    ///  [body] Subscription update model
+    ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<SubscriptionModel?> patchAsync(PatchSubscriptionModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPatchRequestInformation(body, requestConfiguration);
@@ -69,7 +69,7 @@ class SubscriptionsRequestBuilder extends BaseRequestBuilder<SubscriptionsReques
         return requestInfo;
     }
     /// Update an existing subscription with new details
-    ///  [body] Subscription update model
+    ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toPatchRequestInformation(PatchSubscriptionModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
         var requestInfo = RequestInformation(httpMethod : HttpMethod.patch, urlTemplate : urlTemplate, pathParameters :  pathParameters);

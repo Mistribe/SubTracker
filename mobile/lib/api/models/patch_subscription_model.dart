@@ -1,29 +1,39 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import './patch_subscription_payment_model.dart';
+import './editable_owner_model.dart';
+import './editable_subscription_payer_model.dart';
 
 /// auto generated
-/// Subscription update model
 class PatchSubscriptionModel implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
-    ///  The family_id property
-    String? familyId;
-    ///  The family_members property
-    Iterable<String>? familyMembers;
+    ///  The custom_recurrency property
+    int? customRecurrency;
+    ///  The end_date property
+    DateTime? endDate;
+    ///  The free_trial_days property
+    int? freeTrialDays;
+    ///  The friendly_name property
+    String? friendlyName;
     ///  The id property
     String? id;
-    ///  The labels property
-    Iterable<String>? labels;
-    ///  The name property
-    String? name;
-    ///  The payed_by_joint_account property
-    bool? payedByJointAccount;
-    ///  The payer_id property
-    String? payerId;
-    ///  The payments property
-    Iterable<PatchSubscriptionPaymentModel>? payments;
+    ///  The owner property
+    EditableOwnerModel? owner;
+    ///  The payer property
+    EditableSubscriptionPayerModel? payer;
+    ///  The plan_id property
+    String? planId;
+    ///  The price_id property
+    String? priceId;
+    ///  The recurrency property
+    String? recurrency;
+    ///  The service_provider_id property
+    String? serviceProviderId;
+    ///  The service_users property
+    Iterable<String>? serviceUsers;
+    ///  The start_date property
+    DateTime? startDate;
     ///  The updated_at property
     DateTime? updatedAt;
     /// Instantiates a new [PatchSubscriptionModel] and sets the default values.
@@ -38,14 +48,19 @@ class PatchSubscriptionModel implements AdditionalDataHolder, Parsable {
     @override
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
-        deserializerMap['family_id'] = (node) => familyId = node.getStringValue();
-        deserializerMap['family_members'] = (node) => familyMembers = node.getCollectionOfPrimitiveValues<String>();
+        deserializerMap['custom_recurrency'] = (node) => customRecurrency = node.getIntValue();
+        deserializerMap['end_date'] = (node) => endDate = node.getDateTimeValue();
+        deserializerMap['free_trial_days'] = (node) => freeTrialDays = node.getIntValue();
+        deserializerMap['friendly_name'] = (node) => friendlyName = node.getStringValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
-        deserializerMap['labels'] = (node) => labels = node.getCollectionOfPrimitiveValues<String>();
-        deserializerMap['name'] = (node) => name = node.getStringValue();
-        deserializerMap['payed_by_joint_account'] = (node) => payedByJointAccount = node.getBoolValue();
-        deserializerMap['payer_id'] = (node) => payerId = node.getStringValue();
-        deserializerMap['payments'] = (node) => payments = node.getCollectionOfObjectValues<PatchSubscriptionPaymentModel>(PatchSubscriptionPaymentModel.createFromDiscriminatorValue);
+        deserializerMap['owner'] = (node) => owner = node.getObjectValue<EditableOwnerModel>(EditableOwnerModel.createFromDiscriminatorValue);
+        deserializerMap['payer'] = (node) => payer = node.getObjectValue<EditableSubscriptionPayerModel>(EditableSubscriptionPayerModel.createFromDiscriminatorValue);
+        deserializerMap['plan_id'] = (node) => planId = node.getStringValue();
+        deserializerMap['price_id'] = (node) => priceId = node.getStringValue();
+        deserializerMap['recurrency'] = (node) => recurrency = node.getStringValue();
+        deserializerMap['service_provider_id'] = (node) => serviceProviderId = node.getStringValue();
+        deserializerMap['service_users'] = (node) => serviceUsers = node.getCollectionOfPrimitiveValues<String>();
+        deserializerMap['start_date'] = (node) => startDate = node.getDateTimeValue();
         deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
     }
@@ -53,14 +68,19 @@ class PatchSubscriptionModel implements AdditionalDataHolder, Parsable {
     ///  [writer] Serialization writer to use to serialize this model
     @override
     void serialize(SerializationWriter writer) {
-        writer.writeStringValue('family_id', familyId);
-        writer.writeCollectionOfPrimitiveValues<String?>('family_members', familyMembers);
+        writer.writeIntValue('custom_recurrency', customRecurrency);
+        writer.writeDateTimeValue('end_date', endDate);
+        writer.writeIntValue('free_trial_days', freeTrialDays);
+        writer.writeStringValue('friendly_name', friendlyName);
         writer.writeStringValue('id', id);
-        writer.writeCollectionOfPrimitiveValues<String?>('labels', labels);
-        writer.writeStringValue('name', name);
-        writer.writeBoolValue('payed_by_joint_account', value:payedByJointAccount);
-        writer.writeStringValue('payer_id', payerId);
-        writer.writeCollectionOfObjectValues<PatchSubscriptionPaymentModel>('payments', payments);
+        writer.writeObjectValue<EditableOwnerModel>('owner', owner);
+        writer.writeObjectValue<EditableSubscriptionPayerModel>('payer', payer);
+        writer.writeStringValue('plan_id', planId);
+        writer.writeStringValue('price_id', priceId);
+        writer.writeStringValue('recurrency', recurrency);
+        writer.writeStringValue('service_provider_id', serviceProviderId);
+        writer.writeCollectionOfPrimitiveValues<String?>('service_users', serviceUsers);
+        writer.writeDateTimeValue('start_date', startDate);
         writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
     }

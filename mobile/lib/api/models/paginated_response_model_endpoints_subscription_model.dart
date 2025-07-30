@@ -7,11 +7,11 @@ class PaginatedResponseModelEndpointsSubscriptionModel implements AdditionalData
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
-    ///  The data property
+    ///  Data contains the list of items for the current page
     Iterable<SubscriptionModel>? data;
-    ///  The length property
+    ///  Length represents the number of items in the current page
     int? length;
-    ///  The total property
+    ///  Total represents the total number of items available
     int? total;
     /// Instantiates a new [PaginatedResponseModelEndpointsSubscriptionModel] and sets the default values.
     PaginatedResponseModelEndpointsSubscriptionModel() :  

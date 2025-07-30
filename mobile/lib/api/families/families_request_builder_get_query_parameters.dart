@@ -4,7 +4,7 @@ import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 /// auto generated
 /// Get all family members
 class FamiliesRequestBuilderGetQueryParameters implements AbstractQueryParameters {
-    ///  Page number
+    ///  Offset number
     int? page;
     ///  Number of items per page
     int? size;

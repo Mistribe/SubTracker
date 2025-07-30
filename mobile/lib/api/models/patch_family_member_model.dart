@@ -7,13 +7,11 @@ class PatchFamilyMemberModel implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
-    ///  Optional email address
-    String? email;
     ///  Optional member ID. If not provided, new member will be created
     String? id;
     ///  Indicates if the member is a kid
     bool? isKid;
-    ///  Member's name
+    ///  member's name
     String? name;
     ///  Optional timestamp of the last update
     DateTime? updatedAt;
@@ -29,7 +27,6 @@ class PatchFamilyMemberModel implements AdditionalDataHolder, Parsable {
     @override
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
-        deserializerMap['email'] = (node) => email = node.getStringValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
         deserializerMap['is_kid'] = (node) => isKid = node.getBoolValue();
         deserializerMap['name'] = (node) => name = node.getStringValue();
@@ -40,7 +37,6 @@ class PatchFamilyMemberModel implements AdditionalDataHolder, Parsable {
     ///  [writer] Serialization writer to use to serialize this model
     @override
     void serialize(SerializationWriter writer) {
-        writer.writeStringValue('email', email);
         writer.writeStringValue('id', id);
         writer.writeBoolValue('is_kid', value:isKid);
         writer.writeStringValue('name', name);
