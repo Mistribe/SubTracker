@@ -1,123 +1,47 @@
-import {useState} from "react";
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {Popover, PopoverContent, PopoverTrigger,} from "@/components/ui/popover";
-import {ColorPicker} from "@/components/ui/color-picker";
-import {argbToRgba, hexToArgb} from "@/components/ui/utils/color-utils";
-import {Loader2, Pencil, PlusIcon, X} from "lucide-react";
-import {useApiClient} from "@/hooks/use-api-client.ts";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import type {LabelModel} from "@/api/models";
-import Label from "@/models/label.ts";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { hexToArgb } from "@/components/ui/utils/color-utils";
+import { useLabelsQuery } from "@/hooks/labels/useLabelsQuery";
+import { useLabelMutations } from "@/hooks/labels/useLabelMutations";
+import { LabelHeader } from "@/components/labels/LabelHeader";
+import { SystemLabelsSection } from "@/components/labels/SystemLabelsSection";
+import { PersonalLabelsSection } from "@/components/labels/PersonalLabelsSection";
+import { FamilyLabelsSection } from "@/components/labels/FamilyLabelsSection";
+import Label from "@/models/label";
+import { OwnerType } from "@/models/ownerType";
 
 const LabelsPage = () => {
-    const {apiClient} = useApiClient();
-    const queryClient = useQueryClient();
-
     const [page] = useState(1);
     const [pageSize] = useState(10);
 
-    // Fetch labels using TanStack Query
+    // Use custom hooks for data fetching and mutations
     const {
         data: queryResponse,
         isLoading,
         error
-    } = useQuery({
-        queryKey: ['labels'],
-        queryFn: async () => {
-            if (!apiClient) {
-                throw new Error('API client not initialized');
-            }
-            const result = await apiClient?.labels.get({
-                queryParameters: {
-                    withDefault: true,
-                    page: page,
-                    size: pageSize
-                }
-            });
-            if (result && result.data) {
-                return {
-                    labels: result.data.map((model: LabelModel) => {
-                        return Label.fromModel(model);
-                    }),
-                    length: result.data.length,
-                    total: result.total ?? 0
-                }
-            }
-            return {labels: [], length: 0, total: 0};
-        },
-        enabled: !!apiClient,
-        // Optional but useful settings
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        refetchOnWindowFocus: true,
-    });
+    } = useLabelsQuery(page, pageSize);
 
-    // State for new label
-    const [newLabel, setNewLabel] = useState("");
-    const [newLabelColor, setNewLabelColor] = useState("#FF000000"); // Default ARGB color
+    const {
+        createLabelMutation,
+        updateLabelMutation,
+        deleteLabelMutation,
+        canModifyLabel
+    } = useLabelMutations();
 
     // State for editing
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState("");
     const [editingColor, setEditingColor] = useState("");
 
-    // Create label mutation
-    const createLabelMutation = useMutation({
-        mutationFn: async (labelData: { name: string, color: string }) => {
-            return apiClient?.labels.post({
-                name: labelData.name,
-                color: labelData.color
-            });
-        },
-        onSuccess: () => {
-            // Invalidate and refetch
-            queryClient.invalidateQueries({queryKey: ['labels']});
-            setNewLabel("");
-        }
-    });
-
-    // Update label mutation
-    const updateLabelMutation = useMutation({
-        mutationFn: async ({id, name, color}: { id: string, name: string, color: string }) => {
-            return apiClient?.labels.byId(id).put({
-                name: name,
-                color: color,
-            });
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: ['labels']});
-            setEditingId(null);
-            setEditingName("");
-        }
-    });
-
-    // Delete label mutation
-    const deleteLabelMutation = useMutation({
-        mutationFn: async (id: string) => {
-            return apiClient?.labels.byId(id).delete();
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: ['labels']});
-        }
-    });
-
-    const handleAddLabel = () => {
-        if (newLabel.trim()) {
-            createLabelMutation.mutate({
-                name: newLabel,
-                color: newLabelColor
-            });
-        }
-    };
-
-    const startEditing = (label: Label) => {
-        // Prevent editing default labels
-        if (label.owner.isSystem) {
+    const handleStartEditing = (label: Label) => {
+        // Prevent editing system labels
+        if (!canModifyLabel(label)) {
             return;
         }
 
         setEditingId(label.id);
         setEditingName(label.name);
+        
         // Convert hex color to ARGB if needed
         let color = label.color;
 
@@ -134,31 +58,47 @@ const LabelsPage = () => {
         setEditingColor(color);
     };
 
-    const saveEdit = () => {
-        if (editingId && editingName.trim()) {
+    const handleSaveEdit = (id: string, name: string, color: string) => {
+        if (id && name.trim()) {
             updateLabelMutation.mutate({
-                id: editingId,
-                name: editingName,
-                color: editingColor
+                id,
+                name,
+                color
+            }, {
+                onSuccess: () => {
+                    setEditingId(null);
+                    setEditingName("");
+                }
             });
         }
     };
 
-    const cancelEdit = () => {
+    const handleCancelEdit = () => {
         setEditingId(null);
         setEditingName("");
     };
 
-    const deleteLabel = (id: string) => {
-        // Find the label to check if it's a default label
+    const handleDeleteLabel = (id: string) => {
+        // Find the label to check if it's a system label
         const labelToDelete = queryResponse?.labels?.find(label => label.id === id);
 
-        // Prevent deleting default labels
-        if (labelToDelete?.owner.isSystem) {
+        // Prevent deleting system labels
+        if (labelToDelete && !canModifyLabel(labelToDelete)) {
             return;
         }
 
         deleteLabelMutation.mutate(id);
+    };
+
+    const handleAddLabel = (name: string, color: string, ownerType?: OwnerType, familyId?: string) => {
+        if (name.trim()) {
+            createLabelMutation.mutate({
+                name,
+                color,
+                ownerType,
+                familyId
+            });
+        }
     };
 
     // Show loading or error states
@@ -182,157 +122,45 @@ const LabelsPage = () => {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Labels</h1>
-                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <div
-                            className="w-4 h-4 rounded-full flex-shrink-0"
-                            style={{backgroundColor: argbToRgba(newLabelColor)}}
-                        />
-                        <Input
-                            placeholder="Enter label name"
-                            value={newLabel}
-                            onChange={(e) => setNewLabel(e.target.value)}
-                            className="h-9 text-sm w-full sm:w-48 md:w-64"
-                        />
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant="outline" size="sm" className="h-9">
-                                    <div
-                                        className="w-4 h-4 rounded-md mr-1"
-                                        style={{backgroundColor: argbToRgba(newLabelColor)}}
-                                    />
-                                    Color
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                                <ColorPicker
-                                    color={newLabelColor}
-                                    onChange={setNewLabelColor}
-                                />
-                            </PopoverContent>
-                        </Popover>
-                        <Button
-                            size="sm"
-                            className="h-9"
-                            onClick={handleAddLabel}
-                            disabled={createLabelMutation.isPending}
-                        >
-                            {createLabelMutation.isPending ? (
-                                <Loader2 className="h-4 w-4 mr-1 animate-spin"/>
-                            ) : (
-                                <PlusIcon className="h-4 w-4 mr-1"/>
-                            )}
-                            Add
-                        </Button>
-                    </div>
-                </div>
-                <p>{queryResponse?.total} elements</p>
-            </div>
+            <LabelHeader totalCount={queryResponse?.total || 0} />
 
             <div className="mt-8">
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                    {queryResponse?.labels?.map((label) => (
-                        <div
-                            key={label.id}
-                            className={`flex items-center p-2 border rounded-md ${editingId === label.id ? 'bg-muted' : 'hover:bg-muted/50'}`}
-                        >
-                            {editingId === label.id ? (
-                                <div className="w-full space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <div
-                                            className="w-4 h-4 rounded-full flex-shrink-0"
-                                            style={{backgroundColor: argbToRgba(editingColor)}}
-                                        />
-                                        <Input
-                                            value={editingName}
-                                            onChange={(e) => setEditingName(e.target.value)}
-                                            className="h-7 text-sm"
-                                            autoFocus
-                                        />
-                                    </div>
-                                    <div className="flex items-center gap-1 justify-between">
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button variant="outline" size="sm" className="h-7 px-2">
-                                                    <div
-                                                        className="w-4 h-4 rounded-md mr-1"
-                                                        style={{backgroundColor: argbToRgba(editingColor)}}
-                                                    />
-                                                    Color
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0" align="start">
-                                                <ColorPicker
-                                                    color={editingColor}
-                                                    onChange={setEditingColor}
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
-                                        <div className="flex items-center gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-7 px-2"
-                                                onClick={saveEdit}
-                                                disabled={updateLabelMutation.isPending}
-                                            >
-                                                {updateLabelMutation.isPending ? (
-                                                    <Loader2 className="h-3 w-3 mr-1 animate-spin"/>
-                                                ) : null}
-                                                Save
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-7 px-2"
-                                                onClick={cancelEdit}
-                                            >
-                                                Cancel
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <>
-                                    <div
-                                        className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
-                                        style={{backgroundColor: argbToRgba(label.color)}}
-                                    />
-                                    <span className="text-sm font-medium truncate flex-grow">{label.name}</span>
-                                    <div className="flex items-center gap-1 ml-1">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-6 w-6"
-                                            onClick={() => startEditing(label)}
-                                            disabled={label.owner.isSystem}
-                                            title={label.owner.isSystem ? "Default labels cannot be edited" : "Edit label"}
-                                        >
-                                            <Pencil className="h-3 w-3"/>
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-6 w-6 text-destructive hover:text-destructive"
-                                            onClick={() => deleteLabel(label.id)}
-                                            disabled={(deleteLabelMutation.isPending && deleteLabelMutation.variables === label.id) || label.owner.isSystem}
-                                            title={label.owner.isSystem ? "Default labels cannot be deleted" : "Delete label"}
-                                        >
-                                            {deleteLabelMutation.isPending && deleteLabelMutation.variables === label.id ? (
-                                                <Loader2 className="h-3 w-3 animate-spin"/>
-                                            ) : (
-                                                <X className="h-3 w-3"/>
-                                            )}
-                                        </Button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    ))}
+                {/* System Labels Section */}
+                <SystemLabelsSection labels={queryResponse?.labels || []} />
+
+                {/* Personal and Family Labels Section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Personal Labels Column */}
+                    <PersonalLabelsSection 
+                        labels={queryResponse?.labels || []}
+                        editingId={editingId}
+                        editingName={editingName}
+                        editingColor={editingColor}
+                        onStartEditing={handleStartEditing}
+                        onSaveEdit={handleSaveEdit}
+                        onCancelEdit={handleCancelEdit}
+                        onDeleteLabel={handleDeleteLabel}
+                        onAddLabel={handleAddLabel}
+                        isUpdating={updateLabelMutation.isPending}
+                        isDeletingId={deleteLabelMutation.isPending ? deleteLabelMutation.variables as string : null}
+                        isAdding={createLabelMutation.isPending}
+                    />
+
+                    {/* Family Labels Column */}
+                    <FamilyLabelsSection 
+                        labels={queryResponse?.labels || []}
+                        editingId={editingId}
+                        editingName={editingName}
+                        editingColor={editingColor}
+                        onStartEditing={handleStartEditing}
+                        onSaveEdit={handleSaveEdit}
+                        onCancelEdit={handleCancelEdit}
+                        onDeleteLabel={handleDeleteLabel}
+                        onAddLabel={handleAddLabel}
+                        isUpdating={updateLabelMutation.isPending}
+                        isDeletingId={deleteLabelMutation.isPending ? deleteLabelMutation.variables as string : null}
+                        isAdding={createLabelMutation.isPending}
+                    />
                 </div>
             </div>
         </div>
