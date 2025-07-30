@@ -58,7 +58,7 @@ export interface LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBu
  */
 export interface LabelsRequestBuilderGetQueryParameters {
     /**
-     * Page number
+     * Offset number
      */
     page?: number;
     /**

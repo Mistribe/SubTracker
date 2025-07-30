@@ -68,7 +68,7 @@ export interface FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesReque
  */
 export interface FamiliesRequestBuilderGetQueryParameters {
     /**
-     * Page number
+     * Offset number
      */
     page?: number;
     /**

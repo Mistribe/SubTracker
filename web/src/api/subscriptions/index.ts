@@ -4,7 +4,7 @@
 // @ts-ignore
 import { createHttpErrorFromDiscriminatorValue, createPaginatedResponseModelEndpoints_subscriptionModelFromDiscriminatorValue, createSubscriptionModelFromDiscriminatorValue, serializeCreateSubscriptionModel, serializePatchSubscriptionModel, serializeSubscriptionModel, type CreateSubscriptionModel, type HttpError, type PaginatedResponseModelEndpoints_subscriptionModel, type PatchSubscriptionModel, type SubscriptionModel } from '../models/index.js';
 // @ts-ignore
-import { ItemRequestBuilderNavigationMetadata, ItemRequestBuilderRequestsMetadata, type ItemRequestBuilder } from './item/index.js';
+import { type WithSubscriptionItemRequestBuilder, WithSubscriptionItemRequestBuilderRequestsMetadata } from './item/index.js';
 // @ts-ignore
 import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type NavigationMetadata, type Parsable, type ParsableFactory, type RequestConfiguration, type RequestInformation, type RequestsMetadata } from '@microsoft/kiota-abstractions';
 
@@ -14,10 +14,10 @@ import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type 
 export interface SubscriptionsRequestBuilder extends BaseRequestBuilder<SubscriptionsRequestBuilder> {
     /**
      * Gets an item from the ApiSdk.subscriptions.item collection
-     * @param id Subscription ID
-     * @returns {ItemRequestBuilder}
+     * @param subscriptionId Subscription ID
+     * @returns {WithSubscriptionItemRequestBuilder}
      */
-     byId(id: string) : ItemRequestBuilder;
+     bySubscriptionId(subscriptionId: string) : WithSubscriptionItemRequestBuilder;
     /**
      * Get all subscriptions
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
@@ -27,7 +27,7 @@ export interface SubscriptionsRequestBuilder extends BaseRequestBuilder<Subscrip
      get(requestConfiguration?: RequestConfiguration<SubscriptionsRequestBuilderGetQueryParameters> | undefined) : Promise<PaginatedResponseModelEndpoints_subscriptionModel | undefined>;
     /**
      * Update an existing subscription with new details
-     * @param body Subscription update model
+     * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<SubscriptionModel>}
      * @throws {HttpError} error when the service returns a 400 status code
@@ -49,7 +49,7 @@ export interface SubscriptionsRequestBuilder extends BaseRequestBuilder<Subscrip
      toGetRequestInformation(requestConfiguration?: RequestConfiguration<SubscriptionsRequestBuilderGetQueryParameters> | undefined) : RequestInformation;
     /**
      * Update an existing subscription with new details
-     * @param body Subscription update model
+     * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
      */
@@ -67,7 +67,7 @@ export interface SubscriptionsRequestBuilder extends BaseRequestBuilder<Subscrip
  */
 export interface SubscriptionsRequestBuilderGetQueryParameters {
     /**
-     * Page number
+     * Offset number
      */
     page?: number;
     /**
@@ -83,10 +83,9 @@ export const SubscriptionsRequestBuilderUriTemplate = "{+baseurl}/subscriptions{
  * Metadata for all the navigation properties in the request builder.
  */
 export const SubscriptionsRequestBuilderNavigationMetadata: Record<Exclude<keyof SubscriptionsRequestBuilder, KeysToExcludeForNavigationMetadata>, NavigationMetadata> = {
-    byId: {
-        requestsMetadata: ItemRequestBuilderRequestsMetadata,
-        navigationMetadata: ItemRequestBuilderNavigationMetadata,
-        pathParametersMappings: ["%2Did"],
+    bySubscriptionId: {
+        requestsMetadata: WithSubscriptionItemRequestBuilderRequestsMetadata,
+        pathParametersMappings: ["subscriptionId"],
     },
 };
 /**

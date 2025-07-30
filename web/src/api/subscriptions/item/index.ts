@@ -4,18 +4,12 @@
 // @ts-ignore
 import { createHttpErrorFromDiscriminatorValue, createSubscriptionModelFromDiscriminatorValue, serializeSubscriptionModel, serializeUpdateSubscriptionModel, type HttpError, type SubscriptionModel, type UpdateSubscriptionModel } from '../../models/index.js';
 // @ts-ignore
-import { PaymentsRequestBuilderNavigationMetadata, PaymentsRequestBuilderRequestsMetadata, type PaymentsRequestBuilder } from './payments/index.js';
-// @ts-ignore
-import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type NavigationMetadata, type Parsable, type ParsableFactory, type RequestConfiguration, type RequestInformation, type RequestsMetadata } from '@microsoft/kiota-abstractions';
+import { type BaseRequestBuilder, type Parsable, type ParsableFactory, type RequestConfiguration, type RequestInformation, type RequestsMetadata } from '@microsoft/kiota-abstractions';
 
 /**
- * Builds and executes requests for operations under /subscriptions/{-id}
+ * Builds and executes requests for operations under /subscriptions/{subscriptionId}
  */
-export interface ItemRequestBuilder extends BaseRequestBuilder<ItemRequestBuilder> {
-    /**
-     * The payments property
-     */
-    get payments(): PaymentsRequestBuilder;
+export interface WithSubscriptionItemRequestBuilder extends BaseRequestBuilder<WithSubscriptionItemRequestBuilder> {
     /**
      * Delete an existing subscription
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
@@ -61,22 +55,13 @@ export interface ItemRequestBuilder extends BaseRequestBuilder<ItemRequestBuilde
 /**
  * Uri template for the request builder.
  */
-export const ItemRequestBuilderUriTemplate = "{+baseurl}/subscriptions/{%2Did}";
-/**
- * Metadata for all the navigation properties in the request builder.
- */
-export const ItemRequestBuilderNavigationMetadata: Record<Exclude<keyof ItemRequestBuilder, KeysToExcludeForNavigationMetadata>, NavigationMetadata> = {
-    payments: {
-        requestsMetadata: PaymentsRequestBuilderRequestsMetadata,
-        navigationMetadata: PaymentsRequestBuilderNavigationMetadata,
-    },
-};
+export const WithSubscriptionItemRequestBuilderUriTemplate = "{+baseurl}/subscriptions/{subscriptionId}";
 /**
  * Metadata for all the requests in the request builder.
  */
-export const ItemRequestBuilderRequestsMetadata: RequestsMetadata = {
+export const WithSubscriptionItemRequestBuilderRequestsMetadata: RequestsMetadata = {
     delete: {
-        uriTemplate: ItemRequestBuilderUriTemplate,
+        uriTemplate: WithSubscriptionItemRequestBuilderUriTemplate,
         responseBodyContentType: "application/json",
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
@@ -84,7 +69,7 @@ export const ItemRequestBuilderRequestsMetadata: RequestsMetadata = {
         adapterMethodName: "sendNoResponseContent",
     },
     get: {
-        uriTemplate: ItemRequestBuilderUriTemplate,
+        uriTemplate: WithSubscriptionItemRequestBuilderUriTemplate,
         responseBodyContentType: "application/json",
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
@@ -94,7 +79,7 @@ export const ItemRequestBuilderRequestsMetadata: RequestsMetadata = {
         responseBodyFactory:  createSubscriptionModelFromDiscriminatorValue,
     },
     put: {
-        uriTemplate: ItemRequestBuilderUriTemplate,
+        uriTemplate: WithSubscriptionItemRequestBuilderUriTemplate,
         responseBodyContentType: "application/json",
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
