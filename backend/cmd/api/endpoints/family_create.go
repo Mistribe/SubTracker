@@ -11,7 +11,6 @@ import (
 	"github.com/oleexo/subtracker/internal/application/family/command"
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/family"
-	"github.com/oleexo/subtracker/pkg/ext"
 )
 
 type FamilyCreateEndpoint struct {
@@ -20,55 +19,26 @@ type FamilyCreateEndpoint struct {
 
 // @name CreateFamily
 type createFamilyModel struct {
-	Id               *string    `json:"id,omitempty"`
-	Name             string     `json:"name" binding:"required"`
-	HaveJointAccount bool       `json:"have_joint_account,omitempty"`
-	CreatedAt        *time.Time `json:"created_at,omitempty" format:"date-time"`
+	Id          *string    `json:"id,omitempty"`
+	Name        string     `json:"name" binding:"required"`
+	CreatorName string     `json:"creator_name" binding:"required"`
+	CreatedAt   *time.Time `json:"created_at,omitempty" format:"date-time"`
 }
 
-func (m createFamilyModel) ToFamily(ownerId string) (family.Family, error) {
-	var familyId uuid.UUID
-	var err error
-	var createdAt time.Time
-
-	familyId, err = parseUuidOrNew(m.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
-
-	creatorId, err := uuid.NewV7()
-	if err != nil {
-		return nil, err
-	}
-	creator := family.NewMember(creatorId,
-		familyId,
-		"Owner", // todo replace with name from token,
-		false,
-		time.Now(),
-		time.Now(),
-	)
-	creator.SetUserId(&ownerId)
-	return family.NewFamily(
-		familyId,
-		ownerId,
-		m.Name,
-		[]family.Member{
-			creator,
-		},
-		createdAt,
-		createdAt,
-	), nil
-}
-
-func (m createFamilyModel) Command(ownerId string) (command.CreateFamilyCommand, error) {
-	fam, err := m.ToFamily(ownerId)
-	if err != nil {
-		return command.CreateFamilyCommand{}, err
+func (m createFamilyModel) Command() (command.CreateFamilyCommand, error) {
+	var familyId *uuid.UUID
+	if m.Id != nil {
+		id, err := uuid.Parse(*m.Id)
+		if err != nil {
+			return command.CreateFamilyCommand{}, err
+		}
+		familyId = &id
 	}
 	return command.CreateFamilyCommand{
-		Family: fam,
+		FamilyId:    familyId,
+		Name:        m.Name,
+		CreatorName: m.CreatorName,
+		CreatedAt:   m.CreatedAt,
 	}, nil
 
 }
@@ -102,7 +72,7 @@ func (f FamilyCreateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	cmd, err := model.Command(userId)
+	cmd, err := model.Command()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, httpError{
 			Message: err.Error(),

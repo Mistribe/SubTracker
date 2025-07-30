@@ -2,16 +2,21 @@ package command
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/family"
+	"github.com/oleexo/subtracker/pkg/ext"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type CreateFamilyCommand struct {
-	Family family.Family
+	FamilyId    *uuid.UUID
+	Name        string
+	CreatorName string
+	CreatedAt   *time.Time
 }
 
 type CreateFamilyCommandHandler struct {
@@ -28,16 +33,21 @@ func NewCreateFamilyCommandHandler(familyRepository family.Repository,
 }
 
 func (h CreateFamilyCommandHandler) Handle(ctx context.Context, cmd CreateFamilyCommand) result.Result[family.Family] {
-	fam, err := h.familyRepository.GetById(ctx, cmd.Family.Id())
-	if err != nil {
-		return result.Fail[family.Family](err)
-	}
-
-	if fam != nil {
-		if fam.Equal(cmd.Family) {
-			return result.Success(cmd.Family)
+	if cmd.FamilyId != nil {
+		fam, err := h.familyRepository.GetById(ctx, *cmd.FamilyId)
+		if err != nil {
+			return result.Fail[family.Family](err)
 		}
-		return result.Fail[family.Family](family.ErrFamilyAlreadyExists)
+
+		if fam != nil {
+			return result.Fail[family.Family](family.ErrFamilyAlreadyExists)
+		}
+	} else {
+		newId, err := uuid.NewV7()
+		if err != nil {
+			return result.Fail[family.Family](err)
+		}
+		cmd.FamilyId = &newId
 	}
 	return h.createFamily(ctx, cmd)
 }
@@ -52,25 +62,36 @@ func (h CreateFamilyCommandHandler) createFamily(
 		return result.Fail[family.Family](err)
 	}
 
+	createdAt := ext.ValueOrDefault(cmd.CreatedAt, time.Now())
+
+	fam := family.NewFamily(
+		*cmd.FamilyId,
+		userId,
+		cmd.Name,
+		[]family.Member{},
+		createdAt,
+		createdAt,
+	)
+
 	creator := family.NewMember(
 		memberId,
-		cmd.Family.Id(),
-		"You",
+		*cmd.FamilyId,
+		cmd.CreatorName,
 		false,
-		cmd.Family.CreatedAt(),
-		cmd.Family.UpdatedAt(),
+		createdAt,
+		createdAt,
 	)
 	creator.SetUserId(&userId)
 
-	if err := cmd.Family.AddMember(creator); err != nil {
+	if err := fam.AddMember(creator); err != nil {
 		return result.Fail[family.Family](err)
 	}
-	if err := cmd.Family.GetValidationErrors(); err != nil {
+	if err := fam.GetValidationErrors(); err != nil {
 		return result.Fail[family.Family](err)
 	}
-	if err := h.familyRepository.Save(ctx, cmd.Family); err != nil {
+	if err := h.familyRepository.Save(ctx, fam); err != nil {
 		return result.Fail[family.Family](err)
 	}
 
-	return result.Success(cmd.Family)
+	return result.Success(fam)
 }

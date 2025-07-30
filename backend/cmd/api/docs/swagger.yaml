@@ -618,13 +618,14 @@ components:
         created_at:
           format: date-time
           type: string
-        have_joint_account:
-          type: boolean
+        creator_name:
+          type: string
         id:
           type: string
         name:
           type: string
       required:
+      - creator_name
       - name
       type: object
     endpoints.createLabelModel:

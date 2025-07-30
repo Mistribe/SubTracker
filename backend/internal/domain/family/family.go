@@ -63,6 +63,10 @@ func (f *family) GetValidationErrors() validationx.Errors {
 
 	idMap := make(map[uuid.UUID]bool)
 
+	if f.members.Len() == 0 {
+		errors = append(errors, validationx.NewError("members", "family must have at least one member"))
+	}
+
 	for mbr := range f.members.It() {
 		if idMap[mbr.Id()] {
 			errors = append(errors, validationx.NewError("members", "duplicate member id"))
