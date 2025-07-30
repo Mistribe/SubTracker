@@ -22,12 +22,12 @@ type FamilyGetEndpoint struct {
 //	@Description	Retrieve a family and its members by family ID
 //	@Tags			family
 //	@Produce		json
-//	@Param			id			path		string	true	"Family ID (UUID format)"
-//	@Success		200			{object}	familyModel		"Successfully retrieved family"
-//	@Failure		400			{object}	httpError		"Bad Request - Invalid ID format"
-//	@Failure		401			{object}	httpError		"Unauthorized - Invalid user authentication"
-//	@Failure		404			{object}	httpError		"Family not found"
-//	@Failure		500			{object}	httpError		"Internal Server Error"
+//	@Param			id	path		string		true	"Family ID (UUID format)"
+//	@Success		200	{object}	familyModel	"Successfully retrieved family"
+//	@Failure		400	{object}	httpError	"Bad Request - Invalid ID format"
+//	@Failure		401	{object}	httpError	"Unauthorized - Invalid user authentication"
+//	@Failure		404	{object}	httpError	"Family not found"
+//	@Failure		500	{object}	httpError	"Internal Server Error"
 //	@Router			/families/{id} [get]
 func (f FamilyGetEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")

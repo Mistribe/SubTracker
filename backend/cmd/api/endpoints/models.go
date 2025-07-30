@@ -8,11 +8,17 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/auth"
 )
 
+// OwnerModel represents ownership information for resources
+// @Description Owner object that can represent either personal or family ownership
 type OwnerModel struct {
-	Type     string  `json:"type" binding:"required"`
-	FamilyId *string `json:"family_id,omitempty"`
-	UserId   *string `json:"userId,omitempty"`
-	Etag     string  `json:"etag" binding:"required"`
+	// @Description Type of ownership (personal or family)
+	Type string `json:"type" binding:"required" example:"personal" enums:"personal,family,system"`
+	// @Description Family ID when an ownership type is family (required for family ownership)
+	FamilyId *string `json:"family_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174000"`
+	// @Description User ID when an ownership type is personal (required for personal ownership)
+	UserId *string `json:"userId,omitempty" example:"123e4567-e89b-12d3-a456-426614174001"`
+	// @Description Entity tag for optimistic concurrency control
+	Etag string `json:"etag" binding:"required" example:"W/\"123456789\""`
 }
 
 type editableOwnerModel struct {

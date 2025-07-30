@@ -22,8 +22,8 @@ type FamilyGetAllEndpoint struct {
 //	@Description	Retrieve a paginated list of families for the authenticated user
 //	@Tags			family
 //	@Produce		json
-//	@Param			size	query		integer	false	"Number of items per page (default: 10)"
-//	@Param			page	query		integer	false	"Page number (default: 1)"
+//	@Param			size	query		integer								false	"Number of items per page (default: 10)"
+//	@Param			page	query		integer								false	"Page number (default: 1)"
 //	@Success		200		{object}	PaginatedResponseModel[familyModel]	"Paginated list of families"
 //	@Failure		400		{object}	httpError							"Bad Request - Invalid query parameters"
 //	@Failure		401		{object}	httpError							"Unauthorized - Invalid user authentication"

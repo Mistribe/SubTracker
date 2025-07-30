@@ -41,13 +41,13 @@ func (m updatePlanModel) Command(providerId, planId uuid.UUID) (command.UpdatePl
 //	@Tags			providers
 //	@Accept			json
 //	@Produce		json
-//	@Param			providerId	path		string				true	"Provider ID (UUID format)"
-//	@Param			planId		path		string				true	"Plan ID (UUID format)"
-//	@Param			plan		body		updatePlanModel		true	"Updated plan data"
-//	@Success		200			{object}	PlanModel			"Successfully updated plan"
-//	@Failure		400			{object}	httpError			"Bad Request - Invalid input data or IDs"
-//	@Failure		404			{object}	httpError			"Provider or plan not found"
-//	@Failure		500			{object}	httpError			"Internal Server Error"
+//	@Param			providerId	path		string			true	"Provider ID (UUID format)"
+//	@Param			planId		path		string			true	"Plan ID (UUID format)"
+//	@Param			plan		body		updatePlanModel	true	"Updated plan data"
+//	@Success		200			{object}	PlanModel		"Successfully updated plan"
+//	@Failure		400			{object}	httpError		"Bad Request - Invalid input data or IDs"
+//	@Failure		404			{object}	httpError		"Provider or plan not found"
+//	@Failure		500			{object}	httpError		"Internal Server Error"
 //	@Router			/providers/{providerId}/plans/{planId} [put]
 func (e ProviderPlanUpdateEndpoint) Handle(c *gin.Context) {
 	var model updatePlanModel

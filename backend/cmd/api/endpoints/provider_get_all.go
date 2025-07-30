@@ -25,8 +25,8 @@ func NewProviderGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, cor
 //	@Description	Retrieve a paginated list of all providers with their plans and prices
 //	@Tags			providers
 //	@Produce		json
-//	@Param			page	query		int	false	"Page number (default: 1)"
-//	@Param			size	query		int	false	"Items per page (default: 10)"
+//	@Param			page	query		int										false	"Page number (default: 1)"
+//	@Param			size	query		int										false	"Items per page (default: 10)"
 //	@Success		200		{object}	PaginatedResponseModel[ProviderModel]	"Paginated list of providers"
 //	@Failure		400		{object}	httpError								"Bad Request - Invalid query parameters"
 //	@Failure		500		{object}	httpError								"Internal Server Error"

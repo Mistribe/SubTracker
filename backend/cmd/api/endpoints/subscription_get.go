@@ -20,7 +20,7 @@ type SubscriptionGetEndpoint struct {
 //	@Description	Retrieve a single subscription with all its details including provider, plan, and pricing information
 //	@Tags			subscription
 //	@Produce		json
-//	@Param			subscriptionId	path		string	true	"Subscription ID (UUID format)"
+//	@Param			subscriptionId	path		string				true	"Subscription ID (UUID format)"
 //	@Success		200				{object}	subscriptionModel	"Successfully retrieved subscription"
 //	@Failure		400				{object}	httpError			"Bad Request - Invalid subscription ID format"
 //	@Failure		404				{object}	httpError			"Subscription not found"

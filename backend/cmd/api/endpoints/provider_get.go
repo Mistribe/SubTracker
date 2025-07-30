@@ -24,7 +24,7 @@ func NewProviderGetEndpoint(handler core.QueryHandler[query.FindOneQuery, provid
 //	@Description	Retrieve a single provider with all its plans and prices by ID
 //	@Tags			providers
 //	@Produce		json
-//	@Param			providerId	path		string	true	"Provider ID (UUID format)"
+//	@Param			providerId	path		string			true	"Provider ID (UUID format)"
 //	@Success		200			{object}	ProviderModel	"Successfully retrieved provider"
 //	@Failure		400			{object}	httpError		"Bad Request - Invalid provider ID format"
 //	@Failure		404			{object}	httpError		"Provider not found"
