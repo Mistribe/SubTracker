@@ -22,13 +22,14 @@ func NewSubscriptionGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery,
 // Handle godoc
 //
 //	@Summary		Get all subscriptions
-//	@Description	Get all subscriptions
+//	@Description	Retrieve a paginated list of all subscriptions for the authenticated user
 //	@Tags			subscription
 //	@Produce		json
-//	@Param			size	query		integer	false	"Number of items per page"
-//	@Param			page	query		integer	false	"Offset number"
-//	@Success		200		{object}	PaginatedResponseModel[subscriptionModel]
-//	@Failure		400		{object}	httpError
+//	@Param			size	query		integer	false	"Number of items per page (default: 10)"
+//	@Param			page	query		integer	false	"Page number (default: 1)"
+//	@Success		200		{object}	PaginatedResponseModel[subscriptionModel]	"Paginated list of subscriptions"
+//	@Failure		400		{object}	httpError								"Bad Request - Invalid query parameters"
+//	@Failure		500		{object}	httpError								"Internal Server Error"
 //	@Router			/subscriptions [get]
 func (s SubscriptionGetAllEndpoint) Handle(c *gin.Context) {
 	size, err := strconv.Atoi(c.DefaultQuery("size", "10"))

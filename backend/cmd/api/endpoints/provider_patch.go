@@ -24,6 +24,21 @@ func NewProviderPatchEndpoint(handler core.CommandHandler[command.PatchProviderC
 	return &ProviderPatchEndpoint{handler: handler}
 }
 
+// Handle godoc
+//
+//	@Summary		Patch provider with plans and prices
+//	@Description	Update or create a provider with all its plans and prices. If provider doesn't exist, it will be created.
+//	@Tags			providers
+//	@Accept			json
+//	@Produce		json
+//	@Param			provider	body		patchProviderModel	true	"Complete provider data with plans and prices"
+//	@Success		200			{object}	ProviderModel		"Successfully updated provider"
+//	@Failure		400			{object}	httpError			"Bad Request - Invalid input data"
+//	@Failure		401			{object}	httpError			"Unauthorized - Invalid user authentication"
+//	@Failure		404			{object}	httpError			"Provider not found"
+//	@Failure		500			{object}	httpError			"Internal Server Error"
+//	@Router			/providers [patch]
+
 type patchPriceModel struct {
 	Id        *string    `json:"id" `
 	Currency  string     `json:"currency" binding:"required"`

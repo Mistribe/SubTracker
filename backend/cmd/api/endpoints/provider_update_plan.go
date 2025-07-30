@@ -36,14 +36,18 @@ func (m updatePlanModel) Command(providerId, planId uuid.UUID) (command.UpdatePl
 
 // Handle godoc
 //
-//	@Summary		Update a new provider plan
-//	@Description	Update a new price for a provider plan
+//	@Summary		Update provider plan by ID
+//	@Description	Update an existing provider plan's information
 //	@Tags			providers
 //	@Accept			json
 //	@Produce		json
-//	@Param			price	body		updatePriceModel	true	"Price information"
-//	@Success		201		{object}	PriceModel
-//	@Failure		400		{object}	httpError
+//	@Param			providerId	path		string				true	"Provider ID (UUID format)"
+//	@Param			planId		path		string				true	"Plan ID (UUID format)"
+//	@Param			plan		body		updatePlanModel		true	"Updated plan data"
+//	@Success		200			{object}	PlanModel			"Successfully updated plan"
+//	@Failure		400			{object}	httpError			"Bad Request - Invalid input data or IDs"
+//	@Failure		404			{object}	httpError			"Provider or plan not found"
+//	@Failure		500			{object}	httpError			"Internal Server Error"
 //	@Router			/providers/{providerId}/plans/{planId} [put]
 func (e ProviderPlanUpdateEndpoint) Handle(c *gin.Context) {
 	var model updatePlanModel
@@ -81,7 +85,7 @@ func (e ProviderPlanUpdateEndpoint) Handle(c *gin.Context) {
 	r := e.handler.Handle(c, cmd)
 	handleResponse(c,
 		r,
-		withStatus[provider.Plan](http.StatusCreated),
+		withStatus[provider.Plan](http.StatusOK),
 		withMapping[provider.Plan](func(p provider.Plan) any {
 			return newPlanModel(p)
 		}))

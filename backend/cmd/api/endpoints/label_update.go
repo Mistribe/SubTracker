@@ -42,15 +42,16 @@ func (m updateLabelModel) Command(id uuid.UUID) (command.UpdateLabelCommand, err
 // Handle godoc
 //
 //	@Summary		Update label by ID
-//	@Description	Update label by ID
+//	@Description	Update an existing label's name and color by its unique identifier
 //	@Tags			label
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path		string				true	"label ID"
-//	@Param			label	body		updateLabelModel	true	"label data"
-//	@Success		200		{object}	labelModel
-//	@Failure		400		{object}	httpError
-//	@Failure		404		{object}	httpError
+//	@Param			id		path		string				true	"Label ID (UUID format)"
+//	@Param			label	body		updateLabelModel	true	"Updated label data"
+//	@Success		200		{object}	labelModel			"Successfully updated label"
+//	@Failure		400		{object}	httpError			"Bad Request - Invalid ID format or input data"
+//	@Failure		404		{object}	httpError			"Label not found"
+//	@Failure		500		{object}	httpError			"Internal Server Error"
 //	@Router			/labels/{id} [put]
 func (l LabelUpdateEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")

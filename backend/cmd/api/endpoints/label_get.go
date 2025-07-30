@@ -15,15 +15,17 @@ type LabelGetEndpoint struct {
 }
 
 // Handle godoc
-// @Summary		Get label by ID
-// @Description	Get label by ID
-// @Tags			label
-// @Produce		json
-// @Param			id	path		string	true	"label ID"
-// @Success		200	{object}	labelModel
-// @Failure		400	{object}	httpError
-// @Failure		404	{object}	httpError
-// @Router			/labels/{id} [get]
+//
+//	@Summary		Get label by ID
+//	@Description	Retrieve a single label by its unique identifier
+//	@Tags			label
+//	@Produce		json
+//	@Param			id	path		string	true	"Label ID (UUID format)"
+//	@Success		200	{object}	labelModel
+//	@Failure		400	{object}	httpError	"Bad Request - Invalid ID format"
+//	@Failure		404	{object}	httpError	"Label not found"
+//	@Failure		500	{object}	httpError	"Internal Server Error"
+//	@Router			/labels/{id} [get]
 func (s LabelGetEndpoint) Handle(c *gin.Context) {
 	id, err := paramAsUuid(c, "id")
 	if err != nil {

@@ -93,17 +93,19 @@ func (m patchFamilyModel) Command(ownerId string) (command.PatchFamilyCommand, e
 	}, nil
 }
 
-// Handle
+// Handle godoc
 //
 //	@Summary		Patch family with members
-//	@Description	Patch family with members
+//	@Description	Update or create a family with specified members. If family doesn't exist, it will be created.
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			family	body		patchFamilyModel	true	"Family update data"
-//	@Success		200		{object}	familyModel
-//	@Failure		400		{object}	httpError
-//	@Failure		401		{object}	httpError
+//	@Param			family	body		patchFamilyModel	true	"Family update data with members"
+//	@Success		200		{object}	familyModel			"Successfully updated family"
+//	@Failure		400		{object}	httpError			"Bad Request - Invalid input data"
+//	@Failure		401		{object}	httpError			"Unauthorized - Invalid user authentication"
+//	@Failure		404		{object}	httpError			"Family not found"
+//	@Failure		500		{object}	httpError			"Internal Server Error"
 //	@Router			/families [patch]
 func (e FamilyPatchEndpoint) Handle(c *gin.Context) {
 	userId, ok := auth.GetUserIdFromContext(c)

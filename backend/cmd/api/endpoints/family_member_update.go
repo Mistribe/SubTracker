@@ -43,15 +43,18 @@ func (m updateFamilyMemberModel) Command(familyId, memberId uuid.UUID) (command.
 // Handle godoc
 //
 //	@Summary		Update family member by ID
-//	@Description	Update family member by ID
+//	@Description	Update an existing family member's information such as name and kid status
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path		string					true	"Family member ID"
-//	@Param			member	body		updateFamilyMemberModel	true	"Family member data"
-//	@Success		200		{object}	familyModel
-//	@Failure		400		{object}	httpError
-//	@Failure		404		{object}	httpError
+//	@Param			familyId	path		string					true	"Family ID (UUID format)"
+//	@Param			id			path		string					true	"Family member ID (UUID format)"
+//	@Param			member		body		updateFamilyMemberModel	true	"Updated family member data"
+//	@Success		200			{object}	familyModel				"Successfully updated family member"
+//	@Failure		400			{object}	httpError				"Bad Request - Invalid input data or ID format"
+//	@Failure		401			{object}	httpError				"Unauthorized - Invalid user authentication"
+//	@Failure		404			{object}	httpError				"Family or family member not found"
+//	@Failure		500			{object}	httpError				"Internal Server Error"
 //	@Router			/families/{familyId}/members/{id} [put]
 func (f FamilyMemberUpdateEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")

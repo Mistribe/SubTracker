@@ -15,14 +15,16 @@ type SubscriptionGetEndpoint struct {
 }
 
 // Handle godoc
+//
 //	@Summary		Get subscription by ID
-//	@Description	Get subscription by ID
+//	@Description	Retrieve a single subscription with all its details including provider, plan, and pricing information
 //	@Tags			subscription
 //	@Produce		json
-//	@Param			subscriptionId	path		string	true	"Subscription ID"
-//	@Success		200				{object}	subscriptionModel
-//	@Failure		400				{object}	httpError
-//	@Failure		404				{object}	httpError
+//	@Param			subscriptionId	path		string	true	"Subscription ID (UUID format)"
+//	@Success		200				{object}	subscriptionModel	"Successfully retrieved subscription"
+//	@Failure		400				{object}	httpError			"Bad Request - Invalid subscription ID format"
+//	@Failure		404				{object}	httpError			"Subscription not found"
+//	@Failure		500				{object}	httpError			"Internal Server Error"
 //	@Router			/subscriptions/{subscriptionId} [get]
 func (e SubscriptionGetEndpoint) Handle(c *gin.Context) {
 	id, err := paramAsUuid(c, "subscriptionId")

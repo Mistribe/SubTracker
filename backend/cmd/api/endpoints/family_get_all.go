@@ -17,15 +17,18 @@ type FamilyGetAllEndpoint struct {
 }
 
 // Handle godoc
-// @Summary		Get all family members
-// @Description	Get all family members
-// @Tags			family
-// @Produce		json
-// @Param			size	query		integer	false	"Number of items per page"
-// @Param			page	query		integer	false	"Offset number"
-// @Success		200		{object}	PaginatedResponseModel[familyModel]
-// @Failure		400		{object}	httpError
-// @Router			/families [get]
+//
+//	@Summary		Get all families
+//	@Description	Retrieve a paginated list of families for the authenticated user
+//	@Tags			family
+//	@Produce		json
+//	@Param			size	query		integer	false	"Number of items per page (default: 10)"
+//	@Param			page	query		integer	false	"Page number (default: 1)"
+//	@Success		200		{object}	PaginatedResponseModel[familyModel]	"Paginated list of families"
+//	@Failure		400		{object}	httpError							"Bad Request - Invalid query parameters"
+//	@Failure		401		{object}	httpError							"Unauthorized - Invalid user authentication"
+//	@Failure		500		{object}	httpError							"Internal Server Error"
+//	@Router			/families [get]
 func (f FamilyGetAllEndpoint) Handle(c *gin.Context) {
 	size, err := strconv.Atoi(c.DefaultQuery("size", "10"))
 	if err != nil {

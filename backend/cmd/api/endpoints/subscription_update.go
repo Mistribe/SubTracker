@@ -124,15 +124,18 @@ func (m updateSubscriptionModel) Command(userId string, id uuid.UUID) (command.U
 
 // Handle godoc
 //
-//	@Summary		Update an existing subscription
-//	@Description	Update an existing subscription
+//	@Summary		Update subscription by ID
+//	@Description	Update an existing subscription's details including provider, plan, pricing, and payment information
 //	@Tags			subscription
 //	@Accept			json
 //	@Produce		json
-//	@Param			subscriptionId	path		string					true	"Subscription ID"
-//	@Param			subscription	body		updateSubscriptionModel	true	"Subscription data"
-//	@Success		200				{object}	subscriptionModel
-//	@Failure		400				{object}	httpError
+//	@Param			subscriptionId	path		string					true	"Subscription ID (UUID format)"
+//	@Param			subscription	body		updateSubscriptionModel	true	"Updated subscription data"
+//	@Success		200				{object}	subscriptionModel		"Successfully updated subscription"
+//	@Failure		400				{object}	httpError				"Bad Request - Invalid input data or subscription ID"
+//	@Failure		401				{object}	httpError				"Unauthorized - Invalid user authentication"
+//	@Failure		404				{object}	httpError				"Subscription not found"
+//	@Failure		500				{object}	httpError				"Internal Server Error"
 //	@Router			/subscriptions/{subscriptionId} [put]
 func (s SubscriptionUpdateEndpoint) Handle(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("subscriptionId"))

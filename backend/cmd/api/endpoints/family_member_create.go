@@ -61,13 +61,17 @@ func (m createFamilyMemberModel) Command(familyId uuid.UUID) (command.CreateFami
 // Handle godoc
 //
 //	@Summary		Add a new family member
-//	@Description	Add a new family member
+//	@Description	Add a new member to an existing family
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			member	body		createFamilyMemberModel	true	"Family member data"
-//	@Success		201		{object}	familyModel
-//	@Failure		400		{object}	httpError
+//	@Param			familyId	path		string					true	"Family ID (UUID format)"
+//	@Param			member		body		createFamilyMemberModel	true	"Family member creation data"
+//	@Success		201			{object}	familyModel				"Successfully added family member"
+//	@Failure		400			{object}	httpError				"Bad Request - Invalid input data or family ID"
+//	@Failure		401			{object}	httpError				"Unauthorized - Invalid user authentication"
+//	@Failure		404			{object}	httpError				"Family not found"
+//	@Failure		500			{object}	httpError				"Internal Server Error"
 //	@Router			/families/{familyId}/members [post]
 func (f FamilyMemberCreateEndpoint) Handle(c *gin.Context) {
 	familyId, err := uuid.Parse(c.Param("familyId"))

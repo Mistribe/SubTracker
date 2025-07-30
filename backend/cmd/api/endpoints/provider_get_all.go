@@ -22,14 +22,15 @@ func NewProviderGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, cor
 // Handle godoc
 //
 //	@Summary		Get all providers
-//	@Description	Returns a paginated list of providers
+//	@Description	Retrieve a paginated list of all providers with their plans and prices
 //	@Tags			providers
-//	@Accept			json
 //	@Produce		json
-//	@Param			page	query		int	false	"Page number"		default(1)
-//	@Param			size	query		int	false	"Items per page"	default(10)
-//	@Success		200		{object}	PaginatedResponseModel[ProviderModel]
-//	@Router			/api/v1/providers [get]
+//	@Param			page	query		int	false	"Page number (default: 1)"
+//	@Param			size	query		int	false	"Items per page (default: 10)"
+//	@Success		200		{object}	PaginatedResponseModel[ProviderModel]	"Paginated list of providers"
+//	@Failure		400		{object}	httpError								"Bad Request - Invalid query parameters"
+//	@Failure		500		{object}	httpError								"Internal Server Error"
+//	@Router			/providers [get]
 func (e ProviderGetAllEndpoint) Handle(c *gin.Context) {
 	size, err := strconv.Atoi(c.DefaultQuery("size", "10"))
 	if err != nil {

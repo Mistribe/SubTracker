@@ -46,14 +46,19 @@ func (m updatePriceModel) Command(providerId, planId, priceId uuid.UUID) (comman
 
 // Handle godoc
 //
-//	@Summary		Update a provider price
-//	@Description	Update a provider price
+//	@Summary		Update provider price by ID
+//	@Description	Update an existing price for a specific provider plan
 //	@Tags			providers
 //	@Accept			json
 //	@Produce		json
-//	@Param			price	body		updatePriceModel	true	"Price information"
-//	@Success		201		{object}	PriceModel
-//	@Failure		400		{object}	httpError
+//	@Param			providerId	path		string				true	"Provider ID (UUID format)"
+//	@Param			planId		path		string				true	"Plan ID (UUID format)"
+//	@Param			priceId		path		string				true	"Price ID (UUID format)"
+//	@Param			price		body		updatePriceModel	true	"Updated price data"
+//	@Success		200			{object}	PriceModel			"Successfully updated price"
+//	@Failure		400			{object}	httpError			"Bad Request - Invalid input data or IDs"
+//	@Failure		404			{object}	httpError			"Provider, plan, or price not found"
+//	@Failure		500			{object}	httpError			"Internal Server Error"
 //	@Router			/providers/{providerId}/plans/{planId}/prices/{priceId} [put]
 func (e ProviderPriceUpdateEndpoint) Handle(c *gin.Context) {
 	var model updatePriceModel
@@ -98,7 +103,7 @@ func (e ProviderPriceUpdateEndpoint) Handle(c *gin.Context) {
 	r := e.handler.Handle(c, cmd)
 	handleResponse(c,
 		r,
-		withStatus[provider.Price](http.StatusCreated),
+		withStatus[provider.Price](http.StatusOK),
 		withMapping[provider.Price](func(p provider.Price) any {
 			return newPriceModel(p)
 		}))

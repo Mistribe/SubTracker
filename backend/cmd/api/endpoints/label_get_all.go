@@ -24,14 +24,15 @@ func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, core.P
 // Handle godoc
 //
 //	@Summary		Get all labels
-//	@Description	Get all labels
+//	@Description	Retrieve a paginated list of labels with optional filtering by owner type
 //	@Tags			label
 //	@Produce		json
 //	@Param			owner_type		query		[]string	false	"Owner types to filter by (system,personal,family). Can be provided multiple times."
-//	@Param			size			query		integer	false	"Number of items per page"
-//	@Param			page			query		integer	false	"Offset number"
-//	@Success		200				{object}	PaginatedResponseModel[labelModel]
-//	@Failure		400				{object}	httpError
+//	@Param			size			query		integer	false	"Number of items per page (default: 10)"
+//	@Param			page			query		integer	false	"Page number (default: 1)"
+//	@Success		200				{object}	PaginatedResponseModel[labelModel]	"Paginated list of labels"
+//	@Failure		400				{object}	httpError							"Bad Request - Invalid query parameters"
+//	@Failure		500				{object}	httpError							"Internal Server Error"
 //	@Router			/labels [get]
 func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
 	ownerTypeParams := c.QueryArray("owner_type")

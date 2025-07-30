@@ -21,14 +21,15 @@ func NewProviderGetEndpoint(handler core.QueryHandler[query.FindOneQuery, provid
 // Handle godoc
 //
 //	@Summary		Get provider by ID
-//	@Description	Returns a single provider by its ID
+//	@Description	Retrieve a single provider with all its plans and prices by ID
 //	@Tags			providers
-//	@Accept			json
 //	@Produce		json
-//	@Param			providerId	path		string	true	"Provider ID"	format(uuid)
-//	@Success		200			{object}	ProviderModel
-//	@Failure		400			{object}	httpError
-//	@Router			/api/v1/providers/{providerId} [get]
+//	@Param			providerId	path		string	true	"Provider ID (UUID format)"
+//	@Success		200			{object}	ProviderModel	"Successfully retrieved provider"
+//	@Failure		400			{object}	httpError		"Bad Request - Invalid provider ID format"
+//	@Failure		404			{object}	httpError		"Provider not found"
+//	@Failure		500			{object}	httpError		"Internal Server Error"
+//	@Router			/providers/{providerId} [get]
 func (e ProviderGetEndpoint) Handle(c *gin.Context) {
 	id, err := paramAsUuid(c, "providerId")
 	if err != nil {

@@ -18,6 +18,17 @@ func NewProviderDeleteEndpoint(handler core.CommandHandler[command.DeleteProvide
 	return &ProviderDeleteEndpoint{handler: handler}
 }
 
+// Handle godoc
+//
+//	@Summary		Delete provider by ID
+//	@Description	Permanently delete a provider and all its associated plans and prices
+//	@Tags			providers
+//	@Param			providerId	path	string	true	"Provider ID (UUID format)"
+//	@Success		204			"No Content - Provider successfully deleted"
+//	@Failure		400			{object}	httpError	"Bad Request - Invalid provider ID format"
+//	@Failure		404			{object}	httpError	"Provider not found"
+//	@Failure		500			{object}	httpError	"Internal Server Error"
+//	@Router			/providers/{providerId} [delete]
 func (e ProviderDeleteEndpoint) Handle(c *gin.Context) {
 	providerId, err := uuid.Parse(c.Param("providerId"))
 	if err != nil {

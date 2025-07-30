@@ -12,6 +12,14 @@ func NewHealthCheckLiveEndpoint() *HealthCheckLiveEndpoint {
 	return &HealthCheckLiveEndpoint{}
 }
 
+// Handle godoc
+//
+//	@Summary		Health check endpoint
+//	@Description	Returns the health status of the application
+//	@Tags			health
+//	@Produce		json
+//	@Success		200	{object}	map[string]string	"Health status"
+//	@Router			/healthz/live [get]
 func (e HealthCheckLiveEndpoint) Handle(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status": "HEALTHY",

@@ -71,13 +71,15 @@ func (m createProviderModel) Command(userId string) (command.CreateProviderComma
 // Handle godoc
 //
 //	@Summary		Create a new provider
-//	@Description	Create a new provider with plans and prices
+//	@Description	Create a new service provider with labels and owner information
 //	@Tags			providers
 //	@Accept			json
 //	@Produce		json
-//	@Param			provider	body		createProviderModel	true	"Provider information"
-//	@Success		201			{object}	ProviderModel
-//	@Failure		400			{object}	httpError
+//	@Param			provider	body		createProviderModel	true	"Provider creation data"
+//	@Success		201			{object}	ProviderModel		"Successfully created provider"
+//	@Failure		400			{object}	httpError			"Bad Request - Invalid input data"
+//	@Failure		401			{object}	httpError			"Unauthorized - Invalid user authentication"
+//	@Failure		500			{object}	httpError			"Internal Server Error"
 //	@Router			/providers [post]
 func (e ProviderCreateEndpoint) Handle(c *gin.Context) {
 	var model createProviderModel

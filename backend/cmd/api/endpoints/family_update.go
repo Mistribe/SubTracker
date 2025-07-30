@@ -37,14 +37,17 @@ func (m updateFamilyModel) Command(familyId uuid.UUID) (command.UpdateFamilyComm
 // Handle godoc
 //
 //	@Summary		Update a family
-//	@Description	Update a family
+//	@Description	Update family information such as name and other details
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			familyId	path		string				true	"Family member ID"
-//	@Param			family		body		updateFamilyModel	true	"Family data"
-//	@Success		200			{object}	familyModel
-//	@Failure		400			{object}	httpError
+//	@Param			familyId	path		string				true	"Family ID (UUID format)"
+//	@Param			family		body		updateFamilyModel	true	"Updated family data"
+//	@Success		200			{object}	familyModel			"Successfully updated family"
+//	@Failure		400			{object}	httpError			"Bad Request - Invalid input data or family ID"
+//	@Failure		401			{object}	httpError			"Unauthorized - Invalid user authentication"
+//	@Failure		404			{object}	httpError			"Family not found"
+//	@Failure		500			{object}	httpError			"Internal Server Error"
 //	@Router			/families/{familyId} [put]
 func (f FamilyUpdateEndpoint) Handle(c *gin.Context) {
 	familyId, err := uuid.Parse(c.Param("familyId"))

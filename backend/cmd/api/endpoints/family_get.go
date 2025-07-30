@@ -18,15 +18,17 @@ type FamilyGetEndpoint struct {
 
 // Handle godoc
 //
-//	@Summary		Get family member by ID
-//	@Description	Get family member by ID
+//	@Summary		Get family by ID
+//	@Description	Retrieve a family and its members by family ID
 //	@Tags			family
 //	@Produce		json
-//	@Param			familyId	path		string	true	"Family member ID"
-//	@Success		200			{object}	familyModel
-//	@Failure		400			{object}	httpError
-//	@Failure		404			{object}	httpError
-//	@Router			/families/{familyId} [get]
+//	@Param			id			path		string	true	"Family ID (UUID format)"
+//	@Success		200			{object}	familyModel		"Successfully retrieved family"
+//	@Failure		400			{object}	httpError		"Bad Request - Invalid ID format"
+//	@Failure		401			{object}	httpError		"Unauthorized - Invalid user authentication"
+//	@Failure		404			{object}	httpError		"Family not found"
+//	@Failure		500			{object}	httpError		"Internal Server Error"
+//	@Router			/families/{id} [get]
 func (f FamilyGetEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")
 	if idParam == "" {

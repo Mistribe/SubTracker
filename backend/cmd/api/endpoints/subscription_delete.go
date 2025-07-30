@@ -16,12 +16,14 @@ type SubscriptionDeleteEndpoint struct {
 
 // Handle godoc
 //
-//	@Summary		Delete an existing subscription
-//	@Description	Delete an existing subscription
+//	@Summary		Delete subscription by ID
+//	@Description	Permanently delete an existing subscription
 //	@Tags			subscription
-//	@Param			subscriptionId	path	string	true	"Subscription ID"
-//	@Success		204				"No Content"
-//	@Failure		400				{object}	httpError
+//	@Param			subscriptionId	path	string	true	"Subscription ID (UUID format)"
+//	@Success		204				"No Content - Subscription successfully deleted"
+//	@Failure		400				{object}	httpError	"Bad Request - Invalid subscription ID format"
+//	@Failure		404				{object}	httpError	"Subscription not found"
+//	@Failure		500				{object}	httpError	"Internal Server Error"
 //	@Router			/subscriptions/{subscriptionId} [delete]
 func (s SubscriptionDeleteEndpoint) Handle(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("subscriptionId"))
@@ -37,7 +39,7 @@ func (s SubscriptionDeleteEndpoint) Handle(c *gin.Context) {
 	}
 
 	r := s.handler.Handle(c, cmd)
-	handleResponse(c, r)
+	handleResponse(c, r, withNoContent[bool]())
 }
 
 func (s SubscriptionDeleteEndpoint) Pattern() []string {

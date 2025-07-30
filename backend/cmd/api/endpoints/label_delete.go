@@ -17,12 +17,13 @@ type LabelDeleteEndpoint struct {
 // Handle godoc
 //
 //	@Summary		Delete label by ID
-//	@Description	Delete label by ID
+//	@Description	Permanently delete a label by its unique identifier
 //	@Tags			label
-//	@Param			id	path	string	true	"Label ID"
-//	@Success		204	"No Content"
-//	@Failure		400	{object}	httpError
-//	@Failure		404	{object}	httpError
+//	@Param			id	path	string	true	"Label ID (UUID format)"
+//	@Success		204	"No Content - Label successfully deleted"
+//	@Failure		400	{object}	httpError	"Bad Request - Invalid ID format"
+//	@Failure		404	{object}	httpError	"Label not found"
+//	@Failure		500	{object}	httpError	"Internal Server Error"
 //	@Router			/labels/{id} [delete]
 func (l LabelDeleteEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")

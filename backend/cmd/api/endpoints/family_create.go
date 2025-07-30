@@ -76,13 +76,15 @@ func (m createFamilyModel) Command(ownerId string) (command.CreateFamilyCommand,
 // Handle godoc
 //
 //	@Summary		Create a new family
-//	@Description	Create a new family
+//	@Description	Create a new family with the authenticated user as the owner and initial member
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			family	body		createFamilyModel	true	"Family data"
-//	@Success		201		{object}	familyModel
-//	@Failure		400		{object}	httpError
+//	@Param			family	body		createFamilyModel	true	"Family creation data"
+//	@Success		201		{object}	familyModel			"Successfully created family"
+//	@Failure		400		{object}	httpError			"Bad Request - Invalid input data"
+//	@Failure		401		{object}	httpError			"Unauthorized - Invalid user authentication"
+//	@Failure		500		{object}	httpError			"Internal Server Error"
 //	@Router			/families [post]
 func (f FamilyCreateEndpoint) Handle(c *gin.Context) {
 	var model createFamilyModel

@@ -134,13 +134,15 @@ func (m createSubscriptionModel) Command(userId string) (command.CreateSubscript
 // Handle godoc
 //
 //	@Summary		Create a new subscription
-//	@Description	Create a new subscription
+//	@Description	Create a new subscription with provider, plan, pricing, and payment information
 //	@Tags			subscription
 //	@Accept			json
 //	@Produce		json
-//	@Param			subscription	body		createSubscriptionModel	true	"Subscription data"
-//	@Success		201				{object}	subscriptionModel
-//	@Failure		400				{object}	httpError
+//	@Param			subscription	body		createSubscriptionModel	true	"Subscription creation data"
+//	@Success		201				{object}	subscriptionModel		"Successfully created subscription"
+//	@Failure		400				{object}	httpError				"Bad Request - Invalid input data"
+//	@Failure		401				{object}	httpError				"Unauthorized - Invalid user authentication"
+//	@Failure		500				{object}	httpError				"Internal Server Error"
 //	@Router			/subscriptions [post]
 func (s SubscriptionCreateEndpoint) Handle(c *gin.Context) {
 	var model createSubscriptionModel

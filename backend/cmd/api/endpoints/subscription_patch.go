@@ -133,14 +133,17 @@ func (m patchSubscriptionModel) Command(userId string) (command.PatchSubscriptio
 
 // Handle godoc
 //
-//	@Summary		Update subscription
-//	@Description	Update an existing subscription with new details
+//	@Summary		Patch subscription
+//	@Description	Update or create a subscription with complete details. If subscription doesn't exist, it will be created.
 //	@Tags			subscription
 //	@Accept			json
 //	@Produce		json
-//	@Param			subscription	body		patchSubscriptionModel	true	"Subscription details to update"
-//	@Success		200				{object}	subscriptionModel		"Updated subscription"
-//	@Failure		400				{object}	httpError				"Invalid request"
+//	@Param			subscription	body		patchSubscriptionModel	true	"Complete subscription data"
+//	@Success		200				{object}	subscriptionModel		"Successfully updated subscription"
+//	@Failure		400				{object}	httpError				"Bad Request - Invalid input data"
+//	@Failure		401				{object}	httpError				"Unauthorized - Invalid user authentication"
+//	@Failure		404				{object}	httpError				"Subscription not found"
+//	@Failure		500				{object}	httpError				"Internal Server Error"
 //	@Router			/subscriptions [patch]
 func (e SubscriptionPatchEndpoint) Handle(c *gin.Context) {
 	var model patchSubscriptionModel

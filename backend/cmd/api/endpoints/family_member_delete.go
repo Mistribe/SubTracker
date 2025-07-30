@@ -17,12 +17,14 @@ type FamilyMemberDeleteEndpoint struct {
 // Handle godoc
 //
 //	@Summary		Delete family member by ID
-//	@Description	Delete family member by ID
+//	@Description	Permanently delete a family member from a family
 //	@Tags			family
-//	@Param			id	path	string	true	"Family member ID"
-//	@Success		204	"No Content"
-//	@Failure		400	{object}	httpError
-//	@Failure		404	{object}	httpError
+//	@Param			familyId	path	string	true	"Family ID (UUID format)"
+//	@Param			id			path	string	true	"Family member ID (UUID format)"
+//	@Success		204			"No Content - Family member successfully deleted"
+//	@Failure		400			{object}	httpError	"Bad Request - Invalid ID format"
+//	@Failure		404			{object}	httpError	"Family or family member not found"
+//	@Failure		500			{object}	httpError	"Internal Server Error"
 //	@Router			/families/{familyId}/members/{id} [delete]
 func (f FamilyMemberDeleteEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")

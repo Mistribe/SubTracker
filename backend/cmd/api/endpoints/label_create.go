@@ -61,15 +61,18 @@ func (m createLabelModel) Command(userId string) (command.CreateLabelCommand, er
 }
 
 // Handle godoc
-// @Summary		Create a new label
-// @Description	Create a new label
-// @Tags			label
-// @Accept			json
-// @Produce		json
-// @Param			label	body		createLabelModel	true	"label data"
-// @Success		201		{object}	labelModel
-// @Failure		400		{object}	httpError
-// @Router			/labels [post]
+//
+//	@Summary		Create a new label
+//	@Description	Create a new label with specified name, color, and owner information
+//	@Tags			label
+//	@Accept			json
+//	@Produce		json
+//	@Param			label	body		createLabelModel	true	"Label creation data"
+//	@Success		201		{object}	labelModel			"Successfully created label"
+//	@Failure		400		{object}	httpError			"Bad Request - Invalid input data"
+//	@Failure		401		{object}	httpError			"Unauthorized - Invalid user authentication"
+//	@Failure		500		{object}	httpError			"Internal Server Error"
+//	@Router			/labels [post]
 func (l LabelCreateEndpoint) Handle(c *gin.Context) {
 	var model createLabelModel
 	if err := c.ShouldBindJSON(&model); err != nil {
