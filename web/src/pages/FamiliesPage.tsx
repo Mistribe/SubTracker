@@ -28,6 +28,7 @@ const FamiliesPage = () => {
     const [editedMemberName, setEditedMemberName] = useState<string>("");
     const [editedMemberIsKid, setEditedMemberIsKid] = useState<boolean>(false);
     const [isUpdatingMember, setIsUpdatingMember] = useState<boolean>(false);
+    const [isDeletingMember, setIsDeletingMember] = useState<boolean>(false);
 
     // Function to start editing a family
     const startEditing = (family: Family) => {
@@ -84,6 +85,30 @@ const FamiliesPage = () => {
             console.error("Failed to update family member:", error);
         } finally {
             setIsUpdatingMember(false);
+        }
+    };
+
+    // Function to remove a family member
+    const removeMember = async (familyId: string, member: FamilyMember, isOwner: boolean) => {
+        if (!apiClient) return;
+
+        // Prevent removing yourself if you are the owner of the family
+        if (member.isYou && isOwner) {
+            console.error("Cannot remove yourself as the owner of the family");
+            return;
+        }
+
+        try {
+            setIsDeletingMember(true);
+
+            await apiClient.families.byFamilyId(familyId).members.byId(member.id).delete();
+
+            // Invalidate and refetch the families query
+            await queryClient.invalidateQueries({queryKey: ['families']});
+        } catch (error) {
+            console.error("Failed to remove family member:", error);
+        } finally {
+            setIsDeletingMember(false);
         }
     };
 
@@ -324,13 +349,32 @@ const FamiliesPage = () => {
                                                             </Button>
                                                         </div>
                                                     ) : (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => startEditingMember(member)}
-                                                        >
-                                                            Edit
-                                                        </Button>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => startEditingMember(member)}
+                                                            >
+                                                                Edit
+                                                            </Button>
+                                                            {/* Don't show remove button for yourself if you're the owner */}
+                                                            {!(member.isYou && family.isOwner) && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => removeMember(family.id, member, family.isOwner)}
+                                                                    disabled={isDeletingMember}
+                                                                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                                >
+                                                                    {isDeletingMember ? (
+                                                                        <Loader2 className="h-4 w-4 animate-spin mr-2"/>
+                                                                    ) : (
+                                                                        <XIcon className="h-4 w-4 mr-2"/>
+                                                                    )}
+                                                                    Remove
+                                                                </Button>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </TableCell>
                                             </TableRow>
