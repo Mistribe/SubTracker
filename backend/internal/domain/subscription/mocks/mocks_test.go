@@ -2,13 +2,14 @@
 // github.com/vektra/mockery
 // template: testify
 
-package label
+package subscription
 
 import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/oleexo/subtracker/internal/domain/label"
+	"github.com/oleexo/subtracker/internal/domain/entity"
+	"github.com/oleexo/subtracker/internal/domain/subscription"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -181,26 +182,26 @@ func (_c *MockRepository_Exists_Call) RunAndReturn(run func(ctx context.Context,
 }
 
 // GetAll provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetAll(ctx context.Context, parameters label.QueryParameters) ([]label.Label, error) {
+func (_mock *MockRepository) GetAll(ctx context.Context, parameters entity.QueryParameters) ([]subscription.Subscription, error) {
 	ret := _mock.Called(ctx, parameters)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAll")
 	}
 
-	var r0 []label.Label
+	var r0 []subscription.Subscription
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, label.QueryParameters) ([]label.Label, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, entity.QueryParameters) ([]subscription.Subscription, error)); ok {
 		return returnFunc(ctx, parameters)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, label.QueryParameters) []label.Label); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, entity.QueryParameters) []subscription.Subscription); ok {
 		r0 = returnFunc(ctx, parameters)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]label.Label)
+			r0 = ret.Get(0).([]subscription.Subscription)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, label.QueryParameters) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, entity.QueryParameters) error); ok {
 		r1 = returnFunc(ctx, parameters)
 	} else {
 		r1 = ret.Error(1)
@@ -215,20 +216,20 @@ type MockRepository_GetAll_Call struct {
 
 // GetAll is a helper method to define mock.On call
 //   - ctx context.Context
-//   - parameters label.QueryParameters
+//   - parameters entity.QueryParameters
 func (_e *MockRepository_Expecter) GetAll(ctx interface{}, parameters interface{}) *MockRepository_GetAll_Call {
 	return &MockRepository_GetAll_Call{Call: _e.mock.On("GetAll", ctx, parameters)}
 }
 
-func (_c *MockRepository_GetAll_Call) Run(run func(ctx context.Context, parameters label.QueryParameters)) *MockRepository_GetAll_Call {
+func (_c *MockRepository_GetAll_Call) Run(run func(ctx context.Context, parameters entity.QueryParameters)) *MockRepository_GetAll_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 label.QueryParameters
+		var arg1 entity.QueryParameters
 		if args[1] != nil {
-			arg1 = args[1].(label.QueryParameters)
+			arg1 = args[1].(entity.QueryParameters)
 		}
 		run(
 			arg0,
@@ -238,19 +239,19 @@ func (_c *MockRepository_GetAll_Call) Run(run func(ctx context.Context, paramete
 	return _c
 }
 
-func (_c *MockRepository_GetAll_Call) Return(labels []label.Label, err error) *MockRepository_GetAll_Call {
-	_c.Call.Return(labels, err)
+func (_c *MockRepository_GetAll_Call) Return(subscriptions []subscription.Subscription, err error) *MockRepository_GetAll_Call {
+	_c.Call.Return(subscriptions, err)
 	return _c
 }
 
-func (_c *MockRepository_GetAll_Call) RunAndReturn(run func(ctx context.Context, parameters label.QueryParameters) ([]label.Label, error)) *MockRepository_GetAll_Call {
+func (_c *MockRepository_GetAll_Call) RunAndReturn(run func(ctx context.Context, parameters entity.QueryParameters) ([]subscription.Subscription, error)) *MockRepository_GetAll_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetAllCount provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetAllCount(ctx context.Context, parameters label.QueryParameters) (int64, error) {
-	ret := _mock.Called(ctx, parameters)
+func (_mock *MockRepository) GetAllCount(ctx context.Context) (int64, error) {
+	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAllCount")
@@ -258,16 +259,16 @@ func (_mock *MockRepository) GetAllCount(ctx context.Context, parameters label.Q
 
 	var r0 int64
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, label.QueryParameters) (int64, error)); ok {
-		return returnFunc(ctx, parameters)
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (int64, error)); ok {
+		return returnFunc(ctx)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, label.QueryParameters) int64); ok {
-		r0 = returnFunc(ctx, parameters)
+	if returnFunc, ok := ret.Get(0).(func(context.Context) int64); ok {
+		r0 = returnFunc(ctx)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, label.QueryParameters) error); ok {
-		r1 = returnFunc(ctx, parameters)
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -281,24 +282,18 @@ type MockRepository_GetAllCount_Call struct {
 
 // GetAllCount is a helper method to define mock.On call
 //   - ctx context.Context
-//   - parameters label.QueryParameters
-func (_e *MockRepository_Expecter) GetAllCount(ctx interface{}, parameters interface{}) *MockRepository_GetAllCount_Call {
-	return &MockRepository_GetAllCount_Call{Call: _e.mock.On("GetAllCount", ctx, parameters)}
+func (_e *MockRepository_Expecter) GetAllCount(ctx interface{}) *MockRepository_GetAllCount_Call {
+	return &MockRepository_GetAllCount_Call{Call: _e.mock.On("GetAllCount", ctx)}
 }
 
-func (_c *MockRepository_GetAllCount_Call) Run(run func(ctx context.Context, parameters label.QueryParameters)) *MockRepository_GetAllCount_Call {
+func (_c *MockRepository_GetAllCount_Call) Run(run func(ctx context.Context)) *MockRepository_GetAllCount_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 label.QueryParameters
-		if args[1] != nil {
-			arg1 = args[1].(label.QueryParameters)
-		}
 		run(
 			arg0,
-			arg1,
 		)
 	})
 	return _c
@@ -309,29 +304,29 @@ func (_c *MockRepository_GetAllCount_Call) Return(n int64, err error) *MockRepos
 	return _c
 }
 
-func (_c *MockRepository_GetAllCount_Call) RunAndReturn(run func(ctx context.Context, parameters label.QueryParameters) (int64, error)) *MockRepository_GetAllCount_Call {
+func (_c *MockRepository_GetAllCount_Call) RunAndReturn(run func(ctx context.Context) (int64, error)) *MockRepository_GetAllCount_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetById provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetById(ctx context.Context, entityId uuid.UUID) (label.Label, error) {
+func (_mock *MockRepository) GetById(ctx context.Context, entityId uuid.UUID) (subscription.Subscription, error) {
 	ret := _mock.Called(ctx, entityId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetById")
 	}
 
-	var r0 label.Label
+	var r0 subscription.Subscription
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (label.Label, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (subscription.Subscription, error)); ok {
 		return returnFunc(ctx, entityId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) label.Label); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) subscription.Subscription); ok {
 		r0 = returnFunc(ctx, entityId)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(label.Label)
+			r0 = ret.Get(0).(subscription.Subscription)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
@@ -372,89 +367,27 @@ func (_c *MockRepository_GetById_Call) Run(run func(ctx context.Context, entityI
 	return _c
 }
 
-func (_c *MockRepository_GetById_Call) Return(label1 label.Label, err error) *MockRepository_GetById_Call {
-	_c.Call.Return(label1, err)
+func (_c *MockRepository_GetById_Call) Return(subscription1 subscription.Subscription, err error) *MockRepository_GetById_Call {
+	_c.Call.Return(subscription1, err)
 	return _c
 }
 
-func (_c *MockRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId uuid.UUID) (label.Label, error)) *MockRepository_GetById_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetDefaults provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetDefaults(ctx context.Context) ([]label.Label, error) {
-	ret := _mock.Called(ctx)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetDefaults")
-	}
-
-	var r0 []label.Label
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]label.Label, error)); ok {
-		return returnFunc(ctx)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) []label.Label); ok {
-		r0 = returnFunc(ctx)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]label.Label)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = returnFunc(ctx)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockRepository_GetDefaults_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetDefaults'
-type MockRepository_GetDefaults_Call struct {
-	*mock.Call
-}
-
-// GetDefaults is a helper method to define mock.On call
-//   - ctx context.Context
-func (_e *MockRepository_Expecter) GetDefaults(ctx interface{}) *MockRepository_GetDefaults_Call {
-	return &MockRepository_GetDefaults_Call{Call: _e.mock.On("GetDefaults", ctx)}
-}
-
-func (_c *MockRepository_GetDefaults_Call) Run(run func(ctx context.Context)) *MockRepository_GetDefaults_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		run(
-			arg0,
-		)
-	})
-	return _c
-}
-
-func (_c *MockRepository_GetDefaults_Call) Return(labels []label.Label, err error) *MockRepository_GetDefaults_Call {
-	_c.Call.Return(labels, err)
-	return _c
-}
-
-func (_c *MockRepository_GetDefaults_Call) RunAndReturn(run func(ctx context.Context) ([]label.Label, error)) *MockRepository_GetDefaults_Call {
+func (_c *MockRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId uuid.UUID) (subscription.Subscription, error)) *MockRepository_GetById_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Save provides a mock function for the type MockRepository
-func (_mock *MockRepository) Save(ctx context.Context, entity label.Label) error {
-	ret := _mock.Called(ctx, entity)
+func (_mock *MockRepository) Save(ctx context.Context, entity1 subscription.Subscription) error {
+	ret := _mock.Called(ctx, entity1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Save")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, label.Label) error); ok {
-		r0 = returnFunc(ctx, entity)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, subscription.Subscription) error); ok {
+		r0 = returnFunc(ctx, entity1)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -468,20 +401,20 @@ type MockRepository_Save_Call struct {
 
 // Save is a helper method to define mock.On call
 //   - ctx context.Context
-//   - entity label.Label
-func (_e *MockRepository_Expecter) Save(ctx interface{}, entity interface{}) *MockRepository_Save_Call {
-	return &MockRepository_Save_Call{Call: _e.mock.On("Save", ctx, entity)}
+//   - entity1 subscription.Subscription
+func (_e *MockRepository_Expecter) Save(ctx interface{}, entity1 interface{}) *MockRepository_Save_Call {
+	return &MockRepository_Save_Call{Call: _e.mock.On("Save", ctx, entity1)}
 }
 
-func (_c *MockRepository_Save_Call) Run(run func(ctx context.Context, entity label.Label)) *MockRepository_Save_Call {
+func (_c *MockRepository_Save_Call) Run(run func(ctx context.Context, entity1 subscription.Subscription)) *MockRepository_Save_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 label.Label
+		var arg1 subscription.Subscription
 		if args[1] != nil {
-			arg1 = args[1].(label.Label)
+			arg1 = args[1].(subscription.Subscription)
 		}
 		run(
 			arg0,
@@ -496,7 +429,7 @@ func (_c *MockRepository_Save_Call) Return(err error) *MockRepository_Save_Call 
 	return _c
 }
 
-func (_c *MockRepository_Save_Call) RunAndReturn(run func(ctx context.Context, entity label.Label) error) *MockRepository_Save_Call {
+func (_c *MockRepository_Save_Call) RunAndReturn(run func(ctx context.Context, entity1 subscription.Subscription) error) *MockRepository_Save_Call {
 	_c.Call.Return(run)
 	return _c
 }

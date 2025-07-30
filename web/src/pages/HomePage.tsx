@@ -2,10 +2,18 @@ import {ModeToggle} from "@/components/mode-toggle";
 import {Link} from "react-router-dom";
 import {useKindeAuth} from "@kinde-oss/kinde-auth-react";
 import {Button} from "@/components/ui/button.tsx";
-
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {
+    CreditCardIcon,
+    TrendingUpIcon,
+    UsersIcon,
+    TagIcon,
+    CalendarIcon,
+    DollarSignIcon
+} from "lucide-react";
 
 const HomePage = () => {
-    const {login, register, isAuthenticated} = useKindeAuth();
+    const {login, isAuthenticated} = useKindeAuth();
 
     return (
         <div className="container mx-auto p-4">
@@ -15,43 +23,163 @@ const HomePage = () => {
             </header>
 
             <main>
-                <section className="mb-8">
-                    <h2 className="text-2xl font-semibold mb-4">Welcome to Payment Tracker</h2>
-                    <p className="mb-4">
-                        Track and manage all your subscription services and recurring payments in one place.
+                {/* Hero Section */}
+                <section className="mb-16 py-12 px-6 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl text-center">
+                    <h2 className="text-4xl font-bold mb-6">Simplify Your Subscription Management</h2>
+                    <p className="text-xl mb-8 max-w-3xl mx-auto text-muted-foreground">
+                        Take control of your recurring payments, track expenses, and never miss a renewal again.
+                        The smart way to manage all your subscriptions in one place.
                     </p>
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 justify-center">
                         {!isAuthenticated ? (
                             <Button
                                 onClick={() => login()} type="button"
-                                className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+                                size="lg"
+                                className="text-base font-medium"
                             >
-                                Login
+                                Get Started Now
                             </Button>
                         ) : (
-                            <Link
-                                to="/dashboard"
-                                className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90"
-                            >
-                                Go to Dashboard
+                            <Link to="/dashboard">
+                                <Button 
+                                    size="lg" 
+                                    className="text-base font-medium"
+                                >
+                                    Go to Dashboard
+                                </Button>
                             </Link>
                         )}
                     </div>
                 </section>
 
-                <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="p-6 border rounded-lg">
-                        <h3 className="text-xl font-medium mb-2">Track Expenses</h3>
-                        <p>Keep track of all your recurring payments and subscriptions in one place.</p>
+                {/* Features Section */}
+                <section className="mb-16">
+                    <h2 className="text-3xl font-bold mb-8 text-center">Powerful Features</h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {/* Feature 1: Track subscription spending */}
+                        <Card className="transition-all hover:shadow-md">
+                            <CardHeader className="pb-2">
+                                <div className="p-2 bg-primary/10 rounded-full w-12 h-12 flex items-center justify-center mb-2">
+                                    <CreditCardIcon className="h-6 w-6 text-primary" />
+                                </div>
+                                <CardTitle className="text-xl">Track Subscription Spending</CardTitle>
+                                <CardDescription>Monitor how much you spend on each provider</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-muted-foreground">
+                                    Get a clear overview of your subscription costs across different services and identify where your money is going each month.
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        {/* Feature 2: Track price changes */}
+                        <Card className="transition-all hover:shadow-md">
+                            <CardHeader className="pb-2">
+                                <div className="p-2 bg-primary/10 rounded-full w-12 h-12 flex items-center justify-center mb-2">
+                                    <TrendingUpIcon className="h-6 w-6 text-primary" />
+                                </div>
+                                <CardTitle className="text-xl">Track Price Changes</CardTitle>
+                                <CardDescription>Stay informed about subscription price increases</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-muted-foreground">
+                                    Never be surprised by unexpected price hikes. Get notified when your subscription costs change so you can make informed decisions.
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        {/* Feature 3: Share with family */}
+                        <Card className="transition-all hover:shadow-md">
+                            <CardHeader className="pb-2">
+                                <div className="p-2 bg-primary/10 rounded-full w-12 h-12 flex items-center justify-center mb-2">
+                                    <UsersIcon className="h-6 w-6 text-primary" />
+                                </div>
+                                <CardTitle className="text-xl">Share With Family</CardTitle>
+                                <CardDescription>Manage subscriptions as a group</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-muted-foreground">
+                                    See who is using each subscription and who is paying for it. Perfect for family plans and shared accounts.
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        {/* Feature 4: Tag subscriptions */}
+                        <Card className="transition-all hover:shadow-md">
+                            <CardHeader className="pb-2">
+                                <div className="p-2 bg-primary/10 rounded-full w-12 h-12 flex items-center justify-center mb-2">
+                                    <TagIcon className="h-6 w-6 text-primary" />
+                                </div>
+                                <CardTitle className="text-xl">Tag Your Subscriptions</CardTitle>
+                                <CardDescription>Organize with custom labels</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-muted-foreground">
+                                    Categorize your subscriptions with custom labels for better organization and filtering. Group by entertainment, productivity, or any category you choose.
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        {/* Feature 5: Track renewals */}
+                        <Card className="transition-all hover:shadow-md">
+                            <CardHeader className="pb-2">
+                                <div className="p-2 bg-primary/10 rounded-full w-12 h-12 flex items-center justify-center mb-2">
+                                    <CalendarIcon className="h-6 w-6 text-primary" />
+                                </div>
+                                <CardTitle className="text-xl">Track Renewals</CardTitle>
+                                <CardDescription>Never miss a payment date</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-muted-foreground">
+                                    Get timely notifications before your subscriptions renew so you can decide whether to continue, cancel, or modify your plan.
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        {/* Feature 6: Expense Analytics */}
+                        <Card className="transition-all hover:shadow-md">
+                            <CardHeader className="pb-2">
+                                <div className="p-2 bg-primary/10 rounded-full w-12 h-12 flex items-center justify-center mb-2">
+                                    <DollarSignIcon className="h-6 w-6 text-primary" />
+                                </div>
+                                <CardTitle className="text-xl">Expense Analytics</CardTitle>
+                                <CardDescription>Visualize your spending patterns</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-muted-foreground">
+                                    Get insights into your subscription spending with detailed charts and reports to help you optimize your budget.
+                                </p>
+                            </CardContent>
+                        </Card>
                     </div>
-                    <div className="p-6 border rounded-lg">
-                        <h3 className="text-xl font-medium mb-2">Get Reminders</h3>
-                        <p>Never miss a payment with timely reminders before your subscriptions renew.</p>
-                    </div>
-                    <div className="p-6 border rounded-lg">
-                        <h3 className="text-xl font-medium mb-2">Analyze Spending</h3>
-                        <p>Visualize your spending patterns and identify opportunities to save.</p>
-                    </div>
+                </section>
+
+                {/* CTA Section */}
+                <section className="mb-16 py-10 px-6 bg-primary/5 rounded-2xl text-center">
+                    <h2 className="text-3xl font-bold mb-4">Ready to Take Control?</h2>
+                    <p className="text-lg mb-6 max-w-2xl mx-auto text-muted-foreground">
+                        Join thousands of users who are saving money and reducing subscription stress.
+                    </p>
+                    {!isAuthenticated ? (
+                        <Button
+                            onClick={() => login()} type="button"
+                            size="lg"
+                            className="text-base font-medium"
+                        >
+                            Start Managing Your Subscriptions
+                        </Button>
+                    ) : (
+                        <Link to="/dashboard">
+                            <Button 
+                                size="lg" 
+                                variant="secondary"
+                                className="text-base font-medium"
+                            >
+                                Go to Dashboard
+                            </Button>
+                        </Link>
+                    )}
                 </section>
             </main>
 
