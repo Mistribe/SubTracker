@@ -602,8 +602,6 @@ components:
         created_at:
           format: date-time
           type: string
-        email:
-          type: string
         id:
           type: string
         is_kid:
@@ -736,6 +734,11 @@ components:
             and features)'
           example: false
           type: boolean
+        is_you:
+          description: '@Description Indicates whether this member is the current
+            authenticated user'
+          example: false
+          type: boolean
         name:
           description: '@Description Name of the family member'
           example: John Smith
@@ -750,6 +753,7 @@ components:
       - family_id
       - id
       - is_kid
+      - is_you
       - name
       - updated_at
       type: object
@@ -904,7 +908,7 @@ components:
       type: object
     endpoints.updateFamilyMemberModel:
       properties:
-        id_kid:
+        is_kid:
           type: boolean
         name:
           type: string
@@ -912,7 +916,7 @@ components:
           format: date-time
           type: string
       required:
-      - id_kid
+      - is_kid
       - name
       type: object
     endpoints.updateFamilyModel:

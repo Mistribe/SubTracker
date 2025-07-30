@@ -21,7 +21,6 @@ type FamilyMemberCreateEndpoint struct {
 type createFamilyMemberModel struct {
 	Id        *string    `json:"id,omitempty"`
 	Name      string     `json:"name" binding:"required"`
-	Email     *string    `json:"email,omitempty"`
 	IsKid     bool       `json:"is_kid,omitempty"`
 	CreatedAt *time.Time `json:"created_at,omitempty" format:"date-time"`
 }
@@ -53,7 +52,8 @@ func (m createFamilyMemberModel) Command(familyId uuid.UUID) (command.CreateFami
 		return command.CreateFamilyMemberCommand{}, err
 	}
 	return command.CreateFamilyMemberCommand{
-		Member: fam,
+		FamilyId: familyId,
+		Member:   fam,
 	}, nil
 
 }

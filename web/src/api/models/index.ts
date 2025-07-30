@@ -91,10 +91,6 @@ export interface CreateFamilyMemberModel extends AdditionalDataHolder, Parsable 
      */
     createdAt?: Date | null;
     /**
-     * The email property
-     */
-    email?: string | null;
-    /**
      * The id property
      */
     id?: string | null;
@@ -506,7 +502,6 @@ export function createUpdateSubscriptionModelFromDiscriminatorValue(parseNode: P
 export function deserializeIntoCreateFamilyMemberModel(createFamilyMemberModel: Partial<CreateFamilyMemberModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "created_at": n => { createFamilyMemberModel.createdAt = n.getDateValue(); },
-        "email": n => { createFamilyMemberModel.email = n.getStringValue(); },
         "id": n => { createFamilyMemberModel.id = n.getStringValue(); },
         "is_kid": n => { createFamilyMemberModel.isKid = n.getBooleanValue(); },
         "name": n => { createFamilyMemberModel.name = n.getStringValue(); },
@@ -652,6 +647,7 @@ export function deserializeIntoFamilyMemberModel(familyMemberModel: Partial<Fami
         "family_id": n => { familyMemberModel.familyId = n.getStringValue(); },
         "id": n => { familyMemberModel.id = n.getStringValue(); },
         "is_kid": n => { familyMemberModel.isKid = n.getBooleanValue(); },
+        "is_you": n => { familyMemberModel.isYou = n.getBooleanValue(); },
         "name": n => { familyMemberModel.name = n.getStringValue(); },
         "updated_at": n => { familyMemberModel.updatedAt = n.getDateValue(); },
     }
@@ -924,7 +920,7 @@ export function deserializeIntoSubscriptionPayerModel(subscriptionPayerModel: Pa
 // @ts-ignore
 export function deserializeIntoUpdateFamilyMemberModel(updateFamilyMemberModel: Partial<UpdateFamilyMemberModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "id_kid": n => { updateFamilyMemberModel.idKid = n.getBooleanValue(); },
+        "is_kid": n => { updateFamilyMemberModel.isKid = n.getBooleanValue(); },
         "name": n => { updateFamilyMemberModel.name = n.getStringValue(); },
         "updated_at": n => { updateFamilyMemberModel.updatedAt = n.getDateValue(); },
     }
@@ -1058,6 +1054,10 @@ export interface FamilyMemberModel extends AdditionalDataHolder, Parsable {
      * @Description Whether this member is a child (affects permissions and features)
      */
     isKid?: boolean | null;
+    /**
+     * @Description Indicates whether this member is the current authenticated user
+     */
+    isYou?: boolean | null;
     /**
      * @Description Name of the family member
      */
@@ -1450,7 +1450,6 @@ export interface ProviderModel extends AdditionalDataHolder, Parsable {
 export function serializeCreateFamilyMemberModel(writer: SerializationWriter, createFamilyMemberModel: Partial<CreateFamilyMemberModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!createFamilyMemberModel || isSerializingDerivedType) { return; }
     writer.writeDateValue("created_at", createFamilyMemberModel.createdAt);
-    writer.writeStringValue("email", createFamilyMemberModel.email);
     writer.writeStringValue("id", createFamilyMemberModel.id);
     writer.writeBooleanValue("is_kid", createFamilyMemberModel.isKid);
     writer.writeStringValue("name", createFamilyMemberModel.name);
@@ -1605,6 +1604,7 @@ export function serializeFamilyMemberModel(writer: SerializationWriter, familyMe
     writer.writeStringValue("family_id", familyMemberModel.familyId);
     writer.writeStringValue("id", familyMemberModel.id);
     writer.writeBooleanValue("is_kid", familyMemberModel.isKid);
+    writer.writeBooleanValue("is_you", familyMemberModel.isYou);
     writer.writeStringValue("name", familyMemberModel.name);
     writer.writeDateValue("updated_at", familyMemberModel.updatedAt);
     writer.writeAdditionalData(familyMemberModel.additionalData);
@@ -1894,7 +1894,7 @@ export function serializeSubscriptionPayerModel(writer: SerializationWriter, sub
 // @ts-ignore
 export function serializeUpdateFamilyMemberModel(writer: SerializationWriter, updateFamilyMemberModel: Partial<UpdateFamilyMemberModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!updateFamilyMemberModel || isSerializingDerivedType) { return; }
-    writer.writeBooleanValue("id_kid", updateFamilyMemberModel.idKid);
+    writer.writeBooleanValue("is_kid", updateFamilyMemberModel.isKid);
     writer.writeStringValue("name", updateFamilyMemberModel.name);
     writer.writeDateValue("updated_at", updateFamilyMemberModel.updatedAt);
     writer.writeAdditionalData(updateFamilyMemberModel.additionalData);
@@ -2074,9 +2074,9 @@ export interface SubscriptionPayerModel extends AdditionalDataHolder, Parsable {
 export type SubscriptionPayerModel_type = (typeof SubscriptionPayerModel_typeObject)[keyof typeof SubscriptionPayerModel_typeObject];
 export interface UpdateFamilyMemberModel extends AdditionalDataHolder, Parsable {
     /**
-     * The id_kid property
+     * The is_kid property
      */
-    idKid?: boolean | null;
+    isKid?: boolean | null;
     /**
      * The name property
      */

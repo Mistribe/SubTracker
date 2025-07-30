@@ -78,7 +78,7 @@ type familyModel struct {
 func newFamilyModel(userId string, source family.Family) familyModel {
 	var members []familyMemberModel
 	for member := range source.Members().It() {
-		members = append(members, newFamilyMemberModel(member))
+		members = append(members, newFamilyMemberModel(userId, member))
 	}
 
 	return familyModel{
@@ -103,6 +103,8 @@ type familyMemberModel struct {
 	IsKid bool `json:"is_kid" binding:"required" example:"false"`
 	// @Description ID of the family this member belongs to
 	FamilyId string `json:"family_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
+	// @Description Indicates whether this member is the current authenticated user
+	IsYou bool `json:"is_you" binding:"required" example:"false"`
 	// @Description Timestamp when the member was created
 	CreatedAt time.Time `json:"created_at" binding:"required" format:"date-time"`
 	// @Description Timestamp when the member was last updated
@@ -111,8 +113,8 @@ type familyMemberModel struct {
 	Etag string `json:"etag" binding:"required" example:"W/\"123456789\""`
 }
 
-func newFamilyMemberModel(source family.Member) familyMemberModel {
-	return familyMemberModel{
+func newFamilyMemberModel(currentUserId string, source family.Member) familyMemberModel {
+	model := familyMemberModel{
 		Id:        source.Id().String(),
 		Name:      source.Name(),
 		IsKid:     source.IsKid(),
@@ -121,4 +123,10 @@ func newFamilyMemberModel(source family.Member) familyMemberModel {
 		UpdatedAt: source.UpdatedAt(),
 		Etag:      source.ETag(),
 	}
+
+	if source.UserId() != nil {
+		model.IsYou = *source.UserId() == currentUserId
+	}
+
+	return model
 }

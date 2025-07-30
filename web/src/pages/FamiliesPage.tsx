@@ -4,12 +4,14 @@ import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/c
 import {Button} from "@/components/ui/button";
 import {CheckIcon, Loader2, XIcon} from "lucide-react";
 import Family from "@/models/family.ts";
+import FamilyMember from "@/models/familyMember.ts";
 import {useApiClient} from "@/hooks/use-api-client.ts";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import type {FamilyModel, PatchFamilyModel} from "@/api/models";
+import type {FamilyModel, PatchFamilyModel, UpdateFamilyMemberModel} from "@/api/models";
 import {CreateFamilyDialog} from "@/components/families/CreateFamilyDialog.tsx";
 import {Input} from "@/components/ui/input";
 import {AddFamilyMemberDialog} from "@/components/families/AddFamilyMemberDialog.tsx";
+import {Checkbox} from "@/components/ui/checkbox";
 
 const FamiliesPage = () => {
     const {apiClient} = useApiClient();
@@ -21,6 +23,12 @@ const FamiliesPage = () => {
     const [editedName, setEditedName] = useState<string>("");
     const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
+    // Family member editing state
+    const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+    const [editedMemberName, setEditedMemberName] = useState<string>("");
+    const [editedMemberIsKid, setEditedMemberIsKid] = useState<boolean>(false);
+    const [isUpdatingMember, setIsUpdatingMember] = useState<boolean>(false);
+
     // Function to start editing a family
     const startEditing = (family: Family) => {
         setEditingFamilyId(family.id);
@@ -31,6 +39,52 @@ const FamiliesPage = () => {
     const cancelEditing = () => {
         setEditingFamilyId(null);
         setEditedName("");
+    };
+
+    // Function to start editing a family member
+    const startEditingMember = (member: FamilyMember) => {
+        setEditingMemberId(member.id);
+        setEditedMemberName(member.name);
+        setEditedMemberIsKid(member.isKid);
+    };
+
+    // Function to cancel editing a family member
+    const cancelEditingMember = () => {
+        setEditingMemberId(null);
+        setEditedMemberName("");
+        setEditedMemberIsKid(false);
+    };
+
+    // Function to save family member changes
+    const saveMemberChanges = async (familyId: string, member: FamilyMember) => {
+        if (!apiClient) return;
+
+        try {
+            setIsUpdatingMember(true);
+
+            // Only update if values have changed
+            if (editedMemberName === member.name && editedMemberIsKid === member.isKid) {
+                cancelEditingMember();
+                return;
+            }
+
+            const patchModel: Partial<UpdateFamilyMemberModel> = {
+                name: editedMemberName,
+                isKid: editedMemberIsKid,
+            };
+
+            await apiClient.families.byFamilyId(familyId).members.byId(member.id).put(patchModel);
+
+            // Invalidate and refetch the families query
+            await queryClient.invalidateQueries({queryKey: ['families']});
+
+            // Reset editing state
+            cancelEditingMember();
+        } catch (error) {
+            console.error("Failed to update family member:", error);
+        } finally {
+            setIsUpdatingMember(false);
+        }
     };
 
     // Function to save changes
@@ -66,7 +120,6 @@ const FamiliesPage = () => {
         }
     };
 
-    // Fetch families using TanStack Query
     const {
         data: queryResponse,
         isLoading,
@@ -99,7 +152,6 @@ const FamiliesPage = () => {
         refetchOnWindowFocus: true,
     });
 
-    // Loading state
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-64">
@@ -109,7 +161,6 @@ const FamiliesPage = () => {
         );
     }
 
-    // Error state
     if (error) {
         return (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
@@ -210,18 +261,77 @@ const FamiliesPage = () => {
                                         <TableRow>
                                             <TableHead>Name</TableHead>
                                             <TableHead>Role</TableHead>
-                                            <TableHead>Email</TableHead>
                                             <TableHead className="w-[100px]">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {family.members.map((member) => (
                                             <TableRow key={member.id}>
-                                                <TableCell className="font-medium">{member.name}</TableCell>
-                                                <TableCell>{member.isKid ? 'Kid' : 'Adult'}</TableCell>
-                                                <TableCell>{member.email}</TableCell>
+                                                <TableCell className="font-medium">
+                                                    {editingMemberId === member.id ? (
+                                                        <Input
+                                                            value={editedMemberName}
+                                                            onChange={(e) => setEditedMemberName(e.target.value)}
+                                                            className="w-full"
+                                                            placeholder="Member name"
+                                                        />
+                                                    ) : (
+                                                        member.isYou ? (
+                                                            <span>{member.name} <i>(You)</i></span>
+                                                        ) : (
+                                                            <span>{member.name}</span>
+                                                        )
+                                                    )}
+                                                </TableCell>
                                                 <TableCell>
-                                                    <Button variant="ghost" size="sm">Edit</Button>
+                                                    {editingMemberId === member.id ? (
+                                                        <div className="flex items-center space-x-2">
+                                                            <Checkbox
+                                                                checked={editedMemberIsKid}
+                                                                onCheckedChange={(checked) => setEditedMemberIsKid(checked === true)}
+                                                                id={`kid-checkbox-${member.id}`}
+                                                            />
+                                                            <label htmlFor={`kid-checkbox-${member.id}`}>Kid</label>
+                                                        </div>
+                                                    ) : (
+                                                        member.isKid ? 'Kid' : 'Adult'
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {editingMemberId === member.id ? (
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => saveMemberChanges(family.id, member)}
+                                                                disabled={isUpdatingMember}
+                                                            >
+                                                                {isUpdatingMember ? (
+                                                                    <Loader2 className="h-4 w-4 animate-spin mr-2"/>
+                                                                ) : (
+                                                                    <CheckIcon className="h-4 w-4 mr-2"/>
+                                                                )}
+                                                                Save
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={cancelEditingMember}
+                                                                disabled={isUpdatingMember}
+                                                            >
+                                                                <XIcon className="h-4 w-4 mr-2"/>
+                                                                Cancel
+                                                            </Button>
+                                                        </div>
+                                                    ) : (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => startEditingMember(member)}
+                                                        >
+                                                            Edit
+                                                        </Button>
+                                                    )}
                                                 </TableCell>
                                             </TableRow>
                                         ))}

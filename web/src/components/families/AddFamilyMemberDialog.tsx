@@ -25,11 +25,11 @@ import {useForm} from "react-hook-form";
 import {z} from "zod";
 import {useApiClient} from "@/hooks/use-api-client.ts";
 import type {CreateFamilyMemberModel} from "@/api/models";
+import {useQueryClient} from "@tanstack/react-query";
 
 const formSchema = z.object({
     name: z.string().min(1, "Family member name is required"),
     isKid: z.boolean(),
-    email: z.email().or(z.literal("")).optional()
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -41,6 +41,7 @@ interface AddFamilyMemberDialogProps {
 
 export function AddFamilyMemberDialog({familyId, onSuccess}: AddFamilyMemberDialogProps) {
     const {apiClient} = useApiClient();
+    const queryClient = useQueryClient();
     const [open, setOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -50,7 +51,6 @@ export function AddFamilyMemberDialog({familyId, onSuccess}: AddFamilyMemberDial
             defaultValues: {
                 name: "",
                 isKid: false,
-                email: "",
             },
         });
 
@@ -64,11 +64,11 @@ export function AddFamilyMemberDialog({familyId, onSuccess}: AddFamilyMemberDial
         try {
             const familyMember: CreateFamilyMemberModel = {
                 name: values.name,
-                email: values.email,
                 isKid: values.isKid,
             }
 
             await apiClient.families.byFamilyId(familyId).members.post(familyMember);
+            await queryClient.invalidateQueries({queryKey: ["families"]});
             setOpen(false);
             form.reset();
 
@@ -127,22 +127,6 @@ export function AddFamilyMemberDialog({familyId, onSuccess}: AddFamilyMemberDial
                                             Is this member a kid?
                                         </FormDescription>
                                     </div>
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({field}) => (
-                                <FormItem>
-                                    <FormLabel>Email (Optional)</FormLabel>
-                                    <FormControl>
-                                        <Input type="email" placeholder="Enter email address" {...field} />
-                                    </FormControl>
-                                    <FormDescription>
-                                        If email is set, the user will receive an invitation to join this family.
-                                    </FormDescription>
-                                    <FormMessage/>
                                 </FormItem>
                             )}
                         />
