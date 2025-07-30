@@ -1,16 +1,12 @@
 import {useState} from "react";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
+import {Popover, PopoverContent, PopoverTrigger,} from "@/components/ui/popover";
 import {ColorPicker} from "@/components/ui/color-picker";
-import {hexToArgb, argbToRgba} from "@/components/ui/utils/color-utils";
-import {PlusIcon, Pencil, X, Loader2} from "lucide-react";
+import {argbToRgba, hexToArgb} from "@/components/ui/utils/color-utils";
+import {Loader2, Pencil, PlusIcon, X} from "lucide-react";
 import {useApiClient} from "@/hooks/use-api-client.ts";
-import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import type {LabelModel} from "@/api/models";
 import Label from "@/models/label.ts";
 
@@ -116,7 +112,7 @@ const LabelsPage = () => {
 
     const startEditing = (label: Label) => {
         // Prevent editing default labels
-        if (label.isDefault) {
+        if (label.owner.isSystem) {
             return;
         }
 
@@ -158,7 +154,7 @@ const LabelsPage = () => {
         const labelToDelete = queryResponse?.labels?.find(label => label.id === id);
 
         // Prevent deleting default labels
-        if (labelToDelete?.isDefault) {
+        if (labelToDelete?.owner.isSystem) {
             return;
         }
 
@@ -313,8 +309,8 @@ const LabelsPage = () => {
                                             size="icon"
                                             className="h-6 w-6"
                                             onClick={() => startEditing(label)}
-                                            disabled={label.isDefault}
-                                            title={label.isDefault ? "Default labels cannot be edited" : "Edit label"}
+                                            disabled={label.owner.isSystem}
+                                            title={label.owner.isSystem ? "Default labels cannot be edited" : "Edit label"}
                                         >
                                             <Pencil className="h-3 w-3"/>
                                         </Button>
@@ -323,8 +319,8 @@ const LabelsPage = () => {
                                             size="icon"
                                             className="h-6 w-6 text-destructive hover:text-destructive"
                                             onClick={() => deleteLabel(label.id)}
-                                            disabled={(deleteLabelMutation.isPending && deleteLabelMutation.variables === label.id) || label.isDefault}
-                                            title={label.isDefault ? "Default labels cannot be deleted" : "Delete label"}
+                                            disabled={(deleteLabelMutation.isPending && deleteLabelMutation.variables === label.id) || label.owner.isSystem}
+                                            title={label.owner.isSystem ? "Default labels cannot be deleted" : "Delete label"}
                                         >
                                             {deleteLabelMutation.isPending && deleteLabelMutation.variables === label.id ? (
                                                 <Loader2 className="h-3 w-3 animate-spin"/>
