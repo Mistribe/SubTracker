@@ -15,3 +15,11 @@ func FromContext(ctx context.Context) (string, bool) {
 	userId, ok := ctx.Value(ContextKey).(string)
 	return userId, ok
 }
+
+func MustGetFromContext(ctx context.Context) string {
+	userId, ok := ctx.Value(ContextKey).(string)
+	if !ok {
+		panic("missing user id from context")
+	}
+	return userId
+}

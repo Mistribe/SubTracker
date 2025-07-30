@@ -4,20 +4,22 @@ import (
 	"context"
 
 	"github.com/oleexo/subtracker/internal/domain/entity"
+	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
 type QueryParameters struct {
 	entity.QueryParameters
 
-	WithDefaults bool
+	Owners []user.OwnerType
 }
 
-func NewQueryParameters(limit, offset int, withDefaults bool) QueryParameters {
+func NewQueryParameters(limit, offset int, owners []user.OwnerType) QueryParameters {
 	return QueryParameters{
 		QueryParameters: entity.QueryParameters{
 			Limit:  limit,
 			Offset: offset,
-		}, WithDefaults: withDefaults,
+		},
+		Owners: owners,
 	}
 }
 

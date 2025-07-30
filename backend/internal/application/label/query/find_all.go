@@ -5,20 +5,21 @@ import (
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/domain/label"
+	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type FindAllQuery struct {
-	WithDefault bool
-	Limit       int
-	Offset      int
+	Owners []user.OwnerType
+	Limit  int
+	Offset int
 }
 
-func NewFindAllQuery(withDefault bool, size int, offset int) FindAllQuery {
+func NewFindAllQuery(owners []user.OwnerType, size int, offset int) FindAllQuery {
 	return FindAllQuery{
-		WithDefault: withDefault,
-		Limit:       size,
-		Offset:      offset,
+		Owners: owners,
+		Limit:  size,
+		Offset: offset,
 	}
 }
 
@@ -33,7 +34,7 @@ func NewFindAllQueryHandler(repository label.Repository) *FindAllQueryHandler {
 func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[core.PaginatedResponse[label.Label]] {
-	params := label.NewQueryParameters(query.Limit, query.Offset, query.WithDefault)
+	params := label.NewQueryParameters(query.Limit, query.Offset, query.Owners)
 	lbs, err := h.repository.GetAll(ctx, params)
 	if err != nil {
 		return result.Fail[core.PaginatedResponse[label.Label]](err)
