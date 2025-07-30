@@ -36,14 +36,12 @@ func newLabelSqlModel(source label.Label) LabelSqlModel {
 	case user.FamilyOwner:
 		familyId := source.Owner().FamilyId()
 		model.OwnerFamilyId = &familyId
-		break
 	case user.PersonalOwner:
 		userId := source.Owner().UserId()
 		model.OwnerUserId = sql.NullString{
 			String: userId,
 			Valid:  true,
 		}
-		break
 	}
 
 	return model

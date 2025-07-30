@@ -22,7 +22,7 @@ func saveTrackedSlice[TEntity comparable, TSqlModel any](
 		addedSqlModels = append(addedSqlModels, mapFunc(add))
 	}
 	baseRequest := db.WithContext(ctx).Model(&model)
-	if omit != nil && len(omit) > 0 {
+	if len(omit) > 0 {
 		baseRequest = baseRequest.Omit(omit...)
 	}
 	if err := baseRequest.Create(&addedSqlModels).Error; err != nil {

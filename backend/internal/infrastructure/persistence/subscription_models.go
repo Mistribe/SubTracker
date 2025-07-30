@@ -88,11 +88,9 @@ func newSubscriptionSqlModel(source subscription.Subscription) SubscriptionSqlMo
 	case user.FamilyOwner:
 		familyId := source.Owner().FamilyId()
 		model.OwnerFamilyId = &familyId
-		break
 	case user.PersonalOwner:
 		userId := source.Owner().UserId()
 		model.OwnerUserId = stringToSqlNull(&userId)
-		break
 	}
 
 	return model
@@ -111,7 +109,7 @@ func newSubscription(source SubscriptionSqlModel) subscription.Subscription {
 		payer = subscription.NewPayer(payerType, *source.FamilyId, source.PayerMemberId)
 	}
 	var serviceUsers []uuid.UUID
-	if source.ServiceUsers != nil && len(source.ServiceUsers) > 0 {
+	if len(source.ServiceUsers) > 0 {
 		serviceUsers = slicesx.Map(source.ServiceUsers, func(su SubscriptionServiceUserModel) uuid.UUID {
 			return su.FamilyMemberId
 		})

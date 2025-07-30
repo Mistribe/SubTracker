@@ -84,7 +84,7 @@ func newProviderPlanSqlModel(providerId uuid.UUID, source provider.Plan) provide
 
 func newProviderPlan(model providerPlanSqlModel) provider.Plan {
 	var prices []provider.Price
-	if model.Prices != nil && len(model.Prices) > 0 {
+	if len(model.Prices) > 0 {
 		prices = make([]provider.Price, len(model.Prices))
 		for i, price := range model.Prices {
 			prices[i] = newProviderPrice(price)
@@ -149,11 +149,9 @@ func newProviderSqlModel(source provider.Provider) ProviderSqlModel {
 	case user.FamilyOwner:
 		familyId := source.Owner().FamilyId()
 		model.OwnerFamilyId = &familyId
-		break
 	case user.PersonalOwner:
 		userId := source.Owner().UserId()
 		model.OwnerUserId = stringToSqlNull(&userId)
-		break
 	}
 	return model
 }
@@ -165,7 +163,7 @@ func newProvider(model ProviderSqlModel) provider.Provider {
 	}
 	owner := user.NewOwner(ownerType, model.OwnerFamilyId, sqlNullToString(model.OwnerUserId))
 	var labels []uuid.UUID
-	if model.Labels != nil && len(model.Labels) > 0 {
+	if len(model.Labels) > 0 {
 		labels = make([]uuid.UUID, len(model.Labels))
 		for i, label := range model.Labels {
 			labels[i] = label.LabelId
@@ -173,7 +171,7 @@ func newProvider(model ProviderSqlModel) provider.Provider {
 	}
 
 	var plans []provider.Plan
-	if model.Plans != nil && len(model.Plans) > 0 {
+	if len(model.Plans) > 0 {
 		plans = make([]provider.Plan, len(model.Plans))
 		for i, plan := range model.Plans {
 			plans[i] = newProviderPlan(plan)

@@ -1,6 +1,9 @@
 package endpoints
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/oleexo/subtracker/internal/application/core"
@@ -10,8 +13,6 @@ import (
 	"github.com/oleexo/subtracker/pkg/ext"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 	"golang.org/x/text/currency"
-	"net/http"
-	"time"
 )
 
 type ProviderPatchEndpoint struct {
@@ -79,6 +80,9 @@ func (m patchPlanModel) Plan() (provider.Plan, error) {
 	prices, err := slicesx.MapErr(m.Prices, func(prce patchPriceModel) (provider.Price, error) {
 		return prce.Price()
 	})
+	if err != nil {
+		return nil, err
+	}
 	return provider.NewPlan(
 		id,
 		m.Name,
@@ -126,6 +130,9 @@ func (m patchProviderModel) Provider(userId string) (provider.Provider, error) {
 	plans, err := slicesx.MapErr(m.Plans, func(prce patchPlanModel) (provider.Plan, error) {
 		return prce.Plan()
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return provider.NewProvider(
 		id,

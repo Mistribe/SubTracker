@@ -52,11 +52,9 @@ func newOwnerModel(source user.Owner) OwnerModel {
 	case user.PersonalOwner:
 		userId := source.UserId()
 		model.UserId = &userId
-		break
 	case user.FamilyOwner:
 		familyId := source.FamilyId().String()
 		model.FamilyId = &familyId
-		break
 	}
 
 	return model

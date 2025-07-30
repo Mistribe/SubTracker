@@ -75,7 +75,7 @@ func (r SubscriptionRepository) GetAllCount(ctx context.Context) (int64, error) 
 }
 
 func (r SubscriptionRepository) Save(ctx context.Context, dirtySubscription subscription.Subscription) error {
-	if dirtySubscription.IsDirty() == false {
+	if !dirtySubscription.IsDirty() {
 		return nil
 	}
 

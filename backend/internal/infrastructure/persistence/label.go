@@ -70,7 +70,6 @@ func (r LabelRepository) GetAllCount(ctx context.Context, parameters label.Query
 	if !ok {
 		return 0, nil
 	}
-	var labels []LabelSqlModel
 	query := r.repository.db.WithContext(ctx).Model(&LabelSqlModel{})
 
 	if parameters.WithDefaults {
@@ -81,10 +80,6 @@ func (r LabelRepository) GetAllCount(ctx context.Context, parameters label.Query
 	var count int64
 	if result := query.Count(&count); result.Error != nil {
 		return 0, result.Error
-	}
-	result := make([]label.Label, 0, len(labels))
-	for _, lbl := range labels {
-		result = append(result, newLabel(lbl))
 	}
 	return count, nil
 }
@@ -106,7 +101,7 @@ func (r LabelRepository) GetDefaults(ctx context.Context) ([]label.Label, error)
 }
 
 func (r LabelRepository) Save(ctx context.Context, lbl label.Label) error {
-	if lbl.IsDirty() == false {
+	if !lbl.IsDirty() {
 		return nil
 	}
 	if lbl.IsExists() {
