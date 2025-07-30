@@ -6,8 +6,8 @@ class UpdateFamilyMemberModel implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
-    ///  The id_kid property
-    bool? idKid;
+    ///  The is_kid property
+    bool? isKid;
     ///  The name property
     String? name;
     ///  The updated_at property
@@ -24,7 +24,7 @@ class UpdateFamilyMemberModel implements AdditionalDataHolder, Parsable {
     @override
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
-        deserializerMap['id_kid'] = (node) => idKid = node.getBoolValue();
+        deserializerMap['is_kid'] = (node) => isKid = node.getBoolValue();
         deserializerMap['name'] = (node) => name = node.getStringValue();
         deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
@@ -33,7 +33,7 @@ class UpdateFamilyMemberModel implements AdditionalDataHolder, Parsable {
     ///  [writer] Serialization writer to use to serialize this model
     @override
     void serialize(SerializationWriter writer) {
-        writer.writeBoolValue('id_kid', value:idKid);
+        writer.writeBoolValue('is_kid', value:isKid);
         writer.writeStringValue('name', name);
         writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);

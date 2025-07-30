@@ -17,6 +17,8 @@ class FamilyMemberModel implements AdditionalDataHolder, Parsable {
     String? id;
     ///  @Description Whether this member is a child (affects permissions and features)
     bool? isKid;
+    ///  @Description Indicates whether this member is the current authenticated user
+    bool? isYou;
     ///  @Description Name of the family member
     String? name;
     ///  @Description Timestamp when the member was last updated
@@ -38,6 +40,7 @@ class FamilyMemberModel implements AdditionalDataHolder, Parsable {
         deserializerMap['family_id'] = (node) => familyId = node.getStringValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
         deserializerMap['is_kid'] = (node) => isKid = node.getBoolValue();
+        deserializerMap['is_you'] = (node) => isYou = node.getBoolValue();
         deserializerMap['name'] = (node) => name = node.getStringValue();
         deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
@@ -51,6 +54,7 @@ class FamilyMemberModel implements AdditionalDataHolder, Parsable {
         writer.writeStringValue('family_id', familyId);
         writer.writeStringValue('id', id);
         writer.writeBoolValue('is_kid', value:isKid);
+        writer.writeBoolValue('is_you', value:isYou);
         writer.writeStringValue('name', name);
         writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
