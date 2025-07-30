@@ -1,5 +1,199 @@
 components:
   schemas:
+    endpoints.OwnerModel:
+      properties:
+        etag:
+          type: string
+        family_id:
+          type: string
+        type:
+          type: string
+        userId:
+          type: string
+      required:
+      - etag
+      - type
+      type: object
+    endpoints.PaginatedResponseModel-endpoints_ProviderModel:
+      properties:
+        data:
+          description: Data contains the list of items for the current page
+          items:
+            $ref: '#/components/schemas/endpoints.ProviderModel'
+          type: array
+          uniqueItems: false
+        length:
+          description: Length represents the number of items in the current page
+          type: integer
+        total:
+          description: Total represents the total number of items available
+          type: integer
+      required:
+      - data
+      - length
+      - total
+      type: object
+    endpoints.PaginatedResponseModel-endpoints_familyModel:
+      properties:
+        data:
+          description: Data contains the list of items for the current page
+          items:
+            $ref: '#/components/schemas/endpoints.familyModel'
+          type: array
+          uniqueItems: false
+        length:
+          description: Length represents the number of items in the current page
+          type: integer
+        total:
+          description: Total represents the total number of items available
+          type: integer
+      required:
+      - data
+      - length
+      - total
+      type: object
+    endpoints.PaginatedResponseModel-endpoints_labelModel:
+      properties:
+        data:
+          description: Data contains the list of items for the current page
+          items:
+            $ref: '#/components/schemas/endpoints.labelModel'
+          type: array
+          uniqueItems: false
+        length:
+          description: Length represents the number of items in the current page
+          type: integer
+        total:
+          description: Total represents the total number of items available
+          type: integer
+      required:
+      - data
+      - length
+      - total
+      type: object
+    endpoints.PaginatedResponseModel-endpoints_subscriptionModel:
+      properties:
+        data:
+          description: Data contains the list of items for the current page
+          items:
+            $ref: '#/components/schemas/endpoints.subscriptionModel'
+          type: array
+          uniqueItems: false
+        length:
+          description: Length represents the number of items in the current page
+          type: integer
+        total:
+          description: Total represents the total number of items available
+          type: integer
+      required:
+      - data
+      - length
+      - total
+      type: object
+    endpoints.PlanModel:
+      properties:
+        created_at:
+          format: date-time
+          type: string
+        description:
+          type: string
+        etag:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        prices:
+          items:
+            $ref: '#/components/schemas/endpoints.PriceModel'
+          type: array
+          uniqueItems: false
+        updated_at:
+          format: date-time
+          type: string
+      required:
+      - created_at
+      - etag
+      - id
+      - name
+      - prices
+      - updated_at
+      type: object
+    endpoints.PriceModel:
+      properties:
+        amount:
+          type: number
+        created_at:
+          format: date-time
+          type: string
+        currency:
+          type: string
+        end_date:
+          format: date-time
+          type: string
+        etag:
+          type: string
+        id:
+          type: string
+        start_date:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+      - amount
+      - created_at
+      - currency
+      - etag
+      - id
+      - start_date
+      - updated_at
+      type: object
+    endpoints.ProviderModel:
+      properties:
+        created_at:
+          format: date-time
+          type: string
+        description:
+          type: string
+        etag:
+          type: string
+        icon_url:
+          type: string
+        id:
+          type: string
+        labels:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        name:
+          type: string
+        owner:
+          $ref: '#/components/schemas/endpoints.OwnerModel'
+        plans:
+          items:
+            $ref: '#/components/schemas/endpoints.PlanModel'
+          type: array
+          uniqueItems: false
+        pricing_page_url:
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+        url:
+          type: string
+      required:
+      - created_at
+      - etag
+      - id
+      - labels
+      - name
+      - owner
+      - plans
+      - updated_at
+      type: object
     endpoints.createFamilyMemberModel:
       properties:
         created_at:
@@ -39,16 +233,34 @@ components:
           type: string
         id:
           type: string
-        is_default:
-          type: boolean
         name:
           type: string
+        owner:
+          $ref: '#/components/schemas/endpoints.editableOwnerModel'
       required:
       - color
       - name
+      - owner
       type: object
-    endpoints.createPaymentModel:
+    endpoints.createPlanModel:
       properties:
+        created_at:
+          format: date-time
+          type: string
+        description:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+      required:
+      - name
+      type: object
+    endpoints.createPriceModel:
+      description: Price information for a plan
+      properties:
+        amount:
+          type: number
         created_at:
           format: date-time
           type: string
@@ -59,25 +271,23 @@ components:
           type: string
         id:
           type: string
-        months:
-          type: integer
-        price:
-          type: number
         start_date:
           format: date-time
           type: string
+      required:
+      - amount
+      - currency
+      - start_date
       type: object
-    endpoints.createSubscriptionModel:
+    endpoints.createProviderModel:
       properties:
         created_at:
+          format: date-time
           type: string
-        family_id:
+        description:
           type: string
-        family_members:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
+        icon_url:
+          type: string
         id:
           type: string
         labels:
@@ -87,45 +297,80 @@ components:
           uniqueItems: false
         name:
           type: string
-        payed_by_joint_account:
-          type: boolean
-        payer_id:
+        owner:
+          $ref: '#/components/schemas/endpoints.editableOwnerModel'
+        pricing_page_url:
           type: string
-        payments:
-          items:
-            $ref: '#/components/schemas/endpoints.createPaymentModel'
-          type: array
-          uniqueItems: false
+        url:
+          type: string
       required:
-      - family_members
       - labels
       - name
-      - payments
+      - owner
       type: object
-    endpoints.createSubscriptionPaymentModel:
+    endpoints.createSubscriptionModel:
       properties:
         created_at:
-          format: date-time
           type: string
-        currency:
-          type: string
+        custom_recurrency:
+          type: integer
         end_date:
           format: date-time
           type: string
+        free_trial_days:
+          type: integer
+        friendly_name:
+          type: string
         id:
           type: string
-        months:
-          type: integer
-        price:
-          type: number
+        owner:
+          $ref: '#/components/schemas/endpoints.editableOwnerModel'
+        payer:
+          $ref: '#/components/schemas/endpoints.editableSubscriptionPayerModel'
+        plan_id:
+          type: string
+        price_id:
+          type: string
+        recurrency:
+          type: string
+        service_provider_id:
+          type: string
+        service_users:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
         start_date:
           format: date-time
           type: string
       required:
-      - currency
-      - months
-      - price
+      - owner
+      - plan_id
+      - price_id
+      - recurrency
+      - service_provider_id
       - start_date
+      type: object
+    endpoints.editableOwnerModel:
+      properties:
+        family_id:
+          type: string
+        type:
+          type: string
+      required:
+      - type
+      type: object
+    endpoints.editableSubscriptionPayerModel:
+      properties:
+        family_id:
+          type: string
+        memberId:
+          type: string
+        type:
+          type: string
+      required:
+      - family_id
+      - type
       type: object
     endpoints.familyMemberModel:
       properties:
@@ -199,19 +444,17 @@ components:
         color:
           type: string
         created_at:
-          description: CreatedAt date and time the label was created
           format: date-time
           type: string
         etag:
           type: string
         id:
           type: string
-        is_default:
-          type: boolean
         name:
           type: string
+        owner:
+          $ref: '#/components/schemas/endpoints.OwnerModel'
         updated_at:
-          description: UpdatedAt date and time the label was last updated
           format: date-time
           type: string
       required:
@@ -219,64 +462,13 @@ components:
       - created_at
       - etag
       - id
-      - is_default
       - name
+      - owner
       - updated_at
-      type: object
-    endpoints.paginatedResponseModel-endpoints_familyModel:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/endpoints.familyModel'
-          type: array
-          uniqueItems: false
-        length:
-          type: integer
-        total:
-          type: integer
-      required:
-      - data
-      - length
-      - total
-      type: object
-    endpoints.paginatedResponseModel-endpoints_labelModel:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/endpoints.labelModel'
-          type: array
-          uniqueItems: false
-        length:
-          type: integer
-        total:
-          type: integer
-      required:
-      - data
-      - length
-      - total
-      type: object
-    endpoints.paginatedResponseModel-endpoints_subscriptionModel:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/endpoints.subscriptionModel'
-          type: array
-          uniqueItems: false
-        length:
-          type: integer
-        total:
-          type: integer
-      required:
-      - data
-      - length
-      - total
       type: object
     endpoints.patchFamilyMemberModel:
       description: Model for updating family member details
       properties:
-        email:
-          description: Optional email address
-          type: string
         id:
           description: Optional member ID. If not provided, new member will be created
           type: string
@@ -284,7 +476,7 @@ components:
           description: Indicates if the member is a kid
           type: boolean
         name:
-          description: Member's name
+          description: member's name
           type: string
         updated_at:
           description: Optional timestamp of the last update
@@ -321,56 +513,35 @@ components:
       - name
       type: object
     endpoints.patchSubscriptionModel:
-      description: Subscription update model
       properties:
-        family_id:
-          type: string
-        family_members:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        id:
-          type: string
-        labels:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        name:
-          type: string
-        payed_by_joint_account:
-          type: boolean
-        payer_id:
-          type: string
-        payments:
-          items:
-            $ref: '#/components/schemas/endpoints.patchSubscriptionPaymentModel'
-          type: array
-          uniqueItems: false
-        updated_at:
-          format: date-time
-          type: string
-      required:
-      - family_members
-      - labels
-      - name
-      - payments
-      type: object
-    endpoints.patchSubscriptionPaymentModel:
-      description: Payment update model
-      properties:
-        currency:
-          type: string
+        custom_recurrency:
+          type: integer
         end_date:
           format: date-time
           type: string
+        free_trial_days:
+          type: integer
+        friendly_name:
+          type: string
         id:
           type: string
-        months:
-          type: integer
-        price:
-          type: number
+        owner:
+          $ref: '#/components/schemas/endpoints.editableOwnerModel'
+        payer:
+          $ref: '#/components/schemas/endpoints.editableSubscriptionPayerModel'
+        plan_id:
+          type: string
+        price_id:
+          type: string
+        recurrency:
+          type: string
+        service_provider_id:
+          type: string
+        service_users:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
         start_date:
           format: date-time
           type: string
@@ -378,9 +549,11 @@ components:
           format: date-time
           type: string
       required:
-      - currency
-      - months
-      - price
+      - owner
+      - plan_id
+      - price_id
+      - recurrency
+      - service_provider_id
       - start_date
       type: object
     endpoints.subscriptionModel:
@@ -388,65 +561,36 @@ components:
         created_at:
           format: date-time
           type: string
-        etag:
-          type: string
-        family_id:
-          type: string
-        family_members:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        id:
-          type: string
-        labels:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        name:
-          type: string
-        payed_by_joint_account:
-          type: boolean
-        payer_id_id:
-          type: string
-        payments:
-          items:
-            $ref: '#/components/schemas/endpoints.subscriptionPaymentModel'
-          type: array
-          uniqueItems: false
-        updated_at:
-          format: date-time
-          type: string
-      required:
-      - created_at
-      - etag
-      - family_members
-      - id
-      - labels
-      - name
-      - payed_by_joint_account
-      - payments
-      - updated_at
-      type: object
-    endpoints.subscriptionPaymentModel:
-      properties:
-        created_at:
-          format: date-time
-          type: string
-        currency:
-          type: string
+        custom_recurrency:
+          type: integer
         end_date:
           format: date-time
           type: string
         etag:
           type: string
+        free_trial_days:
+          type: integer
+        friendly_name:
+          type: string
         id:
           type: string
-        months:
-          type: integer
-        price:
-          type: number
+        owner:
+          $ref: '#/components/schemas/endpoints.OwnerModel'
+        payer:
+          $ref: '#/components/schemas/endpoints.subscriptionPayerModel'
+        plan_id:
+          type: string
+        price_id:
+          type: string
+        recurrency:
+          type: string
+        service_provider_id:
+          type: string
+        service_users:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
         start_date:
           format: date-time
           type: string
@@ -455,18 +599,33 @@ components:
           type: string
       required:
       - created_at
-      - currency
       - etag
       - id
-      - months
-      - price
+      - owner
+      - plan_id
+      - price_id
+      - recurrency
+      - service_provider_id
       - start_date
       - updated_at
       type: object
+    endpoints.subscriptionPayerModel:
+      properties:
+        etag:
+          type: string
+        family_id:
+          type: string
+        memberId:
+          type: string
+        type:
+          type: string
+      required:
+      - etag
+      - family_id
+      - type
+      type: object
     endpoints.updateFamilyMemberModel:
       properties:
-        email:
-          type: string
         id_kid:
           type: boolean
         name:
@@ -480,8 +639,6 @@ components:
       type: object
     endpoints.updateFamilyModel:
       properties:
-        have_joint_account:
-          type: boolean
         name:
           type: string
         updated_at:
@@ -503,17 +660,54 @@ components:
       - color
       - name
       type: object
-    endpoints.updatePaymentModel:
+    endpoints.updatePriceModel:
       properties:
+        amount:
+          type: number
+        created_at:
+          format: date-time
+          type: string
         currency:
           type: string
         end_date:
           format: date-time
           type: string
-        months:
+        start_date:
+          format: date-time
+          type: string
+      required:
+      - amount
+      - currency
+      - start_date
+      type: object
+    endpoints.updateSubscriptionModel:
+      properties:
+        custom_recurrency:
           type: integer
-        price:
-          type: number
+        end_date:
+          format: date-time
+          type: string
+        free_trial_days:
+          type: integer
+        friendly_name:
+          type: string
+        owner:
+          $ref: '#/components/schemas/endpoints.editableOwnerModel'
+        payer:
+          $ref: '#/components/schemas/endpoints.editableSubscriptionPayerModel'
+        plan_id:
+          type: string
+        price_id:
+          type: string
+        recurrency:
+          type: string
+        service_provider_id:
+          type: string
+        service_users:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
         start_date:
           format: date-time
           type: string
@@ -521,38 +715,12 @@ components:
           format: date-time
           type: string
       required:
-      - currency
-      - months
-      - price
+      - owner
+      - plan_id
+      - price_id
+      - recurrency
+      - service_provider_id
       - start_date
-      type: object
-    endpoints.updateSubscriptionModel:
-      properties:
-        family_id:
-          type: string
-        family_members:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        labels:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        name:
-          type: string
-        payed_by_joint_account:
-          type: boolean
-        payer_id:
-          type: string
-        updated_at:
-          format: date-time
-          type: string
-      required:
-      - family_members
-      - labels
-      - name
       type: object
 externalDocs:
   description: ""
@@ -571,6 +739,69 @@ info:
   version: "1.0"
 openapi: 3.1.0
 paths:
+  /api/v1/providers:
+    get:
+      description: Returns a paginated list of providers
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        schema:
+          default: 1
+          type: integer
+      - description: Items per page
+        in: query
+        name: size
+        schema:
+          default: 10
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.PaginatedResponseModel-endpoints_ProviderModel'
+          description: OK
+      summary: Get all providers
+      tags:
+      - providers
+  /api/v1/providers/{providerId}:
+    get:
+      description: Returns a single provider by its ID
+      parameters:
+      - description: Provider ID
+        in: path
+        name: providerId
+        required: true
+        schema:
+          format: uuid
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.ProviderModel'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Bad Request
+      summary: Get provider by ID
+      tags:
+      - providers
   /families:
     get:
       description: Get all family members
@@ -580,7 +811,7 @@ paths:
         name: size
         schema:
           type: integer
-      - description: Page number
+      - description: Offset number
         in: query
         name: page
         schema:
@@ -590,7 +821,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.paginatedResponseModel-endpoints_familyModel'
+                $ref: '#/components/schemas/endpoints.PaginatedResponseModel-endpoints_familyModel'
           description: OK
         "400":
           content:
@@ -854,7 +1085,7 @@ paths:
         name: size
         schema:
           type: integer
-      - description: Page number
+      - description: Offset number
         in: query
         name: page
         schema:
@@ -864,7 +1095,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.paginatedResponseModel-endpoints_labelModel'
+                $ref: '#/components/schemas/endpoints.PaginatedResponseModel-endpoints_labelModel'
           description: OK
         "400":
           content:
@@ -882,7 +1113,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/endpoints.createLabelModel'
-        description: Label data
+        description: label data
         required: true
       responses:
         "201":
@@ -931,7 +1162,7 @@ paths:
     get:
       description: Get label by ID
       parameters:
-      - description: Label ID
+      - description: label ID
         in: path
         name: id
         required: true
@@ -962,7 +1193,7 @@ paths:
     put:
       description: Update label by ID
       parameters:
-      - description: Label ID
+      - description: label ID
         in: path
         name: id
         required: true
@@ -973,7 +1204,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/endpoints.updateLabelModel'
-        description: Label data
+        description: label data
         required: true
       responses:
         "200":
@@ -1012,6 +1243,136 @@ paths:
       summary: Get default labels
       tags:
       - label
+  /providers:
+    post:
+      description: Create a new provider with plans and prices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.createProviderModel'
+        description: Provider information
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.ProviderModel'
+          description: Created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Bad Request
+      summary: Create a new provider
+      tags:
+      - providers
+  /providers/{providerId}/plans:
+    post:
+      description: Create a new plan for a provider
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.createPlanModel'
+        description: Plan information
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.PlanModel'
+          description: Created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Bad Request
+      summary: Create a new provider plan
+      tags:
+      - providers
+  /providers/{providerId}/plans/{planId}:
+    put:
+      description: Update a new price for a provider plan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.updatePriceModel'
+        description: Price information
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.PriceModel'
+          description: Created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Bad Request
+      summary: Update a new provider plan
+      tags:
+      - providers
+  /providers/{providerId}/plans/{planId}/prices:
+    post:
+      description: Create a new price for a provider plan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.createPriceModel'
+        description: Price information
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.PriceModel'
+          description: Created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Bad Request
+      summary: Create a new provider price
+      tags:
+      - providers
+  /providers/{providerId}/plans/{planId}/prices/{priceId}:
+    put:
+      description: Update a provider price
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.updatePriceModel'
+        description: Price information
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.PriceModel'
+          description: Created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Bad Request
+      summary: Update a provider price
+      tags:
+      - providers
   /subscriptions:
     get:
       description: Get all subscriptions
@@ -1021,7 +1382,7 @@ paths:
         name: size
         schema:
           type: integer
-      - description: Page number
+      - description: Offset number
         in: query
         name: page
         schema:
@@ -1031,7 +1392,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.paginatedResponseModel-endpoints_subscriptionModel'
+                $ref: '#/components/schemas/endpoints.PaginatedResponseModel-endpoints_subscriptionModel'
           description: OK
         "400":
           content:
@@ -1092,13 +1453,13 @@ paths:
       summary: Create a new subscription
       tags:
       - subscription
-  /subscriptions/{id}:
+  /subscriptions/{subscriptionId}:
     delete:
       description: Delete an existing subscription
       parameters:
       - description: Subscription ID
         in: path
-        name: id
+        name: subscriptionId
         required: true
         schema:
           type: string
@@ -1119,7 +1480,7 @@ paths:
       parameters:
       - description: Subscription ID
         in: path
-        name: id
+        name: subscriptionId
         required: true
         schema:
           type: string
@@ -1150,7 +1511,7 @@ paths:
       parameters:
       - description: Subscription ID
         in: path
-        name: id
+        name: subscriptionId
         required: true
         schema:
           type: string
@@ -1175,116 +1536,6 @@ paths:
                 $ref: '#/components/schemas/endpoints.httpError'
           description: Bad Request
       summary: Update an existing subscription
-      tags:
-      - subscription
-  /subscriptions/{id}/payments/{paymentId}:
-    delete:
-      description: Delete a subscription payment
-      parameters:
-      - description: Subscription ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-      - description: Payment ID
-        in: path
-        name: paymentId
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.httpError'
-          description: Bad Request
-      summary: Delete a subscription payment
-      tags:
-      - subscription
-    put:
-      description: Update payment details for a specific subscription
-      parameters:
-      - description: Subscription ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-      - description: Payment ID
-        in: path
-        name: paymentId
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/endpoints.updatePaymentModel'
-        description: Payment details
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.subscriptionModel'
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.httpError'
-          description: Bad Request
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.httpError'
-          description: Not Found
-      summary: Update subscription payment
-      tags:
-      - subscription
-  /subscriptions/{subscription_id}/payments:
-    post:
-      description: Create a new subscription payment
-      parameters:
-      - description: Subscription ID
-        in: path
-        name: subscription_id
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/endpoints.createSubscriptionPaymentModel'
-        description: Payment data
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.subscriptionModel'
-          description: Created
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.httpError'
-          description: Bad Request
-      summary: Create a new subscription payment
       tags:
       - subscription
 servers:

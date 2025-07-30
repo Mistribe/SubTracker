@@ -20,8 +20,8 @@ type SubscriptionDeleteEndpoint struct {
 //	@Description	Delete an existing subscription
 //	@Tags			subscription
 //	@Param			subscriptionId	path	string	true	"Subscription ID"
-//	@Success		204	"No Content"
-//	@Failure		400	{object}	httpError
+//	@Success		204				"No Content"
+//	@Failure		400				{object}	httpError
 //	@Router			/subscriptions/{subscriptionId} [delete]
 func (s SubscriptionDeleteEndpoint) Handle(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("subscriptionId"))

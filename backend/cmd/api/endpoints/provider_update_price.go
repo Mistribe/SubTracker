@@ -46,15 +46,15 @@ func (m updatePriceModel) Command(providerId, planId, priceId uuid.UUID) (comman
 
 // Handle godoc
 //
-// @Summary Update a provider price
-// @Description Update a provider price
-// @Tags providers
-// @Accept json
-// @Produce json
-// @Param price body updatePriceModel true "Price information"
-// @Success 201 {object} priceModel
-// @Failure 400 {object} httpError
-// @Router /providers/{providerId}/plans/{planId}/prices/{priceId} [put]
+//	@Summary		Update a provider price
+//	@Description	Update a provider price
+//	@Tags			providers
+//	@Accept			json
+//	@Produce		json
+//	@Param			price	body		updatePriceModel	true	"Price information"
+//	@Success		201		{object}	PriceModel
+//	@Failure		400		{object}	httpError
+//	@Router			/providers/{providerId}/plans/{planId}/prices/{priceId} [put]
 func (e ProviderPriceUpdateEndpoint) Handle(c *gin.Context) {
 	var model updatePriceModel
 	if err := c.ShouldBindJSON(&model); err != nil {

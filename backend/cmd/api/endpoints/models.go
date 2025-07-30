@@ -8,7 +8,7 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
-type ownerModel struct {
+type OwnerModel struct {
 	Type     string  `json:"type" binding:"required"`
 	FamilyId *string `json:"family_id,omitempty"`
 	UserId   *string `json:"userId,omitempty"`
@@ -43,8 +43,8 @@ func (m editableOwnerModel) Owner(userId string) (user.Owner, error) {
 	return nil, errors.New("unknown owner type")
 }
 
-func newOwnerModel(source user.Owner) ownerModel {
-	model := ownerModel{
+func newOwnerModel(source user.Owner) OwnerModel {
+	model := OwnerModel{
 		Type: source.Type().String(),
 		Etag: source.ETag(),
 	}

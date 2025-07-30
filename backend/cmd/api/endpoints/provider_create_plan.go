@@ -48,15 +48,15 @@ func (m createPlanModel) Command(providerId uuid.UUID) (command.CreatePlanComman
 
 // Handle godoc
 //
-// @Summary Create a new provider plan
-// @Description Create a new plan for a provider
-// @Tags providers
-// @Accept json
-// @Produce json
-// @Param price body createPlanModel true "Plan information"
-// @Success 201 {object} planModel
-// @Failure 400 {object} httpError
-// @Router /providers/{providerId}/plans [post]
+//	@Summary		Create a new provider plan
+//	@Description	Create a new plan for a provider
+//	@Tags			providers
+//	@Accept			json
+//	@Produce		json
+//	@Param			price	body		createPlanModel	true	"Plan information"
+//	@Success		201		{object}	PlanModel
+//	@Failure		400		{object}	httpError
+//	@Router			/providers/{providerId}/plans [post]
 func (e ProviderPlanCreateEndpoint) Handle(c *gin.Context) {
     var model createPlanModel
     if err := c.ShouldBindJSON(&model); err != nil {

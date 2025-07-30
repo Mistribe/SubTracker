@@ -15,15 +15,15 @@ type SubscriptionGetEndpoint struct {
 }
 
 // Handle godoc
-// @Summary		Get subscription by ID
-// @Description	Get subscription by ID
-// @Tags			subscription
-// @Produce		json
-// @Param			subscriptionId	path		string	true	"Subscription ID"
-// @Success		200	{object}	subscriptionModel
-// @Failure		400	{object}	httpError
-// @Failure		404	{object}	httpError
-// @Router			/subscriptions/{subscriptionId} [get]
+//	@Summary		Get subscription by ID
+//	@Description	Get subscription by ID
+//	@Tags			subscription
+//	@Produce		json
+//	@Param			subscriptionId	path		string	true	"Subscription ID"
+//	@Success		200				{object}	subscriptionModel
+//	@Failure		400				{object}	httpError
+//	@Failure		404				{object}	httpError
+//	@Router			/subscriptions/{subscriptionId} [get]
 func (e SubscriptionGetEndpoint) Handle(c *gin.Context) {
 	id, err := paramAsUuid(c, "subscriptionId")
 	if err != nil {

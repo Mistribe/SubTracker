@@ -54,7 +54,7 @@ type labelModel struct {
 	Id        string     `json:"id" binding:"required"`
 	Name      string     `json:"name" binding:"required"`
 	Color     string     `json:"color" binding:"required"`
-	Owner     ownerModel `json:"owner" binding:"required"`
+	Owner     OwnerModel `json:"owner" binding:"required"`
 	CreatedAt time.Time  `json:"created_at" binding:"required" format:"date-time"`
 	UpdatedAt time.Time  `json:"updated_at" binding:"required" format:"date-time"`
 	Etag      string     `json:"etag" binding:"required"`

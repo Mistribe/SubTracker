@@ -129,7 +129,7 @@ func (m updateSubscriptionModel) Command(userId string, id uuid.UUID) (command.U
 //	@Tags			subscription
 //	@Accept			json
 //	@Produce		json
-//	@Param			subscriptionId				path		string					true	"Subscription ID"
+//	@Param			subscriptionId	path		string					true	"Subscription ID"
 //	@Param			subscription	body		updateSubscriptionModel	true	"Subscription data"
 //	@Success		200				{object}	subscriptionModel
 //	@Failure		400				{object}	httpError

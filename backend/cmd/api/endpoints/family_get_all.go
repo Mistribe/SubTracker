@@ -24,7 +24,7 @@ type FamilyGetAllEndpoint struct {
 // @Produce		json
 // @Param			size	query		integer	false	"Number of items per page"
 // @Param			page	query		integer	false	"Offset number"
-// @Success		200		{object}	paginatedResponseModel[familyModel]
+// @Success		200		{object}	PaginatedResponseModel[familyModel]
 // @Failure		400		{object}	httpError
 // @Router			/families [get]
 func (f FamilyGetAllEndpoint) Handle(c *gin.Context) {

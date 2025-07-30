@@ -21,15 +21,15 @@ func NewProviderGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, cor
 
 // Handle godoc
 //
-// @Summary Get all providers
-// @Description Returns a paginated list of providers
-// @Tags providers
-// @Accept json
-// @Produce json
-// @Param page query int false "Page number" default(1)
-// @Param size query int false "Items per page" default(10)
-// @Success 200 {object} PaginatedResponseModel[ProviderModel]
-// @Router /api/v1/providers [get]
+//	@Summary		Get all providers
+//	@Description	Returns a paginated list of providers
+//	@Tags			providers
+//	@Accept			json
+//	@Produce		json
+//	@Param			page	query		int	false	"Page number"		default(1)
+//	@Param			size	query		int	false	"Items per page"	default(10)
+//	@Success		200		{object}	PaginatedResponseModel[ProviderModel]
+//	@Router			/api/v1/providers [get]
 func (e ProviderGetAllEndpoint) Handle(c *gin.Context) {
 	size, err := strconv.Atoi(c.DefaultQuery("size", "10"))
 	if err != nil {

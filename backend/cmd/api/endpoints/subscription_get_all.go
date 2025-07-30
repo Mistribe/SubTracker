@@ -27,7 +27,7 @@ func NewSubscriptionGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery,
 //	@Produce		json
 //	@Param			size	query		integer	false	"Number of items per page"
 //	@Param			page	query		integer	false	"Offset number"
-//	@Success		200		{object}	paginatedResponseModel[subscriptionModel]
+//	@Success		200		{object}	PaginatedResponseModel[subscriptionModel]
 //	@Failure		400		{object}	httpError
 //	@Router			/subscriptions [get]
 func (s SubscriptionGetAllEndpoint) Handle(c *gin.Context) {

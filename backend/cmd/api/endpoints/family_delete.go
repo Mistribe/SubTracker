@@ -24,9 +24,9 @@ func NewFamilyDeleteEndpoint(handler core.CommandHandler[command.DeleteFamilyCom
 //	@Description	Delete family by ID
 //	@Tags			family
 //	@Param			familyId	path	string	true	"Family ID"
-//	@Success		204	"No Content"
-//	@Failure		400	{object}	httpError
-//	@Failure		404	{object}	httpError
+//	@Success		204			"No Content"
+//	@Failure		400			{object}	httpError
+//	@Failure		404			{object}	httpError
 //	@Router			/families/{familyId} [delete]
 func (e FamilyDeleteEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("familyId")

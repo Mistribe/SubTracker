@@ -64,7 +64,7 @@ func NewProviderEndpointGroup(
 	}
 }
 
-type priceModel struct {
+type PriceModel struct {
 	Id        string     `json:"id" binding:"required"`
 	Currency  string     `json:"currency" binding:"required"`
 	StartDate time.Time  `json:"start_date" binding:"required" format:"date-time"`
@@ -75,17 +75,17 @@ type priceModel struct {
 	Etag      string     `json:"etag" binding:"required"`
 }
 
-type planModel struct {
+type PlanModel struct {
 	Id          string       `json:"id" binding:"required"`
 	Name        string       `json:"name" binding:"required"`
 	Description *string      `json:"description,omitempty"`
-	Prices      []priceModel `json:"prices" binding:"required"`
+	Prices      []PriceModel `json:"prices" binding:"required"`
 	CreatedAt   time.Time    `json:"created_at" binding:"required" format:"date-time"`
 	UpdatedAt   time.Time    `json:"updated_at" binding:"required" format:"date-time"`
 	Etag        string       `json:"etag" binding:"required"`
 }
 
-type providerModel struct {
+type ProviderModel struct {
 	Id             string      `json:"id" binding:"required"`
 	Name           string      `json:"name" binding:"required"`
 	Description    *string     `json:"description,omitempty"`
@@ -93,15 +93,15 @@ type providerModel struct {
 	Url            *string     `json:"url,omitempty"`
 	PricingPageUrl *string     `json:"pricing_page_url,omitempty"`
 	Labels         []string    `json:"labels" binding:"required"`
-	Plans          []planModel `json:"plans" binding:"required"`
-	Owner          ownerModel  `json:"owner" binding:"required"`
+	Plans          []PlanModel `json:"plans" binding:"required"`
+	Owner          OwnerModel  `json:"owner" binding:"required"`
 	CreatedAt      time.Time   `json:"created_at" binding:"required" format:"date-time"`
 	UpdatedAt      time.Time   `json:"updated_at" binding:"required" format:"date-time"`
 	Etag           string      `json:"etag" binding:"required"`
 }
 
-func newProviderModel(source provider.Provider) providerModel {
-	return providerModel{
+func newProviderModel(source provider.Provider) ProviderModel {
+	return ProviderModel{
 		Id:             source.Id().String(),
 		Name:           source.Name(),
 		Description:    source.Description(),
@@ -117,8 +117,8 @@ func newProviderModel(source provider.Provider) providerModel {
 	}
 }
 
-func newPlanModel(source provider.Plan) planModel {
-	return planModel{
+func newPlanModel(source provider.Plan) PlanModel {
+	return PlanModel{
 		Id:          source.Id().String(),
 		Name:        source.Name(),
 		Description: source.Description(),
@@ -129,8 +129,8 @@ func newPlanModel(source provider.Plan) planModel {
 	}
 }
 
-func newPriceModel(source provider.Price) priceModel {
-	return priceModel{
+func newPriceModel(source provider.Price) PriceModel {
+	return PriceModel{
 		Id:        source.Id().String(),
 		Currency:  source.Currency().String(),
 		StartDate: source.StartDate(),

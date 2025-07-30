@@ -70,15 +70,15 @@ func (m createProviderModel) Command(userId string) (command.CreateProviderComma
 
 // Handle godoc
 //
-// @Summary Create a new provider
-// @Description Create a new provider with plans and prices
-// @Tags providers
-// @Accept json
-// @Produce json
-// @Param provider body createProviderModel true "Provider information"
-// @Success 201 {object} providerModel
-// @Failure 400 {object} httpError
-// @Router /providers [post]
+//	@Summary		Create a new provider
+//	@Description	Create a new provider with plans and prices
+//	@Tags			providers
+//	@Accept			json
+//	@Produce		json
+//	@Param			provider	body		createProviderModel	true	"Provider information"
+//	@Success		201			{object}	ProviderModel
+//	@Failure		400			{object}	httpError
+//	@Router			/providers [post]
 func (e ProviderCreateEndpoint) Handle(c *gin.Context) {
 	var model createProviderModel
 	if err := c.ShouldBindJSON(&model); err != nil {

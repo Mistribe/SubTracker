@@ -21,7 +21,7 @@ func NewProviderPriceCreateEndpoint(handler core.CommandHandler[command.CreatePr
     return &ProviderPriceCreateEndpoint{handler: handler}
 }
 
-// @Description Price information for a plan
+//	@Description	Price information for a plan
 type createPriceModel struct {
     Id        *string    `json:"id,omitempty"`
     Currency  string     `json:"currency" binding:"required"`
@@ -59,15 +59,15 @@ func (m createPriceModel) Command(providerId, planId uuid.UUID) (command.CreateP
 
 // Handle godoc
 //
-// @Summary Create a new provider price
-// @Description Create a new price for a provider plan
-// @Tags providers
-// @Accept json
-// @Produce json
-// @Param price body createPriceModel true "Price information"
-// @Success 201 {object} priceModel
-// @Failure 400 {object} httpError
-// @Router /providers/{providerId}/plans/{planId}/prices [post]
+//	@Summary		Create a new provider price
+//	@Description	Create a new price for a provider plan
+//	@Tags			providers
+//	@Accept			json
+//	@Produce		json
+//	@Param			price	body		createPriceModel	true	"Price information"
+//	@Success		201		{object}	PriceModel
+//	@Failure		400		{object}	httpError
+//	@Router			/providers/{providerId}/plans/{planId}/prices [post]
 func (e ProviderPriceCreateEndpoint) Handle(c *gin.Context) {
     var model createPriceModel
     if err := c.ShouldBindJSON(&model); err != nil {

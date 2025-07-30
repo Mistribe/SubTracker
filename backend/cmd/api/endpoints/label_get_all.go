@@ -28,7 +28,7 @@ func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, core.P
 //	@Param			with_default	query		boolean	false	"Include default labels"
 //	@Param			size			query		integer	false	"Number of items per page"
 //	@Param			page			query		integer	false	"Offset number"
-//	@Success		200				{object}	paginatedResponseModel[labelModel]
+//	@Success		200				{object}	PaginatedResponseModel[labelModel]
 //	@Failure		400				{object}	httpError
 //	@Router			/labels [get]
 func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
