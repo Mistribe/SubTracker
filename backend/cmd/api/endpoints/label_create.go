@@ -22,7 +22,7 @@ type createLabelModel struct {
 	Id        *string            `json:"id,omitempty"`
 	Name      string             `json:"name" binding:"required"`
 	Color     string             `json:"color" binding:"required"`
-	Owner     editableOwnerModel `json:"owner" binding:"required"`
+	Owner     EditableOwnerModel `json:"owner" binding:"required"`
 	CreatedAt *time.Time         `json:"created_at,omitempty" format:"date-time"`
 }
 

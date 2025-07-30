@@ -1,7 +1,68 @@
 components:
   schemas:
+    endpoints.CreateSubscriptionModel:
+      properties:
+        created_at:
+          type: string
+        custom_recurrency:
+          type: integer
+        end_date:
+          format: date-time
+          type: string
+        free_trial_days:
+          type: integer
+        friendly_name:
+          type: string
+        id:
+          type: string
+        owner:
+          $ref: '#/components/schemas/endpoints.EditableOwnerModel'
+        payer:
+          $ref: '#/components/schemas/endpoints.SubscriptionPayerModel'
+        plan_id:
+          type: string
+        price_id:
+          type: string
+        recurrency:
+          type: string
+        service_provider_id:
+          type: string
+        service_users:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        start_date:
+          format: date-time
+          type: string
+      required:
+      - owner
+      - plan_id
+      - price_id
+      - recurrency
+      - service_provider_id
+      - start_date
+      type: object
+    endpoints.EditableOwnerModel:
+      properties:
+        family_id:
+          description: '@Description Family ID when an ownership type is family (required
+            for family ownership)'
+          type: string
+        type:
+          description: '@Description Type of ownership (personal, family or system)'
+          enum:
+          - personal
+          - family
+          - system
+          example: personal
+          type: string
+      required:
+      - type
+      type: object
     endpoints.OwnerModel:
-      description: Owner object that can represent either personal or family ownership
+      description: '@Description Ownership information specifying whether this subscription
+        belongs to a user or family'
       properties:
         etag:
           description: '@Description Entity tag for optimistic concurrency control'
@@ -13,7 +74,7 @@ components:
           example: 123e4567-e89b-12d3-a456-426614174000
           type: string
         type:
-          description: '@Description Type of ownership (personal or family)'
+          description: '@Description Type of ownership (personal, family or system)'
           enum:
           - personal
           - family
@@ -35,6 +96,25 @@ components:
           description: Data contains the list of items for the current page
           items:
             $ref: '#/components/schemas/endpoints.ProviderModel'
+          type: array
+          uniqueItems: false
+        length:
+          description: Length represents the number of items in the current page
+          type: integer
+        total:
+          description: Total represents the total number of items available
+          type: integer
+      required:
+      - data
+      - length
+      - total
+      type: object
+    endpoints.PaginatedResponseModel-endpoints_SubscriptionModel:
+      properties:
+        data:
+          description: Data contains the list of items for the current page
+          items:
+            $ref: '#/components/schemas/endpoints.SubscriptionModel'
           type: array
           uniqueItems: false
         length:
@@ -86,44 +166,90 @@ components:
       - length
       - total
       type: object
-    endpoints.PaginatedResponseModel-endpoints_subscriptionModel:
+    endpoints.PatchSubscriptionModel:
       properties:
-        data:
-          description: Data contains the list of items for the current page
-          items:
-            $ref: '#/components/schemas/endpoints.subscriptionModel'
-          type: array
-          uniqueItems: false
-        length:
-          description: Length represents the number of items in the current page
+        custom_recurrency:
           type: integer
-        total:
-          description: Total represents the total number of items available
-          type: integer
-      required:
-      - data
-      - length
-      - total
-      type: object
-    endpoints.PlanModel:
-      properties:
-        created_at:
+        end_date:
           format: date-time
           type: string
-        description:
-          type: string
-        etag:
+        free_trial_days:
+          type: integer
+        friendly_name:
           type: string
         id:
           type: string
+        owner:
+          $ref: '#/components/schemas/endpoints.EditableOwnerModel'
+        payer:
+          $ref: '#/components/schemas/endpoints.SubscriptionPayerModel'
+        plan_id:
+          type: string
+        price_id:
+          type: string
+        recurrency:
+          type: string
+        service_provider_id:
+          type: string
+        service_users:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        start_date:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+      - owner
+      - plan_id
+      - price_id
+      - recurrency
+      - service_provider_id
+      - start_date
+      type: object
+    endpoints.PlanModel:
+      description: Plan object defining a specific subscription tier with associated
+        pricing options
+      properties:
+        created_at:
+          description: '@Description ISO 8601 timestamp when the plan was originally
+            created'
+          example: "2023-01-15T10:30:00Z"
+          format: date-time
+          type: string
+        description:
+          description: '@Description Optional detailed description of the plan features
+            and benefits'
+          example: Access to all premium features with unlimited usage
+          type: string
+        etag:
+          description: '@Description Entity tag used for optimistic concurrency control
+            to prevent conflicting updates'
+          example: W/"123456789"
+          type: string
+        id:
+          description: '@Description Unique identifier for the plan (UUID format)'
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
         name:
+          description: '@Description Display name of the subscription plan'
+          example: Premium Plan
+          maxLength: 255
+          minLength: 1
           type: string
         prices:
+          description: '@Description List of pricing options available for this plan
+            (different currencies, time periods, etc.)'
           items:
             $ref: '#/components/schemas/endpoints.PriceModel'
           type: array
           uniqueItems: false
         updated_at:
+          description: '@Description ISO 8601 timestamp when the plan was last modified'
+          example: "2023-01-20T14:45:30Z"
           format: date-time
           type: string
       required:
@@ -135,25 +261,50 @@ components:
       - updated_at
       type: object
     endpoints.PriceModel:
+      description: Price object defining the cost of a subscription plan with currency
+        and time validity
       properties:
         amount:
+          description: '@Description Price amount in the specified currency (supports
+            decimal values)'
+          example: 9.99
+          minimum: 0
           type: number
         created_at:
+          description: '@Description ISO 8601 timestamp when the price was originally
+            created'
+          example: "2023-01-15T10:30:00Z"
           format: date-time
           type: string
         currency:
+          description: '@Description ISO 4217 currency code for the price'
+          example: USD
+          maxLength: 3
+          minLength: 3
           type: string
         end_date:
+          description: '@Description ISO 8601 timestamp when this price expires (null
+            means indefinite)'
+          example: "2023-12-31T23:59:59Z"
           format: date-time
           type: string
         etag:
+          description: '@Description Entity tag used for optimistic concurrency control
+            to prevent conflicting updates'
+          example: W/"123456789"
           type: string
         id:
+          description: '@Description Unique identifier for the price (UUID format)'
+          example: 123e4567-e89b-12d3-a456-426614174000
           type: string
         start_date:
+          description: '@Description ISO 8601 timestamp when this price becomes effective'
+          example: "2023-01-01T00:00:00Z"
           format: date-time
           type: string
         updated_at:
+          description: '@Description ISO 8601 timestamp when the price was last modified'
+          example: "2023-01-20T14:45:30Z"
           format: date-time
           type: string
       required:
@@ -166,38 +317,72 @@ components:
       - updated_at
       type: object
     endpoints.ProviderModel:
+      description: Provider object containing information about a subscription service
+        provider and their available plans
       properties:
         created_at:
+          description: '@Description ISO 8601 timestamp when the provider was originally
+            created'
+          example: "2023-01-15T10:30:00Z"
           format: date-time
           type: string
         description:
+          description: '@Description Optional detailed description of the provider
+            and their services'
+          example: Streaming service offering movies and TV shows
           type: string
         etag:
+          description: '@Description Entity tag used for optimistic concurrency control
+            to prevent conflicting updates'
+          example: W/"123456789"
           type: string
         icon_url:
+          description: '@Description Optional URL to the provider''s icon or logo
+            image'
+          example: https://example.com/netflix-icon.png
           type: string
         id:
+          description: '@Description Unique identifier for the provider (UUID format)'
+          example: 123e4567-e89b-12d3-a456-426614174000
           type: string
         labels:
+          description: '@Description List of label IDs associated with this provider
+            for categorization'
+          example:
+          - 123e4567-e89b-12d3-a456-426614174001
+          - 123e4567-e89b-12d3-a456-426614174002
           items:
             type: string
           type: array
           uniqueItems: false
         name:
+          description: '@Description Display name of the service provider'
+          example: Netflix
+          maxLength: 255
+          minLength: 1
           type: string
         owner:
           $ref: '#/components/schemas/endpoints.OwnerModel'
         plans:
+          description: '@Description List of subscription plans offered by this provider'
           items:
             $ref: '#/components/schemas/endpoints.PlanModel'
           type: array
           uniqueItems: false
         pricing_page_url:
+          description: '@Description Optional URL to the provider''s pricing information
+            page'
+          example: https://netflix.com/pricing
           type: string
         updated_at:
+          description: '@Description ISO 8601 timestamp when the provider was last
+            modified'
+          example: "2023-01-20T14:45:30Z"
           format: date-time
           type: string
         url:
+          description: '@Description Optional URL to the provider''s main website'
+          example: https://netflix.com
           type: string
       required:
       - created_at
@@ -208,6 +393,186 @@ components:
       - owner
       - plans
       - updated_at
+      type: object
+    endpoints.SubscriptionModel:
+      description: Subscription object containing all information about an active
+        subscription including billing and usage details
+      properties:
+        created_at:
+          description: '@Description ISO 8601 timestamp when the subscription was
+            originally created'
+          example: "2023-01-15T10:30:00Z"
+          format: date-time
+          type: string
+        custom_recurrency:
+          description: '@Description Custom recurrency interval in days (required
+            when recurrency is custom)'
+          example: 90
+          maximum: 3650
+          minimum: 1
+          type: integer
+        end_date:
+          description: '@Description ISO 8601 timestamp when the subscription expires
+            (null for ongoing subscriptions)'
+          example: "2024-01-01T00:00:00Z"
+          format: date-time
+          type: string
+        etag:
+          description: '@Description Entity tag used for optimistic concurrency control
+            to prevent conflicting updates'
+          example: W/"123456789"
+          type: string
+        free_trial_days:
+          description: '@Description Number of free trial days remaining (null if
+            no trial or trial expired)'
+          example: 7
+          maximum: 365
+          minimum: 0
+          type: integer
+        friendly_name:
+          description: '@Description Optional custom name for easy identification
+            of the subscription'
+          example: Netflix Family Account
+          maxLength: 255
+          type: string
+        id:
+          description: '@Description Unique identifier for the subscription (UUID
+            format)'
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        owner:
+          $ref: '#/components/schemas/endpoints.OwnerModel'
+        payer:
+          $ref: '#/components/schemas/endpoints.SubscriptionPayerModel'
+        plan_id:
+          description: '@Description ID of the specific plan being subscribed to'
+          example: 123e4567-e89b-12d3-a456-426614174003
+          type: string
+        price_id:
+          description: '@Description ID of the pricing tier for this subscription'
+          example: 123e4567-e89b-12d3-a456-426614174004
+          type: string
+        recurrency:
+          description: '@Description Billing recurrency pattern (monthly, yearly,
+            custom, etc.)'
+          enum:
+          - daily
+          - weekly
+          - monthly
+          - quarterly
+          - yearly
+          - custom
+          example: monthly
+          type: string
+        service_provider_id:
+          description: '@Description ID of the service provider offering this subscription'
+          example: 123e4567-e89b-12d3-a456-426614174002
+          type: string
+        service_users:
+          description: '@Description List of family member IDs who use this service
+            (for shared subscriptions)'
+          example:
+          - 123e4567-e89b-12d3-a456-426614174005
+          - 123e4567-e89b-12d3-a456-426614174006
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        start_date:
+          description: '@Description ISO 8601 timestamp when the subscription becomes
+            active'
+          example: "2023-01-01T00:00:00Z"
+          format: date-time
+          type: string
+        updated_at:
+          description: '@Description ISO 8601 timestamp when the subscription was
+            last modified'
+          example: "2023-01-20T14:45:30Z"
+          format: date-time
+          type: string
+      required:
+      - created_at
+      - etag
+      - id
+      - owner
+      - plan_id
+      - price_id
+      - recurrency
+      - service_provider_id
+      - start_date
+      - updated_at
+      type: object
+    endpoints.SubscriptionPayerModel:
+      description: '@Description Information about who pays for this subscription
+        within the family'
+      properties:
+        etag:
+          description: '@Description Entity tag used for optimistic concurrency control
+            to prevent conflicting updates'
+          example: W/"123456789"
+          type: string
+        family_id:
+          description: '@Description ID of the family associated with this payer'
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        memberId:
+          description: '@Description ID of the specific family member who pays (required
+            when type is family_member)'
+          example: 123e4567-e89b-12d3-a456-426614174001
+          type: string
+        type:
+          description: '@Description Type of payer (family or family member)'
+          enum:
+          - family
+          - family_member
+          example: family_member
+          type: string
+      required:
+      - etag
+      - family_id
+      - type
+      type: object
+    endpoints.UpdateSubscriptionModel:
+      properties:
+        custom_recurrency:
+          type: integer
+        end_date:
+          format: date-time
+          type: string
+        free_trial_days:
+          type: integer
+        friendly_name:
+          type: string
+        owner:
+          $ref: '#/components/schemas/endpoints.EditableOwnerModel'
+        payer:
+          $ref: '#/components/schemas/endpoints.SubscriptionPayerModel'
+        plan_id:
+          type: string
+        price_id:
+          type: string
+        recurrency:
+          type: string
+        service_provider_id:
+          type: string
+        service_users:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        start_date:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+      - owner
+      - plan_id
+      - price_id
+      - recurrency
+      - service_provider_id
+      - start_date
       type: object
     endpoints.createFamilyMemberModel:
       properties:
@@ -251,7 +616,7 @@ components:
         name:
           type: string
         owner:
-          $ref: '#/components/schemas/endpoints.editableOwnerModel'
+          $ref: '#/components/schemas/endpoints.EditableOwnerModel'
       required:
       - color
       - name
@@ -313,7 +678,7 @@ components:
         name:
           type: string
         owner:
-          $ref: '#/components/schemas/endpoints.editableOwnerModel'
+          $ref: '#/components/schemas/endpoints.EditableOwnerModel'
         pricing_page_url:
           type: string
         url:
@@ -322,70 +687,6 @@ components:
       - labels
       - name
       - owner
-      type: object
-    endpoints.createSubscriptionModel:
-      properties:
-        created_at:
-          type: string
-        custom_recurrency:
-          type: integer
-        end_date:
-          format: date-time
-          type: string
-        free_trial_days:
-          type: integer
-        friendly_name:
-          type: string
-        id:
-          type: string
-        owner:
-          $ref: '#/components/schemas/endpoints.editableOwnerModel'
-        payer:
-          $ref: '#/components/schemas/endpoints.editableSubscriptionPayerModel'
-        plan_id:
-          type: string
-        price_id:
-          type: string
-        recurrency:
-          type: string
-        service_provider_id:
-          type: string
-        service_users:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        start_date:
-          format: date-time
-          type: string
-      required:
-      - owner
-      - plan_id
-      - price_id
-      - recurrency
-      - service_provider_id
-      - start_date
-      type: object
-    endpoints.editableOwnerModel:
-      properties:
-        family_id:
-          type: string
-        type:
-          type: string
-      required:
-      - type
-      type: object
-    endpoints.editableSubscriptionPayerModel:
-      properties:
-        family_id:
-          type: string
-        memberId:
-          type: string
-        type:
-          type: string
-      required:
-      - family_id
-      - type
       type: object
     endpoints.familyMemberModel:
       description: Family member object containing member information
@@ -432,43 +733,47 @@ components:
       description: Family object containing family information and members
       properties:
         created_at:
-          description: Timestamp when the family was created
+          description: '@Description ISO 8601 timestamp indicating when the family
+            was originally created'
+          example: "2023-01-15T10:30:00Z"
           format: date-time
           type: string
         etag:
-          description: Entity tag for optimistic concurrency control
+          description: '@Description Entity tag used for optimistic concurrency control
+            to prevent conflicting updates'
           example: W/"123456789"
           type: string
-        have_joint_account:
-          description: Whether the family has a joint account
-          example: false
-          type: boolean
         id:
-          description: Unique identifier for the family
+          description: '@Description Unique identifier for the family (UUID format)'
           example: 123e4567-e89b-12d3-a456-426614174000
           type: string
         is_owner:
-          description: Whether the current user is the owner of this family
+          description: '@Description Indicates whether the current authenticated user
+            is the owner of this family'
           example: true
           type: boolean
         members:
-          description: List of family members
+          description: '@Description Complete list of all members belonging to this
+            family'
           items:
             $ref: '#/components/schemas/endpoints.familyMemberModel'
           type: array
           uniqueItems: false
         name:
-          description: Name of the family
+          description: '@Description Display name of the family'
           example: Smith Family
+          maxLength: 255
+          minLength: 1
           type: string
         updated_at:
-          description: Timestamp when the family was last updated
+          description: '@Description ISO 8601 timestamp indicating when the family
+            information was last modified'
+          example: "2023-01-20T14:45:30Z"
           format: date-time
           type: string
       required:
       - created_at
       - etag
-      - have_joint_account
       - id
       - is_owner
       - members
@@ -483,21 +788,42 @@ components:
       - message
       type: object
     endpoints.labelModel:
+      description: Label object used for categorizing and organizing subscriptions
+        with customizable colors
       properties:
         color:
+          description: '@Description Hexadecimal color code for visual representation
+            of the label'
+          example: '#FF5733'
+          pattern: ^#[0-9A-Fa-f]{6}$
           type: string
         created_at:
+          description: '@Description ISO 8601 timestamp indicating when the label
+            was originally created'
+          example: "2023-01-15T10:30:00Z"
           format: date-time
           type: string
         etag:
+          description: '@Description Entity tag used for optimistic concurrency control
+            to prevent conflicting updates'
+          example: W/"123456789"
           type: string
         id:
+          description: '@Description Unique identifier for the label (UUID format)'
+          example: 123e4567-e89b-12d3-a456-426614174000
           type: string
         name:
+          description: '@Description Display name of the label'
+          example: Entertainment
+          maxLength: 100
+          minLength: 1
           type: string
         owner:
           $ref: '#/components/schemas/endpoints.OwnerModel'
         updated_at:
+          description: '@Description ISO 8601 timestamp indicating when the label
+            was last modified'
+          example: "2023-01-20T14:45:30Z"
           format: date-time
           type: string
       required:
@@ -551,118 +877,6 @@ components:
       required:
       - id
       - name
-      type: object
-    endpoints.patchSubscriptionModel:
-      properties:
-        custom_recurrency:
-          type: integer
-        end_date:
-          format: date-time
-          type: string
-        free_trial_days:
-          type: integer
-        friendly_name:
-          type: string
-        id:
-          type: string
-        owner:
-          $ref: '#/components/schemas/endpoints.editableOwnerModel'
-        payer:
-          $ref: '#/components/schemas/endpoints.editableSubscriptionPayerModel'
-        plan_id:
-          type: string
-        price_id:
-          type: string
-        recurrency:
-          type: string
-        service_provider_id:
-          type: string
-        service_users:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        start_date:
-          format: date-time
-          type: string
-        updated_at:
-          format: date-time
-          type: string
-      required:
-      - owner
-      - plan_id
-      - price_id
-      - recurrency
-      - service_provider_id
-      - start_date
-      type: object
-    endpoints.subscriptionModel:
-      properties:
-        created_at:
-          format: date-time
-          type: string
-        custom_recurrency:
-          type: integer
-        end_date:
-          format: date-time
-          type: string
-        etag:
-          type: string
-        free_trial_days:
-          type: integer
-        friendly_name:
-          type: string
-        id:
-          type: string
-        owner:
-          $ref: '#/components/schemas/endpoints.OwnerModel'
-        payer:
-          $ref: '#/components/schemas/endpoints.subscriptionPayerModel'
-        plan_id:
-          type: string
-        price_id:
-          type: string
-        recurrency:
-          type: string
-        service_provider_id:
-          type: string
-        service_users:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        start_date:
-          format: date-time
-          type: string
-        updated_at:
-          format: date-time
-          type: string
-      required:
-      - created_at
-      - etag
-      - id
-      - owner
-      - plan_id
-      - price_id
-      - recurrency
-      - service_provider_id
-      - start_date
-      - updated_at
-      type: object
-    endpoints.subscriptionPayerModel:
-      properties:
-        etag:
-          type: string
-        family_id:
-          type: string
-        memberId:
-          type: string
-        type:
-          type: string
-      required:
-      - etag
-      - family_id
-      - type
       type: object
     endpoints.updateFamilyMemberModel:
       properties:
@@ -727,48 +941,6 @@ components:
       required:
       - amount
       - currency
-      - start_date
-      type: object
-    endpoints.updateSubscriptionModel:
-      properties:
-        custom_recurrency:
-          type: integer
-        end_date:
-          format: date-time
-          type: string
-        free_trial_days:
-          type: integer
-        friendly_name:
-          type: string
-        owner:
-          $ref: '#/components/schemas/endpoints.editableOwnerModel'
-        payer:
-          $ref: '#/components/schemas/endpoints.editableSubscriptionPayerModel'
-        plan_id:
-          type: string
-        price_id:
-          type: string
-        recurrency:
-          type: string
-        service_provider_id:
-          type: string
-        service_users:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        start_date:
-          format: date-time
-          type: string
-        updated_at:
-          format: date-time
-          type: string
-      required:
-      - owner
-      - plan_id
-      - price_id
-      - recurrency
-      - service_provider_id
       - start_date
       type: object
 externalDocs:
@@ -1875,7 +2047,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.PaginatedResponseModel-endpoints_subscriptionModel'
+                $ref: '#/components/schemas/endpoints.PaginatedResponseModel-endpoints_SubscriptionModel'
           description: Paginated list of subscriptions
         "400":
           content:
@@ -1899,7 +2071,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/endpoints.patchSubscriptionModel'
+              $ref: '#/components/schemas/endpoints.PatchSubscriptionModel'
         description: Complete subscription data
         required: true
       responses:
@@ -1907,7 +2079,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.subscriptionModel'
+                $ref: '#/components/schemas/endpoints.SubscriptionModel'
           description: Successfully updated subscription
         "400":
           content:
@@ -1943,7 +2115,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/endpoints.createSubscriptionModel'
+              $ref: '#/components/schemas/endpoints.CreateSubscriptionModel'
         description: Subscription creation data
         required: true
       responses:
@@ -1951,7 +2123,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.subscriptionModel'
+                $ref: '#/components/schemas/endpoints.SubscriptionModel'
           description: Successfully created subscription
         "400":
           content:
@@ -2023,7 +2195,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.subscriptionModel'
+                $ref: '#/components/schemas/endpoints.SubscriptionModel'
           description: Successfully retrieved subscription
         "400":
           content:
@@ -2060,7 +2232,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/endpoints.updateSubscriptionModel'
+              $ref: '#/components/schemas/endpoints.UpdateSubscriptionModel'
         description: Updated subscription data
         required: true
       responses:
@@ -2068,7 +2240,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.subscriptionModel'
+                $ref: '#/components/schemas/endpoints.SubscriptionModel'
           description: Successfully updated subscription
         "400":
           content:

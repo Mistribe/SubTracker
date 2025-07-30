@@ -25,24 +25,24 @@ func NewSubscriptionPatchEndpoint(handler core.CommandHandler[command.PatchSubsc
 	return &SubscriptionPatchEndpoint{handler: handler}
 }
 
-type patchSubscriptionModel struct {
-	Id                *string                         `json:"id,omitempty"`
-	FriendlyName      *string                         `json:"friendly_name,omitempty"`
-	FreeTrialDays     *uint                           `json:"free_trial_days,omitempty"`
-	ServiceProviderId string                          `json:"service_provider_id" binding:"required"`
-	PlanId            string                          `json:"plan_id" binding:"required"`
-	PriceId           string                          `json:"price_id" binding:"required"`
-	ServiceUsers      []string                        `json:"service_users,omitempty"`
-	StartDate         time.Time                       `json:"start_date" binding:"required" format:"date-time"`
-	EndDate           *time.Time                      `json:"end_date,omitempty" format:"date-time"`
-	Recurrency        string                          `json:"recurrency" binding:"required"`
-	CustomRecurrency  *uint                           `json:"custom_recurrency,omitempty"`
-	Payer             *editableSubscriptionPayerModel `json:"payer,omitempty"`
-	Owner             editableOwnerModel              `json:"owner" binding:"required"`
-	UpdatedAt         *time.Time                      `json:"updated_at,omitempty" format:"date-time"`
+type PatchSubscriptionModel struct {
+	Id                *string                 `json:"id,omitempty"`
+	FriendlyName      *string                 `json:"friendly_name,omitempty"`
+	FreeTrialDays     *uint                   `json:"free_trial_days,omitempty"`
+	ServiceProviderId string                  `json:"service_provider_id" binding:"required"`
+	PlanId            string                  `json:"plan_id" binding:"required"`
+	PriceId           string                  `json:"price_id" binding:"required"`
+	ServiceUsers      []string                `json:"service_users,omitempty"`
+	StartDate         time.Time               `json:"start_date" binding:"required" format:"date-time"`
+	EndDate           *time.Time              `json:"end_date,omitempty" format:"date-time"`
+	Recurrency        string                  `json:"recurrency" binding:"required"`
+	CustomRecurrency  *uint                   `json:"custom_recurrency,omitempty"`
+	Payer             *SubscriptionPayerModel `json:"payer,omitempty"`
+	Owner             EditableOwnerModel      `json:"owner" binding:"required"`
+	UpdatedAt         *time.Time              `json:"updated_at,omitempty" format:"date-time"`
 }
 
-func (m patchSubscriptionModel) Subscription(userId string) (subscription.Subscription, error) {
+func (m PatchSubscriptionModel) Subscription(userId string) (subscription.Subscription, error) {
 	id, err := parseUuidOrNew(m.Id)
 	if err != nil {
 		return nil, err
@@ -121,7 +121,7 @@ func (m patchSubscriptionModel) Subscription(userId string) (subscription.Subscr
 	), nil
 }
 
-func (m patchSubscriptionModel) Command(userId string) (command.PatchSubscriptionCommand, error) {
+func (m PatchSubscriptionModel) Command(userId string) (command.PatchSubscriptionCommand, error) {
 	sub, err := m.Subscription(userId)
 	if err != nil {
 		return command.PatchSubscriptionCommand{}, nil
@@ -138,15 +138,15 @@ func (m patchSubscriptionModel) Command(userId string) (command.PatchSubscriptio
 //	@Tags			subscription
 //	@Accept			json
 //	@Produce		json
-//	@Param			subscription	body		patchSubscriptionModel	true	"Complete subscription data"
-//	@Success		200				{object}	subscriptionModel		"Successfully updated subscription"
+//	@Param			subscription	body		PatchSubscriptionModel	true	"Complete subscription data"
+//	@Success		200				{object}	SubscriptionModel		"Successfully updated subscription"
 //	@Failure		400				{object}	httpError				"Bad Request - Invalid input data"
 //	@Failure		401				{object}	httpError				"Unauthorized - Invalid user authentication"
 //	@Failure		404				{object}	httpError				"Subscription not found"
 //	@Failure		500				{object}	httpError				"Internal Server Error"
 //	@Router			/subscriptions [patch]
 func (e SubscriptionPatchEndpoint) Handle(c *gin.Context) {
-	var model patchSubscriptionModel
+	var model PatchSubscriptionModel
 	if err := c.ShouldBindJSON(&model); err != nil {
 		c.JSON(http.StatusBadRequest, httpError{
 			Message: err.Error(),

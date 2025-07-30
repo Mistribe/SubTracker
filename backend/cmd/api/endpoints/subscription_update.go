@@ -21,23 +21,23 @@ type SubscriptionUpdateEndpoint struct {
 	handler core.CommandHandler[command.UpdateSubscriptionCommand, subscription.Subscription]
 }
 
-type updateSubscriptionModel struct {
-	FriendlyName      *string                         `json:"friendly_name,omitempty"`
-	FreeTrialDays     *uint                           `json:"free_trial_days,omitempty"`
-	ServiceProviderId string                          `json:"service_provider_id" binding:"required"`
-	PlanId            string                          `json:"plan_id" binding:"required"`
-	PriceId           string                          `json:"price_id" binding:"required"`
-	ServiceUsers      []string                        `json:"service_users,omitempty"`
-	StartDate         time.Time                       `json:"start_date" binding:"required" format:"date-time"`
-	EndDate           *time.Time                      `json:"end_date,omitempty" format:"date-time"`
-	Recurrency        string                          `json:"recurrency" binding:"required"`
-	CustomRecurrency  *uint                           `json:"custom_recurrency,omitempty"`
-	Payer             *editableSubscriptionPayerModel `json:"payer,omitempty"`
-	Owner             editableOwnerModel              `json:"owner" binding:"required"`
-	UpdatedAt         *time.Time                      `json:"updated_at,omitempty" format:"date-time"`
+type UpdateSubscriptionModel struct {
+	FriendlyName      *string                 `json:"friendly_name,omitempty"`
+	FreeTrialDays     *uint                   `json:"free_trial_days,omitempty"`
+	ServiceProviderId string                  `json:"service_provider_id" binding:"required"`
+	PlanId            string                  `json:"plan_id" binding:"required"`
+	PriceId           string                  `json:"price_id" binding:"required"`
+	ServiceUsers      []string                `json:"service_users,omitempty"`
+	StartDate         time.Time               `json:"start_date" binding:"required" format:"date-time"`
+	EndDate           *time.Time              `json:"end_date,omitempty" format:"date-time"`
+	Recurrency        string                  `json:"recurrency" binding:"required"`
+	CustomRecurrency  *uint                   `json:"custom_recurrency,omitempty"`
+	Payer             *SubscriptionPayerModel `json:"payer,omitempty"`
+	Owner             EditableOwnerModel      `json:"owner" binding:"required"`
+	UpdatedAt         *time.Time              `json:"updated_at,omitempty" format:"date-time"`
 }
 
-func (m updateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (subscription.Subscription, error) {
+func (m UpdateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (subscription.Subscription, error) {
 	serviceProviderId, err := uuid.Parse(m.ServiceProviderId)
 	if err != nil {
 		return nil, err
@@ -112,7 +112,7 @@ func (m updateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (s
 	), nil
 }
 
-func (m updateSubscriptionModel) Command(userId string, id uuid.UUID) (command.UpdateSubscriptionCommand, error) {
+func (m UpdateSubscriptionModel) Command(userId string, id uuid.UUID) (command.UpdateSubscriptionCommand, error) {
 	sub, err := m.Subscription(userId, id)
 	if err != nil {
 		return command.UpdateSubscriptionCommand{}, err
@@ -130,8 +130,8 @@ func (m updateSubscriptionModel) Command(userId string, id uuid.UUID) (command.U
 //	@Accept			json
 //	@Produce		json
 //	@Param			subscriptionId	path		string					true	"Subscription ID (UUID format)"
-//	@Param			subscription	body		updateSubscriptionModel	true	"Updated subscription data"
-//	@Success		200				{object}	subscriptionModel		"Successfully updated subscription"
+//	@Param			subscription	body		UpdateSubscriptionModel	true	"Updated subscription data"
+//	@Success		200				{object}	SubscriptionModel		"Successfully updated subscription"
 //	@Failure		400				{object}	httpError				"Bad Request - Invalid input data or subscription ID"
 //	@Failure		401				{object}	httpError				"Unauthorized - Invalid user authentication"
 //	@Failure		404				{object}	httpError				"Subscription not found"
@@ -146,7 +146,7 @@ func (s SubscriptionUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	var model updateSubscriptionModel
+	var model UpdateSubscriptionModel
 	if err := c.ShouldBindJSON(&model); err != nil {
 		c.JSON(http.StatusBadRequest, httpError{
 			Message: err.Error(),

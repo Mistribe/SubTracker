@@ -118,7 +118,7 @@ type patchProviderModel struct {
 	PricingPageUrl *string            `json:"pricing_page_url,omitempty"`
 	Labels         []string           `json:"labels" binding:"required"`
 	Plans          []patchPlanModel   `json:"plans" binding:"required"`
-	Owner          editableOwnerModel `json:"owner" binding:"required"`
+	Owner          EditableOwnerModel `json:"owner" binding:"required"`
 	CreatedAt      *time.Time         `json:"created_at,omitempty"  format:"date-time"`
 	UpdatedAt      *time.Time         `json:"updated_at,omitempty" format:"date-time"`
 }

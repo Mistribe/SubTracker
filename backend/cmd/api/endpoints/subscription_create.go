@@ -25,24 +25,24 @@ func NewSubscriptionCreateEndpoint(handler core.CommandHandler[command.CreateSub
 	return &SubscriptionCreateEndpoint{handler: handler}
 }
 
-type createSubscriptionModel struct {
-	Id                *string                         `json:"id,omitempty"`
-	FriendlyName      *string                         `json:"friendly_name,omitempty"`
-	FreeTrialDays     *uint                           `json:"free_trial_days,omitempty"`
-	ServiceProviderId string                          `json:"service_provider_id" binding:"required"`
-	PlanId            string                          `json:"plan_id" binding:"required"`
-	PriceId           string                          `json:"price_id" binding:"required"`
-	ServiceUsers      []string                        `json:"service_users,omitempty"`
-	StartDate         time.Time                       `json:"start_date" binding:"required" format:"date-time"`
-	EndDate           *time.Time                      `json:"end_date,omitempty" format:"date-time"`
-	Recurrency        string                          `json:"recurrency" binding:"required"`
-	CustomRecurrency  *uint                           `json:"custom_recurrency,omitempty"`
-	Payer             *editableSubscriptionPayerModel `json:"payer,omitempty"`
-	Owner             editableOwnerModel              `json:"owner" binding:"required"`
-	CreatedAt         *time.Time                      `json:"created_at,omitempty"`
+type CreateSubscriptionModel struct {
+	Id                *string                 `json:"id,omitempty"`
+	FriendlyName      *string                 `json:"friendly_name,omitempty"`
+	FreeTrialDays     *uint                   `json:"free_trial_days,omitempty"`
+	ServiceProviderId string                  `json:"service_provider_id" binding:"required"`
+	PlanId            string                  `json:"plan_id" binding:"required"`
+	PriceId           string                  `json:"price_id" binding:"required"`
+	ServiceUsers      []string                `json:"service_users,omitempty"`
+	StartDate         time.Time               `json:"start_date" binding:"required" format:"date-time"`
+	EndDate           *time.Time              `json:"end_date,omitempty" format:"date-time"`
+	Recurrency        string                  `json:"recurrency" binding:"required"`
+	CustomRecurrency  *uint                   `json:"custom_recurrency,omitempty"`
+	Payer             *SubscriptionPayerModel `json:"payer,omitempty"`
+	Owner             EditableOwnerModel      `json:"owner" binding:"required"`
+	CreatedAt         *time.Time              `json:"created_at,omitempty"`
 }
 
-func (m createSubscriptionModel) Subscription(userId string) (subscription.Subscription, error) {
+func (m CreateSubscriptionModel) Subscription(userId string) (subscription.Subscription, error) {
 	id, err := parseUuidOrNew(m.Id)
 	if err != nil {
 		return nil, err
@@ -121,7 +121,7 @@ func (m createSubscriptionModel) Subscription(userId string) (subscription.Subsc
 	), nil
 }
 
-func (m createSubscriptionModel) Command(userId string) (command.CreateSubscriptionCommand, error) {
+func (m CreateSubscriptionModel) Command(userId string) (command.CreateSubscriptionCommand, error) {
 	sub, err := m.Subscription(userId)
 	if err != nil {
 		return command.CreateSubscriptionCommand{}, err
@@ -138,14 +138,14 @@ func (m createSubscriptionModel) Command(userId string) (command.CreateSubscript
 //	@Tags			subscription
 //	@Accept			json
 //	@Produce		json
-//	@Param			subscription	body		createSubscriptionModel	true	"Subscription creation data"
-//	@Success		201				{object}	subscriptionModel		"Successfully created subscription"
+//	@Param			subscription	body		CreateSubscriptionModel	true	"Subscription creation data"
+//	@Success		201				{object}	SubscriptionModel		"Successfully created subscription"
 //	@Failure		400				{object}	httpError				"Bad Request - Invalid input data"
 //	@Failure		401				{object}	httpError				"Unauthorized - Invalid user authentication"
 //	@Failure		500				{object}	httpError				"Internal Server Error"
 //	@Router			/subscriptions [post]
 func (s SubscriptionCreateEndpoint) Handle(c *gin.Context) {
-	var model createSubscriptionModel
+	var model CreateSubscriptionModel
 	if err := c.ShouldBindJSON(&model); err != nil {
 		c.JSON(http.StatusBadRequest, httpError{
 			Message: err.Error(),

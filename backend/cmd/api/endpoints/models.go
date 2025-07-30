@@ -11,7 +11,7 @@ import (
 // OwnerModel represents ownership information for resources
 // @Description Owner object that can represent either personal or family ownership
 type OwnerModel struct {
-	// @Description Type of ownership (personal or family)
+	// @Description Type of ownership (personal, family or system)
 	Type string `json:"type" binding:"required" example:"personal" enums:"personal,family,system"`
 	// @Description Family ID when an ownership type is family (required for family ownership)
 	FamilyId *string `json:"family_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174000"`
@@ -21,12 +21,14 @@ type OwnerModel struct {
 	Etag string `json:"etag" binding:"required" example:"W/\"123456789\""`
 }
 
-type editableOwnerModel struct {
-	Type     string  `json:"type" binding:"required"`
+type EditableOwnerModel struct {
+	// @Description Type of ownership (personal, family or system)
+	Type string `json:"type" binding:"required" example:"personal" enums:"personal,family,system"`
+	// @Description Family ID when an ownership type is family (required for family ownership)
 	FamilyId *string `json:"family_id,omitempty"`
 }
 
-func (m editableOwnerModel) Owner(userId string) (auth.Owner, error) {
+func (m EditableOwnerModel) Owner(userId string) (auth.Owner, error) {
 	ownerType, err := auth.ParseOwnerType(m.Type)
 	if err != nil {
 		return nil, err

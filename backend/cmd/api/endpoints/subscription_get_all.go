@@ -27,7 +27,7 @@ func NewSubscriptionGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery,
 //	@Produce		json
 //	@Param			size	query		integer										false	"Number of items per page (default: 10)"
 //	@Param			page	query		integer										false	"Page number (default: 1)"
-//	@Success		200		{object}	PaginatedResponseModel[subscriptionModel]	"Paginated list of subscriptions"
+//	@Success		200		{object}	PaginatedResponseModel[SubscriptionModel]	"Paginated list of subscriptions"
 //	@Failure		400		{object}	httpError									"Bad Request - Invalid query parameters"
 //	@Failure		500		{object}	httpError									"Internal Server Error"
 //	@Router			/subscriptions [get]

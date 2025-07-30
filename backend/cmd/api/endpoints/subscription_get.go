@@ -21,7 +21,7 @@ type SubscriptionGetEndpoint struct {
 //	@Tags			subscription
 //	@Produce		json
 //	@Param			subscriptionId	path		string				true	"Subscription ID (UUID format)"
-//	@Success		200				{object}	subscriptionModel	"Successfully retrieved subscription"
+//	@Success		200				{object}	SubscriptionModel	"Successfully retrieved subscription"
 //	@Failure		400				{object}	httpError			"Bad Request - Invalid subscription ID format"
 //	@Failure		404				{object}	httpError			"Subscription not found"
 //	@Failure		500				{object}	httpError			"Internal Server Error"

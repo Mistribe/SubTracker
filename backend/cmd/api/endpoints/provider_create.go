@@ -30,7 +30,7 @@ type createProviderModel struct {
 	Url            *string            `json:"url,omitempty"`
 	PricingPageUrl *string            `json:"pricing_page_url,omitempty"`
 	Labels         []string           `json:"labels" binding:"required"`
-	Owner          editableOwnerModel `json:"owner" binding:"required"`
+	Owner          EditableOwnerModel `json:"owner" binding:"required"`
 	CreatedAt      *time.Time         `json:"created_at,omitempty" format:"date-time"`
 }
 
