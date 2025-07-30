@@ -3,6 +3,7 @@ package application
 import (
 	"go.uber.org/fx"
 
+	"github.com/oleexo/subtracker/internal/application/auth"
 	"github.com/oleexo/subtracker/internal/application/core"
 	fmlyCommand "github.com/oleexo/subtracker/internal/application/family/command"
 	fmlyQuery "github.com/oleexo/subtracker/internal/application/family/query"
@@ -33,6 +34,7 @@ func AsQueryHandler[TQuery core.Query, TResult any](f any) any {
 func BuildApplicationModule() fx.Option {
 	return fx.Module("application",
 		fx.Provide(
+			auth.NewAuthenticationService,
 			AsQueryHandler[proQuery.FindOneQuery, provider.Provider](proQuery.NewFindOneQueryHandler),
 			AsQueryHandler[proQuery.FindAllQuery, core.PaginatedResponse[provider.Provider]](proQuery.NewFindAllQueryHandler),
 			AsCommandHandler[proCommand.CreateProviderCommand, provider.Provider](proCommand.NewCreateProviderCommandHandler),

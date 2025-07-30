@@ -12,6 +12,10 @@ type AuthenticationService struct {
 	authenticationRepository auth.Repository
 }
 
+func NewAuthenticationService(authenticationRepository auth.Repository) auth.Service {
+	return &AuthenticationService{authenticationRepository: authenticationRepository}
+}
+
 func (s AuthenticationService) MustGetUserId(ctx context.Context) string {
 	userId, ok := auth.GetUserIdFromContext(ctx)
 	if !ok {
