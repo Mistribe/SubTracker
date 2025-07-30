@@ -33,16 +33,30 @@ func NewProviderEndpointGroup(
 	getEndpoint *ProviderGetEndpoint,
 	getAllEndpoint *ProviderGetAllEndpoint,
 	createEndpoint *ProviderCreateEndpoint,
+	createPlanEndpoint *ProviderPlanCreateEndpoint,
+	createPriceEndpoint *ProviderPriceCreateEndpoint,
 	updateEndpoint *ProviderUpdateEndpoint,
+	updatePlanEndpoint *ProviderPlanUpdateEndpoint,
+	updatePriceEndpoint *ProviderPriceUpdateEndpoint,
 	deleteEndpoint *ProviderDeleteEndpoint,
+	deletePlanEndpoint *ProviderPlanDeleteEndpoint,
+	deletePriceEndpoint *ProviderPriceDeleteEndpoint,
+	patchProviderEndpoint *ProviderPatchEndpoint,
 	authenticationMiddleware *middlewares.AuthenticationMiddleware) *ProviderEndpointGroup {
 	return &ProviderEndpointGroup{
 		routes: []ginfx.Route{
 			getEndpoint,
 			getAllEndpoint,
 			createEndpoint,
+			createPlanEndpoint,
+			createPriceEndpoint,
 			updateEndpoint,
+			updatePlanEndpoint,
+			updatePriceEndpoint,
 			deleteEndpoint,
+			deletePlanEndpoint,
+			deletePriceEndpoint,
+			patchProviderEndpoint,
 		},
 		middlewares: []gin.HandlerFunc{
 			authenticationMiddleware.Middleware(),
@@ -63,7 +77,7 @@ type priceModel struct {
 
 type planModel struct {
 	Id          string       `json:"id" binding:"required"`
-	Name        *string      `json:"name,omitempty"`
+	Name        string       `json:"name" binding:"required"`
 	Description *string      `json:"description,omitempty"`
 	Prices      []priceModel `json:"prices" binding:"required"`
 	CreatedAt   time.Time    `json:"created_at" binding:"required" format:"date-time"`
@@ -80,15 +94,14 @@ type providerModel struct {
 	PricingPageUrl *string     `json:"pricing_page_url,omitempty"`
 	Labels         []string    `json:"labels" binding:"required"`
 	Plans          []planModel `json:"plans" binding:"required"`
-	Owner          *ownerModel `json:"owner,omitempty"`
+	Owner          ownerModel  `json:"owner" binding:"required"`
 	CreatedAt      time.Time   `json:"created_at" binding:"required" format:"date-time"`
 	UpdatedAt      time.Time   `json:"updated_at" binding:"required" format:"date-time"`
 	Etag           string      `json:"etag" binding:"required"`
 }
 
 func newProviderModel(source provider.Provider) providerModel {
-
-	model := providerModel{
+	return providerModel{
 		Id:             source.Id().String(),
 		Name:           source.Name(),
 		Description:    source.Description(),
@@ -97,17 +110,11 @@ func newProviderModel(source provider.Provider) providerModel {
 		PricingPageUrl: source.PricingPageUrl(),
 		Labels:         slicesx.Map(source.Labels().Values(), func(id uuid.UUID) string { return id.String() }),
 		Plans:          slicesx.Map(source.Plans().Values(), newPlanModel),
+		Owner:          newOwnerModel(source.Owner()),
 		CreatedAt:      source.CreatedAt(),
 		UpdatedAt:      source.UpdatedAt(),
 		Etag:           source.ETag(),
 	}
-
-	if source.Owner() != nil {
-		owner := newOwnerModel(source.Owner())
-		model.Owner = &owner
-	}
-
-	return model
 }
 
 func newPlanModel(source provider.Plan) planModel {

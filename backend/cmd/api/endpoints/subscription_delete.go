@@ -19,12 +19,12 @@ type SubscriptionDeleteEndpoint struct {
 //	@Summary		Delete an existing subscription
 //	@Description	Delete an existing subscription
 //	@Tags			subscription
-//	@Param			id	path	string	true	"Subscription ID"
+//	@Param			subscriptionId	path	string	true	"Subscription ID"
 //	@Success		204	"No Content"
 //	@Failure		400	{object}	httpError
-//	@Router			/subscriptions/{id} [delete]
+//	@Router			/subscriptions/{subscriptionId} [delete]
 func (s SubscriptionDeleteEndpoint) Handle(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("id"))
+	id, err := uuid.Parse(c.Param("subscriptionId"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, httpError{
 			Message: err.Error(),
@@ -42,7 +42,7 @@ func (s SubscriptionDeleteEndpoint) Handle(c *gin.Context) {
 
 func (s SubscriptionDeleteEndpoint) Pattern() []string {
 	return []string{
-		"/:id",
+		"/:subscriptionId",
 	}
 }
 

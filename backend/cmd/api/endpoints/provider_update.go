@@ -1,14 +1,15 @@
 package endpoints
 
 import (
+	"github.com/oleexo/subtracker/pkg/slicesx"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/provider/command"
-	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/provider"
 )
 
@@ -21,12 +22,31 @@ func NewProviderUpdateEndpoint(handler core.CommandHandler[command.UpdateProvide
 }
 
 type updateProviderModel struct {
-	Name           string   `json:"name" binding:"required"`
-	Description    *string  `json:"description,omitempty"`
-	IconUrl        *string  `json:"icon_url,omitempty"`
-	Url            *string  `json:"url,omitempty"`
-	PricingPageUrl *string  `json:"pricing_page_url,omitempty"`
-	Labels         []string `json:"labels" binding:"required"`
+	Name           string     `json:"name" binding:"required"`
+	Description    *string    `json:"description,omitempty"`
+	IconUrl        *string    `json:"icon_url,omitempty"`
+	Url            *string    `json:"url,omitempty"`
+	PricingPageUrl *string    `json:"pricing_page_url,omitempty"`
+	Labels         []string   `json:"labels" binding:"required"`
+	UpdatedAt      *time.Time `json:"updated_at,omitempty" format:"date-time"`
+}
+
+func (m updateProviderModel) Command(providerId uuid.UUID) (command.UpdateProviderCommand, error) {
+	labels, err := slicesx.MapErr(m.Labels, uuid.Parse)
+	if err != nil {
+		return command.UpdateProviderCommand{}, err
+	}
+
+	return command.UpdateProviderCommand{
+		Id:             providerId,
+		Name:           m.Name,
+		Description:    m.Description,
+		IconUrl:        m.IconUrl,
+		Url:            m.Url,
+		PricingPageUrl: m.PricingPageUrl,
+		Labels:         labels,
+		UpdatedAt:      nil,
+	}, nil
 }
 
 func (e ProviderUpdateEndpoint) Handle(c *gin.Context) {
@@ -46,7 +66,7 @@ func (e ProviderUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	var model updateLabelModel
+	var model updateProviderModel
 	if err := c.ShouldBindJSON(&model); err != nil {
 		c.JSON(http.StatusBadRequest, httpError{
 			Message: err.Error(),
@@ -64,8 +84,8 @@ func (e ProviderUpdateEndpoint) Handle(c *gin.Context) {
 	r := e.handler.Handle(c, cmd)
 	handleResponse(c,
 		r,
-		withMapping[label.Label](func(lbl label.Label) any {
-			return newLabelModel(lbl)
+		withMapping[provider.Provider](func(prov provider.Provider) any {
+			return newProviderModel(prov)
 		}))
 }
 

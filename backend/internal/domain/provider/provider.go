@@ -31,7 +31,6 @@ type Provider interface {
 	SetLabels(labels []uuid.UUID)
 	IsCustom() bool
 	SetOwner(owner user.Owner)
-	SetNoOwner()
 	Owner() user.Owner
 	Plans() *slicesx.Tracked[Plan]
 	SetPlans(plans []Plan)
@@ -178,11 +177,6 @@ func (p *provider) IsCustom() bool {
 
 func (p *provider) SetOwner(owner user.Owner) {
 	p.owner = owner
-	p.SetAsDirty()
-}
-
-func (p *provider) SetNoOwner() {
-	p.owner = nil
 	p.SetAsDirty()
 }
 

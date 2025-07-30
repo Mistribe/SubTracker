@@ -6,13 +6,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"golang.org/x/text/currency"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/provider/command"
 	"github.com/oleexo/subtracker/internal/domain/provider"
 	"github.com/oleexo/subtracker/internal/domain/user"
-	"github.com/oleexo/subtracker/pkg/ext"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
@@ -24,97 +22,49 @@ func NewProviderCreateEndpoint(handler core.CommandHandler[command.CreateProvide
 	return &ProviderCreateEndpoint{handler: handler}
 }
 
-// @Description Plan information for a provider
-type createPlanModel struct {
-	Id          *string            `json:"id,omitempty"`
-	Name        *string            `json:"name,omitempty"`
-	Description *string            `json:"description,omitempty"`
-	Prices      []createPriceModel `json:"prices" binding:"required"`
-	CreatedAt   *time.Time         `json:"created_at,omitempty" format:"date-time"`
-}
-
-func (m createPlanModel) Plan() (provider.Plan, error) {
-	id, err := parseUuidOrNew(m.Id)
-	if err != nil {
-		return nil, err
-	}
-	createdAt := ext.ValueOrDefault(m.CreatedAt, time.Now())
-	prices, err := slicesx.MapErr(m.Prices, func(price createPriceModel) (provider.Price, error) {
-		return price.Price()
-	})
-
-	return provider.NewPlan(
-		id,
-		m.Name,
-		m.Description,
-		prices,
-		createdAt,
-		createdAt), nil
-}
-
-// @Description Provider creation request model
 type createProviderModel struct {
-	Id             *string             `json:"id,omitempty"`
-	Name           string              `json:"name" binding:"required"`
-	Description    *string             `json:"description,omitempty"`
-	IconUrl        *string             `json:"icon_url,omitempty"`
-	Url            *string             `json:"url,omitempty"`
-	PricingPageUrl *string             `json:"pricing_page_url,omitempty"`
-	Labels         []string            `json:"labels" binding:"required"`
-	Plans          []createPlanModel   `json:"plans" binding:"required"`
-	Owner          *editableOwnerModel `json:"owner,omitempty"`
-	CreatedAt      *time.Time          `json:"created_at,omitempty" format:"date-time"`
-}
-
-func (m createProviderModel) Provider(userId string) (provider.Provider, error) {
-	id, err := parseUuidOrNew(m.Id)
-	if err != nil {
-		return nil, err
-	}
-	createdAt := ext.ValueOrDefault(m.CreatedAt, time.Now())
-	plans, err := slicesx.MapErr(m.Plans, func(plan createPlanModel) (provider.Plan, error) {
-		return plan.Plan()
-	})
-	if err != nil {
-		return nil, err
-	}
-	labels, err := slicesx.MapErr(m.Labels, uuid.Parse)
-	if err != nil {
-		return nil, err
-	}
-
-	var owner user.Owner
-	if m.Owner != nil {
-		o, err := m.Owner.Owner(userId)
-		if err != nil {
-			return nil, err
-		}
-		owner = o
-	}
-
-	return provider.NewProvider(
-		id,
-		m.Name,
-		m.Description,
-		m.IconUrl,
-		m.Url,
-		m.PricingPageUrl,
-		labels,
-		plans,
-		owner,
-		createdAt,
-		createdAt,
-	), nil
+	Id             *string            `json:"id,omitempty"`
+	Name           string             `json:"name" binding:"required"`
+	Description    *string            `json:"description,omitempty"`
+	IconUrl        *string            `json:"icon_url,omitempty"`
+	Url            *string            `json:"url,omitempty"`
+	PricingPageUrl *string            `json:"pricing_page_url,omitempty"`
+	Labels         []string           `json:"labels" binding:"required"`
+	Owner          editableOwnerModel `json:"owner" binding:"required"`
+	CreatedAt      *time.Time         `json:"created_at,omitempty" format:"date-time"`
 }
 
 func (m createProviderModel) Command(userId string) (command.CreateProviderCommand, error) {
-	prov, err := m.Provider(userId)
+	var providerId *uuid.UUID
+	if m.Id != nil {
+		id, err := uuid.Parse(*m.Id)
+		if err != nil {
+			return command.CreateProviderCommand{}, err
+		}
+
+		providerId = &id
+	}
+	labels, err := slicesx.MapErr(m.Labels, uuid.Parse)
+	if err != nil {
+		return command.CreateProviderCommand{}, err
+	}
+
+	owner, err := m.Owner.Owner(userId)
 	if err != nil {
 		return command.CreateProviderCommand{}, err
 	}
 
 	return command.CreateProviderCommand{
-		Provider: prov,
+		Id: providerId,
+
+		Name:           m.Name,
+		Description:    m.Description,
+		IconUrl:        m.IconUrl,
+		Url:            m.Url,
+		PricingPageUrl: m.PricingPageUrl,
+		Labels:         labels,
+		Owner:          owner,
+		CreatedAt:      m.CreatedAt,
 	}, nil
 }
 

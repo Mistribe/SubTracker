@@ -19,13 +19,13 @@ type SubscriptionGetEndpoint struct {
 // @Description	Get subscription by ID
 // @Tags			subscription
 // @Produce		json
-// @Param			id	path		string	true	"Subscription ID"
+// @Param			subscriptionId	path		string	true	"Subscription ID"
 // @Success		200	{object}	subscriptionModel
 // @Failure		400	{object}	httpError
 // @Failure		404	{object}	httpError
-// @Router			/subscriptions/{id} [get]
+// @Router			/subscriptions/{subscriptionId} [get]
 func (e SubscriptionGetEndpoint) Handle(c *gin.Context) {
-	id, err := paramAsUuid(c, "id")
+	id, err := paramAsUuid(c, "subscriptionId")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, httpError{
 			Message: err.Error(),
@@ -42,7 +42,7 @@ func (e SubscriptionGetEndpoint) Handle(c *gin.Context) {
 
 func (e SubscriptionGetEndpoint) Pattern() []string {
 	return []string{
-		"/:id",
+		"/:subscriptionId",
 	}
 }
 

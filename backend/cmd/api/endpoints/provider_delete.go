@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"github.com/google/uuid"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,8 +19,20 @@ func NewProviderDeleteEndpoint(handler core.CommandHandler[command.DeleteProvide
 }
 
 func (e ProviderDeleteEndpoint) Handle(c *gin.Context) {
-	//TODO implement me
-	panic("implement me")
+	providerId, err := uuid.Parse(c.Param("providerId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httpError{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	cmd := command.DeleteProviderCommand{
+		ProviderId: providerId,
+	}
+
+	r := e.handler.Handle(c, cmd)
+	handleResponse(c, r, withNoContent[bool]())
 }
 
 func (e ProviderDeleteEndpoint) Pattern() []string {

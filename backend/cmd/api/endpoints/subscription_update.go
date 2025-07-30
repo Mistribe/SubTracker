@@ -22,10 +22,19 @@ type SubscriptionUpdateEndpoint struct {
 }
 
 type updateSubscriptionModel struct {
-	editableSubscriptionModel
-	PayerType     *string    `json:"payer_type,omitempty"`
-	PayerMemberId *string    `json:"payer_memberId,omitempty"`
-	UpdatedAt     *time.Time `json:"updated_at,omitempty" format:"date-time"`
+	FriendlyName      *string                         `json:"friendly_name,omitempty"`
+	FreeTrialDays     *uint                           `json:"free_trial_days,omitempty"`
+	ServiceProviderId string                          `json:"service_provider_id" binding:"required"`
+	PlanId            string                          `json:"plan_id" binding:"required"`
+	PriceId           string                          `json:"price_id" binding:"required"`
+	ServiceUsers      []string                        `json:"service_users,omitempty"`
+	StartDate         time.Time                       `json:"start_date" binding:"required" format:"date-time"`
+	EndDate           *time.Time                      `json:"end_date,omitempty" format:"date-time"`
+	Recurrency        string                          `json:"recurrency" binding:"required"`
+	CustomRecurrency  *uint                           `json:"custom_recurrency,omitempty"`
+	Payer             *editableSubscriptionPayerModel `json:"payer,omitempty"`
+	Owner             editableOwnerModel              `json:"owner" binding:"required"`
+	UpdatedAt         *time.Time                      `json:"updated_at,omitempty" format:"date-time"`
 }
 
 func (m updateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (subscription.Subscription, error) {
@@ -56,17 +65,17 @@ func (m updateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (s
 	owner := user.NewOwner(ownerType, familyId, &userId)
 	updatedAt := ext.ValueOrDefault(m.UpdatedAt, time.Now())
 	var payer subscription.Payer
-	if m.PayerType != nil {
+	if m.Payer != nil {
 		if familyId == nil {
 			return nil, errors.New("missing family_id for adding a payer")
 		}
-		payerType, err := subscription.ParsePayerType(*m.PayerType)
+		payerType, err := subscription.ParsePayerType(m.Payer.Type)
 		if err != nil {
 			return nil, err
 		}
 		var memberId *uuid.UUID
-		if m.PayerMemberId != nil {
-			mbrId, err := uuid.Parse(*m.PayerMemberId)
+		if m.Payer.MemberId != nil {
+			mbrId, err := uuid.Parse(*m.Payer.MemberId)
 			if err != nil {
 				return nil, err
 			}
@@ -120,13 +129,13 @@ func (m updateSubscriptionModel) Command(userId string, id uuid.UUID) (command.U
 //	@Tags			subscription
 //	@Accept			json
 //	@Produce		json
-//	@Param			id				path		string					true	"Subscription ID"
+//	@Param			subscriptionId				path		string					true	"Subscription ID"
 //	@Param			subscription	body		updateSubscriptionModel	true	"Subscription data"
 //	@Success		200				{object}	subscriptionModel
 //	@Failure		400				{object}	httpError
-//	@Router			/subscriptions/{id} [put]
+//	@Router			/subscriptions/{subscriptionId} [put]
 func (s SubscriptionUpdateEndpoint) Handle(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("id"))
+	id, err := uuid.Parse(c.Param("subscriptionId"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, httpError{
 			Message: err.Error(),
@@ -168,7 +177,7 @@ func (s SubscriptionUpdateEndpoint) Handle(c *gin.Context) {
 
 func (s SubscriptionUpdateEndpoint) Pattern() []string {
 	return []string{
-		"/:id",
+		"/:subscriptionId",
 	}
 }
 

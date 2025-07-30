@@ -26,12 +26,20 @@ func NewSubscriptionCreateEndpoint(handler core.CommandHandler[command.CreateSub
 }
 
 type createSubscriptionModel struct {
-	editableSubscriptionModel
-
-	Id            *string    `json:"id,omitempty"`
-	PayerType     *string    `json:"payer_type,omitempty"`
-	PayerMemberId *string    `json:"payer_memberId,omitempty"`
-	CreatedAt     *time.Time `json:"created_at,omitempty"`
+	Id                *string                         `json:"id,omitempty"`
+	FriendlyName      *string                         `json:"friendly_name,omitempty"`
+	FreeTrialDays     *uint                           `json:"free_trial_days,omitempty"`
+	ServiceProviderId string                          `json:"service_provider_id" binding:"required"`
+	PlanId            string                          `json:"plan_id" binding:"required"`
+	PriceId           string                          `json:"price_id" binding:"required"`
+	ServiceUsers      []string                        `json:"service_users,omitempty"`
+	StartDate         time.Time                       `json:"start_date" binding:"required" format:"date-time"`
+	EndDate           *time.Time                      `json:"end_date,omitempty" format:"date-time"`
+	Recurrency        string                          `json:"recurrency" binding:"required"`
+	CustomRecurrency  *uint                           `json:"custom_recurrency,omitempty"`
+	Payer             *editableSubscriptionPayerModel `json:"payer,omitempty"`
+	Owner             editableOwnerModel              `json:"owner" binding:"required"`
+	CreatedAt         *time.Time                      `json:"created_at,omitempty"`
 }
 
 func (m createSubscriptionModel) Subscription(userId string) (subscription.Subscription, error) {
@@ -66,17 +74,17 @@ func (m createSubscriptionModel) Subscription(userId string) (subscription.Subsc
 	owner := user.NewOwner(ownerType, familyId, &userId)
 	createdAt := ext.ValueOrDefault(m.CreatedAt, time.Now())
 	var payer subscription.Payer
-	if m.PayerType != nil {
+	if m.Payer != nil {
 		if familyId == nil {
 			return nil, errors.New("missing family_id for adding a payer")
 		}
-		payerType, err := subscription.ParsePayerType(*m.PayerType)
+		payerType, err := subscription.ParsePayerType(m.Payer.Type)
 		if err != nil {
 			return nil, err
 		}
 		var memberId *uuid.UUID
-		if m.PayerMemberId != nil {
-			mbrId, err := uuid.Parse(*m.PayerMemberId)
+		if m.Payer.MemberId != nil {
+			mbrId, err := uuid.Parse(*m.Payer.MemberId)
 			if err != nil {
 				return nil, err
 			}

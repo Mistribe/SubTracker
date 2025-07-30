@@ -51,7 +51,7 @@ func newProviderPrice(model providerPriceSqlModel) provider.Price {
 type providerPlanSqlModel struct {
 	BaseSqlModel `gorm:"embedded"`
 
-	Name        sql.NullString          `gorm:"type:varchar(100)"`
+	Name        string                  `gorm:"type:varchar(100);not null"`
 	Description sql.NullString          `gorm:"type:varchar(255)"`
 	Prices      []providerPriceSqlModel `gorm:"foreignKey:PlanId;references:Id;constraint:OnDelete:CASCADE"`
 	ProviderId  uuid.UUID               `gorm:"type:uuid;not null"`
@@ -64,18 +64,8 @@ func (p providerPlanSqlModel) TableName() string {
 func newProviderPlanSqlModel(providerId uuid.UUID, source provider.Plan) providerPlanSqlModel {
 	model := providerPlanSqlModel{
 		BaseSqlModel: newBaseSqlModel(source),
+		Name:         source.Name(),
 		ProviderId:   providerId,
-	}
-
-	if source.Name() != nil {
-		model.Name = sql.NullString{
-			String: *source.Name(),
-			Valid:  true,
-		}
-	} else {
-		model.Name = sql.NullString{
-			Valid: false,
-		}
 	}
 
 	if source.Description() != nil {
@@ -103,7 +93,7 @@ func newProviderPlan(model providerPlanSqlModel) provider.Plan {
 
 	return provider.NewPlan(
 		model.Id,
-		sqlNullToString(model.Name),
+		model.Name,
 		sqlNullToString(model.Description),
 		prices,
 		model.CreatedAt,

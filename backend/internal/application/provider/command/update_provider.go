@@ -21,7 +21,6 @@ type UpdateProviderCommand struct {
 	Url            *string
 	PricingPageUrl *string
 	Labels         []uuid.UUID
-	Owner          user.Owner
 	UpdatedAt      *time.Time
 }
 
