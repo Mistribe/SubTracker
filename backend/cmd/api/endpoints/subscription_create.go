@@ -26,20 +26,20 @@ func NewSubscriptionCreateEndpoint(handler core.CommandHandler[command.CreateSub
 }
 
 type CreateSubscriptionModel struct {
-	Id                *string                 `json:"id,omitempty"`
-	FriendlyName      *string                 `json:"friendly_name,omitempty"`
-	FreeTrialDays     *uint                   `json:"free_trial_days,omitempty"`
-	ServiceProviderId string                  `json:"service_provider_id" binding:"required"`
-	PlanId            string                  `json:"plan_id" binding:"required"`
-	PriceId           string                  `json:"price_id" binding:"required"`
-	ServiceUsers      []string                `json:"service_users,omitempty"`
-	StartDate         time.Time               `json:"start_date" binding:"required" format:"date-time"`
-	EndDate           *time.Time              `json:"end_date,omitempty" format:"date-time"`
-	Recurrency        string                  `json:"recurrency" binding:"required"`
-	CustomRecurrency  *uint                   `json:"custom_recurrency,omitempty"`
-	Payer             *SubscriptionPayerModel `json:"payer,omitempty"`
-	Owner             EditableOwnerModel      `json:"owner" binding:"required"`
-	CreatedAt         *time.Time              `json:"created_at,omitempty"`
+	Id                *string                         `json:"id,omitempty"`
+	FriendlyName      *string                         `json:"friendly_name,omitempty"`
+	FreeTrialDays     *uint                           `json:"free_trial_days,omitempty"`
+	ServiceProviderId string                          `json:"service_provider_id" binding:"required"`
+	PlanId            string                          `json:"plan_id" binding:"required"`
+	PriceId           string                          `json:"price_id" binding:"required"`
+	ServiceUsers      []string                        `json:"service_users,omitempty"`
+	StartDate         time.Time                       `json:"start_date" binding:"required" format:"date-time"`
+	EndDate           *time.Time                      `json:"end_date,omitempty" format:"date-time"`
+	Recurrency        string                          `json:"recurrency" binding:"required"`
+	CustomRecurrency  *uint                           `json:"custom_recurrency,omitempty"`
+	Payer             *EditableSubscriptionPayerModel `json:"payer,omitempty"`
+	Owner             EditableOwnerModel              `json:"owner" binding:"required"`
+	CreatedAt         *time.Time                      `json:"created_at,omitempty"`
 }
 
 func (m CreateSubscriptionModel) Subscription(userId string) (subscription.Subscription, error) {

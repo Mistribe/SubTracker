@@ -67,9 +67,9 @@ type SubscriptionPayerModel struct {
 	Etag string `json:"etag" binding:"required" example:"W/\"123456789\""`
 }
 
-// SubscriptionPayerModel represents editable payer information for subscription updates
+// EditableSubscriptionPayerModel represents editable payer information for subscription updates
 // @Description Subscription payer object used for updating who pays for a subscription
-type SubscriptionPayerModel struct {
+type EditableSubscriptionPayerModel struct {
 	// @Description Type of payer (family or family member)
 	Type string `json:"type" binding:"required" example:"family_member" enums:"family,family_member"`
 	// @Description ID of the family associated with this payer

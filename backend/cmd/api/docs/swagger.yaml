@@ -18,7 +18,7 @@ components:
         owner:
           $ref: '#/components/schemas/endpoints.EditableOwnerModel'
         payer:
-          $ref: '#/components/schemas/endpoints.SubscriptionPayerModel'
+          $ref: '#/components/schemas/endpoints.EditableSubscriptionPayerModel'
         plan_id:
           type: string
         price_id:
@@ -58,6 +58,29 @@ components:
           example: personal
           type: string
       required:
+      - type
+      type: object
+    endpoints.EditableSubscriptionPayerModel:
+      description: Subscription payer object used for updating who pays for a subscription
+      properties:
+        family_id:
+          description: '@Description ID of the family associated with this payer'
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        memberId:
+          description: '@Description ID of the specific family member who pays (required
+            when type is family_member)'
+          example: 123e4567-e89b-12d3-a456-426614174001
+          type: string
+        type:
+          description: '@Description Type of payer (family or family member)'
+          enum:
+          - family
+          - family_member
+          example: family_member
+          type: string
+      required:
+      - family_id
       - type
       type: object
     endpoints.OwnerModel:
@@ -182,7 +205,7 @@ components:
         owner:
           $ref: '#/components/schemas/endpoints.EditableOwnerModel'
         payer:
-          $ref: '#/components/schemas/endpoints.SubscriptionPayerModel'
+          $ref: '#/components/schemas/endpoints.EditableSubscriptionPayerModel'
         plan_id:
           type: string
         price_id:
@@ -546,7 +569,7 @@ components:
         owner:
           $ref: '#/components/schemas/endpoints.EditableOwnerModel'
         payer:
-          $ref: '#/components/schemas/endpoints.SubscriptionPayerModel'
+          $ref: '#/components/schemas/endpoints.EditableSubscriptionPayerModel'
         plan_id:
           type: string
         price_id:
@@ -1118,6 +1141,49 @@ paths:
       summary: Delete family by ID
       tags:
       - family
+    get:
+      description: Retrieve a family and its members by family ID
+      parameters:
+      - description: Family ID (UUID format)
+        in: path
+        name: familyId
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.familyModel'
+          description: Successfully retrieved family
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Bad Request - Invalid ID format
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Unauthorized - Invalid user authentication
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Family not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Internal Server Error
+      summary: Get family by ID
+      tags:
+      - family
     put:
       description: Update family information such as name and other details
       parameters:
@@ -1314,50 +1380,6 @@ paths:
                 $ref: '#/components/schemas/endpoints.httpError'
           description: Internal Server Error
       summary: Update family member by ID
-      tags:
-      - family
-  /families/{id}:
-    get:
-      description: Retrieve a family and its members by family ID
-      parameters:
-      - description: Family ID (UUID format)
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.familyModel'
-          description: Successfully retrieved family
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.httpError'
-          description: Bad Request - Invalid ID format
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.httpError'
-          description: Unauthorized - Invalid user authentication
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.httpError'
-          description: Family not found
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.httpError'
-          description: Internal Server Error
-      summary: Get family by ID
       tags:
       - family
   /healthz/live:
