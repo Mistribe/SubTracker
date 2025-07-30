@@ -7,23 +7,26 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/label"
-	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
 type LabelRepository struct {
-	repository *DatabaseContext
+	labelRepository *DatabaseContext
+	authService     auth.Service
 }
 
-func NewLabelRepository(repository *DatabaseContext) *LabelRepository {
+func NewLabelRepository(labelRepository *DatabaseContext,
+	authService auth.Service) *LabelRepository {
 	return &LabelRepository{
-		repository: repository,
+		labelRepository: labelRepository,
+		authService:     authService,
 	}
 }
 
 func (r LabelRepository) GetById(ctx context.Context, labelId uuid.UUID) (label.Label, error) {
 	var model LabelSqlModel
-	if err := r.repository.db.WithContext(ctx).First(&model, labelId).Error; err != nil {
+	if err := r.labelRepository.db.WithContext(ctx).First(&model, labelId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -35,18 +38,39 @@ func (r LabelRepository) GetById(ctx context.Context, labelId uuid.UUID) (label.
 }
 
 func (r LabelRepository) GetAll(ctx context.Context, parameters label.QueryParameters) ([]label.Label, error) {
-	userId, ok := user.FromContext(ctx)
+	userId, ok := auth.GetUserIdFromContext(ctx)
 	if !ok {
 		return nil, nil
 	}
 	var labels []LabelSqlModel
-	query := r.repository.db.WithContext(ctx)
+	query := r.labelRepository.db.WithContext(ctx)
 
-	if parameters.WithDefaults {
-		query = query.Where("(owner_user_id = ? AND owner_type = ?) OR (owner_type  = ?)", userId, user.PersonalOwner, user.SystemOwner)
-	} else {
-		query = query.Where("owner_user_id = ? AND owner_type = ?", userId, user.PersonalOwner)
+	for i, ownerType := range parameters.Owners {
+		switch ownerType {
+		case auth.PersonalOwner:
+			if i == 0 {
+				query = query.Where("owner_type = ? AND owner_user_id = ?", auth.PersonalOwner, userId)
+			} else {
+				query = query.Or("owner_type = ? AND owner_user_id = ?", auth.PersonalOwner, userId)
+			}
+		case auth.SystemOwner:
+			if i == 0 {
+				query = query.Where("owner_type = ?", auth.SystemOwner)
+			} else {
+				query = query.Or("owner_type = ?", auth.SystemOwner)
+			}
+		case auth.FamilyOwner:
+			families := r.authService.MustGetFamilies(ctx)
+			if len(families) > 0 {
+				if i == 0 {
+					query = query.Where("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwner, families)
+				} else {
+					query = query.Or("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwner, families)
+				}
+			}
+		}
 	}
+
 	if parameters.Offset > 0 {
 		query = query.Offset(parameters.Offset)
 	}
@@ -66,16 +90,36 @@ func (r LabelRepository) GetAll(ctx context.Context, parameters label.QueryParam
 }
 
 func (r LabelRepository) GetAllCount(ctx context.Context, parameters label.QueryParameters) (int64, error) {
-	userId, ok := user.FromContext(ctx)
+	userId, ok := auth.GetUserIdFromContext(ctx)
 	if !ok {
 		return 0, nil
 	}
-	query := r.repository.db.WithContext(ctx).Model(&LabelSqlModel{})
+	query := r.labelRepository.db.WithContext(ctx).Model(&LabelSqlModel{})
 
-	if parameters.WithDefaults {
-		query = query.Where("(owner_user_id = ? AND owner_type = ?) OR (owner_type  = ?)", userId, user.PersonalOwner, user.SystemOwner)
-	} else {
-		query = query.Where("owner_user_id = ? AND owner_type = ?", userId, user.PersonalOwner)
+	for i, ownerType := range parameters.Owners {
+		switch ownerType {
+		case auth.PersonalOwner:
+			if i == 0 {
+				query = query.Where("owner_type = ? AND owner_user_id = ?", auth.PersonalOwner, userId)
+			} else {
+				query = query.Or("owner_type = ? AND owner_user_id = ?", auth.PersonalOwner, userId)
+			}
+		case auth.SystemOwner:
+			if i == 0 {
+				query = query.Where("owner_type = ?", auth.SystemOwner)
+			} else {
+				query = query.Or("owner_type = ?", auth.SystemOwner)
+			}
+		case auth.FamilyOwner:
+			families := r.authService.MustGetFamilies(ctx)
+			if len(families) > 0 {
+				if i == 0 {
+					query = query.Where("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwner, families)
+				} else {
+					query = query.Or("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwner, families)
+				}
+			}
+		}
 	}
 	var count int64
 	if result := query.Count(&count); result.Error != nil {
@@ -86,7 +130,7 @@ func (r LabelRepository) GetAllCount(ctx context.Context, parameters label.Query
 
 func (r LabelRepository) GetDefaults(ctx context.Context) ([]label.Label, error) {
 	var labelModels []LabelSqlModel
-	query := r.repository.db.WithContext(ctx).Where("owner_type = ?", user.SystemOwner)
+	query := r.labelRepository.db.WithContext(ctx).Where("owner_type = ?", auth.SystemOwner)
 	result := query.Find(&labelModels)
 	if result.Error != nil {
 		return nil, result.Error
@@ -112,7 +156,7 @@ func (r LabelRepository) Save(ctx context.Context, lbl label.Label) error {
 
 func (r LabelRepository) create(ctx context.Context, lbl label.Label) error {
 	dbLabel := newLabelSqlModel(lbl)
-	result := r.repository.db.WithContext(ctx).Create(&dbLabel)
+	result := r.labelRepository.db.WithContext(ctx).Create(&dbLabel)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -121,7 +165,7 @@ func (r LabelRepository) create(ctx context.Context, lbl label.Label) error {
 }
 func (r LabelRepository) update(ctx context.Context, lbl label.Label) error {
 	dbLabel := newLabelSqlModel(lbl)
-	result := r.repository.db.WithContext(ctx).Save(dbLabel)
+	result := r.labelRepository.db.WithContext(ctx).Save(dbLabel)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -130,7 +174,7 @@ func (r LabelRepository) update(ctx context.Context, lbl label.Label) error {
 }
 
 func (r LabelRepository) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
-	result := r.repository.db.WithContext(ctx).Delete(&LabelSqlModel{}, id)
+	result := r.labelRepository.db.WithContext(ctx).Delete(&LabelSqlModel{}, id)
 	if result.Error != nil {
 		return false, result.Error
 	}
@@ -145,12 +189,12 @@ func (r LabelRepository) Delete(ctx context.Context, id uuid.UUID) (bool, error)
 func (r LabelRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
 	var count int64
 	if len(ids) == 1 {
-		result := r.repository.db.WithContext(ctx).Model(&LabelSqlModel{}).Where("id = ?", ids[0]).Count(&count)
+		result := r.labelRepository.db.WithContext(ctx).Model(&LabelSqlModel{}).Where("id = ?", ids[0]).Count(&count)
 		if result.Error != nil {
 			return false, result.Error
 		}
 	} else {
-		result := r.repository.db.WithContext(ctx).Model(&LabelSqlModel{}).Where("id IN ?", ids).Count(&count)
+		result := r.labelRepository.db.WithContext(ctx).Model(&LabelSqlModel{}).Where("id IN ?", ids).Count(&count)
 		if result.Error != nil {
 			return false, result.Error
 		}

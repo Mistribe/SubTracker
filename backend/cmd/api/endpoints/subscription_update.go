@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/oleexo/subtracker/internal/domain/user"
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/pkg/ext"
 
 	"github.com/gin-gonic/gin"
@@ -50,7 +50,7 @@ func (m updateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (s
 	if err != nil {
 		return nil, err
 	}
-	ownerType, err := user.ParseOwnerType(m.Owner.Type)
+	ownerType, err := auth.ParseOwnerType(m.Owner.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (m updateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (s
 		}
 		familyId = &fid
 	}
-	owner := user.NewOwner(ownerType, familyId, &userId)
+	owner := auth.NewOwner(ownerType, familyId, &userId)
 	updatedAt := ext.ValueOrDefault(m.UpdatedAt, time.Now())
 	var payer subscription.Payer
 	if m.Payer != nil {
@@ -151,7 +151,7 @@ func (s SubscriptionUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	userId, ok := user.FromContext(c)
+	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, httpError{
 			Message: "invalid user id",

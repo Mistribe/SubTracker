@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/oleexo/subtracker/internal/domain/user"
+	"github.com/oleexo/subtracker/internal/domain/auth"
 )
 
 type OwnerModel struct {
@@ -20,16 +20,16 @@ type editableOwnerModel struct {
 	FamilyId *string `json:"family_id,omitempty"`
 }
 
-func (m editableOwnerModel) Owner(userId string) (user.Owner, error) {
-	ownerType, err := user.ParseOwnerType(m.Type)
+func (m editableOwnerModel) Owner(userId string) (auth.Owner, error) {
+	ownerType, err := auth.ParseOwnerType(m.Type)
 	if err != nil {
 		return nil, err
 	}
 
 	switch ownerType {
-	case user.PersonalOwner:
-		return user.NewPersonalOwner(userId), nil
-	case user.FamilyOwner:
+	case auth.PersonalOwner:
+		return auth.NewPersonalOwner(userId), nil
+	case auth.FamilyOwner:
 		if m.FamilyId == nil {
 			return nil, errors.New("missing family_id")
 		}
@@ -37,22 +37,22 @@ func (m editableOwnerModel) Owner(userId string) (user.Owner, error) {
 		if err2 != nil {
 			return nil, err2
 		}
-		return user.NewFamilyOwner(familyId), nil
+		return auth.NewFamilyOwner(familyId), nil
 	}
 
 	return nil, errors.New("unknown owner type")
 }
 
-func newOwnerModel(source user.Owner) OwnerModel {
+func newOwnerModel(source auth.Owner) OwnerModel {
 	model := OwnerModel{
 		Type: source.Type().String(),
 		Etag: source.ETag(),
 	}
 	switch source.Type() {
-	case user.PersonalOwner:
+	case auth.PersonalOwner:
 		userId := source.UserId()
 		model.UserId = &userId
-	case user.FamilyOwner:
+	case auth.FamilyOwner:
 		familyId := source.FamilyId().String()
 		model.FamilyId = &familyId
 	}

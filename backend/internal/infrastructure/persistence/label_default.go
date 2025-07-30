@@ -5,12 +5,12 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/label"
-	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
 func getDefaultLabels() []label.Label {
-	owner := user.NewSystemOwner()
+	owner := auth.NewSystemOwner()
 	return []label.Label{
 		label.NewLabel(uuid.MustParse("387b2bea-8f73-46e2-8223-be8e0db6ec48"), owner, "Music",
 			"#FF81C784", time.Now(), time.Now()),

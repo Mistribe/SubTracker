@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/validationx"
 )
 
@@ -21,7 +21,7 @@ type Label interface {
 	entity.ETagEntity
 
 	Name() string
-	Owner() user.Owner
+	Owner() auth.Owner
 	Color() string
 	GetValidationErrors() validationx.Errors
 	SetName(name string)
@@ -32,7 +32,7 @@ type Label interface {
 type label struct {
 	*entity.Base
 
-	owner     user.Owner
+	owner     auth.Owner
 	name      string
 	isDefault bool
 	color     string
@@ -40,7 +40,7 @@ type label struct {
 
 func NewLabel(
 	id uuid.UUID,
-	owner user.Owner,
+	owner auth.Owner,
 	name string,
 	color string,
 	createdAt time.Time,
@@ -57,7 +57,7 @@ func (l *label) Name() string {
 	return l.name
 }
 
-func (l *label) Owner() user.Owner {
+func (l *label) Owner() auth.Owner {
 	return l.owner
 }
 

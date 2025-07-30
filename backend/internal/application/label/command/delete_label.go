@@ -2,10 +2,11 @@ package command
 
 import (
 	"context"
-	"github.com/oleexo/subtracker/internal/domain/family"
-	"github.com/oleexo/subtracker/internal/domain/user"
 
 	"github.com/google/uuid"
+
+	"github.com/oleexo/subtracker/internal/domain/auth"
+	"github.com/oleexo/subtracker/internal/domain/family"
 
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/pkg/langext/result"
@@ -37,7 +38,7 @@ func (h DeleteLabelCommandHandler) Handle(ctx context.Context, command DeleteLab
 		return result.Fail[bool](label.ErrLabelNotFound)
 	}
 
-	err = user.EnsureOwnership(ctx, h.familyRepository, existingLabel.Owner())
+	err = auth.EnsureOwnership(ctx, h.familyRepository, existingLabel.Owner())
 	if err != nil {
 		return result.Fail[bool](err)
 	}

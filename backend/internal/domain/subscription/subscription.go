@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 	"github.com/oleexo/subtracker/pkg/validationx"
 	"github.com/oleexo/subtracker/pkg/x"
@@ -27,7 +27,7 @@ type Subscription interface {
 	ServiceProviderId() uuid.UUID
 	PlanId() uuid.UUID
 	PriceId() uuid.UUID
-	Owner() user.Owner
+	Owner() auth.Owner
 	Payer() Payer
 	ServiceUsers() *slicesx.Tracked[uuid.UUID]
 	StartDate() time.Time
@@ -38,7 +38,7 @@ type Subscription interface {
 	SetFriendlyName(name *string)
 	SetFamilyId(*uuid.UUID)
 	SetFreeTrialDays(days *uint)
-	SetOwner(owner user.Owner)
+	SetOwner(owner auth.Owner)
 	SetPayer(payer Payer)
 	SetServiceUsers(familyMembers []uuid.UUID)
 	SetStartDate(startDate time.Time)
@@ -59,7 +59,7 @@ type subscription struct {
 	serviceProviderId uuid.UUID
 	planId            uuid.UUID
 	priceId           uuid.UUID
-	owner             user.Owner
+	owner             auth.Owner
 	payer             Payer
 	serviceUsers      *slicesx.Tracked[uuid.UUID]
 	startDate         time.Time
@@ -75,7 +75,7 @@ func NewSubscription(
 	serviceProviderId uuid.UUID,
 	planId uuid.UUID,
 	priceId uuid.UUID,
-	owner user.Owner,
+	owner auth.Owner,
 	payer Payer,
 	serviceUsers []uuid.UUID,
 	startDate time.Time,
@@ -134,7 +134,7 @@ func (s *subscription) PriceId() uuid.UUID {
 	return s.priceId
 }
 
-func (s *subscription) Owner() user.Owner {
+func (s *subscription) Owner() auth.Owner {
 	return s.owner
 }
 
@@ -172,7 +172,7 @@ func (s *subscription) SetFreeTrialDays(days *uint) {
 	s.SetAsDirty()
 }
 
-func (s *subscription) SetOwner(owner user.Owner) {
+func (s *subscription) SetOwner(owner auth.Owner) {
 	s.owner = owner
 	s.SetAsDirty()
 }

@@ -2,9 +2,9 @@ package command
 
 import (
 	"context"
-	"github.com/oleexo/subtracker/internal/domain/family"
-	"github.com/oleexo/subtracker/internal/domain/user"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
+	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
@@ -32,7 +32,7 @@ func (h CreateLabelCommandHandler) Handle(ctx context.Context, command CreateLab
 		return result.Fail[label.Label](err)
 	}
 
-	err = user.EnsureOwnership(ctx, h.familyRepository, command.Label.Owner())
+	err = auth.EnsureOwnership(ctx, h.familyRepository, command.Label.Owner())
 	if err != nil {
 		return result.Fail[label.Label](err)
 	}

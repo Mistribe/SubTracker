@@ -3,6 +3,7 @@ package persistence
 import (
 	"go.uber.org/fx"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/provider"
@@ -24,6 +25,7 @@ func BuildPersistenceModule() fx.Option {
 			AsRepository[family.Repository](NewFamilyRepository),
 			AsRepository[label.Repository](NewLabelRepository),
 			AsRepository[provider.Repository](NewProviderRepository),
+			AsRepository[auth.Repository](NewAuthenticationRepository),
 			startup.AsStartupTask(newLabelTask),
 			startup.AsStartupTask(newRepositoryTask),
 		),

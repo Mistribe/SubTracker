@@ -4,18 +4,18 @@ import (
 	"context"
 
 	"github.com/oleexo/subtracker/internal/application/core"
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/label"
-	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type FindAllQuery struct {
-	Owners []user.OwnerType
+	Owners []auth.OwnerType
 	Limit  int
 	Offset int
 }
 
-func NewFindAllQuery(owners []user.OwnerType, size int, offset int) FindAllQuery {
+func NewFindAllQuery(owners []auth.OwnerType, size int, offset int) FindAllQuery {
 	return FindAllQuery{
 		Owners: owners,
 		Limit:  size,

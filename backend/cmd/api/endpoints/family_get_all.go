@@ -6,10 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/oleexo/subtracker/internal/domain/user"
-
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/family/query"
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/family"
 )
 
@@ -37,7 +36,7 @@ func (f FamilyGetAllEndpoint) Handle(c *gin.Context) {
 		page = 1
 	}
 	q := query.NewFindAllQuery(size, page)
-	userId, ok := user.FromContext(c)
+	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, httpError{
 			Message: "invalid user id",

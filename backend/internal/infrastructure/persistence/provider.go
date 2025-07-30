@@ -7,9 +7,9 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/internal/domain/provider"
-	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
@@ -22,7 +22,7 @@ func NewProviderRepository(repository *DatabaseContext) *ProviderRepository {
 }
 
 func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (provider.Provider, error) {
-	_, ok := user.FromContext(ctx)
+	_, ok := auth.GetUserIdFromContext(ctx)
 	if !ok {
 		return nil, nil
 	}
@@ -47,7 +47,7 @@ func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (
 func (r ProviderRepository) GetAll(ctx context.Context, parameters entity.QueryParameters) (
 	[]provider.Provider,
 	error) {
-	_, ok := user.FromContext(ctx)
+	_, ok := auth.GetUserIdFromContext(ctx)
 	if !ok {
 		return nil, nil
 	}

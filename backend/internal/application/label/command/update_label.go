@@ -2,9 +2,10 @@ package command
 
 import (
 	"context"
-	"github.com/oleexo/subtracker/internal/domain/family"
-	"github.com/oleexo/subtracker/internal/domain/user"
 	"time"
+
+	"github.com/oleexo/subtracker/internal/domain/auth"
+	"github.com/oleexo/subtracker/internal/domain/family"
 
 	"github.com/google/uuid"
 
@@ -42,7 +43,7 @@ func (h UpdateLabelCommandHandler) Handle(ctx context.Context, command UpdateLab
 	if existingLabel == nil {
 		return result.Fail[label.Label](label.ErrLabelNotFound)
 	}
-	err = user.EnsureOwnership(ctx, h.familyRepository, existingLabel.Owner())
+	err = auth.EnsureOwnership(ctx, h.familyRepository, existingLabel.Owner())
 	if err != nil {
 		return result.Fail[label.Label](err)
 	}

@@ -7,8 +7,8 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/provider"
-	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
 type providerPriceSqlModel struct {
@@ -146,10 +146,10 @@ func newProviderSqlModel(source provider.Provider) ProviderSqlModel {
 
 	model.OwnerType = source.Owner().Type().String()
 	switch source.Owner().Type() {
-	case user.FamilyOwner:
+	case auth.FamilyOwner:
 		familyId := source.Owner().FamilyId()
 		model.OwnerFamilyId = &familyId
-	case user.PersonalOwner:
+	case auth.PersonalOwner:
 		userId := source.Owner().UserId()
 		model.OwnerUserId = stringToSqlNull(&userId)
 	}
@@ -157,11 +157,11 @@ func newProviderSqlModel(source provider.Provider) ProviderSqlModel {
 }
 
 func newProvider(model ProviderSqlModel) provider.Provider {
-	ownerType, err := user.ParseOwnerType(model.OwnerType)
+	ownerType, err := auth.ParseOwnerType(model.OwnerType)
 	if err != nil {
 		panic(err)
 	}
-	owner := user.NewOwner(ownerType, model.OwnerFamilyId, sqlNullToString(model.OwnerUserId))
+	owner := auth.NewOwner(ownerType, model.OwnerFamilyId, sqlNullToString(model.OwnerUserId))
 	var labels []uuid.UUID
 	if len(model.Labels) > 0 {
 		labels = make([]uuid.UUID, len(model.Labels))

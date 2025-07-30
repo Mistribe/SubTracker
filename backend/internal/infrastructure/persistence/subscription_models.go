@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/oleexo/subtracker/internal/domain/user"
-
 	"github.com/google/uuid"
+
+	"github.com/oleexo/subtracker/internal/domain/auth"
 
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 	"github.com/oleexo/subtracker/pkg/slicesx"
@@ -85,10 +85,10 @@ func newSubscriptionSqlModel(source subscription.Subscription) SubscriptionSqlMo
 
 	model.OwnerType = source.Owner().Type().String()
 	switch source.Owner().Type() {
-	case user.FamilyOwner:
+	case auth.FamilyOwner:
 		familyId := source.Owner().FamilyId()
 		model.OwnerFamilyId = &familyId
-	case user.PersonalOwner:
+	case auth.PersonalOwner:
 		userId := source.Owner().UserId()
 		model.OwnerUserId = stringToSqlNull(&userId)
 	}
@@ -119,11 +119,11 @@ func newSubscription(source SubscriptionSqlModel) subscription.Subscription {
 		panic(err)
 	}
 
-	ownerType, err := user.ParseOwnerType(source.OwnerType)
+	ownerType, err := auth.ParseOwnerType(source.OwnerType)
 	if err != nil {
 		panic(err)
 	}
-	owner := user.NewOwner(ownerType, source.OwnerFamilyId, sqlNullToString(source.OwnerUserId))
+	owner := auth.NewOwner(ownerType, source.OwnerFamilyId, sqlNullToString(source.OwnerUserId))
 
 	sub := subscription.NewSubscription(
 		source.Id,

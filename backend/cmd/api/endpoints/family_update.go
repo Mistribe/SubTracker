@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/oleexo/subtracker/internal/domain/user"
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/pkg/langext/option"
 
 	"github.com/oleexo/subtracker/internal/application/core"
@@ -55,7 +55,7 @@ func (f FamilyUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	userId, ok := user.FromContext(c)
+	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, httpError{
 			Message: "invalid user id",

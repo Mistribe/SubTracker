@@ -7,9 +7,8 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/internal/domain/user"
-
 	"github.com/oleexo/subtracker/internal/domain/family"
 )
 
@@ -40,7 +39,7 @@ func (r FamilyRepository) GetById(ctx context.Context, id uuid.UUID) (family.Fam
 }
 
 func (r FamilyRepository) GetAll(ctx context.Context, parameters entity.QueryParameters) ([]family.Family, error) {
-	userId, ok := user.FromContext(ctx)
+	userId, ok := auth.GetUserIdFromContext(ctx)
 	if !ok {
 		return []family.Family{}, nil
 	}
@@ -68,7 +67,7 @@ func (r FamilyRepository) GetAll(ctx context.Context, parameters entity.QueryPar
 }
 
 func (r FamilyRepository) GetAllCount(ctx context.Context) (int64, error) {
-	userId, ok := user.FromContext(ctx)
+	userId, ok := auth.GetUserIdFromContext(ctx)
 	if !ok {
 		return 0, nil
 	}

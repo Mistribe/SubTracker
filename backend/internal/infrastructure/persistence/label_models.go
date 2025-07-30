@@ -3,8 +3,8 @@ package persistence
 import (
 	"database/sql"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/label"
-	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
 type LabelSqlModel struct {
@@ -33,10 +33,10 @@ func newLabelSqlModel(source label.Label) LabelSqlModel {
 
 	model.OwnerType = source.Owner().Type().String()
 	switch source.Owner().Type() {
-	case user.FamilyOwner:
+	case auth.FamilyOwner:
 		familyId := source.Owner().FamilyId()
 		model.OwnerFamilyId = &familyId
-	case user.PersonalOwner:
+	case auth.PersonalOwner:
 		userId := source.Owner().UserId()
 		model.OwnerUserId = sql.NullString{
 			String: userId,
@@ -48,7 +48,7 @@ func newLabelSqlModel(source label.Label) LabelSqlModel {
 }
 
 func newLabel(source LabelSqlModel) label.Label {
-	ownerType, err := user.ParseOwnerType(source.OwnerType)
+	ownerType, err := auth.ParseOwnerType(source.OwnerType)
 	if err != nil {
 		panic(err)
 	}
@@ -56,7 +56,7 @@ func newLabel(source LabelSqlModel) label.Label {
 	if source.OwnerUserId.Valid {
 		ownerFamilyId = &source.OwnerUserId.String
 	}
-	owner := user.NewOwner(ownerType, source.OwnerFamilyId, ownerFamilyId)
+	owner := auth.NewOwner(ownerType, source.OwnerFamilyId, ownerFamilyId)
 	lbl := label.NewLabel(
 		source.Id,
 		owner,

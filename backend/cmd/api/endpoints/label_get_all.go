@@ -3,11 +3,13 @@ package endpoints
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/label/query"
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/label"
 )
 
@@ -25,14 +27,24 @@ func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, core.P
 //	@Description	Get all labels
 //	@Tags			label
 //	@Produce		json
-//	@Param			with_default	query		boolean	false	"Include default labels"
+//	@Param			owner_type		query		[]string	false	"Owner types to filter by (system,personal,family). Can be provided multiple times."
 //	@Param			size			query		integer	false	"Number of items per page"
 //	@Param			page			query		integer	false	"Offset number"
 //	@Success		200				{object}	PaginatedResponseModel[labelModel]
 //	@Failure		400				{object}	httpError
 //	@Router			/labels [get]
 func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
-	withDefault := c.DefaultQuery("with_default", "false") == "true"
+	ownerTypeParams := c.QueryArray("owner_type")
+	var ownerTypes []auth.OwnerType
+	if len(ownerTypeParams) > 0 {
+		for _, ownerTypeStr := range ownerTypeParams {
+			ownerTypeStr = strings.TrimSpace(ownerTypeStr)
+			if ownerType, err := auth.ParseOwnerType(ownerTypeStr); err == nil {
+				ownerTypes = append(ownerTypes, ownerType)
+			}
+		}
+	}
+
 	size, err := strconv.Atoi(c.DefaultQuery("size", "10"))
 	if err != nil {
 		size = 10
@@ -41,7 +53,7 @@ func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
 	if err != nil {
 		page = 1
 	}
-	q := query.NewFindAllQuery(withDefault, size, page)
+	q := query.NewFindAllQuery(ownerTypes, size, page)
 	r := e.handler.Handle(c, q)
 	handleResponse(c,
 		r,

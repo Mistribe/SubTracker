@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 
-	"github.com/oleexo/subtracker/internal/domain/user"
+	"github.com/oleexo/subtracker/internal/domain/auth"
 )
 
 type AuthenticationMiddleware struct {
@@ -114,7 +114,7 @@ func (m AuthenticationMiddleware) Middleware() gin.HandlerFunc {
 
 		// Store claims in context for use in handlers
 		c.Set("claims", claims)
-		c.Set(user.ContextKey, claims["sub"])
+		c.Set(auth.ContextKey, claims["sub"])
 
 		c.Next()
 	}

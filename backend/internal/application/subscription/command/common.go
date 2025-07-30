@@ -5,9 +5,9 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
 func ensureRelatedEntityExists(
@@ -15,7 +15,7 @@ func ensureRelatedEntityExists(
 	familyRepository family.Repository,
 	newSubscription subscription.Subscription,
 ) error {
-	if newSubscription.Owner().Type() == user.FamilyOwner {
+	if newSubscription.Owner().Type() == auth.FamilyOwner {
 		familyId := newSubscription.Owner().FamilyId()
 
 		var members []uuid.UUID

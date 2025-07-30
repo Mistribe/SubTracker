@@ -6,13 +6,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"golang.org/x/text/currency"
+
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/provider/command"
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/provider"
-	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/ext"
 	"github.com/oleexo/subtracker/pkg/slicesx"
-	"golang.org/x/text/currency"
 )
 
 type ProviderPatchEndpoint struct {
@@ -167,7 +168,7 @@ func (e ProviderPatchEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	userId, ok := user.FromContext(c)
+	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, httpError{
 			Message: "invalid user id",

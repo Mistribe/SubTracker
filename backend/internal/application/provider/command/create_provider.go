@@ -6,9 +6,9 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/provider"
-	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/ext"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
@@ -21,7 +21,7 @@ type CreateProviderCommand struct {
 	Url            *string
 	PricingPageUrl *string
 	Labels         []uuid.UUID
-	Owner          user.Owner
+	Owner          auth.Owner
 	CreatedAt      *time.Time
 }
 

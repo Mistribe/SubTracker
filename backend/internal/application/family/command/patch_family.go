@@ -4,8 +4,9 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/family"
-	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
@@ -14,15 +15,20 @@ type PatchFamilyCommand struct {
 }
 
 type PatchFamilyCommandHandler struct {
-	repository family.Repository
+	familyRepository family.Repository
+	authService      auth.Service
 }
 
-func NewPatchFamilyCommandHandler(familyRepository family.Repository) *PatchFamilyCommandHandler {
-	return &PatchFamilyCommandHandler{repository: familyRepository}
+func NewPatchFamilyCommandHandler(familyRepository family.Repository,
+	authService auth.Service) *PatchFamilyCommandHandler {
+	return &PatchFamilyCommandHandler{
+		familyRepository: familyRepository,
+		authService:      authService,
+	}
 }
 
 func (h PatchFamilyCommandHandler) Handle(ctx context.Context, cmd PatchFamilyCommand) result.Result[family.Family] {
-	fam, err := h.repository.GetById(ctx, cmd.Family.Id())
+	fam, err := h.familyRepository.GetById(ctx, cmd.Family.Id())
 	if err != nil {
 		return result.Fail[family.Family](err)
 	}
@@ -35,7 +41,7 @@ func (h PatchFamilyCommandHandler) Handle(ctx context.Context, cmd PatchFamilyCo
 func (h PatchFamilyCommandHandler) createFamily(
 	ctx context.Context,
 	cmd PatchFamilyCommand) result.Result[family.Family] {
-	userId := user.MustGetFromContext(ctx)
+	userId := h.authService.MustGetUserId(ctx)
 	memberId, err := uuid.NewV7()
 	if err != nil {
 		return result.Fail[family.Family](err)
@@ -56,7 +62,7 @@ func (h PatchFamilyCommandHandler) createFamily(
 	if err := cmd.Family.GetValidationErrors(); err != nil {
 		return result.Fail[family.Family](err)
 	}
-	if err := h.repository.Save(ctx, cmd.Family); err != nil {
+	if err := h.familyRepository.Save(ctx, cmd.Family); err != nil {
 		return result.Fail[family.Family](err)
 	}
 
@@ -100,7 +106,7 @@ func (h PatchFamilyCommandHandler) patchFamily(
 		return result.Fail[family.Family](err)
 	}
 
-	if err := h.repository.Save(ctx, fam); err != nil {
+	if err := h.familyRepository.Save(ctx, fam); err != nil {
 		return result.Fail[family.Family](err)
 	}
 

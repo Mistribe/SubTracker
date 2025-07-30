@@ -6,9 +6,9 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/provider"
-	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/ext"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
@@ -56,12 +56,12 @@ func (h UpdateCommandHandler) update(
 	cmd UpdateProviderCommand,
 	prov provider.Provider) result.Result[provider.Provider] {
 
-	userId, ok := user.FromContext(ctx)
+	userId, ok := auth.GetUserIdFromContext(ctx)
 	if !ok {
-		return result.Fail[provider.Provider](user.ErrUnknownUser)
+		return result.Fail[provider.Provider](auth.ErrUnknownUser)
 	}
 
-	if prov.Owner().Type() == user.PersonalOwner &&
+	if prov.Owner().Type() == auth.PersonalOwner &&
 		prov.Owner().UserId() != userId {
 		return result.Fail[provider.Provider](provider.ErrOnlyOwnerCanEdit)
 	}

@@ -3,17 +3,20 @@ package label
 import (
 	"context"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
 type QueryParameters struct {
 	entity.QueryParameters
 
-	Owners []user.OwnerType
+	Owners []auth.OwnerType
 }
 
-func NewQueryParameters(limit, offset int, owners []user.OwnerType) QueryParameters {
+func NewQueryParameters(limit, offset int, owners []auth.OwnerType) QueryParameters {
+	if len(owners) == 0 {
+		owners = append(owners, auth.SystemOwner, auth.PersonalOwner, auth.FamilyOwner)
+	}
 	return QueryParameters{
 		QueryParameters: entity.QueryParameters{
 			Limit:  limit,

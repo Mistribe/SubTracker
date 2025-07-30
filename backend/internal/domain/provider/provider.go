@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 	"github.com/oleexo/subtracker/pkg/validationx"
 	"github.com/oleexo/subtracker/pkg/x"
@@ -30,8 +30,8 @@ type Provider interface {
 	Labels() *slicesx.Tracked[uuid.UUID]
 	SetLabels(labels []uuid.UUID)
 	IsCustom() bool
-	SetOwner(owner user.Owner)
-	Owner() user.Owner
+	SetOwner(owner auth.Owner)
+	Owner() auth.Owner
 	Plans() *slicesx.Tracked[Plan]
 	SetPlans(plans []Plan)
 	Equal(other Provider) bool
@@ -52,7 +52,7 @@ type provider struct {
 	pricingPageUrl *string
 	labels         *slicesx.Tracked[uuid.UUID]
 	plans          *slicesx.Tracked[Plan]
-	owner          user.Owner
+	owner          auth.Owner
 }
 
 func NewProvider(
@@ -64,7 +64,7 @@ func NewProvider(
 	pricingPageUrl *string,
 	labels []uuid.UUID,
 	plans []Plan,
-	owner user.Owner,
+	owner auth.Owner,
 	createdAt time.Time,
 	updatedAt time.Time) Provider {
 	return &provider{
@@ -175,12 +175,12 @@ func (p *provider) IsCustom() bool {
 	return p.owner != nil
 }
 
-func (p *provider) SetOwner(owner user.Owner) {
+func (p *provider) SetOwner(owner auth.Owner) {
 	p.owner = owner
 	p.SetAsDirty()
 }
 
-func (p *provider) Owner() user.Owner {
+func (p *provider) Owner() auth.Owner {
 	return p.owner
 }
 

@@ -9,8 +9,8 @@ import (
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/family/command"
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/family"
-	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/ext"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 )
@@ -106,7 +106,7 @@ func (m patchFamilyModel) Command(ownerId string) (command.PatchFamilyCommand, e
 //	@Failure		401		{object}	httpError
 //	@Router			/families [patch]
 func (e FamilyPatchEndpoint) Handle(c *gin.Context) {
-	userId, ok := user.FromContext(c)
+	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, httpError{
 			Message: "invalid user id",
