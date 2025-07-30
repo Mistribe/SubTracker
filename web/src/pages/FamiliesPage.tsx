@@ -7,11 +7,9 @@ import Family from "@/models/family.ts";
 import {useApiClient} from "@/hooks/use-api-client.ts";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import type {FamilyModel, PatchFamilyModel} from "@/api/models";
-import {CreateFamilyDialog} from "@/components/dialogs/CreateFamilyDialog.tsx";
-import {Badge} from "@/components/ui/badge";
+import {CreateFamilyDialog} from "@/components/families/CreateFamilyDialog.tsx";
 import {Input} from "@/components/ui/input";
-import {Checkbox} from "@/components/ui/checkbox";
-import {AddFamilyMemberDialog} from "@/components/dialogs/AddFamilyMemberDialog.tsx";
+import {AddFamilyMemberDialog} from "@/components/families/AddFamilyMemberDialog.tsx";
 
 const FamiliesPage = () => {
     const {apiClient} = useApiClient();
@@ -21,21 +19,18 @@ const FamiliesPage = () => {
     const [pageSize] = useState(10);
     const [editingFamilyId, setEditingFamilyId] = useState<string | null>(null);
     const [editedName, setEditedName] = useState<string>("");
-    const [editedJointAccount, setEditedJointAccount] = useState<boolean>(false);
     const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
     // Function to start editing a family
     const startEditing = (family: Family) => {
         setEditingFamilyId(family.id);
         setEditedName(family.name);
-        setEditedJointAccount(family.haveJointAccount);
     };
 
     // Function to cancel editing
     const cancelEditing = () => {
         setEditingFamilyId(null);
         setEditedName("");
-        setEditedJointAccount(false);
     };
 
     // Function to save changes
@@ -46,7 +41,7 @@ const FamiliesPage = () => {
             setIsUpdating(true);
 
             // Only update if values have changed
-            if (editedName === family.name && editedJointAccount === family.haveJointAccount) {
+            if (editedName === family.name) {
                 cancelEditing();
                 return;
             }
@@ -54,7 +49,6 @@ const FamiliesPage = () => {
             const patchModel: Partial<PatchFamilyModel> = {
                 id: family.id,
                 name: editedName,
-                haveJointAccount: editedJointAccount,
                 updatedAt: new Date()
             };
 
@@ -132,12 +126,15 @@ const FamiliesPage = () => {
         <div>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Families</h1>
-                {families.filter(x => x.isOwner).length === 0 && <CreateFamilyDialog/>}
+                {families.length > 0 && families.filter(x => x.isOwner).length === 0 && <CreateFamilyDialog/>}
             </div>
 
             {families.length === 0 ? (
                 <div className="text-center p-8 bg-gray-50 rounded-lg">
-                    <p className="text-gray-500">No families found. Create your first family to get started.</p>
+                    <p className="text-gray-500 mb-4">No families found. Create your first family to get started.</p>
+                    <div className="flex justify-center">
+                        <CreateFamilyDialog/>
+                    </div>
                 </div>
             ) : (
                 <div className="grid gap-6">
@@ -156,27 +153,11 @@ const FamiliesPage = () => {
                                                         placeholder="Family name"
                                                     />
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Checkbox
-                                                        id={`joint-account-${family.id}`}
-                                                        checked={editedJointAccount}
-                                                        onCheckedChange={(checked) => setEditedJointAccount(!!checked)}
-                                                    />
-                                                    <label
-                                                        htmlFor={`joint-account-${family.id}`}
-                                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                                    >
-                                                        Joint Account
-                                                    </label>
-                                                </div>
                                             </div>
                                         ) : (
                                             <>
                                                 <div className="flex items-center gap-2">
                                                     <CardTitle>{family.name}</CardTitle>
-                                                    {family.haveJointAccount && (
-                                                        <Badge variant="secondary">Joint Account</Badge>
-                                                    )}
                                                 </div>
                                                 <CardDescription>{family.members.length} members</CardDescription>
                                             </>

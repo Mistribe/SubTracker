@@ -23,16 +23,14 @@ import {
     FormMessage,
 } from "@/components/ui/form.tsx";
 import {Input} from "@/components/ui/input.tsx";
-import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {PlusIcon, Loader2} from "lucide-react";
+import {Loader2, PlusIcon} from "lucide-react";
 import {useApiClient} from "@/hooks/use-api-client.ts";
 import type {CreateFamilyModel} from "@/api/models";
 
 // Define the form schema
 const formSchema = z.object({
     name: z.string().min(1, "Family name is required"),
-    haveJointAccount: z.boolean(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -52,7 +50,6 @@ export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
-            haveJointAccount: false,
         },
     });
 
@@ -68,7 +65,6 @@ export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
             // Create the family model
             const familyModel: CreateFamilyModel = {
                 name: values.name,
-                haveJointAccount: values.haveJointAccount,
             };
 
             // Call the API to create the family
@@ -122,27 +118,6 @@ export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
                                         This is the name of your family.
                                     </FormDescription>
                                     <FormMessage/>
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="haveJointAccount"
-                            render={({field}) => (
-                                <FormItem
-                                    className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                                    <FormControl>
-                                        <Checkbox
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
-                                    </FormControl>
-                                    <div className="space-y-1 leading-none">
-                                        <FormLabel>Joint Account</FormLabel>
-                                        <FormDescription>
-                                            Does your family have a joint account?
-                                        </FormDescription>
-                                    </div>
                                 </FormItem>
                             )}
                         />

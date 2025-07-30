@@ -781,7 +781,6 @@ export function deserializeIntoPatchFamilyMemberModel(patchFamilyMemberModel: Pa
 // @ts-ignore
 export function deserializeIntoPatchFamilyModel(patchFamilyModel: Partial<PatchFamilyModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "have_joint_account": n => { patchFamilyModel.haveJointAccount = n.getBooleanValue(); },
         "id": n => { patchFamilyModel.id = n.getStringValue(); },
         "members": n => { patchFamilyModel.members = n.getCollectionOfObjectValues<PatchFamilyMemberModel>(createPatchFamilyMemberModelFromDiscriminatorValue); },
         "name": n => { patchFamilyModel.name = n.getStringValue(); },
@@ -1208,10 +1207,6 @@ export interface PatchFamilyMemberModel extends AdditionalDataHolder, Parsable {
  * Model for updating family details
  */
 export interface PatchFamilyModel extends AdditionalDataHolder, Parsable {
-    /**
-     * Indicates if family has joint account
-     */
-    haveJointAccount?: boolean | null;
     /**
      * Family ID
      */
@@ -1714,7 +1709,6 @@ export function serializePatchFamilyMemberModel(writer: SerializationWriter, pat
 // @ts-ignore
 export function serializePatchFamilyModel(writer: SerializationWriter, patchFamilyModel: Partial<PatchFamilyModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!patchFamilyModel || isSerializingDerivedType) { return; }
-    writer.writeBooleanValue("have_joint_account", patchFamilyModel.haveJointAccount);
     writer.writeStringValue("id", patchFamilyModel.id);
     writer.writeCollectionOfObjectValues<PatchFamilyMemberModel>("members", patchFamilyModel.members, serializePatchFamilyMemberModel);
     writer.writeStringValue("name", patchFamilyModel.name);
