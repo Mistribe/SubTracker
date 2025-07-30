@@ -122,9 +122,9 @@ export interface CreateFamilyModel extends AdditionalDataHolder, Parsable {
      */
     createdAt?: Date | null;
     /**
-     * The have_joint_account property
+     * The creator_name property
      */
-    haveJointAccount?: boolean | null;
+    creatorName?: string | null;
     /**
      * The id property
      */
@@ -521,7 +521,7 @@ export function deserializeIntoCreateFamilyMemberModel(createFamilyMemberModel: 
 export function deserializeIntoCreateFamilyModel(createFamilyModel: Partial<CreateFamilyModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "created_at": n => { createFamilyModel.createdAt = n.getDateValue(); },
-        "have_joint_account": n => { createFamilyModel.haveJointAccount = n.getBooleanValue(); },
+        "creator_name": n => { createFamilyModel.creatorName = n.getStringValue(); },
         "id": n => { createFamilyModel.id = n.getStringValue(); },
         "name": n => { createFamilyModel.name = n.getStringValue(); },
     }
@@ -1466,7 +1466,7 @@ export function serializeCreateFamilyMemberModel(writer: SerializationWriter, cr
 export function serializeCreateFamilyModel(writer: SerializationWriter, createFamilyModel: Partial<CreateFamilyModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!createFamilyModel || isSerializingDerivedType) { return; }
     writer.writeDateValue("created_at", createFamilyModel.createdAt);
-    writer.writeBooleanValue("have_joint_account", createFamilyModel.haveJointAccount);
+    writer.writeStringValue("creator_name", createFamilyModel.creatorName);
     writer.writeStringValue("id", createFamilyModel.id);
     writer.writeStringValue("name", createFamilyModel.name);
     writer.writeAdditionalData(createFamilyModel.additionalData);

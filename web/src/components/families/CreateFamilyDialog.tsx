@@ -31,6 +31,7 @@ import type {CreateFamilyModel} from "@/api/models";
 // Define the form schema
 const formSchema = z.object({
     name: z.string().min(1, "Family name is required"),
+    creatorName: z.string().min(1, "Creator name is required"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -50,6 +51,7 @@ export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
+            creatorName: ""
         },
     });
 
@@ -65,6 +67,7 @@ export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
             // Create the family model
             const familyModel: CreateFamilyModel = {
                 name: values.name,
+                creatorName: values.creatorName
             };
 
             // Call the API to create the family
@@ -116,6 +119,22 @@ export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
                                     </FormControl>
                                     <FormDescription>
                                         This is the name of your family.
+                                    </FormDescription>
+                                    <FormMessage/>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="creatorName"
+                            render={({field}) => (
+                                <FormItem>
+                                    <FormLabel>Creator Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Enter your name" {...field} />
+                                    </FormControl>
+                                    <FormDescription>
+                                        Your name as the creator of this family.
                                     </FormDescription>
                                     <FormMessage/>
                                 </FormItem>
