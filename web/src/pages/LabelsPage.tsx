@@ -1,6 +1,5 @@
 import {useState} from "react";
 import {hexToArgb} from "@/components/ui/utils/color-utils";
-import {useLabelsQuery} from "@/hooks/labels/useLabelsQuery";
 import {useLabelMutations} from "@/hooks/labels/useLabelMutations";
 import {useFamiliesMutations} from "@/hooks/families/useFamiliesMutations";
 import {LabelHeader} from "@/components/labels/LabelHeader";
@@ -11,29 +10,6 @@ import Label from "@/models/label";
 import {OwnerType} from "@/models/ownerType";
 
 const LabelsPage = () => {
-    const [page] = useState(1);
-    const [pageSize] = useState(10);
-
-    // Use custom hooks for data fetching and mutations with separate queries for each label type
-    const {
-        data: systemLabelsResponse,
-        isLoading: isLoadingSystemLabels,
-        error: systemLabelsError
-    } = useLabelsQuery({
-        ownerTypes: [OwnerType.System],
-        page,
-        pageSize
-    });
-
-    const {
-        data: personalLabelsResponse,
-        isLoading: isLoadingPersonalLabels,
-        error: personalLabelsError
-    } = useLabelsQuery({
-        ownerTypes: [OwnerType.Personal],
-        page,
-        pageSize
-    });
 
     const {
         createLabelMutation,
@@ -96,14 +72,9 @@ const LabelsPage = () => {
         setEditingName("");
     };
 
-    const handleDeleteLabel = (id: string) => {
-        // Find the label to check if it's a system label
-        const labelToDelete =
-            systemLabelsResponse?.labels?.find(label => label.id === id) ||
-            personalLabelsResponse?.labels?.find(label => label.id === id);
-
-        // Prevent deleting system labels
-        if (labelToDelete && !canModifyLabel(labelToDelete)) {
+    const handleDeleteLabel = (id: string, label?: Label) => {
+        // If label is provided, check if it can be modified
+        if (label && !canModifyLabel(label)) {
             return;
         }
 
@@ -142,17 +113,12 @@ const LabelsPage = () => {
 
             <div className="mt-8">
                 {/* System Labels Section */}
-                <SystemLabelsSection
-                    labels={systemLabelsResponse?.labels || []}
-                    isLoading={isLoadingSystemLabels}
-                    error={systemLabelsError}
-                />
+                <SystemLabelsSection />
 
                 {/* Personal and Family Labels Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Personal Labels Column */}
                     <PersonalLabelsSection
-                        labels={personalLabelsResponse?.labels || []}
                         editingId={editingId}
                         editingName={editingName}
                         editingColor={editingColor}
@@ -164,8 +130,6 @@ const LabelsPage = () => {
                         isUpdating={updateLabelMutation.isPending}
                         isDeletingId={deleteLabelMutation.isPending ? deleteLabelMutation.variables as string : null}
                         isAdding={createLabelMutation.isPending}
-                        isLoading={isLoadingPersonalLabels}
-                        error={personalLabelsError}
                     />
 
                     {/* Family Labels Column */}

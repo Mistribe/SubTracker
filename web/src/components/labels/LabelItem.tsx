@@ -6,7 +6,7 @@ import Label from "@/models/label";
 interface LabelItemProps {
   label: Label;
   onEdit?: (label: Label) => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (id: string, label?: Label) => void;
   isDeleting?: boolean;
   isReadOnly?: boolean;
 }
@@ -43,7 +43,7 @@ export const LabelItem = ({
             variant="ghost"
             size="icon"
             className="h-6 w-6 text-destructive hover:text-destructive"
-            onClick={() => onDelete?.(label.id)}
+            onClick={() => onDelete?.(label.id, label)}
             disabled={isDeleting}
             title="Delete label"
           >

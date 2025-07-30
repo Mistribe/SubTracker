@@ -1,19 +1,29 @@
-import Label from "@/models/label";
 import { LabelItem } from "./LabelItem";
 import { Loader2 } from "lucide-react";
+import { useLabelsQuery } from "@/hooks/labels/useLabelsQuery";
+import { OwnerType } from "@/models/ownerType";
 
 interface SystemLabelsSectionProps {
-  labels: Label[];
-  isLoading?: boolean;
-  error?: Error | null;
+  page?: number;
+  pageSize?: number;
 }
 
 export const SystemLabelsSection = ({ 
-  labels, 
-  isLoading = false, 
-  error = null 
+  page = 1,
+  pageSize = 10
 }: SystemLabelsSectionProps) => {
-  // No need to filter labels anymore since we're getting only system labels from the query
+  // Fetch system labels
+  const {
+    data: systemLabelsResponse,
+    isLoading,
+    error
+  } = useLabelsQuery({
+    ownerTypes: [OwnerType.System],
+    offset: (page - 1) * pageSize,
+    limit: pageSize
+  });
+
+  const labels = systemLabelsResponse?.labels || [];
 
   if (isLoading) {
     return (

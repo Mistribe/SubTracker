@@ -4,26 +4,25 @@ import { EditableLabelItem } from "./EditableLabelItem";
 import { AddLabelForm } from "./AddLabelForm";
 import { OwnerType } from "@/models/ownerType";
 import { Loader2 } from "lucide-react";
+import { useLabelsQuery } from "@/hooks/labels/useLabelsQuery";
 
 interface PersonalLabelsSectionProps {
-  labels: Label[];
   editingId: string | null;
   editingName: string;
   editingColor: string;
   onStartEditing: (label: Label) => void;
   onSaveEdit: (id: string, name: string, color: string) => void;
   onCancelEdit: () => void;
-  onDeleteLabel: (id: string) => void;
+  onDeleteLabel: (id: string, label?: Label) => void;
   onAddLabel: (name: string, color: string, ownerType?: OwnerType, familyId?: string) => void;
   isUpdating: boolean;
   isDeletingId: string | null;
   isAdding: boolean;
-  isLoading?: boolean;
-  error?: Error | null;
+  page?: number;
+  pageSize?: number;
 }
 
 export const PersonalLabelsSection = ({
-  labels,
   editingId,
   editingName,
   editingColor,
@@ -35,10 +34,21 @@ export const PersonalLabelsSection = ({
   isUpdating,
   isDeletingId,
   isAdding,
-  isLoading = false,
-  error = null
+  page = 1,
+  pageSize = 10
 }: PersonalLabelsSectionProps) => {
-  // No need to filter labels anymore since we're getting only personal labels from the query
+  // Fetch personal labels
+  const {
+    data: personalLabelsResponse,
+    isLoading,
+    error
+  } = useLabelsQuery({
+    ownerTypes: [OwnerType.Personal],
+    offset: (page - 1) * pageSize,
+    limit: pageSize
+  });
+
+  const labels = personalLabelsResponse?.labels || [];
 
   if (isLoading) {
     return (
