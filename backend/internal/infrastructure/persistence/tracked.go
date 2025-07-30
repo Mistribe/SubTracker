@@ -28,8 +28,10 @@ func saveTrackedSlice[TEntity comparable, TSqlModel any](
 	if len(omit) > 0 {
 		baseRequest = baseRequest.Omit(omit...)
 	}
-	if err := baseRequest.Create(&addedSqlModels).Error; err != nil {
-		return err
+	if len(addedSqlModels) > 0 {
+		if err := baseRequest.Create(&addedSqlModels).Error; err != nil {
+			return err
+		}
 	}
 	for remove := range s.Removed() {
 		model = mapFunc(remove)

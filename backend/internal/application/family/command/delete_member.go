@@ -42,8 +42,13 @@ func (h DeleteFamilyMemberCommandHandler) deleteMember(
 	if err := ensureOwnerIsEditor(ctx, fam.OwnerId()); err != nil {
 		return result.Fail[bool](err)
 	}
-	if !fam.ContainsMember(command.Id) {
+	mbr := fam.GetMember(command.Id)
+	if mbr == nil {
 		return result.Fail[bool](family.ErrFamilyMemberNotFound)
+	}
+
+	if err := fam.RemoveMember(mbr); err != nil {
+		return result.Fail[bool](err)
 	}
 
 	if err := fam.GetValidationErrors(); err != nil {

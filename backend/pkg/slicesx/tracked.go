@@ -30,7 +30,7 @@ func NewTracked[T comparable](
 }
 
 func (d *Tracked[T]) HasChanges() bool {
-	return len(d._added) > 0 || len(d._removed) > 0
+	return len(d._added) > 0 || len(d._removed) > 0 || len(d._updated) > 0
 }
 
 func (d *Tracked[T]) Values() []T {

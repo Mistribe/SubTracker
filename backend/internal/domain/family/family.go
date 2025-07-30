@@ -19,6 +19,7 @@ type Family interface {
 	OwnerId() string
 	Members() *slicesx.Tracked[Member]
 	AddMember(member Member) error
+	RemoveMember(member Member) error
 	GetMember(id uuid.UUID) Member
 	UpdateMember(member Member) error
 	ContainsMember(id uuid.UUID) bool
@@ -105,6 +106,15 @@ func (f *family) AddMember(member Member) error {
 	return nil
 }
 
+func (f *family) RemoveMember(member Member) error {
+	if !f.members.Remove(member) {
+		return ErrFamilyMemberNotFound
+	}
+
+	f.SetAsDirty()
+	return nil
+}
+
 func (f *family) isDuplicateMember(member Member) bool {
 	for m := range f.members.It() {
 		if m.Id() == member.Id() {
@@ -127,9 +137,9 @@ func (f *family) GetMember(id uuid.UUID) Member {
 func (f *family) UpdateMember(member Member) error {
 	if !f.members.Update(member) {
 		return ErrFamilyMemberNotFound
-
 	}
 
+	f.SetAsDirty()
 	return nil
 }
 
