@@ -15,6 +15,9 @@ func saveTrackedSlice[TEntity comparable, TSqlModel any](
 	mapFunc func(TEntity) TSqlModel,
 	omit ...string,
 ) error {
+	if !s.HasChanges() {
+		return nil
+	}
 	var model TSqlModel
 
 	var addedSqlModels []TSqlModel

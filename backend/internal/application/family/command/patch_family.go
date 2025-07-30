@@ -3,7 +3,9 @@ package command
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/oleexo/subtracker/internal/domain/family"
+	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
@@ -33,6 +35,24 @@ func (h PatchFamilyCommandHandler) Handle(ctx context.Context, cmd PatchFamilyCo
 func (h PatchFamilyCommandHandler) createFamily(
 	ctx context.Context,
 	cmd PatchFamilyCommand) result.Result[family.Family] {
+	userId := user.MustGetFromContext(ctx)
+	memberId, err := uuid.NewV7()
+	if err != nil {
+		return result.Fail[family.Family](err)
+	}
+
+	creator := family.NewMember(
+		memberId,
+		cmd.Family.Id(),
+		"You",
+		false,
+		cmd.Family.CreatedAt(),
+		cmd.Family.UpdatedAt(),
+	)
+	creator.SetUserId(&userId)
+
+	cmd.Family.AddMember(creator)
+
 	if err := cmd.Family.GetValidationErrors(); err != nil {
 		return result.Fail[family.Family](err)
 	}

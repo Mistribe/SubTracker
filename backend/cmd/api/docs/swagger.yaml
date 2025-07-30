@@ -489,9 +489,6 @@ components:
     endpoints.patchFamilyModel:
       description: Model for updating family details
       properties:
-        have_joint_account:
-          description: Indicates if family has joint account
-          type: boolean
         id:
           description: Family ID
           type: string

@@ -62,8 +62,6 @@ type patchFamilyModel struct {
 	Id *string `json:"id" binding:"required"`
 	// Family name
 	Name string `json:"name" binding:"required"`
-	// Indicates if family has joint account
-	HaveJointAccount bool `json:"have_joint_account,omitempty"`
 	// List of family members
 	Members []patchFamilyMemberModel `json:"members,omitempty"`
 	// Optional timestamp of the last update
