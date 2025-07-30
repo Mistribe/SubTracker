@@ -33,3 +33,15 @@ func (s AuthenticationService) MustGetFamilies(ctx context.Context) []uuid.UUID 
 	}
 	return families
 }
+
+func (s AuthenticationService) IsInFamily(ctx context.Context, familyId uuid.UUID) bool {
+	families := s.MustGetFamilies(ctx)
+
+	for _, fam := range families {
+		if fam == familyId {
+			return true
+		}
+	}
+
+	return false
+}

@@ -3,6 +3,8 @@ package query
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/label"
@@ -10,16 +12,21 @@ import (
 )
 
 type FindAllQuery struct {
-	Owners []auth.OwnerType
-	Limit  int
-	Offset int
+	Owners   []auth.OwnerType
+	Limit    int
+	Offset   int
+	FamilyId *uuid.UUID
 }
 
-func NewFindAllQuery(owners []auth.OwnerType, size int, offset int) FindAllQuery {
+func NewFindAllQuery(owners []auth.OwnerType,
+	limit int,
+	offset int,
+	familyId *uuid.UUID) FindAllQuery {
 	return FindAllQuery{
-		Owners: owners,
-		Limit:  size,
-		Offset: offset,
+		Owners:   owners,
+		Limit:    limit,
+		Offset:   offset,
+		FamilyId: familyId,
 	}
 }
 
@@ -34,7 +41,7 @@ func NewFindAllQueryHandler(repository label.Repository) *FindAllQueryHandler {
 func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[core.PaginatedResponse[label.Label]] {
-	params := label.NewQueryParameters(query.Limit, query.Offset, query.Owners)
+	params := label.NewQueryParameters(query.Limit, query.Offset, query.Owners, query.FamilyId)
 	lbs, err := h.repository.GetAll(ctx, params)
 	if err != nil {
 		return result.Fail[core.PaginatedResponse[label.Label]](err)

@@ -3,6 +3,8 @@ package label
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/entity"
 )
@@ -10,10 +12,13 @@ import (
 type QueryParameters struct {
 	entity.QueryParameters
 
-	Owners []auth.OwnerType
+	Owners   []auth.OwnerType
+	FamilyId *uuid.UUID
 }
 
-func NewQueryParameters(limit, offset int, owners []auth.OwnerType) QueryParameters {
+func NewQueryParameters(limit, offset int,
+	owners []auth.OwnerType,
+	familyId *uuid.UUID) QueryParameters {
 	if len(owners) == 0 {
 		owners = append(owners, auth.SystemOwner, auth.PersonalOwner, auth.FamilyOwner)
 	}
@@ -22,7 +27,8 @@ func NewQueryParameters(limit, offset int, owners []auth.OwnerType) QueryParamet
 			Limit:  limit,
 			Offset: offset,
 		},
-		Owners: owners,
+		Owners:   owners,
+		FamilyId: familyId,
 	}
 }
 

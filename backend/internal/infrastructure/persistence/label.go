@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
+	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/internal/domain/label"
 )
 
@@ -60,7 +61,15 @@ func (r LabelRepository) GetAll(ctx context.Context, parameters label.QueryParam
 				query = query.Or("owner_type = ?", auth.SystemOwner)
 			}
 		case auth.FamilyOwner:
-			families := r.authService.MustGetFamilies(ctx)
+			var families []uuid.UUID
+			if parameters.FamilyId != nil {
+				if r.authService.IsInFamily(ctx, *parameters.FamilyId) {
+					return nil, family.ErrFamilyNotFound
+				}
+				families = append(families, *parameters.FamilyId)
+			} else {
+				families = r.authService.MustGetFamilies(ctx)
+			}
 			if len(families) > 0 {
 				if i == 0 {
 					query = query.Where("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwner, families)

@@ -9,4 +9,5 @@ import (
 type Service interface {
 	MustGetUserId(ctx context.Context) string
 	MustGetFamilies(ctx context.Context) []uuid.UUID
+	IsInFamily(ctx context.Context, familyId uuid.UUID) bool
 }

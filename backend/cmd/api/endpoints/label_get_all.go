@@ -28,8 +28,9 @@ func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, core.P
 //	@Tags			label
 //	@Produce		json
 //	@Param			owner_type	query		[]string							false	"Owner types to filter by (system,personal,family). Can be provided multiple times."
-//	@Param			size		query		integer								false	"Number of items per page (default: 10)"
-//	@Param			page		query		integer								false	"Page number (default: 1)"
+//	@Param			limit		query		integer								false	"Number of items (default: 10)"
+//	@Param			offset		query		integer								false	"Offset (default: 0)"
+//	@Param			familyId	query		string								false	"Family ID (UUID format)"
 //	@Success		200			{object}	PaginatedResponseModel[labelModel]	"Paginated list of labels"
 //	@Failure		400			{object}	httpError							"Bad Request - Invalid query parameters"
 //	@Failure		500			{object}	httpError							"Internal Server Error"
@@ -46,15 +47,17 @@ func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
 		}
 	}
 
-	size, err := strconv.Atoi(c.DefaultQuery("size", "10"))
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	if err != nil {
-		size = 10
+		limit = 10
 	}
-	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	offset, err := strconv.Atoi(c.DefaultQuery("offset", "0"))
 	if err != nil {
-		page = 1
+		offset = 0
 	}
-	q := query.NewFindAllQuery(ownerTypes, size, page)
+
+	familyId := parseUuidOrNil(c.Query("familyId"))
+	q := query.NewFindAllQuery(ownerTypes, limit, offset, familyId)
 	r := e.handler.Handle(c, q)
 	handleResponse(c,
 		r,

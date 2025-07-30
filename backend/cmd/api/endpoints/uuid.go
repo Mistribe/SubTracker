@@ -33,3 +33,18 @@ func parseUuidOrNew(in *string) (uuid.UUID, error) {
 
 	return out, nil
 }
+
+func parseUuidOrNil(in string) *uuid.UUID {
+	var out uuid.UUID
+	var err error
+	if in == "" {
+		out = uuid.UUID{}
+	} else {
+		out, err = uuid.Parse(in)
+		if err != nil {
+			return nil
+		}
+	}
+
+	return &out
+}
