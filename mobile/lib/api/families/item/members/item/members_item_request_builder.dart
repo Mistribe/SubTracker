@@ -20,28 +20,31 @@ class MembersItemRequestBuilder extends BaseRequestBuilder<MembersItemRequestBui
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
     MembersItemRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/families/{familyId}/members/{id}", {RequestInformation.rawUrlKey : rawUrl}) ;
-    /// Delete family member by ID
+    /// Permanently delete a family member from a family
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<void> deleteAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toDeleteRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
             '404' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.sendNoContent(requestInfo, errorMapping);
     }
-    /// Update family member by ID
+    /// Update an existing family member's information such as name and kid status
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<FamilyModel?> putAsync(UpdateFamilyMemberModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPutRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
+            '401' :  HttpError.createFromDiscriminatorValue,
             '404' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<FamilyModel>(requestInfo, FamilyModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Delete family member by ID
+    /// Permanently delete a family member from a family
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toDeleteRequestInformation([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
         var requestInfo = RequestInformation(httpMethod : HttpMethod.delete, urlTemplate : urlTemplate, pathParameters :  pathParameters);
@@ -49,7 +52,7 @@ class MembersItemRequestBuilder extends BaseRequestBuilder<MembersItemRequestBui
         requestInfo.headers.put('Accept', 'application/json');
         return requestInfo;
     }
-    /// Update family member by ID
+    /// Update an existing family member's information such as name and kid status
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toPutRequestInformation(UpdateFamilyMemberModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {

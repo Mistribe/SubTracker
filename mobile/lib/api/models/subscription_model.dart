@@ -1,44 +1,46 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import './owner_model.dart';
+import './subscription_model_recurrency.dart';
 import './subscription_payer_model.dart';
 
 /// auto generated
+/// Subscription object containing all information about an active subscription including billing and usage details
 class SubscriptionModel implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
-    ///  The created_at property
+    ///  @Description ISO 8601 timestamp when the subscription was originally created
     DateTime? createdAt;
-    ///  The custom_recurrency property
+    ///  @Description Custom recurrency interval in days (required when recurrency is custom)
     int? customRecurrency;
-    ///  The end_date property
+    ///  @Description ISO 8601 timestamp when the subscription expires (null for ongoing subscriptions)
     DateTime? endDate;
-    ///  The etag property
+    ///  @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
     String? etag;
-    ///  The free_trial_days property
+    ///  @Description Number of free trial days remaining (null if no trial or trial expired)
     int? freeTrialDays;
-    ///  The friendly_name property
+    ///  @Description Optional custom name for easy identification of the subscription
     String? friendlyName;
-    ///  The id property
+    ///  @Description Unique identifier for the subscription (UUID format)
     String? id;
-    ///  The owner property
+    ///  @Description Ownership information specifying whether this subscription belongs to a user or family
     OwnerModel? owner;
-    ///  The payer property
+    ///  @Description Information about who pays for this subscription within the family
     SubscriptionPayerModel? payer;
-    ///  The plan_id property
+    ///  @Description ID of the specific plan being subscribed to
     String? planId;
-    ///  The price_id property
+    ///  @Description ID of the pricing tier for this subscription
     String? priceId;
-    ///  The recurrency property
-    String? recurrency;
-    ///  The service_provider_id property
+    ///  @Description Billing recurrency pattern (monthly, yearly, custom, etc.)
+    SubscriptionModelRecurrency? recurrency;
+    ///  @Description ID of the service provider offering this subscription
     String? serviceProviderId;
-    ///  The service_users property
+    ///  @Description List of family member IDs who use this service (for shared subscriptions)
     Iterable<String>? serviceUsers;
-    ///  The start_date property
+    ///  @Description ISO 8601 timestamp when the subscription becomes active
     DateTime? startDate;
-    ///  The updated_at property
+    ///  @Description ISO 8601 timestamp when the subscription was last modified
     DateTime? updatedAt;
     /// Instantiates a new [SubscriptionModel] and sets the default values.
     SubscriptionModel() :  
@@ -63,7 +65,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
         deserializerMap['payer'] = (node) => payer = node.getObjectValue<SubscriptionPayerModel>(SubscriptionPayerModel.createFromDiscriminatorValue);
         deserializerMap['plan_id'] = (node) => planId = node.getStringValue();
         deserializerMap['price_id'] = (node) => priceId = node.getStringValue();
-        deserializerMap['recurrency'] = (node) => recurrency = node.getStringValue();
+        deserializerMap['recurrency'] = (node) => recurrency = node.getEnumValue<SubscriptionModelRecurrency>((stringValue) => SubscriptionModelRecurrency.values.where((enumVal) => enumVal.value == stringValue).firstOrNull);
         deserializerMap['service_provider_id'] = (node) => serviceProviderId = node.getStringValue();
         deserializerMap['service_users'] = (node) => serviceUsers = node.getCollectionOfPrimitiveValues<String>();
         deserializerMap['start_date'] = (node) => startDate = node.getDateTimeValue();
@@ -85,7 +87,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
         writer.writeObjectValue<SubscriptionPayerModel>('payer', payer);
         writer.writeStringValue('plan_id', planId);
         writer.writeStringValue('price_id', priceId);
-        writer.writeStringValue('recurrency', recurrency);
+        writer.writeEnumValue<SubscriptionModelRecurrency>('recurrency', recurrency, (e) => e?.value);
         writer.writeStringValue('service_provider_id', serviceProviderId);
         writer.writeCollectionOfPrimitiveValues<String?>('service_users', serviceUsers);
         writer.writeDateTimeValue('start_date', startDate);

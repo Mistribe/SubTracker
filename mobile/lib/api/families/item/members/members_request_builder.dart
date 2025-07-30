@@ -9,7 +9,7 @@ import './item/members_item_request_builder.dart';
 /// Builds and executes requests for operations under \families\{familyId}\members
 class MembersRequestBuilder extends BaseRequestBuilder<MembersRequestBuilder> {
     /// Gets an item from the ApiSdk.families.item.members.item collection
-    ///  [id] Family member ID
+    ///  [id] Family member ID (UUID format)
     MembersItemRequestBuilder byId(String id) {
         var urlTplParams = Map.of(pathParameters);
         urlTplParams.putIfAbsent('id', () => id);
@@ -28,17 +28,20 @@ class MembersRequestBuilder extends BaseRequestBuilder<MembersRequestBuilder> {
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
     MembersRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/families/{familyId}/members", {RequestInformation.rawUrlKey : rawUrl}) ;
-    /// Add a new family member
+    /// Add a new member to an existing family
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<FamilyModel?> postAsync(CreateFamilyMemberModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPostRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
+            '401' :  HttpError.createFromDiscriminatorValue,
+            '404' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<FamilyModel>(requestInfo, FamilyModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Add a new family member
+    /// Add a new member to an existing family
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toPostRequestInformation(CreateFamilyMemberModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {

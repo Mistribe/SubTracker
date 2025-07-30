@@ -14,20 +14,22 @@ import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type 
 export interface PlansRequestBuilder extends BaseRequestBuilder<PlansRequestBuilder> {
     /**
      * Gets an item from the ApiSdk.providers.item.plans.item collection
-     * @param planId Unique identifier of the item
+     * @param planId Plan ID (UUID format)
      * @returns {WithPlanItemRequestBuilder}
      */
      byPlanId(planId: string) : WithPlanItemRequestBuilder;
     /**
-     * Create a new plan for a provider
+     * Create a new subscription plan for an existing provider
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<PlanModel>}
      * @throws {HttpError} error when the service returns a 400 status code
+     * @throws {HttpError} error when the service returns a 404 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      post(body: CreatePlanModel, requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<PlanModel | undefined>;
     /**
-     * Create a new plan for a provider
+     * Create a new subscription plan for an existing provider
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
@@ -57,6 +59,8 @@ export const PlansRequestBuilderRequestsMetadata: RequestsMetadata = {
         responseBodyContentType: "application/json",
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            404: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "send",
         responseBodyFactory:  createPlanModelFromDiscriminatorValue,

@@ -1,18 +1,20 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
+import './owner_model_type.dart';
 
 /// auto generated
+/// @Description Ownership information specifying whether this subscription belongs to a user or family
 class OwnerModel implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
-    ///  The etag property
+    ///  @Description Entity tag for optimistic concurrency control
     String? etag;
-    ///  The family_id property
+    ///  @Description Family ID when an ownership type is family (required for family ownership)
     String? familyId;
-    ///  The type property
-    String? type_;
-    ///  The userId property
+    ///  @Description Type of ownership (personal, family or system)
+    OwnerModelType? type_;
+    ///  @Description User ID when an ownership type is personal (required for personal ownership)
     String? userId;
     /// Instantiates a new [OwnerModel] and sets the default values.
     OwnerModel() :  
@@ -28,7 +30,7 @@ class OwnerModel implements AdditionalDataHolder, Parsable {
         var deserializerMap = <String, void Function(ParseNode)>{};
         deserializerMap['etag'] = (node) => etag = node.getStringValue();
         deserializerMap['family_id'] = (node) => familyId = node.getStringValue();
-        deserializerMap['type'] = (node) => type_ = node.getStringValue();
+        deserializerMap['type'] = (node) => type_ = node.getEnumValue<OwnerModelType>((stringValue) => OwnerModelType.values.where((enumVal) => enumVal.value == stringValue).firstOrNull);
         deserializerMap['userId'] = (node) => userId = node.getStringValue();
         return deserializerMap;
     }
@@ -38,7 +40,7 @@ class OwnerModel implements AdditionalDataHolder, Parsable {
     void serialize(SerializationWriter writer) {
         writer.writeStringValue('etag', etag);
         writer.writeStringValue('family_id', familyId);
-        writer.writeStringValue('type', type_);
+        writer.writeEnumValue<OwnerModelType>('type', type_, (e) => e?.value);
         writer.writeStringValue('userId', userId);
         writer.writeAdditionalData(additionalData);
     }

@@ -222,11 +222,11 @@ export function createPaginatedResponseModelEndpoints_ProviderModelFromDiscrimin
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
- * @returns {PaginatedResponseModelEndpoints_subscriptionModel}
+ * @returns {PaginatedResponseModelEndpoints_SubscriptionModel}
  */
 // @ts-ignore
-export function createPaginatedResponseModelEndpoints_subscriptionModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
-    return deserializeIntoPaginatedResponseModelEndpoints_subscriptionModel;
+export function createPaginatedResponseModelEndpoints_SubscriptionModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoPaginatedResponseModelEndpoints_SubscriptionModel;
 }
 /**
  * Creates a new instance of the appropriate class based on discriminator value
@@ -397,7 +397,7 @@ export interface CreateSubscriptionModel extends AdditionalDataHolder, Parsable 
      */
     owner?: EditableOwnerModel | null;
     /**
-     * The payer property
+     * Subscription payer object used for updating who pays for a subscription
      */
     payer?: EditableSubscriptionPayerModel | null;
     /**
@@ -469,6 +469,15 @@ export function createUpdateFamilyModelFromDiscriminatorValue(parseNode: ParseNo
 // @ts-ignore
 export function createUpdateLabelModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
     return deserializeIntoUpdateLabelModel;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {UpdatePlanModel}
+ */
+// @ts-ignore
+export function createUpdatePlanModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoUpdatePlanModel;
 }
 /**
  * Creates a new instance of the appropriate class based on discriminator value
@@ -614,7 +623,7 @@ export function deserializeIntoCreateSubscriptionModel(createSubscriptionModel: 
 export function deserializeIntoEditableOwnerModel(editableOwnerModel: Partial<EditableOwnerModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "family_id": n => { editableOwnerModel.familyId = n.getStringValue(); },
-        "type": n => { editableOwnerModel.type = n.getStringValue(); },
+        "type": n => { editableOwnerModel.type = n.getEnumValue<EditableOwnerModel_type>(EditableOwnerModel_typeObject); },
     }
 }
 /**
@@ -627,7 +636,7 @@ export function deserializeIntoEditableSubscriptionPayerModel(editableSubscripti
     return {
         "family_id": n => { editableSubscriptionPayerModel.familyId = n.getStringValue(); },
         "memberId": n => { editableSubscriptionPayerModel.memberId = n.getStringValue(); },
-        "type": n => { editableSubscriptionPayerModel.type = n.getStringValue(); },
+        "type": n => { editableSubscriptionPayerModel.type = n.getEnumValue<EditableSubscriptionPayerModel_type>(EditableSubscriptionPayerModel_typeObject); },
     }
 }
 /**
@@ -657,7 +666,6 @@ export function deserializeIntoFamilyModel(familyModel: Partial<FamilyModel> | u
     return {
         "created_at": n => { familyModel.createdAt = n.getDateValue(); },
         "etag": n => { familyModel.etag = n.getStringValue(); },
-        "have_joint_account": n => { familyModel.haveJointAccount = n.getBooleanValue(); },
         "id": n => { familyModel.id = n.getStringValue(); },
         "is_owner": n => { familyModel.isOwner = n.getBooleanValue(); },
         "members": n => { familyModel.members = n.getCollectionOfObjectValues<FamilyMemberModel>(createFamilyMemberModelFromDiscriminatorValue); },
@@ -703,7 +711,7 @@ export function deserializeIntoOwnerModel(ownerModel: Partial<OwnerModel> | unde
     return {
         "etag": n => { ownerModel.etag = n.getStringValue(); },
         "family_id": n => { ownerModel.familyId = n.getStringValue(); },
-        "type": n => { ownerModel.type = n.getStringValue(); },
+        "type": n => { ownerModel.type = n.getEnumValue<OwnerModel_type>(OwnerModel_typeObject); },
         "userId": n => { ownerModel.userId = n.getStringValue(); },
     }
 }
@@ -748,15 +756,15 @@ export function deserializeIntoPaginatedResponseModelEndpoints_ProviderModel(pag
 }
 /**
  * The deserialization information for the current model
- * @param PaginatedResponseModelEndpoints_subscriptionModel The instance to deserialize into.
+ * @param PaginatedResponseModelEndpoints_SubscriptionModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
-export function deserializeIntoPaginatedResponseModelEndpoints_subscriptionModel(paginatedResponseModelEndpoints_subscriptionModel: Partial<PaginatedResponseModelEndpoints_subscriptionModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+export function deserializeIntoPaginatedResponseModelEndpoints_SubscriptionModel(paginatedResponseModelEndpoints_SubscriptionModel: Partial<PaginatedResponseModelEndpoints_SubscriptionModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "data": n => { paginatedResponseModelEndpoints_subscriptionModel.data = n.getCollectionOfObjectValues<SubscriptionModel>(createSubscriptionModelFromDiscriminatorValue); },
-        "length": n => { paginatedResponseModelEndpoints_subscriptionModel.length = n.getNumberValue(); },
-        "total": n => { paginatedResponseModelEndpoints_subscriptionModel.total = n.getNumberValue(); },
+        "data": n => { paginatedResponseModelEndpoints_SubscriptionModel.data = n.getCollectionOfObjectValues<SubscriptionModel>(createSubscriptionModelFromDiscriminatorValue); },
+        "length": n => { paginatedResponseModelEndpoints_SubscriptionModel.length = n.getNumberValue(); },
+        "total": n => { paginatedResponseModelEndpoints_SubscriptionModel.total = n.getNumberValue(); },
     }
 }
 /**
@@ -887,7 +895,7 @@ export function deserializeIntoSubscriptionModel(subscriptionModel: Partial<Subs
         "payer": n => { subscriptionModel.payer = n.getObjectValue<SubscriptionPayerModel>(createSubscriptionPayerModelFromDiscriminatorValue); },
         "plan_id": n => { subscriptionModel.planId = n.getStringValue(); },
         "price_id": n => { subscriptionModel.priceId = n.getStringValue(); },
-        "recurrency": n => { subscriptionModel.recurrency = n.getStringValue(); },
+        "recurrency": n => { subscriptionModel.recurrency = n.getEnumValue<SubscriptionModel_recurrency>(SubscriptionModel_recurrencyObject); },
         "service_provider_id": n => { subscriptionModel.serviceProviderId = n.getStringValue(); },
         "service_users": n => { subscriptionModel.serviceUsers = n.getCollectionOfPrimitiveValues<string>(); },
         "start_date": n => { subscriptionModel.startDate = n.getDateValue(); },
@@ -905,7 +913,7 @@ export function deserializeIntoSubscriptionPayerModel(subscriptionPayerModel: Pa
         "etag": n => { subscriptionPayerModel.etag = n.getStringValue(); },
         "family_id": n => { subscriptionPayerModel.familyId = n.getStringValue(); },
         "memberId": n => { subscriptionPayerModel.memberId = n.getStringValue(); },
-        "type": n => { subscriptionPayerModel.type = n.getStringValue(); },
+        "type": n => { subscriptionPayerModel.type = n.getEnumValue<SubscriptionPayerModel_type>(SubscriptionPayerModel_typeObject); },
     }
 }
 /**
@@ -948,6 +956,19 @@ export function deserializeIntoUpdateLabelModel(updateLabelModel: Partial<Update
 }
 /**
  * The deserialization information for the current model
+ * @param UpdatePlanModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoUpdatePlanModel(updatePlanModel: Partial<UpdatePlanModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "description": n => { updatePlanModel.description = n.getStringValue(); },
+        "name": n => { updatePlanModel.name = n.getStringValue(); },
+        "updateAt": n => { updatePlanModel.updateAt = n.getStringValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
  * @param UpdatePriceModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
@@ -986,89 +1007,96 @@ export function deserializeIntoUpdateSubscriptionModel(updateSubscriptionModel: 
 }
 export interface EditableOwnerModel extends AdditionalDataHolder, Parsable {
     /**
-     * The family_id property
+     * @Description Family ID when an ownership type is family (required for family ownership)
      */
     familyId?: string | null;
     /**
-     * The type property
+     * @Description Type of ownership (personal, family or system)
      */
-    type?: string | null;
+    type?: EditableOwnerModel_type | null;
 }
+export type EditableOwnerModel_type = (typeof EditableOwnerModel_typeObject)[keyof typeof EditableOwnerModel_typeObject];
+/**
+ * Subscription payer object used for updating who pays for a subscription
+ */
 export interface EditableSubscriptionPayerModel extends AdditionalDataHolder, Parsable {
     /**
-     * The family_id property
+     * @Description ID of the family associated with this payer
      */
     familyId?: string | null;
     /**
-     * The memberId property
+     * @Description ID of the specific family member who pays (required when type is family_member)
      */
     memberId?: string | null;
     /**
-     * The type property
+     * @Description Type of payer (family or family member)
      */
-    type?: string | null;
+    type?: EditableSubscriptionPayerModel_type | null;
 }
+export type EditableSubscriptionPayerModel_type = (typeof EditableSubscriptionPayerModel_typeObject)[keyof typeof EditableSubscriptionPayerModel_typeObject];
+/**
+ * Family member object containing member information
+ */
 export interface FamilyMemberModel extends AdditionalDataHolder, Parsable {
     /**
-     * The created_at property
+     * @Description Timestamp when the member was created
      */
     createdAt?: Date | null;
     /**
-     * The etag property
+     * @Description Entity tag for optimistic concurrency control
      */
     etag?: string | null;
     /**
-     * The family_id property
+     * @Description ID of the family this member belongs to
      */
     familyId?: string | null;
     /**
-     * The id property
+     * @Description Unique identifier for the family member
      */
     id?: string | null;
     /**
-     * The is_kid property
+     * @Description Whether this member is a child (affects permissions and features)
      */
     isKid?: boolean | null;
     /**
-     * The name property
+     * @Description Name of the family member
      */
     name?: string | null;
     /**
-     * The updated_at property
+     * @Description Timestamp when the member was last updated
      */
     updatedAt?: Date | null;
 }
+/**
+ * Family object containing family information and members
+ */
 export interface FamilyModel extends AdditionalDataHolder, Parsable {
     /**
-     * The created_at property
+     * @Description ISO 8601 timestamp indicating when the family was originally created
      */
     createdAt?: Date | null;
     /**
-     * The etag property
+     * @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
      */
     etag?: string | null;
     /**
-     * The have_joint_account property
-     */
-    haveJointAccount?: boolean | null;
-    /**
-     * The id property
+     * @Description Unique identifier for the family (UUID format)
      */
     id?: string | null;
     /**
-     * The is_owner property
+     * @Description Indicates whether the current authenticated user is the owner of this family
      */
     isOwner?: boolean | null;
     /**
-     * The members property
+     * @Description Complete list of all members belonging to this family
      */
     members?: FamilyMemberModel[] | null;
     /**
-     * The name property
+     * @Description Display name of the family
      */
     name?: string | null;
     /**
-     * The updated_at property
+     * @Description ISO 8601 timestamp indicating when the family information was last modified
      */
     updatedAt?: Date | null;
 }
@@ -1078,54 +1106,61 @@ export interface HttpError extends AdditionalDataHolder, ApiError, Parsable {
      */
     messageEscaped?: string | null;
 }
+/**
+ * Label object used for categorizing and organizing subscriptions with customizable colors
+ */
 export interface LabelModel extends AdditionalDataHolder, Parsable {
     /**
-     * The color property
+     * @Description Hexadecimal color code for visual representation of the label
      */
     color?: string | null;
     /**
-     * The created_at property
+     * @Description ISO 8601 timestamp indicating when the label was originally created
      */
     createdAt?: Date | null;
     /**
-     * The etag property
+     * @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
      */
     etag?: string | null;
     /**
-     * The id property
+     * @Description Unique identifier for the label (UUID format)
      */
     id?: string | null;
     /**
-     * The name property
+     * @Description Display name of the label
      */
     name?: string | null;
     /**
-     * The owner property
+     * @Description Ownership information specifying whether this subscription belongs to a user or family
      */
     owner?: OwnerModel | null;
     /**
-     * The updated_at property
+     * @Description ISO 8601 timestamp indicating when the label was last modified
      */
     updatedAt?: Date | null;
 }
+/**
+ * @Description Ownership information specifying whether this subscription belongs to a user or family
+ */
 export interface OwnerModel extends AdditionalDataHolder, Parsable {
     /**
-     * The etag property
+     * @Description Entity tag for optimistic concurrency control
      */
     etag?: string | null;
     /**
-     * The family_id property
+     * @Description Family ID when an ownership type is family (required for family ownership)
      */
     familyId?: string | null;
     /**
-     * The type property
+     * @Description Type of ownership (personal, family or system)
      */
-    type?: string | null;
+    type?: OwnerModel_type | null;
     /**
-     * The userId property
+     * @Description User ID when an ownership type is personal (required for personal ownership)
      */
     userId?: string | null;
 }
+export type OwnerModel_type = (typeof OwnerModel_typeObject)[keyof typeof OwnerModel_typeObject];
 export interface PaginatedResponseModelEndpoints_familyModel extends AdditionalDataHolder, Parsable {
     /**
      * Data contains the list of items for the current page
@@ -1168,7 +1203,7 @@ export interface PaginatedResponseModelEndpoints_ProviderModel extends Additiona
      */
     total?: number | null;
 }
-export interface PaginatedResponseModelEndpoints_subscriptionModel extends AdditionalDataHolder, Parsable {
+export interface PaginatedResponseModelEndpoints_SubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
      * Data contains the list of items for the current page
      */
@@ -1250,7 +1285,7 @@ export interface PatchSubscriptionModel extends AdditionalDataHolder, Parsable {
      */
     owner?: EditableOwnerModel | null;
     /**
-     * The payer property
+     * Subscription payer object used for updating who pays for a subscription
      */
     payer?: EditableSubscriptionPayerModel | null;
     /**
@@ -1282,117 +1317,126 @@ export interface PatchSubscriptionModel extends AdditionalDataHolder, Parsable {
      */
     updatedAt?: Date | null;
 }
+/**
+ * Plan object defining a specific subscription tier with associated pricing options
+ */
 export interface PlanModel extends AdditionalDataHolder, Parsable {
     /**
-     * The created_at property
+     * @Description ISO 8601 timestamp when the plan was originally created
      */
     createdAt?: Date | null;
     /**
-     * The description property
+     * @Description Optional detailed description of the plan features and benefits
      */
     description?: string | null;
     /**
-     * The etag property
+     * @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
      */
     etag?: string | null;
     /**
-     * The id property
+     * @Description Unique identifier for the plan (UUID format)
      */
     id?: string | null;
     /**
-     * The name property
+     * @Description Display name of the subscription plan
      */
     name?: string | null;
     /**
-     * The prices property
+     * @Description List of pricing options available for this plan (different currencies, time periods, etc.)
      */
     prices?: PriceModel[] | null;
     /**
-     * The updated_at property
+     * @Description ISO 8601 timestamp when the plan was last modified
      */
     updatedAt?: Date | null;
 }
+/**
+ * Price object defining the cost of a subscription plan with currency and time validity
+ */
 export interface PriceModel extends AdditionalDataHolder, Parsable {
     /**
-     * The amount property
+     * @Description Price amount in the specified currency (supports decimal values)
      */
     amount?: number | null;
     /**
-     * The created_at property
+     * @Description ISO 8601 timestamp when the price was originally created
      */
     createdAt?: Date | null;
     /**
-     * The currency property
+     * @Description ISO 4217 currency code for the price
      */
     currency?: string | null;
     /**
-     * The end_date property
+     * @Description ISO 8601 timestamp when this price expires (null means indefinite)
      */
     endDate?: Date | null;
     /**
-     * The etag property
+     * @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
      */
     etag?: string | null;
     /**
-     * The id property
+     * @Description Unique identifier for the price (UUID format)
      */
     id?: string | null;
     /**
-     * The start_date property
+     * @Description ISO 8601 timestamp when this price becomes effective
      */
     startDate?: Date | null;
     /**
-     * The updated_at property
+     * @Description ISO 8601 timestamp when the price was last modified
      */
     updatedAt?: Date | null;
 }
+/**
+ * Provider object containing information about a subscription service provider and their available plans
+ */
 export interface ProviderModel extends AdditionalDataHolder, Parsable {
     /**
-     * The created_at property
+     * @Description ISO 8601 timestamp when the provider was originally created
      */
     createdAt?: Date | null;
     /**
-     * The description property
+     * @Description Optional detailed description of the provider and their services
      */
     description?: string | null;
     /**
-     * The etag property
+     * @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
      */
     etag?: string | null;
     /**
-     * The icon_url property
+     * @Description Optional URL to the provider's icon or logo image
      */
     iconUrl?: string | null;
     /**
-     * The id property
+     * @Description Unique identifier for the provider (UUID format)
      */
     id?: string | null;
     /**
-     * The labels property
+     * @Description List of label IDs associated with this provider for categorization
      */
     labels?: string[] | null;
     /**
-     * The name property
+     * @Description Display name of the service provider
      */
     name?: string | null;
     /**
-     * The owner property
+     * @Description Ownership information specifying whether this subscription belongs to a user or family
      */
     owner?: OwnerModel | null;
     /**
-     * The plans property
+     * @Description List of subscription plans offered by this provider
      */
     plans?: PlanModel[] | null;
     /**
-     * The pricing_page_url property
+     * @Description Optional URL to the provider's pricing information page
      */
     pricingPageUrl?: string | null;
     /**
-     * The updated_at property
+     * @Description ISO 8601 timestamp when the provider was last modified
      */
     updatedAt?: Date | null;
     /**
-     * The url property
+     * @Description Optional URL to the provider's main website
      */
     url?: string | null;
 }
@@ -1530,7 +1574,7 @@ export function serializeCreateSubscriptionModel(writer: SerializationWriter, cr
 export function serializeEditableOwnerModel(writer: SerializationWriter, editableOwnerModel: Partial<EditableOwnerModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!editableOwnerModel || isSerializingDerivedType) { return; }
     writer.writeStringValue("family_id", editableOwnerModel.familyId);
-    writer.writeStringValue("type", editableOwnerModel.type);
+    writer.writeEnumValue<EditableOwnerModel_type>("type", editableOwnerModel.type);
     writer.writeAdditionalData(editableOwnerModel.additionalData);
 }
 /**
@@ -1544,7 +1588,7 @@ export function serializeEditableSubscriptionPayerModel(writer: SerializationWri
     if (!editableSubscriptionPayerModel || isSerializingDerivedType) { return; }
     writer.writeStringValue("family_id", editableSubscriptionPayerModel.familyId);
     writer.writeStringValue("memberId", editableSubscriptionPayerModel.memberId);
-    writer.writeStringValue("type", editableSubscriptionPayerModel.type);
+    writer.writeEnumValue<EditableSubscriptionPayerModel_type>("type", editableSubscriptionPayerModel.type);
     writer.writeAdditionalData(editableSubscriptionPayerModel.additionalData);
 }
 /**
@@ -1576,7 +1620,6 @@ export function serializeFamilyModel(writer: SerializationWriter, familyModel: P
     if (!familyModel || isSerializingDerivedType) { return; }
     writer.writeDateValue("created_at", familyModel.createdAt);
     writer.writeStringValue("etag", familyModel.etag);
-    writer.writeBooleanValue("have_joint_account", familyModel.haveJointAccount);
     writer.writeStringValue("id", familyModel.id);
     writer.writeBooleanValue("is_owner", familyModel.isOwner);
     writer.writeCollectionOfObjectValues<FamilyMemberModel>("members", familyModel.members, serializeFamilyMemberModel);
@@ -1625,7 +1668,7 @@ export function serializeOwnerModel(writer: SerializationWriter, ownerModel: Par
     if (!ownerModel || isSerializingDerivedType) { return; }
     writer.writeStringValue("etag", ownerModel.etag);
     writer.writeStringValue("family_id", ownerModel.familyId);
-    writer.writeStringValue("type", ownerModel.type);
+    writer.writeEnumValue<OwnerModel_type>("type", ownerModel.type);
     writer.writeStringValue("userId", ownerModel.userId);
     writer.writeAdditionalData(ownerModel.additionalData);
 }
@@ -1674,16 +1717,16 @@ export function serializePaginatedResponseModelEndpoints_ProviderModel(writer: S
 /**
  * Serializes information the current object
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param PaginatedResponseModelEndpoints_subscriptionModel The instance to serialize from.
+ * @param PaginatedResponseModelEndpoints_SubscriptionModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializePaginatedResponseModelEndpoints_subscriptionModel(writer: SerializationWriter, paginatedResponseModelEndpoints_subscriptionModel: Partial<PaginatedResponseModelEndpoints_subscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!paginatedResponseModelEndpoints_subscriptionModel || isSerializingDerivedType) { return; }
-    writer.writeCollectionOfObjectValues<SubscriptionModel>("data", paginatedResponseModelEndpoints_subscriptionModel.data, serializeSubscriptionModel);
-    writer.writeNumberValue("length", paginatedResponseModelEndpoints_subscriptionModel.length);
-    writer.writeNumberValue("total", paginatedResponseModelEndpoints_subscriptionModel.total);
-    writer.writeAdditionalData(paginatedResponseModelEndpoints_subscriptionModel.additionalData);
+export function serializePaginatedResponseModelEndpoints_SubscriptionModel(writer: SerializationWriter, paginatedResponseModelEndpoints_SubscriptionModel: Partial<PaginatedResponseModelEndpoints_SubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!paginatedResponseModelEndpoints_SubscriptionModel || isSerializingDerivedType) { return; }
+    writer.writeCollectionOfObjectValues<SubscriptionModel>("data", paginatedResponseModelEndpoints_SubscriptionModel.data, serializeSubscriptionModel);
+    writer.writeNumberValue("length", paginatedResponseModelEndpoints_SubscriptionModel.length);
+    writer.writeNumberValue("total", paginatedResponseModelEndpoints_SubscriptionModel.total);
+    writer.writeAdditionalData(paginatedResponseModelEndpoints_SubscriptionModel.additionalData);
 }
 /**
  * Serializes information the current object
@@ -1820,7 +1863,7 @@ export function serializeSubscriptionModel(writer: SerializationWriter, subscrip
     writer.writeObjectValue<SubscriptionPayerModel>("payer", subscriptionModel.payer, serializeSubscriptionPayerModel);
     writer.writeStringValue("plan_id", subscriptionModel.planId);
     writer.writeStringValue("price_id", subscriptionModel.priceId);
-    writer.writeStringValue("recurrency", subscriptionModel.recurrency);
+    writer.writeEnumValue<SubscriptionModel_recurrency>("recurrency", subscriptionModel.recurrency);
     writer.writeStringValue("service_provider_id", subscriptionModel.serviceProviderId);
     writer.writeCollectionOfPrimitiveValues<string>("service_users", subscriptionModel.serviceUsers);
     writer.writeDateValue("start_date", subscriptionModel.startDate);
@@ -1839,7 +1882,7 @@ export function serializeSubscriptionPayerModel(writer: SerializationWriter, sub
     writer.writeStringValue("etag", subscriptionPayerModel.etag);
     writer.writeStringValue("family_id", subscriptionPayerModel.familyId);
     writer.writeStringValue("memberId", subscriptionPayerModel.memberId);
-    writer.writeStringValue("type", subscriptionPayerModel.type);
+    writer.writeEnumValue<SubscriptionPayerModel_type>("type", subscriptionPayerModel.type);
     writer.writeAdditionalData(subscriptionPayerModel.additionalData);
 }
 /**
@@ -1886,6 +1929,20 @@ export function serializeUpdateLabelModel(writer: SerializationWriter, updateLab
 /**
  * Serializes information the current object
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param UpdatePlanModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeUpdatePlanModel(writer: SerializationWriter, updatePlanModel: Partial<UpdatePlanModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!updatePlanModel || isSerializingDerivedType) { return; }
+    writer.writeStringValue("description", updatePlanModel.description);
+    writer.writeStringValue("name", updatePlanModel.name);
+    writer.writeStringValue("updateAt", updatePlanModel.updateAt);
+    writer.writeAdditionalData(updatePlanModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param UpdatePriceModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
@@ -1923,90 +1980,98 @@ export function serializeUpdateSubscriptionModel(writer: SerializationWriter, up
     writer.writeDateValue("updated_at", updateSubscriptionModel.updatedAt);
     writer.writeAdditionalData(updateSubscriptionModel.additionalData);
 }
+/**
+ * Subscription object containing all information about an active subscription including billing and usage details
+ */
 export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
-     * The created_at property
+     * @Description ISO 8601 timestamp when the subscription was originally created
      */
     createdAt?: Date | null;
     /**
-     * The custom_recurrency property
+     * @Description Custom recurrency interval in days (required when recurrency is custom)
      */
     customRecurrency?: number | null;
     /**
-     * The end_date property
+     * @Description ISO 8601 timestamp when the subscription expires (null for ongoing subscriptions)
      */
     endDate?: Date | null;
     /**
-     * The etag property
+     * @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
      */
     etag?: string | null;
     /**
-     * The free_trial_days property
+     * @Description Number of free trial days remaining (null if no trial or trial expired)
      */
     freeTrialDays?: number | null;
     /**
-     * The friendly_name property
+     * @Description Optional custom name for easy identification of the subscription
      */
     friendlyName?: string | null;
     /**
-     * The id property
+     * @Description Unique identifier for the subscription (UUID format)
      */
     id?: string | null;
     /**
-     * The owner property
+     * @Description Ownership information specifying whether this subscription belongs to a user or family
      */
     owner?: OwnerModel | null;
     /**
-     * The payer property
+     * @Description Information about who pays for this subscription within the family
      */
     payer?: SubscriptionPayerModel | null;
     /**
-     * The plan_id property
+     * @Description ID of the specific plan being subscribed to
      */
     planId?: string | null;
     /**
-     * The price_id property
+     * @Description ID of the pricing tier for this subscription
      */
     priceId?: string | null;
     /**
-     * The recurrency property
+     * @Description Billing recurrency pattern (monthly, yearly, custom, etc.)
      */
-    recurrency?: string | null;
+    recurrency?: SubscriptionModel_recurrency | null;
     /**
-     * The service_provider_id property
+     * @Description ID of the service provider offering this subscription
      */
     serviceProviderId?: string | null;
     /**
-     * The service_users property
+     * @Description List of family member IDs who use this service (for shared subscriptions)
      */
     serviceUsers?: string[] | null;
     /**
-     * The start_date property
+     * @Description ISO 8601 timestamp when the subscription becomes active
      */
     startDate?: Date | null;
     /**
-     * The updated_at property
+     * @Description ISO 8601 timestamp when the subscription was last modified
      */
     updatedAt?: Date | null;
 }
+export type SubscriptionModel_recurrency = (typeof SubscriptionModel_recurrencyObject)[keyof typeof SubscriptionModel_recurrencyObject];
+/**
+ * @Description Information about who pays for this subscription within the family
+ */
 export interface SubscriptionPayerModel extends AdditionalDataHolder, Parsable {
     /**
-     * The etag property
+     * @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
      */
     etag?: string | null;
     /**
-     * The family_id property
+     * @Description ID of the family associated with this payer
      */
     familyId?: string | null;
     /**
-     * The memberId property
+     * @Description ID of the specific family member who pays (required when type is family_member)
      */
     memberId?: string | null;
     /**
-     * The type property
+     * @Description Type of payer (family or family member)
      */
-    type?: string | null;
+    type?: SubscriptionPayerModel_type | null;
 }
+export type SubscriptionPayerModel_type = (typeof SubscriptionPayerModel_typeObject)[keyof typeof SubscriptionPayerModel_typeObject];
 export interface UpdateFamilyMemberModel extends AdditionalDataHolder, Parsable {
     /**
      * The id_kid property
@@ -2044,6 +2109,20 @@ export interface UpdateLabelModel extends AdditionalDataHolder, Parsable {
      * The updated_at property
      */
     updatedAt?: Date | null;
+}
+export interface UpdatePlanModel extends AdditionalDataHolder, Parsable {
+    /**
+     * The description property
+     */
+    description?: string | null;
+    /**
+     * The name property
+     */
+    name?: string | null;
+    /**
+     * The updateAt property
+     */
+    updateAt?: string | null;
 }
 export interface UpdatePriceModel extends AdditionalDataHolder, Parsable {
     /**
@@ -2089,7 +2168,7 @@ export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable 
      */
     owner?: EditableOwnerModel | null;
     /**
-     * The payer property
+     * Subscription payer object used for updating who pays for a subscription
      */
     payer?: EditableSubscriptionPayerModel | null;
     /**
@@ -2121,5 +2200,46 @@ export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable 
      */
     updatedAt?: Date | null;
 }
+/**
+ * @Description Type of ownership (personal, family or system)
+ */
+export const EditableOwnerModel_typeObject = {
+    Personal: "personal",
+    Family: "family",
+    System: "system",
+} as const;
+/**
+ * @Description Type of payer (family or family member)
+ */
+export const EditableSubscriptionPayerModel_typeObject = {
+    Family: "family",
+    Family_member: "family_member",
+} as const;
+/**
+ * @Description Type of ownership (personal, family or system)
+ */
+export const OwnerModel_typeObject = {
+    Personal: "personal",
+    Family: "family",
+    System: "system",
+} as const;
+/**
+ * @Description Billing recurrency pattern (monthly, yearly, custom, etc.)
+ */
+export const SubscriptionModel_recurrencyObject = {
+    Daily: "daily",
+    Weekly: "weekly",
+    Monthly: "monthly",
+    Quarterly: "quarterly",
+    Yearly: "yearly",
+    Custom: "custom",
+} as const;
+/**
+ * @Description Type of payer (family or family member)
+ */
+export const SubscriptionPayerModel_typeObject = {
+    Family: "family",
+    Family_member: "family_member",
+} as const;
 /* tslint:enable */
 /* eslint-enable */

@@ -11,43 +11,46 @@ import { type BaseRequestBuilder, type Parsable, type ParsableFactory, type Requ
  */
 export interface LabelsItemRequestBuilder extends BaseRequestBuilder<LabelsItemRequestBuilder> {
     /**
-     * Delete label by ID
+     * Permanently delete a label by its unique identifier
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @throws {HttpError} error when the service returns a 400 status code
      * @throws {HttpError} error when the service returns a 404 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      delete(requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<void>;
     /**
-     * Get label by ID
+     * Retrieve a single label by its unique identifier
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<LabelModel>}
      * @throws {HttpError} error when the service returns a 400 status code
      * @throws {HttpError} error when the service returns a 404 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      get(requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<LabelModel | undefined>;
     /**
-     * Update label by ID
+     * Update an existing label's name and color by its unique identifier
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<LabelModel>}
      * @throws {HttpError} error when the service returns a 400 status code
      * @throws {HttpError} error when the service returns a 404 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      put(body: UpdateLabelModel, requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<LabelModel | undefined>;
     /**
-     * Delete label by ID
+     * Permanently delete a label by its unique identifier
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
      */
      toDeleteRequestInformation(requestConfiguration?: RequestConfiguration<object> | undefined) : RequestInformation;
     /**
-     * Get label by ID
+     * Retrieve a single label by its unique identifier
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
      */
      toGetRequestInformation(requestConfiguration?: RequestConfiguration<object> | undefined) : RequestInformation;
     /**
-     * Update label by ID
+     * Update an existing label's name and color by its unique identifier
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
@@ -68,6 +71,7 @@ export const LabelsItemRequestBuilderRequestsMetadata: RequestsMetadata = {
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
             404: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "sendNoResponseContent",
     },
@@ -77,6 +81,7 @@ export const LabelsItemRequestBuilderRequestsMetadata: RequestsMetadata = {
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
             404: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "send",
         responseBodyFactory:  createLabelModelFromDiscriminatorValue,
@@ -87,6 +92,7 @@ export const LabelsItemRequestBuilderRequestsMetadata: RequestsMetadata = {
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
             404: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "send",
         responseBodyFactory:  createLabelModelFromDiscriminatorValue,

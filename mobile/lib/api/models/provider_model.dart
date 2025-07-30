@@ -4,33 +4,34 @@ import './owner_model.dart';
 import './plan_model.dart';
 
 /// auto generated
+/// Provider object containing information about a subscription service provider and their available plans
 class ProviderModel implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
-    ///  The created_at property
+    ///  @Description ISO 8601 timestamp when the provider was originally created
     DateTime? createdAt;
-    ///  The description property
+    ///  @Description Optional detailed description of the provider and their services
     String? description;
-    ///  The etag property
+    ///  @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
     String? etag;
-    ///  The icon_url property
+    ///  @Description Optional URL to the provider's icon or logo image
     String? iconUrl;
-    ///  The id property
+    ///  @Description Unique identifier for the provider (UUID format)
     String? id;
-    ///  The labels property
+    ///  @Description List of label IDs associated with this provider for categorization
     Iterable<String>? labels;
-    ///  The name property
+    ///  @Description Display name of the service provider
     String? name;
-    ///  The owner property
+    ///  @Description Ownership information specifying whether this subscription belongs to a user or family
     OwnerModel? owner;
-    ///  The plans property
+    ///  @Description List of subscription plans offered by this provider
     Iterable<PlanModel>? plans;
-    ///  The pricing_page_url property
+    ///  @Description Optional URL to the provider's pricing information page
     String? pricingPageUrl;
-    ///  The updated_at property
+    ///  @Description ISO 8601 timestamp when the provider was last modified
     DateTime? updatedAt;
-    ///  The url property
+    ///  @Description Optional URL to the provider's main website
     String? url;
     /// Instantiates a new [ProviderModel] and sets the default values.
     ProviderModel() :  

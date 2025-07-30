@@ -2,25 +2,26 @@
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 
 /// auto generated
+/// Price object defining the cost of a subscription plan with currency and time validity
 class PriceModel implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
-    ///  The amount property
+    ///  @Description Price amount in the specified currency (supports decimal values)
     double? amount;
-    ///  The created_at property
+    ///  @Description ISO 8601 timestamp when the price was originally created
     DateTime? createdAt;
-    ///  The currency property
+    ///  @Description ISO 4217 currency code for the price
     String? currency;
-    ///  The end_date property
+    ///  @Description ISO 8601 timestamp when this price expires (null means indefinite)
     DateTime? endDate;
-    ///  The etag property
+    ///  @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
     String? etag;
-    ///  The id property
+    ///  @Description Unique identifier for the price (UUID format)
     String? id;
-    ///  The start_date property
+    ///  @Description ISO 8601 timestamp when this price becomes effective
     DateTime? startDate;
-    ///  The updated_at property
+    ///  @Description ISO 8601 timestamp when the price was last modified
     DateTime? updatedAt;
     /// Instantiates a new [PriceModel] and sets the default values.
     PriceModel() :  

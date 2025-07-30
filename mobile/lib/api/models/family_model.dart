@@ -3,25 +3,24 @@ import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import './family_member_model.dart';
 
 /// auto generated
+/// Family object containing family information and members
 class FamilyModel implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
-    ///  The created_at property
+    ///  @Description ISO 8601 timestamp indicating when the family was originally created
     DateTime? createdAt;
-    ///  The etag property
+    ///  @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
     String? etag;
-    ///  The have_joint_account property
-    bool? haveJointAccount;
-    ///  The id property
+    ///  @Description Unique identifier for the family (UUID format)
     String? id;
-    ///  The is_owner property
+    ///  @Description Indicates whether the current authenticated user is the owner of this family
     bool? isOwner;
-    ///  The members property
+    ///  @Description Complete list of all members belonging to this family
     Iterable<FamilyMemberModel>? members;
-    ///  The name property
+    ///  @Description Display name of the family
     String? name;
-    ///  The updated_at property
+    ///  @Description ISO 8601 timestamp indicating when the family information was last modified
     DateTime? updatedAt;
     /// Instantiates a new [FamilyModel] and sets the default values.
     FamilyModel() :  
@@ -37,7 +36,6 @@ class FamilyModel implements AdditionalDataHolder, Parsable {
         var deserializerMap = <String, void Function(ParseNode)>{};
         deserializerMap['created_at'] = (node) => createdAt = node.getDateTimeValue();
         deserializerMap['etag'] = (node) => etag = node.getStringValue();
-        deserializerMap['have_joint_account'] = (node) => haveJointAccount = node.getBoolValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
         deserializerMap['is_owner'] = (node) => isOwner = node.getBoolValue();
         deserializerMap['members'] = (node) => members = node.getCollectionOfObjectValues<FamilyMemberModel>(FamilyMemberModel.createFromDiscriminatorValue);
@@ -51,7 +49,6 @@ class FamilyModel implements AdditionalDataHolder, Parsable {
     void serialize(SerializationWriter writer) {
         writer.writeDateTimeValue('created_at', createdAt);
         writer.writeStringValue('etag', etag);
-        writer.writeBoolValue('have_joint_account', value:haveJointAccount);
         writer.writeStringValue('id', id);
         writer.writeBoolValue('is_owner', value:isOwner);
         writer.writeCollectionOfObjectValues<FamilyMemberModel>('members', members);

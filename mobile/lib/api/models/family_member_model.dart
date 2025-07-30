@@ -2,23 +2,24 @@
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 
 /// auto generated
+/// Family member object containing member information
 class FamilyMemberModel implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
-    ///  The created_at property
+    ///  @Description Timestamp when the member was created
     DateTime? createdAt;
-    ///  The etag property
+    ///  @Description Entity tag for optimistic concurrency control
     String? etag;
-    ///  The family_id property
+    ///  @Description ID of the family this member belongs to
     String? familyId;
-    ///  The id property
+    ///  @Description Unique identifier for the family member
     String? id;
-    ///  The is_kid property
+    ///  @Description Whether this member is a child (affects permissions and features)
     bool? isKid;
-    ///  The name property
+    ///  @Description Name of the family member
     String? name;
-    ///  The updated_at property
+    ///  @Description Timestamp when the member was last updated
     DateTime? updatedAt;
     /// Instantiates a new [FamilyMemberModel] and sets the default values.
     FamilyMemberModel() :  

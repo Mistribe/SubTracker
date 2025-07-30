@@ -9,7 +9,7 @@ import './item/with_price_item_request_builder.dart';
 /// Builds and executes requests for operations under \providers\{providerId}\plans\{planId}\prices
 class PricesRequestBuilder extends BaseRequestBuilder<PricesRequestBuilder> {
     /// Gets an item from the ApiSdk.providers.item.plans.item.prices.item collection
-    ///  [priceId] Unique identifier of the item
+    ///  [priceId] Price ID (UUID format)
     WithPriceItemRequestBuilder byPriceId(String priceId) {
         var urlTplParams = Map.of(pathParameters);
         urlTplParams.putIfAbsent('priceId', () => priceId);
@@ -28,17 +28,19 @@ class PricesRequestBuilder extends BaseRequestBuilder<PricesRequestBuilder> {
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
     PricesRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/providers/{providerId}/plans/{planId}/prices", {RequestInformation.rawUrlKey : rawUrl}) ;
-    /// Create a new price for a provider plan
+    /// Create a new pricing option for a specific provider plan
     ///  [body] Price information for a plan
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<PriceModel?> postAsync(CreatePriceModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPostRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
+            '404' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<PriceModel>(requestInfo, PriceModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Create a new price for a provider plan
+    /// Create a new pricing option for a specific provider plan
     ///  [body] Price information for a plan
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toPostRequestInformation(CreatePriceModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {

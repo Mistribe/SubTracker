@@ -1,5 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
+import '../../models/http_error.dart';
 import '../../models/label_model.dart';
 
 /// auto generated
@@ -18,13 +19,16 @@ class DefaultRequestBuilder extends BaseRequestBuilder<DefaultRequestBuilder> {
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
     DefaultRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/labels/default", {RequestInformation.rawUrlKey : rawUrl}) ;
-    /// Retrieves a list of default labels
+    /// Retrieves a list of default system labels available to all users
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<Iterable<LabelModel>?> getAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
-        return await requestAdapter.sendCollection<LabelModel>(requestInfo, LabelModel.createFromDiscriminatorValue, {});
+        final errorMapping = <String, ParsableFactory<Parsable>>{
+            '500' :  HttpError.createFromDiscriminatorValue,
+        };
+        return await requestAdapter.sendCollection<LabelModel>(requestInfo, LabelModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Retrieves a list of default labels
+    /// Retrieves a list of default system labels available to all users
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toGetRequestInformation([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
         var requestInfo = RequestInformation(httpMethod : HttpMethod.get, urlTemplate : urlTemplate, pathParameters :  pathParameters);

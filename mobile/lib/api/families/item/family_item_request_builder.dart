@@ -1,26 +1,31 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
+import '../../models/family_model.dart';
 import '../../models/http_error.dart';
-import '../../models/subscription_model.dart';
-import '../../models/update_subscription_model.dart';
+import '../../models/update_family_model.dart';
+import './members/members_request_builder.dart';
 
 /// auto generated
-/// Builds and executes requests for operations under \subscriptions\{subscriptionId}
-class WithSubscriptionItemRequestBuilder extends BaseRequestBuilder<WithSubscriptionItemRequestBuilder> {
+/// Builds and executes requests for operations under \families\{family-id}
+class FamilyItemRequestBuilder extends BaseRequestBuilder<FamilyItemRequestBuilder> {
+    ///  The members property
+    MembersRequestBuilder get members {
+        return MembersRequestBuilder(pathParameters, requestAdapter);
+    }
     /// Clones the requestbuilder.
     @override
-    WithSubscriptionItemRequestBuilder clone() {
-        return WithSubscriptionItemRequestBuilder(pathParameters, requestAdapter);
+    FamilyItemRequestBuilder clone() {
+        return FamilyItemRequestBuilder(pathParameters, requestAdapter);
     }
-    /// Instantiates a new [WithSubscriptionItemRequestBuilder] and sets the default values.
+    /// Instantiates a new [FamilyItemRequestBuilder] and sets the default values.
     ///  [pathParameters] Path parameters for the request
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    WithSubscriptionItemRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/subscriptions/{subscriptionId}", pathParameters) ;
-    /// Instantiates a new [WithSubscriptionItemRequestBuilder] and sets the default values.
+    FamilyItemRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/families/{family%2Did}", pathParameters) ;
+    /// Instantiates a new [FamilyItemRequestBuilder] and sets the default values.
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    WithSubscriptionItemRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/subscriptions/{subscriptionId}", {RequestInformation.rawUrlKey : rawUrl}) ;
-    /// Permanently delete an existing subscription
+    FamilyItemRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/families/{family%2Did}", {RequestInformation.rawUrlKey : rawUrl}) ;
+    /// Permanently delete a family and all its members
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<void> deleteAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toDeleteRequestInformation(requestConfiguration);
@@ -31,21 +36,22 @@ class WithSubscriptionItemRequestBuilder extends BaseRequestBuilder<WithSubscrip
         };
         return await requestAdapter.sendNoContent(requestInfo, errorMapping);
     }
-    /// Retrieve a single subscription with all its details including provider, plan, and pricing information
+    /// Retrieve a family and its members by family ID
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
-    Future<SubscriptionModel?> getAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
+    Future<FamilyModel?> getAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
+            '401' :  HttpError.createFromDiscriminatorValue,
             '404' :  HttpError.createFromDiscriminatorValue,
             '500' :  HttpError.createFromDiscriminatorValue,
         };
-        return await requestAdapter.send<SubscriptionModel>(requestInfo, SubscriptionModel.createFromDiscriminatorValue, errorMapping);
+        return await requestAdapter.send<FamilyModel>(requestInfo, FamilyModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Update an existing subscription's details including provider, plan, pricing, and payment information
+    /// Update family information such as name and other details
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
-    Future<SubscriptionModel?> putAsync(UpdateSubscriptionModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
+    Future<FamilyModel?> putAsync(UpdateFamilyModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPutRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
@@ -53,9 +59,9 @@ class WithSubscriptionItemRequestBuilder extends BaseRequestBuilder<WithSubscrip
             '404' :  HttpError.createFromDiscriminatorValue,
             '500' :  HttpError.createFromDiscriminatorValue,
         };
-        return await requestAdapter.send<SubscriptionModel>(requestInfo, SubscriptionModel.createFromDiscriminatorValue, errorMapping);
+        return await requestAdapter.send<FamilyModel>(requestInfo, FamilyModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Permanently delete an existing subscription
+    /// Permanently delete a family and all its members
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toDeleteRequestInformation([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
         var requestInfo = RequestInformation(httpMethod : HttpMethod.delete, urlTemplate : urlTemplate, pathParameters :  pathParameters);
@@ -63,7 +69,7 @@ class WithSubscriptionItemRequestBuilder extends BaseRequestBuilder<WithSubscrip
         requestInfo.headers.put('Accept', 'application/json');
         return requestInfo;
     }
-    /// Retrieve a single subscription with all its details including provider, plan, and pricing information
+    /// Retrieve a family and its members by family ID
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toGetRequestInformation([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
         var requestInfo = RequestInformation(httpMethod : HttpMethod.get, urlTemplate : urlTemplate, pathParameters :  pathParameters);
@@ -71,10 +77,10 @@ class WithSubscriptionItemRequestBuilder extends BaseRequestBuilder<WithSubscrip
         requestInfo.headers.put('Accept', 'application/json');
         return requestInfo;
     }
-    /// Update an existing subscription's details including provider, plan, pricing, and payment information
+    /// Update family information such as name and other details
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
-    RequestInformation toPutRequestInformation(UpdateSubscriptionModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
+    RequestInformation toPutRequestInformation(UpdateFamilyModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
         var requestInfo = RequestInformation(httpMethod : HttpMethod.put, urlTemplate : urlTemplate, pathParameters :  pathParameters);
         requestInfo.configure<DefaultQueryParameters>(requestConfiguration, () => DefaultQueryParameters());
         requestInfo.headers.put('Accept', 'application/json');

@@ -14,49 +14,55 @@ import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type 
 export interface FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesRequestBuilder> {
     /**
      * Gets an item from the ApiSdk.families.item collection
-     * @param familyId Family ID
+     * @param familyId Family ID (UUID format)
      * @returns {WithFamilyItemRequestBuilder}
      */
      byFamilyId(familyId: string) : WithFamilyItemRequestBuilder;
     /**
-     * Get all family members
+     * Retrieve a paginated list of families for the authenticated user
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<PaginatedResponseModelEndpoints_familyModel>}
      * @throws {HttpError} error when the service returns a 400 status code
+     * @throws {HttpError} error when the service returns a 401 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      get(requestConfiguration?: RequestConfiguration<FamiliesRequestBuilderGetQueryParameters> | undefined) : Promise<PaginatedResponseModelEndpoints_familyModel | undefined>;
     /**
-     * Patch family with members
+     * Update or create a family with specified members. If family doesn't exist, it will be created.
      * @param body Model for updating family details
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<FamilyModel>}
      * @throws {HttpError} error when the service returns a 400 status code
      * @throws {HttpError} error when the service returns a 401 status code
+     * @throws {HttpError} error when the service returns a 404 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      patch(body: PatchFamilyModel, requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<FamilyModel | undefined>;
     /**
-     * Create a new family
+     * Create a new family with the authenticated user as the owner and initial member
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<FamilyModel>}
      * @throws {HttpError} error when the service returns a 400 status code
+     * @throws {HttpError} error when the service returns a 401 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      post(body: CreateFamilyModel, requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<FamilyModel | undefined>;
     /**
-     * Get all family members
+     * Retrieve a paginated list of families for the authenticated user
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
      */
      toGetRequestInformation(requestConfiguration?: RequestConfiguration<FamiliesRequestBuilderGetQueryParameters> | undefined) : RequestInformation;
     /**
-     * Patch family with members
+     * Update or create a family with specified members. If family doesn't exist, it will be created.
      * @param body Model for updating family details
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
      */
      toPatchRequestInformation(body: PatchFamilyModel, requestConfiguration?: RequestConfiguration<object> | undefined) : RequestInformation;
     /**
-     * Create a new family
+     * Create a new family with the authenticated user as the owner and initial member
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
@@ -64,15 +70,15 @@ export interface FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesReque
      toPostRequestInformation(body: CreateFamilyModel, requestConfiguration?: RequestConfiguration<object> | undefined) : RequestInformation;
 }
 /**
- * Get all family members
+ * Retrieve a paginated list of families for the authenticated user
  */
 export interface FamiliesRequestBuilderGetQueryParameters {
     /**
-     * Offset number
+     * Page number (default: 1)
      */
     page?: number;
     /**
-     * Number of items per page
+     * Number of items per page (default: 10)
      */
     size?: number;
 }
@@ -99,6 +105,8 @@ export const FamiliesRequestBuilderRequestsMetadata: RequestsMetadata = {
         responseBodyContentType: "application/json",
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            401: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "send",
         responseBodyFactory:  createPaginatedResponseModelEndpoints_familyModelFromDiscriminatorValue,
@@ -109,6 +117,8 @@ export const FamiliesRequestBuilderRequestsMetadata: RequestsMetadata = {
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
             401: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            404: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "send",
         responseBodyFactory:  createFamilyModelFromDiscriminatorValue,
@@ -121,6 +131,8 @@ export const FamiliesRequestBuilderRequestsMetadata: RequestsMetadata = {
         responseBodyContentType: "application/json",
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            401: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "send",
         responseBodyFactory:  createFamilyModelFromDiscriminatorValue,

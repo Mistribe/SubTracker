@@ -16,7 +16,7 @@ class LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBuilder> {
         return DefaultRequestBuilder(pathParameters, requestAdapter);
     }
     /// Gets an item from the ApiSdk.labels.item collection
-    ///  [id] Label ID
+    ///  [id] Label ID (UUID format)
     LabelsItemRequestBuilder byId(String id) {
         var urlTplParams = Map.of(pathParameters);
         urlTplParams.putIfAbsent('id', () => id);
@@ -30,31 +30,34 @@ class LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBuilder> {
     /// Instantiates a new [LabelsRequestBuilder] and sets the default values.
     ///  [pathParameters] Path parameters for the request
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    LabelsRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/labels{?page*,size*,with_default*}", pathParameters) ;
+    LabelsRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/labels{?owner_type*,page*,size*}", pathParameters) ;
     /// Instantiates a new [LabelsRequestBuilder] and sets the default values.
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    LabelsRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/labels{?page*,size*,with_default*}", {RequestInformation.rawUrlKey : rawUrl}) ;
-    /// Get all labels
+    LabelsRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/labels{?owner_type*,page*,size*}", {RequestInformation.rawUrlKey : rawUrl}) ;
+    /// Retrieve a paginated list of labels with optional filtering by owner type
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<PaginatedResponseModelEndpointsLabelModel?> getAsync([void Function(RequestConfiguration<LabelsRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<PaginatedResponseModelEndpointsLabelModel>(requestInfo, PaginatedResponseModelEndpointsLabelModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Create a new label
+    /// Create a new label with specified name, color, and owner information
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<LabelModel?> postAsync(CreateLabelModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPostRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
+            '401' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<LabelModel>(requestInfo, LabelModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Get all labels
+    /// Retrieve a paginated list of labels with optional filtering by owner type
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toGetRequestInformation([void Function(RequestConfiguration<LabelsRequestBuilderGetQueryParameters>)? requestConfiguration]) {
         var requestInfo = RequestInformation(httpMethod : HttpMethod.get, urlTemplate : urlTemplate, pathParameters :  pathParameters);
@@ -62,7 +65,7 @@ class LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBuilder> {
         requestInfo.headers.put('Accept', 'application/json');
         return requestInfo;
     }
-    /// Create a new label
+    /// Create a new label with specified name, color, and owner information
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toPostRequestInformation(CreateLabelModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {

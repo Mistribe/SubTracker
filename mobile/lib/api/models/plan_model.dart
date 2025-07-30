@@ -3,23 +3,24 @@ import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import './price_model.dart';
 
 /// auto generated
+/// Plan object defining a specific subscription tier with associated pricing options
 class PlanModel implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
-    ///  The created_at property
+    ///  @Description ISO 8601 timestamp when the plan was originally created
     DateTime? createdAt;
-    ///  The description property
+    ///  @Description Optional detailed description of the plan features and benefits
     String? description;
-    ///  The etag property
+    ///  @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
     String? etag;
-    ///  The id property
+    ///  @Description Unique identifier for the plan (UUID format)
     String? id;
-    ///  The name property
+    ///  @Description Display name of the subscription plan
     String? name;
-    ///  The prices property
+    ///  @Description List of pricing options available for this plan (different currencies, time periods, etc.)
     Iterable<PriceModel>? prices;
-    ///  The updated_at property
+    ///  @Description ISO 8601 timestamp when the plan was last modified
     DateTime? updatedAt;
     /// Instantiates a new [PlanModel] and sets the default values.
     PlanModel() :  

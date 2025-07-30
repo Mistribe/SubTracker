@@ -2,11 +2,11 @@
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 
 /// auto generated
-/// Get all subscriptions
+/// Retrieve a paginated list of all subscriptions for the authenticated user
 class SubscriptionsRequestBuilderGetQueryParameters implements AbstractQueryParameters {
-    ///  Offset number
+    ///  Page number (default: 1)
     int? page;
-    ///  Number of items per page
+    ///  Number of items per page (default: 10)
     int? size;
     /// Extracts the query parameters into a map for the URI template parsing.
     @override

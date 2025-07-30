@@ -20,33 +20,36 @@ export interface LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBu
     get defaultEscaped(): DefaultRequestBuilder;
     /**
      * Gets an item from the ApiSdk.labels.item collection
-     * @param id Label ID
+     * @param id Label ID (UUID format)
      * @returns {LabelsItemRequestBuilder}
      */
      byId(id: string) : LabelsItemRequestBuilder;
     /**
-     * Get all labels
+     * Retrieve a paginated list of labels with optional filtering by owner type
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<PaginatedResponseModelEndpoints_labelModel>}
      * @throws {HttpError} error when the service returns a 400 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      get(requestConfiguration?: RequestConfiguration<LabelsRequestBuilderGetQueryParameters> | undefined) : Promise<PaginatedResponseModelEndpoints_labelModel | undefined>;
     /**
-     * Create a new label
+     * Create a new label with specified name, color, and owner information
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<LabelModel>}
      * @throws {HttpError} error when the service returns a 400 status code
+     * @throws {HttpError} error when the service returns a 401 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      post(body: CreateLabelModel, requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<LabelModel | undefined>;
     /**
-     * Get all labels
+     * Retrieve a paginated list of labels with optional filtering by owner type
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
      */
      toGetRequestInformation(requestConfiguration?: RequestConfiguration<LabelsRequestBuilderGetQueryParameters> | undefined) : RequestInformation;
     /**
-     * Create a new label
+     * Create a new label with specified name, color, and owner information
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
@@ -54,31 +57,31 @@ export interface LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBu
      toPostRequestInformation(body: CreateLabelModel, requestConfiguration?: RequestConfiguration<object> | undefined) : RequestInformation;
 }
 /**
- * Get all labels
+ * Retrieve a paginated list of labels with optional filtering by owner type
  */
 export interface LabelsRequestBuilderGetQueryParameters {
     /**
-     * Offset number
+     * Owner types to filter by (system,personal,family). Can be provided multiple times.
+     */
+    ownerType?: string[];
+    /**
+     * Page number (default: 1)
      */
     page?: number;
     /**
-     * Number of items per page
+     * Number of items per page (default: 10)
      */
     size?: number;
-    /**
-     * Include default labels
-     */
-    withDefault?: boolean;
 }
 /**
  * Uri template for the request builder.
  */
-export const LabelsRequestBuilderUriTemplate = "{+baseurl}/labels{?page*,size*,with_default*}";
+export const LabelsRequestBuilderUriTemplate = "{+baseurl}/labels{?owner_type*,page*,size*}";
 /**
  * Mapper for query parameters from symbol name to serialization name represented as a constant.
  */
 const LabelsRequestBuilderGetQueryParametersMapper: Record<string, string> = {
-    "withDefault": "with_default",
+    "ownerType": "owner_type",
 };
 /**
  * Metadata for all the navigation properties in the request builder.
@@ -101,6 +104,7 @@ export const LabelsRequestBuilderRequestsMetadata: RequestsMetadata = {
         responseBodyContentType: "application/json",
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "send",
         responseBodyFactory:  createPaginatedResponseModelEndpoints_labelModelFromDiscriminatorValue,
@@ -111,6 +115,8 @@ export const LabelsRequestBuilderRequestsMetadata: RequestsMetadata = {
         responseBodyContentType: "application/json",
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            401: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "send",
         responseBodyFactory:  createLabelModelFromDiscriminatorValue,

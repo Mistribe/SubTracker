@@ -11,29 +11,32 @@ import { type BaseRequestBuilder, type Parsable, type ParsableFactory, type Requ
  */
 export interface MembersItemRequestBuilder extends BaseRequestBuilder<MembersItemRequestBuilder> {
     /**
-     * Delete family member by ID
+     * Permanently delete a family member from a family
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @throws {HttpError} error when the service returns a 400 status code
      * @throws {HttpError} error when the service returns a 404 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      delete(requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<void>;
     /**
-     * Update family member by ID
+     * Update an existing family member's information such as name and kid status
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<FamilyModel>}
      * @throws {HttpError} error when the service returns a 400 status code
+     * @throws {HttpError} error when the service returns a 401 status code
      * @throws {HttpError} error when the service returns a 404 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      put(body: UpdateFamilyMemberModel, requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<FamilyModel | undefined>;
     /**
-     * Delete family member by ID
+     * Permanently delete a family member from a family
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
      */
      toDeleteRequestInformation(requestConfiguration?: RequestConfiguration<object> | undefined) : RequestInformation;
     /**
-     * Update family member by ID
+     * Update an existing family member's information such as name and kid status
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
@@ -54,6 +57,7 @@ export const MembersItemRequestBuilderRequestsMetadata: RequestsMetadata = {
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
             404: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "sendNoResponseContent",
     },
@@ -62,7 +66,9 @@ export const MembersItemRequestBuilderRequestsMetadata: RequestsMetadata = {
         responseBodyContentType: "application/json",
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            401: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
             404: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "send",
         responseBodyFactory:  createFamilyModelFromDiscriminatorValue,

@@ -20,17 +20,38 @@ class WithPriceItemRequestBuilder extends BaseRequestBuilder<WithPriceItemReques
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
     WithPriceItemRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/providers/{providerId}/plans/{planId}/prices/{priceId}", {RequestInformation.rawUrlKey : rawUrl}) ;
-    /// Update a provider price
+    /// Permanently delete a specific price from a provider plan
+    ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
+    Future<void> deleteAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
+        var requestInfo = toDeleteRequestInformation(requestConfiguration);
+        final errorMapping = <String, ParsableFactory<Parsable>>{
+            '400' :  HttpError.createFromDiscriminatorValue,
+            '404' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
+        };
+        return await requestAdapter.sendNoContent(requestInfo, errorMapping);
+    }
+    /// Update an existing price for a specific provider plan
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<PriceModel?> putAsync(UpdatePriceModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPutRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
+            '404' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<PriceModel>(requestInfo, PriceModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Update a provider price
+    /// Permanently delete a specific price from a provider plan
+    ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
+    RequestInformation toDeleteRequestInformation([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
+        var requestInfo = RequestInformation(httpMethod : HttpMethod.delete, urlTemplate : urlTemplate, pathParameters :  pathParameters);
+        requestInfo.configure<DefaultQueryParameters>(requestConfiguration, () => DefaultQueryParameters());
+        requestInfo.headers.put('Accept', 'application/json');
+        return requestInfo;
+    }
+    /// Update an existing price for a specific provider plan
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toPutRequestInformation(UpdatePriceModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {

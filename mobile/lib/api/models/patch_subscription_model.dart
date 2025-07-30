@@ -20,7 +20,7 @@ class PatchSubscriptionModel implements AdditionalDataHolder, Parsable {
     String? id;
     ///  The owner property
     EditableOwnerModel? owner;
-    ///  The payer property
+    ///  Subscription payer object used for updating who pays for a subscription
     EditableSubscriptionPayerModel? payer;
     ///  The plan_id property
     String? planId;

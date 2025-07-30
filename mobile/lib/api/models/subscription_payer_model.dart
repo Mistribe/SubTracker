@@ -1,19 +1,21 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
+import './subscription_payer_model_type.dart';
 
 /// auto generated
+/// @Description Information about who pays for this subscription within the family
 class SubscriptionPayerModel implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
-    ///  The etag property
+    ///  @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
     String? etag;
-    ///  The family_id property
+    ///  @Description ID of the family associated with this payer
     String? familyId;
-    ///  The memberId property
+    ///  @Description ID of the specific family member who pays (required when type is family_member)
     String? memberId;
-    ///  The type property
-    String? type_;
+    ///  @Description Type of payer (family or family member)
+    SubscriptionPayerModelType? type_;
     /// Instantiates a new [SubscriptionPayerModel] and sets the default values.
     SubscriptionPayerModel() :  
         additionalData = {};
@@ -29,7 +31,7 @@ class SubscriptionPayerModel implements AdditionalDataHolder, Parsable {
         deserializerMap['etag'] = (node) => etag = node.getStringValue();
         deserializerMap['family_id'] = (node) => familyId = node.getStringValue();
         deserializerMap['memberId'] = (node) => memberId = node.getStringValue();
-        deserializerMap['type'] = (node) => type_ = node.getStringValue();
+        deserializerMap['type'] = (node) => type_ = node.getEnumValue<SubscriptionPayerModelType>((stringValue) => SubscriptionPayerModelType.values.where((enumVal) => enumVal.value == stringValue).firstOrNull);
         return deserializerMap;
     }
     /// Serializes information the current object
@@ -39,7 +41,7 @@ class SubscriptionPayerModel implements AdditionalDataHolder, Parsable {
         writer.writeStringValue('etag', etag);
         writer.writeStringValue('family_id', familyId);
         writer.writeStringValue('memberId', memberId);
-        writer.writeStringValue('type', type_);
+        writer.writeEnumValue<SubscriptionPayerModelType>('type', type_, (e) => e?.value);
         writer.writeAdditionalData(additionalData);
     }
 }

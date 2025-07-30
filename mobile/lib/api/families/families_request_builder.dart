@@ -12,7 +12,7 @@ import './item/with_family_item_request_builder.dart';
 /// Builds and executes requests for operations under \families
 class FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesRequestBuilder> {
     /// Gets an item from the ApiSdk.families.item collection
-    ///  [familyId] Family ID
+    ///  [familyId] Family ID (UUID format)
     WithFamilyItemRequestBuilder byFamilyId(String familyId) {
         var urlTplParams = Map.of(pathParameters);
         urlTplParams.putIfAbsent('familyId', () => familyId);
@@ -31,16 +31,18 @@ class FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesRequestBuilder> 
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
     FamiliesRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/families{?page*,size*}", {RequestInformation.rawUrlKey : rawUrl}) ;
-    /// Get all family members
+    /// Retrieve a paginated list of families for the authenticated user
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<PaginatedResponseModelEndpointsFamilyModel?> getAsync([void Function(RequestConfiguration<FamiliesRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
+            '401' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<PaginatedResponseModelEndpointsFamilyModel>(requestInfo, PaginatedResponseModelEndpointsFamilyModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Patch family with members
+    /// Update or create a family with specified members. If family doesn't exist, it will be created.
     ///  [body] Model for updating family details
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<FamilyModel?> patchAsync(PatchFamilyModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
@@ -48,20 +50,24 @@ class FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesRequestBuilder> 
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
             '401' :  HttpError.createFromDiscriminatorValue,
+            '404' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<FamilyModel>(requestInfo, FamilyModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Create a new family
+    /// Create a new family with the authenticated user as the owner and initial member
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<FamilyModel?> postAsync(CreateFamilyModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPostRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
+            '401' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<FamilyModel>(requestInfo, FamilyModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Get all family members
+    /// Retrieve a paginated list of families for the authenticated user
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toGetRequestInformation([void Function(RequestConfiguration<FamiliesRequestBuilderGetQueryParameters>)? requestConfiguration]) {
         var requestInfo = RequestInformation(httpMethod : HttpMethod.get, urlTemplate : urlTemplate, pathParameters :  pathParameters);
@@ -69,7 +75,7 @@ class FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesRequestBuilder> 
         requestInfo.headers.put('Accept', 'application/json');
         return requestInfo;
     }
-    /// Patch family with members
+    /// Update or create a family with specified members. If family doesn't exist, it will be created.
     ///  [body] Model for updating family details
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toPatchRequestInformation(PatchFamilyModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
@@ -79,7 +85,7 @@ class FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesRequestBuilder> 
         requestInfo.setContentFromParsable(requestAdapter, 'application/json', body);
         return requestInfo;
     }
-    /// Create a new family
+    /// Create a new family with the authenticated user as the owner and initial member
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toPostRequestInformation(CreateFamilyModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {

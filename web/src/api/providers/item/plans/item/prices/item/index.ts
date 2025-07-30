@@ -11,15 +11,31 @@ import { type BaseRequestBuilder, type Parsable, type ParsableFactory, type Requ
  */
 export interface WithPriceItemRequestBuilder extends BaseRequestBuilder<WithPriceItemRequestBuilder> {
     /**
-     * Update a provider price
+     * Permanently delete a specific price from a provider plan
+     * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
+     * @throws {HttpError} error when the service returns a 400 status code
+     * @throws {HttpError} error when the service returns a 404 status code
+     * @throws {HttpError} error when the service returns a 500 status code
+     */
+     delete(requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<void>;
+    /**
+     * Update an existing price for a specific provider plan
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<PriceModel>}
      * @throws {HttpError} error when the service returns a 400 status code
+     * @throws {HttpError} error when the service returns a 404 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      put(body: UpdatePriceModel, requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<PriceModel | undefined>;
     /**
-     * Update a provider price
+     * Permanently delete a specific price from a provider plan
+     * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
+     * @returns {RequestInformation}
+     */
+     toDeleteRequestInformation(requestConfiguration?: RequestConfiguration<object> | undefined) : RequestInformation;
+    /**
+     * Update an existing price for a specific provider plan
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
@@ -34,11 +50,23 @@ export const WithPriceItemRequestBuilderUriTemplate = "{+baseurl}/providers/{pro
  * Metadata for all the requests in the request builder.
  */
 export const WithPriceItemRequestBuilderRequestsMetadata: RequestsMetadata = {
+    delete: {
+        uriTemplate: WithPriceItemRequestBuilderUriTemplate,
+        responseBodyContentType: "application/json",
+        errorMappings: {
+            400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            404: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+        },
+        adapterMethodName: "sendNoResponseContent",
+    },
     put: {
         uriTemplate: WithPriceItemRequestBuilderUriTemplate,
         responseBodyContentType: "application/json",
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            404: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "send",
         responseBodyFactory:  createPriceModelFromDiscriminatorValue,

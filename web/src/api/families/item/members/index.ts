@@ -14,20 +14,23 @@ import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type 
 export interface MembersRequestBuilder extends BaseRequestBuilder<MembersRequestBuilder> {
     /**
      * Gets an item from the ApiSdk.families.item.members.item collection
-     * @param id Family member ID
+     * @param id Family member ID (UUID format)
      * @returns {MembersItemRequestBuilder}
      */
      byId(id: string) : MembersItemRequestBuilder;
     /**
-     * Add a new family member
+     * Add a new member to an existing family
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<FamilyModel>}
      * @throws {HttpError} error when the service returns a 400 status code
+     * @throws {HttpError} error when the service returns a 401 status code
+     * @throws {HttpError} error when the service returns a 404 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      post(body: CreateFamilyMemberModel, requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<FamilyModel | undefined>;
     /**
-     * Add a new family member
+     * Add a new member to an existing family
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
@@ -56,6 +59,9 @@ export const MembersRequestBuilderRequestsMetadata: RequestsMetadata = {
         responseBodyContentType: "application/json",
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            401: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            404: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "send",
         responseBodyFactory:  createFamilyModelFromDiscriminatorValue,

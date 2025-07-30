@@ -12,7 +12,7 @@ import './subscriptions_request_builder_get_query_parameters.dart';
 /// Builds and executes requests for operations under \subscriptions
 class SubscriptionsRequestBuilder extends BaseRequestBuilder<SubscriptionsRequestBuilder> {
     /// Gets an item from the ApiSdk.subscriptions.item collection
-    ///  [subscriptionId] Subscription ID
+    ///  [subscriptionId] Subscription ID (UUID format)
     WithSubscriptionItemRequestBuilder bySubscriptionId(String subscriptionId) {
         var urlTplParams = Map.of(pathParameters);
         urlTplParams.putIfAbsent('subscriptionId', () => subscriptionId);
@@ -31,36 +31,42 @@ class SubscriptionsRequestBuilder extends BaseRequestBuilder<SubscriptionsReques
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
     SubscriptionsRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/subscriptions{?page*,size*}", {RequestInformation.rawUrlKey : rawUrl}) ;
-    /// Get all subscriptions
+    /// Retrieve a paginated list of all subscriptions for the authenticated user
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<PaginatedResponseModelEndpointsSubscriptionModel?> getAsync([void Function(RequestConfiguration<SubscriptionsRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<PaginatedResponseModelEndpointsSubscriptionModel>(requestInfo, PaginatedResponseModelEndpointsSubscriptionModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Update an existing subscription with new details
+    /// Update or create a subscription with complete details. If subscription doesn't exist, it will be created.
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<SubscriptionModel?> patchAsync(PatchSubscriptionModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPatchRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
+            '401' :  HttpError.createFromDiscriminatorValue,
+            '404' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<SubscriptionModel>(requestInfo, SubscriptionModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Create a new subscription
+    /// Create a new subscription with provider, plan, pricing, and payment information
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<SubscriptionModel?> postAsync(CreateSubscriptionModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPostRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
+            '401' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<SubscriptionModel>(requestInfo, SubscriptionModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Get all subscriptions
+    /// Retrieve a paginated list of all subscriptions for the authenticated user
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toGetRequestInformation([void Function(RequestConfiguration<SubscriptionsRequestBuilderGetQueryParameters>)? requestConfiguration]) {
         var requestInfo = RequestInformation(httpMethod : HttpMethod.get, urlTemplate : urlTemplate, pathParameters :  pathParameters);
@@ -68,7 +74,7 @@ class SubscriptionsRequestBuilder extends BaseRequestBuilder<SubscriptionsReques
         requestInfo.headers.put('Accept', 'application/json');
         return requestInfo;
     }
-    /// Update an existing subscription with new details
+    /// Update or create a subscription with complete details. If subscription doesn't exist, it will be created.
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toPatchRequestInformation(PatchSubscriptionModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
@@ -78,7 +84,7 @@ class SubscriptionsRequestBuilder extends BaseRequestBuilder<SubscriptionsReques
         requestInfo.setContentFromParsable(requestAdapter, 'application/json', body);
         return requestInfo;
     }
-    /// Create a new subscription
+    /// Create a new subscription with provider, plan, pricing, and payment information
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toPostRequestInformation(CreateSubscriptionModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {

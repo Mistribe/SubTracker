@@ -20,27 +20,29 @@ class LabelsItemRequestBuilder extends BaseRequestBuilder<LabelsItemRequestBuild
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
     LabelsItemRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/labels/{id}", {RequestInformation.rawUrlKey : rawUrl}) ;
-    /// Delete label by ID
+    /// Permanently delete a label by its unique identifier
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<void> deleteAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toDeleteRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
             '404' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.sendNoContent(requestInfo, errorMapping);
     }
-    /// Get label by ID
+    /// Retrieve a single label by its unique identifier
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<LabelModel?> getAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
             '404' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<LabelModel>(requestInfo, LabelModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Update label by ID
+    /// Update an existing label's name and color by its unique identifier
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<LabelModel?> putAsync(UpdateLabelModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
@@ -48,10 +50,11 @@ class LabelsItemRequestBuilder extends BaseRequestBuilder<LabelsItemRequestBuild
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
             '404' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<LabelModel>(requestInfo, LabelModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Delete label by ID
+    /// Permanently delete a label by its unique identifier
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toDeleteRequestInformation([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
         var requestInfo = RequestInformation(httpMethod : HttpMethod.delete, urlTemplate : urlTemplate, pathParameters :  pathParameters);
@@ -59,7 +62,7 @@ class LabelsItemRequestBuilder extends BaseRequestBuilder<LabelsItemRequestBuild
         requestInfo.headers.put('Accept', 'application/json');
         return requestInfo;
     }
-    /// Get label by ID
+    /// Retrieve a single label by its unique identifier
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toGetRequestInformation([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
         var requestInfo = RequestInformation(httpMethod : HttpMethod.get, urlTemplate : urlTemplate, pathParameters :  pathParameters);
@@ -67,7 +70,7 @@ class LabelsItemRequestBuilder extends BaseRequestBuilder<LabelsItemRequestBuild
         requestInfo.headers.put('Accept', 'application/json');
         return requestInfo;
     }
-    /// Update label by ID
+    /// Update an existing label's name and color by its unique identifier
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toPutRequestInformation(UpdateLabelModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {

@@ -11,41 +11,47 @@ import { type BaseRequestBuilder, type Parsable, type ParsableFactory, type Requ
  */
 export interface WithSubscriptionItemRequestBuilder extends BaseRequestBuilder<WithSubscriptionItemRequestBuilder> {
     /**
-     * Delete an existing subscription
+     * Permanently delete an existing subscription
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @throws {HttpError} error when the service returns a 400 status code
+     * @throws {HttpError} error when the service returns a 404 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      delete(requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<void>;
     /**
-     * Get subscription by ID
+     * Retrieve a single subscription with all its details including provider, plan, and pricing information
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<SubscriptionModel>}
      * @throws {HttpError} error when the service returns a 400 status code
      * @throws {HttpError} error when the service returns a 404 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      get(requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<SubscriptionModel | undefined>;
     /**
-     * Update an existing subscription
+     * Update an existing subscription's details including provider, plan, pricing, and payment information
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<SubscriptionModel>}
      * @throws {HttpError} error when the service returns a 400 status code
+     * @throws {HttpError} error when the service returns a 401 status code
+     * @throws {HttpError} error when the service returns a 404 status code
+     * @throws {HttpError} error when the service returns a 500 status code
      */
      put(body: UpdateSubscriptionModel, requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<SubscriptionModel | undefined>;
     /**
-     * Delete an existing subscription
+     * Permanently delete an existing subscription
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
      */
      toDeleteRequestInformation(requestConfiguration?: RequestConfiguration<object> | undefined) : RequestInformation;
     /**
-     * Get subscription by ID
+     * Retrieve a single subscription with all its details including provider, plan, and pricing information
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
      */
      toGetRequestInformation(requestConfiguration?: RequestConfiguration<object> | undefined) : RequestInformation;
     /**
-     * Update an existing subscription
+     * Update an existing subscription's details including provider, plan, pricing, and payment information
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
@@ -65,6 +71,8 @@ export const WithSubscriptionItemRequestBuilderRequestsMetadata: RequestsMetadat
         responseBodyContentType: "application/json",
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            404: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "sendNoResponseContent",
     },
@@ -74,6 +82,7 @@ export const WithSubscriptionItemRequestBuilderRequestsMetadata: RequestsMetadat
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
             404: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "send",
         responseBodyFactory:  createSubscriptionModelFromDiscriminatorValue,
@@ -83,6 +92,9 @@ export const WithSubscriptionItemRequestBuilderRequestsMetadata: RequestsMetadat
         responseBodyContentType: "application/json",
         errorMappings: {
             400: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            401: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            404: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
+            500: createHttpErrorFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "send",
         responseBodyFactory:  createSubscriptionModelFromDiscriminatorValue,

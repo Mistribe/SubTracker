@@ -25,37 +25,43 @@ class WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFamilyItemRequ
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
     WithFamilyItemRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/families/{familyId}", {RequestInformation.rawUrlKey : rawUrl}) ;
-    /// Delete family by ID
+    /// Permanently delete a family and all its members
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<void> deleteAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toDeleteRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
             '404' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.sendNoContent(requestInfo, errorMapping);
     }
-    /// Get family member by ID
+    /// Retrieve a family and its members by family ID
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<FamilyModel?> getAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
+            '401' :  HttpError.createFromDiscriminatorValue,
             '404' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<FamilyModel>(requestInfo, FamilyModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Update a family
+    /// Update family information such as name and other details
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<FamilyModel?> putAsync(UpdateFamilyModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPutRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpError.createFromDiscriminatorValue,
+            '401' :  HttpError.createFromDiscriminatorValue,
+            '404' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<FamilyModel>(requestInfo, FamilyModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Delete family by ID
+    /// Permanently delete a family and all its members
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toDeleteRequestInformation([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
         var requestInfo = RequestInformation(httpMethod : HttpMethod.delete, urlTemplate : urlTemplate, pathParameters :  pathParameters);
@@ -63,7 +69,7 @@ class WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFamilyItemRequ
         requestInfo.headers.put('Accept', 'application/json');
         return requestInfo;
     }
-    /// Get family member by ID
+    /// Retrieve a family and its members by family ID
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toGetRequestInformation([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
         var requestInfo = RequestInformation(httpMethod : HttpMethod.get, urlTemplate : urlTemplate, pathParameters :  pathParameters);
@@ -71,7 +77,7 @@ class WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFamilyItemRequ
         requestInfo.headers.put('Accept', 'application/json');
         return requestInfo;
     }
-    /// Update a family
+    /// Update family information such as name and other details
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toPutRequestInformation(UpdateFamilyModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {

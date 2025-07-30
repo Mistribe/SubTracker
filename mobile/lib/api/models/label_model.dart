@@ -3,23 +3,24 @@ import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import './owner_model.dart';
 
 /// auto generated
+/// Label object used for categorizing and organizing subscriptions with customizable colors
 class LabelModel implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
-    ///  The color property
+    ///  @Description Hexadecimal color code for visual representation of the label
     String? color;
-    ///  The created_at property
+    ///  @Description ISO 8601 timestamp indicating when the label was originally created
     DateTime? createdAt;
-    ///  The etag property
+    ///  @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
     String? etag;
-    ///  The id property
+    ///  @Description Unique identifier for the label (UUID format)
     String? id;
-    ///  The name property
+    ///  @Description Display name of the label
     String? name;
-    ///  The owner property
+    ///  @Description Ownership information specifying whether this subscription belongs to a user or family
     OwnerModel? owner;
-    ///  The updated_at property
+    ///  @Description ISO 8601 timestamp indicating when the label was last modified
     DateTime? updatedAt;
     /// Instantiates a new [LabelModel] and sets the default values.
     LabelModel() :  
