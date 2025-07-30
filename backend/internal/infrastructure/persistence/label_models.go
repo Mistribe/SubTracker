@@ -12,7 +12,7 @@ type LabelSqlModel struct {
 	BaseOwnerSqlModel `gorm:"embedded"`
 
 	Name  string `gorm:"type:varchar(100);not null"`
-	Color string `gorm:"type:varchar(20);not null"`
+	Color string `gorm:"type:varchar(50);not null"`
 }
 
 func (l LabelSqlModel) TableName() string {

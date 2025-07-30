@@ -20,7 +20,7 @@ type BaseOwnerSqlModel struct {
 	OwnerType     string          `gorm:"type:varchar(20);not null"`
 	OwnerFamilyId *uuid.UUID      `gorm:"type:uuid"`
 	OwnerFamily   *FamilySqlModel `gorm:"foreignKey:OwnerFamilyId;references:Id"`
-	OwnerUserId   sql.NullString  `gorm:"type:varchar(20)"`
+	OwnerUserId   sql.NullString  `gorm:"type:varchar(50)"`
 }
 
 func newBaseSqlModel(entity entity.Entity) BaseSqlModel {
