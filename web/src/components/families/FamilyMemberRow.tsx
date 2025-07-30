@@ -5,9 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckIcon, Loader2, XIcon } from "lucide-react";
 import FamilyMember from "@/models/familyMember.ts";
-import { useApiClient } from "@/hooks/use-api-client.ts";
-import { useQueryClient } from "@tanstack/react-query";
-import type { UpdateFamilyMemberModel } from "@/api/models";
+import { useFamiliesMutations } from "@/hooks/families/useFamiliesMutations";
 
 interface FamilyMemberRowProps {
   member: FamilyMember;
@@ -16,14 +14,11 @@ interface FamilyMemberRowProps {
 }
 
 export const FamilyMemberRow = ({ member, familyId, isOwner }: FamilyMemberRowProps) => {
-  const { apiClient } = useApiClient();
-  const queryClient = useQueryClient();
+  const { updateFamilyMemberMutation, removeFamilyMemberMutation } = useFamiliesMutations();
   
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [editedMemberName, setEditedMemberName] = useState<string>("");
   const [editedMemberIsKid, setEditedMemberIsKid] = useState<boolean>(false);
-  const [isUpdatingMember, setIsUpdatingMember] = useState<boolean>(false);
-  const [isDeletingMember, setIsDeletingMember] = useState<boolean>(false);
 
   // Function to start editing a family member
   const startEditingMember = (member: FamilyMember) => {
@@ -40,59 +35,45 @@ export const FamilyMemberRow = ({ member, familyId, isOwner }: FamilyMemberRowPr
   };
 
   // Function to save family member changes
-  const saveMemberChanges = async (familyId: string, member: FamilyMember) => {
-    if (!apiClient) return;
-
-    try {
-      setIsUpdatingMember(true);
-
-      // Only update if values have changed
-      if (editedMemberName === member.name && editedMemberIsKid === member.isKid) {
-        cancelEditingMember();
-        return;
-      }
-
-      const patchModel: Partial<UpdateFamilyMemberModel> = {
-        name: editedMemberName,
-        isKid: editedMemberIsKid,
-      };
-
-      await apiClient.families.byFamilyId(familyId).members.byId(member.id).put(patchModel);
-
-      // Invalidate and refetch the families query
-      await queryClient.invalidateQueries({ queryKey: ['families'] });
-
-      // Reset editing state
+  const saveMemberChanges = (familyId: string, member: FamilyMember) => {
+    // Only update if values have changed
+    if (editedMemberName === member.name && editedMemberIsKid === member.isKid) {
       cancelEditingMember();
-    } catch (error) {
-      console.error("Failed to update family member:", error);
-    } finally {
-      setIsUpdatingMember(false);
+      return;
     }
+
+    updateFamilyMemberMutation.mutate({
+      familyId,
+      memberId: member.id,
+      name: editedMemberName,
+      isKid: editedMemberIsKid
+    }, {
+      onSuccess: () => {
+        // Reset editing state
+        cancelEditingMember();
+      },
+      onError: (error) => {
+        console.error("Failed to update family member:", error);
+      }
+    });
   };
 
   // Function to remove a family member
-  const removeMember = async (familyId: string, member: FamilyMember, isOwner: boolean) => {
-    if (!apiClient) return;
-
+  const removeMember = (familyId: string, member: FamilyMember, isOwner: boolean) => {
     // Prevent removing yourself if you are the owner of the family
     if (member.isYou && isOwner) {
       console.error("Cannot remove yourself as the owner of the family");
       return;
     }
 
-    try {
-      setIsDeletingMember(true);
-
-      await apiClient.families.byFamilyId(familyId).members.byId(member.id).delete();
-
-      // Invalidate and refetch the families query
-      await queryClient.invalidateQueries({ queryKey: ['families'] });
-    } catch (error) {
-      console.error("Failed to remove family member:", error);
-    } finally {
-      setIsDeletingMember(false);
-    }
+    removeFamilyMemberMutation.mutate({
+      familyId,
+      memberId: member.id
+    }, {
+      onError: (error) => {
+        console.error("Failed to remove family member:", error);
+      }
+    });
   };
 
   return (
@@ -134,9 +115,9 @@ export const FamilyMemberRow = ({ member, familyId, isOwner }: FamilyMemberRowPr
               variant="outline"
               size="sm"
               onClick={() => saveMemberChanges(familyId, member)}
-              disabled={isUpdatingMember}
+              disabled={updateFamilyMemberMutation.isPending}
             >
-              {isUpdatingMember ? (
+              {updateFamilyMemberMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (
                 <CheckIcon className="h-4 w-4 mr-2" />
@@ -147,7 +128,7 @@ export const FamilyMemberRow = ({ member, familyId, isOwner }: FamilyMemberRowPr
               variant="outline"
               size="sm"
               onClick={cancelEditingMember}
-              disabled={isUpdatingMember}
+              disabled={updateFamilyMemberMutation.isPending}
             >
               <XIcon className="h-4 w-4 mr-2" />
               Cancel
@@ -168,10 +149,10 @@ export const FamilyMemberRow = ({ member, familyId, isOwner }: FamilyMemberRowPr
                 variant="ghost"
                 size="sm"
                 onClick={() => removeMember(familyId, member, isOwner)}
-                disabled={isDeletingMember}
+                disabled={removeFamilyMemberMutation.isPending}
                 className="text-red-500 hover:text-red-700 hover:bg-red-50"
               >
-                {isDeletingMember ? (
+                {removeFamilyMemberMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : (
                   <XIcon className="h-4 w-4 mr-2" />

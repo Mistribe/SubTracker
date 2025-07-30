@@ -23,9 +23,7 @@ import {Loader2, PlusIcon} from "lucide-react";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
-import {useApiClient} from "@/hooks/use-api-client.ts";
-import type {CreateFamilyMemberModel} from "@/api/models";
-import {useQueryClient} from "@tanstack/react-query";
+import {useFamiliesMutations} from "@/hooks/families/useFamiliesMutations";
 
 const formSchema = z.object({
     name: z.string().min(1, "Family member name is required"),
@@ -40,10 +38,8 @@ interface AddFamilyMemberDialogProps {
 }
 
 export function AddFamilyMemberDialog({familyId, onSuccess}: AddFamilyMemberDialogProps) {
-    const {apiClient} = useApiClient();
-    const queryClient = useQueryClient();
+    const { addFamilyMemberMutation } = useFamiliesMutations();
     const [open, setOpen] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<FormValues>(
         {
@@ -55,31 +51,23 @@ export function AddFamilyMemberDialog({familyId, onSuccess}: AddFamilyMemberDial
         });
 
     const onSubmit = async (values: FormValues) => {
-        if (!apiClient) {
-            return;
-        }
+        addFamilyMemberMutation.mutate({
+            familyId,
+            name: values.name,
+            isKid: values.isKid
+        }, {
+            onSuccess: () => {
+                setOpen(false);
+                form.reset();
 
-        setIsSubmitting(true);
-
-        try {
-            const familyMember: CreateFamilyMemberModel = {
-                name: values.name,
-                isKid: values.isKid,
+                if (onSuccess) {
+                    onSuccess();
+                }
+            },
+            onError: (error) => {
+                console.error("Failed to add family member:", error);
             }
-
-            await apiClient.families.byFamilyId(familyId).members.post(familyMember);
-            await queryClient.invalidateQueries({queryKey: ["families"]});
-            setOpen(false);
-            form.reset();
-
-            if (onSuccess) {
-                onSuccess();
-            }
-        } catch (error) {
-            console.error("Failed to add family member:", error);
-        } finally {
-            setIsSubmitting(false);
-        }
+        });
     };
 
     return (
@@ -131,8 +119,8 @@ export function AddFamilyMemberDialog({familyId, onSuccess}: AddFamilyMemberDial
                             )}
                         />
                         <DialogFooter>
-                            <Button type="submit" disabled={isSubmitting}>
-                                {isSubmitting ? (
+                            <Button type="submit" disabled={addFamilyMemberMutation.isPending}>
+                                {addFamilyMemberMutation.isPending ? (
                                     <>
                                         <Loader2 className="h-4 w-4 mr-2 animate-spin"/>
                                         Adding...

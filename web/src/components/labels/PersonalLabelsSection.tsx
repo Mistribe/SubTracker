@@ -3,6 +3,7 @@ import { LabelItem } from "./LabelItem";
 import { EditableLabelItem } from "./EditableLabelItem";
 import { AddLabelForm } from "./AddLabelForm";
 import { OwnerType } from "@/models/ownerType";
+import { Loader2 } from "lucide-react";
 
 interface PersonalLabelsSectionProps {
   labels: Label[];
@@ -17,6 +18,8 @@ interface PersonalLabelsSectionProps {
   isUpdating: boolean;
   isDeletingId: string | null;
   isAdding: boolean;
+  isLoading?: boolean;
+  error?: Error | null;
 }
 
 export const PersonalLabelsSection = ({
@@ -31,10 +34,34 @@ export const PersonalLabelsSection = ({
   onAddLabel,
   isUpdating,
   isDeletingId,
-  isAdding
+  isAdding,
+  isLoading = false,
+  error = null
 }: PersonalLabelsSectionProps) => {
-  // Filter to only include personal labels
-  const personalLabels = labels.filter(label => label.owner.isPersonal);
+  // No need to filter labels anymore since we're getting only personal labels from the query
+
+  if (isLoading) {
+    return (
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Personal Labels</h2>
+        <div className="flex flex-col items-center justify-center h-32">
+          <Loader2 className="h-6 w-6 animate-spin text-primary mb-2"/>
+          <p className="text-muted-foreground text-sm">Loading personal labels...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Personal Labels</h2>
+        <div className="p-4 border rounded-md bg-destructive/10">
+          <p className="text-destructive text-sm">Error loading personal labels</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -50,30 +77,34 @@ export const PersonalLabelsSection = ({
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {personalLabels.map((label) => (
-          <div
-            key={label.id}
-            className={`border rounded-md ${editingId === label.id ? 'bg-muted' : 'hover:bg-muted/50'}`}
-          >
-            {editingId === label.id ? (
-              <EditableLabelItem
-                label={label}
-                initialName={editingName}
-                initialColor={editingColor}
-                onSave={onSaveEdit}
-                onCancel={onCancelEdit}
-                isSaving={isUpdating}
-              />
-            ) : (
-              <LabelItem
-                label={label}
-                onEdit={onStartEditing}
-                onDelete={onDeleteLabel}
-                isDeleting={isDeletingId === label.id}
-              />
-            )}
-          </div>
-        ))}
+        {labels.length === 0 ? (
+          <p className="text-muted-foreground col-span-full text-center py-4">No personal labels found</p>
+        ) : (
+          labels.map((label) => (
+            <div
+              key={label.id}
+              className={`border rounded-md ${editingId === label.id ? 'bg-muted' : 'hover:bg-muted/50'}`}
+            >
+              {editingId === label.id ? (
+                <EditableLabelItem
+                  label={label}
+                  initialName={editingName}
+                  initialColor={editingColor}
+                  onSave={onSaveEdit}
+                  onCancel={onCancelEdit}
+                  isSaving={isUpdating}
+                />
+              ) : (
+                <LabelItem
+                  label={label}
+                  onEdit={onStartEditing}
+                  onDelete={onDeleteLabel}
+                  isDeleting={isDeletingId === label.id}
+                />
+              )}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

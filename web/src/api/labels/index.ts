@@ -61,22 +61,26 @@ export interface LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBu
  */
 export interface LabelsRequestBuilderGetQueryParameters {
     /**
+     * Family ID (UUID format)
+     */
+    familyId?: string;
+    /**
+     * Number of items (default: 10)
+     */
+    limit?: number;
+    /**
+     * Offset (default: 0)
+     */
+    offset?: number;
+    /**
      * Owner types to filter by (system,personal,family). Can be provided multiple times.
      */
     ownerType?: string[];
-    /**
-     * Page number (default: 1)
-     */
-    page?: number;
-    /**
-     * Number of items per page (default: 10)
-     */
-    size?: number;
 }
 /**
  * Uri template for the request builder.
  */
-export const LabelsRequestBuilderUriTemplate = "{+baseurl}/labels{?owner_type*,page*,size*}";
+export const LabelsRequestBuilderUriTemplate = "{+baseurl}/labels{?familyId*,limit*,offset*,owner_type*}";
 /**
  * Mapper for query parameters from symbol name to serialization name represented as a constant.
  */

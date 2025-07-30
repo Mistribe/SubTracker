@@ -1,25 +1,39 @@
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
-import { hexToArgb } from "@/components/ui/utils/color-utils";
-import { useLabelsQuery } from "@/hooks/labels/useLabelsQuery";
-import { useLabelMutations } from "@/hooks/labels/useLabelMutations";
-import { LabelHeader } from "@/components/labels/LabelHeader";
-import { SystemLabelsSection } from "@/components/labels/SystemLabelsSection";
-import { PersonalLabelsSection } from "@/components/labels/PersonalLabelsSection";
-import { FamilyLabelsSection } from "@/components/labels/FamilyLabelsSection";
+import {useState} from "react";
+import {hexToArgb} from "@/components/ui/utils/color-utils";
+import {useLabelsQuery} from "@/hooks/labels/useLabelsQuery";
+import {useLabelMutations} from "@/hooks/labels/useLabelMutations";
+import {useFamiliesMutations} from "@/hooks/families/useFamiliesMutations";
+import {LabelHeader} from "@/components/labels/LabelHeader";
+import {SystemLabelsSection} from "@/components/labels/SystemLabelsSection";
+import {PersonalLabelsSection} from "@/components/labels/PersonalLabelsSection";
+import {FamilyLabelsSection} from "@/components/labels/FamilyLabelsSection";
 import Label from "@/models/label";
-import { OwnerType } from "@/models/ownerType";
+import {OwnerType} from "@/models/ownerType";
 
 const LabelsPage = () => {
     const [page] = useState(1);
     const [pageSize] = useState(10);
 
-    // Use custom hooks for data fetching and mutations
+    // Use custom hooks for data fetching and mutations with separate queries for each label type
     const {
-        data: queryResponse,
-        isLoading,
-        error
-    } = useLabelsQuery(page, pageSize);
+        data: systemLabelsResponse,
+        isLoading: isLoadingSystemLabels,
+        error: systemLabelsError
+    } = useLabelsQuery({
+        ownerTypes: [OwnerType.System],
+        page,
+        pageSize
+    });
+
+    const {
+        data: personalLabelsResponse,
+        isLoading: isLoadingPersonalLabels,
+        error: personalLabelsError
+    } = useLabelsQuery({
+        ownerTypes: [OwnerType.Personal],
+        page,
+        pageSize
+    });
 
     const {
         createLabelMutation,
@@ -27,6 +41,10 @@ const LabelsPage = () => {
         deleteLabelMutation,
         canModifyLabel
     } = useLabelMutations();
+
+    const {
+        createFamilyLabelMutation
+    } = useFamiliesMutations();
 
     // State for editing
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -41,7 +59,7 @@ const LabelsPage = () => {
 
         setEditingId(label.id);
         setEditingName(label.name);
-        
+
         // Convert hex color to ARGB if needed
         let color = label.color;
 
@@ -80,7 +98,9 @@ const LabelsPage = () => {
 
     const handleDeleteLabel = (id: string) => {
         // Find the label to check if it's a system label
-        const labelToDelete = queryResponse?.labels?.find(label => label.id === id);
+        const labelToDelete =
+            systemLabelsResponse?.labels?.find(label => label.id === id) ||
+            personalLabelsResponse?.labels?.find(label => label.id === id);
 
         // Prevent deleting system labels
         if (labelToDelete && !canModifyLabel(labelToDelete)) {
@@ -91,7 +111,20 @@ const LabelsPage = () => {
     };
 
     const handleAddLabel = (name: string, color: string, ownerType?: OwnerType, familyId?: string) => {
-        if (name.trim()) {
+        if (!name.trim()) {
+            return;
+        }
+
+        // Use different mutations based on the owner type
+        if (ownerType === OwnerType.Family && familyId) {
+            // Use the family-specific mutation for family labels
+            createFamilyLabelMutation.mutate({
+                familyId,
+                name,
+                color
+            });
+        } else {
+            // Use the general label mutation for other types
             createLabelMutation.mutate({
                 name,
                 color,
@@ -101,38 +134,25 @@ const LabelsPage = () => {
         }
     };
 
-    // Show loading or error states
-    if (isLoading) {
-        return (
-            <div className="flex flex-col items-center justify-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-primary mb-4"/>
-                <p className="text-muted-foreground">Loading labels...</p>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="flex flex-col items-center justify-center h-64">
-                <p className="text-destructive mb-2">Error loading labels</p>
-                <p className="text-muted-foreground text-sm">{error instanceof Error ? error.message : 'Unknown error'}</p>
-            </div>
-        );
-    }
+    // We'll handle loading and error states for each section separately
 
     return (
         <div>
-            <LabelHeader totalCount={queryResponse?.total || 0} />
+            <LabelHeader/>
 
             <div className="mt-8">
                 {/* System Labels Section */}
-                <SystemLabelsSection labels={queryResponse?.labels || []} />
+                <SystemLabelsSection
+                    labels={systemLabelsResponse?.labels || []}
+                    isLoading={isLoadingSystemLabels}
+                    error={systemLabelsError}
+                />
 
                 {/* Personal and Family Labels Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Personal Labels Column */}
-                    <PersonalLabelsSection 
-                        labels={queryResponse?.labels || []}
+                    <PersonalLabelsSection
+                        labels={personalLabelsResponse?.labels || []}
                         editingId={editingId}
                         editingName={editingName}
                         editingColor={editingColor}
@@ -144,11 +164,12 @@ const LabelsPage = () => {
                         isUpdating={updateLabelMutation.isPending}
                         isDeletingId={deleteLabelMutation.isPending ? deleteLabelMutation.variables as string : null}
                         isAdding={createLabelMutation.isPending}
+                        isLoading={isLoadingPersonalLabels}
+                        error={personalLabelsError}
                     />
 
                     {/* Family Labels Column */}
-                    <FamilyLabelsSection 
-                        labels={queryResponse?.labels || []}
+                    <FamilyLabelsSection
                         editingId={editingId}
                         editingName={editingName}
                         editingColor={editingColor}
@@ -159,7 +180,7 @@ const LabelsPage = () => {
                         onAddLabel={handleAddLabel}
                         isUpdating={updateLabelMutation.isPending}
                         isDeletingId={deleteLabelMutation.isPending ? deleteLabelMutation.variables as string : null}
-                        isAdding={createLabelMutation.isPending}
+                        isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
                     />
                 </div>
             </div>

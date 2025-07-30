@@ -1,16 +1,11 @@
 import {useState} from "react";
-import Family from "@/models/family.ts";
-import {useApiClient} from "@/hooks/use-api-client.ts";
-import {useQuery} from "@tanstack/react-query";
-import type {FamilyModel} from "@/api/models";
 import {CreateFamilyDialog} from "@/components/families/CreateFamilyDialog.tsx";
 import {FamilyCard} from "@/components/families/FamilyCard";
 import {EmptyFamiliesState} from "@/components/families/EmptyFamiliesState";
 import {FamiliesLoadingError} from "@/components/families/FamiliesLoadingError";
+import {useFamiliesQuery} from "@/hooks/families/useFamiliesQuery";
 
 const FamiliesPage = () => {
-    const {apiClient} = useApiClient();
-
     const [offset] = useState(0);
     const [limit] = useState(10);
 
@@ -18,32 +13,9 @@ const FamiliesPage = () => {
         data: queryResponse,
         isLoading,
         error
-    } = useQuery({
-        queryKey: ['families'],
-        queryFn: async () => {
-            if (!apiClient) {
-                throw new Error('API client not initialized');
-            }
-            const result = await apiClient.families.get({
-                queryParameters: {
-                    offset: offset,
-                    limit: limit
-                }
-            });
-            if (result && result.data) {
-                return {
-                    families: result.data.map((model: FamilyModel) => {
-                        return Family.fromModel(model);
-                    }),
-                    length: result.data.length,
-                    total: result.total ?? 0
-                }
-            }
-            return {families: [], length: 0, total: 0};
-        },
-        enabled: !!apiClient,
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        refetchOnWindowFocus: true,
+    } = useFamiliesQuery({
+        offset,
+        limit
     });
 
     // Show loading or error states

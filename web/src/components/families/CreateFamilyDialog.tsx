@@ -2,7 +2,6 @@ import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {useQueryClient} from "@tanstack/react-query";
 
 import {
     Dialog,
@@ -25,8 +24,7 @@ import {
 import {Input} from "@/components/ui/input.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Loader2, PlusIcon} from "lucide-react";
-import {useApiClient} from "@/hooks/use-api-client.ts";
-import type {CreateFamilyModel} from "@/api/models";
+import {useFamiliesMutations} from "@/hooks/families/useFamiliesMutations";
 
 // Define the form schema
 const formSchema = z.object({
@@ -41,10 +39,8 @@ interface CreateFamilyDialogProps {
 }
 
 export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
-    const {apiClient} = useApiClient();
-    const queryClient = useQueryClient();
+    const { createFamilyMutation } = useFamiliesMutations();
     const [open, setOpen] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Initialize the form
     const form = useForm<FormValues>({
@@ -57,38 +53,24 @@ export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
 
     // Handle form submission
     const onSubmit = async (values: FormValues) => {
-        if (!apiClient) {
-            return;
-        }
+        createFamilyMutation.mutate({
+            name: values.name,
+            creatorName: values.creatorName
+        }, {
+            onSuccess: () => {
+                // Close the dialog and reset the form
+                setOpen(false);
+                form.reset();
 
-        setIsSubmitting(true);
-
-        try {
-            // Create the family model
-            const familyModel: CreateFamilyModel = {
-                name: values.name,
-                creatorName: values.creatorName
-            };
-
-            // Call the API to create the family
-            await apiClient.families.post(familyModel);
-
-            // Invalidate the families query to refetch the data
-            await queryClient.invalidateQueries({queryKey: ["families"]});
-
-            // Close the dialog and reset the form
-            setOpen(false);
-            form.reset();
-
-            // Call the onSuccess callback if provided
-            if (onSuccess) {
-                onSuccess();
+                // Call the onSuccess callback if provided
+                if (onSuccess) {
+                    onSuccess();
+                }
+            },
+            onError: (error) => {
+                console.error("Failed to create family:", error);
             }
-        } catch (error) {
-            console.error("Failed to create family:", error);
-        } finally {
-            setIsSubmitting(false);
-        }
+        });
     };
 
     return (
@@ -141,8 +123,8 @@ export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
                             )}
                         />
                         <DialogFooter>
-                            <Button type="submit" disabled={isSubmitting}>
-                                {isSubmitting ? (
+                            <Button type="submit" disabled={createFamilyMutation.isPending}>
+                                {createFamilyMutation.isPending ? (
                                     <>
                                         <Loader2 className="h-4 w-4 mr-2 animate-spin"/>
                                         Creating...
