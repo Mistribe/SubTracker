@@ -43,9 +43,9 @@ func (r LabelRepository) GetAll(ctx context.Context, parameters label.QueryParam
 	query := r.repository.db.WithContext(ctx)
 
 	if parameters.WithDefaults {
-		query = query.Where("owner_id = ? OR (owner_id is null AND is_default = ?)", userId, true)
+		query = query.Where("(owner_user_id = ? AND owner_type = ?) OR (owner_type  = ?)", userId, user.PersonalOwner, user.SystemOwner)
 	} else {
-		query = query.Where("owner_id = ?", userId)
+		query = query.Where("owner_user_id = ? AND owner_type = ?", userId, user.PersonalOwner)
 	}
 	if parameters.Offset > 0 {
 		query = query.Offset(parameters.Offset)
@@ -74,9 +74,9 @@ func (r LabelRepository) GetAllCount(ctx context.Context, parameters label.Query
 	query := r.repository.db.WithContext(ctx).Model(&LabelSqlModel{})
 
 	if parameters.WithDefaults {
-		query = query.Where("owner_id = ? OR (owner_id is null AND is_default = ?)", userId, true)
+		query = query.Where("(owner_user_id = ? AND owner_type = ?) OR (owner_type  = ?)", userId, user.PersonalOwner, user.SystemOwner)
 	} else {
-		query = query.Where("owner_id = ?", userId)
+		query = query.Where("owner_user_id = ? AND owner_type = ?", userId, user.PersonalOwner)
 	}
 	var count int64
 	if result := query.Count(&count); result.Error != nil {
