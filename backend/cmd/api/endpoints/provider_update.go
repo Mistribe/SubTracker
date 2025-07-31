@@ -1,9 +1,10 @@
 package endpoints
 
 import (
-	"github.com/oleexo/subtracker/pkg/slicesx"
 	"net/http"
 	"time"
+
+	"github.com/oleexo/subtracker/pkg/slicesx"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -20,21 +21,6 @@ type ProviderUpdateEndpoint struct {
 func NewProviderUpdateEndpoint(handler core.CommandHandler[command.UpdateProviderCommand, provider.Provider]) *ProviderUpdateEndpoint {
 	return &ProviderUpdateEndpoint{handler: handler}
 }
-
-// Handle godoc
-//
-//	@Summary		Update provider by ID
-//	@Description	Update an existing provider's basic information
-//	@Tags			providers
-//	@Accept			json
-//	@Produce		json
-//	@Param			providerId	path		string				true	"Provider ID (UUID format)"
-//	@Param			provider	body		updateProviderModel	true	"Updated provider data"
-//	@Success		200			{object}	ProviderModel		"Successfully updated provider"
-//	@Failure		400			{object}	httpError			"Bad Request - Invalid input data or provider ID"
-//	@Failure		404			{object}	httpError			"Provider not found"
-//	@Failure		500			{object}	httpError			"Internal Server Error"
-//	@Router			/providers/{providerId} [put]
 
 type updateProviderModel struct {
 	Name           string     `json:"name" binding:"required"`
@@ -64,6 +50,20 @@ func (m updateProviderModel) Command(providerId uuid.UUID) (command.UpdateProvid
 	}, nil
 }
 
+// Handle godoc
+//
+//	@Summary		Update provider by ID
+//	@Description	Update an existing provider's basic information
+//	@Tags			providers
+//	@Accept			json
+//	@Produce		json
+//	@Param			providerId	path		string				true	"Provider ID (UUID format)"
+//	@Param			provider	body		updateProviderModel	true	"Updated provider data"
+//	@Success		200			{object}	ProviderModel		"Successfully updated provider"
+//	@Failure		400			{object}	httpError			"Bad Request - Invalid input data or provider ID"
+//	@Failure		404			{object}	httpError			"Provider not found"
+//	@Failure		500			{object}	httpError			"Internal Server Error"
+//	@Router			/providers/{providerId} [put]
 func (e ProviderUpdateEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("providerId")
 	if idParam == "" {
