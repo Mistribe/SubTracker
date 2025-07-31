@@ -88,14 +88,33 @@ export const useProvidersMutations = () => {
         }
     });
 
+    // Delete provider mutation
+    const deleteProviderMutation = useMutation({
+        mutationFn: async (providerId: string) => {
+            if (!apiClient) throw new Error("API client not initialized");
+            return apiClient.providers.byProviderId(providerId).delete();
+        },
+        onSuccess: () => {
+            // Invalidate and refetch
+            queryClient.invalidateQueries({queryKey: ['providers']});
+        }
+    });
+
     // Helper function to check if a provider can be edited or deleted
     const canModifyProvider = (provider: Provider): boolean => {
         return !provider.owner.isSystem;
     };
 
+    // Helper function to check if a provider can be deleted (only family or personal)
+    const canDeleteProvider = (provider: Provider): boolean => {
+        return !provider.owner.isSystem && (provider.owner.isFamily || provider.owner.isPersonal);
+    };
+
     return {
         createProviderMutation,
         updateProviderMutation,
-        canModifyProvider
+        deleteProviderMutation,
+        canModifyProvider,
+        canDeleteProvider
     };
 };

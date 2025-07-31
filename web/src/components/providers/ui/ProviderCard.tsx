@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import Provider from "@/models/provider";
 import Plan from "@/models/plan";
 import { getBadgeText, getBadgeVariant } from "../utils/badgeUtils";
-import { Edit, MoreVertical, Plus } from "lucide-react";
+import { Edit, MoreVertical, Plus, Trash2 } from "lucide-react";
 import { useProvidersMutations } from "@/hooks/providers/useProvidersMutations";
 import { PlanDetailsDialog } from "../PlanDetailsDialog";
 import { AddPlanDialog } from "../AddPlanDialog";
@@ -14,7 +14,18 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ProviderCardProps {
   provider: Provider;
@@ -24,8 +35,19 @@ interface ProviderCardProps {
 export const ProviderCard = ({ provider, onEdit }: ProviderCardProps) => {
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isAddingPlan, setIsAddingPlan] = useState(false);
-  const { canModifyProvider } = useProvidersMutations();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { canModifyProvider, canDeleteProvider, deleteProviderMutation } = useProvidersMutations();
   const isEditable = canModifyProvider(provider);
+  const isDeletable = canDeleteProvider(provider);
+
+  const handleDeleteProvider = async () => {
+    try {
+      await deleteProviderMutation.mutateAsync(provider.id);
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to delete provider:", error);
+    }
+  };
 
   return (
     <Card key={provider.id} className="overflow-hidden">
@@ -56,6 +78,18 @@ export const ProviderCard = ({ provider, onEdit }: ProviderCardProps) => {
                     <Plus className="h-4 w-4 mr-2" />
                     Add Plan
                   </DropdownMenuItem>
+                  {isDeletable && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => setIsDeleteDialogOpen(true)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Remove Provider
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
@@ -127,6 +161,28 @@ export const ProviderCard = ({ provider, onEdit }: ProviderCardProps) => {
           providerId={provider.id}
         />
       )}
+
+      {/* Delete Provider Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the provider "{provider.name}" and all its associated plans and prices.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteProvider}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

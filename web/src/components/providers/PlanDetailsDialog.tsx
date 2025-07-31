@@ -8,7 +8,7 @@ import {
     DialogTitle
 } from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
-import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
+import {Card, CardFooter} from "@/components/ui/card";
 import {Alert, AlertDescription} from "@/components/ui/alert";
 import {AlertCircle, Pencil, Plus, Trash2} from "lucide-react";
 import {useApiClient} from "@/hooks/use-api-client";
@@ -42,6 +42,7 @@ export function PlanDetailsDialog({isOpen, onClose, plan, providerId, onPlanUpda
     const [showAddPriceForm, setShowAddPriceForm] = useState(false);
     const [editingPrice, setEditingPrice] = useState<Price | null>(null);
     const [deletingPrice, setDeletingPrice] = useState<Price | null>(null);
+    const [deletingPlan, setDeletingPlan] = useState(false);
     const [expandedCurrencies, setExpandedCurrencies] = useState<Record<string, boolean>>({});
     const [selectedCurrencies, setSelectedCurrencies] = useState<string[]>([]);
     const {apiClient} = useApiClient();
@@ -271,6 +272,39 @@ export function PlanDetailsDialog({isOpen, onClose, plan, providerId, onPlanUpda
         setEditingPrice(null);
         setError(null);
     };
+    
+    // Handle deleting a plan
+    const handleDeletePlan = async () => {
+        try {
+            if (!apiClient) return;
+            setIsSubmitting(true);
+            setError(null);
+
+            // Extract plan ID from the full plan ID if it contains a separator
+            const planId = plan.id.includes('/') ? plan.id.split('/')[1] : plan.id;
+
+            await apiClient.providers.byProviderId(providerId)
+                .plans.byPlanId(planId)
+                .delete();
+
+            // Invalidate the providers query to refresh the data
+            await queryClient.invalidateQueries({queryKey: ['providers']});
+
+            // Close the dialog
+            onClose();
+
+            // Notify parent component that plan was updated
+            if (onPlanUpdated) {
+                onPlanUpdated();
+            }
+        } catch (err) {
+            setError("Failed to delete plan. Please try again.");
+            console.error(err);
+        } finally {
+            setIsSubmitting(false);
+            setDeletingPlan(false);
+        }
+    };
 
     return (
         <>
@@ -399,43 +433,40 @@ export function PlanDetailsDialog({isOpen, onClose, plan, providerId, onPlanUpda
                                             <div className="space-y-2 mb-3">
                                                 {activePrices.map((price) => (
                                                     <Card key={price.id} className="overflow-hidden border-l-4 border-l-green-500 bg-green-50/30">
-                                                        <CardHeader className="py-3">
-                                                            <CardTitle className="text-base flex justify-between items-center">
-                                                                <span className="font-medium">{price.amount} {price.currency}</span>
-                                                                {editingPrice?.id === price.id ? (
-                                                                    <span className="text-xs text-blue-500">Editing...</span>
-                                                                ) : (
-                                                                    <div className="flex space-x-1">
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="icon"
-                                                                            className="h-6 w-6"
-                                                                            onClick={() => setEditingPrice(price)}
-                                                                            disabled={!!editingPrice || showAddPriceForm}
-                                                                        >
-                                                                            <Pencil className="h-3 w-3"/>
-                                                                        </Button>
-                                                                        <Button
-                                                                            variant="ghost"
-                                                                            size="icon"
-                                                                            className="h-6 w-6 text-red-500"
-                                                                            onClick={() => setDeletingPrice(price)}
-                                                                            disabled={!!editingPrice || showAddPriceForm}
-                                                                        >
-                                                                            <Trash2 className="h-3 w-3"/>
-                                                                        </Button>
-                                                                    </div>
-                                                                )}
-                                                            </CardTitle>
-                                                        </CardHeader>
-                                                        <CardContent className="py-2">
-                                                            <div className="text-sm text-gray-500">
-                                                                <div>From: {price.startDate.toLocaleDateString()}</div>
-                                                                {price.endDate && (
-                                                                    <div>To: {price.endDate.toLocaleDateString()}</div>
-                                                                )}
+                                                        <div className="p-2 flex items-center justify-between">
+                                                            <div>
+                                                                <div className="font-medium">{price.amount} {price.currency}</div>
+                                                                <div className="text-xs text-gray-500">
+                                                                    {price.endDate 
+                                                                        ? `${price.startDate.toLocaleDateString()} - ${price.endDate.toLocaleDateString()}`
+                                                                        : `From ${price.startDate.toLocaleDateString()}`}
+                                                                </div>
                                                             </div>
-                                                        </CardContent>
+                                                            {editingPrice?.id === price.id ? (
+                                                                <span className="text-xs text-blue-500">Editing...</span>
+                                                            ) : (
+                                                                <div className="flex space-x-1">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-6 w-6"
+                                                                        onClick={() => setEditingPrice(price)}
+                                                                        disabled={!!editingPrice || showAddPriceForm}
+                                                                    >
+                                                                        <Pencil className="h-3 w-3"/>
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-6 w-6 text-red-500"
+                                                                        onClick={() => setDeletingPrice(price)}
+                                                                        disabled={!!editingPrice || showAddPriceForm}
+                                                                    >
+                                                                        <Trash2 className="h-3 w-3"/>
+                                                                    </Button>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                         {editingPrice?.id === price.id && (
                                                             <CardFooter className="py-2 bg-gray-50">
                                                                 <PriceForm
@@ -469,43 +500,40 @@ export function PlanDetailsDialog({isOpen, onClose, plan, providerId, onPlanUpda
                                                         <div className="space-y-2 mt-2">
                                                             {inactivePrices.map((price) => (
                                                                 <Card key={price.id} className="overflow-hidden border-l-4 border-l-gray-300">
-                                                                    <CardHeader className="py-3">
-                                                                        <CardTitle className="text-base flex justify-between items-center">
-                                                                            <span>{price.amount} {price.currency}</span>
-                                                                            {editingPrice?.id === price.id ? (
-                                                                                <span className="text-xs text-blue-500">Editing...</span>
-                                                                            ) : (
-                                                                                <div className="flex space-x-1">
-                                                                                    <Button
-                                                                                        variant="ghost"
-                                                                                        size="icon"
-                                                                                        className="h-6 w-6"
-                                                                                        onClick={() => setEditingPrice(price)}
-                                                                                        disabled={!!editingPrice || showAddPriceForm}
-                                                                                    >
-                                                                                        <Pencil className="h-3 w-3"/>
-                                                                                    </Button>
-                                                                                    <Button
-                                                                                        variant="ghost"
-                                                                                        size="icon"
-                                                                                        className="h-6 w-6 text-red-500"
-                                                                                        onClick={() => setDeletingPrice(price)}
-                                                                                        disabled={!!editingPrice || showAddPriceForm}
-                                                                                    >
-                                                                                        <Trash2 className="h-3 w-3"/>
-                                                                                    </Button>
-                                                                                </div>
-                                                                            )}
-                                                                        </CardTitle>
-                                                                    </CardHeader>
-                                                                    <CardContent className="py-2">
-                                                                        <div className="text-sm text-gray-500">
-                                                                            <div>From: {price.startDate.toLocaleDateString()}</div>
-                                                                            {price.endDate && (
-                                                                                <div>To: {price.endDate.toLocaleDateString()}</div>
-                                                                            )}
+                                                                    <div className="p-2 flex items-center justify-between">
+                                                                        <div>
+                                                                            <div>{price.amount} {price.currency}</div>
+                                                                            <div className="text-xs text-gray-500">
+                                                                                {price.endDate 
+                                                                                    ? `${price.startDate.toLocaleDateString()} - ${price.endDate.toLocaleDateString()}`
+                                                                                    : `From ${price.startDate.toLocaleDateString()}`}
+                                                                            </div>
                                                                         </div>
-                                                                    </CardContent>
+                                                                        {editingPrice?.id === price.id ? (
+                                                                            <span className="text-xs text-blue-500">Editing...</span>
+                                                                        ) : (
+                                                                            <div className="flex space-x-1">
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="icon"
+                                                                                    className="h-6 w-6"
+                                                                                    onClick={() => setEditingPrice(price)}
+                                                                                    disabled={!!editingPrice || showAddPriceForm}
+                                                                                >
+                                                                                    <Pencil className="h-3 w-3"/>
+                                                                                </Button>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="icon"
+                                                                                    className="h-6 w-6 text-red-500"
+                                                                                    onClick={() => setDeletingPrice(price)}
+                                                                                    disabled={!!editingPrice || showAddPriceForm}
+                                                                                >
+                                                                                    <Trash2 className="h-3 w-3"/>
+                                                                                </Button>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                     {editingPrice?.id === price.id && (
                                                                         <CardFooter className="py-2 bg-gray-50">
                                                                             <PriceForm
@@ -532,7 +560,14 @@ export function PlanDetailsDialog({isOpen, onClose, plan, providerId, onPlanUpda
                         )}
                     </div>
 
-                    <DialogFooter>
+                    <DialogFooter className="flex justify-between">
+                        <Button 
+                            variant="destructive" 
+                            onClick={() => setDeletingPlan(true)}
+                            disabled={isSubmitting}
+                        >
+                            <Trash2 className="h-4 w-4 mr-1"/> Delete Plan
+                        </Button>
                         <Button onClick={onClose}>Close</Button>
                     </DialogFooter>
                 </DialogContent>
@@ -550,6 +585,26 @@ export function PlanDetailsDialog({isOpen, onClose, plan, providerId, onPlanUpda
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleDeletePrice}
+                            disabled={isSubmitting}
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+            
+            <AlertDialog open={deletingPlan} onOpenChange={(open) => !open && setDeletingPlan(false)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Plan</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete this plan? All associated prices will also be deleted. This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleDeletePlan}
                             disabled={isSubmitting}
                         >
                             Delete
