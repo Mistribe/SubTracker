@@ -4,7 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/oleexo/subtracker/internal/domain/currency"
+	dcurrency "github.com/oleexo/subtracker/internal/domain/currency"
+	"github.com/oleexo/subtracker/pkg/slicesx"
+	"golang.org/x/text/currency"
 )
 
 type CurrencySupportedEndpoint struct {
@@ -22,7 +24,10 @@ func NewCurrencySupportedEndpoint() *CurrencySupportedEndpoint {
 //	@Success		200	{array}	string	"currencies"
 //	@Router			/currencies/supported [get]
 func (e CurrencySupportedEndpoint) Handle(c *gin.Context) {
-	c.JSON(http.StatusOK, currency.GetSupportedCurrencies())
+	response := slicesx.Map(dcurrency.GetSupportedCurrencies(), func(u currency.Unit) string {
+		return u.String()
+	})
+	c.JSON(http.StatusOK, response)
 }
 
 func (e CurrencySupportedEndpoint) Pattern() []string {
