@@ -4,6 +4,7 @@ import 'package:microsoft_kiota_serialization_form/microsoft_kiota_serialization
 import 'package:microsoft_kiota_serialization_json/microsoft_kiota_serialization_json.dart';
 import 'package:microsoft_kiota_serialization_multipart/microsoft_kiota_serialization_multipart.dart';
 import 'package:microsoft_kiota_serialization_text/microsoft_kiota_serialization_text.dart';
+import './currencies/currencies_request_builder.dart';
 import './families/families_request_builder.dart';
 import './healthz/healthz_request_builder.dart';
 import './labels/labels_request_builder.dart';
@@ -13,6 +14,10 @@ import './subscriptions/subscriptions_request_builder.dart';
 /// auto generated
 /// The main entry point of the SDK, exposes the configuration and the fluent API.
 class ApiClient extends BaseRequestBuilder<ApiClient> {
+    ///  The currencies property
+    CurrenciesRequestBuilder get currencies {
+        return CurrenciesRequestBuilder(pathParameters, requestAdapter);
+    }
     ///  The families property
     FamiliesRequestBuilder get families {
         return FamiliesRequestBuilder(pathParameters, requestAdapter);
