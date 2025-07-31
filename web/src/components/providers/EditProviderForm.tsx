@@ -10,17 +10,19 @@ import {Textarea} from "@/components/ui/textarea";
 import {Label} from "@/components/ui/label";
 import {OwnerType} from "@/models/ownerType";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from "@/components/ui/select";
 import {Alert, AlertDescription} from "@/components/ui/alert";
-import {AlertCircle, Loader2, Plus, Trash2, Edit2} from "lucide-react";
+import {AlertCircle, Edit2, Loader2, Plus, Trash2} from "lucide-react";
 import Provider from "@/models/provider";
+import Plan from "@/models/plan";
+import Price from "@/models/price";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
 import {useApiClient} from "@/hooks/use-api-client";
@@ -57,10 +59,9 @@ const priceFormSchema = z.object({
             const parsed = parseFloat(val as string);
             return isNaN(parsed) ? undefined : parsed;
         },
-        z.number({
-            required_error: "Amount is required",
-            invalid_type_error: "Amount must be a number"
-        }).min(0, "Amount must be a positive number")
+        z.number()
+            .min(0, "Amount must be a positive number")
+            .describe("Amount is required")
     ),
     currency: z.string().min(1, "Currency is required"),
     startDate: z.string().min(1, "Start date is required"),
@@ -82,13 +83,13 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
     const {updateProviderMutation} = useProvidersMutations();
     const {data: familiesData} = useFamiliesQuery({limit: 100});
     const families = familiesData?.families || [];
-    const { apiClient } = useApiClient();
+    const {apiClient} = useApiClient();
     const queryClient = useQueryClient();
 
     // State for plans and prices management
     const [plans, setPlans] = useState(provider.plans);
     const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
-    const [editingPriceInfo, setEditingPriceInfo] = useState<{planId: string, priceId: string} | null>(null);
+    const [editingPriceInfo, setEditingPriceInfo] = useState<{ planId: string, priceId: string } | null>(null);
     const [showAddPlanForm, setShowAddPlanForm] = useState(false);
     const [showAddPriceForm, setShowAddPriceForm] = useState<string | null>(null); // planId or null
 
@@ -109,7 +110,7 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
             iconUrl: provider.iconUrl || "",
             pricingPageUrl: provider.pricingPageUrl || "",
             ownerType: provider.owner.type,
-            familyId: provider.owner.type === OwnerType.Family ? provider.owner.familyId : undefined,
+            familyId: provider.owner.type === OwnerType.Family ? provider.owner.familyId || undefined : undefined,
         },
     });
 
@@ -124,7 +125,7 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
 
     // Form for price details
     const priceForm = useForm<PriceFormValues>({
-        resolver: zodResolver(priceFormSchema),
+        resolver: zodResolver(priceFormSchema) as any, // Cast to any to resolve type incompatibility
         defaultValues: {
             amount: 0,
             currency: "USD",
@@ -170,19 +171,22 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
     const handleAddPlan = async (data: PlanFormValues) => {
         try {
             if (!apiClient) return;
-            
+
             const response = await apiClient.providers.byProviderId(provider.id).plans.post({
                 name: data.name,
                 description: data.description || undefined
             });
-            
+
             if (response) {
                 // Add the new plan to the local state
-                setPlans([...plans, response]);
+                const updatedPlans = [...plans];
+                const newPlan = response as unknown as Plan;
+                updatedPlans.push(newPlan);
+                setPlans(updatedPlans);
                 planForm.reset();
                 setShowAddPlanForm(false);
                 // Invalidate the providers query to refresh the data
-                queryClient.invalidateQueries({ queryKey: ['providers'] });
+                queryClient.invalidateQueries({queryKey: ['providers']});
             }
         } catch (err) {
             setError("Failed to add plan. Please try again.");
@@ -194,23 +198,29 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
     const handleUpdatePlan = async (data: PlanFormValues) => {
         try {
             if (!apiClient || !editingPlanId) return;
-            
+
             const planToUpdate = plans.find(p => p.id === editingPlanId);
             if (!planToUpdate) return;
-            
+
             const response = await apiClient.providers.byProviderId(provider.id).plans.byPlanId(editingPlanId).put({
                 name: data.name,
-                description: data.description || undefined,
-                etag: planToUpdate.etag
+                description: data.description || undefined
+                // etag is not needed in the UpdatePlanModel
             });
-            
+
             if (response) {
                 // Update the plan in the local state
-                setPlans(plans.map(p => p.id === editingPlanId ? response : p));
+                const updatedPlans = plans.map(p => {
+                    if (p.id === editingPlanId) {
+                        return response as unknown as Plan;
+                    }
+                    return p;
+                });
+                setPlans(updatedPlans);
                 planForm.reset();
                 setEditingPlanId(null);
                 // Invalidate the providers query to refresh the data
-                queryClient.invalidateQueries({ queryKey: ['providers'] });
+                queryClient.invalidateQueries({queryKey: ['providers']});
             }
         } catch (err) {
             setError("Failed to update plan. Please try again.");
@@ -222,13 +232,13 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
     const handleDeletePlan = async (planId: string) => {
         try {
             if (!apiClient) return;
-            
+
             await apiClient.providers.byProviderId(provider.id).plans.byPlanId(planId).delete();
-            
+
             // Remove the plan from the local state
             setPlans(plans.filter(p => p.id !== planId));
             // Invalidate the providers query to refresh the data
-            queryClient.invalidateQueries({ queryKey: ['providers'] });
+            queryClient.invalidateQueries({queryKey: ['providers']});
         } catch (err) {
             setError("Failed to delete plan. Please try again.");
             console.error(err);
@@ -239,14 +249,14 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
     const handleAddPrice = async (data: PriceFormValues) => {
         try {
             if (!apiClient || !showAddPriceForm) return;
-            
+
             // Validate dates
             const startDate = new Date(data.startDate);
             if (isNaN(startDate.getTime())) {
                 setError("Invalid start date. Please enter a valid date.");
                 return;
             }
-            
+
             let endDate = undefined;
             if (data.endDate) {
                 const parsedEndDate = new Date(data.endDate);
@@ -256,29 +266,39 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                 }
                 endDate = parsedEndDate;
             }
-            
+
             const response = await apiClient.providers.byProviderId(provider.id).plans.byPlanId(showAddPriceForm).prices.post({
                 amount: data.amount,
                 currency: data.currency,
                 startDate: startDate,
                 endDate: endDate
             });
-            
+
             if (response) {
                 // Add the new price to the plan in the local state
-                setPlans(plans.map(p => {
+                const updatedPlans = plans.map(p => {
                     if (p.id === showAddPriceForm) {
-                        return {
-                            ...p,
-                            prices: [...p.prices, response]
-                        };
+                        // Create a new plan object with the updated prices array
+                        const updatedPrices = [...p.prices, response as unknown as Price];
+                        // Create a deep copy of the plan to maintain all its properties
+                        const updatedPlan = new Plan(
+                            p.id,
+                            p.name,
+                            p.description,
+                            updatedPrices,
+                            p.createdAt,
+                            p.updatedAt,
+                            p.etag
+                        );
+                        return updatedPlan;
                     }
                     return p;
-                }));
+                });
+                setPlans(updatedPlans);
                 priceForm.reset();
                 setShowAddPriceForm(null);
                 // Invalidate the providers query to refresh the data
-                queryClient.invalidateQueries({ queryKey: ['providers'] });
+                queryClient.invalidateQueries({queryKey: ['providers']});
             }
         } catch (err) {
             setError("Failed to add price. Please try again.");
@@ -290,21 +310,21 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
     const handleUpdatePrice = async (data: PriceFormValues) => {
         try {
             if (!apiClient || !editingPriceInfo) return;
-            
-            const { planId, priceId } = editingPriceInfo;
+
+            const {planId, priceId} = editingPriceInfo;
             const plan = plans.find(p => p.id === planId);
             if (!plan) return;
-            
+
             const priceToUpdate = plan.prices.find(p => p.id === priceId);
             if (!priceToUpdate) return;
-            
+
             // Validate dates
             const startDate = new Date(data.startDate);
             if (isNaN(startDate.getTime())) {
                 setError("Invalid start date. Please enter a valid date.");
                 return;
             }
-            
+
             let endDate = undefined;
             if (data.endDate) {
                 const parsedEndDate = new Date(data.endDate);
@@ -314,30 +334,45 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                 }
                 endDate = parsedEndDate;
             }
-            
+
             const response = await apiClient.providers.byProviderId(provider.id).plans.byPlanId(planId).prices.byPriceId(priceId).put({
                 amount: data.amount,
                 currency: data.currency,
                 startDate: startDate,
-                endDate: endDate,
-                etag: priceToUpdate.etag
+                endDate: endDate
+                // etag is not needed in the UpdatePriceModel
             });
-            
+
             if (response) {
                 // Update the price in the local state
-                setPlans(plans.map(p => {
+                const updatedPlans = plans.map(p => {
                     if (p.id === planId) {
-                        return {
-                            ...p,
-                            prices: p.prices.map(price => price.id === priceId ? response : price)
-                        };
+                        // Update the specific price in the prices array
+                        const updatedPrices = p.prices.map(price => {
+                            if (price.id === priceId) {
+                                return response as unknown as Price;
+                            }
+                            return price;
+                        });
+                        // Create a deep copy of the plan to maintain all its properties
+                        const updatedPlan = new Plan(
+                            p.id,
+                            p.name,
+                            p.description,
+                            updatedPrices,
+                            p.createdAt,
+                            p.updatedAt,
+                            p.etag
+                        );
+                        return updatedPlan;
                     }
                     return p;
-                }));
+                });
+                setPlans(updatedPlans);
                 priceForm.reset();
                 setEditingPriceInfo(null);
                 // Invalidate the providers query to refresh the data
-                queryClient.invalidateQueries({ queryKey: ['providers'] });
+                queryClient.invalidateQueries({queryKey: ['providers']});
             }
         } catch (err) {
             setError("Failed to update price. Please try again.");
@@ -349,21 +384,31 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
     const handleDeletePrice = async (planId: string, priceId: string) => {
         try {
             if (!apiClient) return;
-            
+
             await apiClient.providers.byProviderId(provider.id).plans.byPlanId(planId).prices.byPriceId(priceId).delete();
-            
+
             // Remove the price from the plan in the local state
-            setPlans(plans.map(p => {
+            const updatedPlans = plans.map(p => {
                 if (p.id === planId) {
-                    return {
-                        ...p,
-                        prices: p.prices.filter(price => price.id !== priceId)
-                    };
+                    // Filter out the deleted price
+                    const updatedPrices = p.prices.filter(price => price.id !== priceId);
+                    // Create a deep copy of the plan to maintain all its properties
+                    const updatedPlan = new Plan(
+                        p.id,
+                        p.name,
+                        p.description,
+                        updatedPrices,
+                        p.createdAt,
+                        p.updatedAt,
+                        p.etag
+                    );
+                    return updatedPlan;
                 }
                 return p;
-            }));
+            });
+            setPlans(updatedPlans);
             // Invalidate the providers query to refresh the data
-            queryClient.invalidateQueries({ queryKey: ['providers'] });
+            queryClient.invalidateQueries({queryKey: ['providers']});
         } catch (err) {
             setError("Failed to delete price. Please try again.");
             console.error(err);
@@ -390,7 +435,7 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                 priceForm.setValue("currency", price.currency);
                 priceForm.setValue("startDate", price.startDate.toISOString().split('T')[0]);
                 priceForm.setValue("endDate", price.endDate ? price.endDate.toISOString().split('T')[0] : "");
-                setEditingPriceInfo({ planId, priceId });
+                setEditingPriceInfo({planId, priceId});
             }
         }
     };
@@ -428,7 +473,7 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                     <AccordionItem value="provider-details">
                         <AccordionTrigger>Provider Details</AccordionTrigger>
                         <AccordionContent>
-                            <form id="provider-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                            <form id="provider-form" onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="name">Name *</Label>
                                     <Input id="name" {...register("name")} />
@@ -472,15 +517,16 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                 <div className="space-y-2">
                                     <Label>Owner Type</Label>
                                     <div className="p-2 border rounded-md text-sm">
-                                        {provider.owner.type === OwnerType.Personal ? "Personal" : 
-                                         provider.owner.type === OwnerType.Family ? "Family" : "System"}
+                                        {provider.owner.type === OwnerType.Personal ? "Personal" :
+                                            provider.owner.type === OwnerType.Family ? "Family" : "System"}
                                         <input
                                             type="hidden"
                                             {...register("ownerType")}
                                             value={provider.owner.type}
                                         />
                                     </div>
-                                    <p className="text-xs text-gray-500 italic">Owner type can only be set during creation</p>
+                                    <p className="text-xs text-gray-500 italic">Owner type can only be set during
+                                        creation</p>
                                     {errors.ownerType && (
                                         <p className="text-sm text-red-500">{errors.ownerType.message}</p>
                                     )}
@@ -492,7 +538,7 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                         {families.length > 1 ? (
                                             <Select
                                                 onValueChange={(value) => setValue("familyId", value)}
-                                                defaultValue={provider.owner.familyId}
+                                                defaultValue={provider.owner.familyId || undefined}
                                             >
                                                 <SelectTrigger className="w-full">
                                                     <SelectValue placeholder="Select a family"/>
@@ -520,7 +566,7 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                         )}
                                     </div>
                                 )}
-                                
+
                                 <div className="flex justify-end mt-4">
                                     <Button type="submit" disabled={isSubmitting}>
                                         {isSubmitting ? (
@@ -543,16 +589,16 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center">
                                     <h3 className="text-lg font-medium">Plans</h3>
-                                    <Button 
-                                        variant="outline" 
-                                        size="sm" 
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
                                         onClick={() => {
                                             planForm.reset();
                                             setEditingPlanId(null);
                                             setShowAddPlanForm(true);
                                         }}
                                     >
-                                        <Plus className="h-4 w-4 mr-2" />
+                                        <Plus className="h-4 w-4 mr-2"/>
                                         Add Plan
                                     </Button>
                                 </div>
@@ -561,10 +607,13 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                 {showAddPlanForm && (
                                     <Card className="mt-4 border-dashed border-2">
                                         <CardHeader className="pb-2">
-                                            <CardTitle className="text-base">{editingPlanId ? "Edit Plan" : "Add New Plan"}</CardTitle>
+                                            <CardTitle
+                                                className="text-base">{editingPlanId ? "Edit Plan" : "Add New Plan"}</CardTitle>
                                         </CardHeader>
                                         <CardContent>
-                                            <form onSubmit={planForm.handleSubmit(editingPlanId ? handleUpdatePlan : handleAddPlan)} className="space-y-4">
+                                            <form
+                                                onSubmit={planForm.handleSubmit(editingPlanId ? handleUpdatePlan : handleAddPlan)}
+                                                className="space-y-4">
                                                 <div className="space-y-2">
                                                     <Label htmlFor="plan-name">Name *</Label>
                                                     <Input id="plan-name" {...planForm.register("name")} />
@@ -575,7 +624,8 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
 
                                                 <div className="space-y-2">
                                                     <Label htmlFor="plan-description">Description</Label>
-                                                    <Textarea id="plan-description" {...planForm.register("description")} />
+                                                    <Textarea
+                                                        id="plan-description" {...planForm.register("description")} />
                                                 </div>
 
                                                 <div className="flex justify-end space-x-2">
@@ -615,22 +665,22 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                                     <div className="flex justify-between items-start">
                                                         <CardTitle>{plan.name}</CardTitle>
                                                         <div className="flex space-x-2">
-                                                            <Button 
-                                                                variant="ghost" 
+                                                            <Button
+                                                                variant="ghost"
                                                                 size="sm"
                                                                 onClick={() => {
                                                                     startEditingPlan(plan.id);
                                                                     setShowAddPlanForm(true);
                                                                 }}
                                                             >
-                                                                <Edit2 className="h-4 w-4" />
+                                                                <Edit2 className="h-4 w-4"/>
                                                             </Button>
-                                                            <Button 
-                                                                variant="ghost" 
+                                                            <Button
+                                                                variant="ghost"
                                                                 size="sm"
                                                                 onClick={() => handleDeletePlan(plan.id)}
                                                             >
-                                                                <Trash2 className="h-4 w-4 text-red-500" />
+                                                                <Trash2 className="h-4 w-4 text-red-500"/>
                                                             </Button>
                                                         </div>
                                                     </div>
@@ -642,8 +692,8 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                                     <div className="space-y-2">
                                                         <div className="flex justify-between items-center">
                                                             <h4 className="text-sm font-medium">Prices</h4>
-                                                            <Button 
-                                                                variant="ghost" 
+                                                            <Button
+                                                                variant="ghost"
                                                                 size="sm"
                                                                 onClick={() => {
                                                                     priceForm.reset();
@@ -651,7 +701,7 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                                                     setShowAddPriceForm(plan.id);
                                                                 }}
                                                             >
-                                                                <Plus className="h-4 w-4 mr-1" />
+                                                                <Plus className="h-4 w-4 mr-1"/>
                                                                 Add Price
                                                             </Button>
                                                         </div>
@@ -660,18 +710,22 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                                         {showAddPriceForm === plan.id && (
                                                             <Card className="mt-2 border-dashed border-2">
                                                                 <CardHeader className="py-2">
-                                                                    <CardTitle className="text-sm">{editingPriceInfo ? "Edit Price" : "Add New Price"}</CardTitle>
+                                                                    <CardTitle
+                                                                        className="text-sm">{editingPriceInfo ? "Edit Price" : "Add New Price"}</CardTitle>
                                                                 </CardHeader>
                                                                 <CardContent className="py-2">
-                                                                    <form onSubmit={priceForm.handleSubmit(editingPriceInfo ? handleUpdatePrice : handleAddPrice)} className="space-y-3">
+                                                                    <form
+                                                                        onSubmit={priceForm.handleSubmit(editingPriceInfo ? handleUpdatePrice as any : handleAddPrice as any)}
+                                                                        className="space-y-3">
                                                                         <div className="space-y-2">
-                                                                            <Label htmlFor="price-amount" className="text-xs">Amount *</Label>
-                                                                            <Input 
-                                                                                id="price-amount" 
-                                                                                type="number" 
+                                                                            <Label htmlFor="price-amount"
+                                                                                   className="text-xs">Amount *</Label>
+                                                                            <Input
+                                                                                id="price-amount"
+                                                                                type="number"
                                                                                 step="0.01"
                                                                                 className="h-8"
-                                                                                {...priceForm.register("amount", { valueAsNumber: true })} 
+                                                                                {...priceForm.register("amount", {valueAsNumber: true})}
                                                                             />
                                                                             {priceForm.formState.errors.amount && (
                                                                                 <p className="text-xs text-red-500">{priceForm.formState.errors.amount.message}</p>
@@ -679,38 +733,50 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                                                         </div>
 
                                                                         <div className="space-y-2">
-                                                                            <Label htmlFor="price-currency" className="text-xs">Currency *</Label>
-                                                                            <Input id="price-currency" className="h-8" {...priceForm.register("currency")} />
+                                                                            <Label htmlFor="price-currency"
+                                                                                   className="text-xs">Currency
+                                                                                *</Label>
+                                                                            <Input id="price-currency"
+                                                                                   className="h-8" {...priceForm.register("currency")} />
                                                                             {priceForm.formState.errors.currency && (
                                                                                 <p className="text-xs text-red-500">{priceForm.formState.errors.currency.message}</p>
                                                                             )}
                                                                         </div>
 
                                                                         <div className="space-y-2">
-                                                                            <Label htmlFor="price-start-date" className="text-xs">Start Date *</Label>
-                                                                            <Input id="price-start-date" type="date" className="h-8" {...priceForm.register("startDate")} />
+                                                                            <Label htmlFor="price-start-date"
+                                                                                   className="text-xs">Start Date
+                                                                                *</Label>
+                                                                            <Input id="price-start-date" type="date"
+                                                                                   className="h-8" {...priceForm.register("startDate")} />
                                                                             {priceForm.formState.errors.startDate && (
                                                                                 <p className="text-xs text-red-500">{priceForm.formState.errors.startDate.message}</p>
                                                                             )}
                                                                         </div>
 
                                                                         <div className="space-y-2">
-                                                                            <Label htmlFor="price-end-date" className="text-xs">End Date (Optional)</Label>
-                                                                            <Input id="price-end-date" type="date" className="h-8" {...priceForm.register("endDate")} />
+                                                                            <Label htmlFor="price-end-date"
+                                                                                   className="text-xs">End Date
+                                                                                (Optional)</Label>
+                                                                            <Input id="price-end-date" type="date"
+                                                                                   className="h-8" {...priceForm.register("endDate")} />
                                                                         </div>
 
                                                                         <div className="flex justify-end space-x-2">
-                                                                            <Button type="button" variant="outline" size="sm" onClick={() => {
+                                                                            <Button type="button" variant="outline"
+                                                                                    size="sm" onClick={() => {
                                                                                 priceForm.reset();
                                                                                 setEditingPriceInfo(null);
                                                                                 setShowAddPriceForm(null);
                                                                             }}>
                                                                                 Cancel
                                                                             </Button>
-                                                                            <Button type="submit" size="sm" disabled={priceForm.formState.isSubmitting}>
+                                                                            <Button type="submit" size="sm"
+                                                                                    disabled={priceForm.formState.isSubmitting}>
                                                                                 {priceForm.formState.isSubmitting ? (
                                                                                     <>
-                                                                                        <Loader2 className="mr-1 h-3 w-3 animate-spin"/>
+                                                                                        <Loader2
+                                                                                            className="mr-1 h-3 w-3 animate-spin"/>
                                                                                         Saving...
                                                                                     </>
                                                                                 ) : (
@@ -730,7 +796,8 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                                         ) : (
                                                             <div className="space-y-2">
                                                                 {plan.prices.map((price) => (
-                                                                    <div key={price.id} className="flex justify-between items-center p-2 border rounded-md">
+                                                                    <div key={price.id}
+                                                                         className="flex justify-between items-center p-2 border rounded-md">
                                                                         <div>
                                                                             <div className="font-medium">
                                                                                 {price.amount} {price.currency}
@@ -741,22 +808,23 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                                                             </div>
                                                                         </div>
                                                                         <div className="flex space-x-1">
-                                                                            <Button 
-                                                                                variant="ghost" 
+                                                                            <Button
+                                                                                variant="ghost"
                                                                                 size="sm"
                                                                                 onClick={() => {
                                                                                     startEditingPrice(plan.id, price.id);
                                                                                     setShowAddPriceForm(plan.id);
                                                                                 }}
                                                                             >
-                                                                                <Edit2 className="h-3 w-3" />
+                                                                                <Edit2 className="h-3 w-3"/>
                                                                             </Button>
-                                                                            <Button 
-                                                                                variant="ghost" 
+                                                                            <Button
+                                                                                variant="ghost"
                                                                                 size="sm"
                                                                                 onClick={() => handleDeletePrice(plan.id, price.id)}
                                                                             >
-                                                                                <Trash2 className="h-3 w-3 text-red-500" />
+                                                                                <Trash2
+                                                                                    className="h-3 w-3 text-red-500"/>
                                                                             </Button>
                                                                         </div>
                                                                     </div>
