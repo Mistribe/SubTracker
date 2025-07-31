@@ -8,7 +8,6 @@ import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
 import {Label} from "@/components/ui/label";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
 import {OwnerType} from "@/models/ownerType";
 import {
   Dialog,
@@ -36,6 +35,12 @@ const formSchema = z.object({
     pricingPageUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
     ownerType: z.enum([OwnerType.Personal, OwnerType.Family, OwnerType.System]),
     familyId: z.string().optional(),
+}).refine(data => {
+    // If owner type is Family, familyId is required
+    return data.ownerType !== OwnerType.Family || (data.familyId && data.familyId.length > 0);
+}, {
+    message: "Family ID is required when owner type is Family",
+    path: ["familyId"],
 });
 
 // Define the plan form schema
@@ -46,7 +51,17 @@ const planFormSchema = z.object({
 
 // Define the price form schema
 const priceFormSchema = z.object({
-    amount: z.number().min(0, "Amount must be a positive number"),
+    amount: z.preprocess(
+        // Convert string to number and handle NaN
+        (val) => {
+            const parsed = parseFloat(val as string);
+            return isNaN(parsed) ? undefined : parsed;
+        },
+        z.number({
+            required_error: "Amount is required",
+            invalid_type_error: "Amount must be a number"
+        }).min(0, "Amount must be a positive number")
+    ),
     currency: z.string().min(1, "Currency is required"),
     startDate: z.string().min(1, "Start date is required"),
     endDate: z.string().optional(),
@@ -72,11 +87,10 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
 
     // State for plans and prices management
     const [plans, setPlans] = useState(provider.plans);
-    const [isAddingPlan, setIsAddingPlan] = useState(false);
     const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
-    const [isAddingPrice, setIsAddingPrice] = useState(false);
     const [editingPriceInfo, setEditingPriceInfo] = useState<{planId: string, priceId: string} | null>(null);
-    const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
+    const [showAddPlanForm, setShowAddPlanForm] = useState(false);
+    const [showAddPriceForm, setShowAddPriceForm] = useState<string | null>(null); // planId or null
 
     // Form for provider details
     const {
@@ -140,8 +154,9 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                 url: data.url || undefined,
                 iconUrl: data.iconUrl || undefined,
                 pricingPageUrl: data.pricingPageUrl || undefined,
-                ownerType: data.ownerType,
-                familyId: data.ownerType === OwnerType.Family ? data.familyId : undefined,
+                labels: provider.labels, // Preserve existing labels
+                ownerType: provider.owner.type, // Always use the original owner type
+                familyId: provider.owner.type === OwnerType.Family ? data.familyId : undefined,
             });
             reset();
             onClose();
@@ -165,7 +180,7 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                 // Add the new plan to the local state
                 setPlans([...plans, response]);
                 planForm.reset();
-                setIsAddingPlan(false);
+                setShowAddPlanForm(false);
                 // Invalidate the providers query to refresh the data
                 queryClient.invalidateQueries({ queryKey: ['providers'] });
             }
@@ -223,19 +238,36 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
     // Handle adding a new price to a plan
     const handleAddPrice = async (data: PriceFormValues) => {
         try {
-            if (!apiClient || !currentPlanId) return;
+            if (!apiClient || !showAddPriceForm) return;
             
-            const response = await apiClient.providers.byProviderId(provider.id).plans.byPlanId(currentPlanId).prices.post({
+            // Validate dates
+            const startDate = new Date(data.startDate);
+            if (isNaN(startDate.getTime())) {
+                setError("Invalid start date. Please enter a valid date.");
+                return;
+            }
+            
+            let endDate = undefined;
+            if (data.endDate) {
+                const parsedEndDate = new Date(data.endDate);
+                if (isNaN(parsedEndDate.getTime())) {
+                    setError("Invalid end date. Please enter a valid date.");
+                    return;
+                }
+                endDate = parsedEndDate;
+            }
+            
+            const response = await apiClient.providers.byProviderId(provider.id).plans.byPlanId(showAddPriceForm).prices.post({
                 amount: data.amount,
                 currency: data.currency,
-                startDate: new Date(data.startDate),
-                endDate: data.endDate ? new Date(data.endDate) : undefined
+                startDate: startDate,
+                endDate: endDate
             });
             
             if (response) {
                 // Add the new price to the plan in the local state
                 setPlans(plans.map(p => {
-                    if (p.id === currentPlanId) {
+                    if (p.id === showAddPriceForm) {
                         return {
                             ...p,
                             prices: [...p.prices, response]
@@ -244,8 +276,7 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                     return p;
                 }));
                 priceForm.reset();
-                setIsAddingPrice(false);
-                setCurrentPlanId(null);
+                setShowAddPriceForm(null);
                 // Invalidate the providers query to refresh the data
                 queryClient.invalidateQueries({ queryKey: ['providers'] });
             }
@@ -267,11 +298,28 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
             const priceToUpdate = plan.prices.find(p => p.id === priceId);
             if (!priceToUpdate) return;
             
+            // Validate dates
+            const startDate = new Date(data.startDate);
+            if (isNaN(startDate.getTime())) {
+                setError("Invalid start date. Please enter a valid date.");
+                return;
+            }
+            
+            let endDate = undefined;
+            if (data.endDate) {
+                const parsedEndDate = new Date(data.endDate);
+                if (isNaN(parsedEndDate.getTime())) {
+                    setError("Invalid end date. Please enter a valid date.");
+                    return;
+                }
+                endDate = parsedEndDate;
+            }
+            
             const response = await apiClient.providers.byProviderId(provider.id).plans.byPlanId(planId).prices.byPriceId(priceId).put({
                 amount: data.amount,
                 currency: data.currency,
-                startDate: new Date(data.startDate),
-                endDate: data.endDate ? new Date(data.endDate) : undefined,
+                startDate: startDate,
+                endDate: endDate,
                 etag: priceToUpdate.etag
             });
             
@@ -329,7 +377,6 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
             planForm.setValue("name", plan.name);
             planForm.setValue("description", plan.description || "");
             setEditingPlanId(planId);
-            setIsAddingPlan(true);
         }
     };
 
@@ -344,8 +391,6 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                 priceForm.setValue("startDate", price.startDate.toISOString().split('T')[0]);
                 priceForm.setValue("endDate", price.endDate ? price.endDate.toISOString().split('T')[0] : "");
                 setEditingPriceInfo({ planId, priceId });
-                setIsAddingPrice(true);
-                setCurrentPlanId(planId);
             }
         }
     };
@@ -355,11 +400,10 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
         planForm.reset();
         priceForm.reset();
         setError(null);
-        setIsAddingPlan(false);
         setEditingPlanId(null);
-        setIsAddingPrice(false);
         setEditingPriceInfo(null);
-        setCurrentPlanId(null);
+        setShowAddPlanForm(false);
+        setShowAddPriceForm(null);
         onClose();
     };
 
@@ -427,21 +471,16 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
 
                                 <div className="space-y-2">
                                     <Label>Owner Type</Label>
-                                    <RadioGroup
-                                        defaultValue={provider.owner.type}
-                                        onValueChange={(value) => setValue("ownerType", value as OwnerType)}
-                                        value={watch("ownerType")}
-                                        className="flex flex-col space-y-1"
-                                    >
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="personal" id="personal"/>
-                                            <Label htmlFor="personal">Personal</Label>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="family" id="family"/>
-                                            <Label htmlFor="family">Family</Label>
-                                        </div>
-                                    </RadioGroup>
+                                    <div className="p-2 border rounded-md text-sm">
+                                        {provider.owner.type === OwnerType.Personal ? "Personal" : 
+                                         provider.owner.type === OwnerType.Family ? "Family" : "System"}
+                                        <input
+                                            type="hidden"
+                                            {...register("ownerType")}
+                                            value={provider.owner.type}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-500 italic">Owner type can only be set during creation</p>
                                     {errors.ownerType && (
                                         <p className="text-sm text-red-500">{errors.ownerType.message}</p>
                                     )}
@@ -481,6 +520,19 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                         )}
                                     </div>
                                 )}
+                                
+                                <div className="flex justify-end mt-4">
+                                    <Button type="submit" disabled={isSubmitting}>
+                                        {isSubmitting ? (
+                                            <>
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                                                Updating...
+                                            </>
+                                        ) : (
+                                            "Update Provider"
+                                        )}
+                                    </Button>
+                                </div>
                             </form>
                         </AccordionContent>
                     </AccordionItem>
@@ -497,7 +549,7 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                         onClick={() => {
                                             planForm.reset();
                                             setEditingPlanId(null);
-                                            setIsAddingPlan(true);
+                                            setShowAddPlanForm(true);
                                         }}
                                     >
                                         <Plus className="h-4 w-4 mr-2" />
@@ -505,13 +557,58 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                     </Button>
                                 </div>
 
+                                {/* Add/Edit Plan Form */}
+                                {showAddPlanForm && (
+                                    <Card className="mt-4 border-dashed border-2">
+                                        <CardHeader className="pb-2">
+                                            <CardTitle className="text-base">{editingPlanId ? "Edit Plan" : "Add New Plan"}</CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <form onSubmit={planForm.handleSubmit(editingPlanId ? handleUpdatePlan : handleAddPlan)} className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="plan-name">Name *</Label>
+                                                    <Input id="plan-name" {...planForm.register("name")} />
+                                                    {planForm.formState.errors.name && (
+                                                        <p className="text-sm text-red-500">{planForm.formState.errors.name.message}</p>
+                                                    )}
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="plan-description">Description</Label>
+                                                    <Textarea id="plan-description" {...planForm.register("description")} />
+                                                </div>
+
+                                                <div className="flex justify-end space-x-2">
+                                                    <Button type="button" variant="outline" onClick={() => {
+                                                        planForm.reset();
+                                                        setEditingPlanId(null);
+                                                        setShowAddPlanForm(false);
+                                                    }}>
+                                                        Cancel
+                                                    </Button>
+                                                    <Button type="submit" disabled={planForm.formState.isSubmitting}>
+                                                        {planForm.formState.isSubmitting ? (
+                                                            <>
+                                                                <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                                                                Saving...
+                                                            </>
+                                                        ) : (
+                                                            editingPlanId ? "Update Plan" : "Add Plan"
+                                                        )}
+                                                    </Button>
+                                                </div>
+                                            </form>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
                                 {/* Plans list */}
-                                {plans.length === 0 ? (
+                                {plans.length === 0 && !showAddPlanForm ? (
                                     <div className="text-center py-4 text-gray-500">
                                         No plans added yet. Click "Add Plan" to create one.
                                     </div>
                                 ) : (
-                                    <div className="space-y-4">
+                                    <div className="space-y-4 mt-4">
                                         {plans.map((plan) => (
                                             <Card key={plan.id}>
                                                 <CardHeader className="pb-2">
@@ -521,7 +618,10 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                                             <Button 
                                                                 variant="ghost" 
                                                                 size="sm"
-                                                                onClick={() => startEditingPlan(plan.id)}
+                                                                onClick={() => {
+                                                                    startEditingPlan(plan.id);
+                                                                    setShowAddPlanForm(true);
+                                                                }}
                                                             >
                                                                 <Edit2 className="h-4 w-4" />
                                                             </Button>
@@ -548,15 +648,82 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                                                 onClick={() => {
                                                                     priceForm.reset();
                                                                     setEditingPriceInfo(null);
-                                                                    setIsAddingPrice(true);
-                                                                    setCurrentPlanId(plan.id);
+                                                                    setShowAddPriceForm(plan.id);
                                                                 }}
                                                             >
                                                                 <Plus className="h-4 w-4 mr-1" />
                                                                 Add Price
                                                             </Button>
                                                         </div>
-                                                        {plan.prices.length === 0 ? (
+
+                                                        {/* Add/Edit Price Form */}
+                                                        {showAddPriceForm === plan.id && (
+                                                            <Card className="mt-2 border-dashed border-2">
+                                                                <CardHeader className="py-2">
+                                                                    <CardTitle className="text-sm">{editingPriceInfo ? "Edit Price" : "Add New Price"}</CardTitle>
+                                                                </CardHeader>
+                                                                <CardContent className="py-2">
+                                                                    <form onSubmit={priceForm.handleSubmit(editingPriceInfo ? handleUpdatePrice : handleAddPrice)} className="space-y-3">
+                                                                        <div className="space-y-2">
+                                                                            <Label htmlFor="price-amount" className="text-xs">Amount *</Label>
+                                                                            <Input 
+                                                                                id="price-amount" 
+                                                                                type="number" 
+                                                                                step="0.01"
+                                                                                className="h-8"
+                                                                                {...priceForm.register("amount", { valueAsNumber: true })} 
+                                                                            />
+                                                                            {priceForm.formState.errors.amount && (
+                                                                                <p className="text-xs text-red-500">{priceForm.formState.errors.amount.message}</p>
+                                                                            )}
+                                                                        </div>
+
+                                                                        <div className="space-y-2">
+                                                                            <Label htmlFor="price-currency" className="text-xs">Currency *</Label>
+                                                                            <Input id="price-currency" className="h-8" {...priceForm.register("currency")} />
+                                                                            {priceForm.formState.errors.currency && (
+                                                                                <p className="text-xs text-red-500">{priceForm.formState.errors.currency.message}</p>
+                                                                            )}
+                                                                        </div>
+
+                                                                        <div className="space-y-2">
+                                                                            <Label htmlFor="price-start-date" className="text-xs">Start Date *</Label>
+                                                                            <Input id="price-start-date" type="date" className="h-8" {...priceForm.register("startDate")} />
+                                                                            {priceForm.formState.errors.startDate && (
+                                                                                <p className="text-xs text-red-500">{priceForm.formState.errors.startDate.message}</p>
+                                                                            )}
+                                                                        </div>
+
+                                                                        <div className="space-y-2">
+                                                                            <Label htmlFor="price-end-date" className="text-xs">End Date (Optional)</Label>
+                                                                            <Input id="price-end-date" type="date" className="h-8" {...priceForm.register("endDate")} />
+                                                                        </div>
+
+                                                                        <div className="flex justify-end space-x-2">
+                                                                            <Button type="button" variant="outline" size="sm" onClick={() => {
+                                                                                priceForm.reset();
+                                                                                setEditingPriceInfo(null);
+                                                                                setShowAddPriceForm(null);
+                                                                            }}>
+                                                                                Cancel
+                                                                            </Button>
+                                                                            <Button type="submit" size="sm" disabled={priceForm.formState.isSubmitting}>
+                                                                                {priceForm.formState.isSubmitting ? (
+                                                                                    <>
+                                                                                        <Loader2 className="mr-1 h-3 w-3 animate-spin"/>
+                                                                                        Saving...
+                                                                                    </>
+                                                                                ) : (
+                                                                                    editingPriceInfo ? "Update" : "Add"
+                                                                                )}
+                                                                            </Button>
+                                                                        </div>
+                                                                    </form>
+                                                                </CardContent>
+                                                            </Card>
+                                                        )}
+
+                                                        {plan.prices.length === 0 && showAddPriceForm !== plan.id ? (
                                                             <div className="text-center py-2 text-gray-500 text-sm">
                                                                 No prices added yet.
                                                             </div>
@@ -575,15 +742,16 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                                                                         </div>
                                                                         <div className="flex space-x-1">
                                                                             <Button 
-                                                                                key={`edit-${price.id}`}
                                                                                 variant="ghost" 
                                                                                 size="sm"
-                                                                                onClick={() => startEditingPrice(plan.id, price.id)}
+                                                                                onClick={() => {
+                                                                                    startEditingPrice(plan.id, price.id);
+                                                                                    setShowAddPriceForm(plan.id);
+                                                                                }}
                                                                             >
                                                                                 <Edit2 className="h-3 w-3" />
                                                                             </Button>
                                                                             <Button 
-                                                                                key={`delete-${price.id}`}
                                                                                 variant="ghost" 
                                                                                 size="sm"
                                                                                 onClick={() => handleDeletePrice(plan.id, price.id)}
@@ -606,144 +774,11 @@ export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormPr
                     </AccordionItem>
                 </Accordion>
 
-                {/* Plan form dialog */}
-                {isAddingPlan && (
-                    <Dialog open={isAddingPlan} onOpenChange={(open) => {
-                        if (!open) {
-                            planForm.reset();
-                            setEditingPlanId(null);
-                            setIsAddingPlan(false);
-                        }
-                    }}>
-                        <DialogContent className="sm:max-w-[500px]">
-                            <DialogHeader>
-                                <DialogTitle>{editingPlanId ? "Edit Plan" : "Add New Plan"}</DialogTitle>
-                            </DialogHeader>
-                            <form onSubmit={planForm.handleSubmit(editingPlanId ? handleUpdatePlan : handleAddPlan)} className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="plan-name">Name *</Label>
-                                    <Input id="plan-name" {...planForm.register("name")} />
-                                    {planForm.formState.errors.name && (
-                                        <p className="text-sm text-red-500">{planForm.formState.errors.name.message}</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="plan-description">Description</Label>
-                                    <Textarea id="plan-description" {...planForm.register("description")} />
-                                </div>
-
-                                <DialogFooter>
-                                    <Button type="button" variant="outline" onClick={() => {
-                                        planForm.reset();
-                                        setEditingPlanId(null);
-                                        setIsAddingPlan(false);
-                                    }}>
-                                        Cancel
-                                    </Button>
-                                    <Button type="submit" disabled={planForm.formState.isSubmitting}>
-                                        {planForm.formState.isSubmitting ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-                                                Saving...
-                                            </>
-                                        ) : (
-                                            editingPlanId ? "Update Plan" : "Add Plan"
-                                        )}
-                                    </Button>
-                                </DialogFooter>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
-                )}
-
-                {/* Price form dialog */}
-                {isAddingPrice && (
-                    <Dialog open={isAddingPrice} onOpenChange={(open) => {
-                        if (!open) {
-                            priceForm.reset();
-                            setEditingPriceInfo(null);
-                            setIsAddingPrice(false);
-                            setCurrentPlanId(null);
-                        }
-                    }}>
-                        <DialogContent className="sm:max-w-[500px]">
-                            <DialogHeader>
-                                <DialogTitle>{editingPriceInfo ? "Edit Price" : "Add New Price"}</DialogTitle>
-                            </DialogHeader>
-                            <form onSubmit={priceForm.handleSubmit(editingPriceInfo ? handleUpdatePrice : handleAddPrice)} className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="price-amount">Amount *</Label>
-                                    <Input 
-                                        id="price-amount" 
-                                        type="number" 
-                                        step="0.01"
-                                        {...priceForm.register("amount", { valueAsNumber: true })} 
-                                    />
-                                    {priceForm.formState.errors.amount && (
-                                        <p className="text-sm text-red-500">{priceForm.formState.errors.amount.message}</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="price-currency">Currency *</Label>
-                                    <Input id="price-currency" {...priceForm.register("currency")} />
-                                    {priceForm.formState.errors.currency && (
-                                        <p className="text-sm text-red-500">{priceForm.formState.errors.currency.message}</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="price-start-date">Start Date *</Label>
-                                    <Input id="price-start-date" type="date" {...priceForm.register("startDate")} />
-                                    {priceForm.formState.errors.startDate && (
-                                        <p className="text-sm text-red-500">{priceForm.formState.errors.startDate.message}</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="price-end-date">End Date (Optional)</Label>
-                                    <Input id="price-end-date" type="date" {...priceForm.register("endDate")} />
-                                </div>
-
-                                <DialogFooter>
-                                    <Button type="button" variant="outline" onClick={() => {
-                                        priceForm.reset();
-                                        setEditingPriceInfo(null);
-                                        setIsAddingPrice(false);
-                                        setCurrentPlanId(null);
-                                    }}>
-                                        Cancel
-                                    </Button>
-                                    <Button type="submit" disabled={priceForm.formState.isSubmitting}>
-                                        {priceForm.formState.isSubmitting ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-                                                Saving...
-                                            </>
-                                        ) : (
-                                            editingPriceInfo ? "Update Price" : "Add Price"
-                                        )}
-                                    </Button>
-                                </DialogFooter>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
-                )}
+                {/* No separate dialogs needed anymore as we're using inline forms */}
 
                 <DialogFooter>
-                    <Button type="button" variant="outline" onClick={handleClose}>
-                        Cancel
-                    </Button>
-                    <Button form="provider-form" type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-                                Updating...
-                            </>
-                        ) : (
-                            "Update Provider"
-                        )}
+                    <Button type="button" onClick={handleClose}>
+                        Close
                     </Button>
                 </DialogFooter>
             </DialogContent>

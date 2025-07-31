@@ -487,6 +487,15 @@ export function createUpdatePriceModelFromDiscriminatorValue(parseNode: ParseNod
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {UpdateProviderModel}
+ */
+// @ts-ignore
+export function createUpdateProviderModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoUpdateProviderModel;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
  * @returns {UpdateSubscriptionModel}
  */
 // @ts-ignore
@@ -976,6 +985,23 @@ export function deserializeIntoUpdatePriceModel(updatePriceModel: Partial<Update
         "currency": n => { updatePriceModel.currency = n.getStringValue(); },
         "end_date": n => { updatePriceModel.endDate = n.getDateValue(); },
         "start_date": n => { updatePriceModel.startDate = n.getDateValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param UpdateProviderModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoUpdateProviderModel(updateProviderModel: Partial<UpdateProviderModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "description": n => { updateProviderModel.description = n.getStringValue(); },
+        "icon_url": n => { updateProviderModel.iconUrl = n.getStringValue(); },
+        "labels": n => { updateProviderModel.labels = n.getCollectionOfPrimitiveValues<string>(); },
+        "name": n => { updateProviderModel.name = n.getStringValue(); },
+        "pricing_page_url": n => { updateProviderModel.pricingPageUrl = n.getStringValue(); },
+        "updated_at": n => { updateProviderModel.updatedAt = n.getDateValue(); },
+        "url": n => { updateProviderModel.url = n.getStringValue(); },
     }
 }
 /**
@@ -1959,6 +1985,24 @@ export function serializeUpdatePriceModel(writer: SerializationWriter, updatePri
 /**
  * Serializes information the current object
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param UpdateProviderModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeUpdateProviderModel(writer: SerializationWriter, updateProviderModel: Partial<UpdateProviderModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!updateProviderModel || isSerializingDerivedType) { return; }
+    writer.writeStringValue("description", updateProviderModel.description);
+    writer.writeStringValue("icon_url", updateProviderModel.iconUrl);
+    writer.writeCollectionOfPrimitiveValues<string>("labels", updateProviderModel.labels);
+    writer.writeStringValue("name", updateProviderModel.name);
+    writer.writeStringValue("pricing_page_url", updateProviderModel.pricingPageUrl);
+    writer.writeDateValue("updated_at", updateProviderModel.updatedAt);
+    writer.writeStringValue("url", updateProviderModel.url);
+    writer.writeAdditionalData(updateProviderModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param UpdateSubscriptionModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
@@ -2145,6 +2189,36 @@ export interface UpdatePriceModel extends AdditionalDataHolder, Parsable {
      * The start_date property
      */
     startDate?: Date | null;
+}
+export interface UpdateProviderModel extends AdditionalDataHolder, Parsable {
+    /**
+     * The description property
+     */
+    description?: string | null;
+    /**
+     * The icon_url property
+     */
+    iconUrl?: string | null;
+    /**
+     * The labels property
+     */
+    labels?: string[] | null;
+    /**
+     * The name property
+     */
+    name?: string | null;
+    /**
+     * The pricing_page_url property
+     */
+    pricingPageUrl?: string | null;
+    /**
+     * The updated_at property
+     */
+    updatedAt?: Date | null;
+    /**
+     * The url property
+     */
+    url?: string | null;
 }
 export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
