@@ -8,7 +8,6 @@ export default class Plan {
     private readonly _etag: string;
     private readonly _name: string;
     private readonly _description: string | null;
-    private readonly _prices: Price[];
 
     constructor(id: string,
                 name: string,
@@ -24,6 +23,16 @@ export default class Plan {
         this._name = name;
         this._description = description;
         this._prices = prices;
+    }
+
+    private _prices: Price[];
+
+    get prices(): Price[] {
+        return this._prices;
+    }
+
+    set prices(value: Price[]) {
+        this._prices = value;
     }
 
     get id(): string {
@@ -48,10 +57,6 @@ export default class Plan {
 
     get description(): string | null {
         return this._description;
-    }
-
-    get prices(): Price[] {
-        return this._prices;
     }
 
     static fromModel(model: PlanModel): Plan {

@@ -28,6 +28,10 @@ export default class Price {
         this._endDate = endDate;
     }
 
+    get isActive(): boolean {
+        return this._endDate === null || this._endDate > new Date();
+    }
+
     get id(): string {
         return this._id;
     }

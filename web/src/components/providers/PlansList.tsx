@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Edit2, Plus, Trash2 } from "lucide-react";
+import {useState} from "react";
+import {Button} from "@/components/ui/button";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Edit2, Plus, Trash2} from "lucide-react";
 import Plan from "@/models/plan";
 import Price from "@/models/price";
-import { PlanForm, PlanFormValues } from "./PlanForm";
-import { PriceForm, PriceFormValues } from "./PriceForm";
+import {PlanForm, type PlanFormValues} from "./PlanForm";
+import {PriceForm, type PriceFormValues} from "./PriceForm";
 
 interface PlansListProps {
     plans: Plan[];
@@ -21,17 +21,17 @@ interface PlansListProps {
 }
 
 export function PlansList({
-    plans,
-    currencies,
-    isLoadingCurrencies,
-    onAddPlan,
-    onUpdatePlan,
-    onDeletePlan,
-    onAddPrice,
-    onUpdatePrice,
-    onDeletePrice,
-    isSubmitting
-}: PlansListProps) {
+                              plans,
+                              currencies,
+                              isLoadingCurrencies,
+                              onAddPlan,
+                              onUpdatePlan,
+                              onDeletePlan,
+                              onAddPrice,
+                              onUpdatePrice,
+                              onDeletePrice,
+                              isSubmitting
+                          }: PlansListProps) {
     // State for managing UI
     const [showAddPlanForm, setShowAddPlanForm] = useState(false);
     const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
@@ -68,7 +68,7 @@ export function PlansList({
 
     // Start editing a price
     const startEditingPrice = (planId: string, price: Price) => {
-        setEditingPriceInfo({ planId, priceId: price.id });
+        setEditingPriceInfo({planId, priceId: price.id});
         setShowAddPriceForm(planId);
     };
 
@@ -76,8 +76,8 @@ export function PlansList({
     const editingPlan = editingPlanId ? plans.find(p => p.id === editingPlanId) : undefined;
 
     // Find the price being edited
-    const editingPrice = editingPriceInfo 
-        ? plans.find(p => p.id === editingPriceInfo.planId)?.prices.find(p => p.id === editingPriceInfo.priceId) 
+    const editingPrice = editingPriceInfo
+        ? plans.find(p => p.id === editingPriceInfo.planId)?.prices.find(p => p.id === editingPriceInfo.priceId)
         : undefined;
 
     return (
@@ -164,6 +164,7 @@ export function PlansList({
                                     {showAddPriceForm === plan.id && (
                                         <PriceForm
                                             price={editingPrice}
+                                            existingPrices={plan.prices}
                                             currencies={currencies}
                                             isLoadingCurrencies={isLoadingCurrencies}
                                             onSubmit={handlePriceSubmit}

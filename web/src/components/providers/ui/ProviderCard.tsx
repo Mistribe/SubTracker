@@ -1,10 +1,20 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Provider from "@/models/provider";
+import Plan from "@/models/plan";
 import { getBadgeText, getBadgeVariant } from "../utils/badgeUtils";
-import { Edit } from "lucide-react";
+import { Edit, MoreVertical, Plus } from "lucide-react";
 import { useProvidersMutations } from "@/hooks/providers/useProvidersMutations";
+import { PlanDetailsDialog } from "../PlanDetailsDialog";
+import { AddPlanDialog } from "../AddPlanDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ProviderCardProps {
   provider: Provider;
@@ -12,6 +22,8 @@ interface ProviderCardProps {
 }
 
 export const ProviderCard = ({ provider, onEdit }: ProviderCardProps) => {
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [isAddingPlan, setIsAddingPlan] = useState(false);
   const { canModifyProvider } = useProvidersMutations();
   const isEditable = canModifyProvider(provider);
 
@@ -21,20 +33,32 @@ export const ProviderCard = ({ provider, onEdit }: ProviderCardProps) => {
         <div className="flex justify-between items-start">
           <CardTitle>{provider.name}</CardTitle>
           <div className="flex items-center space-x-2">
-            {isEditable && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-8 w-8 p-0" 
-                onClick={() => onEdit(provider)}
-                title="Edit provider"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-            )}
             <Badge variant={getBadgeVariant(provider.owner.type)}>
               {getBadgeText(provider.owner.type)}
             </Badge>
+            {isEditable && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEdit(provider)}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Provider
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsAddingPlan(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Plan
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
         {provider.url && (
@@ -55,16 +79,54 @@ export const ProviderCard = ({ provider, onEdit }: ProviderCardProps) => {
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex justify-between">
-        {provider.pricingPageUrl && (
-          <a href={provider.pricingPageUrl} target="_blank" rel="noopener noreferrer">
-            <Button variant="outline" size="sm">View Pricing</Button>
-          </a>
-        )}
+      <CardFooter className="flex flex-col space-y-2 w-full">
+        <div className="flex justify-between w-full">
+          {provider.pricingPageUrl && (
+            <a href={provider.pricingPageUrl} target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="sm">View Pricing</Button>
+            </a>
+          )}
+        </div>
+        
         {provider.plans.length > 0 && (
-          <Badge variant="secondary">{provider.plans.length} Plans</Badge>
+          <div className="flex flex-wrap gap-2 w-full">
+            {provider.plans.map((plan) => {
+              // Count active prices
+              const activePricesCount = plan.prices.filter(price => price.isActive).length;
+              
+              return (
+                <Badge 
+                  key={plan.id} 
+                  variant="secondary"
+                  className="cursor-pointer hover:bg-secondary/80 text-sm py-1.5 px-3"
+                  onClick={() => setSelectedPlan(plan)}
+                >
+                  {plan.name} {activePricesCount > 0 && <span className="ml-1 font-bold">{activePricesCount}</span>}
+                </Badge>
+              );
+            })}
+          </div>
         )}
       </CardFooter>
+
+      {/* Plan Details Dialog */}
+      {selectedPlan && (
+        <PlanDetailsDialog
+          isOpen={!!selectedPlan}
+          onClose={() => setSelectedPlan(null)}
+          plan={selectedPlan}
+          providerId={provider.id}
+        />
+      )}
+
+      {/* Add Plan Dialog */}
+      {isAddingPlan && (
+        <AddPlanDialog
+          isOpen={isAddingPlan}
+          onClose={() => setIsAddingPlan(false)}
+          providerId={provider.id}
+        />
+      )}
     </Card>
   );
 };

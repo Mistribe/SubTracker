@@ -1,16 +1,16 @@
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import {useEffect} from "react";
+import {useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { OwnerType } from "@/models/ownerType";
-import { Loader2 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Textarea} from "@/components/ui/textarea";
+import {Label} from "@/components/ui/label";
+import {OwnerType} from "@/models/ownerType";
+import {Loader2} from "lucide-react";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import Provider from "@/models/provider";
-import { Family } from "@/models/family";
+import Family from "@/models/family";
 
 // Define the form schema with Zod
 const formSchema = z.object({
@@ -38,13 +38,13 @@ interface ProviderDetailsFormProps {
     isSubmitting: boolean;
 }
 
-export function ProviderDetailsForm({ provider, families, onSubmit, isSubmitting }: ProviderDetailsFormProps) {
+export function ProviderDetailsForm({provider, families, onSubmit, isSubmitting}: ProviderDetailsFormProps) {
     const {
         register,
         handleSubmit,
         watch,
         setValue,
-        formState: { errors },
+        formState: {errors},
     } = useForm<ProviderFormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {

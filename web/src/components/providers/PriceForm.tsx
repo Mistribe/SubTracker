@@ -1,67 +1,158 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import type {SubmitHandler} from "react-hook-form";
+import {useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {Loader2} from "lucide-react";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import Price from "@/models/price";
 import getSymbolFromCurrency from "currency-symbol-map";
 
-// Define the price form schema
-const priceFormSchema = z.object({
-    amount: z.preprocess(
-        // Convert string to number and handle NaN
-        (val) => {
-            const parsed = parseFloat(val as string);
-            return isNaN(parsed) ? undefined : parsed;
-        },
-        z.number()
-            .min(0, "Amount must be a positive number")
-            .describe("Amount is required")
-    ),
-    currency: z.string().min(1, "Currency is required"),
-    startDate: z.string().min(1, "Start date is required"),
-    endDate: z.string().optional(),
-});
+// Helper function to check if date ranges overlap
+const datesOverlap = (
+    startDate1: Date,
+    endDate1: Date | null,
+    startDate2: Date,
+    endDate2: Date | null
+): boolean => {
+    // If either range has no end date, it extends indefinitely
+    if (endDate1 === null && endDate2 === null) {
+        // Both ranges extend indefinitely, they must overlap
+        return true;
+    }
 
-export type PriceFormValues = z.infer<typeof priceFormSchema>;
+    if (endDate1 === null) {
+        // Range 1 extends indefinitely, check if it starts before range 2 ends
+        return startDate1 <= (endDate2 || new Date(8640000000000000));
+    }
+
+    if (endDate2 === null) {
+        // Range 2 extends indefinitely, check if it starts before range 1 ends
+        return startDate2 <= endDate1;
+    }
+
+    // Both ranges have end dates, check standard overlap
+    return startDate1 <= endDate2 && startDate2 <= endDate1;
+};
+
+// Define the price form schema with custom refinement for date overlap validation
+const createPriceFormSchema = (existingPrices: Price[] = [], currentPriceId?: string) => {
+    return z.object({
+        amount: z.preprocess(
+            // Convert string to number and handle NaN
+            (val) => {
+                const parsed = parseFloat(val as string);
+                return isNaN(parsed) ? undefined : parsed;
+            },
+            z.number()
+                .min(0, "Amount must be a positive number")
+                .describe("Amount must be a valid number")
+        ),
+        currency: z.string().min(1, "Currency is required"),
+        startDate: z.string().min(1, "Start date is required"),
+        endDate: z.string().optional(),
+    })
+    // First refinement: Validate end date is after start date
+    .refine((data) => {
+        if (!data.startDate || !data.endDate) {
+            return true; // Skip validation if either date is missing
+        }
+        
+        const startDate = new Date(data.startDate);
+        const endDate = new Date(data.endDate);
+        
+        return startDate <= endDate;
+    }, {
+        message: "End date must be after start date",
+        path: ["endDate"] // Show error on the end date field
+    })
+    // Second refinement: Check for overlapping date ranges
+    .refine((data) => {
+        // Skip validation if no currency or start date
+        if (!data.currency || !data.startDate) {
+            return true;
+        }
+
+        const newStartDate = new Date(data.startDate);
+        const newEndDate = data.endDate ? new Date(data.endDate) : null;
+
+        // Check for overlaps with existing prices of the same currency
+        const overlappingPrice = existingPrices.find(price => {
+            // Skip the current price being edited
+            if (currentPriceId && price.id === currentPriceId) {
+                return false;
+            }
+
+            // Only check prices with the same currency
+            if (price.currency !== data.currency) {
+                return false;
+            }
+
+            // Check if date ranges overlap
+            return datesOverlap(
+                newStartDate,
+                newEndDate,
+                price.startDate,
+                price.endDate
+            );
+        });
+
+        return !overlappingPrice;
+    }, {
+        message: "Date range overlaps with an existing price for the same currency",
+        path: ["startDate"] // Show error on the start date field
+    });
+};
+
+// Define the type for form values
+export type PriceFormValues = {
+    amount: number;
+    currency: string;
+    startDate: string;
+    endDate?: string;
+};
 
 interface PriceFormProps {
     price?: Price; // Optional - if provided, we're editing an existing price
+    existingPrices?: Price[]; // All prices in the current plan for overlap validation
     currencies: string[];
     isLoadingCurrencies: boolean;
-    onSubmit: (data: PriceFormValues) => Promise<void>;
+    onSubmit: SubmitHandler<PriceFormValues>;
     onCancel: () => void;
     isSubmitting: boolean;
 }
 
-export function PriceForm({ 
-    price, 
-    currencies, 
-    isLoadingCurrencies, 
-    onSubmit, 
-    onCancel, 
-    isSubmitting 
-}: PriceFormProps) {
+export function PriceForm({
+                              price,
+                              existingPrices = [],
+                              currencies,
+                              isLoadingCurrencies,
+                              onSubmit,
+                              onCancel,
+                              isSubmitting
+                          }: PriceFormProps) {
+    // Create a schema with validation for overlapping date ranges
+    const validationSchema = createPriceFormSchema(existingPrices, price?.id);
+
     const {
         register,
         handleSubmit,
         setValue,
         watch,
-        formState: { errors },
+        formState: {errors},
     } = useForm<PriceFormValues>({
-        resolver: zodResolver(priceFormSchema) as any, // Cast to any to resolve type incompatibility
+        resolver: zodResolver(validationSchema),
         defaultValues: {
             amount: price?.amount || 0,
             currency: price?.currency || "USD",
-            startDate: price?.startDate 
-                ? price.startDate.toISOString().split('T')[0] 
+            startDate: price?.startDate
+                ? price.startDate.toISOString().split('T')[0]
                 : new Date().toISOString().split('T')[0],
-            endDate: price?.endDate 
-                ? price.endDate.toISOString().split('T')[0] 
+            endDate: price?.endDate
+                ? price.endDate.toISOString().split('T')[0]
                 : "",
         },
     });
@@ -76,7 +167,13 @@ export function PriceForm({
                 <CardTitle className="text-sm">{isEditing ? "Edit Price" : "Add New Price"}</CardTitle>
             </CardHeader>
             <CardContent className="py-2">
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+                <form onSubmit={handleSubmit(
+                    (data) => onSubmit(data),
+                    (errors) => {
+                        console.error("Form validation failed:", errors);
+                        // Form validation failed, errors object contains validation errors
+                    }
+                )} className="space-y-3">
                     <div className="space-y-2">
                         <Label htmlFor="price-amount" className="text-xs">Amount and Currency *</Label>
                         <div className="flex space-x-2">
@@ -85,7 +182,7 @@ export function PriceForm({
                                     id="price-amount"
                                     type="number"
                                     step="0.01"
-                                    className="h-8"
+                                    className={`h-8 ${errors.amount ? "border-red-500" : ""}`}
                                     {...register("amount", {valueAsNumber: true})}
                                 />
                                 {errors.amount && (
@@ -94,17 +191,26 @@ export function PriceForm({
                             </div>
                             <div className="w-1/3">
                                 {isLoadingCurrencies ? (
-                                    <Input 
-                                        id="price-currency" 
-                                        className="h-8" 
-                                        {...register("currency")} 
-                                    />
+                                    <div>
+                                        <Input
+                                            id="price-currency"
+                                            className={`h-8 ${errors.currency ? "border-red-500" : ""}`}
+                                            disabled
+                                            value={currentCurrency}
+                                            placeholder="Loading currencies..."
+                                        />
+                                        <input 
+                                            type="hidden" 
+                                            {...register("currency")} 
+                                            value={currentCurrency} 
+                                        />
+                                    </div>
                                 ) : (
                                     <Select
                                         onValueChange={(value) => setValue("currency", value)}
                                         defaultValue={currentCurrency}
                                     >
-                                        <SelectTrigger className="h-8">
+                                        <SelectTrigger className={`h-8 ${errors.currency ? "border-red-500" : ""}`}>
                                             <SelectValue placeholder="Select currency">
                                                 {currentCurrency && `${currencySymbol} ${currentCurrency}`}
                                             </SelectValue>
@@ -127,11 +233,11 @@ export function PriceForm({
 
                     <div className="space-y-2">
                         <Label htmlFor="price-start-date" className="text-xs">Start Date *</Label>
-                        <Input 
-                            id="price-start-date" 
-                            type="date" 
-                            className="h-8" 
-                            {...register("startDate")} 
+                        <Input
+                            id="price-start-date"
+                            type="date"
+                            className={`h-8 ${errors.startDate ? "border-red-500" : ""}`}
+                            {...register("startDate")}
                         />
                         {errors.startDate && (
                             <p className="text-xs text-red-500">{errors.startDate.message}</p>
@@ -140,26 +246,29 @@ export function PriceForm({
 
                     <div className="space-y-2">
                         <Label htmlFor="price-end-date" className="text-xs">End Date (Optional)</Label>
-                        <Input 
-                            id="price-end-date" 
-                            type="date" 
-                            className="h-8" 
-                            {...register("endDate")} 
+                        <Input
+                            id="price-end-date"
+                            type="date"
+                            className={`h-8 ${errors.endDate ? "border-red-500" : ""}`}
+                            {...register("endDate")}
                         />
+                        {errors.endDate && (
+                            <p className="text-xs text-red-500">{errors.endDate.message}</p>
+                        )}
                     </div>
 
                     <div className="flex justify-end space-x-2">
-                        <Button 
-                            type="button" 
-                            variant="outline" 
-                            size="sm" 
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
                             onClick={onCancel}
                         >
                             Cancel
                         </Button>
-                        <Button 
-                            type="submit" 
-                            size="sm" 
+                        <Button
+                            type="submit"
+                            size="sm"
                             disabled={isSubmitting}
                         >
                             {isSubmitting ? (
