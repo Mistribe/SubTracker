@@ -156,10 +156,6 @@ func (p *plan) GetValidationErrors() validationx.Errors {
 		errors = append(errors, validationx.NewError("name", "name is required and cannot be empty"))
 	}
 
-	if p.prices == nil || len(p.prices.Values()) == 0 {
-		errors = append(errors, validationx.NewError("prices", "at least one price is required"))
-	}
-
 	for _, pr := range p.prices.Values() {
 		if err := pr.GetValidationErrors(); err != nil {
 			errors = append(errors, err...)

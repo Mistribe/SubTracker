@@ -3,20 +3,39 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Provider from "@/models/provider";
 import { getBadgeText, getBadgeVariant } from "../utils/badgeUtils";
+import { Edit } from "lucide-react";
+import { useProvidersMutations } from "@/hooks/providers/useProvidersMutations";
 
 interface ProviderCardProps {
   provider: Provider;
+  onEdit: (provider: Provider) => void;
 }
 
-export const ProviderCard = ({ provider }: ProviderCardProps) => {
+export const ProviderCard = ({ provider, onEdit }: ProviderCardProps) => {
+  const { canModifyProvider } = useProvidersMutations();
+  const isEditable = canModifyProvider(provider);
+
   return (
     <Card key={provider.id} className="overflow-hidden">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle>{provider.name}</CardTitle>
-          <Badge variant={getBadgeVariant(provider.owner.type)}>
-            {getBadgeText(provider.owner.type)}
-          </Badge>
+          <div className="flex items-center space-x-2">
+            {isEditable && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 w-8 p-0" 
+                onClick={() => onEdit(provider)}
+                title="Edit provider"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            )}
+            <Badge variant={getBadgeVariant(provider.owner.type)}>
+              {getBadgeText(provider.owner.type)}
+            </Badge>
+          </div>
         </div>
         {provider.url && (
           <CardDescription>

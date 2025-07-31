@@ -2,12 +2,14 @@ import {useCallback, useEffect, useState} from "react";
 import {useProvidersQuery} from "@/hooks/providers/useProvidersQuery";
 import {useInView} from "react-intersection-observer";
 import {AddProviderForm} from "@/components/providers/AddProviderForm";
+import {EditProviderForm} from "@/components/providers/EditProviderForm";
 import {ProviderCard} from "@/components/providers/ui/ProviderCard";
 import {ProviderCardSkeletonGrid} from "@/components/providers/ui/ProviderCardSkeleton";
 import {ErrorState} from "@/components/providers/ui/ErrorState";
 import {InfiniteLoading} from "@/components/providers/ui/InfiniteLoading";
 import {NoMoreProviders, NoProviders} from "@/components/providers/ui/EmptyStates";
 import {PageHeader} from "@/components/providers/ui/PageHeader";
+import Provider from "@/models/provider";
 
 const ProvidersPage = () => {
     const {ref, inView} = useInView();
@@ -20,6 +22,7 @@ const ProvidersPage = () => {
         }
     }, [loadMoreRef, ref]);
     const [isAddingProvider, setIsAddingProvider] = useState(false);
+    const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
     // Query providers with infinite loading
     const {
         data,
@@ -60,7 +63,11 @@ const ProvidersPage = () => {
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {providers.map((provider) => (
-                            <ProviderCard key={provider.id} provider={provider}/>
+                            <ProviderCard 
+                                key={provider.id} 
+                                provider={provider}
+                                onEdit={setEditingProvider}
+                            />
                         ))}
                     </div>
 
@@ -80,11 +87,19 @@ const ProvidersPage = () => {
                 </>
             )}
 
-            {/* Provider form modal */}
+            {/* Provider form modals */}
             <AddProviderForm
                 isOpen={isAddingProvider}
                 onClose={() => setIsAddingProvider(false)}
             />
+            
+            {editingProvider && (
+                <EditProviderForm
+                    isOpen={!!editingProvider}
+                    onClose={() => setEditingProvider(null)}
+                    provider={editingProvider}
+                />
+            )}
         </div>
     );
 };
