@@ -8,28 +8,95 @@
     "labels": ["Streaming", "Video On Demand"],
     "plans": [
       {
-        "name": "Standard with ads",
-        "recurrencies": {
-          "monthly": [
-            {
-              "amount": 5.99
-            },
-            {
-              "amount": 12.99
-            },
-            {
-              "amount": 18.99
+        "name": {
+          "default": "Standard with ads",
+          "local": {
+            "fr-fr": ""
+          }
+        },
+        "description": {
+          "default": "Standard with ads",
+          "local": {
+            "fr-fr": ""
+          }
+        },
+        "features": [
+          {
+            "default": "Watch in 1080p (Full HD)",
+            "local": {
+              "fr-fr": ""
             }
-          ]
+          },
+          {
+            "default": "Watch on 2 supported devices at a time",
+            "local": {
+              "fr-fr": ""
+            }
+          },
+          {
+            "default": "Ad-supported, all mobile games and most movies and TV shows are available. A lock icon will appear on unavailable titles.",
+            "local": {
+              "fr-fr": ""
+            }
+          }
+        ],
+        "prices": {
+          "amount": 12,
+          "currency": "USD"
+        },
+        "recurrency": "monthly"
+      },
+      {
+        "name": {
+          "default": "Standard",
+          "local": {
+            "fr-fr": ""
+          }
+        },
+        "description": {
+          "default": "Standard",
+          "local": {
+            "fr-fr": ""
+          }
+        },
+        "features": [
+          {
+            "default": "Watch in 1080p (Full HD)",
+            "local": {
+              "fr-fr": ""
+            }
+          },
+          {
+            "default": "Watch on 2 supported devices at a time",
+            "local": {
+              "fr-fr": ""
+            }
+          }
+        ],
+        "prices": {
+          "amount": 22,
+          "currency": "USD"
+        },
+        "recurrency": "monthly",
+        "options": {
+          "name": {
+            "default": "Extra member who doesn't live with you",
+            "local": {
+              "fr-fr": ""
+            }
+          },
+          "description": {
+            "default": "Extra member who doesn't live with you",
+            "local": {
+              "fr-fr": ""
+            }
+          },
+          "allow_multiple": true,
+          "prices": {
+            "amount": 5,
+            "currency": "USD"
+          }
         }
-      },
-      {
-        "name": "Standard",
-        "recurrency": ["monthly"]
-      },
-      {
-        "name": "Premium",
-        "recurrency": ["monthly"]
       }
     ]
   },
