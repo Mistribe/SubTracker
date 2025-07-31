@@ -2,6 +2,7 @@
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import '../../models/http_error.dart';
 import '../../models/provider_model.dart';
+import '../../models/update_provider_model.dart';
 import './plans/plans_request_builder.dart';
 
 /// auto generated
@@ -46,6 +47,18 @@ class WithProviderItemRequestBuilder extends BaseRequestBuilder<WithProviderItem
         };
         return await requestAdapter.send<ProviderModel>(requestInfo, ProviderModel.createFromDiscriminatorValue, errorMapping);
     }
+    /// Update an existing provider's basic information
+    ///  [body] The request body
+    ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
+    Future<ProviderModel?> putAsync(UpdateProviderModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
+        var requestInfo = toPutRequestInformation(body, requestConfiguration);
+        final errorMapping = <String, ParsableFactory<Parsable>>{
+            '400' :  HttpError.createFromDiscriminatorValue,
+            '404' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpError.createFromDiscriminatorValue,
+        };
+        return await requestAdapter.send<ProviderModel>(requestInfo, ProviderModel.createFromDiscriminatorValue, errorMapping);
+    }
     /// Permanently delete a provider and all its associated plans and prices
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toDeleteRequestInformation([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
@@ -60,6 +73,16 @@ class WithProviderItemRequestBuilder extends BaseRequestBuilder<WithProviderItem
         var requestInfo = RequestInformation(httpMethod : HttpMethod.get, urlTemplate : urlTemplate, pathParameters :  pathParameters);
         requestInfo.configure<DefaultQueryParameters>(requestConfiguration, () => DefaultQueryParameters());
         requestInfo.headers.put('Accept', 'application/json');
+        return requestInfo;
+    }
+    /// Update an existing provider's basic information
+    ///  [body] The request body
+    ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
+    RequestInformation toPutRequestInformation(UpdateProviderModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
+        var requestInfo = RequestInformation(httpMethod : HttpMethod.put, urlTemplate : urlTemplate, pathParameters :  pathParameters);
+        requestInfo.configure<DefaultQueryParameters>(requestConfiguration, () => DefaultQueryParameters());
+        requestInfo.headers.put('Accept', 'application/json');
+        requestInfo.setContentFromParsable(requestAdapter, 'application/json', body);
         return requestInfo;
     }
 }
