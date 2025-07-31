@@ -1630,14 +1630,14 @@ paths:
       description: Retrieve a paginated list of all providers with their plans and
         prices
       parameters:
-      - description: 'Page number (default: 1)'
+      - description: 'Offset (default: 0)'
         in: query
-        name: page
+        name: offset
         schema:
           type: integer
-      - description: 'Items per page (default: 10)'
+      - description: 'Limit per request (default: 10)'
         in: query
-        name: size
+        name: limit
         schema:
           type: integer
       responses:

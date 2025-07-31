@@ -25,22 +25,22 @@ func NewProviderGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, cor
 //	@Description	Retrieve a paginated list of all providers with their plans and prices
 //	@Tags			providers
 //	@Produce		json
-//	@Param			page	query		int										false	"Page number (default: 1)"
-//	@Param			size	query		int										false	"Items per page (default: 10)"
+//	@Param			offset	query		int										false	"Offset (default: 0)"
+//	@Param			limit	query		int										false	"Limit per request (default: 10)"
 //	@Success		200		{object}	PaginatedResponseModel[ProviderModel]	"Paginated list of providers"
 //	@Failure		400		{object}	httpError								"Bad Request - Invalid query parameters"
 //	@Failure		500		{object}	httpError								"Internal Server Error"
 //	@Router			/providers [get]
 func (e ProviderGetAllEndpoint) Handle(c *gin.Context) {
-	size, err := strconv.Atoi(c.DefaultQuery("size", "10"))
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	if err != nil {
-		size = 10
+		limit = 10
 	}
-	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	offset, err := strconv.Atoi(c.DefaultQuery("offset", "0"))
 	if err != nil {
-		page = 1
+		offset = 1
 	}
-	q := query.NewFindAllQuery(size, page)
+	q := query.NewFindAllQuery(limit, offset)
 	r := e.handler.Handle(c, q)
 	handleResponse(c,
 		r,
@@ -51,7 +51,7 @@ func (e ProviderGetAllEndpoint) Handle(c *gin.Context) {
 
 func (e ProviderGetAllEndpoint) Pattern() []string {
 	return []string{
-		"/api/v1/providers",
+		"",
 	}
 }
 
