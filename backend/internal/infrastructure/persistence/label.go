@@ -48,19 +48,19 @@ func (r LabelRepository) GetAll(ctx context.Context, parameters label.QueryParam
 
 	for i, ownerType := range parameters.Owners {
 		switch ownerType {
-		case auth.PersonalOwner:
+		case auth.PersonalOwnerType:
 			if i == 0 {
-				query = query.Where("owner_type = ? AND owner_user_id = ?", auth.PersonalOwner, userId)
+				query = query.Where("owner_type = ? AND owner_user_id = ?", auth.PersonalOwnerType, userId)
 			} else {
-				query = query.Or("owner_type = ? AND owner_user_id = ?", auth.PersonalOwner, userId)
+				query = query.Or("owner_type = ? AND owner_user_id = ?", auth.PersonalOwnerType, userId)
 			}
-		case auth.SystemOwner:
+		case auth.SystemOwnerType:
 			if i == 0 {
-				query = query.Where("owner_type = ?", auth.SystemOwner)
+				query = query.Where("owner_type = ?", auth.SystemOwnerType)
 			} else {
-				query = query.Or("owner_type = ?", auth.SystemOwner)
+				query = query.Or("owner_type = ?", auth.SystemOwnerType)
 			}
-		case auth.FamilyOwner:
+		case auth.FamilyOwnerType:
 			var families []uuid.UUID
 			if parameters.FamilyId != nil {
 				if r.authService.IsInFamily(ctx, *parameters.FamilyId) {
@@ -72,9 +72,9 @@ func (r LabelRepository) GetAll(ctx context.Context, parameters label.QueryParam
 			}
 			if len(families) > 0 {
 				if i == 0 {
-					query = query.Where("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwner, families)
+					query = query.Where("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwnerType, families)
 				} else {
-					query = query.Or("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwner, families)
+					query = query.Or("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwnerType, families)
 				}
 			}
 		}
@@ -107,25 +107,25 @@ func (r LabelRepository) GetAllCount(ctx context.Context, parameters label.Query
 
 	for i, ownerType := range parameters.Owners {
 		switch ownerType {
-		case auth.PersonalOwner:
+		case auth.PersonalOwnerType:
 			if i == 0 {
-				query = query.Where("owner_type = ? AND owner_user_id = ?", auth.PersonalOwner, userId)
+				query = query.Where("owner_type = ? AND owner_user_id = ?", auth.PersonalOwnerType, userId)
 			} else {
-				query = query.Or("owner_type = ? AND owner_user_id = ?", auth.PersonalOwner, userId)
+				query = query.Or("owner_type = ? AND owner_user_id = ?", auth.PersonalOwnerType, userId)
 			}
-		case auth.SystemOwner:
+		case auth.SystemOwnerType:
 			if i == 0 {
-				query = query.Where("owner_type = ?", auth.SystemOwner)
+				query = query.Where("owner_type = ?", auth.SystemOwnerType)
 			} else {
-				query = query.Or("owner_type = ?", auth.SystemOwner)
+				query = query.Or("owner_type = ?", auth.SystemOwnerType)
 			}
-		case auth.FamilyOwner:
+		case auth.FamilyOwnerType:
 			families := r.authService.MustGetFamilies(ctx)
 			if len(families) > 0 {
 				if i == 0 {
-					query = query.Where("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwner, families)
+					query = query.Where("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwnerType, families)
 				} else {
-					query = query.Or("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwner, families)
+					query = query.Or("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwnerType, families)
 				}
 			}
 		}
@@ -137,9 +137,9 @@ func (r LabelRepository) GetAllCount(ctx context.Context, parameters label.Query
 	return count, nil
 }
 
-func (r LabelRepository) GetDefaults(ctx context.Context) ([]label.Label, error) {
+func (r LabelRepository) GetSystemLabels(ctx context.Context) ([]label.Label, error) {
 	var labelModels []LabelSqlModel
-	query := r.labelRepository.db.WithContext(ctx).Where("owner_type = ?", auth.SystemOwner)
+	query := r.labelRepository.db.WithContext(ctx).Where("owner_type = ?", auth.SystemOwnerType)
 	result := query.Find(&labelModels)
 	if result.Error != nil {
 		return nil, result.Error

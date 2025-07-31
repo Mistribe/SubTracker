@@ -33,7 +33,7 @@ type updateProviderModel struct {
 }
 
 func (m updateProviderModel) Command(providerId uuid.UUID) (command.UpdateProviderCommand, error) {
-	labels, err := slicesx.MapErr(m.Labels, uuid.Parse)
+	labels, err := slicesx.SelectErr(m.Labels, uuid.Parse)
 	if err != nil {
 		return command.UpdateProviderCommand{}, err
 	}

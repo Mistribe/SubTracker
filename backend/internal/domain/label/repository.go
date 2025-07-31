@@ -20,7 +20,7 @@ func NewQueryParameters(limit, offset int,
 	owners []auth.OwnerType,
 	familyId *uuid.UUID) QueryParameters {
 	if len(owners) == 0 {
-		owners = append(owners, auth.SystemOwner, auth.PersonalOwner, auth.FamilyOwner)
+		owners = append(owners, auth.SystemOwnerType, auth.PersonalOwnerType, auth.FamilyOwnerType)
 	}
 	return QueryParameters{
 		QueryParameters: entity.QueryParameters{
@@ -35,7 +35,7 @@ func NewQueryParameters(limit, offset int,
 type Repository interface {
 	entity.Repository[Label]
 
-	GetDefaults(ctx context.Context) ([]Label, error)
+	GetSystemLabels(ctx context.Context) ([]Label, error)
 	GetAll(ctx context.Context, parameters QueryParameters) ([]Label, error)
 	GetAllCount(ctx context.Context, parameters QueryParameters) (int64, error)
 }

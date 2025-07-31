@@ -1,6 +1,6 @@
 package slicesx
 
-func Map[TIn any, TOut any](source []TIn, f func(TIn) TOut) []TOut {
+func Select[TIn any, TOut any](source []TIn, f func(TIn) TOut) []TOut {
 	result := make([]TOut, len(source))
 	for i, v := range source {
 		result[i] = f(v)
@@ -8,7 +8,7 @@ func Map[TIn any, TOut any](source []TIn, f func(TIn) TOut) []TOut {
 	return result
 }
 
-func MapErr[TIn any, TOut any](source []TIn, f func(TIn) (TOut, error)) ([]TOut, error) {
+func SelectErr[TIn any, TOut any](source []TIn, f func(TIn) (TOut, error)) ([]TOut, error) {
 	result := make([]TOut, len(source))
 	for i, v := range source {
 		r, err := f(v)
@@ -25,5 +25,14 @@ func SelectMany[TIn any, TOut any](source []TIn, f func(TIn) []TOut) []TOut {
 	for _, v := range source {
 		result = append(result, f(v)...)
 	}
+	return result
+}
+
+func ToMap[TKey comparable, TValue any](source []TValue, keySelector func(TValue) TKey) map[TKey]TValue {
+	result := make(map[TKey]TValue)
+	for _, v := range source {
+		result[keySelector(v)] = v
+	}
+
 	return result
 }

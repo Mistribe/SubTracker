@@ -7,6 +7,7 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/oleexo/subtracker/internal/application"
+	"github.com/oleexo/subtracker/internal/application/system"
 	"github.com/oleexo/subtracker/internal/infrastructure/logfx"
 	"github.com/oleexo/subtracker/internal/infrastructure/persistence"
 	"github.com/oleexo/subtracker/internal/infrastructure/startup"
@@ -38,6 +39,7 @@ func main() {
 		BuildRoutesModule(),
 		BuildHttpServerModule(),
 		startup.BuildStartupModule(),
+		system.NewUpdaterModule(),
 	)
 
 	app.Run()

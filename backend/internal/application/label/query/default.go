@@ -19,7 +19,7 @@ func NewDefaultLabelQueryHandler(repository label.Repository) *DefaultLabelQuery
 }
 
 func (h DefaultLabelQueryHandler) Handle(ctx context.Context, query DefaultLabelQuery) result.Result[[]label.Label] {
-	lbls, err := h.repository.GetDefaults(ctx)
+	lbls, err := h.repository.GetSystemLabels(ctx)
 	if err != nil {
 		return result.Fail[[]label.Label](err)
 	}

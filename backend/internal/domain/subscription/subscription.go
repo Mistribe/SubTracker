@@ -228,7 +228,7 @@ func (s *subscription) ETagFields() []interface{} {
 	}
 
 	if s.serviceUsers != nil && s.serviceUsers.Len() > 0 {
-		fields = append(fields, slicesx.Map(s.serviceUsers.Values(), func(su uuid.UUID) string {
+		fields = append(fields, slicesx.Select(s.serviceUsers.Values(), func(su uuid.UUID) string {
 			return su.String()
 		}))
 	}

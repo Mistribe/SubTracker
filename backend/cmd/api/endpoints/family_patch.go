@@ -74,7 +74,7 @@ func (m patchFamilyModel) Command(ownerId string) (command.PatchFamilyCommand, e
 		return command.PatchFamilyCommand{}, err
 	}
 	updatedAt := ext.ValueOrDefault(m.UpdatedAt, time.Now())
-	members, err := slicesx.MapErr(m.Members, func(member patchFamilyMemberModel) (family.Member, error) {
+	members, err := slicesx.SelectErr(m.Members, func(member patchFamilyMemberModel) (family.Member, error) {
 		return member.Command(familyId)
 	})
 	if err != nil {

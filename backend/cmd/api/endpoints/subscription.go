@@ -134,7 +134,7 @@ func newSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 	if source.Payer() != nil {
 		payerModel = newSubscriptionPayerModel(source.Payer())
 	}
-	serviceUsers := slicesx.Map(source.ServiceUsers().Values(), func(in uuid.UUID) string {
+	serviceUsers := slicesx.Select(source.ServiceUsers().Values(), func(in uuid.UUID) string {
 		return in.String()
 	})
 	return SubscriptionModel{

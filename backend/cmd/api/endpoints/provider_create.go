@@ -44,7 +44,7 @@ func (m createProviderModel) Command(userId string) (command.CreateProviderComma
 
 		providerId = &id
 	}
-	labels, err := slicesx.MapErr(m.Labels, uuid.Parse)
+	labels, err := slicesx.SelectErr(m.Labels, uuid.Parse)
 	if err != nil {
 		return command.CreateProviderCommand{}, err
 	}

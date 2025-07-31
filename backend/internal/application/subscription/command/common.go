@@ -15,7 +15,7 @@ func ensureRelatedEntityExists(
 	familyRepository family.Repository,
 	newSubscription subscription.Subscription,
 ) error {
-	if newSubscription.Owner().Type() == auth.FamilyOwner {
+	if newSubscription.Owner().Type() == auth.FamilyOwnerType {
 		familyId := newSubscription.Owner().FamilyId()
 
 		var members []uuid.UUID

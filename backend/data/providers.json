@@ -1,0 +1,90 @@
+[
+  {
+    "name": "Netflix",
+    "website": "https://www.netflix.com",
+    "pricing_page": "https://www.netflix.com/us/pricing",
+    "icon": "",
+    "price_model": "Monthly",
+    "labels": ["Streaming", "Video On Demand"],
+    "plans": [
+      {
+        "name": "Standard with ads",
+        "recurrencies": {
+          "monthly": [
+            {
+              "amount": 5.99
+            },
+            {
+              "amount": 12.99
+            },
+            {
+              "amount": 18.99
+            }
+          ]
+        }
+      },
+      {
+        "name": "Standard",
+        "recurrency": ["monthly"]
+      },
+      {
+        "name": "Premium",
+        "recurrency": ["monthly"]
+      }
+    ]
+  },
+  {
+    "name": "Spotify",
+    "website": "https://www.spotify.com",
+    "price_model": "Monthly",
+    "labels": "Music",
+    "price_range_usd": {
+      "monthly_min": 5,
+      "monthly_max": 11
+    }
+  },
+  {
+    "name": "Amazon Prime",
+    "category": "Shopping / Streaming",
+    "website": "https://www.amazon.com/prime",
+    "price_model": "Monthly / Yearly",
+    "labels": "Shopping",
+    "price_range_usd": {
+      "monthly_min": 15,
+      "monthly_max": 15
+    }
+  },
+  {
+    "name": "Disney+",
+    "category": "Streaming - Video",
+    "website": "https://www.disneyplus.com",
+    "price_model": "Monthly",
+    "labels": "Streaming",
+    "price_range_usd": {
+      "monthly_min": 8,
+      "monthly_max": 14
+    }
+  },
+  {
+    "name": "Apple Music",
+    "category": "Streaming - Music",
+    "website": "https://music.apple.com",
+    "price_model": "Monthly",
+    "labels": "Music",
+    "price_range_usd": {
+      "monthly_min": 5,
+      "monthly_max": 11
+    }
+  },
+  {
+    "name": "YouTube Premium",
+    "category": "Streaming - Video",
+    "website": "https://www.youtube.com/premium",
+    "price_model": "Monthly",
+    "labels": "Streaming",
+    "price_range_usd": {
+      "monthly_min": 12,
+      "monthly_max": 12
+    }
+  }
+]

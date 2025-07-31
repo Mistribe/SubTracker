@@ -87,7 +87,7 @@ func (m UpdateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (s
 	if err != nil {
 		return nil, err
 	}
-	serviceUsers, err := slicesx.MapErr(m.ServiceUsers, func(in string) (uuid.UUID, error) {
+	serviceUsers, err := slicesx.SelectErr(m.ServiceUsers, func(in string) (uuid.UUID, error) {
 		return uuid.Parse(in)
 	})
 	if err != nil {

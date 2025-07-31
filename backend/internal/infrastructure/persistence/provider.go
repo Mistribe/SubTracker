@@ -173,7 +173,7 @@ func (r ProviderRepository) create(ctx context.Context, newProvider provider.Pro
 }
 
 func (r ProviderRepository) createLabels(ctx context.Context, providerId uuid.UUID, labelIds []uuid.UUID) error {
-	sqlModels := slicesx.Map(labelIds, func(labelId uuid.UUID) providerLabelSqlModel {
+	sqlModels := slicesx.Select(labelIds, func(labelId uuid.UUID) providerLabelSqlModel {
 		return newProviderLabelSqlModel(providerId, labelId)
 	})
 	result := r.repository.db.WithContext(ctx).Create(&sqlModels)
@@ -185,7 +185,7 @@ func (r ProviderRepository) createLabels(ctx context.Context, providerId uuid.UU
 }
 
 func (r ProviderRepository) createPlans(ctx context.Context, providerId uuid.UUID, plans []provider.Plan) error {
-	planSqlModels := slicesx.Map(plans, func(plan provider.Plan) providerPlanSqlModel {
+	planSqlModels := slicesx.Select(plans, func(plan provider.Plan) providerPlanSqlModel {
 		return newProviderPlanSqlModel(providerId, plan)
 	})
 

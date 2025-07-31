@@ -35,9 +35,9 @@ func (m EditableOwnerModel) Owner(userId string) (auth.Owner, error) {
 	}
 
 	switch ownerType {
-	case auth.PersonalOwner:
+	case auth.PersonalOwnerType:
 		return auth.NewPersonalOwner(userId), nil
-	case auth.FamilyOwner:
+	case auth.FamilyOwnerType:
 		if m.FamilyId == nil {
 			return nil, errors.New("missing family_id")
 		}
@@ -57,10 +57,10 @@ func newOwnerModel(source auth.Owner) OwnerModel {
 		Etag: source.ETag(),
 	}
 	switch source.Type() {
-	case auth.PersonalOwner:
+	case auth.PersonalOwnerType:
 		userId := source.UserId()
 		model.UserId = &userId
-	case auth.FamilyOwner:
+	case auth.FamilyOwnerType:
 		familyId := source.FamilyId().String()
 		model.FamilyId = &familyId
 	}

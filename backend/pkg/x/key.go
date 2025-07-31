@@ -1,9 +1,11 @@
 package x
 
-import "regexp"
+import (
+	"strings"
+)
 
 func MakeKey(input string) string {
-	reg, _ := regexp.Compile("[^a-zA-Z0-9]+")
-	processedString := reg.ReplaceAllString(input, "-")
-	return processedString
+	input = strings.ToLower(input)
+	input = strings.ReplaceAll(input, " ", "-")
+	return input
 }

@@ -24,7 +24,7 @@ func NewCurrencySupportedEndpoint() *CurrencySupportedEndpoint {
 //	@Success		200	{array}	string	"currencies"
 //	@Router			/currencies/supported [get]
 func (e CurrencySupportedEndpoint) Handle(c *gin.Context) {
-	response := slicesx.Map(dcurrency.GetSupportedCurrencies(), func(u currency.Unit) string {
+	response := slicesx.Select(dcurrency.GetSupportedCurrencies(), func(u currency.Unit) string {
 		return u.String()
 	})
 	c.JSON(http.StatusOK, response)

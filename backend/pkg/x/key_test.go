@@ -4,43 +4,62 @@ import (
 	"testing"
 
 	"github.com/oleexo/subtracker/pkg/x"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMakeKey(t *testing.T) {
-	testCases := []struct {
+	tests := []struct {
 		name     string
 		input    string
 		expected string
 	}{
 		{
-			name:     "Empty string",
+			name:     "basic_lowercase",
+			input:    "hello",
+			expected: "hello",
+		},
+		{
+			name:     "uppercase_to_lowercase",
+			input:    "HelloWorld",
+			expected: "helloworld",
+		},
+		{
+			name:     "spaces_to_hyphens",
+			input:    "hello world",
+			expected: "hello-world",
+		},
+		{
+			name:     "multiple_spaces",
+			input:    "hello   world",
+			expected: "hello---world",
+		},
+		{
+			name:     "mixed_case_and_spaces",
+			input:    "  HelLo  WoRLd  ",
+			expected: "--hello--world--",
+		},
+		{
+			name:     "empty_string",
 			input:    "",
 			expected: "",
 		},
 		{
-			name:     "String with spaces",
-			input:    "test string",
-			expected: "test string",
+			name:     "only_spaces",
+			input:    "     ",
+			expected: "-----",
 		},
 		{
-			name:     "String with numbers",
-			input:    "123456",
-			expected: "123456",
-		},
-		{
-			name:     "Special characters",
-			input:    "#$%^&**",
-			expected: "#$%^&**",
+			name:     "special_characters",
+			input:    "hello@# world!",
+			expected: "hello@#-world!",
 		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			assert := assert.New(t)
-			result := x.MakeKey(tc.input)
-			assert.Equal(tc.expected, result)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := x.MakeKey(tt.input)
+			if result != tt.expected {
+				t.Errorf("MakeKey(%q) = %q, want %q", tt.input, result, tt.expected)
+			}
 		})
 	}
 }

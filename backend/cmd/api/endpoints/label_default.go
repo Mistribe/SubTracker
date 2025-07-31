@@ -34,7 +34,7 @@ func (e DefaultLabelEndpoint) Handle(c *gin.Context) {
 	handleResponse(c,
 		r,
 		withMapping[[]label.Label](func(lbls []label.Label) any {
-			return slicesx.Map[label.Label, labelModel](
+			return slicesx.Select[label.Label, labelModel](
 				lbls,
 				func(lbl label.Label) labelModel {
 					return newLabelModel(lbl)

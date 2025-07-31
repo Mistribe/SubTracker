@@ -383,11 +383,11 @@ func (_c *MockRepository_GetById_Call) RunAndReturn(run func(ctx context.Context
 }
 
 // GetDefaults provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetDefaults(ctx context.Context) ([]label.Label, error) {
+func (_mock *MockRepository) GetSystemLabels(ctx context.Context) ([]label.Label, error) {
 	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetDefaults")
+		panic("no return value specified for GetSystemLabels")
 	}
 
 	var r0 []label.Label
@@ -410,7 +410,7 @@ func (_mock *MockRepository) GetDefaults(ctx context.Context) ([]label.Label, er
 	return r0, r1
 }
 
-// MockRepository_GetDefaults_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetDefaults'
+// MockRepository_GetDefaults_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetSystemLabels'
 type MockRepository_GetDefaults_Call struct {
 	*mock.Call
 }
@@ -418,7 +418,7 @@ type MockRepository_GetDefaults_Call struct {
 // GetDefaults is a helper method to define mock.On call
 //   - ctx context.Context
 func (_e *MockRepository_Expecter) GetDefaults(ctx interface{}) *MockRepository_GetDefaults_Call {
-	return &MockRepository_GetDefaults_Call{Call: _e.mock.On("GetDefaults", ctx)}
+	return &MockRepository_GetDefaults_Call{Call: _e.mock.On("GetSystemLabels", ctx)}
 }
 
 func (_c *MockRepository_GetDefaults_Call) Run(run func(ctx context.Context)) *MockRepository_GetDefaults_Call {

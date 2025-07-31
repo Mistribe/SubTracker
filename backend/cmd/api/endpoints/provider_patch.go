@@ -93,7 +93,7 @@ func (m patchPlanModel) Plan() (provider.Plan, error) {
 	if updatedAt.Before(createdAt) {
 		updatedAt = createdAt
 	}
-	prices, err := slicesx.MapErr(m.Prices, func(prce patchPriceModel) (provider.Price, error) {
+	prices, err := slicesx.SelectErr(m.Prices, func(prce patchPriceModel) (provider.Price, error) {
 		return prce.Price()
 	})
 	if err != nil {
@@ -138,12 +138,12 @@ func (m patchProviderModel) Provider(userId string) (provider.Provider, error) {
 		return nil, err
 	}
 
-	labels, err := slicesx.MapErr(m.Labels, uuid.Parse)
+	labels, err := slicesx.SelectErr(m.Labels, uuid.Parse)
 	if err != nil {
 		return nil, err
 	}
 
-	plans, err := slicesx.MapErr(m.Plans, func(prce patchPlanModel) (provider.Plan, error) {
+	plans, err := slicesx.SelectErr(m.Plans, func(prce patchPlanModel) (provider.Plan, error) {
 		return prce.Plan()
 	})
 	if err != nil {

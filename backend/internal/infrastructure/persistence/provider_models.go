@@ -146,10 +146,10 @@ func newProviderSqlModel(source provider.Provider) ProviderSqlModel {
 
 	model.OwnerType = source.Owner().Type().String()
 	switch source.Owner().Type() {
-	case auth.FamilyOwner:
+	case auth.FamilyOwnerType:
 		familyId := source.Owner().FamilyId()
 		model.OwnerFamilyId = &familyId
-	case auth.PersonalOwner:
+	case auth.PersonalOwnerType:
 		userId := source.Owner().UserId()
 		model.OwnerUserId = stringToSqlNull(&userId)
 	}

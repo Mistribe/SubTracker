@@ -1,30 +1,37 @@
 [
-    {
-        "key": "streaming-music",
-        "color": "#FF81C784"
-    },
-    {
-        "key": "streaming-video",
-        "color": "#FFF06292"
-    },
-    {
-        "key": "mobile",
-        "color": "#FFFFD54F"
-    },
-    {
-        "key": "internet",
-        "color": "#FF64B5F6"
-    },
-    {
-        "key": "gaming",
-        "color": "#FF4DB6AC"
-    },
-    {
-        "key": "software",
-        "color": "#FF7986CB"
-    },
-    {
-        "key": "utilities",
-        "color": "#FF9575CD"
-    }
+  {
+    "key": "streaming-music",
+    "name": "Streaming Music",
+    "color": "#FF81C784"
+  },
+  {
+    "key": "streaming-video",
+    "name": "Streaming Video",
+    "color": "#FFF06292"
+  },
+  {
+    "key": "mobile",
+    "name": "Mobile",
+    "color": "#FFFFD54F"
+  },
+  {
+    "key": "internet",
+    "name": "Internet",
+    "color": "#FF64B5F6"
+  },
+  {
+    "key": "gaming",
+    "name": "Gaming",
+    "color": "#FF4DB6AC"
+  },
+  {
+    "key": "software",
+    "name": "Software",
+    "color": "#FF7986CB"
+  },
+  {
+    "key": "utilities",
+    "name": "Utilities",
+    "color": "#FF9575CD"
+  }
 ]

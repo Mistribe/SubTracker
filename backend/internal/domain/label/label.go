@@ -112,6 +112,9 @@ func (l *label) SetName(name string) {
 }
 
 func (l *label) SetColor(color string) {
+	if l.color == color {
+		return
+	}
 	l.color = color
 	l.SetAsDirty()
 }

@@ -85,10 +85,10 @@ func newSubscriptionSqlModel(source subscription.Subscription) SubscriptionSqlMo
 
 	model.OwnerType = source.Owner().Type().String()
 	switch source.Owner().Type() {
-	case auth.FamilyOwner:
+	case auth.FamilyOwnerType:
 		familyId := source.Owner().FamilyId()
 		model.OwnerFamilyId = &familyId
-	case auth.PersonalOwner:
+	case auth.PersonalOwnerType:
 		userId := source.Owner().UserId()
 		model.OwnerUserId = stringToSqlNull(&userId)
 	}
@@ -110,7 +110,7 @@ func newSubscription(source SubscriptionSqlModel) subscription.Subscription {
 	}
 	var serviceUsers []uuid.UUID
 	if len(source.ServiceUsers) > 0 {
-		serviceUsers = slicesx.Map(source.ServiceUsers, func(su SubscriptionServiceUserModel) uuid.UUID {
+		serviceUsers = slicesx.Select(source.ServiceUsers, func(su SubscriptionServiceUserModel) uuid.UUID {
 			return su.FamilyMemberId
 		})
 	}

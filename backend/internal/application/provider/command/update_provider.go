@@ -61,7 +61,7 @@ func (h UpdateCommandHandler) update(
 		return result.Fail[provider.Provider](auth.ErrUnknownUser)
 	}
 
-	if prov.Owner().Type() == auth.PersonalOwner &&
+	if prov.Owner().Type() == auth.PersonalOwnerType &&
 		prov.Owner().UserId() != userId {
 		return result.Fail[provider.Provider](provider.ErrOnlyOwnerCanEdit)
 	}

@@ -6,13 +6,17 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/entity"
 )
 
+var (
+	SystemOwner = NewSystemOwner()
+)
+
 type OwnerType string
 
 const (
-	UnknownOwner  OwnerType = "unknown"
-	SystemOwner   OwnerType = "system"
-	PersonalOwner OwnerType = "personal"
-	FamilyOwner   OwnerType = "family"
+	UnknownOwnerType  OwnerType = "unknown"
+	SystemOwnerType   OwnerType = "system"
+	PersonalOwnerType OwnerType = "personal"
+	FamilyOwnerType   OwnerType = "family"
 )
 
 func (o OwnerType) String() string {
@@ -21,14 +25,14 @@ func (o OwnerType) String() string {
 
 func ParseOwnerType(input string) (OwnerType, error) {
 	switch input {
-	case string(PersonalOwner):
-		return PersonalOwner, nil
-	case string(FamilyOwner):
-		return FamilyOwner, nil
-	case string(SystemOwner):
-		return SystemOwner, nil
+	case string(PersonalOwnerType):
+		return PersonalOwnerType, nil
+	case string(FamilyOwnerType):
+		return FamilyOwnerType, nil
+	case string(SystemOwnerType):
+		return SystemOwnerType, nil
 	default:
-		return UnknownOwner, ErrUnknownOwnerType
+		return UnknownOwnerType, ErrUnknownOwnerType
 	}
 }
 
@@ -43,12 +47,12 @@ type Owner interface {
 
 func NewOwner(ownerType OwnerType, familyId *uuid.UUID, userId *string) Owner {
 	switch ownerType {
-	case PersonalOwner:
+	case PersonalOwnerType:
 		if userId == nil {
 			panic("missing user id for a personal owner type")
 		}
 		return NewPersonalOwner(*userId)
-	case FamilyOwner:
+	case FamilyOwnerType:
 		if familyId == nil {
 			panic("missing family id for a family owner type")
 		}
@@ -77,7 +81,7 @@ func (o familyOwner) UserId() string {
 }
 
 func (o familyOwner) Type() OwnerType {
-	return FamilyOwner
+	return FamilyOwnerType
 }
 
 func (o familyOwner) Equal(other Owner) bool {
@@ -91,7 +95,7 @@ func (o familyOwner) Equal(other Owner) bool {
 func (o familyOwner) ETagFields() []interface{} {
 	return []interface{}{
 		o.familyId.String(),
-		FamilyOwner.String(),
+		FamilyOwnerType.String(),
 	}
 
 }
@@ -118,7 +122,7 @@ func (o personalOwner) UserId() string {
 }
 
 func (o personalOwner) Type() OwnerType {
-	return PersonalOwner
+	return PersonalOwnerType
 }
 
 func (o personalOwner) Equal(other Owner) bool {
@@ -132,7 +136,7 @@ func (o personalOwner) Equal(other Owner) bool {
 func (o personalOwner) ETagFields() []interface{} {
 	return []interface{}{
 		o.ownerId,
-		PersonalOwner.String(),
+		PersonalOwnerType.String(),
 	}
 
 }
@@ -156,7 +160,7 @@ func (o systemOwner) UserId() string {
 }
 
 func (o systemOwner) Type() OwnerType {
-	return SystemOwner
+	return SystemOwnerType
 }
 
 func (o systemOwner) Equal(other Owner) bool {
@@ -169,7 +173,7 @@ func (o systemOwner) Equal(other Owner) bool {
 
 func (o systemOwner) ETagFields() []interface{} {
 	return []interface{}{
-		PersonalOwner.String(),
+		PersonalOwnerType.String(),
 	}
 
 }

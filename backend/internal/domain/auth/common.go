@@ -14,9 +14,9 @@ func EnsureOwnership(ctx context.Context,
 		return ErrNotAuthorized
 	}
 	switch owner.Type() {
-	case SystemOwner:
+	case SystemOwnerType:
 		return ErrNotAuthorized
-	case FamilyOwner:
+	case FamilyOwnerType:
 		isMember, err := familyRepository.IsUserMemberOfFamily(ctx, owner.FamilyId(), userId)
 		if err != nil {
 			return err
@@ -24,7 +24,7 @@ func EnsureOwnership(ctx context.Context,
 		if !isMember {
 			return ErrNotAuthorized
 		}
-	case PersonalOwner:
+	case PersonalOwnerType:
 		if owner.UserId() != userId {
 			return ErrNotAuthorized
 		}

@@ -20,7 +20,7 @@ func newPaginatedResponseModel[TValue any, TOut any](
 	p core.PaginatedResponse[TValue],
 	mapper func(TValue) TOut) PaginatedResponseModel[TOut] {
 	return PaginatedResponseModel[TOut]{
-		Data:   slicesx.Map(p.Data(), mapper),
+		Data:   slicesx.Select(p.Data(), mapper),
 		Length: p.Length(),
 		Total:  p.Total(),
 	}

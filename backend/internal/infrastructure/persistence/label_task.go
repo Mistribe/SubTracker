@@ -19,7 +19,7 @@ func newLabelTask(labelRepository label.Repository) *LabelTask {
 }
 
 func (l LabelTask) OnStart(ctx context.Context) error {
-	lbls, err := l.labelRepository.GetDefaults(ctx)
+	lbls, err := l.labelRepository.GetSystemLabels(ctx)
 	if err != nil {
 		return err
 	}
