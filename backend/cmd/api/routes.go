@@ -53,6 +53,9 @@ func BuildRoutesModule() fx.Option {
 			endpoints.NewProviderPatchEndpoint,
 			ginfx.AsRouteGroup(endpoints.NewProviderEndpointGroup),
 
+			endpoints.NewCurrencySupportedEndpoint,
+			ginfx.AsRouteGroup(endpoints.NewCurrencyGroupEndpointGroup),
+
 			ginfx.AsRoute(endpoints.NewHealthCheckLiveEndpoint),
 		),
 	)

@@ -1012,6 +1012,19 @@ info:
   version: "1.0"
 openapi: 3.1.0
 paths:
+  /currencies/supported:
+    get:
+      description: get details of all supported currencies
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: currencies
+      summary: Get Supported Currencies
   /families:
     get:
       description: Retrieve a paginated list of families for the authenticated user
