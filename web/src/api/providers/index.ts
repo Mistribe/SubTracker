@@ -55,18 +55,18 @@ export interface ProvidersRequestBuilder extends BaseRequestBuilder<ProvidersReq
  */
 export interface ProvidersRequestBuilderGetQueryParameters {
     /**
-     * Page number (default: 1)
+     * Limit per request (default: 10)
      */
-    page?: number;
+    limit?: number;
     /**
-     * Items per page (default: 10)
+     * Offset (default: 0)
      */
-    size?: number;
+    offset?: number;
 }
 /**
  * Uri template for the request builder.
  */
-export const ProvidersRequestBuilderUriTemplate = "{+baseurl}/providers{?page*,size*}";
+export const ProvidersRequestBuilderUriTemplate = "{+baseurl}/providers{?limit*,offset*}";
 /**
  * Metadata for all the navigation properties in the request builder.
  */

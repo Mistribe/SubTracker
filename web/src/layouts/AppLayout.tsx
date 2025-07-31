@@ -20,7 +20,8 @@ import {
     UsersIcon,
     TagIcon,
     UserIcon,
-    LogOutIcon
+    LogOutIcon,
+    PackageIcon
 } from "lucide-react";
 
 interface AppLayoutProps {
@@ -66,6 +67,19 @@ export function AppLayout({children}: AppLayoutProps) {
                                     <Link to="/dashboard" className="flex items-center">
                                         <HomeIcon className="mr-2 h-4 w-4"/>
                                         <span>Dashboard</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={location.pathname === "/providers"}
+                                    tooltip="Providers"
+                                >
+                                    <Link to="/providers" className="flex items-center">
+                                        <PackageIcon className="mr-2 h-4 w-4"/>
+                                        <span>Providers</span>
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
