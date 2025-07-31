@@ -43,6 +43,7 @@ export function PlanDetailsDialog({isOpen, onClose, plan, providerId, onPlanUpda
     const [editingPrice, setEditingPrice] = useState<Price | null>(null);
     const [deletingPrice, setDeletingPrice] = useState<Price | null>(null);
     const [expandedCurrencies, setExpandedCurrencies] = useState<Record<string, boolean>>({});
+    const [selectedCurrencies, setSelectedCurrencies] = useState<string[]>([]);
     const {apiClient} = useApiClient();
     const queryClient = useQueryClient();
     const {data: currencies, isLoading: isLoadingCurrencies} = useCurrenciesQuery();
@@ -63,6 +64,17 @@ export function PlanDetailsDialog({isOpen, onClose, plan, providerId, onPlanUpda
             ...prev,
             [currency]: !prev[currency]
         }));
+    };
+    
+    // Toggle currency filter
+    const toggleCurrencyFilter = (currency: string) => {
+        setSelectedCurrencies(prev => {
+            if (prev.includes(currency)) {
+                return prev.filter(c => c !== currency);
+            } else {
+                return [...prev, currency];
+            }
+        });
     };
 
     // Handle adding a new price
@@ -298,20 +310,37 @@ export function PlanDetailsDialog({isOpen, onClose, plan, providerId, onPlanUpda
                         {/* Active currencies summary */}
                         {plan.prices.length > 0 && (
                             <div className="bg-gray-50 p-3 rounded-md mb-4">
-                                <div className="text-sm font-medium mb-2">Active Currencies:</div>
+                                <div className="text-sm font-medium mb-2">Filter by Active Currencies:</div>
                                 <div className="flex flex-wrap gap-2">
                                     {Object.entries(pricesByCurrency).map(([currency, prices]) => {
                                         const hasActivePrices = prices.some(p => p.isActive);
+                                        const isSelected = selectedCurrencies.includes(currency);
                                         return hasActivePrices ? (
-                                            <div 
+                                            <button 
                                                 key={currency}
-                                                className="px-3 py-1 bg-white border rounded-full text-sm flex items-center gap-1"
+                                                onClick={() => toggleCurrencyFilter(currency)}
+                                                className={`px-3 py-1 border rounded-full text-sm flex items-center gap-1 transition-colors ${
+                                                    isSelected 
+                                                        ? "bg-green-100 border-green-300 text-green-800" 
+                                                        : "bg-white hover:bg-gray-100"
+                                                }`}
+                                                aria-pressed={isSelected}
+                                                title={`${isSelected ? 'Remove' : 'Add'} ${currency} filter`}
                                             >
-                                                <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                                                <span className={`h-2 w-2 rounded-full ${isSelected ? "bg-green-600" : "bg-green-500"}`}></span>
                                                 <span>{currency}</span>
-                                            </div>
+                                            </button>
                                         ) : null;
                                     })}
+                                    {selectedCurrencies.length > 0 && (
+                                        <button 
+                                            onClick={() => setSelectedCurrencies([])}
+                                            className="px-3 py-1 bg-gray-100 border rounded-full text-sm hover:bg-gray-200"
+                                            title="Clear all filters"
+                                        >
+                                            Clear filters
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -333,7 +362,10 @@ export function PlanDetailsDialog({isOpen, onClose, plan, providerId, onPlanUpda
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {Object.entries(pricesByCurrency).map(([currency, prices]) => {
+                                {Object.entries(pricesByCurrency)
+                                    // Filter currencies based on selection (show all if none selected)
+                                    .filter(([currency]) => selectedCurrencies.length === 0 || selectedCurrencies.includes(currency))
+                                    .map(([currency, prices]) => {
                                     // Sort prices: active first, then by start date (newest first)
                                     const sortedPrices = [...prices].sort((a, b) => {
                                         if (a.isActive !== b.isActive) {

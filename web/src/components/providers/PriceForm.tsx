@@ -137,6 +137,50 @@ export function PriceForm({
     // Create a schema with validation for overlapping date ranges
     const validationSchema = createPriceFormSchema(existingPrices, price?.id);
 
+    // Helper function to find the latest end date for a currency
+    const getLatestEndDateForCurrency = (currency: string): string => {
+        if (!existingPrices.length) return new Date().toISOString().split('T')[0];
+        
+        // Filter prices by currency and sort by end date (most recent first)
+        const currencyPrices = existingPrices
+            .filter(p => p.currency === currency)
+            .sort((a, b) => {
+                // Handle null end dates (active prices)
+                if (!a.endDate && !b.endDate) return 0;
+                if (!a.endDate) return -1; // a is active, should come first
+                if (!b.endDate) return 1;  // b is active, should come first
+                
+                // Both have end dates, compare them
+                return b.endDate.getTime() - a.endDate.getTime();
+            });
+            
+        // If no prices for this currency, return today
+        if (currencyPrices.length === 0) return new Date().toISOString().split('T')[0];
+        
+        // Get the most recent price
+        const latestPrice = currencyPrices[0];
+        
+        // If it has an end date, use that (plus one day), otherwise use today
+        if (latestPrice.endDate) {
+            const nextDay = new Date(latestPrice.endDate);
+            nextDay.setDate(nextDay.getDate() + 1); // Add one day to avoid overlap
+            return nextDay.toISOString().split('T')[0];
+        }
+        
+        return new Date().toISOString().split('T')[0];
+    };
+
+    // Get default start date based on editing status and currency
+    const getDefaultStartDate = (): string => {
+        if (price?.startDate) {
+            // If editing, use the existing start date
+            return price.startDate.toISOString().split('T')[0];
+        }
+        
+        // For new prices, use the latest end date for the default currency
+        return getLatestEndDateForCurrency(price?.currency || "USD");
+    };
+
     const {
         register,
         handleSubmit,
@@ -148,9 +192,7 @@ export function PriceForm({
         defaultValues: {
             amount: price?.amount || 0,
             currency: price?.currency || "USD",
-            startDate: price?.startDate
-                ? price.startDate.toISOString().split('T')[0]
-                : new Date().toISOString().split('T')[0],
+            startDate: getDefaultStartDate(),
             endDate: price?.endDate
                 ? price.endDate.toISOString().split('T')[0]
                 : "",
@@ -207,7 +249,15 @@ export function PriceForm({
                                     </div>
                                 ) : (
                                     <Select
-                                        onValueChange={(value) => setValue("currency", value)}
+                                        onValueChange={(value) => {
+                                            setValue("currency", value);
+                                            
+                                            // Only update start date for new prices (not when editing)
+                                            if (!isEditing) {
+                                                // Set start date based on the selected currency
+                                                setValue("startDate", getLatestEndDateForCurrency(value));
+                                            }
+                                        }}
                                         defaultValue={currentCurrency}
                                     >
                                         <SelectTrigger className={`h-8 ${errors.currency ? "border-red-500" : ""}`}>
