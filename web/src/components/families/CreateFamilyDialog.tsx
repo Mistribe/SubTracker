@@ -25,6 +25,7 @@ import {Input} from "@/components/ui/input.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Loader2, PlusIcon} from "lucide-react";
 import {useFamiliesMutations} from "@/hooks/families/useFamiliesMutations";
+import {useKindeAuth} from "@kinde-oss/kinde-auth-react";
 
 // Define the form schema
 const formSchema = z.object({
@@ -39,15 +40,20 @@ interface CreateFamilyDialogProps {
 }
 
 export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
-    const { createFamilyMutation } = useFamiliesMutations();
+    const {createFamilyMutation} = useFamiliesMutations();
+    const {user} = useKindeAuth();
     const [open, setOpen] = useState(false);
 
+    let defaultCreatorName = ""
+    if (user && user.givenName) {
+        defaultCreatorName = user.givenName
+    }
     // Initialize the form
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
-            creatorName: ""
+            creatorName: defaultCreatorName
         },
     });
 

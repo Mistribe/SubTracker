@@ -168,7 +168,14 @@ const FamilyLabelsGroup = ({
     return (
         <div className="border rounded-lg p-4">
             <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">{family.name}</h3>
+                <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-medium">{family.name}</h3>
+                    <AddLabelForm
+                        onAddLabel={handleAddLabel}
+                        isAdding={isAdding}
+                        title={`Add label to ${family.name}`}
+                    />
+                </div>
                 <button
                     onClick={onToggleActive}
                     className="text-sm text-primary hover:underline"
@@ -190,14 +197,6 @@ const FamilyLabelsGroup = ({
                         </div>
                     ) : (
                         <>
-                            <div className="mb-4">
-                                <AddLabelForm
-                                    onAddLabel={handleAddLabel}
-                                    isAdding={isAdding}
-                                    title={`Add label to ${family.name}`}
-                                />
-                            </div>
-
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {!hasLabels ? (
                                     <p className="text-muted-foreground col-span-full text-center py-4">
