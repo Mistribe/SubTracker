@@ -971,6 +971,30 @@ components:
       - currency
       - start_date
       type: object
+    endpoints.updateProviderModel:
+      properties:
+        description:
+          type: string
+        icon_url:
+          type: string
+        labels:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        name:
+          type: string
+        pricing_page_url:
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+        url:
+          type: string
+      required:
+      - labels
+      - name
+      type: object
 externalDocs:
   description: ""
   url: ""
@@ -1769,6 +1793,50 @@ paths:
                 $ref: '#/components/schemas/endpoints.httpError'
           description: Internal Server Error
       summary: Get provider by ID
+      tags:
+      - providers
+    put:
+      description: Update an existing provider's basic information
+      parameters:
+      - description: Provider ID (UUID format)
+        in: path
+        name: providerId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.updateProviderModel'
+        description: Updated provider data
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.ProviderModel'
+          description: Successfully updated provider
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Bad Request - Invalid input data or provider ID
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Provider not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Internal Server Error
+      summary: Update provider by ID
       tags:
       - providers
   /providers/{providerId}/plans:

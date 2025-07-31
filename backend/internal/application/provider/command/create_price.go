@@ -74,6 +74,7 @@ func (h CreatePriceCommandHandler) Handle(ctx context.Context, cmd CreatePriceCo
 		return result.Fail[provider.Price](provider.ErrPriceAlreadyExists)
 	}
 
+	prov.Plans().Update(pln)
 	pln.SetUpdatedAt(createdAt)
 	prov.SetUpdatedAt(createdAt)
 
