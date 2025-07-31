@@ -12,6 +12,7 @@ type LabelSqlModel struct {
 	BaseOwnerSqlModel `gorm:"embedded"`
 
 	Name  string `gorm:"type:varchar(100);not null"`
+	Key   string `gorm:"type:varchar(100);not null"`
 	Color string `gorm:"type:varchar(50);not null"`
 }
 
@@ -28,6 +29,7 @@ func newLabelSqlModel(source label.Label) LabelSqlModel {
 			Etag:      source.ETag(),
 		},
 		Name:  source.Name(),
+		Key:   source.Key(),
 		Color: source.Color(),
 	}
 
@@ -61,6 +63,7 @@ func newLabel(source LabelSqlModel) label.Label {
 		source.Id,
 		owner,
 		source.Name,
+		source.Key,
 		source.Color,
 		source.CreatedAt,
 		source.UpdatedAt,

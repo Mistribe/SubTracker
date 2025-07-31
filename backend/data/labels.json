@@ -1,0 +1,30 @@
+[
+    {
+        "key": "streaming-music",
+        "color": "#FF81C784"
+    },
+    {
+        "key": "streaming-video",
+        "color": "#FFF06292"
+    },
+    {
+        "key": "mobile",
+        "color": "#FFFFD54F"
+    },
+    {
+        "key": "internet",
+        "color": "#FF64B5F6"
+    },
+    {
+        "key": "gaming",
+        "color": "#FF4DB6AC"
+    },
+    {
+        "key": "software",
+        "color": "#FF7986CB"
+    },
+    {
+        "key": "utilities",
+        "color": "#FF9575CD"
+    }
+]

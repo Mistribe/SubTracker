@@ -10,6 +10,7 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/pkg/validationx"
+	"github.com/oleexo/subtracker/pkg/x"
 )
 
 var (
@@ -21,6 +22,7 @@ type Label interface {
 	entity.ETagEntity
 
 	Name() string
+	Key() string
 	Owner() auth.Owner
 	Color() string
 	GetValidationErrors() validationx.Errors
@@ -34,6 +36,7 @@ type label struct {
 
 	owner     auth.Owner
 	name      string
+	key       string
 	isDefault bool
 	color     string
 }
@@ -42,19 +45,33 @@ func NewLabel(
 	id uuid.UUID,
 	owner auth.Owner,
 	name string,
+	key string,
 	color string,
 	createdAt time.Time,
 	updatedAt time.Time) Label {
+	var sanatizeKey string
+	key = strings.TrimSpace(key)
+	name = strings.TrimSpace(name)
+	if key == "" {
+		sanatizeKey = x.MakeKey(name)
+	} else {
+		sanatizeKey = key
+	}
 	return &label{
 		Base:  entity.NewBase(id, createdAt, updatedAt, true, false),
 		owner: owner,
-		name:  strings.TrimSpace(name),
+		name:  name,
+		key:   sanatizeKey,
 		color: strings.TrimSpace(color),
 	}
 }
 
 func (l *label) Name() string {
 	return l.name
+}
+
+func (l *label) Key() string {
+	return l.key
 }
 
 func (l *label) Owner() auth.Owner {

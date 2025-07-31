@@ -1,6 +1,10 @@
 package persistence
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -9,22 +13,57 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/label"
 )
 
-func getDefaultLabels() []label.Label {
+type systemLabel struct {
+	Key   string `json:"key"`
+	Color string `json:"color"`
+}
+
+const (
+	systemLabelFileName = "labels.json"
+)
+
+func loadSystemLabelData(dataPath string) ([]systemLabel, error) {
+	// Construct full path to the JSON file
+	filePath := fmt.Sprintf("%s/%s", dataPath, systemLabelFileName)
+
+	// Open the file
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open the file %s: %w", filePath, err)
+	}
+	defer file.Close()
+
+	// Read file content into memory
+	content, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read the file %s: %w", filePath, err)
+	}
+
+	// Parse JSON into a slice of systemLabel structs
+	var labels []systemLabel
+	if err := json.Unmarshal(content, &labels); err != nil {
+		return nil, fmt.Errorf("failed to parse JSON content from %s: %w", filePath, err)
+	}
+
+	return labels, nil
+}
+
+func getSystemLabels() []label.Label {
 	owner := auth.NewSystemOwner()
 	return []label.Label{
-		label.NewLabel(uuid.MustParse("387b2bea-8f73-46e2-8223-be8e0db6ec48"), owner, "Music",
+		label.NewLabel(uuid.MustParse("387b2bea-8f73-46e2-8223-be8e0db6ec48"), owner, "Music", "",
 			"#FF81C784", time.Now(), time.Now()),
-		label.NewLabel(uuid.MustParse("825bd63a-1572-4a94-bd2e-ea7168941345"), owner, "Internet",
+		label.NewLabel(uuid.MustParse("825bd63a-1572-4a94-bd2e-ea7168941345"), owner, "Internet", "",
 			"#FF64B5F6", time.Now(), time.Now()),
-		label.NewLabel(uuid.MustParse("ccb4e552-82d3-46ba-ab61-60c792988976"), owner, "Mobile",
+		label.NewLabel(uuid.MustParse("ccb4e552-82d3-46ba-ab61-60c792988976"), owner, "Mobile", "",
 			"#FFFFD54F", time.Now(), time.Now()),
-		label.NewLabel(uuid.MustParse("49d713ba-ac07-4e6d-896e-5e9965aa68c0"), owner, "Utilities",
+		label.NewLabel(uuid.MustParse("49d713ba-ac07-4e6d-896e-5e9965aa68c0"), owner, "Utilities", "",
 			"#FF9575CD", time.Now(), time.Now()),
-		label.NewLabel(uuid.MustParse("4b3144a9-a98b-4b6e-bf70-5e0f69dffc6f"), owner, "Streaming",
+		label.NewLabel(uuid.MustParse("4b3144a9-a98b-4b6e-bf70-5e0f69dffc6f"), owner, "Streaming", "",
 			"#FFF06292", time.Now(), time.Now()),
-		label.NewLabel(uuid.MustParse("e7145075-8250-45fc-99dc-3e2172e073de"), owner, "Gaming",
+		label.NewLabel(uuid.MustParse("e7145075-8250-45fc-99dc-3e2172e073de"), owner, "Gaming", "",
 			"#FF4DB6AC", time.Now(), time.Now()),
-		label.NewLabel(uuid.MustParse("4a3aaa69-edf7-4175-af25-eb93a9cd2816"), owner, "Software",
+		label.NewLabel(uuid.MustParse("4a3aaa69-edf7-4175-af25-eb93a9cd2816"), owner, "Software", "",
 			"#FF7986CB", time.Now(), time.Now()),
 	}
 

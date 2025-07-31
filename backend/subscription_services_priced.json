@@ -1,0 +1,734 @@
+[
+    {
+        "name": "Netflix",
+        "category": "Streaming - Video",
+        "website": "https://www.netflix.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Streaming",
+        "price_range_usd": {
+            "monthly_min": 8,
+            "monthly_max": 23
+        }
+    },
+    {
+        "name": "Spotify",
+        "category": "Streaming - Music",
+        "website": "https://www.spotify.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Music",
+        "price_range_usd": {
+            "monthly_min": 5,
+            "monthly_max": 11
+        }
+    },
+    {
+        "name": "Amazon Prime",
+        "category": "Shopping / Streaming",
+        "website": "https://www.amazon.com/prime",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly / Yearly",
+        "category_group": "Shopping",
+        "price_range_usd": {
+            "monthly_min": 15,
+            "monthly_max": 15
+        }
+    },
+    {
+        "name": "Disney+",
+        "category": "Streaming - Video",
+        "website": "https://www.disneyplus.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Streaming",
+        "price_range_usd": {
+            "monthly_min": 8,
+            "monthly_max": 14
+        }
+    },
+    {
+        "name": "Apple Music",
+        "category": "Streaming - Music",
+        "website": "https://music.apple.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Music",
+        "price_range_usd": {
+            "monthly_min": 5,
+            "monthly_max": 11
+        }
+    },
+    {
+        "name": "YouTube Premium",
+        "category": "Streaming - Video",
+        "website": "https://www.youtube.com/premium",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Streaming",
+        "price_range_usd": {
+            "monthly_min": 12,
+            "monthly_max": 12
+        }
+    },
+    {
+        "name": "HBO Max",
+        "category": "Streaming - Video",
+        "website": "https://www.max.com",
+        "regions": [
+            "US",
+            "LATAM",
+            "Europe"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Streaming",
+        "price_range_usd": {
+            "monthly_min": 10,
+            "monthly_max": 20
+        }
+    },
+    {
+        "name": "Hulu",
+        "category": "Streaming - Video",
+        "website": "https://www.hulu.com",
+        "regions": [
+            "US"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Streaming",
+        "price_range_usd": {
+            "monthly_min": 8,
+            "monthly_max": 18
+        }
+    },
+    {
+        "name": "Crunchyroll",
+        "category": "Streaming - Anime",
+        "website": "https://www.crunchyroll.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Streaming",
+        "price_range_usd": {
+            "monthly_min": 8,
+            "monthly_max": 15
+        }
+    },
+    {
+        "name": "Dropbox",
+        "category": "Cloud Storage",
+        "website": "https://www.dropbox.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Productivity",
+        "price_range_usd": {
+            "monthly_min": 10,
+            "monthly_max": 20
+        }
+    },
+    {
+        "name": "Google One",
+        "category": "Cloud Storage",
+        "website": "https://one.google.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Productivity",
+        "price_range_usd": {
+            "monthly_min": 2,
+            "monthly_max": 10
+        }
+    },
+    {
+        "name": "Microsoft 365",
+        "category": "Productivity",
+        "website": "https://www.microsoft.com/microsoft-365",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly / Yearly",
+        "category_group": "Productivity",
+        "price_range_usd": {
+            "monthly_min": 7,
+            "monthly_max": 15
+        }
+    },
+    {
+        "name": "iCloud+",
+        "category": "Cloud Storage",
+        "website": "https://www.apple.com/icloud",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Productivity",
+        "price_range_usd": {
+            "monthly_min": 1,
+            "monthly_max": 10
+        }
+    },
+    {
+        "name": "Adobe Creative Cloud",
+        "category": "Design / Creative",
+        "website": "https://www.adobe.com/creativecloud.html",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly / Yearly",
+        "category_group": "Design",
+        "price_range_usd": {
+            "monthly_min": 21,
+            "monthly_max": 55
+        }
+    },
+    {
+        "name": "Headspace",
+        "category": "Health / Wellness",
+        "website": "https://www.headspace.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly / Yearly",
+        "category_group": "Health",
+        "price_range_usd": {
+            "monthly_min": 6,
+            "monthly_max": 13
+        }
+    },
+    {
+        "name": "Calm",
+        "category": "Health / Wellness",
+        "website": "https://www.calm.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly / Yearly",
+        "category_group": "Health",
+        "price_range_usd": {
+            "monthly_min": 6,
+            "monthly_max": 15
+        }
+    },
+    {
+        "name": "Duolingo Plus",
+        "category": "Education / Language Learning",
+        "website": "https://www.duolingo.com/plus",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly / Yearly",
+        "category_group": "Education",
+        "price_range_usd": {
+            "monthly_min": 7,
+            "monthly_max": 12
+        }
+    },
+    {
+        "name": "Skillshare",
+        "category": "Education",
+        "website": "https://www.skillshare.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly / Yearly",
+        "category_group": "Education",
+        "price_range_usd": {
+            "monthly_min": 13,
+            "monthly_max": 13
+        }
+    },
+    {
+        "name": "Coursera Plus",
+        "category": "Education",
+        "website": "https://www.coursera.org/courseraplus",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly / Yearly",
+        "category_group": "Education",
+        "price_range_usd": {
+            "monthly_min": 59,
+            "monthly_max": 59
+        }
+    },
+    {
+        "name": "Nintendo Switch Online",
+        "category": "Gaming",
+        "website": "https://www.nintendo.com/switch/online-service",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly / Yearly",
+        "category_group": "Gaming",
+        "price_range_usd": {
+            "monthly_min": 4,
+            "monthly_max": 20
+        }
+    },
+    {
+        "name": "Paramount+",
+        "category": "Streaming - Video",
+        "website": "https://www.paramountplus.com",
+        "regions": [
+            "US",
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Streaming",
+        "price_range_usd": {
+            "monthly_min": 6,
+            "monthly_max": 12
+        }
+    },
+    {
+        "name": "Peacock",
+        "category": "Streaming - Video",
+        "website": "https://www.peacocktv.com",
+        "regions": [
+            "US"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Streaming",
+        "price_range_usd": {
+            "monthly_min": 6,
+            "monthly_max": 12
+        }
+    },
+    {
+        "name": "Discovery+",
+        "category": "Streaming - Video",
+        "website": "https://www.discoveryplus.com",
+        "regions": [
+            "US",
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Streaming",
+        "price_range_usd": {
+            "monthly_min": 5,
+            "monthly_max": 9
+        }
+    },
+    {
+        "name": "Starz",
+        "category": "Streaming - Video",
+        "website": "https://www.starz.com",
+        "regions": [
+            "US"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Streaming",
+        "price_range_usd": {
+            "monthly_min": 9,
+            "monthly_max": 9
+        }
+    },
+    {
+        "name": "Showtime",
+        "category": "Streaming - Video",
+        "website": "https://www.showtime.com",
+        "regions": [
+            "US"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Streaming",
+        "price_range_usd": {
+            "monthly_min": 11,
+            "monthly_max": 11
+        }
+    },
+    {
+        "name": "Tidal",
+        "category": "Streaming - Music",
+        "website": "https://www.tidal.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Music",
+        "price_range_usd": {
+            "monthly_min": 10,
+            "monthly_max": 20
+        }
+    },
+    {
+        "name": "Deezer",
+        "category": "Streaming - Music",
+        "website": "https://www.deezer.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Music",
+        "price_range_usd": {
+            "monthly_min": 5,
+            "monthly_max": 11
+        }
+    },
+    {
+        "name": "YouTube Music",
+        "category": "Streaming - Music",
+        "website": "https://music.youtube.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Music",
+        "price_range_usd": {
+            "monthly_min": 10,
+            "monthly_max": 10
+        }
+    },
+    {
+        "name": "Pandora Plus",
+        "category": "Streaming - Music",
+        "website": "https://www.pandora.com/upgrade",
+        "regions": [
+            "US"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Music",
+        "price_range_usd": {
+            "monthly_min": 5,
+            "monthly_max": 10
+        }
+    },
+    {
+        "name": "Evernote Premium",
+        "category": "Productivity",
+        "website": "https://www.evernote.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Productivity",
+        "price_range_usd": {
+            "monthly_min": 8,
+            "monthly_max": 10
+        }
+    },
+    {
+        "name": "Notion Plus",
+        "category": "Productivity",
+        "website": "https://www.notion.so",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Productivity",
+        "price_range_usd": {
+            "monthly_min": 8,
+            "monthly_max": 10
+        }
+    },
+    {
+        "name": "Todoist Premium",
+        "category": "Productivity",
+        "website": "https://todoist.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Productivity",
+        "price_range_usd": {
+            "monthly_min": 4,
+            "monthly_max": 6
+        }
+    },
+    {
+        "name": "Grammarly Premium",
+        "category": "Productivity",
+        "website": "https://www.grammarly.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Productivity",
+        "price_range_usd": {
+            "monthly_min": 12,
+            "monthly_max": 30
+        }
+    },
+    {
+        "name": "The New York Times",
+        "category": "News",
+        "website": "https://www.nytimes.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "News",
+        "price_range_usd": {
+            "monthly_min": 4,
+            "monthly_max": 20
+        }
+    },
+    {
+        "name": "The Washington Post",
+        "category": "News",
+        "website": "https://www.washingtonpost.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "News",
+        "price_range_usd": {
+            "monthly_min": 4,
+            "monthly_max": 12
+        }
+    },
+    {
+        "name": "The Economist",
+        "category": "News",
+        "website": "https://www.economist.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "News",
+        "price_range_usd": {
+            "monthly_min": 12,
+            "monthly_max": 19
+        }
+    },
+    {
+        "name": "The Athletic",
+        "category": "News - Sports",
+        "website": "https://www.theathletic.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "News",
+        "price_range_usd": {
+            "monthly_min": 8,
+            "monthly_max": 10
+        }
+    },
+    {
+        "name": "PlayStation Plus",
+        "category": "Gaming",
+        "website": "https://www.playstation.com/ps-plus",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Gaming",
+        "price_range_usd": {
+            "monthly_min": 9,
+            "monthly_max": 18
+        }
+    },
+    {
+        "name": "Xbox Game Pass",
+        "category": "Gaming",
+        "website": "https://www.xbox.com/xbox-game-pass",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Gaming",
+        "price_range_usd": {
+            "monthly_min": 10,
+            "monthly_max": 17
+        }
+    },
+    {
+        "name": "EA Play",
+        "category": "Gaming",
+        "website": "https://www.ea.com/ea-play",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Gaming",
+        "price_range_usd": {
+            "monthly_min": 5,
+            "monthly_max": 15
+        }
+    },
+    {
+        "name": "GeForce NOW",
+        "category": "Gaming",
+        "website": "https://www.nvidia.com/en-us/geforce-now",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Gaming",
+        "price_range_usd": {
+            "monthly_min": 10,
+            "monthly_max": 20
+        }
+    },
+    {
+        "name": "Peloton App",
+        "category": "Fitness",
+        "website": "https://www.onepeloton.com/app",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Health",
+        "price_range_usd": {
+            "monthly_min": 13,
+            "monthly_max": 13
+        }
+    },
+    {
+        "name": "Fitbit Premium",
+        "category": "Fitness",
+        "website": "https://www.fitbit.com/global/us/products/services/premium",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Health",
+        "price_range_usd": {
+            "monthly_min": 10,
+            "monthly_max": 10
+        }
+    },
+    {
+        "name": "MyFitnessPal Premium",
+        "category": "Fitness",
+        "website": "https://www.myfitnesspal.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Health",
+        "price_range_usd": {
+            "monthly_min": 8,
+            "monthly_max": 20
+        }
+    },
+    {
+        "name": "Babbel",
+        "category": "Education / Language",
+        "website": "https://www.babbel.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Other",
+        "price_range_usd": {
+            "monthly_min": 7,
+            "monthly_max": 13
+        }
+    },
+    {
+        "name": "Rosetta Stone",
+        "category": "Education / Language",
+        "website": "https://www.rosettastone.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Other",
+        "price_range_usd": {
+            "monthly_min": 8,
+            "monthly_max": 12
+        }
+    },
+    {
+        "name": "Brilliant",
+        "category": "Education",
+        "website": "https://www.brilliant.org",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Education",
+        "price_range_usd": {
+            "monthly_min": 13,
+            "monthly_max": 13
+        }
+    },
+    {
+        "name": "MasterClass",
+        "category": "Education",
+        "website": "https://www.masterclass.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Yearly",
+        "category_group": "Education",
+        "price_range_usd": {
+            "monthly_min": 15,
+            "monthly_max": 20
+        }
+    },
+    {
+        "name": "YNAB (You Need a Budget)",
+        "category": "Finance",
+        "website": "https://www.youneedabudget.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Finance",
+        "price_range_usd": {
+            "monthly_min": 14,
+            "monthly_max": 14
+        }
+    },
+    {
+        "name": "Pocket Premium",
+        "category": "Productivity",
+        "website": "https://getpocket.com/premium",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Productivity",
+        "price_range_usd": {
+            "monthly_min": 5,
+            "monthly_max": 5
+        }
+    },
+    {
+        "name": "1Password",
+        "category": "Security",
+        "website": "https://1password.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Security",
+        "price_range_usd": {
+            "monthly_min": 3,
+            "monthly_max": 5
+        }
+    },
+    {
+        "name": "Dashlane",
+        "category": "Security",
+        "website": "https://www.dashlane.com",
+        "regions": [
+            "Global"
+        ],
+        "price_model": "Monthly",
+        "category_group": "Security",
+        "price_range_usd": {
+            "monthly_min": 4,
+            "monthly_max": 6
+        }
+    }
+]

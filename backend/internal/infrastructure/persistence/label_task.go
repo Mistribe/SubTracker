@@ -26,7 +26,7 @@ func (l LabelTask) OnStart(ctx context.Context) error {
 	if len(lbls) > 0 {
 		return nil
 	}
-	for _, lbl := range getDefaultLabels() {
+	for _, lbl := range getSystemLabels() {
 		if err := l.labelRepository.Save(ctx, lbl); err != nil {
 			return err
 		}
