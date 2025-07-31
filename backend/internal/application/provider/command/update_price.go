@@ -60,7 +60,9 @@ func (h UpdatePriceCommandHandler) Handle(ctx context.Context, cmd UpdatePriceCo
 	price.SetAmount(cmd.Amount)
 	price.SetUpdatedAt(updatedAt)
 
+	pln.Prices().Update(price)
 	pln.SetUpdatedAt(updatedAt)
+	prov.Plans().Update(pln)
 	prov.SetUpdatedAt(updatedAt)
 
 	if err := prov.GetValidationErrors(); err != nil {
