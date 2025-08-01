@@ -1,3 +1,150 @@
 [
-    {}
+    {
+        "id": "e9a14ff0-6805-4161-8367-1998e7478ff8",
+        "friendly_name": "Spotify Premium Duo",
+        "provider_key": "spotify",
+        "custom_price": {
+            "currency": "EUR",
+            "amount": 14.99
+        },
+        "owner": {
+            "type": "family",
+            "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
+        },
+        "payer": {
+            "type": "family"
+        },
+        "service_users": [
+            "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+            "16e151e4-3e17-490d-9228-f275b1d1d833"
+        ],
+        "start_date": "2023-08-28 00:00:00.000",
+        "end_date": "2024-06-28 00:00:00.000",
+        "recurrency": "monthly"
+    },
+    {
+        "id": "5f36c92c-6ea8-4d67-ac9d-5ebaf42f736e",
+        "friendly_name": "Spotify Premium Duo",
+        "provider_key": "spotify",
+        "custom_price": {
+            "currency": "EUR",
+            "amount": 15.17
+        },
+        "owner": {
+            "type": "family",
+            "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
+        },
+        "payer": {
+            "type": "family"
+        },
+        "service_users": [
+            "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+            "16e151e4-3e17-490d-9228-f275b1d1d833"
+        ],
+        "start_date": "2024-06-28 00:00:00.000",
+        "end_date": "2025-06-28 00:00:00.000",
+        "recurrency": "monthly"
+    },
+    {
+        "id": "67892312-eccb-4aa7-b5ec-376cda1f2f91",
+        "friendly_name": "Spotify Premium Duo",
+        "provider_key": "spotify",
+        "custom_price": {
+            "currency": "EUR",
+            "amount": 17.20
+        },
+        "owner": {
+            "type": "family",
+            "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
+        },
+        "payer": {
+            "type": "family"
+        },
+        "service_users": [
+            "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+            "16e151e4-3e17-490d-9228-f275b1d1d833"
+        ],
+        "start_date": "2025-06-28 00:00:00.000",
+        "recurrency": "monthly"
+    },
+    {
+        "id": "008e6e52-3f4b-4df0-876c-d0790a4ff3fe",
+        "friendly_name": "NordVPN",
+        "provider_key": "nordvpn",
+        "custom_price": {
+            "currency": "USD",
+            "amount": 79
+        },
+        "owner": {
+            "type": "personal",
+            "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+        },
+        "service_users": [
+            "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+            "16e151e4-3e17-490d-9228-f275b1d1d833"
+        ],
+        "start_date": "2018-02-21 00:00:00.000",
+        "end_date": "2020-02-21 00:00:00.000",
+        "recurrency": "one_time"
+    },
+    {
+        "id": "6c2649fb-0d85-4b20-a320-acd6ae8dafad",
+        "friendly_name": "NordVPN",
+        "provider_key": "nordvpn",
+        "custom_price": {
+            "currency": "USD",
+            "amount": 100.66
+        },
+        "owner": {
+            "type": "personal",
+            "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+        },
+        "service_users": [
+            "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+            "16e151e4-3e17-490d-9228-f275b1d1d833"
+        ],
+        "start_date": "2020-02-22 00:00:00.000",
+        "end_date": "2023-02-22 00:00:00.000",
+        "recurrency": "one_time"
+    },
+    {
+        "id": "109c0f3a-eb70-4a95-b00d-71b5fd381c54",
+        "friendly_name": "NordVPN",
+        "provider_key": "nordvpn",
+        "custom_price": {
+            "currency": "EUR",
+            "amount": 100.51
+        },
+        "owner": {
+            "type": "personal",
+            "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+        },
+        "service_users": [
+            "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+            "16e151e4-3e17-490d-9228-f275b1d1d833"
+        ],
+        "start_date": "2023-06-07 00:00:00.000",
+        "end_date": "2025-06-07 00:00:00.000",
+        "recurrency": "one_time"
+    },
+    {
+        "id": "5daa9a8a-cd5a-45e2-abd9-002c8d5921ff",
+        "friendly_name": "NordVPN",
+        "provider_key": "nordvpn",
+        "custom_price": {
+            "currency": "EUR",
+            "amount": 179.86
+        },
+        "owner": {
+            "type": "personal",
+            "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+        },
+        "service_users": [
+            "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+            "16e151e4-3e17-490d-9228-f275b1d1d833"
+        ],
+        "start_date": "2025-06-22 00:00:00.000",
+        "end_date": "2028-01-06 00:00:00.000",
+        "recurrency": "one_time"
+    }
 ]
