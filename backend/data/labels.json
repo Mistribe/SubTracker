@@ -1,12 +1,22 @@
 [
   {
     "key": "streaming-music",
-    "name": "Streaming Music",
+    "name": "Music",
     "color": "#FF81C784"
   },
   {
+    "key": "steaming",
+    "name": "Streaming",
+    "color": "#FF6400F6"
+  },
+  {
+    "key": "vod",
+    "name": "Video On Demand",
+    "color": "#FFF06292"
+  },
+  {
     "key": "streaming-video",
-    "name": "Streaming Video",
+    "name": "Video",
     "color": "#FFF06292"
   },
   {
@@ -33,5 +43,10 @@
     "key": "utilities",
     "name": "Utilities",
     "color": "#FF9575CD"
+  },
+  {
+    "key": "shopping",
+    "name": "Shopping",
+    "color": "#FF798600"
   }
 ]

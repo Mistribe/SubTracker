@@ -18,6 +18,7 @@ type Provider interface {
 	entity.ETagEntity
 
 	Name() string
+	Key() *string
 	SetName(name string)
 	Description() *string
 	SetDescription(description *string)
@@ -46,6 +47,7 @@ type provider struct {
 	*entity.Base
 
 	name           string
+	key            *string
 	description    *string
 	iconUrl        *string
 	url            *string
@@ -58,6 +60,7 @@ type provider struct {
 func NewProvider(
 	id uuid.UUID,
 	name string,
+	key *string,
 	description *string,
 	iconUrl *string,
 	url *string,
@@ -69,7 +72,8 @@ func NewProvider(
 	updatedAt time.Time) Provider {
 	return &provider{
 		Base:           entity.NewBase(id, createdAt, updatedAt, true, false),
-		name:           name,
+		name:           strings.TrimSpace(name),
+		key:            key,
 		description:    description,
 		iconUrl:        iconUrl,
 		url:            url,
@@ -78,6 +82,10 @@ func NewProvider(
 		plans:          slicesx.NewTracked(plans, planUniqueComparer, planComparer),
 		owner:          owner,
 	}
+}
+
+func (p *provider) Key() *string {
+	return p.key
 }
 
 func (p *provider) RemovePlanById(planId uuid.UUID) bool {
@@ -122,6 +130,9 @@ func (p *provider) Name() string {
 }
 
 func (p *provider) SetName(name string) {
+	if name == p.name {
+		return
+	}
 	p.name = name
 	p.SetAsDirty()
 }
@@ -131,6 +142,9 @@ func (p *provider) Description() *string {
 }
 
 func (p *provider) SetDescription(description *string) {
+	if description == p.description {
+		return
+	}
 	p.description = description
 	p.SetAsDirty()
 }
@@ -140,6 +154,9 @@ func (p *provider) IconUrl() *string {
 }
 
 func (p *provider) SetIconUrl(iconUrl *string) {
+	if iconUrl == p.iconUrl {
+		return
+	}
 	p.iconUrl = iconUrl
 	p.SetAsDirty()
 }
@@ -149,6 +166,9 @@ func (p *provider) Url() *string {
 }
 
 func (p *provider) SetUrl(url *string) {
+	if url == p.url {
+		return
+	}
 	p.url = url
 	p.SetAsDirty()
 }
@@ -158,6 +178,9 @@ func (p *provider) PricingPageUrl() *string {
 }
 
 func (p *provider) SetPricingPageUrl(pricingUrl *string) {
+	if p.pricingPageUrl == pricingUrl {
+		return
+	}
 	p.pricingPageUrl = pricingUrl
 	p.SetAsDirty()
 }
@@ -167,7 +190,7 @@ func (p *provider) Labels() *slicesx.Tracked[uuid.UUID] {
 }
 
 func (p *provider) SetLabels(labels []uuid.UUID) {
-	p.labels = slicesx.NewTracked(labels, x.UuidUniqueComparer, x.UuidComparer)
+	p.labels.Set(labels)
 	p.SetAsDirty()
 }
 

@@ -51,7 +51,7 @@ func (h CreateLabelCommandHandler) createLabel(
 	lbl := label.NewLabel(command.Label.Id(),
 		command.Label.Owner(),
 		command.Label.Name(),
-		"",
+		nil,
 		command.Label.Color(),
 		command.Label.CreatedAt(),
 		command.Label.CreatedAt(),

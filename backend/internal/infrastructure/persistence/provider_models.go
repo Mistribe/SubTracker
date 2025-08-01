@@ -122,6 +122,7 @@ type ProviderSqlModel struct {
 	BaseOwnerSqlModel `gorm:"embedded"`
 
 	Name           string                  `gorm:"type:varchar(100);not null"`
+	Key            sql.NullString          `gorm:"type:varchar(100)"`
 	Description    sql.NullString          `gorm:"type:varchar(255)"`
 	IconUrl        sql.NullString          `gorm:"type:varchar(255)"`
 	Url            sql.NullString          `gorm:"type:varchar(255)"`
@@ -142,6 +143,17 @@ func newProviderSqlModel(source provider.Provider) ProviderSqlModel {
 		IconUrl:        stringToSqlNull(source.IconUrl()),
 		Url:            stringToSqlNull(source.Url()),
 		PricingPageUrl: stringToSqlNull(source.PricingPageUrl()),
+	}
+
+	if source.Key() != nil && *source.Key() != "" {
+		model.Key = sql.NullString{
+			String: *source.Key(),
+			Valid:  true,
+		}
+	} else {
+		model.Key = sql.NullString{
+			Valid: false,
+		}
 	}
 
 	model.OwnerType = source.Owner().Type().String()
@@ -178,9 +190,15 @@ func newProvider(model ProviderSqlModel) provider.Provider {
 		}
 	}
 
+	var key *string
+	if model.Key.Valid && model.Key.String != "" {
+		key = &model.Key.String
+	}
+
 	return provider.NewProvider(
 		model.Id,
 		model.Name,
+		key,
 		sqlNullToString(model.Description),
 		sqlNullToString(model.IconUrl),
 		sqlNullToString(model.Url),

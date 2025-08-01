@@ -63,6 +63,7 @@ func (h CreateCommandHandler) Handle(ctx context.Context, cmd CreateProviderComm
 	prov := provider.NewProvider(
 		*cmd.Id,
 		cmd.Name,
+		nil,
 		cmd.Description,
 		cmd.IconUrl,
 		cmd.Url,

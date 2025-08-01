@@ -28,10 +28,12 @@ func SelectMany[TIn any, TOut any](source []TIn, f func(TIn) []TOut) []TOut {
 	return result
 }
 
-func ToMap[TKey comparable, TValue any](source []TValue, keySelector func(TValue) TKey) map[TKey]TValue {
-	result := make(map[TKey]TValue)
+func ToMap[TKey comparable, TOut any, TValue any](source []TValue,
+	keySelector func(TValue) TKey,
+	valueSelector func(TValue) TOut) map[TKey]TOut {
+	result := make(map[TKey]TOut)
 	for _, v := range source {
-		result[keySelector(v)] = v
+		result[keySelector(v)] = valueSelector(v)
 	}
 
 	return result

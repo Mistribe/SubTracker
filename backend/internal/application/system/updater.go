@@ -2,12 +2,20 @@ package system
 
 import (
 	"context"
+	"sort"
 
 	"github.com/Oleexo/config-go"
 	"go.uber.org/fx"
 )
 
+const (
+	highPriorty    = 0
+	mediumPriority = 100
+	lowPriority    = 200
+)
+
 type Updater interface {
+	Priority() int
 	Update(ctx context.Context) error
 }
 
@@ -28,18 +36,26 @@ func NewUpdaterService(params UpdaterParams) *UpdaterService {
 	if runAtStart {
 		params.Lifecycle.Append(fx.Hook{
 			OnStart: func(ctx context.Context) error {
-				for _, service := range params.Services {
-					if err := service.Update(ctx); err != nil {
-						return err
-					}
-				}
-				return nil
+				return runServices(ctx, params.Services)
 			},
 		})
 	}
 	return &UpdaterService{
 		services: params.Services,
 	}
+}
+
+func runServices(ctx context.Context, services []Updater) error {
+	sort.Slice(services, func(i, j int) bool {
+		return services[i].Priority() < services[j].Priority()
+	})
+
+	for _, service := range services {
+		if err := service.Update(ctx); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func AsUpdater(f any) any {
@@ -52,6 +68,7 @@ func AsUpdater(f any) any {
 func NewUpdaterModule() fx.Option {
 	return fx.Module("updater",
 		fx.Provide(
+			AsUpdater(newProviderUpdater),
 			AsUpdater(newLabelUpdater),
 			NewUpdaterService,
 		),

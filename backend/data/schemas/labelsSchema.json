@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "key": {
+                "type": "string",
+                "description": "A unique identifier for the label."
+            },
+            "name": {
+                "type": "string",
+                "description": "The display name of the label."
+            },
+            "color": {
+                "type": "string",
+                "pattern": "^#FF[0-9A-Fa-f]{6}$",
+                "description": "The color code of the label in ARGB format."
+            }
+        },
+        "required": [
+            "key",
+            "name",
+            "color"
+        ],
+        "additionalProperties": false
+    }
+}

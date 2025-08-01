@@ -11,9 +11,9 @@ type LabelSqlModel struct {
 	BaseSqlModel      `gorm:"embedded"`
 	BaseOwnerSqlModel `gorm:"embedded"`
 
-	Name  string `gorm:"type:varchar(100);not null"`
-	Key   string `gorm:"type:varchar(100);not null"`
-	Color string `gorm:"type:varchar(50);not null"`
+	Name  string         `gorm:"type:varchar(100);not null"`
+	Key   sql.NullString `gorm:"type:varchar(100)"`
+	Color string         `gorm:"type:varchar(50);not null"`
 }
 
 func (l LabelSqlModel) TableName() string {
@@ -29,8 +29,18 @@ func newLabelSqlModel(source label.Label) LabelSqlModel {
 			Etag:      source.ETag(),
 		},
 		Name:  source.Name(),
-		Key:   source.Key(),
 		Color: source.Color(),
+	}
+
+	if source.Key() != nil && *source.Key() != "" {
+		model.Key = sql.NullString{
+			String: *source.Key(),
+			Valid:  true,
+		}
+	} else {
+		model.Key = sql.NullString{
+			Valid: false,
+		}
 	}
 
 	model.OwnerType = source.Owner().Type().String()
@@ -59,11 +69,15 @@ func newLabel(source LabelSqlModel) label.Label {
 		ownerFamilyId = &source.OwnerUserId.String
 	}
 	owner := auth.NewOwner(ownerType, source.OwnerFamilyId, ownerFamilyId)
+	var key *string
+	if source.Key.Valid {
+		key = &source.Key.String
+	}
 	lbl := label.NewLabel(
 		source.Id,
 		owner,
 		source.Name,
-		source.Key,
+		key,
 		source.Color,
 		source.CreatedAt,
 		source.UpdatedAt,

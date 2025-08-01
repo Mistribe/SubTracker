@@ -25,6 +25,10 @@ type labelUpdater struct {
 	labelRepository label.Repository
 }
 
+func (l labelUpdater) Priority() int {
+	return highPriorty
+}
+
 func (l labelUpdater) Update(ctx context.Context) error {
 	if l.downloader == nil {
 		return nil
@@ -48,11 +52,11 @@ func (l labelUpdater) updateDatabase(ctx context.Context, sourceLabels []systemL
 	}
 
 	systemLabelMap := slicesx.ToMap(systemLabels, func(lbl label.Label) string {
-		return lbl.Key()
-	})
+		return *lbl.Key()
+	}, func(lbl label.Label) label.Label { return lbl })
 	sourceLabelMap := slicesx.ToMap(sourceLabels, func(lbl systemLabelModel) string {
 		return lbl.Key
-	})
+	}, func(lbl systemLabelModel) systemLabelModel { return lbl })
 	for key, lbl := range sourceLabelMap {
 		existing, ok := systemLabelMap[key]
 		if ok {
@@ -69,7 +73,7 @@ func (l labelUpdater) updateDatabase(ctx context.Context, sourceLabels []systemL
 				uuid.Must(uuid.NewV7()),
 				auth.SystemOwner,
 				lbl.Name,
-				lbl.Key,
+				&lbl.Key,
 				lbl.Color,
 				time.Now(),
 				time.Now(),

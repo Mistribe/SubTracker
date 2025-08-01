@@ -1,11 +1,14 @@
 [
   {
     "name": "Netflix",
+    "key": "netflix",
     "website": "https://www.netflix.com",
     "pricing_page": "https://www.netflix.com/us/pricing",
-    "icon": "",
-    "price_model": "Monthly",
-    "labels": ["Streaming", "Video On Demand"],
+    "icon": "https://1000logos.net/wp-content/uploads/2017/05/Netflix-Logo-1536x864.png",
+    "categories": [
+      "streaming",
+      "vod"
+    ],
     "plans": [
       {
         "name": {
@@ -102,56 +105,59 @@
   },
   {
     "name": "Spotify",
+    "key": "spotify",
     "website": "https://www.spotify.com",
-    "price_model": "Monthly",
-    "labels": "Music",
-    "price_range_usd": {
-      "monthly_min": 5,
-      "monthly_max": 11
-    }
+    "pricing_page": "https://www.spotify.com/us/premium/",
+    "icon": "https://1000logos.net/wp-content/uploads/2017/11/Spotify-Logo-1536x864.png",
+    "categories": [
+      "streaming",
+      "streaming-music"
+    ]
   },
   {
     "name": "Amazon Prime",
-    "category": "Shopping / Streaming",
+    "key": "amazon-prime",
     "website": "https://www.amazon.com/prime",
-    "price_model": "Monthly / Yearly",
-    "labels": "Shopping",
-    "price_range_usd": {
-      "monthly_min": 15,
-      "monthly_max": 15
-    }
+    "pricing_page": "https://www.amazon.com/prime",
+    "icon": "https://1000logos.net/wp-content/uploads/2016/10/Amazon-Logo-1536x864.png",
+    "categories": [
+      "shopping",
+      "streaming"
+    ]
   },
   {
     "name": "Disney+",
-    "category": "Streaming - Video",
+    "key": "disney-plus",
     "website": "https://www.disneyplus.com",
-    "price_model": "Monthly",
-    "labels": "Streaming",
-    "price_range_usd": {
-      "monthly_min": 8,
-      "monthly_max": 14
-    }
+    "pricing_page": "https://www.disneyplus.com",
+    "icon": "https://1000logos.net/wp-content/uploads/2021/01/Disney-Plus-Logo-1536x864.png",
+    "categories": [
+      "streaming",
+      "vod"
+    ]
   },
   {
-    "name": "Apple Music",
-    "category": "Streaming - Music",
+    "name": "Apple streaming-music",
+    "key": "apple-music",
     "website": "https://music.apple.com",
-    "price_model": "Monthly",
-    "labels": "Music",
-    "price_range_usd": {
-      "monthly_min": 5,
-      "monthly_max": 11
-    }
+    "pricing_page": "https://music.apple.com",
+    "icon": "https://1000logos.net/wp-content/uploads/2023/01/Apple-streaming-music-Logo-1536x864.png",
+    "categories": [
+      "streaming-music",
+      "streaming"
+    ]
   },
   {
     "name": "YouTube Premium",
-    "category": "Streaming - Video",
+    "key": "youtube-premium",
     "website": "https://www.youtube.com/premium",
-    "price_model": "Monthly",
-    "labels": "Streaming",
-    "price_range_usd": {
-      "monthly_min": 12,
-      "monthly_max": 12
-    }
+    "pricing_page": "https://www.youtube.com/premium",
+    "icon": "https://1000logos.net/wp-content/uploads/2017/05/Youtube-Logo-1536x864.png",
+    "categories": [
+      "streaming",
+      "streaming-video",
+      "streaming-music",
+      "vod"
+    ]
   }
 ]

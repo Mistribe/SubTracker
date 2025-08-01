@@ -153,6 +153,7 @@ func (m patchProviderModel) Provider(userId string) (provider.Provider, error) {
 	return provider.NewProvider(
 		id,
 		m.Name,
+		nil,
 		m.Description,
 		m.IconUrl,
 		m.Url,

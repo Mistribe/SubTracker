@@ -44,7 +44,7 @@ func (m createLabelModel) ToLabel(userId string) (label.Label, error) {
 		id,
 		owner,
 		m.Name,
-		"",
+		nil,
 		strings.ToUpper(m.Color),
 		createdAt,
 		createdAt,
