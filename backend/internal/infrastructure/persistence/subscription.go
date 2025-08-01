@@ -15,7 +15,7 @@ type SubscriptionRepository struct {
 	repository *DatabaseContext
 }
 
-func NewSubscriptionRepository(repository *DatabaseContext) *SubscriptionRepository {
+func NewSubscriptionRepository(repository *DatabaseContext) subscription.Repository {
 	return &SubscriptionRepository{
 		repository: repository,
 	}

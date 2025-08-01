@@ -4,13 +4,14 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/oleexo/subtracker/internal/domain/auth"
 )
 
 type AuthenticationRepository struct {
 	repository *DatabaseContext
 }
 
-func NewAuthenticationRepository(repository *DatabaseContext) *AuthenticationRepository {
+func NewAuthenticationRepository(repository *DatabaseContext) auth.Repository {
 	return &AuthenticationRepository{repository: repository}
 }
 

@@ -16,7 +16,7 @@ type FamilyRepository struct {
 	repository *DatabaseContext
 }
 
-func NewFamilyRepository(repository *DatabaseContext) *FamilyRepository {
+func NewFamilyRepository(repository *DatabaseContext) family.Repository {
 	return &FamilyRepository{
 		repository: repository,
 	}

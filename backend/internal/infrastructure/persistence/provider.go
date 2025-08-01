@@ -17,7 +17,7 @@ type ProviderRepository struct {
 	repository *DatabaseContext
 }
 
-func NewProviderRepository(repository *DatabaseContext) *ProviderRepository {
+func NewProviderRepository(repository *DatabaseContext) provider.Repository {
 	return &ProviderRepository{repository: repository}
 }
 
@@ -42,6 +42,26 @@ func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (
 	p := newProvider(model)
 	p.Clean()
 	return p, nil
+}
+
+func (r *ProviderRepository) GetSystemProviders(ctx context.Context) ([]provider.Provider, error) {
+	var providerSqlModels []ProviderSqlModel
+	result := r.repository.db.WithContext(ctx).
+		Preload("Labels").
+		Preload("Plans").
+		Preload("Plans.Prices").
+		Where("owner_type = ?", auth.SystemOwnerType.String()).
+		Find(&providerSqlModels)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	providers := make([]provider.Provider, 0, len(providerSqlModels))
+	for _, model := range providerSqlModels {
+		p := newProvider(model)
+		p.Clean()
+		providers = append(providers, p)
+	}
+	return providers, nil
 }
 
 func (r ProviderRepository) GetAll(ctx context.Context, parameters entity.QueryParameters) (

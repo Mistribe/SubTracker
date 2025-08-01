@@ -18,7 +18,7 @@ type LabelRepository struct {
 }
 
 func NewLabelRepository(labelRepository *DatabaseContext,
-	authService auth.Service) *LabelRepository {
+	authService auth.Service) label.Repository {
 	return &LabelRepository{
 		labelRepository: labelRepository,
 		authService:     authService,
