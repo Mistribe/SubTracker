@@ -26,7 +26,7 @@ type FamilyMemberSqlModel struct {
 	Name     string         `gorm:"type:varchar(100);not null"`
 	FamilyId uuid.UUID      `gorm:"type:uuid;not null"`
 	UserId   sql.NullString `gorm:"type:varchar(100)"`
-	IsKid    bool           `gorm:"type:boolean;not null;default:false"`
+	Type     string         `gorm:"type:varchar(10);not null"`
 }
 
 func (f FamilyMemberSqlModel) TableName() string {
@@ -34,7 +34,7 @@ func (f FamilyMemberSqlModel) TableName() string {
 }
 func newFamilySqlModel(source family.Family) FamilySqlModel {
 	return FamilySqlModel{
-		BaseSqlModel: newBaseSqlModel(source),
+		BaseSqlModel: newBaseSqlModel(source, source.ETag()),
 		Name:         source.Name(),
 		OwnerId:      source.OwnerId(),
 	}
@@ -59,11 +59,12 @@ func newFamily(source FamilySqlModel) family.Family {
 }
 
 func newFamilyMember(source FamilyMemberSqlModel) family.Member {
+	memberType := family.MustParseMemberType(source.Type)
 	mbr := family.NewMember(
 		source.Id,
 		source.FamilyId,
 		source.Name,
-		source.IsKid,
+		memberType,
 		source.CreatedAt,
 		source.UpdatedAt,
 	)
@@ -83,7 +84,7 @@ func newFamilyMemberSqlModel(source family.Member) FamilyMemberSqlModel {
 			Etag:      source.ETag(),
 		},
 		Name:     source.Name(),
-		IsKid:    source.IsKid(),
+		Type:     source.Type().String(),
 		FamilyId: source.FamilyId(),
 	}
 

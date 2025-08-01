@@ -95,14 +95,15 @@ export interface CreateFamilyMemberModel extends AdditionalDataHolder, Parsable 
      */
     id?: string | null;
     /**
-     * The is_kid property
-     */
-    isKid?: boolean | null;
-    /**
      * The name property
      */
     name?: string | null;
+    /**
+     * The type property
+     */
+    type?: CreateFamilyMemberModel_type | null;
 }
+export type CreateFamilyMemberModel_type = (typeof CreateFamilyMemberModel_typeObject)[keyof typeof CreateFamilyMemberModel_typeObject];
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
@@ -363,11 +364,33 @@ export interface CreateProviderModel extends AdditionalDataHolder, Parsable {
 export function createProviderModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
     return deserializeIntoProviderModel;
 }
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {SubscriptionCustomPriceModel}
+ */
+// @ts-ignore
+export function createSubscriptionCustomPriceModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoSubscriptionCustomPriceModel;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {SubscriptionFreeTrialModel}
+ */
+// @ts-ignore
+export function createSubscriptionFreeTrialModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoSubscriptionFreeTrialModel;
+}
 export interface CreateSubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
      * The created_at property
      */
     createdAt?: string | null;
+    /**
+     * The custom_price property
+     */
+    customPrice?: SubscriptionCustomPriceModel | null;
     /**
      * The custom_recurrency property
      */
@@ -377,9 +400,9 @@ export interface CreateSubscriptionModel extends AdditionalDataHolder, Parsable 
      */
     endDate?: Date | null;
     /**
-     * The free_trial_days property
+     * @Description Number of free trial days remaining (null if no trial or trial expired)
      */
-    freeTrialDays?: number | null;
+    freeTrial?: SubscriptionFreeTrialModel | null;
     /**
      * The friendly_name property
      */
@@ -405,13 +428,13 @@ export interface CreateSubscriptionModel extends AdditionalDataHolder, Parsable 
      */
     priceId?: string | null;
     /**
+     * The provider_id property
+     */
+    providerId?: string | null;
+    /**
      * The recurrency property
      */
     recurrency?: string | null;
-    /**
-     * The service_provider_id property
-     */
-    serviceProviderId?: string | null;
     /**
      * The service_users property
      */
@@ -512,8 +535,8 @@ export function deserializeIntoCreateFamilyMemberModel(createFamilyMemberModel: 
     return {
         "created_at": n => { createFamilyMemberModel.createdAt = n.getDateValue(); },
         "id": n => { createFamilyMemberModel.id = n.getStringValue(); },
-        "is_kid": n => { createFamilyMemberModel.isKid = n.getBooleanValue(); },
         "name": n => { createFamilyMemberModel.name = n.getStringValue(); },
+        "type": n => { createFamilyMemberModel.type = n.getEnumValue<CreateFamilyMemberModel_type>(CreateFamilyMemberModel_typeObject); },
     }
 }
 /**
@@ -603,17 +626,18 @@ export function deserializeIntoCreateProviderModel(createProviderModel: Partial<
 export function deserializeIntoCreateSubscriptionModel(createSubscriptionModel: Partial<CreateSubscriptionModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "created_at": n => { createSubscriptionModel.createdAt = n.getStringValue(); },
+        "custom_price": n => { createSubscriptionModel.customPrice = n.getObjectValue<SubscriptionCustomPriceModel>(createSubscriptionCustomPriceModelFromDiscriminatorValue); },
         "custom_recurrency": n => { createSubscriptionModel.customRecurrency = n.getNumberValue(); },
         "end_date": n => { createSubscriptionModel.endDate = n.getDateValue(); },
-        "free_trial_days": n => { createSubscriptionModel.freeTrialDays = n.getNumberValue(); },
+        "free_trial": n => { createSubscriptionModel.freeTrial = n.getObjectValue<SubscriptionFreeTrialModel>(createSubscriptionFreeTrialModelFromDiscriminatorValue); },
         "friendly_name": n => { createSubscriptionModel.friendlyName = n.getStringValue(); },
         "id": n => { createSubscriptionModel.id = n.getStringValue(); },
         "owner": n => { createSubscriptionModel.owner = n.getObjectValue<EditableOwnerModel>(createEditableOwnerModelFromDiscriminatorValue); },
         "payer": n => { createSubscriptionModel.payer = n.getObjectValue<EditableSubscriptionPayerModel>(createEditableSubscriptionPayerModelFromDiscriminatorValue); },
         "plan_id": n => { createSubscriptionModel.planId = n.getStringValue(); },
         "price_id": n => { createSubscriptionModel.priceId = n.getStringValue(); },
+        "provider_id": n => { createSubscriptionModel.providerId = n.getStringValue(); },
         "recurrency": n => { createSubscriptionModel.recurrency = n.getStringValue(); },
-        "service_provider_id": n => { createSubscriptionModel.serviceProviderId = n.getStringValue(); },
         "service_users": n => { createSubscriptionModel.serviceUsers = n.getCollectionOfPrimitiveValues<string>(); },
         "start_date": n => { createSubscriptionModel.startDate = n.getDateValue(); },
     }
@@ -655,9 +679,9 @@ export function deserializeIntoFamilyMemberModel(familyMemberModel: Partial<Fami
         "etag": n => { familyMemberModel.etag = n.getStringValue(); },
         "family_id": n => { familyMemberModel.familyId = n.getStringValue(); },
         "id": n => { familyMemberModel.id = n.getStringValue(); },
-        "is_kid": n => { familyMemberModel.isKid = n.getBooleanValue(); },
         "is_you": n => { familyMemberModel.isYou = n.getBooleanValue(); },
         "name": n => { familyMemberModel.name = n.getStringValue(); },
+        "type": n => { familyMemberModel.type = n.getEnumValue<FamilyMemberModel_type>(FamilyMemberModel_typeObject); },
         "updated_at": n => { familyMemberModel.updatedAt = n.getDateValue(); },
     }
 }
@@ -782,8 +806,8 @@ export function deserializeIntoPaginatedResponseModelEndpoints_SubscriptionModel
 export function deserializeIntoPatchFamilyMemberModel(patchFamilyMemberModel: Partial<PatchFamilyMemberModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "id": n => { patchFamilyMemberModel.id = n.getStringValue(); },
-        "is_kid": n => { patchFamilyMemberModel.isKid = n.getBooleanValue(); },
         "name": n => { patchFamilyMemberModel.name = n.getStringValue(); },
+        "type": n => { patchFamilyMemberModel.type = n.getEnumValue<PatchFamilyMemberModel_type>(PatchFamilyMemberModel_typeObject); },
         "updated_at": n => { patchFamilyMemberModel.updatedAt = n.getDateValue(); },
     }
 }
@@ -809,17 +833,18 @@ export function deserializeIntoPatchFamilyModel(patchFamilyModel: Partial<PatchF
 // @ts-ignore
 export function deserializeIntoPatchSubscriptionModel(patchSubscriptionModel: Partial<PatchSubscriptionModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
+        "custom_price": n => { patchSubscriptionModel.customPrice = n.getObjectValue<SubscriptionCustomPriceModel>(createSubscriptionCustomPriceModelFromDiscriminatorValue); },
         "custom_recurrency": n => { patchSubscriptionModel.customRecurrency = n.getNumberValue(); },
         "end_date": n => { patchSubscriptionModel.endDate = n.getDateValue(); },
-        "free_trial_days": n => { patchSubscriptionModel.freeTrialDays = n.getNumberValue(); },
+        "free_trial": n => { patchSubscriptionModel.freeTrial = n.getObjectValue<SubscriptionFreeTrialModel>(createSubscriptionFreeTrialModelFromDiscriminatorValue); },
         "friendly_name": n => { patchSubscriptionModel.friendlyName = n.getStringValue(); },
         "id": n => { patchSubscriptionModel.id = n.getStringValue(); },
         "owner": n => { patchSubscriptionModel.owner = n.getObjectValue<EditableOwnerModel>(createEditableOwnerModelFromDiscriminatorValue); },
         "payer": n => { patchSubscriptionModel.payer = n.getObjectValue<EditableSubscriptionPayerModel>(createEditableSubscriptionPayerModelFromDiscriminatorValue); },
         "plan_id": n => { patchSubscriptionModel.planId = n.getStringValue(); },
         "price_id": n => { patchSubscriptionModel.priceId = n.getStringValue(); },
+        "provider_id": n => { patchSubscriptionModel.providerId = n.getStringValue(); },
         "recurrency": n => { patchSubscriptionModel.recurrency = n.getStringValue(); },
-        "service_provider_id": n => { patchSubscriptionModel.serviceProviderId = n.getStringValue(); },
         "service_users": n => { patchSubscriptionModel.serviceUsers = n.getCollectionOfPrimitiveValues<string>(); },
         "start_date": n => { patchSubscriptionModel.startDate = n.getDateValue(); },
         "updated_at": n => { patchSubscriptionModel.updatedAt = n.getDateValue(); },
@@ -885,6 +910,30 @@ export function deserializeIntoProviderModel(providerModel: Partial<ProviderMode
 }
 /**
  * The deserialization information for the current model
+ * @param SubscriptionCustomPriceModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoSubscriptionCustomPriceModel(subscriptionCustomPriceModel: Partial<SubscriptionCustomPriceModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "amount": n => { subscriptionCustomPriceModel.amount = n.getNumberValue(); },
+        "currency": n => { subscriptionCustomPriceModel.currency = n.getStringValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param SubscriptionFreeTrialModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoSubscriptionFreeTrialModel(subscriptionFreeTrialModel: Partial<SubscriptionFreeTrialModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "end_date": n => { subscriptionFreeTrialModel.endDate = n.getDateValue(); },
+        "start_date": n => { subscriptionFreeTrialModel.startDate = n.getDateValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
  * @param SubscriptionModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
@@ -892,18 +941,19 @@ export function deserializeIntoProviderModel(providerModel: Partial<ProviderMode
 export function deserializeIntoSubscriptionModel(subscriptionModel: Partial<SubscriptionModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "created_at": n => { subscriptionModel.createdAt = n.getDateValue(); },
+        "custom_price": n => { subscriptionModel.customPrice = n.getObjectValue<SubscriptionCustomPriceModel>(createSubscriptionCustomPriceModelFromDiscriminatorValue); },
         "custom_recurrency": n => { subscriptionModel.customRecurrency = n.getNumberValue(); },
         "end_date": n => { subscriptionModel.endDate = n.getDateValue(); },
         "etag": n => { subscriptionModel.etag = n.getStringValue(); },
-        "free_trial_days": n => { subscriptionModel.freeTrialDays = n.getNumberValue(); },
+        "free_trial": n => { subscriptionModel.freeTrial = n.getObjectValue<SubscriptionFreeTrialModel>(createSubscriptionFreeTrialModelFromDiscriminatorValue); },
         "friendly_name": n => { subscriptionModel.friendlyName = n.getStringValue(); },
         "id": n => { subscriptionModel.id = n.getStringValue(); },
         "owner": n => { subscriptionModel.owner = n.getObjectValue<OwnerModel>(createOwnerModelFromDiscriminatorValue); },
         "payer": n => { subscriptionModel.payer = n.getObjectValue<SubscriptionPayerModel>(createSubscriptionPayerModelFromDiscriminatorValue); },
         "plan_id": n => { subscriptionModel.planId = n.getStringValue(); },
         "price_id": n => { subscriptionModel.priceId = n.getStringValue(); },
+        "provider_id": n => { subscriptionModel.providerId = n.getStringValue(); },
         "recurrency": n => { subscriptionModel.recurrency = n.getEnumValue<SubscriptionModel_recurrency>(SubscriptionModel_recurrencyObject); },
-        "service_provider_id": n => { subscriptionModel.serviceProviderId = n.getStringValue(); },
         "service_users": n => { subscriptionModel.serviceUsers = n.getCollectionOfPrimitiveValues<string>(); },
         "start_date": n => { subscriptionModel.startDate = n.getDateValue(); },
         "updated_at": n => { subscriptionModel.updatedAt = n.getDateValue(); },
@@ -931,8 +981,8 @@ export function deserializeIntoSubscriptionPayerModel(subscriptionPayerModel: Pa
 // @ts-ignore
 export function deserializeIntoUpdateFamilyMemberModel(updateFamilyMemberModel: Partial<UpdateFamilyMemberModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "is_kid": n => { updateFamilyMemberModel.isKid = n.getBooleanValue(); },
         "name": n => { updateFamilyMemberModel.name = n.getStringValue(); },
+        "type": n => { updateFamilyMemberModel.type = n.getEnumValue<UpdateFamilyMemberModel_type>(UpdateFamilyMemberModel_typeObject); },
         "updated_at": n => { updateFamilyMemberModel.updatedAt = n.getDateValue(); },
     }
 }
@@ -1014,16 +1064,17 @@ export function deserializeIntoUpdateProviderModel(updateProviderModel: Partial<
 // @ts-ignore
 export function deserializeIntoUpdateSubscriptionModel(updateSubscriptionModel: Partial<UpdateSubscriptionModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
+        "custom_price": n => { updateSubscriptionModel.customPrice = n.getObjectValue<SubscriptionCustomPriceModel>(createSubscriptionCustomPriceModelFromDiscriminatorValue); },
         "custom_recurrency": n => { updateSubscriptionModel.customRecurrency = n.getNumberValue(); },
         "end_date": n => { updateSubscriptionModel.endDate = n.getDateValue(); },
-        "free_trial_days": n => { updateSubscriptionModel.freeTrialDays = n.getNumberValue(); },
+        "free_trial": n => { updateSubscriptionModel.freeTrial = n.getObjectValue<SubscriptionFreeTrialModel>(createSubscriptionFreeTrialModelFromDiscriminatorValue); },
         "friendly_name": n => { updateSubscriptionModel.friendlyName = n.getStringValue(); },
         "owner": n => { updateSubscriptionModel.owner = n.getObjectValue<EditableOwnerModel>(createEditableOwnerModelFromDiscriminatorValue); },
         "payer": n => { updateSubscriptionModel.payer = n.getObjectValue<EditableSubscriptionPayerModel>(createEditableSubscriptionPayerModelFromDiscriminatorValue); },
         "plan_id": n => { updateSubscriptionModel.planId = n.getStringValue(); },
         "price_id": n => { updateSubscriptionModel.priceId = n.getStringValue(); },
+        "provider_id": n => { updateSubscriptionModel.providerId = n.getStringValue(); },
         "recurrency": n => { updateSubscriptionModel.recurrency = n.getStringValue(); },
-        "service_provider_id": n => { updateSubscriptionModel.serviceProviderId = n.getStringValue(); },
         "service_users": n => { updateSubscriptionModel.serviceUsers = n.getCollectionOfPrimitiveValues<string>(); },
         "start_date": n => { updateSubscriptionModel.startDate = n.getDateValue(); },
         "updated_at": n => { updateSubscriptionModel.updatedAt = n.getDateValue(); },
@@ -1079,10 +1130,6 @@ export interface FamilyMemberModel extends AdditionalDataHolder, Parsable {
      */
     id?: string | null;
     /**
-     * @Description Whether this member is a child (affects permissions and features)
-     */
-    isKid?: boolean | null;
-    /**
      * @Description Indicates whether this member is the current authenticated user
      */
     isYou?: boolean | null;
@@ -1091,10 +1138,15 @@ export interface FamilyMemberModel extends AdditionalDataHolder, Parsable {
      */
     name?: string | null;
     /**
+     * @Description Whether this member is a child (affects permissions and features)
+     */
+    type?: FamilyMemberModel_type | null;
+    /**
      * @Description Timestamp when the member was last updated
      */
     updatedAt?: Date | null;
 }
+export type FamilyMemberModel_type = (typeof FamilyMemberModel_typeObject)[keyof typeof FamilyMemberModel_typeObject];
 /**
  * Family object containing family information and members
  */
@@ -1258,18 +1310,19 @@ export interface PatchFamilyMemberModel extends AdditionalDataHolder, Parsable {
      */
     id?: string | null;
     /**
-     * Indicates if the member is a kid
-     */
-    isKid?: boolean | null;
-    /**
      * member's name
      */
     name?: string | null;
+    /**
+     * Indicates if the member is a kid
+     */
+    type?: PatchFamilyMemberModel_type | null;
     /**
      * Optional timestamp of the last update
      */
     updatedAt?: Date | null;
 }
+export type PatchFamilyMemberModel_type = (typeof PatchFamilyMemberModel_typeObject)[keyof typeof PatchFamilyMemberModel_typeObject];
 /**
  * Model for updating family details
  */
@@ -1293,6 +1346,10 @@ export interface PatchFamilyModel extends AdditionalDataHolder, Parsable {
 }
 export interface PatchSubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
+     * The custom_price property
+     */
+    customPrice?: SubscriptionCustomPriceModel | null;
+    /**
      * The custom_recurrency property
      */
     customRecurrency?: number | null;
@@ -1301,9 +1358,9 @@ export interface PatchSubscriptionModel extends AdditionalDataHolder, Parsable {
      */
     endDate?: Date | null;
     /**
-     * The free_trial_days property
+     * @Description Number of free trial days remaining (null if no trial or trial expired)
      */
-    freeTrialDays?: number | null;
+    freeTrial?: SubscriptionFreeTrialModel | null;
     /**
      * The friendly_name property
      */
@@ -1329,13 +1386,13 @@ export interface PatchSubscriptionModel extends AdditionalDataHolder, Parsable {
      */
     priceId?: string | null;
     /**
+     * The provider_id property
+     */
+    providerId?: string | null;
+    /**
      * The recurrency property
      */
     recurrency?: string | null;
-    /**
-     * The service_provider_id property
-     */
-    serviceProviderId?: string | null;
     /**
      * The service_users property
      */
@@ -1487,8 +1544,8 @@ export function serializeCreateFamilyMemberModel(writer: SerializationWriter, cr
     if (!createFamilyMemberModel || isSerializingDerivedType) { return; }
     writer.writeDateValue("created_at", createFamilyMemberModel.createdAt);
     writer.writeStringValue("id", createFamilyMemberModel.id);
-    writer.writeBooleanValue("is_kid", createFamilyMemberModel.isKid);
     writer.writeStringValue("name", createFamilyMemberModel.name);
+    writer.writeEnumValue<CreateFamilyMemberModel_type>("type", createFamilyMemberModel.type);
     writer.writeAdditionalData(createFamilyMemberModel.additionalData);
 }
 /**
@@ -1584,17 +1641,18 @@ export function serializeCreateProviderModel(writer: SerializationWriter, create
 export function serializeCreateSubscriptionModel(writer: SerializationWriter, createSubscriptionModel: Partial<CreateSubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!createSubscriptionModel || isSerializingDerivedType) { return; }
     writer.writeStringValue("created_at", createSubscriptionModel.createdAt);
+    writer.writeObjectValue<SubscriptionCustomPriceModel>("custom_price", createSubscriptionModel.customPrice, serializeSubscriptionCustomPriceModel);
     writer.writeNumberValue("custom_recurrency", createSubscriptionModel.customRecurrency);
     writer.writeDateValue("end_date", createSubscriptionModel.endDate);
-    writer.writeNumberValue("free_trial_days", createSubscriptionModel.freeTrialDays);
+    writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", createSubscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
     writer.writeStringValue("friendly_name", createSubscriptionModel.friendlyName);
     writer.writeStringValue("id", createSubscriptionModel.id);
     writer.writeObjectValue<EditableOwnerModel>("owner", createSubscriptionModel.owner, serializeEditableOwnerModel);
     writer.writeObjectValue<EditableSubscriptionPayerModel>("payer", createSubscriptionModel.payer, serializeEditableSubscriptionPayerModel);
     writer.writeStringValue("plan_id", createSubscriptionModel.planId);
     writer.writeStringValue("price_id", createSubscriptionModel.priceId);
+    writer.writeStringValue("provider_id", createSubscriptionModel.providerId);
     writer.writeStringValue("recurrency", createSubscriptionModel.recurrency);
-    writer.writeStringValue("service_provider_id", createSubscriptionModel.serviceProviderId);
     writer.writeCollectionOfPrimitiveValues<string>("service_users", createSubscriptionModel.serviceUsers);
     writer.writeDateValue("start_date", createSubscriptionModel.startDate);
     writer.writeAdditionalData(createSubscriptionModel.additionalData);
@@ -1639,9 +1697,9 @@ export function serializeFamilyMemberModel(writer: SerializationWriter, familyMe
     writer.writeStringValue("etag", familyMemberModel.etag);
     writer.writeStringValue("family_id", familyMemberModel.familyId);
     writer.writeStringValue("id", familyMemberModel.id);
-    writer.writeBooleanValue("is_kid", familyMemberModel.isKid);
     writer.writeBooleanValue("is_you", familyMemberModel.isYou);
     writer.writeStringValue("name", familyMemberModel.name);
+    writer.writeEnumValue<FamilyMemberModel_type>("type", familyMemberModel.type);
     writer.writeDateValue("updated_at", familyMemberModel.updatedAt);
     writer.writeAdditionalData(familyMemberModel.additionalData);
 }
@@ -1775,8 +1833,8 @@ export function serializePaginatedResponseModelEndpoints_SubscriptionModel(write
 export function serializePatchFamilyMemberModel(writer: SerializationWriter, patchFamilyMemberModel: Partial<PatchFamilyMemberModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!patchFamilyMemberModel || isSerializingDerivedType) { return; }
     writer.writeStringValue("id", patchFamilyMemberModel.id);
-    writer.writeBooleanValue("is_kid", patchFamilyMemberModel.isKid);
     writer.writeStringValue("name", patchFamilyMemberModel.name);
+    writer.writeEnumValue<PatchFamilyMemberModel_type>("type", patchFamilyMemberModel.type);
     writer.writeDateValue("updated_at", patchFamilyMemberModel.updatedAt);
     writer.writeAdditionalData(patchFamilyMemberModel.additionalData);
 }
@@ -1804,17 +1862,18 @@ export function serializePatchFamilyModel(writer: SerializationWriter, patchFami
 // @ts-ignore
 export function serializePatchSubscriptionModel(writer: SerializationWriter, patchSubscriptionModel: Partial<PatchSubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!patchSubscriptionModel || isSerializingDerivedType) { return; }
+    writer.writeObjectValue<SubscriptionCustomPriceModel>("custom_price", patchSubscriptionModel.customPrice, serializeSubscriptionCustomPriceModel);
     writer.writeNumberValue("custom_recurrency", patchSubscriptionModel.customRecurrency);
     writer.writeDateValue("end_date", patchSubscriptionModel.endDate);
-    writer.writeNumberValue("free_trial_days", patchSubscriptionModel.freeTrialDays);
+    writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", patchSubscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
     writer.writeStringValue("friendly_name", patchSubscriptionModel.friendlyName);
     writer.writeStringValue("id", patchSubscriptionModel.id);
     writer.writeObjectValue<EditableOwnerModel>("owner", patchSubscriptionModel.owner, serializeEditableOwnerModel);
     writer.writeObjectValue<EditableSubscriptionPayerModel>("payer", patchSubscriptionModel.payer, serializeEditableSubscriptionPayerModel);
     writer.writeStringValue("plan_id", patchSubscriptionModel.planId);
     writer.writeStringValue("price_id", patchSubscriptionModel.priceId);
+    writer.writeStringValue("provider_id", patchSubscriptionModel.providerId);
     writer.writeStringValue("recurrency", patchSubscriptionModel.recurrency);
-    writer.writeStringValue("service_provider_id", patchSubscriptionModel.serviceProviderId);
     writer.writeCollectionOfPrimitiveValues<string>("service_users", patchSubscriptionModel.serviceUsers);
     writer.writeDateValue("start_date", patchSubscriptionModel.startDate);
     writer.writeDateValue("updated_at", patchSubscriptionModel.updatedAt);
@@ -1884,6 +1943,32 @@ export function serializeProviderModel(writer: SerializationWriter, providerMode
 /**
  * Serializes information the current object
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param SubscriptionCustomPriceModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeSubscriptionCustomPriceModel(writer: SerializationWriter, subscriptionCustomPriceModel: Partial<SubscriptionCustomPriceModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!subscriptionCustomPriceModel || isSerializingDerivedType) { return; }
+    writer.writeNumberValue("amount", subscriptionCustomPriceModel.amount);
+    writer.writeStringValue("currency", subscriptionCustomPriceModel.currency);
+    writer.writeAdditionalData(subscriptionCustomPriceModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param SubscriptionFreeTrialModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeSubscriptionFreeTrialModel(writer: SerializationWriter, subscriptionFreeTrialModel: Partial<SubscriptionFreeTrialModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!subscriptionFreeTrialModel || isSerializingDerivedType) { return; }
+    writer.writeDateValue("end_date", subscriptionFreeTrialModel.endDate);
+    writer.writeDateValue("start_date", subscriptionFreeTrialModel.startDate);
+    writer.writeAdditionalData(subscriptionFreeTrialModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param SubscriptionModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
@@ -1891,18 +1976,19 @@ export function serializeProviderModel(writer: SerializationWriter, providerMode
 export function serializeSubscriptionModel(writer: SerializationWriter, subscriptionModel: Partial<SubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!subscriptionModel || isSerializingDerivedType) { return; }
     writer.writeDateValue("created_at", subscriptionModel.createdAt);
+    writer.writeObjectValue<SubscriptionCustomPriceModel>("custom_price", subscriptionModel.customPrice, serializeSubscriptionCustomPriceModel);
     writer.writeNumberValue("custom_recurrency", subscriptionModel.customRecurrency);
     writer.writeDateValue("end_date", subscriptionModel.endDate);
     writer.writeStringValue("etag", subscriptionModel.etag);
-    writer.writeNumberValue("free_trial_days", subscriptionModel.freeTrialDays);
+    writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", subscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
     writer.writeStringValue("friendly_name", subscriptionModel.friendlyName);
     writer.writeStringValue("id", subscriptionModel.id);
     writer.writeObjectValue<OwnerModel>("owner", subscriptionModel.owner, serializeOwnerModel);
     writer.writeObjectValue<SubscriptionPayerModel>("payer", subscriptionModel.payer, serializeSubscriptionPayerModel);
     writer.writeStringValue("plan_id", subscriptionModel.planId);
     writer.writeStringValue("price_id", subscriptionModel.priceId);
+    writer.writeStringValue("provider_id", subscriptionModel.providerId);
     writer.writeEnumValue<SubscriptionModel_recurrency>("recurrency", subscriptionModel.recurrency);
-    writer.writeStringValue("service_provider_id", subscriptionModel.serviceProviderId);
     writer.writeCollectionOfPrimitiveValues<string>("service_users", subscriptionModel.serviceUsers);
     writer.writeDateValue("start_date", subscriptionModel.startDate);
     writer.writeDateValue("updated_at", subscriptionModel.updatedAt);
@@ -1932,8 +2018,8 @@ export function serializeSubscriptionPayerModel(writer: SerializationWriter, sub
 // @ts-ignore
 export function serializeUpdateFamilyMemberModel(writer: SerializationWriter, updateFamilyMemberModel: Partial<UpdateFamilyMemberModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!updateFamilyMemberModel || isSerializingDerivedType) { return; }
-    writer.writeBooleanValue("is_kid", updateFamilyMemberModel.isKid);
     writer.writeStringValue("name", updateFamilyMemberModel.name);
+    writer.writeEnumValue<UpdateFamilyMemberModel_type>("type", updateFamilyMemberModel.type);
     writer.writeDateValue("updated_at", updateFamilyMemberModel.updatedAt);
     writer.writeAdditionalData(updateFamilyMemberModel.additionalData);
 }
@@ -2021,20 +2107,44 @@ export function serializeUpdateProviderModel(writer: SerializationWriter, update
 // @ts-ignore
 export function serializeUpdateSubscriptionModel(writer: SerializationWriter, updateSubscriptionModel: Partial<UpdateSubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!updateSubscriptionModel || isSerializingDerivedType) { return; }
+    writer.writeObjectValue<SubscriptionCustomPriceModel>("custom_price", updateSubscriptionModel.customPrice, serializeSubscriptionCustomPriceModel);
     writer.writeNumberValue("custom_recurrency", updateSubscriptionModel.customRecurrency);
     writer.writeDateValue("end_date", updateSubscriptionModel.endDate);
-    writer.writeNumberValue("free_trial_days", updateSubscriptionModel.freeTrialDays);
+    writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", updateSubscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
     writer.writeStringValue("friendly_name", updateSubscriptionModel.friendlyName);
     writer.writeObjectValue<EditableOwnerModel>("owner", updateSubscriptionModel.owner, serializeEditableOwnerModel);
     writer.writeObjectValue<EditableSubscriptionPayerModel>("payer", updateSubscriptionModel.payer, serializeEditableSubscriptionPayerModel);
     writer.writeStringValue("plan_id", updateSubscriptionModel.planId);
     writer.writeStringValue("price_id", updateSubscriptionModel.priceId);
+    writer.writeStringValue("provider_id", updateSubscriptionModel.providerId);
     writer.writeStringValue("recurrency", updateSubscriptionModel.recurrency);
-    writer.writeStringValue("service_provider_id", updateSubscriptionModel.serviceProviderId);
     writer.writeCollectionOfPrimitiveValues<string>("service_users", updateSubscriptionModel.serviceUsers);
     writer.writeDateValue("start_date", updateSubscriptionModel.startDate);
     writer.writeDateValue("updated_at", updateSubscriptionModel.updatedAt);
     writer.writeAdditionalData(updateSubscriptionModel.additionalData);
+}
+export interface SubscriptionCustomPriceModel extends AdditionalDataHolder, Parsable {
+    /**
+     * The amount property
+     */
+    amount?: number | null;
+    /**
+     * The currency property
+     */
+    currency?: string | null;
+}
+/**
+ * @Description Number of free trial days remaining (null if no trial or trial expired)
+ */
+export interface SubscriptionFreeTrialModel extends AdditionalDataHolder, Parsable {
+    /**
+     * The end_date property
+     */
+    endDate?: Date | null;
+    /**
+     * The start_date property
+     */
+    startDate?: Date | null;
 }
 /**
  * Subscription object containing all information about an active subscription including billing and usage details
@@ -2044,6 +2154,10 @@ export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
      * @Description ISO 8601 timestamp when the subscription was originally created
      */
     createdAt?: Date | null;
+    /**
+     * The custom_price property
+     */
+    customPrice?: SubscriptionCustomPriceModel | null;
     /**
      * @Description Custom recurrency interval in days (required when recurrency is custom)
      */
@@ -2059,7 +2173,7 @@ export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
      * @Description Number of free trial days remaining (null if no trial or trial expired)
      */
-    freeTrialDays?: number | null;
+    freeTrial?: SubscriptionFreeTrialModel | null;
     /**
      * @Description Optional custom name for easy identification of the subscription
      */
@@ -2085,13 +2199,13 @@ export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
      */
     priceId?: string | null;
     /**
+     * @Description ID of the service provider offering this subscription
+     */
+    providerId?: string | null;
+    /**
      * @Description Billing recurrency pattern (monthly, yearly, custom, etc.)
      */
     recurrency?: SubscriptionModel_recurrency | null;
-    /**
-     * @Description ID of the service provider offering this subscription
-     */
-    serviceProviderId?: string | null;
     /**
      * @Description List of family member IDs who use this service (for shared subscriptions)
      */
@@ -2130,18 +2244,19 @@ export interface SubscriptionPayerModel extends AdditionalDataHolder, Parsable {
 export type SubscriptionPayerModel_type = (typeof SubscriptionPayerModel_typeObject)[keyof typeof SubscriptionPayerModel_typeObject];
 export interface UpdateFamilyMemberModel extends AdditionalDataHolder, Parsable {
     /**
-     * The is_kid property
-     */
-    isKid?: boolean | null;
-    /**
      * The name property
      */
     name?: string | null;
+    /**
+     * The type property
+     */
+    type?: UpdateFamilyMemberModel_type | null;
     /**
      * The updated_at property
      */
     updatedAt?: Date | null;
 }
+export type UpdateFamilyMemberModel_type = (typeof UpdateFamilyMemberModel_typeObject)[keyof typeof UpdateFamilyMemberModel_typeObject];
 export interface UpdateFamilyModel extends AdditionalDataHolder, Parsable {
     /**
      * The name property
@@ -2234,6 +2349,10 @@ export interface UpdateProviderModel extends AdditionalDataHolder, Parsable {
 }
 export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
+     * The custom_price property
+     */
+    customPrice?: SubscriptionCustomPriceModel | null;
+    /**
      * The custom_recurrency property
      */
     customRecurrency?: number | null;
@@ -2242,9 +2361,9 @@ export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable 
      */
     endDate?: Date | null;
     /**
-     * The free_trial_days property
+     * @Description Number of free trial days remaining (null if no trial or trial expired)
      */
-    freeTrialDays?: number | null;
+    freeTrial?: SubscriptionFreeTrialModel | null;
     /**
      * The friendly_name property
      */
@@ -2266,13 +2385,13 @@ export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable 
      */
     priceId?: string | null;
     /**
+     * The provider_id property
+     */
+    providerId?: string | null;
+    /**
      * The recurrency property
      */
     recurrency?: string | null;
-    /**
-     * The service_provider_id property
-     */
-    serviceProviderId?: string | null;
     /**
      * The service_users property
      */
@@ -2286,6 +2405,11 @@ export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable 
      */
     updatedAt?: Date | null;
 }
+export const CreateFamilyMemberModel_typeObject = {
+    Owner: "owner",
+    Adult: "adult",
+    Kid: "kid",
+} as const;
 /**
  * @Description Type of ownership (personal, family or system)
  */
@@ -2302,12 +2426,28 @@ export const EditableSubscriptionPayerModel_typeObject = {
     Family_member: "family_member",
 } as const;
 /**
+ * @Description Whether this member is a child (affects permissions and features)
+ */
+export const FamilyMemberModel_typeObject = {
+    Owner: "owner",
+    Adult: "adult",
+    Kid: "kid",
+} as const;
+/**
  * @Description Type of ownership (personal, family or system)
  */
 export const OwnerModel_typeObject = {
     Personal: "personal",
     Family: "family",
     System: "system",
+} as const;
+/**
+ * Indicates if the member is a kid
+ */
+export const PatchFamilyMemberModel_typeObject = {
+    Owner: "owner",
+    Adult: "adult",
+    Kid: "kid",
 } as const;
 /**
  * @Description Billing recurrency pattern (monthly, yearly, custom, etc.)
@@ -2326,6 +2466,11 @@ export const SubscriptionModel_recurrencyObject = {
 export const SubscriptionPayerModel_typeObject = {
     Family: "family",
     Family_member: "family_member",
+} as const;
+export const UpdateFamilyMemberModel_typeObject = {
+    Owner: "owner",
+    Adult: "adult",
+    Kid: "kid",
 } as const;
 /* tslint:enable */
 /* eslint-enable */

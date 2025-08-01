@@ -1,5 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
+import './family_member_model_type.dart';
 
 /// auto generated
 /// Family member object containing member information
@@ -15,12 +16,12 @@ class FamilyMemberModel implements AdditionalDataHolder, Parsable {
     String? familyId;
     ///  @Description Unique identifier for the family member
     String? id;
-    ///  @Description Whether this member is a child (affects permissions and features)
-    bool? isKid;
     ///  @Description Indicates whether this member is the current authenticated user
     bool? isYou;
     ///  @Description Name of the family member
     String? name;
+    ///  @Description Whether this member is a child (affects permissions and features)
+    FamilyMemberModelType? type_;
     ///  @Description Timestamp when the member was last updated
     DateTime? updatedAt;
     /// Instantiates a new [FamilyMemberModel] and sets the default values.
@@ -39,9 +40,9 @@ class FamilyMemberModel implements AdditionalDataHolder, Parsable {
         deserializerMap['etag'] = (node) => etag = node.getStringValue();
         deserializerMap['family_id'] = (node) => familyId = node.getStringValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
-        deserializerMap['is_kid'] = (node) => isKid = node.getBoolValue();
         deserializerMap['is_you'] = (node) => isYou = node.getBoolValue();
         deserializerMap['name'] = (node) => name = node.getStringValue();
+        deserializerMap['type'] = (node) => type_ = node.getEnumValue<FamilyMemberModelType>((stringValue) => FamilyMemberModelType.values.where((enumVal) => enumVal.value == stringValue).firstOrNull);
         deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
     }
@@ -53,9 +54,9 @@ class FamilyMemberModel implements AdditionalDataHolder, Parsable {
         writer.writeStringValue('etag', etag);
         writer.writeStringValue('family_id', familyId);
         writer.writeStringValue('id', id);
-        writer.writeBoolValue('is_kid', value:isKid);
         writer.writeBoolValue('is_you', value:isYou);
         writer.writeStringValue('name', name);
+        writer.writeEnumValue<FamilyMemberModelType>('type', type_, (e) => e?.value);
         writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
     }

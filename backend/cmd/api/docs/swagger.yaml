@@ -4,13 +4,15 @@ components:
       properties:
         created_at:
           type: string
+        custom_price:
+          $ref: '#/components/schemas/endpoints.SubscriptionCustomPriceModel'
         custom_recurrency:
           type: integer
         end_date:
           format: date-time
           type: string
-        free_trial_days:
-          type: integer
+        free_trial:
+          $ref: '#/components/schemas/endpoints.SubscriptionFreeTrialModel'
         friendly_name:
           type: string
         id:
@@ -23,9 +25,9 @@ components:
           type: string
         price_id:
           type: string
-        recurrency:
+        provider_id:
           type: string
-        service_provider_id:
+        recurrency:
           type: string
         service_users:
           items:
@@ -37,10 +39,8 @@ components:
           type: string
       required:
       - owner
-      - plan_id
-      - price_id
+      - provider_id
       - recurrency
-      - service_provider_id
       - start_date
       type: object
     endpoints.EditableOwnerModel:
@@ -191,13 +191,15 @@ components:
       type: object
     endpoints.PatchSubscriptionModel:
       properties:
+        custom_price:
+          $ref: '#/components/schemas/endpoints.SubscriptionCustomPriceModel'
         custom_recurrency:
           type: integer
         end_date:
           format: date-time
           type: string
-        free_trial_days:
-          type: integer
+        free_trial:
+          $ref: '#/components/schemas/endpoints.SubscriptionFreeTrialModel'
         friendly_name:
           type: string
         id:
@@ -210,9 +212,9 @@ components:
           type: string
         price_id:
           type: string
-        recurrency:
+        provider_id:
           type: string
-        service_provider_id:
+        recurrency:
           type: string
         service_users:
           items:
@@ -227,10 +229,8 @@ components:
           type: string
       required:
       - owner
-      - plan_id
-      - price_id
+      - provider_id
       - recurrency
-      - service_provider_id
       - start_date
       type: object
     endpoints.PlanModel:
@@ -419,6 +419,27 @@ components:
       - plans
       - updated_at
       type: object
+    endpoints.SubscriptionCustomPriceModel:
+      properties:
+        amount:
+          type: number
+        currency:
+          type: string
+      required:
+      - amount
+      - currency
+      type: object
+    endpoints.SubscriptionFreeTrialModel:
+      description: '@Description Number of free trial days remaining (null if no trial
+        or trial expired)'
+      properties:
+        end_date:
+          format: date-time
+          type: string
+        start_date:
+          format: date-time
+          type: string
+      type: object
     endpoints.SubscriptionModel:
       description: Subscription object containing all information about an active
         subscription including billing and usage details
@@ -429,6 +450,8 @@ components:
           example: "2023-01-15T10:30:00Z"
           format: date-time
           type: string
+        custom_price:
+          $ref: '#/components/schemas/endpoints.SubscriptionCustomPriceModel'
         custom_recurrency:
           description: '@Description Custom recurrency interval in days (required
             when recurrency is custom)'
@@ -447,13 +470,8 @@ components:
             to prevent conflicting updates'
           example: W/"123456789"
           type: string
-        free_trial_days:
-          description: '@Description Number of free trial days remaining (null if
-            no trial or trial expired)'
-          example: 7
-          maximum: 365
-          minimum: 0
-          type: integer
+        free_trial:
+          $ref: '#/components/schemas/endpoints.SubscriptionFreeTrialModel'
         friendly_name:
           description: '@Description Optional custom name for easy identification
             of the subscription'
@@ -477,6 +495,10 @@ components:
           description: '@Description ID of the pricing tier for this subscription'
           example: 123e4567-e89b-12d3-a456-426614174004
           type: string
+        provider_id:
+          description: '@Description ID of the service provider offering this subscription'
+          example: 123e4567-e89b-12d3-a456-426614174002
+          type: string
         recurrency:
           description: '@Description Billing recurrency pattern (monthly, yearly,
             custom, etc.)'
@@ -488,10 +510,6 @@ components:
           - yearly
           - custom
           example: monthly
-          type: string
-        service_provider_id:
-          description: '@Description ID of the service provider offering this subscription'
-          example: 123e4567-e89b-12d3-a456-426614174002
           type: string
         service_users:
           description: '@Description List of family member IDs who use this service
@@ -520,10 +538,8 @@ components:
       - etag
       - id
       - owner
-      - plan_id
-      - price_id
+      - provider_id
       - recurrency
-      - service_provider_id
       - start_date
       - updated_at
       type: object
@@ -559,13 +575,15 @@ components:
       type: object
     endpoints.UpdateSubscriptionModel:
       properties:
+        custom_price:
+          $ref: '#/components/schemas/endpoints.SubscriptionCustomPriceModel'
         custom_recurrency:
           type: integer
         end_date:
           format: date-time
           type: string
-        free_trial_days:
-          type: integer
+        free_trial:
+          $ref: '#/components/schemas/endpoints.SubscriptionFreeTrialModel'
         friendly_name:
           type: string
         owner:
@@ -576,9 +594,9 @@ components:
           type: string
         price_id:
           type: string
-        recurrency:
+        provider_id:
           type: string
-        service_provider_id:
+        recurrency:
           type: string
         service_users:
           items:
@@ -593,10 +611,8 @@ components:
           type: string
       required:
       - owner
-      - plan_id
-      - price_id
+      - provider_id
       - recurrency
-      - service_provider_id
       - start_date
       type: object
     endpoints.createFamilyMemberModel:
@@ -606,12 +622,17 @@ components:
           type: string
         id:
           type: string
-        is_kid:
-          type: boolean
         name:
+          type: string
+        type:
+          enum:
+          - owner
+          - adult
+          - kid
           type: string
       required:
       - name
+      - type
       type: object
     endpoints.createFamilyModel:
       properties:
@@ -731,11 +752,6 @@ components:
           description: '@Description Unique identifier for the family member'
           example: 123e4567-e89b-12d3-a456-426614174001
           type: string
-        is_kid:
-          description: '@Description Whether this member is a child (affects permissions
-            and features)'
-          example: false
-          type: boolean
         is_you:
           description: '@Description Indicates whether this member is the current
             authenticated user'
@@ -744,6 +760,14 @@ components:
         name:
           description: '@Description Name of the family member'
           example: John Smith
+          type: string
+        type:
+          description: '@Description Whether this member is a child (affects permissions
+            and features)'
+          enum:
+          - owner
+          - adult
+          - kid
           type: string
         updated_at:
           description: '@Description Timestamp when the member was last updated'
@@ -754,9 +778,9 @@ components:
       - etag
       - family_id
       - id
-      - is_kid
       - is_you
       - name
+      - type
       - updated_at
       type: object
     endpoints.familyModel:
@@ -873,19 +897,23 @@ components:
         id:
           description: Optional member ID. If not provided, new member will be created
           type: string
-        is_kid:
-          description: Indicates if the member is a kid
-          type: boolean
         name:
           description: member's name
+          type: string
+        type:
+          description: Indicates if the member is a kid
+          enum:
+          - owner
+          - adult
+          - kid
           type: string
         updated_at:
           description: Optional timestamp of the last update
           format: date-time
           type: string
       required:
-      - is_kid
       - name
+      - type
       type: object
     endpoints.patchFamilyModel:
       description: Model for updating family details
@@ -912,16 +940,20 @@ components:
       type: object
     endpoints.updateFamilyMemberModel:
       properties:
-        is_kid:
-          type: boolean
         name:
+          type: string
+        type:
+          enum:
+          - owner
+          - adult
+          - kid
           type: string
         updated_at:
           format: date-time
           type: string
       required:
-      - is_kid
       - name
+      - type
       type: object
     endpoints.updateFamilyModel:
       properties:

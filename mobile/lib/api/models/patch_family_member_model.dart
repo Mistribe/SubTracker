@@ -1,5 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
+import './patch_family_member_model_type.dart';
 
 /// auto generated
 /// Model for updating family member details
@@ -9,10 +10,10 @@ class PatchFamilyMemberModel implements AdditionalDataHolder, Parsable {
     Map<String, Object?> additionalData;
     ///  Optional member ID. If not provided, new member will be created
     String? id;
-    ///  Indicates if the member is a kid
-    bool? isKid;
     ///  member's name
     String? name;
+    ///  Indicates if the member is a kid
+    PatchFamilyMemberModelType? type_;
     ///  Optional timestamp of the last update
     DateTime? updatedAt;
     /// Instantiates a new [PatchFamilyMemberModel] and sets the default values.
@@ -28,8 +29,8 @@ class PatchFamilyMemberModel implements AdditionalDataHolder, Parsable {
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
         deserializerMap['id'] = (node) => id = node.getStringValue();
-        deserializerMap['is_kid'] = (node) => isKid = node.getBoolValue();
         deserializerMap['name'] = (node) => name = node.getStringValue();
+        deserializerMap['type'] = (node) => type_ = node.getEnumValue<PatchFamilyMemberModelType>((stringValue) => PatchFamilyMemberModelType.values.where((enumVal) => enumVal.value == stringValue).firstOrNull);
         deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
         return deserializerMap;
     }
@@ -38,8 +39,8 @@ class PatchFamilyMemberModel implements AdditionalDataHolder, Parsable {
     @override
     void serialize(SerializationWriter writer) {
         writer.writeStringValue('id', id);
-        writer.writeBoolValue('is_kid', value:isKid);
         writer.writeStringValue('name', name);
+        writer.writeEnumValue<PatchFamilyMemberModelType>('type', type_, (e) => e?.value);
         writer.writeDateTimeValue('updated_at', updatedAt);
         writer.writeAdditionalData(additionalData);
     }

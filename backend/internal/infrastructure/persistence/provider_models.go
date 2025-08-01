@@ -27,7 +27,7 @@ func (p providerPriceSqlModel) TableName() string {
 
 func newProviderPriceSqlModel(planId uuid.UUID, source provider.Price) providerPriceSqlModel {
 	return providerPriceSqlModel{
-		BaseSqlModel: newBaseSqlModel(source),
+		BaseSqlModel: newBaseSqlModel(source, source.ETag()),
 		StartDate:    source.StartDate(),
 		EndDate:      source.EndDate(),
 		Currency:     source.Currency().String(),
@@ -63,7 +63,7 @@ func (p providerPlanSqlModel) TableName() string {
 
 func newProviderPlanSqlModel(providerId uuid.UUID, source provider.Plan) providerPlanSqlModel {
 	model := providerPlanSqlModel{
-		BaseSqlModel: newBaseSqlModel(source),
+		BaseSqlModel: newBaseSqlModel(source, source.ETag()),
 		Name:         source.Name(),
 		ProviderId:   providerId,
 	}
@@ -137,7 +137,7 @@ func (p ProviderSqlModel) TableName() string {
 
 func newProviderSqlModel(source provider.Provider) ProviderSqlModel {
 	model := ProviderSqlModel{
-		BaseSqlModel:   newBaseSqlModel(source),
+		BaseSqlModel:   newBaseSqlModel(source, source.ETag()),
 		Name:           source.Name(),
 		Description:    stringToSqlNull(source.Description()),
 		IconUrl:        stringToSqlNull(source.IconUrl()),

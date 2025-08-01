@@ -1,5 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
+import './create_family_member_model_type.dart';
 
 /// auto generated
 class CreateFamilyMemberModel implements AdditionalDataHolder, Parsable {
@@ -10,10 +11,10 @@ class CreateFamilyMemberModel implements AdditionalDataHolder, Parsable {
     DateTime? createdAt;
     ///  The id property
     String? id;
-    ///  The is_kid property
-    bool? isKid;
     ///  The name property
     String? name;
+    ///  The type property
+    CreateFamilyMemberModelType? type_;
     /// Instantiates a new [CreateFamilyMemberModel] and sets the default values.
     CreateFamilyMemberModel() :  
         additionalData = {};
@@ -28,8 +29,8 @@ class CreateFamilyMemberModel implements AdditionalDataHolder, Parsable {
         var deserializerMap = <String, void Function(ParseNode)>{};
         deserializerMap['created_at'] = (node) => createdAt = node.getDateTimeValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
-        deserializerMap['is_kid'] = (node) => isKid = node.getBoolValue();
         deserializerMap['name'] = (node) => name = node.getStringValue();
+        deserializerMap['type'] = (node) => type_ = node.getEnumValue<CreateFamilyMemberModelType>((stringValue) => CreateFamilyMemberModelType.values.where((enumVal) => enumVal.value == stringValue).firstOrNull);
         return deserializerMap;
     }
     /// Serializes information the current object
@@ -38,8 +39,8 @@ class CreateFamilyMemberModel implements AdditionalDataHolder, Parsable {
     void serialize(SerializationWriter writer) {
         writer.writeDateTimeValue('created_at', createdAt);
         writer.writeStringValue('id', id);
-        writer.writeBoolValue('is_kid', value:isKid);
         writer.writeStringValue('name', name);
+        writer.writeEnumValue<CreateFamilyMemberModelType>('type', type_, (e) => e?.value);
         writer.writeAdditionalData(additionalData);
     }
 }

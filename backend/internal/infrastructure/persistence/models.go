@@ -23,11 +23,11 @@ type BaseOwnerSqlModel struct {
 	OwnerUserId   sql.NullString  `gorm:"type:varchar(50)"`
 }
 
-func newBaseSqlModel(entity entity.Entity) BaseSqlModel {
+func newBaseSqlModel(entity entity.Entity, etag string) BaseSqlModel {
 	return BaseSqlModel{
 		Id:        entity.Id(),
 		CreatedAt: entity.CreatedAt(),
 		UpdatedAt: entity.UpdatedAt(),
-		Etag:      entity.ETag(),
+		Etag:      etag,
 	}
 }
