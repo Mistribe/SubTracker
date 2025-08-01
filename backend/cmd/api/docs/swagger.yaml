@@ -368,6 +368,8 @@ components:
           description: '@Description Unique identifier for the provider (UUID format)'
           example: 123e4567-e89b-12d3-a456-426614174000
           type: string
+        key:
+          type: string
         labels:
           description: '@Description List of label IDs associated with this provider
             for categorization'
@@ -839,6 +841,8 @@ components:
         id:
           description: '@Description Unique identifier for the label (UUID format)'
           example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        key:
           type: string
         name:
           description: '@Description Display name of the label'

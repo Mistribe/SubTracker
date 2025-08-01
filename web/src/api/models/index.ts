@@ -701,6 +701,7 @@ export function deserializeIntoLabelModel(labelModel: Partial<LabelModel> | unde
         "created_at": n => { labelModel.createdAt = n.getDateValue(); },
         "etag": n => { labelModel.etag = n.getStringValue(); },
         "id": n => { labelModel.id = n.getStringValue(); },
+        "key": n => { labelModel.key = n.getStringValue(); },
         "name": n => { labelModel.name = n.getStringValue(); },
         "owner": n => { labelModel.owner = n.getObjectValue<OwnerModel>(createOwnerModelFromDiscriminatorValue); },
         "updated_at": n => { labelModel.updatedAt = n.getDateValue(); },
@@ -872,6 +873,7 @@ export function deserializeIntoProviderModel(providerModel: Partial<ProviderMode
         "etag": n => { providerModel.etag = n.getStringValue(); },
         "icon_url": n => { providerModel.iconUrl = n.getStringValue(); },
         "id": n => { providerModel.id = n.getStringValue(); },
+        "key": n => { providerModel.key = n.getStringValue(); },
         "labels": n => { providerModel.labels = n.getCollectionOfPrimitiveValues<string>(); },
         "name": n => { providerModel.name = n.getStringValue(); },
         "owner": n => { providerModel.owner = n.getObjectValue<OwnerModel>(createOwnerModelFromDiscriminatorValue); },
@@ -1152,6 +1154,10 @@ export interface LabelModel extends AdditionalDataHolder, Parsable {
      * @Description Unique identifier for the label (UUID format)
      */
     id?: string | null;
+    /**
+     * The key property
+     */
+    key?: string | null;
     /**
      * @Description Display name of the label
      */
@@ -1438,6 +1444,10 @@ export interface ProviderModel extends AdditionalDataHolder, Parsable {
      */
     id?: string | null;
     /**
+     * The key property
+     */
+    key?: string | null;
+    /**
      * @Description List of label IDs associated with this provider for categorization
      */
     labels?: string[] | null;
@@ -1678,6 +1688,7 @@ export function serializeLabelModel(writer: SerializationWriter, labelModel: Par
     writer.writeDateValue("created_at", labelModel.createdAt);
     writer.writeStringValue("etag", labelModel.etag);
     writer.writeStringValue("id", labelModel.id);
+    writer.writeStringValue("key", labelModel.key);
     writer.writeStringValue("name", labelModel.name);
     writer.writeObjectValue<OwnerModel>("owner", labelModel.owner, serializeOwnerModel);
     writer.writeDateValue("updated_at", labelModel.updatedAt);
@@ -1860,6 +1871,7 @@ export function serializeProviderModel(writer: SerializationWriter, providerMode
     writer.writeStringValue("etag", providerModel.etag);
     writer.writeStringValue("icon_url", providerModel.iconUrl);
     writer.writeStringValue("id", providerModel.id);
+    writer.writeStringValue("key", providerModel.key);
     writer.writeCollectionOfPrimitiveValues<string>("labels", providerModel.labels);
     writer.writeStringValue("name", providerModel.name);
     writer.writeObjectValue<OwnerModel>("owner", providerModel.owner, serializeOwnerModel);

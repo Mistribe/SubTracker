@@ -19,6 +19,8 @@ class ProviderModel implements AdditionalDataHolder, Parsable {
     String? iconUrl;
     ///  @Description Unique identifier for the provider (UUID format)
     String? id;
+    ///  The key property
+    String? key;
     ///  @Description List of label IDs associated with this provider for categorization
     Iterable<String>? labels;
     ///  @Description Display name of the service provider
@@ -50,6 +52,7 @@ class ProviderModel implements AdditionalDataHolder, Parsable {
         deserializerMap['etag'] = (node) => etag = node.getStringValue();
         deserializerMap['icon_url'] = (node) => iconUrl = node.getStringValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
+        deserializerMap['key'] = (node) => key = node.getStringValue();
         deserializerMap['labels'] = (node) => labels = node.getCollectionOfPrimitiveValues<String>();
         deserializerMap['name'] = (node) => name = node.getStringValue();
         deserializerMap['owner'] = (node) => owner = node.getObjectValue<OwnerModel>(OwnerModel.createFromDiscriminatorValue);
@@ -68,6 +71,7 @@ class ProviderModel implements AdditionalDataHolder, Parsable {
         writer.writeStringValue('etag', etag);
         writer.writeStringValue('icon_url', iconUrl);
         writer.writeStringValue('id', id);
+        writer.writeStringValue('key', key);
         writer.writeCollectionOfPrimitiveValues<String?>('labels', labels);
         writer.writeStringValue('name', name);
         writer.writeObjectValue<OwnerModel>('owner', owner);

@@ -16,6 +16,8 @@ class LabelModel implements AdditionalDataHolder, Parsable {
     String? etag;
     ///  @Description Unique identifier for the label (UUID format)
     String? id;
+    ///  The key property
+    String? key;
     ///  @Description Display name of the label
     String? name;
     ///  @Description Ownership information specifying whether this subscription belongs to a user or family
@@ -38,6 +40,7 @@ class LabelModel implements AdditionalDataHolder, Parsable {
         deserializerMap['created_at'] = (node) => createdAt = node.getDateTimeValue();
         deserializerMap['etag'] = (node) => etag = node.getStringValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
+        deserializerMap['key'] = (node) => key = node.getStringValue();
         deserializerMap['name'] = (node) => name = node.getStringValue();
         deserializerMap['owner'] = (node) => owner = node.getObjectValue<OwnerModel>(OwnerModel.createFromDiscriminatorValue);
         deserializerMap['updated_at'] = (node) => updatedAt = node.getDateTimeValue();
@@ -51,6 +54,7 @@ class LabelModel implements AdditionalDataHolder, Parsable {
         writer.writeDateTimeValue('created_at', createdAt);
         writer.writeStringValue('etag', etag);
         writer.writeStringValue('id', id);
+        writer.writeStringValue('key', key);
         writer.writeStringValue('name', name);
         writer.writeObjectValue<OwnerModel>('owner', owner);
         writer.writeDateTimeValue('updated_at', updatedAt);
