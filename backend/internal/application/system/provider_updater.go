@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/Oleexo/config-go"
@@ -31,6 +32,18 @@ func (m labelMap) getUuids(keys []string) ([]uuid.UUID, bool) {
 	return results, true
 }
 
+func (m labelMap) Keys() []string {
+	results := make([]string, len(m))
+
+	idx := 0
+	for k, _ := range m {
+		results[idx] = k
+		idx++
+	}
+
+	return results
+}
+
 type systemProviderModel struct {
 	Name        string   `json:"name"`
 	Key         string   `json:"key"`
@@ -45,6 +58,7 @@ type providerUpdater struct {
 	downloader         DataDownloader
 	providerRepository provider.Repository
 	labelRepository    label.Repository
+	logger             *slog.Logger
 }
 
 func (l providerUpdater) Priority() int {
@@ -103,7 +117,9 @@ func (l providerUpdater) updateDatabase(ctx context.Context, sourceProviders []s
 		if ok {
 			labelIds, ok := labels.getUuids(prov.Categories)
 			if !ok {
-				// todo log
+				l.logger.Warn("missing or invalid labels",
+					slog.Any("expected", prov.Categories),
+					slog.Any("categories", labels.Keys()))
 				continue
 			}
 
@@ -123,7 +139,9 @@ func (l providerUpdater) updateDatabase(ctx context.Context, sourceProviders []s
 		} else {
 			labelIds, ok := labels.getUuids(prov.Categories)
 			if !ok {
-				// todo log
+				l.logger.Warn("missing or invalid labels",
+					slog.Any("expected", prov.Categories),
+					slog.Any("categories", labels.Keys()))
 				continue
 			}
 
@@ -167,6 +185,7 @@ func (l providerUpdater) updateDatabase(ctx context.Context, sourceProviders []s
 
 func newProviderUpdater(cfg config.Configuration,
 	providerRepository provider.Repository,
+	logger *slog.Logger,
 	labelRepository label.Repository) *providerUpdater {
 	providerPath := cfg.GetStringOrDefault("DATA_PROVIDER", "")
 	var downloader DataDownloader
@@ -177,5 +196,6 @@ func newProviderUpdater(cfg config.Configuration,
 		downloader:         downloader,
 		providerRepository: providerRepository,
 		labelRepository:    labelRepository,
+		logger:             logger,
 	}
 }

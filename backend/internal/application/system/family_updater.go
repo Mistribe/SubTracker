@@ -13,9 +13,10 @@ import (
 )
 
 type systemMemberModel struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Id     string  `json:"id"`
+	Name   string  `json:"name"`
+	UserId *string `json:"user_id,omitempty"`
+	Type   string  `json:"type"`
 }
 
 type systemFamilyModel struct {
@@ -72,7 +73,7 @@ func (l familyUpdater) updateDatabase(ctx context.Context, families []systemFami
 		}
 		if fam == nil {
 			members := slicesx.Select(model.Members, func(memberModel systemMemberModel) family.Member {
-				return family.NewMember(
+				mbr := family.NewMember(
 					uuid.MustParse(memberModel.Id),
 					id,
 					memberModel.Name,
@@ -80,6 +81,11 @@ func (l familyUpdater) updateDatabase(ctx context.Context, families []systemFami
 					time.Now(),
 					time.Now(),
 				)
+
+				if memberModel.UserId != nil {
+					mbr.SetUserId(memberModel.UserId)
+				}
+				return mbr
 			})
 			fam = family.NewFamily(
 				id,
