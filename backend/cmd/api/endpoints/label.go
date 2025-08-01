@@ -56,7 +56,8 @@ type labelModel struct {
 	// @Description Unique identifier for the label (UUID format)
 	Id string `json:"id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
 	// @Description Display name of the label
-	Name string `json:"name" binding:"required" example:"Entertainment" minLength:"1" maxLength:"100"`
+	Name string  `json:"name" binding:"required" example:"Entertainment" minLength:"1" maxLength:"100"`
+	Key  *string `json:"key,omitempty"`
 	// @Description Hexadecimal color code for visual representation of the label
 	Color string `json:"color" binding:"required" example:"#FF5733" pattern:"^#[0-9A-Fa-f]{6}$"`
 	// @Description Ownership information specifying whether this label belongs to a user or family
@@ -73,6 +74,7 @@ func newLabelModel(source label.Label) labelModel {
 	return labelModel{
 		Id:        source.Id().String(),
 		Name:      source.Name(),
+		Key:       source.Key(),
 		Color:     source.Color(),
 		Owner:     newOwnerModel(source.Owner()),
 		CreatedAt: source.CreatedAt(),

@@ -110,7 +110,8 @@ type ProviderModel struct {
 	// @Description Unique identifier for the provider (UUID format)
 	Id string `json:"id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
 	// @Description Display name of the service provider
-	Name string `json:"name" binding:"required" example:"Netflix" minLength:"1" maxLength:"255"`
+	Name string  `json:"name" binding:"required" example:"Netflix" minLength:"1" maxLength:"255"`
+	Key  *string `json:"key,omitempty"`
 	// @Description Optional detailed description of the provider and their services
 	Description *string `json:"description,omitempty" example:"Streaming service offering movies and TV shows"`
 	// @Description Optional URL to the provider's icon or logo image
@@ -137,6 +138,7 @@ func newProviderModel(source provider.Provider) ProviderModel {
 	return ProviderModel{
 		Id:             source.Id().String(),
 		Name:           source.Name(),
+		Key:            source.Key(),
 		Description:    source.Description(),
 		IconUrl:        source.IconUrl(),
 		Url:            source.Url(),
