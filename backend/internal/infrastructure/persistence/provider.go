@@ -47,7 +47,7 @@ func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (
 func (r *ProviderRepository) GetSystemProviders(ctx context.Context) ([]provider.Provider, error) {
 	var providerSqlModels []ProviderSqlModel
 	result := r.repository.db.WithContext(ctx).
-		Preload("Labels").
+		Joins("LEFT JOIN provider_labels on provider_labels.provider_id = providers.id").
 		Preload("Plans").
 		Preload("Plans.Prices").
 		Where("owner_type = ?", auth.SystemOwnerType.String()).

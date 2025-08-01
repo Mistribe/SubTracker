@@ -198,5 +198,4 @@ func newSubscriptionUpdater(cfg config.Configuration,
 		subscriptionRepository: subscriptionRepository,
 		providerRepository:     providerRepository,
 	}
-
 }
