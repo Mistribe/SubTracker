@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"golang.org/x/text/currency"
 
 	"github.com/oleexo/subtracker/cmd/api/ginfx"
 	"github.com/oleexo/subtracker/cmd/api/middlewares"
@@ -54,6 +55,59 @@ func NewSubscriptionEndpointGroup(
 	}
 }
 
+type SubscriptionFreeTrialModel struct {
+	StartDate time.Time `json:"start_date" bindind:"required" format:"date-time"`
+	EndDate   time.Time `json:"end_date" bindind:"required" format:"date-time"`
+}
+
+func newSubscriptionFreeTrialModel(source subscription.FreeTrial) *SubscriptionFreeTrialModel {
+	if source == nil {
+		return nil
+	}
+
+	return &SubscriptionFreeTrialModel{
+		StartDate: source.StartDate(),
+		EndDate:   source.EndDate(),
+	}
+}
+
+func newSubscriptionFreeTrial(model *SubscriptionFreeTrialModel) subscription.FreeTrial {
+	if model == nil {
+		return nil
+	}
+
+	return subscription.NewFreeTrial(model.StartDate, model.EndDate)
+}
+
+type SubscriptionCustomPriceModel struct {
+	Currency string  `json:"currency" binding:"required"`
+	Amount   float64 `json:"amount" binding:"required"`
+}
+
+func newSubscriptionCustomPriceModel(source subscription.CustomPrice) *SubscriptionCustomPriceModel {
+	if source == nil {
+		return nil
+	}
+	return &SubscriptionCustomPriceModel{
+		Currency: source.Currency().String(),
+		Amount:   source.Amount(),
+	}
+}
+
+func newSubscriptionCustomPrice(model *SubscriptionCustomPriceModel) (subscription.CustomPrice, error) {
+	if model == nil {
+		return nil, nil
+	}
+
+	cry, err := currency.ParseISO(model.Currency)
+	if err != nil {
+		return nil, err
+	}
+
+	return subscription.NewCustomPrice(model.Amount, cry), nil
+
+}
+
 // SubscriptionPayerModel represents who pays for a subscription within a family
 // @Description Subscription payer object defining which family member is responsible for payment
 type SubscriptionPayerModel struct {
@@ -86,13 +140,14 @@ type SubscriptionModel struct {
 	// @Description Optional custom name for easy identification of the subscription
 	FriendlyName *string `json:"friendly_name,omitempty" example:"Netflix Family Account" maxLength:"255"`
 	// @Description Number of free trial days remaining (null if no trial or trial expired)
-	FreeTrialDays *uint `json:"free_trial_days,omitempty" example:"7" minimum:"0" maximum:"365"`
+	FreeTrial *SubscriptionFreeTrialModel `json:"free_trial,omitempty"`
 	// @Description ID of the service provider offering this subscription
-	ServiceProviderId string `json:"service_provider_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174002"`
+	ProviderId string `json:"provider_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174002"`
 	// @Description ID of the specific plan being subscribed to
-	PlanId string `json:"plan_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174003"`
+	PlanId *string `json:"plan_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174003"`
 	// @Description ID of the pricing tier for this subscription
-	PriceId string `json:"price_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174004"`
+	PriceId     *string                       `json:"price_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174004"`
+	CustomPrice *SubscriptionCustomPriceModel `json:"custom_price,omitempty"`
 	// @Description Ownership information specifying whether this subscription belongs to a user or family
 	Owner OwnerModel `json:"owner" binding:"required"`
 	// @Description List of family member IDs who use this service (for shared subscriptions)
@@ -137,22 +192,33 @@ func newSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 	serviceUsers := slicesx.Select(source.ServiceUsers().Values(), func(in uuid.UUID) string {
 		return in.String()
 	})
-	return SubscriptionModel{
-		Id:                source.Id().String(),
-		FriendlyName:      source.FriendlyName(),
-		FreeTrialDays:     source.FreeTrialDays(),
-		ServiceProviderId: source.ServiceProviderId().String(),
-		PlanId:            source.PlanId().String(),
-		PriceId:           source.PriceId().String(),
-		ServiceUsers:      serviceUsers,
-		Owner:             newOwnerModel(source.Owner()),
-		StartDate:         source.StartDate(),
-		EndDate:           source.EndDate(),
-		Recurrency:        source.Recurrency().String(),
-		CustomRecurrency:  source.CustomRecurrency(),
-		Payer:             &payerModel,
-		CreatedAt:         source.CreatedAt(),
-		UpdatedAt:         source.UpdatedAt(),
-		Etag:              source.ETag(),
+	model := SubscriptionModel{
+		Id:               source.Id().String(),
+		FriendlyName:     source.FriendlyName(),
+		FreeTrial:        newSubscriptionFreeTrialModel(source.FreeTrial()),
+		ProviderId:       source.ProviderId().String(),
+		ServiceUsers:     serviceUsers,
+		Owner:            newOwnerModel(source.Owner()),
+		StartDate:        source.StartDate(),
+		EndDate:          source.EndDate(),
+		Recurrency:       source.Recurrency().String(),
+		CustomRecurrency: source.CustomRecurrency(),
+		Payer:            &payerModel,
+		CreatedAt:        source.CreatedAt(),
+		UpdatedAt:        source.UpdatedAt(),
+		Etag:             source.ETag(),
+		CustomPrice:      newSubscriptionCustomPriceModel(source.CustomPrice()),
 	}
+
+	if source.PlanId() != nil {
+		planId := source.PlanId().String()
+		model.PlanId = &planId
+	}
+
+	if source.PriceId() != nil {
+		priceId := source.PriceId().String()
+		model.PriceId = &priceId
+	}
+
+	return model
 }

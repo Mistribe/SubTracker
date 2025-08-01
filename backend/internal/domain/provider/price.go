@@ -106,7 +106,7 @@ func (p *price) ETagFields() []interface{} {
 }
 
 func (p *price) ETag() string {
-	return entity.CalculateETag(p, p.Base)
+	return entity.CalculateETag(p)
 }
 
 func (p *price) Equal(other Price) bool {

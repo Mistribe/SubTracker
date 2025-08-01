@@ -1,7 +1,7 @@
 package family
 
 import (
-	"regexp"
+	"errors"
 	"strings"
 	"time"
 
@@ -11,20 +11,58 @@ import (
 	"github.com/oleexo/subtracker/pkg/validationx"
 )
 
-var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+type MemberType string
+
+const (
+	UnknownMemberType MemberType = "unknown"
+	OwnerMemberType   MemberType = "owner"
+	AdultMemberType   MemberType = "adult"
+	KidMemberType     MemberType = "kid"
+)
+
+func (t MemberType) String() string {
+	return string(t)
+}
+
+func MustParseMemberType(input string) MemberType {
+	switch input {
+	case string(OwnerMemberType):
+		return OwnerMemberType
+	case string(AdultMemberType):
+		return AdultMemberType
+	case string(KidMemberType):
+		return KidMemberType
+	default:
+		panic("unknown member type")
+	}
+}
+
+func ParseMemberType(input string) (MemberType, error) {
+	switch input {
+	case string(OwnerMemberType):
+		return OwnerMemberType, nil
+	case string(AdultMemberType):
+		return AdultMemberType, nil
+	case string(KidMemberType):
+		return KidMemberType, nil
+	default:
+		return UnknownMemberType, errors.New("unknown member type")
+	}
+
+}
 
 type Member interface {
 	entity.Entity
 	entity.ETagEntity
 
 	Name() string
-	IsKid() bool
+	Type() MemberType
 	UserId() *string
 	SetName(string)
-	SetAsKid()
-	SetAsAdult()
+	SetType(MemberType)
 	SetUserId(*string)
 	FamilyId() uuid.UUID
+
 	Equal(member Member) bool
 	GetValidationErrors() validationx.Errors
 }
@@ -35,14 +73,14 @@ type member struct {
 	familyId uuid.UUID
 	name     string
 	userId   *string
-	isKid    bool
+	userType MemberType
 }
 
 func NewMember(
 	id uuid.UUID,
 	familyId uuid.UUID,
 	name string,
-	isKid bool,
+	userType MemberType,
 	createdAt time.Time,
 	updatedAt time.Time) Member {
 	return &member{
@@ -50,7 +88,7 @@ func NewMember(
 		familyId: familyId,
 		name:     strings.TrimSpace(name),
 		userId:   nil,
-		isKid:    isKid,
+		userType: userType,
 	}
 }
 
@@ -58,8 +96,8 @@ func (m *member) Name() string {
 	return m.name
 }
 
-func (m *member) IsKid() bool {
-	return m.isKid
+func (m *member) Type() MemberType {
+	return m.userType
 }
 
 func (m *member) UserId() *string {
@@ -79,11 +117,11 @@ func (m *member) ETagFields() []interface{} {
 		m.familyId.String(),
 		m.name,
 		m.userId,
-		m.isKid,
+		m.userType.String(),
 	}
 }
 func (m *member) ETag() string {
-	return entity.CalculateETag(m, m.Base)
+	return entity.CalculateETag(m)
 }
 
 func (m *member) GetValidationErrors() validationx.Errors {
@@ -105,13 +143,8 @@ func (m *member) SetName(name string) {
 	m.SetAsDirty()
 }
 
-func (m *member) SetAsKid() {
-	m.isKid = true
-	m.SetAsDirty()
-}
-
-func (m *member) SetAsAdult() {
-	m.isKid = false
+func (m *member) SetType(userType MemberType) {
+	m.userType = userType
 	m.SetAsDirty()
 }
 

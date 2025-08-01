@@ -126,5 +126,5 @@ func (l *label) ETagFields() []interface{} {
 	}
 }
 func (l *label) ETag() string {
-	return entity.CalculateETag(l, l.Base)
+	return entity.CalculateETag(l)
 }

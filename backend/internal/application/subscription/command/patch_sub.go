@@ -69,7 +69,7 @@ func (h PatchSubscriptionCommandHandler) patchSubscription(
 	}
 
 	sub.SetFriendlyName(cmd.Subscription.FriendlyName())
-	sub.SetFreeTrialDays(cmd.Subscription.FreeTrialDays())
+	sub.SetFreeTrial(cmd.Subscription.FreeTrial())
 	sub.SetOwner(cmd.Subscription.Owner())
 	sub.SetPayer(cmd.Subscription.Payer())
 	sub.SetServiceUsers(cmd.Subscription.ServiceUsers().Values())

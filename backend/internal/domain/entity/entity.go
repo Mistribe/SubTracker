@@ -7,8 +7,6 @@ import (
 )
 
 type Entity interface {
-	ETagEntity
-
 	Id() uuid.UUID
 	CreatedAt() time.Time
 	UpdatedAt() time.Time
@@ -17,11 +15,6 @@ type Entity interface {
 	SetUpdatedAt(updatedAt time.Time)
 	SetAsDirty()
 	IsExists() bool
-}
-
-type ETagEntity interface {
-	ETagFields() []interface{}
-	ETag() string
 }
 
 type Base struct {
@@ -85,16 +78,4 @@ func (b *Base) Equal(other Base) bool {
 	return b.id == other.id &&
 		b.createdAt == other.createdAt &&
 		b.updatedAt == other.updatedAt
-}
-
-func (b *Base) ETagFields() []interface{} {
-	return []interface{}{
-		b.id.String(),
-		b.createdAt,
-		b.updatedAt,
-	}
-}
-
-func (b *Base) ETag() string {
-	return CalculateETag(b)
 }

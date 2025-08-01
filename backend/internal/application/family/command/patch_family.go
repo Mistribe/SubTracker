@@ -51,7 +51,7 @@ func (h PatchFamilyCommandHandler) createFamily(
 		memberId,
 		cmd.Family.Id(),
 		"You",
-		false,
+		family.OwnerMemberType,
 		cmd.Family.CreatedAt(),
 		cmd.Family.UpdatedAt(),
 	)
@@ -90,11 +90,7 @@ func (h PatchFamilyCommandHandler) patchFamily(
 		if !ok {
 			fam.Members().Add(mbr)
 		} else {
-			if mbr.IsKid() {
-				existingMember.SetAsKid()
-			} else {
-				existingMember.SetAsAdult()
-			}
+			existingMember.SetType(mbr.Type())
 			existingMember.SetName(mbr.Name())
 			existingMember.SetUpdatedAt(mbr.UpdatedAt())
 

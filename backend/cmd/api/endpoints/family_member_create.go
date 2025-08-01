@@ -21,7 +21,7 @@ type FamilyMemberCreateEndpoint struct {
 type createFamilyMemberModel struct {
 	Id        *string    `json:"id,omitempty"`
 	Name      string     `json:"name" binding:"required"`
-	IsKid     bool       `json:"is_kid,omitempty"`
+	Type      string     `json:"type" binding:"required" enums:"owner,adult,kid"`
 	CreatedAt *time.Time `json:"created_at,omitempty" format:"date-time"`
 }
 
@@ -36,11 +36,15 @@ func (m createFamilyMemberModel) ToFamilyMember(familyId uuid.UUID) (family.Memb
 
 	createdAt = ext.ValueOrDefault(m.CreatedAt, time.Now())
 
+	memberType, err := family.ParseMemberType(m.Type)
+	if err != nil {
+		return nil, err
+	}
 	return family.NewMember(
 		id,
 		familyId,
 		m.Name,
-		m.IsKid,
+		memberType,
 		createdAt,
 		createdAt,
 	), nil

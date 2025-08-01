@@ -20,7 +20,7 @@ type FamilyMemberUpdateEndpoint struct {
 
 type updateFamilyMemberModel struct {
 	Name      string     `json:"name" binding:"required"`
-	IsKid     bool       `json:"is_kid" binding:"required"`
+	Type      string     `json:"type" binding:"required" enums:"owner,adult,kid"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
 
@@ -31,11 +31,16 @@ func (m updateFamilyMemberModel) Command(familyId, memberId uuid.UUID) (command.
 		updatedAt = option.Some(*m.UpdatedAt)
 	}
 
+	memberType, err := family.ParseMemberType(m.Type)
+	if err != nil {
+		return command.UpdateFamilyMemberCommand{}, err
+	}
+
 	return command.UpdateFamilyMemberCommand{
 		FamilyId:  familyId,
 		Id:        memberId,
 		Name:      m.Name,
-		IsKid:     m.IsKid,
+		Type:      memberType,
 		UpdatedAt: updatedAt,
 	}, nil
 }

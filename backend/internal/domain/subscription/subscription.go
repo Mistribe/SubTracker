@@ -21,23 +21,36 @@ type Subscription interface {
 	entity.Entity
 	entity.ETagEntity
 
+	// FriendlyName is an override name to the provider name
 	FriendlyName() *string
-	FamilyId() *uuid.UUID
-	FreeTrialDays() *uint
-	ServiceProviderId() uuid.UUID
-	PlanId() uuid.UUID
-	PriceId() uuid.UUID
+	//FreeTrial is the configuration of the free trial for the subscription
+	FreeTrial() FreeTrial
+	// ProviderId is the provider of the subscription
+	ProviderId() uuid.UUID
+	// PlanId reserved not used for now
+	PlanId() *uuid.UUID
+	// PriceId reserved not used for now
+	PriceId() *uuid.UUID
+	// CustomPrice is an override to the price Id
+	CustomPrice() CustomPrice
+	// Owner is who own the subscription
 	Owner() auth.Owner
+	// Payer is who is paying the subscription
 	Payer() Payer
+	// Service users is the member of the family using the service
 	ServiceUsers() *slicesx.Tracked[uuid.UUID]
+	// StartDate is when the subscription as start
 	StartDate() time.Time
+	// EndDate is when the subscription as stop
 	EndDate() *time.Time
+	// Recurrency defined the type of recurrency for the subscription
 	Recurrency() RecurrencyType
+	// CustomRecurrency When the recurrency is custom, this is the number of month between each recurrence
 	CustomRecurrency() *uint
 
 	SetFriendlyName(name *string)
-	SetFamilyId(*uuid.UUID)
-	SetFreeTrialDays(days *uint)
+	SetFreeTrial(trial FreeTrial)
+	SetCustomPrice(price CustomPrice)
 	SetOwner(owner auth.Owner)
 	SetPayer(payer Payer)
 	SetServiceUsers(familyMembers []uuid.UUID)
@@ -53,28 +66,29 @@ type Subscription interface {
 type subscription struct {
 	*entity.Base
 
-	friendlyName      *string
-	familyId          *uuid.UUID
-	freeTrialDays     *uint
-	serviceProviderId uuid.UUID
-	planId            uuid.UUID
-	priceId           uuid.UUID
-	owner             auth.Owner
-	payer             Payer
-	serviceUsers      *slicesx.Tracked[uuid.UUID]
-	startDate         time.Time
-	endDate           *time.Time
-	recurrency        RecurrencyType
-	customRecurrency  *uint
+	friendlyName     *string
+	freeTrial        FreeTrial
+	providerId       uuid.UUID
+	planId           *uuid.UUID
+	priceId          *uuid.UUID
+	customPrice      CustomPrice
+	owner            auth.Owner
+	payer            Payer
+	serviceUsers     *slicesx.Tracked[uuid.UUID]
+	startDate        time.Time
+	endDate          *time.Time
+	recurrency       RecurrencyType
+	customRecurrency *uint
 }
 
 func NewSubscription(
 	id uuid.UUID,
 	friendlyName *string,
-	freeTrialDays *uint,
-	serviceProviderId uuid.UUID,
-	planId uuid.UUID,
-	priceId uuid.UUID,
+	freeTrial FreeTrial,
+	providerId uuid.UUID,
+	planId *uuid.UUID,
+	priceId *uuid.UUID,
+	customPrice CustomPrice,
 	owner auth.Owner,
 	payer Payer,
 	serviceUsers []uuid.UUID,
@@ -86,19 +100,20 @@ func NewSubscription(
 	updatedAt time.Time,
 ) Subscription {
 	return &subscription{
-		Base:              entity.NewBase(id, createdAt, updatedAt, true, false),
-		friendlyName:      friendlyName,
-		freeTrialDays:     freeTrialDays,
-		serviceProviderId: serviceProviderId,
-		planId:            planId,
-		priceId:           priceId,
-		owner:             owner,
-		payer:             payer,
-		serviceUsers:      slicesx.NewTracked(serviceUsers, x.UuidUniqueComparer, x.UuidComparer),
-		startDate:         startDate,
-		endDate:           endDate,
-		recurrency:        recurrency,
-		customRecurrency:  customRecurrency,
+		Base:             entity.NewBase(id, createdAt, updatedAt, true, false),
+		friendlyName:     friendlyName,
+		freeTrial:        freeTrial,
+		providerId:       providerId,
+		planId:           planId,
+		priceId:          priceId,
+		customPrice:      customPrice,
+		owner:            owner,
+		payer:            payer,
+		serviceUsers:     slicesx.NewTracked(serviceUsers, x.UuidUniqueComparer, x.UuidComparer),
+		startDate:        startDate,
+		endDate:          endDate,
+		recurrency:       recurrency,
+		customRecurrency: customRecurrency,
 	}
 }
 
@@ -106,31 +121,28 @@ func (s *subscription) FriendlyName() *string {
 	return s.friendlyName
 }
 
-func (s *subscription) FreeTrialDays() *uint {
-	return s.freeTrialDays
+func (s *subscription) CustomPrice() CustomPrice {
+	return s.customPrice
 }
 
-func (s *subscription) FamilyId() *uuid.UUID {
-	return s.familyId
-}
-
-func (s *subscription) SetFamilyId(id *uuid.UUID) {
-	if s.familyId == id {
-		return
-	}
-	s.familyId = id
+func (s *subscription) SetCustomPrice(price CustomPrice) {
+	s.customPrice = price
 	s.SetAsDirty()
 }
 
-func (s *subscription) ServiceProviderId() uuid.UUID {
-	return s.serviceProviderId
+func (s *subscription) FreeTrial() FreeTrial {
+	return s.freeTrial
 }
 
-func (s *subscription) PlanId() uuid.UUID {
+func (s *subscription) ProviderId() uuid.UUID {
+	return s.providerId
+}
+
+func (s *subscription) PlanId() *uuid.UUID {
 	return s.planId
 }
 
-func (s *subscription) PriceId() uuid.UUID {
+func (s *subscription) PriceId() *uuid.UUID {
 	return s.priceId
 }
 
@@ -167,8 +179,8 @@ func (s *subscription) SetFriendlyName(name *string) {
 	s.SetAsDirty()
 }
 
-func (s *subscription) SetFreeTrialDays(days *uint) {
-	s.freeTrialDays = days
+func (s *subscription) SetFreeTrial(trial FreeTrial) {
+	s.freeTrial = trial
 	s.SetAsDirty()
 }
 
@@ -210,13 +222,11 @@ func (s *subscription) SetCustomRecurrency(customRecurrency *uint) {
 func (s *subscription) ETagFields() []interface{} {
 	fields := []interface{}{
 		s.friendlyName,
-		s.freeTrialDays,
-		s.serviceProviderId,
+		s.freeTrial.ETag(),
+		s.providerId,
 		s.planId,
 		s.priceId,
 		s.owner.ETag(),
-		s.payer.ETag(),
-		s.serviceUsers,
 		s.startDate,
 		s.endDate,
 		s.recurrency.String(),
@@ -236,7 +246,7 @@ func (s *subscription) ETagFields() []interface{} {
 	return fields
 }
 func (s *subscription) ETag() string {
-	return entity.CalculateETag(s, s.Base)
+	return entity.CalculateETag(s)
 }
 
 func (s *subscription) Equal(other Subscription) bool {

@@ -179,5 +179,5 @@ func (f *family) ETagFields() []interface{} {
 	return fields
 }
 func (f *family) ETag() string {
-	return entity.CalculateETag(f, f.Base)
+	return entity.CalculateETag(f)
 }

@@ -68,6 +68,7 @@ func AsUpdater(f any) any {
 func NewUpdaterModule() fx.Option {
 	return fx.Module("updater",
 		fx.Provide(
+			AsUpdater(newFamilyUpdater),
 			AsUpdater(newProviderUpdater),
 			AsUpdater(newLabelUpdater),
 			NewUpdaterService,

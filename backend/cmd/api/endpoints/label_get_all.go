@@ -56,7 +56,15 @@ func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
 		offset = 0
 	}
 
-	familyId := parseUuidOrNil(c.Query("familyId"))
+	familyIdParam := c.Query("familyId")
+	familyId, err := parseUuidOrNil(&familyIdParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httpError{
+			Message: err.Error(),
+		})
+		c.Abort()
+		return
+	}
 	q := query.NewFindAllQuery(ownerTypes, limit, offset, familyId)
 	r := e.handler.Handle(c, q)
 	handleResponse(c,

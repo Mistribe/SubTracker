@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+type ETagEntity interface {
+	ETagFields() []interface{}
+	ETag() string
+}
+
 func CalculateETag(etagEntities ...ETagEntity) string {
 	hasher := sha256.New()
 	var etagFields []interface{}

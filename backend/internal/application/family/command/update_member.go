@@ -15,7 +15,7 @@ type UpdateFamilyMemberCommand struct {
 	Id        uuid.UUID
 	FamilyId  uuid.UUID
 	Name      string
-	IsKid     bool
+	Type      family.MemberType
 	UpdatedAt option.Option[time.Time]
 }
 
@@ -49,23 +49,19 @@ func (h UpdateFamilyMemberCommandHandler) Handle(
 
 func (h UpdateFamilyMemberCommandHandler) updateFamilyMember(
 	ctx context.Context,
-	command UpdateFamilyMemberCommand,
+	cmd UpdateFamilyMemberCommand,
 	fam family.Family,
 	mbr family.Member) result.Result[family.Family] {
 	if err := ensureOwnerIsEditor(ctx, fam.OwnerId()); err != nil {
 		return result.Fail[family.Family](err)
 	}
-	mbr.SetName(command.Name)
-	if command.IsKid {
-		mbr.SetAsKid()
-	} else {
-		mbr.SetAsAdult()
-	}
+	mbr.SetName(cmd.Name)
+	mbr.SetType(cmd.Type)
 
-	command.UpdatedAt.IfSome(func(updatedAt time.Time) {
+	cmd.UpdatedAt.IfSome(func(updatedAt time.Time) {
 		mbr.SetUpdatedAt(updatedAt)
 	})
-	command.UpdatedAt.IfNone(func() {
+	cmd.UpdatedAt.IfNone(func() {
 		mbr.SetUpdatedAt(time.Now())
 	})
 

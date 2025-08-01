@@ -100,7 +100,7 @@ type familyMemberModel struct {
 	// @Description Name of the family member
 	Name string `json:"name" binding:"required" example:"John Smith"`
 	// @Description Whether this member is a child (affects permissions and features)
-	IsKid bool `json:"is_kid" binding:"required" example:"false"`
+	Type string `json:"type" binding:"required" enums:"owner,adult,kid"`
 	// @Description ID of the family this member belongs to
 	FamilyId string `json:"family_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
 	// @Description Indicates whether this member is the current authenticated user
@@ -117,7 +117,7 @@ func newFamilyMemberModel(currentUserId string, source family.Member) familyMemb
 	model := familyMemberModel{
 		Id:        source.Id().String(),
 		Name:      source.Name(),
-		IsKid:     source.IsKid(),
+		Type:      source.Type().String(),
 		FamilyId:  source.FamilyId().String(),
 		CreatedAt: source.CreatedAt(),
 		UpdatedAt: source.UpdatedAt(),

@@ -138,7 +138,7 @@ func (p *plan) ETagFields() []interface{} {
 }
 
 func (p *plan) ETag() string {
-	return entity.CalculateETag(p, p.Base)
+	return entity.CalculateETag(p)
 }
 
 func (p *plan) Equal(other Plan) bool {

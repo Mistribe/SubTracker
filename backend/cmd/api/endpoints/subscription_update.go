@@ -22,31 +22,32 @@ type SubscriptionUpdateEndpoint struct {
 }
 
 type UpdateSubscriptionModel struct {
-	FriendlyName      *string                         `json:"friendly_name,omitempty"`
-	FreeTrialDays     *uint                           `json:"free_trial_days,omitempty"`
-	ServiceProviderId string                          `json:"service_provider_id" binding:"required"`
-	PlanId            string                          `json:"plan_id" binding:"required"`
-	PriceId           string                          `json:"price_id" binding:"required"`
-	ServiceUsers      []string                        `json:"service_users,omitempty"`
-	StartDate         time.Time                       `json:"start_date" binding:"required" format:"date-time"`
-	EndDate           *time.Time                      `json:"end_date,omitempty" format:"date-time"`
-	Recurrency        string                          `json:"recurrency" binding:"required"`
-	CustomRecurrency  *uint                           `json:"custom_recurrency,omitempty"`
-	Payer             *EditableSubscriptionPayerModel `json:"payer,omitempty"`
-	Owner             EditableOwnerModel              `json:"owner" binding:"required"`
-	UpdatedAt         *time.Time                      `json:"updated_at,omitempty" format:"date-time"`
+	FriendlyName     *string                         `json:"friendly_name,omitempty"`
+	FreeTrial        *SubscriptionFreeTrialModel     `json:"free_trial,omitempty"`
+	ProviderId       string                          `json:"provider_id" binding:"required"`
+	PlanId           *string                         `json:"plan_id,omitempty"`
+	PriceId          *string                         `json:"price_id,omitempty"`
+	CustomPrice      *SubscriptionCustomPriceModel   `json:"custom_price,omitempty"`
+	ServiceUsers     []string                        `json:"service_users,omitempty"`
+	StartDate        time.Time                       `json:"start_date" binding:"required" format:"date-time"`
+	EndDate          *time.Time                      `json:"end_date,omitempty" format:"date-time"`
+	Recurrency       string                          `json:"recurrency" binding:"required"`
+	CustomRecurrency *uint                           `json:"custom_recurrency,omitempty"`
+	Payer            *EditableSubscriptionPayerModel `json:"payer,omitempty"`
+	Owner            EditableOwnerModel              `json:"owner" binding:"required"`
+	UpdatedAt        *time.Time                      `json:"updated_at,omitempty" format:"date-time"`
 }
 
 func (m UpdateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (subscription.Subscription, error) {
-	serviceProviderId, err := uuid.Parse(m.ServiceProviderId)
+	serviceProviderId, err := uuid.Parse(m.ProviderId)
 	if err != nil {
 		return nil, err
 	}
-	planId, err := uuid.Parse(m.PlanId)
+	planId, err := parseUuidOrNil(m.PlanId)
 	if err != nil {
 		return nil, err
 	}
-	priceId, err := uuid.Parse(m.PriceId)
+	priceId, err := parseUuidOrNil(m.PriceId)
 	if err != nil {
 		return nil, err
 	}
@@ -93,13 +94,19 @@ func (m UpdateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (s
 	if err != nil {
 		return nil, err
 	}
+	price, err := newSubscriptionCustomPrice(m.CustomPrice)
+	if err != nil {
+		return nil, err
+	}
+
 	return subscription.NewSubscription(
 		subId,
 		m.FriendlyName,
-		m.FreeTrialDays,
+		newSubscriptionFreeTrial(m.FreeTrial),
 		serviceProviderId,
 		planId,
 		priceId,
+		price,
 		owner,
 		payer,
 		serviceUsers,

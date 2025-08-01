@@ -11,6 +11,24 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import Price from "@/models/price";
 import getSymbolFromCurrency from "currency-symbol-map";
 
+// Define the type for form values
+export type PriceFormValues = {
+    amount: number;
+    currency: string;
+    startDate: string;
+    endDate?: string;
+};
+
+interface PriceFormProps {
+    price?: Price; // Optional - if provided, we're editing an existing price
+    existingPrices?: Price[]; // All prices in the current plan for overlap validation
+    currencies: string[];
+    isLoadingCurrencies: boolean;
+    onSubmit: SubmitHandler<PriceFormValues>;
+    onCancel: () => void;
+    isSubmitting: boolean;
+}
+
 // Helper function to check if date ranges overlap
 const datesOverlap = (
     startDate1: Date,
@@ -41,89 +59,63 @@ const datesOverlap = (
 // Define the price form schema with custom refinement for date overlap validation
 const createPriceFormSchema = (existingPrices: Price[] = [], currentPriceId?: string) => {
     return z.object({
-        amount: z.preprocess(
-            // Convert string to number and handle NaN
-            (val) => {
-                const parsed = parseFloat(val as string);
-                return isNaN(parsed) ? undefined : parsed;
-            },
-            z.number()
-                .min(0, "Amount must be a positive number")
-                .describe("Amount must be a valid number")
-        ),
+        amount: z.number().min(0, "Amount must be a positive number").describe("Amount must be a valid number"),
         currency: z.string().min(1, "Currency is required"),
         startDate: z.string().min(1, "Start date is required"),
         endDate: z.string().optional(),
     })
-    // First refinement: Validate end date is after start date
-    .refine((data) => {
-        if (!data.startDate || !data.endDate) {
-            return true; // Skip validation if either date is missing
-        }
-        
-        const startDate = new Date(data.startDate);
-        const endDate = new Date(data.endDate);
-        
-        return startDate <= endDate;
-    }, {
-        message: "End date must be after start date",
-        path: ["endDate"] // Show error on the end date field
-    })
-    // Second refinement: Check for overlapping date ranges
-    .refine((data) => {
-        // Skip validation if no currency or start date
-        if (!data.currency || !data.startDate) {
-            return true;
-        }
-
-        const newStartDate = new Date(data.startDate);
-        const newEndDate = data.endDate ? new Date(data.endDate) : null;
-
-        // Check for overlaps with existing prices of the same currency
-        const overlappingPrice = existingPrices.find(price => {
-            // Skip the current price being edited
-            if (currentPriceId && price.id === currentPriceId) {
-                return false;
+        // First refinement: Validate end date is after start date
+        .refine((data) => {
+            if (!data.startDate || !data.endDate) {
+                return true; // Skip validation if either date is missing
             }
 
-            // Only check prices with the same currency
-            if (price.currency !== data.currency) {
-                return false;
+            const startDate = new Date(data.startDate);
+            const endDate = new Date(data.endDate);
+
+            return startDate <= endDate;
+        }, {
+            message: "End date must be after start date",
+            path: ["endDate"] // Show error on the end date field
+        })
+        // Second refinement: Check for overlapping date ranges
+        .refine((data) => {
+            // Skip validation if no currency or start date
+            if (!data.currency || !data.startDate) {
+                return true;
             }
 
-            // Check if date ranges overlap
-            return datesOverlap(
-                newStartDate,
-                newEndDate,
-                price.startDate,
-                price.endDate
-            );
+            const newStartDate = new Date(data.startDate);
+            const newEndDate = data.endDate ? new Date(data.endDate) : null;
+
+            // Check for overlaps with existing prices of the same currency
+            const overlappingPrice = existingPrices.find(price => {
+                // Skip the current price being edited
+                if (currentPriceId && price.id === currentPriceId) {
+                    return false;
+                }
+
+                // Only check prices with the same currency
+                if (price.currency !== data.currency) {
+                    return false;
+                }
+
+                // Check if date ranges overlap
+                return datesOverlap(
+                    newStartDate,
+                    newEndDate,
+                    price.startDate,
+                    price.endDate
+                );
+            });
+
+            return !overlappingPrice;
+        }, {
+            message: "Date range overlaps with an existing price for the same currency",
+            path: ["startDate"] // Show error on the start date field
         });
-
-        return !overlappingPrice;
-    }, {
-        message: "Date range overlaps with an existing price for the same currency",
-        path: ["startDate"] // Show error on the start date field
-    });
 };
 
-// Define the type for form values
-export type PriceFormValues = {
-    amount: number;
-    currency: string;
-    startDate: string;
-    endDate?: string;
-};
-
-interface PriceFormProps {
-    price?: Price; // Optional - if provided, we're editing an existing price
-    existingPrices?: Price[]; // All prices in the current plan for overlap validation
-    currencies: string[];
-    isLoadingCurrencies: boolean;
-    onSubmit: SubmitHandler<PriceFormValues>;
-    onCancel: () => void;
-    isSubmitting: boolean;
-}
 
 export function PriceForm({
                               price,
@@ -140,7 +132,7 @@ export function PriceForm({
     // Helper function to find the latest end date for a currency
     const getLatestEndDateForCurrency = (currency: string): string => {
         if (!existingPrices.length) return new Date().toISOString().split('T')[0];
-        
+
         // Filter prices by currency and sort by end date (most recent first)
         const currencyPrices = existingPrices
             .filter(p => p.currency === currency)
@@ -149,24 +141,24 @@ export function PriceForm({
                 if (!a.endDate && !b.endDate) return 0;
                 if (!a.endDate) return -1; // a is active, should come first
                 if (!b.endDate) return 1;  // b is active, should come first
-                
+
                 // Both have end dates, compare them
                 return b.endDate.getTime() - a.endDate.getTime();
             });
-            
+
         // If no prices for this currency, return today
         if (currencyPrices.length === 0) return new Date().toISOString().split('T')[0];
-        
+
         // Get the most recent price
         const latestPrice = currencyPrices[0];
-        
+
         // If it has an end date, use that (plus one day), otherwise use today
         if (latestPrice.endDate) {
             const nextDay = new Date(latestPrice.endDate);
             nextDay.setDate(nextDay.getDate() + 1); // Add one day to avoid overlap
             return nextDay.toISOString().split('T')[0];
         }
-        
+
         return new Date().toISOString().split('T')[0];
     };
 
@@ -176,7 +168,7 @@ export function PriceForm({
             // If editing, use the existing start date
             return price.startDate.toISOString().split('T')[0];
         }
-        
+
         // For new prices, use the latest end date for the default currency
         return getLatestEndDateForCurrency(price?.currency || "USD");
     };
@@ -241,17 +233,17 @@ export function PriceForm({
                                             value={currentCurrency}
                                             placeholder="Loading currencies..."
                                         />
-                                        <input 
-                                            type="hidden" 
-                                            {...register("currency")} 
-                                            value={currentCurrency} 
+                                        <input
+                                            type="hidden"
+                                            {...register("currency")}
+                                            value={currentCurrency}
                                         />
                                     </div>
                                 ) : (
                                     <Select
                                         onValueChange={(value) => {
                                             setValue("currency", value);
-                                            
+
                                             // Only update start date for new prices (not when editing)
                                             if (!isEditing) {
                                                 // Set start date based on the selected currency

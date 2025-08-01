@@ -238,7 +238,7 @@ func (p *provider) ETagFields() []interface{} {
 }
 
 func (p *provider) ETag() string {
-	return entity.CalculateETag(p, p.Base)
+	return entity.CalculateETag(p)
 }
 
 func (p *provider) Equal(other Provider) bool {

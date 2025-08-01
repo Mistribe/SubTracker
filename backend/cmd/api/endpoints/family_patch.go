@@ -30,7 +30,7 @@ type patchFamilyMemberModel struct {
 	// member's name
 	Name string `json:"name" binding:"required"`
 	// Indicates if the member is a kid
-	IsKid bool `json:"is_kid" binding:"required"`
+	Type string `json:"type" binding:"required" enums:"owner,adult,kid"`
 	// Optional timestamp of the last update
 	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
 }
@@ -45,11 +45,16 @@ func (m patchFamilyMemberModel) Command(familyId uuid.UUID) (family.Member, erro
 	}
 	updatedAt := ext.ValueOrDefault(m.UpdatedAt, time.Now())
 
+	memberType, err := family.ParseMemberType(m.Type)
+	if err != nil {
+		return nil, err
+	}
+
 	return family.NewMember(
 		id,
 		familyId,
 		m.Name,
-		m.IsKid,
+		memberType,
 		updatedAt,
 		updatedAt,
 	), nil

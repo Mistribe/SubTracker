@@ -77,7 +77,7 @@ func (h CreateFamilyCommandHandler) createFamily(
 		memberId,
 		*cmd.FamilyId,
 		cmd.CreatorName,
-		false,
+		family.OwnerMemberType,
 		createdAt,
 		createdAt,
 	)
