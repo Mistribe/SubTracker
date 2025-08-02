@@ -9,11 +9,12 @@ import (
 
 	"github.com/Oleexo/config-go"
 	"github.com/google/uuid"
+	"golang.org/x/text/currency"
+
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/provider"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 	"github.com/oleexo/subtracker/pkg/slicesx"
-	"golang.org/x/text/currency"
 )
 
 type systemSubscriptionModel struct {

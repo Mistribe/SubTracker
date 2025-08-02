@@ -7,11 +7,11 @@ import (
 )
 
 type QueryParameters struct {
-	Limit  int
-	Offset int
+	Limit  int32
+	Offset int32
 }
 
-func NewQueryParameters(limit, offset int) QueryParameters {
+func NewQueryParameters(limit, offset int32) QueryParameters {
 	return QueryParameters{
 		Limit:  limit,
 		Offset: offset,
@@ -20,7 +20,7 @@ func NewQueryParameters(limit, offset int) QueryParameters {
 
 type Repository[TEntity Entity] interface {
 	GetById(ctx context.Context, entityId uuid.UUID) (TEntity, error)
-	Save(ctx context.Context, entity TEntity) error
+	Save(ctx context.Context, entities ...TEntity) error
 	Delete(ctx context.Context, entityId uuid.UUID) (bool, error)
 	Exists(ctx context.Context, ids ...uuid.UUID) (bool, error)
 }

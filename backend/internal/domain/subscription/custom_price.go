@@ -1,8 +1,9 @@
 package subscription
 
 import (
-	"github.com/oleexo/subtracker/internal/domain/entity"
 	"golang.org/x/text/currency"
+
+	"github.com/oleexo/subtracker/internal/domain/entity"
 )
 
 type CustomPrice interface {

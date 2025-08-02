@@ -2,198 +2,246 @@ package persistence
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/internal/domain/family"
+	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 type FamilyRepository struct {
-	repository *DatabaseContext
+	dbContext *DatabaseContext
 }
 
 func NewFamilyRepository(repository *DatabaseContext) family.Repository {
 	return &FamilyRepository{
-		repository: repository,
+		dbContext: repository,
 	}
 }
 
 func (r FamilyRepository) GetById(ctx context.Context, id uuid.UUID) (family.Family, error) {
-	var model FamilySqlModel
-	result := r.repository.db.WithContext(ctx).
-		Preload("Members").
-		First(&model, id)
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, nil
+	response, err := r.dbContext.GetQueries(ctx).GetFamilyById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if len(response) == 0 {
+		return nil, nil
+	}
+	families := createFamilyFromSqlcRows(response,
+		func(row sql.GetFamilyByIdRow) sql.Family {
+			return row.Family
+		}, func(row sql.GetFamilyByIdRow) sql.FamilyMember {
+			return row.FamilyMember
+		},
+	)
+	if len(families) == 0 {
+		return nil, nil
+	}
+	return families[0], nil
+}
+
+func (r FamilyRepository) GetAll(ctx context.Context, parameters entity.QueryParameters) ([]family.Family, int64,
+	error) {
+	userId, ok := auth.GetUserIdFromContext(ctx)
+	if !ok {
+		return []family.Family{}, 0, nil
+	}
+
+	response, err := r.dbContext.GetQueries(ctx).GetFamiliesForUser(ctx, sql.GetFamiliesForUserParams{
+		UserID: &userId,
+		Limit:  parameters.Limit,
+		Offset: parameters.Offset,
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	if len(response) == 0 {
+		return nil, 0, nil
+	}
+	families := createFamilyFromSqlcRows(response,
+		func(row sql.GetFamiliesForUserRow) sql.Family {
+			return row.Family
+		}, func(row sql.GetFamiliesForUserRow) sql.FamilyMember {
+			return row.FamilyMember
+		},
+	)
+	if len(families) == 0 {
+		return nil, 0, nil
+	}
+	return families, response[0].TotalCount, nil
+}
+
+func (r FamilyRepository) Save(ctx context.Context, families ...family.Family) error {
+	var newFamilies []family.Family
+	for _, fam := range families {
+		if !fam.IsExists() {
+			newFamilies = append(newFamilies, fam)
+		} else {
+			if err := r.update(ctx, fam); err != nil {
+				return err
+			}
 		}
-		return nil, result.Error
-	}
-	fam := newFamily(model)
-	fam.Clean()
-	return fam, nil
-}
-
-func (r FamilyRepository) GetAll(ctx context.Context, parameters entity.QueryParameters) ([]family.Family, error) {
-	userId, ok := auth.GetUserIdFromContext(ctx)
-	if !ok {
-		return []family.Family{}, nil
-	}
-	var familyModels []FamilySqlModel
-	query := r.repository.db.WithContext(ctx).
-		Preload("Members").
-		Where("owner_id = ?", userId)
-	if parameters.Offset > 0 {
-		query = query.Offset(parameters.Offset)
-	}
-	if parameters.Limit > 0 {
-		query = query.Limit(parameters.Limit)
 	}
 
-	result := query.Find(&familyModels)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	families := make([]family.Family, 0, len(familyModels))
-	for _, model := range familyModels {
-		fam := newFamily(model)
-		families = append(families, fam)
-	}
-	return families, nil
-}
-
-func (r FamilyRepository) GetAllCount(ctx context.Context) (int64, error) {
-	userId, ok := auth.GetUserIdFromContext(ctx)
-	if !ok {
-		return 0, nil
-	}
-	var count int64
-	result := r.repository.db.WithContext(ctx).
-		Model(&FamilySqlModel{}).
-		Where("owner_id = ?", userId).
-		Count(&count)
-	if result.Error != nil {
-		return 0, result.Error
-	}
-	return count, nil
-}
-
-func (r FamilyRepository) GetAllMembers(ctx context.Context, familyId uuid.UUID) ([]family.Member, error) {
-	var members []FamilyMemberSqlModel
-	if result := r.repository.db.WithContext(ctx).Where("family_id = ?", familyId).Find(&members); result.Error != nil {
-		return nil, result.Error
-	}
-	result := make([]family.Member, 0, len(members))
-	for _, model := range members {
-		mbr := newFamilyMember(model)
-		result = append(result, mbr)
-	}
-	return result, nil
-}
-
-func (r FamilyRepository) Save(ctx context.Context, dirtyFamily family.Family) error {
-	if !dirtyFamily.IsDirty() {
-		return nil
-	}
-	dbMember := newFamilySqlModel(dirtyFamily)
-	var result *gorm.DB
-	if dirtyFamily.IsExists() {
-		result = r.repository.db.WithContext(ctx).
-			Omit("Members").
-			Save(&dbMember)
-	} else {
-		result = r.repository.db.WithContext(ctx).
-			Omit("Members").
-			Create(&dbMember)
+	if len(newFamilies) > 0 {
+		if err := r.create(ctx, newFamilies); err != nil {
+			return err
+		}
 	}
 
-	if result.Error != nil {
-		return result.Error
+	for _, fam := range families {
+		for _, mbr := range fam.Members().Values() {
+			mbr.Clean()
+		}
+		fam.Clean()
 	}
-
-	if err := saveTrackedSlice(ctx,
-		r.repository.db,
-		dirtyFamily.Members(), func(mbr family.Member) FamilyMemberSqlModel {
-			return newFamilyMemberSqlModel(mbr)
-		}); err != nil {
-		return err
-	}
-	dirtyFamily.Clean()
 	return nil
 }
 
-func (r FamilyRepository) DeleteMember(ctx context.Context, memberId uuid.UUID) (bool, error) {
-	result := r.repository.db.WithContext(ctx).Delete(&FamilyMemberSqlModel{}, memberId)
-	if result.Error != nil {
-		return false, result.Error
+func (r FamilyRepository) create(ctx context.Context, families []family.Family) error {
+	if len(families) == 0 {
+		return nil
+	}
+	familyArgs := slicesx.Select(families, func(family family.Family) sql.CreateFamiliesParams {
+		return sql.CreateFamiliesParams{
+			ID:        family.Id(),
+			Name:      family.Name(),
+			OwnerID:   family.OwnerId(),
+			CreatedAt: family.CreatedAt(),
+			UpdatedAt: family.UpdatedAt(),
+			Etag:      family.ETag(),
+		}
+	})
+	_, err := r.dbContext.GetQueries(ctx).CreateFamilies(ctx, familyArgs)
+	if err != nil {
+		return err
 	}
 
-	if result.RowsAffected == 0 {
-		return false, nil
+	memberArgs := slicesx.SelectMany(families, func(fam family.Family) []sql.CreateFamilyMembersParams {
+		return slicesx.Select(fam.Members().Values(), func(member family.Member) sql.CreateFamilyMembersParams {
+			return sql.CreateFamilyMembersParams{
+				ID:        member.Id(),
+				FamilyID:  fam.Id(),
+				UserID:    member.UserId(),
+				Name:      member.Name(),
+				Type:      member.Type().String(),
+				CreatedAt: member.CreatedAt(),
+				UpdatedAt: member.UpdatedAt(),
+				Etag:      member.ETag(),
+			}
+		})
+	})
+
+	if len(memberArgs) > 0 {
+		_, err = r.dbContext.GetQueries(ctx).CreateFamilyMembers(ctx, memberArgs)
+		if err != nil {
+			return err
+		}
 	}
-	return true, nil
+
+	return nil
+}
+
+func (r FamilyRepository) update(ctx context.Context, fam family.Family) error {
+	if !fam.IsDirty() {
+		return nil
+	}
+	err := r.dbContext.GetQueries(ctx).UpdateFamily(ctx, sql.UpdateFamilyParams{
+		ID:        fam.Id(),
+		Name:      fam.Name(),
+		OwnerID:   fam.OwnerId(),
+		UpdatedAt: fam.UpdatedAt(),
+	})
+	if err != nil {
+		return err
+	}
+
+	err = saveTrackedSlice(ctx,
+		r.dbContext,
+		fam.Members(),
+		func(ctx context.Context, queries *sql.Queries, members []family.Member) error {
+			args := slicesx.Select(members, func(member family.Member) sql.CreateFamilyMembersParams {
+				return sql.CreateFamilyMembersParams{
+					ID:        member.Id(),
+					FamilyID:  fam.Id(),
+					UserID:    member.UserId(),
+					Name:      member.Name(),
+					Type:      member.Type().String(),
+					CreatedAt: member.CreatedAt(),
+					UpdatedAt: member.UpdatedAt(),
+					Etag:      member.ETag(),
+				}
+			})
+			_, qErr := queries.CreateFamilyMembers(ctx, args)
+			return qErr
+		},
+		func(ctx context.Context, queries *sql.Queries, member family.Member) error {
+			return queries.UpdateFamilyMember(ctx, sql.UpdateFamilyMemberParams{
+				ID:        member.Id(),
+				FamilyID:  member.FamilyId(),
+				UserID:    member.UserId(),
+				Name:      member.Name(),
+				Type:      member.Type().String(),
+				UpdatedAt: member.UpdatedAt(),
+				Etag:      member.ETag(),
+			})
+		},
+		func(ctx context.Context, queries *sql.Queries, member family.Member) error {
+			return queries.DeleteFamilyMember(ctx, member.Id())
+		},
+	)
+
+	if err != nil {
+		return err
+	}
+	return err
 }
 
 func (r FamilyRepository) Delete(ctx context.Context, familyId uuid.UUID) (bool, error) {
-	result := r.repository.db.WithContext(ctx).Delete(&FamilySqlModel{}, familyId)
-	if result.Error != nil {
-		return false, result.Error
-	}
-
-	if result.RowsAffected == 0 {
-		return false, nil
+	err := r.dbContext.GetQueries(ctx).DeleteFamily(ctx, familyId)
+	if err != nil {
+		return false, err
 	}
 
 	return true, nil
 }
 
 func (r FamilyRepository) MemberExists(ctx context.Context, familyId uuid.UUID, members ...uuid.UUID) (bool, error) {
-	var count int64
-	if len(members) == 1 {
-		result := r.repository.db.WithContext(ctx).Model(&FamilyMemberSqlModel{}).Where("family_id = ? AND id = ?",
-			familyId, members[0]).Count(&count)
-		if result.Error != nil {
-			return false, result.Error
-		}
-	} else {
-		result := r.repository.db.WithContext(ctx).Model(&FamilyMemberSqlModel{}).Where("family_id = ? AND id IN ?",
-			familyId, members).Count(&count)
-		if result.Error != nil {
-			return false, result.Error
-		}
+	if len(members) == 0 {
+		return true, nil
 	}
-	return count == int64(len(members)), nil
+	count, err := r.dbContext.GetQueries(ctx).IsMemberExists(ctx, sql.IsMemberExistsParams{
+		FamilyID: familyId,
+		Column2:  members,
+	})
+	if err != nil {
+		return false, err
+	}
+	return count > int64(len(members)), nil
 }
 
 func (r FamilyRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
-	var count int64
-	if len(ids) == 1 {
-		result := r.repository.db.WithContext(ctx).Model(&FamilySqlModel{}).Where("id = ?", ids[0]).Count(&count)
-		if result.Error != nil {
-			return false, result.Error
-		}
-	} else {
-		result := r.repository.db.WithContext(ctx).Model(&FamilySqlModel{}).Where("id IN ?", ids).Count(&count)
-		if result.Error != nil {
-			return false, result.Error
-		}
+	if len(ids) == 0 {
+		return true, nil
 	}
 
-	return count == int64(len(ids)), nil
+	count, err := r.dbContext.GetQueries(ctx).IsFamilyExists(ctx, ids)
+	if err != nil {
+		return false, err
+	}
+	return count > int64(len(ids)), nil
 }
 
 func (r FamilyRepository) IsUserMemberOfFamily(ctx context.Context, familyId uuid.UUID, userId string) (bool, error) {
-	var count int64
-	result := r.repository.db.WithContext(ctx).
-		Model(&FamilyMemberSqlModel{}).
-		Where("family_id = ? AND user_id = ?", familyId, userId).
-		Count(&count)
-	if result.Error != nil {
-		return false, result.Error
+	count, err := r.dbContext.GetQueries(ctx).IsMemberOfFamily(ctx, sql.IsMemberOfFamilyParams{
+		FamilyID: familyId,
+		UserID:   &userId,
+	})
+	if err != nil {
+		return false, err
 	}
 	return count > 0, nil
 }

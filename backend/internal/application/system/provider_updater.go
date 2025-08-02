@@ -36,7 +36,7 @@ func (m labelMap) Keys() []string {
 	results := make([]string, len(m))
 
 	idx := 0
-	for k, _ := range m {
+	for k := range m {
 		results[idx] = k
 		idx++
 	}

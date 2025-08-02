@@ -2,6 +2,7 @@ package query
 
 import (
 	"context"
+
 	"github.com/oleexo/subtracker/internal/domain/entity"
 
 	"github.com/oleexo/subtracker/internal/application/core"

@@ -1,0 +1,59 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "internal/infrastructure/persistence/sql"
+    schema: "database"
+    gen:
+      go:
+        package: "sql"
+        out: "internal/infrastructure/persistence/sql"
+        sql_package: "pgx/v5"
+        overrides:
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+              pointer: false
+            nullable: false
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+              pointer: true
+            nullable: true
+          - db_type: "pg_catalog.timestamp"
+            go_type:
+              import: "time"
+              type: "Time"
+              pointer: false
+            nullable: false
+          - db_type: "pg_catalog.timestamp"
+            go_type:
+              import: "time"
+              type: "Time"
+              pointer: true
+            nullable: true
+          - db_type: "pg_catalog.numeric"
+            go_type:
+              type: "float64"
+            nullable: false
+          - db_type: "pg_catalog.numeric"
+            go_type:
+              type: "float64"
+              pointer: true
+            nullable: true
+          - db_type: "pg_catalog.varchar"
+            go_type:
+              type: "string"
+              pointer: true
+            nullable: true
+          - db_type: "pg_catalog.int4"
+            go_type:
+              type: "int32"
+              pointer: false
+            nullable: false
+          - db_type: "pg_catalog.int4"
+            go_type:
+              type: "int32"
+              pointer: true
+            nullable: true

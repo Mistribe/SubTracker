@@ -7,101 +7,74 @@ import (
 	"time"
 
 	"github.com/Oleexo/config-go"
-	sloggorm "github.com/orandin/slog-gorm"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
+)
+
+const (
+	TransactionKey = "X-pgx-transaction"
 )
 
 type DatabaseContext struct {
-	db *gorm.DB
+	pool    *pgxpool.Pool
+	queries *sql.Queries
 }
 
 func NewDatabaseContext(
 	cfg config.Configuration,
 	logger *slog.Logger) *DatabaseContext {
 	dsn := cfg.GetString("DATABASE_DSN")
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: sloggorm.New(
-			sloggorm.WithLogger(logger),
-			sloggorm.WithTraceAll(), // Log all SQL queries
-		),
-	})
-	if err != nil {
-		panic(err)
-	}
-	// Get the underlying SQL database connection
-	sqlDB, err := db.DB()
+
+	// Parse pgxConfig and set pool settings
+	pgxConfig, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		panic(err)
 	}
 
 	// Configure connection pool settings
-	sqlDB.SetMaxOpenConns(25)                  // Maximum number of open connections
-	sqlDB.SetMaxIdleConns(5)                   // Maximum number of idle connections
-	sqlDB.SetConnMaxLifetime(time.Hour)        // Maximum connection lifetime
-	sqlDB.SetConnMaxIdleTime(30 * time.Minute) // Maximum connection idle time
+	pgxConfig.MaxConns = 25                      // Maximum number of connections
+	pgxConfig.MinConns = 5                       // Minimum number of connections to maintain
+	pgxConfig.MaxConnLifetime = time.Hour        // Maximum connection lifetime
+	pgxConfig.MaxConnIdleTime = 30 * time.Minute // Maximum connection idle time
+
+	// Create connection pool
+	pool, err := pgxpool.NewWithConfig(context.Background(), pgxConfig)
+	if err != nil {
+		panic(err)
+	}
+
+	// Create sqlc queries instance with the pool
+	queries := sql.New(pool)
 
 	return &DatabaseContext{
-		db: db,
+		pool:    pool,
+		queries: queries,
 	}
 }
 
-func (r DatabaseContext) GetDB() *gorm.DB {
-	return r.db
+func (r *DatabaseContext) GetPool() *pgxpool.Pool {
+	return r.pool
 }
 
-func (r DatabaseContext) Close() error {
-	if r.db != nil {
-		sqlDB, err := r.db.DB()
-		if err != nil {
-			return err
-		}
-		return sqlDB.Close()
+func (r *DatabaseContext) GetQueries(ctx context.Context) *sql.Queries {
+	tx, ok := ctx.Value(TransactionKey).(pgx.Tx)
+	if ok {
+		return r.queries.WithTx(tx)
 	}
-	return nil
+	return r.queries
 }
 
-func (r DatabaseContext) Ping() error {
-	if r.db != nil {
-		sqlDB, err := r.db.DB()
-		if err != nil {
-			return err
-		}
-		return sqlDB.Ping()
+func (r *DatabaseContext) Close() {
+	if r.pool != nil {
+		r.pool.Close()
 	}
-	return errors.New("database connection is nil")
 }
 
-type DatabaseContextTask struct {
-	repository *DatabaseContext
-}
-
-func (r DatabaseContextTask) Priority() int {
-	return -1
-}
-
-func newRepositoryTask(repository *DatabaseContext) *DatabaseContextTask {
-	return &DatabaseContextTask{repository: repository}
-}
-
-func (r DatabaseContextTask) OnStart(_ context.Context) error {
-	if err := r.repository.db.AutoMigrate(
-		&FamilySqlModel{},
-		&FamilyMemberSqlModel{},
-		&LabelSqlModel{},
-		&ProviderSqlModel{},
-		&providerLabelSqlModel{},
-		&providerPlanSqlModel{},
-		&providerPriceSqlModel{},
-		&SubscriptionSqlModel{},
-		&SubscriptionServiceUserModel{},
-	); err != nil {
-		return err
+func (r *DatabaseContext) Ping(ctx context.Context) error {
+	if r.pool != nil {
+		return r.pool.Ping(ctx)
 	}
-
-	return nil
-}
-
-func (r DatabaseContextTask) OnStop(_ context.Context) error {
-	return r.repository.Close()
+	return errors.New("database pool is nil")
 }
