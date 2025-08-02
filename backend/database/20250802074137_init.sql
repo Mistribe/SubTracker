@@ -67,6 +67,12 @@ CREATE TABLE public.provider_labels
 (
     label_id    uuid NOT NULL,
     provider_id uuid NOT NULL,
+    CONSTRAINT fk_provider_labels_labels
+        FOREIGN KEY (label_id)
+            REFERENCES public.labels ON DELETE CASCADE,
+    CONSTRAINT fk_provider_labels_providers
+        FOREIGN KEY (provider_id)
+            REFERENCES public.providers ON DELETE CASCADE,
     PRIMARY KEY (label_id, provider_id)
 );
 

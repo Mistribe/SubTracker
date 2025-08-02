@@ -25,13 +25,6 @@ WHERE l.owner_family_id IS NULL
   AND l.owner_user_id IS NULL
   AND l.owner_type = 'system';
 
--- name: GetLabelsForOwner :many
-SELECT *, COUNT(*) OVER () AS total_count
-FROM public.labels l
-WHERE (l.owner_type = $1 AND l.owner_user_id = $2)
-   OR (l.owner_type = $3 AND l.owner_family_id = $4)
-LIMIT $5 OFFSET $6;
-
 -- name: IsLabelExists :one
 SELECT COUNT(*)
 FROM public.labels l

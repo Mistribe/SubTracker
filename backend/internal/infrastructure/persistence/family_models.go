@@ -27,7 +27,8 @@ func createFamilyMemberFromSqlc(sqlcMember sql.FamilyMember) family.Member {
 	return member
 }
 
-func createFamilyFromSqlcRows[T any](rows []T, getFamilyFunc func(T) sql.Family,
+func createFamilyFromSqlcRows[T any](rows []T,
+	getFamilyFunc func(T) sql.Family,
 	getMemberFunc func(T) sql.FamilyMember) []family.Family {
 	if len(rows) == 0 {
 		return nil

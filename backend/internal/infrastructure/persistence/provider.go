@@ -2,23 +2,22 @@ package persistence
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/internal/domain/provider"
+	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 type ProviderRepository struct {
-	repository *DatabaseContext
+	dbContext *DatabaseContext
 }
 
 func NewProviderRepository(repository *DatabaseContext) provider.Repository {
-	return &ProviderRepository{repository: repository}
+	return &ProviderRepository{dbContext: repository}
 }
 
 func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (provider.Provider, error) {
@@ -26,91 +25,98 @@ func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (
 	if !ok {
 		return nil, nil
 	}
-	var model ProviderSqlModel
-	result := r.repository.db.WithContext(ctx).
-		Preload("Labels").
-		Preload("Plans").
-		Preload("Plans.Prices").
-		// todo add filter by owner
-		First(&model, providerId)
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, result.Error
+	response, err := r.dbContext.GetQueries(ctx).GetProviderById(ctx, providerId)
+	if err != nil {
+		return nil, err
 	}
-	p := newProvider(model)
-	p.Clean()
-	return p, nil
+	if len(response) == 0 {
+		return nil, nil
+	}
+	providers := createProviderFromSqlcRows(response,
+		func(row sql.GetProviderByIdRow) sql.Provider {
+			return row.Provider
+		},
+		func(row sql.GetProviderByIdRow) sql.ProviderPlan {
+			return row.ProviderPlan
+		},
+		func(row sql.GetProviderByIdRow) sql.ProviderPrice {
+			return row.ProviderPrice
+		},
+	)
+
+	if len(providers) == 0 {
+		return nil, nil
+	}
+
+	return providers[0], nil
 }
 
-func (r *ProviderRepository) GetSystemProviders(ctx context.Context) ([]provider.Provider, error) {
-	var providerSqlModels []ProviderSqlModel
-	result := r.repository.db.WithContext(ctx).
-		Joins("LEFT JOIN provider_labels on provider_labels.provider_id = providers.id").
-		Preload("Plans").
-		Preload("Plans.Prices").
-		Where("owner_type = ?", auth.SystemOwnerType.String()).
-		Find(&providerSqlModels)
-	if result.Error != nil {
-		return nil, result.Error
+func (r ProviderRepository) GetSystemProviders(ctx context.Context) ([]provider.Provider, error) {
+	response, err := r.dbContext.GetQueries(ctx).GetSystemProviders(ctx)
+	if err != nil {
+		return nil, err
 	}
-	providers := make([]provider.Provider, 0, len(providerSqlModels))
-	for _, model := range providerSqlModels {
-		p := newProvider(model)
-		p.Clean()
-		providers = append(providers, p)
+	if len(response) == 0 {
+		return nil, nil
 	}
+	providers := createProviderFromSqlcRows(response,
+		func(row sql.GetSystemProvidersRow) sql.Provider {
+			return row.Provider
+		},
+		func(row sql.GetSystemProvidersRow) sql.ProviderPlan {
+			return row.ProviderPlan
+		},
+		func(row sql.GetSystemProvidersRow) sql.ProviderPrice {
+			return row.ProviderPrice
+		},
+	)
+
+	if len(providers) == 0 {
+		return nil, nil
+	}
+
 	return providers, nil
 }
 
 func (r ProviderRepository) GetAll(ctx context.Context, parameters entity.QueryParameters) (
 	[]provider.Provider,
+	int64,
 	error) {
 	_, ok := auth.GetUserIdFromContext(ctx)
 	if !ok {
-		return nil, nil
+		return nil, 0, nil
 	}
 
-	var providerSqlModels []ProviderSqlModel
-	query := r.repository.db.WithContext(ctx).
-		Preload("Labels").
-		Preload("Plans").
-		Preload("Plans.Prices")
-	// todo add filter by owner
+	response, err := r.dbContext.GetQueries(ctx).GetProviders(ctx, sql.GetProvidersParams{
+		Limit:  parameters.Limit,
+		Offset: parameters.Offset,
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	if len(response) == 0 {
+		return nil, 0, nil
+	}
+	providers := createProviderFromSqlcRows(response,
+		func(row sql.GetProvidersRow) sql.Provider {
+			return row.Provider
+		},
+		func(row sql.GetProvidersRow) sql.ProviderPlan {
+			return row.ProviderPlan
+		},
+		func(row sql.GetProvidersRow) sql.ProviderPrice {
+			return row.ProviderPrice
+		},
+	)
 
-	if parameters.Offset >= 0 {
-		query = query.Offset(parameters.Offset)
+	if len(providers) == 0 {
+		return nil, 0, nil
 	}
-	if parameters.Limit > 0 {
-		query = query.Limit(parameters.Limit)
-	}
-	result := query.Find(&providerSqlModels)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	providers := make([]provider.Provider, 0, len(providerSqlModels))
-	for _, model := range providerSqlModels {
-		p := newProvider(model)
-		p.Clean()
-		providers = append(providers, p)
-	}
-	return providers, nil
+
+	return providers, response[0].TotalCount, nil
 }
 
-func (r ProviderRepository) GetAllCount(ctx context.Context) (int64, error) {
-	var count int64
-	result := r.repository.db.WithContext(ctx).
-		Model(&ProviderSqlModel{}).
-		// todo add filter by owner
-		Count(&count)
-	if result.Error != nil {
-		return 0, result.Error
-	}
-	return count, nil
-}
-
-func (r ProviderRepository) Save(ctx context.Context, dirtyProvider provider.Provider) error {
+func (r ProviderRepository) Save(ctx context.Context, providers ...provider.Provider) error {
 	if !dirtyProvider.IsDirty() {
 		return nil
 	}
@@ -122,7 +128,7 @@ func (r ProviderRepository) Save(ctx context.Context, dirtyProvider provider.Pro
 }
 
 func (r ProviderRepository) Delete(ctx context.Context, providerId uuid.UUID) (bool, error) {
-	result := r.repository.db.WithContext(ctx).Delete(&ProviderSqlModel{}, providerId)
+	result := r.dbContext.db.WithContext(ctx).Delete(&ProviderSqlModel{}, providerId)
 	if result.Error != nil {
 		return false, result.Error
 	}
@@ -133,7 +139,7 @@ func (r ProviderRepository) Delete(ctx context.Context, providerId uuid.UUID) (b
 }
 
 func (r ProviderRepository) DeletePlan(ctx context.Context, planId uuid.UUID) (bool, error) {
-	result := r.repository.db.WithContext(ctx).Delete(&providerPlanSqlModel{}, planId)
+	result := r.dbContext.db.WithContext(ctx).Delete(&providerPlanSqlModel{}, planId)
 	if result.Error != nil {
 		return false, result.Error
 	}
@@ -144,7 +150,7 @@ func (r ProviderRepository) DeletePlan(ctx context.Context, planId uuid.UUID) (b
 }
 
 func (r ProviderRepository) DeletePrice(ctx context.Context, priceId uuid.UUID) (bool, error) {
-	result := r.repository.db.WithContext(ctx).Delete(&providerPriceSqlModel{}, priceId)
+	result := r.dbContext.db.WithContext(ctx).Delete(&providerPriceSqlModel{}, priceId)
 	if result.Error != nil {
 		return false, result.Error
 	}
@@ -156,7 +162,7 @@ func (r ProviderRepository) DeletePrice(ctx context.Context, priceId uuid.UUID) 
 
 func (r ProviderRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
 	var count int64
-	result := r.repository.db.WithContext(ctx).
+	result := r.dbContext.db.WithContext(ctx).
 		Model(&ProviderSqlModel{}).
 		Where("id IN ?", ids).
 		Count(&count)
@@ -168,7 +174,7 @@ func (r ProviderRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool,
 
 func (r ProviderRepository) create(ctx context.Context, newProvider provider.Provider) error {
 	sqlModel := newProviderSqlModel(newProvider)
-	result := r.repository.db.WithContext(ctx).
+	result := r.dbContext.db.WithContext(ctx).
 		Omit("Labels", "Plans").
 		Create(&sqlModel)
 	if result.Error != nil {
@@ -196,7 +202,7 @@ func (r ProviderRepository) createLabels(ctx context.Context, providerId uuid.UU
 	sqlModels := slicesx.Select(labelIds, func(labelId uuid.UUID) providerLabelSqlModel {
 		return newProviderLabelSqlModel(providerId, labelId)
 	})
-	result := r.repository.db.WithContext(ctx).Create(&sqlModels)
+	result := r.dbContext.db.WithContext(ctx).Create(&sqlModels)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -209,7 +215,7 @@ func (r ProviderRepository) createPlans(ctx context.Context, providerId uuid.UUI
 		return newProviderPlanSqlModel(providerId, plan)
 	})
 
-	result := r.repository.db.WithContext(ctx).
+	result := r.dbContext.db.WithContext(ctx).
 		Omit("Prices").
 		Create(&planSqlModels)
 	if result.Error != nil {
@@ -224,7 +230,7 @@ func (r ProviderRepository) createPlans(ctx context.Context, providerId uuid.UUI
 		return models
 	})
 
-	result = r.repository.db.WithContext(ctx).Create(&priceSqlModels)
+	result = r.dbContext.db.WithContext(ctx).Create(&priceSqlModels)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -235,7 +241,7 @@ func (r ProviderRepository) createPlans(ctx context.Context, providerId uuid.UUI
 func (r ProviderRepository) update(ctx context.Context, dirtyProvider provider.Provider) error {
 	sqlModel := newProviderSqlModel(dirtyProvider)
 
-	result := r.repository.db.WithContext(ctx).
+	result := r.dbContext.db.WithContext(ctx).
 		Omit("Labels", "Plans").
 		Save(&sqlModel)
 	if result.Error != nil {
@@ -266,7 +272,7 @@ func (r ProviderRepository) updateLabels(
 	providerId uuid.UUID,
 	labels *slicesx.Tracked[uuid.UUID]) error {
 	return saveTrackedSlice(ctx,
-		r.repository.db,
+		r.dbContext.db,
 		labels,
 		func(labelId uuid.UUID) providerLabelSqlModel {
 			return newProviderLabelSqlModel(providerId, labelId)
@@ -279,7 +285,7 @@ func (r ProviderRepository) updatePlans(
 	providerId uuid.UUID,
 	plans *slicesx.Tracked[provider.Plan]) error {
 	if err := saveTrackedSlice(ctx,
-		r.repository.db,
+		r.dbContext.db,
 		plans,
 		func(plan provider.Plan) providerPlanSqlModel {
 			return newProviderPlanSqlModel(providerId, plan)
@@ -303,7 +309,7 @@ func (r ProviderRepository) updatePrices(
 	planId uuid.UUID,
 	prices *slicesx.Tracked[provider.Price]) error {
 	return saveTrackedSlice(ctx,
-		r.repository.db,
+		r.dbContext.db,
 		prices,
 		func(price provider.Price) providerPriceSqlModel {
 			return newProviderPriceSqlModel(planId, price)

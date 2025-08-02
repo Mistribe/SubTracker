@@ -125,3 +125,125 @@ func (r iteratorForCreateLabels) Err() error {
 func (q *Queries) CreateLabels(ctx context.Context, arg []CreateLabelsParams) (int64, error) {
 	return q.db.CopyFrom(ctx, []string{"public", "labels"}, []string{"id", "owner_type", "owner_family_id", "owner_user_id", "name", "key", "color", "created_at", "updated_at", "etag"}, &iteratorForCreateLabels{rows: arg})
 }
+
+// iteratorForCreateProviderPlans implements pgx.CopyFromSource.
+type iteratorForCreateProviderPlans struct {
+	rows                 []CreateProviderPlansParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateProviderPlans) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateProviderPlans) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].ID,
+		r.rows[0].ProviderID,
+		r.rows[0].Name,
+		r.rows[0].Description,
+		r.rows[0].CreatedAt,
+		r.rows[0].UpdatedAt,
+		r.rows[0].Etag,
+	}, nil
+}
+
+func (r iteratorForCreateProviderPlans) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateProviderPlans(ctx context.Context, arg []CreateProviderPlansParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"public", "provider_plans"}, []string{"id", "provider_id", "name", "description", "created_at", "updated_at", "etag"}, &iteratorForCreateProviderPlans{rows: arg})
+}
+
+// iteratorForCreateProviderPrices implements pgx.CopyFromSource.
+type iteratorForCreateProviderPrices struct {
+	rows                 []CreateProviderPricesParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateProviderPrices) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateProviderPrices) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].ID,
+		r.rows[0].PlanID,
+		r.rows[0].Currency,
+		r.rows[0].Amount,
+		r.rows[0].StartDate,
+		r.rows[0].EndDate,
+		r.rows[0].CreatedAt,
+		r.rows[0].UpdatedAt,
+		r.rows[0].Etag,
+	}, nil
+}
+
+func (r iteratorForCreateProviderPrices) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateProviderPrices(ctx context.Context, arg []CreateProviderPricesParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"public", "provider_prices"}, []string{"id", "plan_id", "currency", "amount", "start_date", "end_date", "created_at", "updated_at", "etag"}, &iteratorForCreateProviderPrices{rows: arg})
+}
+
+// iteratorForCreateProviders implements pgx.CopyFromSource.
+type iteratorForCreateProviders struct {
+	rows                 []CreateProvidersParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateProviders) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateProviders) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].ID,
+		r.rows[0].OwnerType,
+		r.rows[0].OwnerFamilyID,
+		r.rows[0].OwnerUserID,
+		r.rows[0].Name,
+		r.rows[0].Key,
+		r.rows[0].Description,
+		r.rows[0].IconUrl,
+		r.rows[0].Url,
+		r.rows[0].PricingPageUrl,
+		r.rows[0].CreatedAt,
+		r.rows[0].UpdatedAt,
+		r.rows[0].Etag,
+	}, nil
+}
+
+func (r iteratorForCreateProviders) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateProviders(ctx context.Context, arg []CreateProvidersParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"public", "providers"}, []string{"id", "owner_type", "owner_family_id", "owner_user_id", "name", "key", "description", "icon_url", "url", "pricing_page_url", "created_at", "updated_at", "etag"}, &iteratorForCreateProviders{rows: arg})
+}
