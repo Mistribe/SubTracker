@@ -84,3 +84,44 @@ func (r iteratorForCreateFamilyMembers) Err() error {
 func (q *Queries) CreateFamilyMembers(ctx context.Context, arg []CreateFamilyMembersParams) (int64, error) {
 	return q.db.CopyFrom(ctx, []string{"public", "family_members"}, []string{"id", "family_id", "user_id", "name", "type", "created_at", "updated_at", "etag"}, &iteratorForCreateFamilyMembers{rows: arg})
 }
+
+// iteratorForCreateLabels implements pgx.CopyFromSource.
+type iteratorForCreateLabels struct {
+	rows                 []CreateLabelsParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateLabels) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateLabels) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].ID,
+		r.rows[0].OwnerType,
+		r.rows[0].OwnerFamilyID,
+		r.rows[0].OwnerUserID,
+		r.rows[0].Name,
+		r.rows[0].Key,
+		r.rows[0].Color,
+		r.rows[0].CreatedAt,
+		r.rows[0].UpdatedAt,
+		r.rows[0].Etag,
+	}, nil
+}
+
+func (r iteratorForCreateLabels) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateLabels(ctx context.Context, arg []CreateLabelsParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"public", "labels"}, []string{"id", "owner_type", "owner_family_id", "owner_user_id", "name", "key", "color", "created_at", "updated_at", "etag"}, &iteratorForCreateLabels{rows: arg})
+}

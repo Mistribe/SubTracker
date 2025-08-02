@@ -2,211 +2,181 @@ package persistence
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/internal/domain/label"
+	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 type LabelRepository struct {
-	labelRepository *DatabaseContext
-	authService     auth.Service
+	dbContext   *DatabaseContext
+	authService auth.Service
 }
 
-func NewLabelRepository(labelRepository *DatabaseContext,
+func NewLabelRepository(dbContext *DatabaseContext,
 	authService auth.Service) label.Repository {
 	return &LabelRepository{
-		labelRepository: labelRepository,
-		authService:     authService,
+		dbContext:   dbContext,
+		authService: authService,
 	}
 }
 
 func (r LabelRepository) GetById(ctx context.Context, labelId uuid.UUID) (label.Label, error) {
-	var model LabelSqlModel
-	if err := r.labelRepository.db.WithContext(ctx).First(&model, labelId).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
+	response, err := r.dbContext.GetQueries(ctx).GetLabelById(ctx, labelId)
+	if err != nil {
 		return nil, err
 	}
-	lbl := newLabel(model)
+
+	lbl := createLabelFromSqlc(response)
 	lbl.Clean()
 	return lbl, nil
 }
 
-func (r LabelRepository) GetAll(ctx context.Context, parameters label.QueryParameters) ([]label.Label, error) {
+func (r LabelRepository) GetAll(ctx context.Context, parameters label.QueryParameters) ([]label.Label, int64, error) {
 	userId, ok := auth.GetUserIdFromContext(ctx)
 	if !ok {
-		return nil, nil
+		return nil, 0, nil
 	}
-	var labels []LabelSqlModel
-	query := r.labelRepository.db.WithContext(ctx)
 
-	for i, ownerType := range parameters.Owners {
-		switch ownerType {
-		case auth.PersonalOwnerType:
-			if i == 0 {
-				query = query.Where("owner_type = ? AND owner_user_id = ?", auth.PersonalOwnerType, userId)
-			} else {
-				query = query.Or("owner_type = ? AND owner_user_id = ?", auth.PersonalOwnerType, userId)
+	var families []uuid.UUID
+	if parameters.Owners.Contains(auth.FamilyOwnerType) {
+		if parameters.FamilyId != nil {
+			if r.authService.IsInFamily(ctx, *parameters.FamilyId) {
+				return nil, 0, family.ErrFamilyNotFound
 			}
-		case auth.SystemOwnerType:
-			if i == 0 {
-				query = query.Where("owner_type = ?", auth.SystemOwnerType)
-			} else {
-				query = query.Or("owner_type = ?", auth.SystemOwnerType)
-			}
-		case auth.FamilyOwnerType:
-			var families []uuid.UUID
-			if parameters.FamilyId != nil {
-				if r.authService.IsInFamily(ctx, *parameters.FamilyId) {
-					return nil, family.ErrFamilyNotFound
-				}
-				families = append(families, *parameters.FamilyId)
-			} else {
-				families = r.authService.MustGetFamilies(ctx)
-			}
-			if len(families) > 0 {
-				if i == 0 {
-					query = query.Where("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwnerType, families)
-				} else {
-					query = query.Or("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwnerType, families)
-				}
-			}
+			families = append(families, *parameters.FamilyId)
+		} else {
+			families = r.authService.MustGetFamilies(ctx)
 		}
 	}
 
-	if parameters.Offset > 0 {
-		query = query.Offset(parameters.Offset)
+	response, err := r.dbContext.GetQueries(ctx).GetLabels(ctx, sql.GetLabelsParams{
+		Column1:     parameters.Owners.Strings(),
+		OwnerUserID: &userId,
+		Column3:     families,
+		Limit:       parameters.Limit,
+		Offset:      parameters.Offset,
+	})
+	if err != nil {
+		return nil, 0, err
 	}
-	if parameters.Limit > 0 {
-		query = query.Limit(parameters.Limit)
-	}
-	if result := query.Find(&labels); result.Error != nil {
-		return nil, result.Error
-	}
-	result := make([]label.Label, 0, len(labels))
-	for _, model := range labels {
-		lbl := newLabel(model)
-		lbl.Clean()
-		result = append(result, lbl)
-	}
-	return result, nil
-}
 
-func (r LabelRepository) GetAllCount(ctx context.Context, parameters label.QueryParameters) (int64, error) {
-	userId, ok := auth.GetUserIdFromContext(ctx)
-	if !ok {
-		return 0, nil
+	if len(response) == 0 {
+		return nil, 0, nil
 	}
-	query := r.labelRepository.db.WithContext(ctx).Model(&LabelSqlModel{})
 
-	for i, ownerType := range parameters.Owners {
-		switch ownerType {
-		case auth.PersonalOwnerType:
-			if i == 0 {
-				query = query.Where("owner_type = ? AND owner_user_id = ?", auth.PersonalOwnerType, userId)
-			} else {
-				query = query.Or("owner_type = ? AND owner_user_id = ?", auth.PersonalOwnerType, userId)
-			}
-		case auth.SystemOwnerType:
-			if i == 0 {
-				query = query.Where("owner_type = ?", auth.SystemOwnerType)
-			} else {
-				query = query.Or("owner_type = ?", auth.SystemOwnerType)
-			}
-		case auth.FamilyOwnerType:
-			families := r.authService.MustGetFamilies(ctx)
-			if len(families) > 0 {
-				if i == 0 {
-					query = query.Where("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwnerType, families)
-				} else {
-					query = query.Or("owner_type = ? AND owner_family_id IN ?", auth.FamilyOwnerType, families)
-				}
-			}
-		}
-	}
-	var count int64
-	if result := query.Count(&count); result.Error != nil {
-		return 0, result.Error
-	}
-	return count, nil
+	labels := slicesx.Select(response, func(model sql.GetLabelsRow) label.Label {
+		return createLabelFromSqlc(model.Label)
+	})
+
+	return labels, response[0].TotalCount, nil
 }
 
 func (r LabelRepository) GetSystemLabels(ctx context.Context) ([]label.Label, error) {
-	var labelModels []LabelSqlModel
-	query := r.labelRepository.db.WithContext(ctx).Where("owner_type = ?", auth.SystemOwnerType)
-	result := query.Find(&labelModels)
-	if result.Error != nil {
-		return nil, result.Error
+	response, err := r.dbContext.GetQueries(ctx).GetSystemLabels(ctx)
+	if err != nil {
+		return nil, err
 	}
-	labels := make([]label.Label, 0, len(labelModels))
-	for _, model := range labelModels {
-		lbl := newLabel(model)
-		lbl.Clean()
-		labels = append(labels, lbl)
-	}
+	labels := slicesx.Select(response, func(model sql.Label) label.Label {
+		return createLabelFromSqlc(model)
+	})
 	return labels, nil
 }
 
-func (r LabelRepository) Save(ctx context.Context, lbl label.Label) error {
-	if !lbl.IsDirty() {
-		return nil
+func (r LabelRepository) Save(ctx context.Context, labels ...label.Label) error {
+	var newLabels []label.Label
+	for _, lbl := range labels {
+		if !lbl.IsExists() {
+			newLabels = append(newLabels, lbl)
+		} else {
+			if err := r.update(ctx, lbl); err != nil {
+				return err
+			}
+		}
 	}
-	if lbl.IsExists() {
-		return r.update(ctx, lbl)
+	if len(newLabels) > 0 {
+		if err := r.create(ctx, newLabels); err != nil {
+			return err
+		}
 	}
-	return r.create(ctx, lbl)
+
+	for _, lbl := range labels {
+		lbl.Clean()
+	}
+
+	return nil
 }
 
-func (r LabelRepository) create(ctx context.Context, lbl label.Label) error {
-	dbLabel := newLabelSqlModel(lbl)
-	result := r.labelRepository.db.WithContext(ctx).Create(&dbLabel)
-	if result.Error != nil {
-		return result.Error
+func (r LabelRepository) create(ctx context.Context, labels []label.Label) error {
+	args := slicesx.Select(labels, func(lbl label.Label) sql.CreateLabelsParams {
+		params := sql.CreateLabelsParams{
+			ID:            lbl.Id(),
+			OwnerType:     lbl.Owner().Type().String(),
+			OwnerFamilyID: nil,
+			OwnerUserID:   nil,
+			Name:          lbl.Name(),
+			Key:           lbl.Key(),
+			Color:         lbl.Color(),
+			CreatedAt:     lbl.CreatedAt(),
+			UpdatedAt:     lbl.UpdatedAt(),
+			Etag:          lbl.ETag(),
+		}
+		switch lbl.Owner().Type() {
+		case auth.PersonalOwnerType:
+			userId := lbl.Owner().UserId()
+			params.OwnerUserID = &userId
+		case auth.FamilyOwnerType:
+			familyId := lbl.Owner().FamilyId()
+			params.OwnerFamilyID = &familyId
+		}
+		return params
+	})
+	_, err := r.dbContext.GetQueries(ctx).CreateLabels(ctx, args)
+	if err != nil {
+		return err
 	}
-	lbl.Clean()
 	return nil
 }
 func (r LabelRepository) update(ctx context.Context, lbl label.Label) error {
-	dbLabel := newLabelSqlModel(lbl)
-	result := r.labelRepository.db.WithContext(ctx).Save(dbLabel)
-	if result.Error != nil {
-		return result.Error
+	params := sql.UpdateLabelParams{
+		ID:        lbl.Id(),
+		OwnerType: lbl.Owner().Type().String(),
+		Name:      lbl.Name(),
+		Key:       lbl.Key(),
+		Color:     lbl.Color(),
+		UpdatedAt: lbl.UpdatedAt(),
+		Etag:      lbl.ETag(),
 	}
-	lbl.Clean()
-	return nil
+
+	switch lbl.Owner().Type() {
+	case auth.PersonalOwnerType:
+		userId := lbl.Owner().UserId()
+		params.OwnerUserID = &userId
+	case auth.FamilyOwnerType:
+		familyId := lbl.Owner().FamilyId()
+		params.OwnerFamilyID = &familyId
+	}
+
+	return r.dbContext.GetQueries(ctx).UpdateLabel(ctx, params)
 }
 
 func (r LabelRepository) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
-	result := r.labelRepository.db.WithContext(ctx).Delete(&LabelSqlModel{}, id)
-	if result.Error != nil {
-		return false, result.Error
-	}
-
-	if result.RowsAffected == 0 {
-		return false, nil
+	err := r.dbContext.GetQueries(ctx).DeleteLabel(ctx, id)
+	if err != nil {
+		return false, err
 	}
 
 	return true, nil
 }
 
 func (r LabelRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
-	var count int64
-	if len(ids) == 1 {
-		result := r.labelRepository.db.WithContext(ctx).Model(&LabelSqlModel{}).Where("id = ?", ids[0]).Count(&count)
-		if result.Error != nil {
-			return false, result.Error
-		}
-	} else {
-		result := r.labelRepository.db.WithContext(ctx).Model(&LabelSqlModel{}).Where("id IN ?", ids).Count(&count)
-		if result.Error != nil {
-			return false, result.Error
-		}
+	count, err := r.dbContext.GetQueries(ctx).IsLabelExists(ctx, ids)
+	if err != nil {
+		return false, err
 	}
 	return count == int64(len(ids)), nil
 }

@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"slices"
+
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/entity"
@@ -11,6 +13,7 @@ var (
 )
 
 type OwnerType string
+type OwnerTypes []OwnerType
 
 const (
 	UnknownOwnerType  OwnerType = "unknown"
@@ -21,6 +24,18 @@ const (
 
 func (o OwnerType) String() string {
 	return string(o)
+}
+
+func (o OwnerTypes) Contains(t OwnerType) bool {
+	return slices.Contains(o, t)
+}
+
+func (o OwnerTypes) Strings() []string {
+	var result []string
+	for _, ot := range o {
+		result = append(result, ot.String())
+	}
+	return result
 }
 
 func ParseOwnerType(input string) (OwnerType, error) {
@@ -34,6 +49,14 @@ func ParseOwnerType(input string) (OwnerType, error) {
 	default:
 		return UnknownOwnerType, ErrUnknownOwnerType
 	}
+}
+
+func MustParseOwnerType(input string) OwnerType {
+	t, err := ParseOwnerType(input)
+	if err != nil {
+		panic(err)
+	}
+	return t
 }
 
 type Owner interface {

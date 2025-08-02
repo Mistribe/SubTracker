@@ -12,6 +12,11 @@ openapi:
 	cd ../scripts &&\
 	./http-client-gen.sh
 
+sqlcg:
+	@sqlc generate
+
+prepare: install-deps openapi sqlcg
+
 build:
 	go build -v -o ./tmp/api ./cmd/api/
 

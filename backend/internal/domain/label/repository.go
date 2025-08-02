@@ -12,11 +12,11 @@ import (
 type QueryParameters struct {
 	entity.QueryParameters
 
-	Owners   []auth.OwnerType
+	Owners   auth.OwnerTypes
 	FamilyId *uuid.UUID
 }
 
-func NewQueryParameters(limit, offset int,
+func NewQueryParameters(limit, offset int32,
 	owners []auth.OwnerType,
 	familyId *uuid.UUID) QueryParameters {
 	if len(owners) == 0 {
@@ -36,6 +36,5 @@ type Repository interface {
 	entity.Repository[Label]
 
 	GetSystemLabels(ctx context.Context) ([]Label, error)
-	GetAll(ctx context.Context, parameters QueryParameters) ([]Label, error)
-	GetAllCount(ctx context.Context, parameters QueryParameters) (int64, error)
+	GetAll(ctx context.Context, parameters QueryParameters) ([]Label, int64, error)
 }
