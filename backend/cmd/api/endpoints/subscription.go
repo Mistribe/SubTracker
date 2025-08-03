@@ -159,7 +159,7 @@ type SubscriptionModel struct {
 	// @Description Billing recurrency pattern (monthly, yearly, custom, etc.)
 	Recurrency string `json:"recurrency" binding:"required" example:"monthly" enums:"daily,weekly,monthly,quarterly,yearly,custom"`
 	// @Description Custom recurrency interval in days (required when recurrency is custom)
-	CustomRecurrency *uint `json:"custom_recurrency,omitempty" example:"90" minimum:"1" maximum:"3650"`
+	CustomRecurrency *int32 `json:"custom_recurrency,omitempty" example:"90" minimum:"1" maximum:"3650"`
 	// @Description Information about who pays for this subscription within the family
 	Payer *SubscriptionPayerModel `json:"payer,omitempty"`
 	// @Description ISO 8601 timestamp when the subscription was originally created
