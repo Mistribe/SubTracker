@@ -32,7 +32,7 @@ type UpdateSubscriptionModel struct {
 	StartDate        time.Time                       `json:"start_date" binding:"required" format:"date-time"`
 	EndDate          *time.Time                      `json:"end_date,omitempty" format:"date-time"`
 	Recurrency       string                          `json:"recurrency" binding:"required"`
-	CustomRecurrency *uint                           `json:"custom_recurrency,omitempty"`
+	CustomRecurrency *int32                          `json:"custom_recurrency,omitempty"`
 	Payer            *EditableSubscriptionPayerModel `json:"payer,omitempty"`
 	Owner            EditableOwnerModel              `json:"owner" binding:"required"`
 	UpdatedAt        *time.Time                      `json:"updated_at,omitempty" format:"date-time"`
