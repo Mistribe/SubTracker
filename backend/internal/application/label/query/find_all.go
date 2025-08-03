@@ -13,14 +13,14 @@ import (
 
 type FindAllQuery struct {
 	Owners   []auth.OwnerType
-	Limit    int
-	Offset   int
+	Limit    int32
+	Offset   int32
 	FamilyId *uuid.UUID
 }
 
 func NewFindAllQuery(owners []auth.OwnerType,
-	limit int,
-	offset int,
+	limit int32,
+	offset int32,
 	familyId *uuid.UUID) FindAllQuery {
 	return FindAllQuery{
 		Owners:   owners,
@@ -42,13 +42,9 @@ func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[core.PaginatedResponse[label.Label]] {
 	params := label.NewQueryParameters(query.Limit, query.Offset, query.Owners, query.FamilyId)
-	lbs, err := h.repository.GetAll(ctx, params)
+	lbs, count, err := h.repository.GetAll(ctx, params)
 	if err != nil {
 		return result.Fail[core.PaginatedResponse[label.Label]](err)
 	}
-	total, err := h.repository.GetAllCount(ctx, params)
-	if err != nil {
-		return result.Fail[core.PaginatedResponse[label.Label]](err)
-	}
-	return result.Success(core.NewPaginatedResponse(lbs, total))
+	return result.Success(core.NewPaginatedResponse(lbs, count))
 }

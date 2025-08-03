@@ -29,7 +29,7 @@ type systemSubscriptionModel struct {
 	StartDate        time.Time             `json:"start_date"`
 	EndDate          *time.Time            `json:"end_date"`
 	Recurrency       string                `json:"recurrency"`
-	CustomRecurrency *uint                 `json:"custom_recurrency"`
+	CustomRecurrency *int32                `json:"custom_recurrency"`
 }
 
 type systemFreeTrialModel struct {

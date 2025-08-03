@@ -10,11 +10,11 @@ import (
 )
 
 type FindAllQuery struct {
-	Limit  int
-	Offset int
+	Limit  int32
+	Offset int32
 }
 
-func NewFindAllQuery(limit, offset int) FindAllQuery {
+func NewFindAllQuery(limit, offset int32) FindAllQuery {
 	return FindAllQuery{
 		Limit:  limit,
 		Offset: offset,
@@ -32,14 +32,10 @@ func NewFindAllQueryHandler(repository provider.Repository) *FindAllQueryHandler
 func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[core.PaginatedResponse[provider.Provider]] {
-	providers, err := h.repository.GetAll(ctx, entity.NewQueryParameters(query.Limit, query.Offset))
+	providers, count, err := h.repository.GetAll(ctx, entity.NewQueryParameters(query.Limit, query.Offset))
 	if err != nil {
 		return result.Fail[core.PaginatedResponse[provider.Provider]](err)
 	}
 
-	total, err := h.repository.GetAllCount(ctx)
-	if err != nil {
-		return result.Fail[core.PaginatedResponse[provider.Provider]](err)
-	}
-	return result.Success(core.NewPaginatedResponse(providers, total))
+	return result.Success(core.NewPaginatedResponse(providers, count))
 }

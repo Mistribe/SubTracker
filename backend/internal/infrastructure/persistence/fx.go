@@ -2,8 +2,6 @@ package persistence
 
 import (
 	"go.uber.org/fx"
-
-	"github.com/oleexo/subtracker/internal/infrastructure/startup"
 )
 
 func AsRepository[TRepository any](f any) any {
@@ -22,7 +20,7 @@ func BuildPersistenceModule() fx.Option {
 			NewProviderRepository,
 			NewAuthenticationRepository,
 			//startup.AsStartupTask(newLabelTask),
-			startup.AsStartupTask(newRepositoryTask),
+			//startup.AsStartupTask(newRepositoryTask),
 		),
 	)
 }
