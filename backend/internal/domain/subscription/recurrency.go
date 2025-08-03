@@ -34,3 +34,11 @@ func ParseRecurrencyType(input string) (RecurrencyType, error) {
 		return UnknownRecurrency, ErrUnknownRecurrencyType
 	}
 }
+
+func MustParseRecurrencyType(input string) RecurrencyType {
+	t, err := ParseRecurrencyType(input)
+	if err != nil {
+		panic(err)
+	}
+	return t
+}

@@ -9,6 +9,5 @@ import (
 type Repository interface {
 	entity.Repository[Subscription]
 
-	GetAll(ctx context.Context, parameters entity.QueryParameters) ([]Subscription, error)
-	GetAllCount(ctx context.Context) (int64, error)
+	GetAll(ctx context.Context, parameters entity.QueryParameters) ([]Subscription, int64, error)
 }

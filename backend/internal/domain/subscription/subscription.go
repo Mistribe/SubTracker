@@ -46,7 +46,7 @@ type Subscription interface {
 	// Recurrency defined the type of recurrency for the subscription
 	Recurrency() RecurrencyType
 	// CustomRecurrency When the recurrency is custom, this is the number of month between each recurrence
-	CustomRecurrency() *uint
+	CustomRecurrency() *int32
 
 	SetFriendlyName(name *string)
 	SetFreeTrial(trial FreeTrial)
@@ -57,7 +57,7 @@ type Subscription interface {
 	SetStartDate(startDate time.Time)
 	SetEndDate(endDate *time.Time)
 	SetRecurrency(recurrency RecurrencyType)
-	SetCustomRecurrency(customRecurrency *uint)
+	SetCustomRecurrency(customRecurrency *int32)
 
 	Equal(other Subscription) bool
 	GetValidationErrors() validationx.Errors
@@ -78,7 +78,7 @@ type subscription struct {
 	startDate        time.Time
 	endDate          *time.Time
 	recurrency       RecurrencyType
-	customRecurrency *uint
+	customRecurrency *int32
 }
 
 func NewSubscription(
@@ -95,7 +95,7 @@ func NewSubscription(
 	startDate time.Time,
 	endDate *time.Time,
 	recurrency RecurrencyType,
-	customRecurrency *uint,
+	customRecurrency *int32,
 	createdAt time.Time,
 	updatedAt time.Time,
 ) Subscription {
@@ -170,7 +170,7 @@ func (s *subscription) Recurrency() RecurrencyType {
 	return s.recurrency
 }
 
-func (s *subscription) CustomRecurrency() *uint {
+func (s *subscription) CustomRecurrency() *int32 {
 	return s.customRecurrency
 }
 
@@ -214,7 +214,7 @@ func (s *subscription) SetRecurrency(recurrency RecurrencyType) {
 	s.SetAsDirty()
 }
 
-func (s *subscription) SetCustomRecurrency(customRecurrency *uint) {
+func (s *subscription) SetCustomRecurrency(customRecurrency *int32) {
 	s.customRecurrency = customRecurrency
 	s.SetAsDirty()
 }

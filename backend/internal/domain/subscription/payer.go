@@ -29,6 +29,14 @@ func ParsePayerType(input string) (payerType PayerType, err error) {
 	}
 }
 
+func MustParsePayerType(input string) PayerType {
+	t, err := ParsePayerType(input)
+	if err != nil {
+		panic(err)
+	}
+	return t
+}
+
 type Payer interface {
 	entity.ETagEntity
 

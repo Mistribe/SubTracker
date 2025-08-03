@@ -280,3 +280,89 @@ func (r iteratorForCreateProviders) Err() error {
 func (q *Queries) CreateProviders(ctx context.Context, arg []CreateProvidersParams) (int64, error) {
 	return q.db.CopyFrom(ctx, []string{"public", "providers"}, []string{"id", "owner_type", "owner_family_id", "owner_user_id", "name", "key", "description", "icon_url", "url", "pricing_page_url", "created_at", "updated_at", "etag"}, &iteratorForCreateProviders{rows: arg})
 }
+
+// iteratorForCreateSubscriptionServiceUsers implements pgx.CopyFromSource.
+type iteratorForCreateSubscriptionServiceUsers struct {
+	rows                 []CreateSubscriptionServiceUsersParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateSubscriptionServiceUsers) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateSubscriptionServiceUsers) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].SubscriptionID,
+		r.rows[0].FamilyMemberID,
+	}, nil
+}
+
+func (r iteratorForCreateSubscriptionServiceUsers) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateSubscriptionServiceUsers(ctx context.Context, arg []CreateSubscriptionServiceUsersParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"public", "subscription_service_users"}, []string{"subscription_id", "family_member_id"}, &iteratorForCreateSubscriptionServiceUsers{rows: arg})
+}
+
+// iteratorForCreateSubscriptions implements pgx.CopyFromSource.
+type iteratorForCreateSubscriptions struct {
+	rows                 []CreateSubscriptionsParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateSubscriptions) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateSubscriptions) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].ID,
+		r.rows[0].FriendlyName,
+		r.rows[0].FreeTrialStartDate,
+		r.rows[0].FreeTrialEndDate,
+		r.rows[0].ProviderID,
+		r.rows[0].PlanID,
+		r.rows[0].PriceID,
+		r.rows[0].CustomPriceCurrency,
+		r.rows[0].CustomPriceAmount,
+		r.rows[0].OwnerType,
+		r.rows[0].OwnerFamilyID,
+		r.rows[0].OwnerUserID,
+		r.rows[0].PayerType,
+		r.rows[0].FamilyID,
+		r.rows[0].PayerMemberID,
+		r.rows[0].StartDate,
+		r.rows[0].EndDate,
+		r.rows[0].Recurrency,
+		r.rows[0].CustomRecurrency,
+		r.rows[0].CreatedAt,
+		r.rows[0].UpdatedAt,
+		r.rows[0].Etag,
+	}, nil
+}
+
+func (r iteratorForCreateSubscriptions) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateSubscriptions(ctx context.Context, arg []CreateSubscriptionsParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"public", "subscriptions"}, []string{"id", "friendly_name", "free_trial_start_date", "free_trial_end_date", "provider_id", "plan_id", "price_id", "custom_price_currency", "custom_price_amount", "owner_type", "owner_family_id", "owner_user_id", "payer_type", "family_id", "payer_member_id", "start_date", "end_date", "recurrency", "custom_recurrency", "created_at", "updated_at", "etag"}, &iteratorForCreateSubscriptions{rows: arg})
+}
