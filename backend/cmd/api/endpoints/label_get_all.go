@@ -47,11 +47,11 @@ func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
 		}
 	}
 
-	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 32)
 	if err != nil {
 		limit = 10
 	}
-	offset, err := strconv.Atoi(c.DefaultQuery("offset", "0"))
+	offset, err := strconv.ParseInt(c.DefaultQuery("offset", "0"), 10, 32)
 	if err != nil {
 		offset = 0
 	}
@@ -65,7 +65,7 @@ func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	q := query.NewFindAllQuery(ownerTypes, limit, offset, familyId)
+	q := query.NewFindAllQuery(ownerTypes, int32(limit), int32(offset), familyId)
 	r := e.handler.Handle(c, q)
 	handleResponse(c,
 		r,

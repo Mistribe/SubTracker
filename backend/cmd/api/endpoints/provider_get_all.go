@@ -32,15 +32,15 @@ func NewProviderGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, cor
 //	@Failure		500		{object}	httpError								"Internal Server Error"
 //	@Router			/providers [get]
 func (e ProviderGetAllEndpoint) Handle(c *gin.Context) {
-	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 32)
 	if err != nil {
 		limit = 10
 	}
-	offset, err := strconv.Atoi(c.DefaultQuery("offset", "0"))
+	offset, err := strconv.ParseInt(c.DefaultQuery("offset", "0"), 10, 32)
 	if err != nil {
 		offset = 1
 	}
-	q := query.NewFindAllQuery(limit, offset)
+	q := query.NewFindAllQuery(int32(limit), int32(offset))
 	r := e.handler.Handle(c, q)
 	handleResponse(c,
 		r,
