@@ -56,6 +56,26 @@ func (q *Queries) CreateProvider(ctx context.Context, arg CreateProviderParams) 
 	return err
 }
 
+const createProviderLabel = `-- name: CreateProviderLabel :exec
+INSERT INTO public.provider_labels (label_id, provider_id)
+VALUES ($1, $2)
+`
+
+type CreateProviderLabelParams struct {
+	LabelID    uuid.UUID
+	ProviderID uuid.UUID
+}
+
+func (q *Queries) CreateProviderLabel(ctx context.Context, arg CreateProviderLabelParams) error {
+	_, err := q.db.Exec(ctx, createProviderLabel, arg.LabelID, arg.ProviderID)
+	return err
+}
+
+type CreateProviderLabelsParams struct {
+	LabelID    uuid.UUID
+	ProviderID uuid.UUID
+}
+
 const createProviderPlan = `-- name: CreateProviderPlan :exec
 INSERT INTO public.provider_plans (id, provider_id, name,
                                    description, created_at, updated_at,
@@ -166,6 +186,45 @@ WHERE id = $1
 
 func (q *Queries) DeleteProvider(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteProvider, id)
+	return err
+}
+
+const deleteProviderLabel = `-- name: DeleteProviderLabel :exec
+DELETE
+FROM public.provider_labels
+WHERE provider_id = $1
+  AND label_id = $2
+`
+
+type DeleteProviderLabelParams struct {
+	ProviderID uuid.UUID
+	LabelID    uuid.UUID
+}
+
+func (q *Queries) DeleteProviderLabel(ctx context.Context, arg DeleteProviderLabelParams) error {
+	_, err := q.db.Exec(ctx, deleteProviderLabel, arg.ProviderID, arg.LabelID)
+	return err
+}
+
+const deleteProviderPlan = `-- name: DeleteProviderPlan :exec
+DELETE
+FROM public.provider_plans
+WHERE id = $1
+`
+
+func (q *Queries) DeleteProviderPlan(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteProviderPlan, id)
+	return err
+}
+
+const deleteProviderPrice = `-- name: DeleteProviderPrice :exec
+DELETE
+FROM public.provider_prices
+WHERE id = $1
+`
+
+func (q *Queries) DeleteProviderPrice(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteProviderPrice, id)
 	return err
 }
 
@@ -375,6 +434,19 @@ func (q *Queries) GetSystemProviders(ctx context.Context) ([]GetSystemProvidersR
 		return nil, err
 	}
 	return items, nil
+}
+
+const isProviderExists = `-- name: IsProviderExists :one
+SELECT COUNT(*)
+FROM public.providers p
+WHERE p.id = ANY ($1::uuid[])
+`
+
+func (q *Queries) IsProviderExists(ctx context.Context, dollar_1 []uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, isProviderExists, dollar_1)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const updateProvider = `-- name: UpdateProvider :exec

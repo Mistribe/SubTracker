@@ -69,6 +69,14 @@ INSERT INTO public.providers (id, owner_type, owner_family_id,
                               etag)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
 
+-- name: CreateProviderLabel :exec
+INSERT INTO public.provider_labels (label_id, provider_id)
+VALUES ($1, $2);
+
+-- name: CreateProviderLabels :copyfrom
+INSERT INTO public.provider_labels (label_id, provider_id)
+VALUES ($1, $2);
+
 -- name: UpdateProviderPrice :exec
 UPDATE public.provider_prices
 SET currency   = $2,
@@ -107,3 +115,24 @@ WHERE id = $1;
 DELETE
 FROM public.providers
 WHERE id = $1;
+
+-- name: DeleteProviderPlan :exec
+DELETE
+FROM public.provider_plans
+WHERE id = $1;
+
+-- name: DeleteProviderPrice :exec
+DELETE
+FROM public.provider_prices
+WHERE id = $1;
+
+-- name: DeleteProviderLabel :exec
+DELETE
+FROM public.provider_labels
+WHERE provider_id = $1
+  AND label_id = $2;
+
+-- name: IsProviderExists :one
+SELECT COUNT(*)
+FROM public.providers p
+WHERE p.id = ANY ($1::uuid[]);

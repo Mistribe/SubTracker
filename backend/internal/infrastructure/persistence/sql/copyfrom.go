@@ -126,6 +126,39 @@ func (q *Queries) CreateLabels(ctx context.Context, arg []CreateLabelsParams) (i
 	return q.db.CopyFrom(ctx, []string{"public", "labels"}, []string{"id", "owner_type", "owner_family_id", "owner_user_id", "name", "key", "color", "created_at", "updated_at", "etag"}, &iteratorForCreateLabels{rows: arg})
 }
 
+// iteratorForCreateProviderLabels implements pgx.CopyFromSource.
+type iteratorForCreateProviderLabels struct {
+	rows                 []CreateProviderLabelsParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateProviderLabels) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateProviderLabels) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].LabelID,
+		r.rows[0].ProviderID,
+	}, nil
+}
+
+func (r iteratorForCreateProviderLabels) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateProviderLabels(ctx context.Context, arg []CreateProviderLabelsParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"public", "provider_labels"}, []string{"label_id", "provider_id"}, &iteratorForCreateProviderLabels{rows: arg})
+}
+
 // iteratorForCreateProviderPlans implements pgx.CopyFromSource.
 type iteratorForCreateProviderPlans struct {
 	rows                 []CreateProviderPlansParams

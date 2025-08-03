@@ -117,139 +117,210 @@ func (r ProviderRepository) GetAll(ctx context.Context, parameters entity.QueryP
 }
 
 func (r ProviderRepository) Save(ctx context.Context, providers ...provider.Provider) error {
-	if !dirtyProvider.IsDirty() {
-		return nil
+	var newProviders []provider.Provider
+	for _, prov := range providers {
+		if !prov.IsExists() {
+			newProviders = append(newProviders, prov)
+		} else {
+			if err := r.update(ctx, prov); err != nil {
+				return err
+			}
+		}
 	}
 
-	if dirtyProvider.IsExists() {
-		return r.update(ctx, dirtyProvider)
+	if len(newProviders) > 0 {
+		if err := r.create(ctx, newProviders); err != nil {
+			return err
+		}
 	}
-	return r.create(ctx, dirtyProvider)
+
+	for _, prov := range providers {
+		prov.Clean()
+	}
+
+	return nil
 }
 
 func (r ProviderRepository) Delete(ctx context.Context, providerId uuid.UUID) (bool, error) {
-	result := r.dbContext.db.WithContext(ctx).Delete(&ProviderSqlModel{}, providerId)
-	if result.Error != nil {
-		return false, result.Error
+	err := r.dbContext.GetQueries(ctx).DeleteProvider(ctx, providerId)
+	if err != nil {
+		return false, err
 	}
-	if result.RowsAffected == 0 {
-		return false, nil
-	}
+
 	return true, nil
 }
 
 func (r ProviderRepository) DeletePlan(ctx context.Context, planId uuid.UUID) (bool, error) {
-	result := r.dbContext.db.WithContext(ctx).Delete(&providerPlanSqlModel{}, planId)
-	if result.Error != nil {
-		return false, result.Error
+	err := r.dbContext.GetQueries(ctx).DeleteProviderPlan(ctx, planId)
+	if err != nil {
+		return false, err
 	}
-	if result.RowsAffected == 0 {
-		return false, nil
-	}
+
 	return true, nil
 }
 
 func (r ProviderRepository) DeletePrice(ctx context.Context, priceId uuid.UUID) (bool, error) {
-	result := r.dbContext.db.WithContext(ctx).Delete(&providerPriceSqlModel{}, priceId)
-	if result.Error != nil {
-		return false, result.Error
+	err := r.dbContext.GetQueries(ctx).DeleteProviderPrice(ctx, priceId)
+	if err != nil {
+		return false, err
 	}
-	if result.RowsAffected == 0 {
-		return false, nil
-	}
+
 	return true, nil
 }
 
 func (r ProviderRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
-	var count int64
-	result := r.dbContext.db.WithContext(ctx).
-		Model(&ProviderSqlModel{}).
-		Where("id IN ?", ids).
-		Count(&count)
-	if result.Error != nil {
-		return false, result.Error
+	if len(ids) == 0 {
+		return true, nil
 	}
-	return count == int64(len(ids)), nil
+
+	count, err := r.dbContext.GetQueries(ctx).IsProviderExists(ctx, ids)
+	if err != nil {
+		return false, err
+	}
+	return count > int64(len(ids)), nil
 }
 
-func (r ProviderRepository) create(ctx context.Context, newProvider provider.Provider) error {
-	sqlModel := newProviderSqlModel(newProvider)
-	result := r.dbContext.db.WithContext(ctx).
-		Omit("Labels", "Plans").
-		Create(&sqlModel)
-	if result.Error != nil {
-		return result.Error
+func (r ProviderRepository) create(ctx context.Context, providers []provider.Provider) error {
+	args := slicesx.Select(providers, func(prov provider.Provider) sql.CreateProvidersParams {
+		model := sql.CreateProvidersParams{
+			ID:             prov.Id(),
+			OwnerType:      prov.Owner().Type().String(),
+			Name:           prov.Name(),
+			Key:            prov.Key(),
+			Description:    prov.Description(),
+			IconUrl:        prov.IconUrl(),
+			Url:            prov.Url(),
+			PricingPageUrl: prov.PricingPageUrl(),
+			CreatedAt:      prov.CreatedAt(),
+			UpdatedAt:      prov.UpdatedAt(),
+			Etag:           prov.ETag(),
+		}
+
+		switch prov.Owner().Type() {
+		case auth.PersonalOwnerType:
+			userId := prov.Owner().UserId()
+			model.OwnerUserID = &userId
+		case auth.FamilyOwnerType:
+			familyId := prov.Owner().FamilyId()
+			model.OwnerFamilyID = &familyId
+		}
+
+		return model
+	})
+
+	if _, err := r.dbContext.GetQueries(ctx).CreateProviders(ctx, args); err != nil {
+		return err
 	}
-	newProvider.Clean()
-	if newProvider.Labels().HasChanges() {
-		if err := r.createLabels(ctx, newProvider.Id(), newProvider.Labels().Values()); err != nil {
+
+	labelArgs := slicesx.SelectMany(providers, func(prov provider.Provider) []sql.CreateProviderLabelsParams {
+		return slicesx.Select(prov.Labels().Values(), func(labelId uuid.UUID) sql.CreateProviderLabelsParams {
+			return sql.CreateProviderLabelsParams{
+				ProviderID: prov.Id(),
+				LabelID:    labelId,
+			}
+		})
+	})
+
+	if len(labelArgs) > 0 {
+		if _, err := r.dbContext.GetQueries(ctx).CreateProviderLabels(ctx, labelArgs); err != nil {
 			return err
 		}
-		newProvider.Labels().ClearChanges()
 	}
 
-	if newProvider.Plans().HasChanges() {
-		if err := r.createPlans(ctx, newProvider.Id(), newProvider.Plans().Values()); err != nil {
+	planArgs := slicesx.SelectMany(providers, func(prov provider.Provider) []sql.CreateProviderPlansParams {
+		return slicesx.Select(prov.Plans().Values(), func(plan provider.Plan) sql.CreateProviderPlansParams {
+			return sql.CreateProviderPlansParams{
+				ID:          plan.Id(),
+				ProviderID:  prov.Id(),
+				Name:        plan.Name(),
+				Description: plan.Description(),
+				CreatedAt:   plan.CreatedAt(),
+				UpdatedAt:   plan.UpdatedAt(),
+				Etag:        plan.ETag(),
+			}
+		})
+	})
+
+	if len(planArgs) > 0 {
+		if _, err := r.dbContext.GetQueries(ctx).CreateProviderPlans(ctx, planArgs); err != nil {
 			return err
 		}
-		newProvider.Plans().ClearChanges()
 	}
 
-	return nil
-}
-
-func (r ProviderRepository) createLabels(ctx context.Context, providerId uuid.UUID, labelIds []uuid.UUID) error {
-	sqlModels := slicesx.Select(labelIds, func(labelId uuid.UUID) providerLabelSqlModel {
-		return newProviderLabelSqlModel(providerId, labelId)
-	})
-	result := r.dbContext.db.WithContext(ctx).Create(&sqlModels)
-	if result.Error != nil {
-		return result.Error
-	}
-
-	return nil
-}
-
-func (r ProviderRepository) createPlans(ctx context.Context, providerId uuid.UUID, plans []provider.Plan) error {
-	planSqlModels := slicesx.Select(plans, func(plan provider.Plan) providerPlanSqlModel {
-		return newProviderPlanSqlModel(providerId, plan)
+	priceArgs := slicesx.SelectMany(providers, func(prov provider.Provider) []sql.CreateProviderPricesParams {
+		return slicesx.SelectMany(prov.Plans().Values(), func(plan provider.Plan) []sql.CreateProviderPricesParams {
+			return slicesx.Select(plan.Prices().Values(), func(price provider.Price) sql.CreateProviderPricesParams {
+				return sql.CreateProviderPricesParams{
+					ID:        price.Id(),
+					PlanID:    plan.Id(),
+					Currency:  price.Currency().String(),
+					Amount:    price.Amount(),
+					StartDate: price.StartDate(),
+					EndDate:   price.EndDate(),
+					CreatedAt: price.CreatedAt(),
+					UpdatedAt: price.UpdatedAt(),
+					Etag:      price.ETag(),
+				}
+			})
+		})
 	})
 
-	result := r.dbContext.db.WithContext(ctx).
-		Omit("Prices").
-		Create(&planSqlModels)
-	if result.Error != nil {
-		return result.Error
-	}
-
-	priceSqlModels := slicesx.SelectMany(plans, func(plan provider.Plan) []providerPriceSqlModel {
-		models := make([]providerPriceSqlModel, plan.Prices().Len())
-		for i, price := range plan.Prices().Values() {
-			models[i] = newProviderPriceSqlModel(plan.Id(), price)
+	if len(priceArgs) > 0 {
+		if _, err := r.dbContext.GetQueries(ctx).CreateProviderPrices(ctx, priceArgs); err != nil {
+			return err
 		}
-		return models
-	})
-
-	result = r.dbContext.db.WithContext(ctx).Create(&priceSqlModels)
-	if result.Error != nil {
-		return result.Error
 	}
 
 	return nil
 }
 
 func (r ProviderRepository) update(ctx context.Context, dirtyProvider provider.Provider) error {
-	sqlModel := newProviderSqlModel(dirtyProvider)
+	model := sql.UpdateProviderParams{
+		ID:             dirtyProvider.Id(),
+		OwnerType:      dirtyProvider.Owner().Type().String(),
+		Name:           dirtyProvider.Name(),
+		Key:            dirtyProvider.Key(),
+		Description:    dirtyProvider.Description(),
+		IconUrl:        dirtyProvider.IconUrl(),
+		Url:            dirtyProvider.Url(),
+		PricingPageUrl: dirtyProvider.PricingPageUrl(),
+		UpdatedAt:      dirtyProvider.UpdatedAt(),
+	}
 
-	result := r.dbContext.db.WithContext(ctx).
-		Omit("Labels", "Plans").
-		Save(&sqlModel)
-	if result.Error != nil {
-		return result.Error
+	switch dirtyProvider.Owner().Type() {
+	case auth.PersonalOwnerType:
+		userId := dirtyProvider.Owner().UserId()
+		model.OwnerUserID = &userId
+	case auth.FamilyOwnerType:
+		familyId := dirtyProvider.Owner().FamilyId()
+		model.OwnerFamilyID = &familyId
+	}
+
+	if err := r.dbContext.GetQueries(ctx).UpdateProvider(ctx, model); err != nil {
+		return err
 	}
 
 	if dirtyProvider.Labels().HasChanges() {
-		if err := r.updateLabels(ctx, dirtyProvider.Id(), dirtyProvider.Labels()); err != nil {
+		if err := saveTrackedSlice(ctx, r.dbContext, dirtyProvider.Labels(),
+			func(ctx context.Context, queries *sql.Queries, entities []uuid.UUID) error {
+				args := slicesx.Select(entities, func(labelId uuid.UUID) sql.CreateProviderLabelsParams {
+					return sql.CreateProviderLabelsParams{
+						LabelID:    labelId,
+						ProviderID: dirtyProvider.Id(),
+					}
+				})
+				_, qErr := queries.CreateProviderLabels(ctx, args)
+				return qErr
+			},
+			func(ctx context.Context, queries *sql.Queries, entity uuid.UUID) error {
+				panic("can't update provider_labels relation")
+			},
+			func(ctx context.Context, queries *sql.Queries, entity uuid.UUID) error {
+				return queries.DeleteProviderLabel(ctx, sql.DeleteProviderLabelParams{
+					ProviderID: dirtyProvider.Id(),
+					LabelID:    entity,
+				})
+			}); err != nil {
 			return err
 		}
 
@@ -257,8 +328,53 @@ func (r ProviderRepository) update(ctx context.Context, dirtyProvider provider.P
 	}
 
 	if dirtyProvider.Plans().HasChanges() {
-		if err := r.updatePlans(ctx, dirtyProvider.Id(), dirtyProvider.Plans()); err != nil {
+		if err := saveTrackedSlice(ctx,
+			r.dbContext,
+			dirtyProvider.Plans(),
+			func(ctx context.Context, queries *sql.Queries, plans []provider.Plan) error {
+				args := slicesx.Select(plans, func(plan provider.Plan) sql.CreateProviderPlansParams {
+					return sql.CreateProviderPlansParams{
+						ID:          plan.Id(),
+						ProviderID:  dirtyProvider.Id(),
+						Name:        plan.Name(),
+						Description: plan.Description(),
+						CreatedAt:   plan.CreatedAt(),
+						UpdatedAt:   plan.UpdatedAt(),
+						Etag:        plan.ETag(),
+					}
+				})
+				_, qErr := queries.CreateProviderPlans(ctx, args)
+				return qErr
+			},
+			func(ctx context.Context, queries *sql.Queries, entity provider.Plan) error {
+				return queries.UpdateProviderPlan(ctx, sql.UpdateProviderPlanParams{
+					ID:          entity.Id(),
+					Name:        entity.Name(),
+					Description: entity.Description(),
+					UpdatedAt:   entity.UpdatedAt(),
+					Etag:        entity.ETag(),
+					ProviderID:  dirtyProvider.Id(),
+				})
+			},
+			func(ctx context.Context, queries *sql.Queries, entity provider.Plan) error {
+				return queries.DeleteProviderPlan(ctx, entity.Id())
+			},
+		); err != nil {
 			return err
+		}
+
+		for updatedPlan := range dirtyProvider.Plans().Updated() {
+			if updatedPlan.Prices().HasChanges() {
+				if err := r.savePrices(ctx, updatedPlan.Id(), updatedPlan.Prices()); err != nil {
+					return err
+				}
+			}
+		}
+
+		for updatePlan := range dirtyProvider.Plans().Added() {
+			if err := r.savePrices(ctx, updatePlan.Id(), updatePlan.Prices()); err != nil {
+				return err
+			}
 		}
 
 		dirtyProvider.Plans().ClearChanges()
@@ -267,52 +383,51 @@ func (r ProviderRepository) update(ctx context.Context, dirtyProvider provider.P
 	return nil
 }
 
-func (r ProviderRepository) updateLabels(
-	ctx context.Context,
-	providerId uuid.UUID,
-	labels *slicesx.Tracked[uuid.UUID]) error {
-	return saveTrackedSlice(ctx,
-		r.dbContext.db,
-		labels,
-		func(labelId uuid.UUID) providerLabelSqlModel {
-			return newProviderLabelSqlModel(providerId, labelId)
+func (r ProviderRepository) savePrices(ctx context.Context,
+	planId uuid.UUID,
+	trackedPrices *slicesx.Tracked[provider.Price]) error {
+	err := saveTrackedSlice(ctx,
+		r.dbContext,
+		trackedPrices,
+		func(ctx context.Context, queries *sql.Queries, entities []provider.Price) error {
+			args := slicesx.Select(entities, func(price provider.Price) sql.CreateProviderPricesParams {
+				return sql.CreateProviderPricesParams{
+					ID:        price.Id(),
+					PlanID:    planId,
+					Currency:  price.Currency().String(),
+					Amount:    price.Amount(),
+					StartDate: price.StartDate(),
+					EndDate:   price.EndDate(),
+					CreatedAt: price.CreatedAt(),
+					UpdatedAt: price.UpdatedAt(),
+					Etag:      price.ETag(),
+				}
+
+			})
+			_, qErr := queries.CreateProviderPrices(ctx, args)
+			return qErr
+		},
+		func(ctx context.Context, queries *sql.Queries, entity provider.Price) error {
+			return queries.UpdateProviderPrice(ctx, sql.UpdateProviderPriceParams{
+				ID:        entity.Id(),
+				Currency:  entity.Currency().String(),
+				Amount:    entity.Amount(),
+				StartDate: entity.StartDate(),
+				EndDate:   entity.EndDate(),
+				UpdatedAt: entity.UpdatedAt(),
+				Etag:      entity.ETag(),
+				PlanID:    planId,
+			})
+		},
+		func(ctx context.Context, queries *sql.Queries, entity provider.Price) error {
+			return queries.DeleteProviderPrice(ctx, entity.Id())
 		},
 	)
-}
 
-func (r ProviderRepository) updatePlans(
-	ctx context.Context,
-	providerId uuid.UUID,
-	plans *slicesx.Tracked[provider.Plan]) error {
-	if err := saveTrackedSlice(ctx,
-		r.dbContext.db,
-		plans,
-		func(plan provider.Plan) providerPlanSqlModel {
-			return newProviderPlanSqlModel(providerId, plan)
-		}); err != nil {
+	if err != nil {
 		return err
 	}
 
-	for _, plan := range plans.Values() {
-		if plan.IsDirty() && plan.Prices().HasChanges() {
-			if err := r.updatePrices(ctx, plan.Id(), plan.Prices()); err != nil {
-				return err
-			}
-		}
-	}
-
+	trackedPrices.ClearChanges()
 	return nil
-}
-
-func (r ProviderRepository) updatePrices(
-	ctx context.Context,
-	planId uuid.UUID,
-	prices *slicesx.Tracked[provider.Price]) error {
-	return saveTrackedSlice(ctx,
-		r.dbContext.db,
-		prices,
-		func(price provider.Price) providerPriceSqlModel {
-			return newProviderPriceSqlModel(planId, price)
-		},
-	)
 }

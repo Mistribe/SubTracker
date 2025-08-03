@@ -197,6 +197,8 @@ func (r FamilyRepository) update(ctx context.Context, fam family.Family) error {
 	if err != nil {
 		return err
 	}
+
+	fam.Members().ClearChanges()
 	return err
 }
 
