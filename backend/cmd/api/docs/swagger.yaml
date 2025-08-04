@@ -2183,12 +2183,12 @@ paths:
       parameters:
       - description: 'Number of items per page (default: 10)'
         in: query
-        name: size
+        name: limit
         schema:
           type: integer
-      - description: 'Page number (default: 1)'
+      - description: 'Page number (default: 0)'
         in: query
-        name: page
+        name: offset
         schema:
           type: integer
       responses:

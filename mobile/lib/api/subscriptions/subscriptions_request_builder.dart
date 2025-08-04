@@ -26,11 +26,11 @@ class SubscriptionsRequestBuilder extends BaseRequestBuilder<SubscriptionsReques
     /// Instantiates a new [SubscriptionsRequestBuilder] and sets the default values.
     ///  [pathParameters] Path parameters for the request
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    SubscriptionsRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/subscriptions{?page*,size*}", pathParameters) ;
+    SubscriptionsRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/subscriptions{?limit*,offset*}", pathParameters) ;
     /// Instantiates a new [SubscriptionsRequestBuilder] and sets the default values.
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    SubscriptionsRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/subscriptions{?page*,size*}", {RequestInformation.rawUrlKey : rawUrl}) ;
+    SubscriptionsRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/subscriptions{?limit*,offset*}", {RequestInformation.rawUrlKey : rawUrl}) ;
     /// Retrieve a paginated list of all subscriptions for the authenticated user
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<PaginatedResponseModelEndpointsSubscriptionModel?> getAsync([void Function(RequestConfiguration<SubscriptionsRequestBuilderGetQueryParameters>)? requestConfiguration]) async {

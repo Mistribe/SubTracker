@@ -73,18 +73,18 @@ export interface SubscriptionsRequestBuilder extends BaseRequestBuilder<Subscrip
  */
 export interface SubscriptionsRequestBuilderGetQueryParameters {
     /**
-     * Page number (default: 1)
-     */
-    page?: number;
-    /**
      * Number of items per page (default: 10)
      */
-    size?: number;
+    limit?: number;
+    /**
+     * Page number (default: 0)
+     */
+    offset?: number;
 }
 /**
  * Uri template for the request builder.
  */
-export const SubscriptionsRequestBuilderUriTemplate = "{+baseurl}/subscriptions{?page*,size*}";
+export const SubscriptionsRequestBuilderUriTemplate = "{+baseurl}/subscriptions{?limit*,offset*}";
 /**
  * Metadata for all the navigation properties in the request builder.
  */
