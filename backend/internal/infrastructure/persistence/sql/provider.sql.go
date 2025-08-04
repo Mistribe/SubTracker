@@ -614,7 +614,6 @@ func (q *Queries) getProviders(ctx context.Context, arg getProvidersParams) ([]g
 }
 
 const getSystemProviders = `-- name: getSystemProviders :many
-
 SELECT p.id               AS "providers.id",
        p.owner_type       AS "providers.owner_type",
        p.owner_family_id  AS "providers.owner_family_id",
@@ -691,8 +690,6 @@ type getSystemProvidersRow struct {
 	TotalCount               int64
 }
 
-// sqlc.embed:provider_plans
-// sqlc.embed:provider_prices
 func (q *Queries) getSystemProviders(ctx context.Context) ([]getSystemProvidersRow, error) {
 	rows, err := q.db.Query(ctx, getSystemProviders)
 	if err != nil {

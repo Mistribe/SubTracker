@@ -50,11 +50,12 @@ func (r FamilyRepository) GetAll(ctx context.Context, parameters entity.QueryPar
 		return []family.Family{}, 0, nil
 	}
 
-	response, err := r.dbContext.GetQueries(ctx).GetFamiliesForUser(ctx, sql.GetFamiliesForUserParams{
-		UserID: &userId,
-		Limit:  parameters.Limit,
-		Offset: parameters.Offset,
-	})
+	response, count, err := r.dbContext.GetQueries(ctx).
+		GetFamiliesForUser(ctx,
+			&userId,
+			parameters.Limit,
+			parameters.Offset,
+		)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -62,16 +63,17 @@ func (r FamilyRepository) GetAll(ctx context.Context, parameters entity.QueryPar
 		return nil, 0, nil
 	}
 	families := createFamilyFromSqlcRows(response,
-		func(row sql.GetFamiliesForUserRow) sql.Family {
+		func(row sql.FamilyRow) sql.Family {
 			return row.Family
-		}, func(row sql.GetFamiliesForUserRow) sql.FamilyMember {
-			return row.FamilyMember
+		},
+		func(row sql.FamilyRow) *sql.FamilyMember {
+			return row.Member
 		},
 	)
 	if len(families) == 0 {
 		return nil, 0, nil
 	}
-	return families, response[0].TotalCount, nil
+	return families, count, nil
 }
 
 func (r FamilyRepository) Save(ctx context.Context, families ...family.Family) error {

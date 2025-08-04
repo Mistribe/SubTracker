@@ -228,7 +228,7 @@ func (q *Queries) GetSubscriptionById(ctx context.Context, id uuid.UUID) ([]GetS
 const getSubscriptions = `-- name: GetSubscriptions :many
 SELECT s.id, s.owner_type, s.owner_family_id, s.owner_user_id, s.friendly_name, s.free_trial_start_date, s.free_trial_end_date, s.provider_id, s.plan_id, s.price_id, s.family_id, s.payer_type, s.payer_member_id, s.start_date, s.end_date, s.recurrency, s.custom_recurrency, s.custom_price_currency, s.custom_price_amount, s.created_at, s.updated_at, s.etag,
        su.family_member_id, su.subscription_id,
-       COUNT() OVER () AS total_count
+       COUNT(*) OVER () AS total_count
 FROM public.subscriptions s
          INNER JOIN subscription_service_users su ON su.subscription_id = s.id
 LIMIT $1 OFFSET $2

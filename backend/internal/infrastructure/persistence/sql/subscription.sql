@@ -8,7 +8,7 @@ WHERE s.id = $1;
 -- name: GetSubscriptions :many
 SELECT sqlc.embed(s),
        sqlc.embed(su),
-       COUNT() OVER () AS total_count
+       COUNT(*) OVER () AS total_count
 FROM public.subscriptions s
          INNER JOIN subscription_service_users su ON su.subscription_id = s.id
 LIMIT $1 OFFSET $2;

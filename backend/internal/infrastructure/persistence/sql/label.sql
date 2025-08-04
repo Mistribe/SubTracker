@@ -4,7 +4,7 @@ FROM public.labels l
 WHERE l.id = $1;
 
 -- name: GetLabels :many
-SELECT sqlc.embed(l), COUNT() OVER () AS total_count
+SELECT sqlc.embed(l), COUNT(*) OVER () AS total_count
 FROM labels l
 WHERE (
           -- Personal owner condition

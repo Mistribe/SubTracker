@@ -1,11 +1,38 @@
--- name: GetFamilyById :many
-SELECT sqlc.embed(f), sqlc.embed(fm)
+-- name: getFamilyById :many
+SELECT f.id          AS "families.id",
+       f.name        AS "families.name",
+       f.owner_id    AS "families.owner_id",
+       f.created_at  AS "families.created_at",
+       f.updated_at  AS "families.updated_at",
+       f.etag        AS "families.etag",
+       fm.id         AS "family_members.id",
+       fm.name       AS "family_members.name",
+       fm.family_id  AS "family_members.family_id",
+       fm.user_id    AS "family_members.user_id",
+       fm.type       AS "family_members.type",
+       fm.created_at AS "family_members.created_at",
+       fm.updated_at AS "family_members.updated_at",
+       fm.etag       AS "family_members.etag"
 FROM public.families f
          LEFT JOIN public.family_members fm ON f.id = fm.family_id
 WHERE f.id = $1;
 
--- name: GetFamiliesForUser :many
-SELECT sqlc.embed(f), sqlc.embed(fm), COUNT(*) OVER () AS total_count
+-- name: getFamiliesForUser :many
+SELECT f.id          AS "families.id",
+       f.name        AS "families.name",
+       f.owner_id    AS "families.owner_id",
+       f.created_at  AS "families.created_at",
+       f.updated_at  AS "families.updated_at",
+       f.etag        AS "families.etag",
+       fm.id         AS "family_members.id",
+       fm.name       AS "family_members.name",
+       fm.family_id  AS "family_members.family_id",
+       fm.user_id    AS "family_members.user_id",
+       fm.type       AS "family_members.type",
+       fm.created_at AS "family_members.created_at",
+       fm.updated_at AS "family_members.updated_at",
+       fm.etag       AS "family_members.etag",
+       COUNT(*) OVER () AS total_count
 FROM public.families f
          LEFT JOIN public.family_members fm ON f.id = fm.family_id
 WHERE fm.user_id = $1
@@ -63,9 +90,11 @@ SET family_id  = $2,
 WHERE id = $1;
 
 -- name: DeleteFamily :exec
-DELETE FROM public.families f
+DELETE
+FROM public.families f
 WHERE f.id = $1;
 
 -- name: DeleteFamilyMember :exec
-DELETE FROM public.family_members fm
+DELETE
+FROM public.family_members fm
 WHERE fm.id = $1;

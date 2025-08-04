@@ -120,7 +120,7 @@ func (q *Queries) GetLabelById(ctx context.Context, id uuid.UUID) (Label, error)
 }
 
 const getLabels = `-- name: GetLabels :many
-SELECT l.id, l.owner_type, l.owner_family_id, l.owner_user_id, l.name, l.key, l.color, l.created_at, l.updated_at, l.etag, COUNT() OVER () AS total_count
+SELECT l.id, l.owner_type, l.owner_family_id, l.owner_user_id, l.name, l.key, l.color, l.created_at, l.updated_at, l.etag, COUNT(*) OVER () AS total_count
 FROM labels l
 WHERE (
           -- Personal owner condition

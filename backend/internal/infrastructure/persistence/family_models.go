@@ -29,7 +29,7 @@ func createFamilyMemberFromSqlc(sqlcMember sql.FamilyMember) family.Member {
 
 func createFamilyFromSqlcRows[T any](rows []T,
 	getFamilyFunc func(T) sql.Family,
-	getMemberFunc func(T) sql.FamilyMember) []family.Family {
+	getMemberFunc func(T) *sql.FamilyMember) []family.Family {
 	if len(rows) == 0 {
 		return nil
 	}

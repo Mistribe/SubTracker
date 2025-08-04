@@ -18,6 +18,9 @@ func (q *Queries) GetSystemProviders(ctx context.Context) ([]ProviderRow, int64,
 	if err != nil {
 		return nil, 0, err
 	}
+	if len(rows) == 0 {
+		return nil, 0, nil
+	}
 	totalCount := rows[0].TotalCount
 	results := make([]ProviderRow, len(rows))
 	for i, row := range rows {

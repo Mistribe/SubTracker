@@ -89,7 +89,8 @@ type CreateFamilyMembersParams struct {
 }
 
 const deleteFamily = `-- name: DeleteFamily :exec
-DELETE FROM public.families f
+DELETE
+FROM public.families f
 WHERE f.id = $1
 `
 
@@ -99,116 +100,14 @@ func (q *Queries) DeleteFamily(ctx context.Context, id uuid.UUID) error {
 }
 
 const deleteFamilyMember = `-- name: DeleteFamilyMember :exec
-DELETE FROM public.family_members fm
+DELETE
+FROM public.family_members fm
 WHERE fm.id = $1
 `
 
 func (q *Queries) DeleteFamilyMember(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteFamilyMember, id)
 	return err
-}
-
-const getFamiliesForUser = `-- name: GetFamiliesForUser :many
-SELECT f.id, f.name, f.owner_id, f.created_at, f.updated_at, f.etag, fm.id, fm.name, fm.family_id, fm.user_id, fm.type, fm.created_at, fm.updated_at, fm.etag, COUNT(*) OVER () AS total_count
-FROM public.families f
-         LEFT JOIN public.family_members fm ON f.id = fm.family_id
-WHERE fm.user_id = $1
-LIMIT $2 OFFSET $3
-`
-
-type GetFamiliesForUserParams struct {
-	UserID *string
-	Limit  int32
-	Offset int32
-}
-
-type GetFamiliesForUserRow struct {
-	Family       Family
-	FamilyMember FamilyMember
-	TotalCount   int64
-}
-
-func (q *Queries) GetFamiliesForUser(ctx context.Context, arg GetFamiliesForUserParams) ([]GetFamiliesForUserRow, error) {
-	rows, err := q.db.Query(ctx, getFamiliesForUser, arg.UserID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetFamiliesForUserRow
-	for rows.Next() {
-		var i GetFamiliesForUserRow
-		if err := rows.Scan(
-			&i.Family.ID,
-			&i.Family.Name,
-			&i.Family.OwnerID,
-			&i.Family.CreatedAt,
-			&i.Family.UpdatedAt,
-			&i.Family.Etag,
-			&i.FamilyMember.ID,
-			&i.FamilyMember.Name,
-			&i.FamilyMember.FamilyID,
-			&i.FamilyMember.UserID,
-			&i.FamilyMember.Type,
-			&i.FamilyMember.CreatedAt,
-			&i.FamilyMember.UpdatedAt,
-			&i.FamilyMember.Etag,
-			&i.TotalCount,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getFamilyById = `-- name: GetFamilyById :many
-SELECT f.id, f.name, f.owner_id, f.created_at, f.updated_at, f.etag, fm.id, fm.name, fm.family_id, fm.user_id, fm.type, fm.created_at, fm.updated_at, fm.etag
-FROM public.families f
-         LEFT JOIN public.family_members fm ON f.id = fm.family_id
-WHERE f.id = $1
-`
-
-type GetFamilyByIdRow struct {
-	Family       Family
-	FamilyMember FamilyMember
-}
-
-func (q *Queries) GetFamilyById(ctx context.Context, id uuid.UUID) ([]GetFamilyByIdRow, error) {
-	rows, err := q.db.Query(ctx, getFamilyById, id)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetFamilyByIdRow
-	for rows.Next() {
-		var i GetFamilyByIdRow
-		if err := rows.Scan(
-			&i.Family.ID,
-			&i.Family.Name,
-			&i.Family.OwnerID,
-			&i.Family.CreatedAt,
-			&i.Family.UpdatedAt,
-			&i.Family.Etag,
-			&i.FamilyMember.ID,
-			&i.FamilyMember.Name,
-			&i.FamilyMember.FamilyID,
-			&i.FamilyMember.UserID,
-			&i.FamilyMember.Type,
-			&i.FamilyMember.CreatedAt,
-			&i.FamilyMember.UpdatedAt,
-			&i.FamilyMember.Etag,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const isFamilyExists = `-- name: IsFamilyExists :one
@@ -320,4 +219,158 @@ func (q *Queries) UpdateFamilyMember(ctx context.Context, arg UpdateFamilyMember
 		arg.Etag,
 	)
 	return err
+}
+
+const getFamiliesForUser = `-- name: getFamiliesForUser :many
+SELECT f.id          AS "families.id",
+       f.name        AS "families.name",
+       f.owner_id    AS "families.owner_id",
+       f.created_at  AS "families.created_at",
+       f.updated_at  AS "families.updated_at",
+       f.etag        AS "families.etag",
+       fm.id         AS "family_members.id",
+       fm.name       AS "family_members.name",
+       fm.family_id  AS "family_members.family_id",
+       fm.user_id    AS "family_members.user_id",
+       fm.type       AS "family_members.type",
+       fm.created_at AS "family_members.created_at",
+       fm.updated_at AS "family_members.updated_at",
+       fm.etag       AS "family_members.etag",
+       COUNT(*) OVER () AS total_count
+FROM public.families f
+         LEFT JOIN public.family_members fm ON f.id = fm.family_id
+WHERE fm.user_id = $1
+LIMIT $2 OFFSET $3
+`
+
+type getFamiliesForUserParams struct {
+	UserID *string
+	Limit  int32
+	Offset int32
+}
+
+type getFamiliesForUserRow struct {
+	FamiliesID             uuid.UUID
+	FamiliesName           string
+	FamiliesOwnerID        string
+	FamiliesCreatedAt      time.Time
+	FamiliesUpdatedAt      time.Time
+	FamiliesEtag           string
+	FamilyMembersID        *uuid.UUID
+	FamilyMembersName      *string
+	FamilyMembersFamilyID  *uuid.UUID
+	FamilyMembersUserID    *string
+	FamilyMembersType      *string
+	FamilyMembersCreatedAt *time.Time
+	FamilyMembersUpdatedAt *time.Time
+	FamilyMembersEtag      *string
+	TotalCount             int64
+}
+
+func (q *Queries) getFamiliesForUser(ctx context.Context, arg getFamiliesForUserParams) ([]getFamiliesForUserRow, error) {
+	rows, err := q.db.Query(ctx, getFamiliesForUser, arg.UserID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []getFamiliesForUserRow
+	for rows.Next() {
+		var i getFamiliesForUserRow
+		if err := rows.Scan(
+			&i.FamiliesID,
+			&i.FamiliesName,
+			&i.FamiliesOwnerID,
+			&i.FamiliesCreatedAt,
+			&i.FamiliesUpdatedAt,
+			&i.FamiliesEtag,
+			&i.FamilyMembersID,
+			&i.FamilyMembersName,
+			&i.FamilyMembersFamilyID,
+			&i.FamilyMembersUserID,
+			&i.FamilyMembersType,
+			&i.FamilyMembersCreatedAt,
+			&i.FamilyMembersUpdatedAt,
+			&i.FamilyMembersEtag,
+			&i.TotalCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getFamilyById = `-- name: getFamilyById :many
+SELECT f.id          AS "families.id",
+       f.name        AS "families.name",
+       f.owner_id    AS "families.owner_id",
+       f.created_at  AS "families.created_at",
+       f.updated_at  AS "families.updated_at",
+       f.etag        AS "families.etag",
+       fm.id         AS "family_members.id",
+       fm.name       AS "family_members.name",
+       fm.family_id  AS "family_members.family_id",
+       fm.user_id    AS "family_members.user_id",
+       fm.type       AS "family_members.type",
+       fm.created_at AS "family_members.created_at",
+       fm.updated_at AS "family_members.updated_at",
+       fm.etag       AS "family_members.etag"
+FROM public.families f
+         LEFT JOIN public.family_members fm ON f.id = fm.family_id
+WHERE f.id = $1
+`
+
+type getFamilyByIdRow struct {
+	FamiliesID             uuid.UUID
+	FamiliesName           string
+	FamiliesOwnerID        string
+	FamiliesCreatedAt      time.Time
+	FamiliesUpdatedAt      time.Time
+	FamiliesEtag           string
+	FamilyMembersID        *uuid.UUID
+	FamilyMembersName      *string
+	FamilyMembersFamilyID  *uuid.UUID
+	FamilyMembersUserID    *string
+	FamilyMembersType      *string
+	FamilyMembersCreatedAt *time.Time
+	FamilyMembersUpdatedAt *time.Time
+	FamilyMembersEtag      *string
+}
+
+func (q *Queries) getFamilyById(ctx context.Context, id uuid.UUID) ([]getFamilyByIdRow, error) {
+	rows, err := q.db.Query(ctx, getFamilyById, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []getFamilyByIdRow
+	for rows.Next() {
+		var i getFamilyByIdRow
+		if err := rows.Scan(
+			&i.FamiliesID,
+			&i.FamiliesName,
+			&i.FamiliesOwnerID,
+			&i.FamiliesCreatedAt,
+			&i.FamiliesUpdatedAt,
+			&i.FamiliesEtag,
+			&i.FamilyMembersID,
+			&i.FamilyMembersName,
+			&i.FamilyMembersFamilyID,
+			&i.FamilyMembersUserID,
+			&i.FamilyMembersType,
+			&i.FamilyMembersCreatedAt,
+			&i.FamilyMembersUpdatedAt,
+			&i.FamilyMembersEtag,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
