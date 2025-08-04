@@ -33,14 +33,17 @@ func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (
 		return nil, nil
 	}
 	providers := createProviderFromSqlcRows(response,
-		func(row sql.GetProviderByIdRow) sql.Provider {
+		func(row sql.ProviderRow) sql.Provider {
 			return row.Provider
 		},
-		func(row sql.GetProviderByIdRow) sql.ProviderPlan {
+		func(row sql.ProviderRow) *sql.ProviderPlan {
 			return row.ProviderPlan
 		},
-		func(row sql.GetProviderByIdRow) sql.ProviderPrice {
+		func(row sql.ProviderRow) *sql.ProviderPrice {
 			return row.ProviderPrice
+		},
+		func(row sql.ProviderRow) *uuid.UUID {
+			return row.ProviderLabel
 		},
 	)
 
@@ -51,31 +54,34 @@ func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (
 	return providers[0], nil
 }
 
-func (r ProviderRepository) GetSystemProviders(ctx context.Context) ([]provider.Provider, error) {
-	response, err := r.dbContext.GetQueries(ctx).GetSystemProviders(ctx)
+func (r ProviderRepository) GetSystemProviders(ctx context.Context) ([]provider.Provider, int64, error) {
+	response, count, err := r.dbContext.GetQueries(ctx).GetSystemProviders(ctx)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if len(response) == 0 {
-		return nil, nil
+		return nil, 0, nil
 	}
 	providers := createProviderFromSqlcRows(response,
-		func(row sql.GetSystemProvidersRow) sql.Provider {
+		func(row sql.ProviderRow) sql.Provider {
 			return row.Provider
 		},
-		func(row sql.GetSystemProvidersRow) sql.ProviderPlan {
+		func(row sql.ProviderRow) *sql.ProviderPlan {
 			return row.ProviderPlan
 		},
-		func(row sql.GetSystemProvidersRow) sql.ProviderPrice {
+		func(row sql.ProviderRow) *sql.ProviderPrice {
 			return row.ProviderPrice
+		},
+		func(row sql.ProviderRow) *uuid.UUID {
+			return row.ProviderLabel
 		},
 	)
 
 	if len(providers) == 0 {
-		return nil, nil
+		return nil, 0, nil
 	}
 
-	return providers, nil
+	return providers, count, nil
 }
 
 func (r ProviderRepository) GetAll(ctx context.Context, parameters entity.QueryParameters) (
@@ -87,10 +93,7 @@ func (r ProviderRepository) GetAll(ctx context.Context, parameters entity.QueryP
 		return nil, 0, nil
 	}
 
-	response, err := r.dbContext.GetQueries(ctx).GetProviders(ctx, sql.GetProvidersParams{
-		Limit:  parameters.Limit,
-		Offset: parameters.Offset,
-	})
+	response, count, err := r.dbContext.GetQueries(ctx).GetProviders(ctx, parameters.Limit, parameters.Offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -98,14 +101,17 @@ func (r ProviderRepository) GetAll(ctx context.Context, parameters entity.QueryP
 		return nil, 0, nil
 	}
 	providers := createProviderFromSqlcRows(response,
-		func(row sql.GetProvidersRow) sql.Provider {
+		func(row sql.ProviderRow) sql.Provider {
 			return row.Provider
 		},
-		func(row sql.GetProvidersRow) sql.ProviderPlan {
+		func(row sql.ProviderRow) *sql.ProviderPlan {
 			return row.ProviderPlan
 		},
-		func(row sql.GetProvidersRow) sql.ProviderPrice {
+		func(row sql.ProviderRow) *sql.ProviderPrice {
 			return row.ProviderPrice
+		},
+		func(row sql.ProviderRow) *uuid.UUID {
+			return row.ProviderLabel
 		},
 	)
 
@@ -113,7 +119,7 @@ func (r ProviderRepository) GetAll(ctx context.Context, parameters entity.QueryP
 		return nil, 0, nil
 	}
 
-	return providers, response[0].TotalCount, nil
+	return providers, count, nil
 }
 
 func (r ProviderRepository) Save(ctx context.Context, providers ...provider.Provider) error {
@@ -383,7 +389,8 @@ func (r ProviderRepository) update(ctx context.Context, dirtyProvider provider.P
 	return nil
 }
 
-func (r ProviderRepository) savePrices(ctx context.Context,
+func (r ProviderRepository) savePrices(
+	ctx context.Context,
 	planId uuid.UUID,
 	trackedPrices *slicesx.Tracked[provider.Price]) error {
 	err := saveTrackedSlice(ctx,

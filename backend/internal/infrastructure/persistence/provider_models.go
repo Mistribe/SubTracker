@@ -1,16 +1,19 @@
 package persistence
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/provider"
 	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 func createProviderPriceFromSqlc(sqlcModel sql.ProviderPrice) provider.Price {
-	return provider.NewPrice(
+	p := provider.NewPrice(
 		sqlcModel.ID,
 		sqlcModel.StartDate,
 		sqlcModel.EndDate,
@@ -19,13 +22,30 @@ func createProviderPriceFromSqlc(sqlcModel sql.ProviderPrice) provider.Price {
 		sqlcModel.CreatedAt,
 		sqlcModel.UpdatedAt,
 	)
+
+	p.Clean()
+	return p
 }
 
-func createProviderFromSqlc(sqlcModel sql.Provider) provider.Provider {
+func createProviderPlanFromSqlc(sqlcPlan sql.ProviderPlan, prices []provider.Price) provider.Plan {
+	p := provider.NewPlan(
+		sqlcPlan.ID,
+		sqlcPlan.Name,
+		sqlcPlan.Description,
+		prices,
+		sqlcPlan.CreatedAt,
+		sqlcPlan.UpdatedAt,
+	)
+
+	p.Clean()
+	return p
+}
+
+func createProviderFromSqlc(sqlcModel sql.Provider, plans []provider.Plan, labels []uuid.UUID) provider.Provider {
 	ownerType := auth.MustParseOwnerType(sqlcModel.OwnerType)
 	owner := auth.NewOwner(ownerType, sqlcModel.OwnerFamilyID, sqlcModel.OwnerUserID)
 
-	return provider.NewProvider(
+	p := provider.NewProvider(
 		sqlcModel.ID,
 		sqlcModel.Name,
 		sqlcModel.Key,
@@ -33,124 +53,90 @@ func createProviderFromSqlc(sqlcModel sql.Provider) provider.Provider {
 		sqlcModel.IconUrl,
 		sqlcModel.Url,
 		sqlcModel.PricingPageUrl,
-		nil,
-		nil,
+		labels,
+		plans,
 		owner,
 		sqlcModel.CreatedAt,
 		sqlcModel.UpdatedAt,
 	)
-}
 
-// aggregateProviderData organizes rows into a structured map for easier processing
-func aggregateProviderData[T any](rows []T,
-	getProviderFunc func(T) sql.Provider,
-	getPlanFunc func(T) sql.ProviderPlan,
-	getPriceFunc func(T) sql.ProviderPrice) (map[uuid.UUID]map[uuid.UUID][]provider.Price, sql.Provider) {
-
-	providerMap := make(map[uuid.UUID]map[uuid.UUID][]provider.Price)
-	var lastProvider sql.Provider
-
-	for _, row := range rows {
-		sqlcProvider := getProviderFunc(row)
-		sqlcPlan := getPlanFunc(row)
-		sqlcPrice := getPriceFunc(row)
-
-		lastProvider = sqlcProvider
-
-		// Initialize provider map if not exists
-		if providerMap[sqlcProvider.ID] == nil {
-			providerMap[sqlcProvider.ID] = make(map[uuid.UUID][]provider.Price)
-		}
-
-		// Add price if valid (not null from LEFT JOIN)
-		if sqlcPrice.ID != uuid.Nil {
-			price := createProviderPriceFromSqlc(sqlcPrice)
-			providerMap[sqlcProvider.ID][sqlcPlan.ID] = append(providerMap[sqlcProvider.ID][sqlcPlan.ID], price)
-		}
-
-		// Initialize plan entry if it doesn't exist (for plans without prices)
-		if sqlcPlan.ID != uuid.Nil {
-			if _, exists := providerMap[sqlcProvider.ID][sqlcPlan.ID]; !exists {
-				providerMap[sqlcProvider.ID][sqlcPlan.ID] = []provider.Price{}
-			}
-		}
-	}
-
-	return providerMap, lastProvider
-}
-
-// buildPlansFromMap converts plan data from the aggregated map to domain plans
-func buildPlansFromMap[T any](planMap map[uuid.UUID][]provider.Price, rows []T,
-	getPlanFunc func(T) sql.ProviderPlan) []provider.Plan {
-	if len(planMap) == 0 {
-		return nil
-	}
-
-	plans := make([]provider.Plan, 0, len(planMap))
-	for planID, prices := range planMap {
-		// Find the plan data from rows
-		var planData sql.ProviderPlan
-		for _, row := range rows {
-			if getPlanFunc(row).ID == planID {
-				planData = getPlanFunc(row)
-				break
-			}
-		}
-
-		plan := provider.NewPlan(
-			planData.ID,
-			planData.Name,
-			planData.Description,
-			prices,
-			planData.CreatedAt,
-			planData.UpdatedAt,
-		)
-		plans = append(plans, plan)
-	}
-
-	return plans
-}
-
-// createProviderWithPlans creates a complete provider with its plans
-func createProviderWithPlans(baseProvider sql.Provider, plans []provider.Plan) provider.Provider {
-	domainProvider := createProviderFromSqlc(baseProvider)
-
-	return provider.NewProvider(
-		domainProvider.Id(),
-		domainProvider.Name(),
-		domainProvider.Key(),
-		domainProvider.Description(),
-		domainProvider.IconUrl(),
-		domainProvider.Url(),
-		domainProvider.PricingPageUrl(),
-		nil, // labels - handled separately if needed
-		plans,
-		domainProvider.Owner(),
-		domainProvider.CreatedAt(),
-		domainProvider.UpdatedAt(),
-	)
+	p.Clean()
+	return p
 }
 
 // createProviderFromSqlcRows converts SQLC rows to domain providers with plans and prices
-func createProviderFromSqlcRows[T any](rows []T,
+func createProviderFromSqlcRows[T any](
+	rows []T,
 	getProviderFunc func(T) sql.Provider,
-	getPlanFunc func(T) sql.ProviderPlan,
-	getPriceFunc func(T) sql.ProviderPrice) []provider.Provider {
+	getPlanFunc func(T) *sql.ProviderPlan,
+	getPriceFunc func(T) *sql.ProviderPrice,
+	getLabelFunc func(T) *uuid.UUID) []provider.Provider {
 
 	if len(rows) == 0 {
 		return nil
 	}
 
-	// Aggregate data from rows
-	providerMap, lastProvider := aggregateProviderData(rows, getProviderFunc, getPlanFunc, getPriceFunc)
+	providers := make(map[uuid.UUID]sql.Provider)
+	planSet := make(map[uuid.UUID]struct{})
+	providerPlans := make(map[uuid.UUID][]sql.ProviderPlan)
+	priceSet := make(map[uuid.UUID]struct{})
+	planPrices := make(map[uuid.UUID][]sql.ProviderPrice)
+	labelSet := make(map[string]struct{})
+	providerLabels := make(map[uuid.UUID][]uuid.UUID)
 
-	// Convert to domain providers
-	providers := make([]provider.Provider, 0, len(providerMap))
-	for _, planMap := range providerMap {
-		plans := buildPlansFromMap(planMap, rows, getPlanFunc)
-		domainProvider := createProviderWithPlans(lastProvider, plans)
-		providers = append(providers, domainProvider)
+	for _, row := range rows {
+		sqlcProvider := getProviderFunc(row)
+		if _, ok := providers[sqlcProvider.ID]; !ok {
+			providers[sqlcProvider.ID] = sqlcProvider
+		}
+		sqlcPlan := getPlanFunc(row)
+		if sqlcPlan != nil {
+			if _, ok := planSet[sqlcPlan.ID]; !ok {
+				planSet[sqlcPlan.ID] = struct{}{}
+				providerPlans[sqlcPlan.ProviderID] = append(providerPlans[sqlcPlan.ProviderID], *sqlcPlan)
+			}
+		}
+		sqlcPrice := getPriceFunc(row)
+		if sqlcPrice != nil {
+			if _, ok := priceSet[sqlcPrice.ID]; !ok {
+				priceSet[sqlcPrice.ID] = struct{}{}
+				planPrices[sqlcPrice.PlanID] = append(planPrices[sqlcPrice.PlanID], *sqlcPrice)
+			}
+		}
+
+		sqlcLabelId := getLabelFunc(row)
+		if sqlcLabelId != nil {
+			key := fmt.Sprintf("%s:%s", sqlcProvider.ID, *sqlcLabelId)
+			if _, ok := labelSet[key]; !ok {
+				labelSet[key] = struct{}{}
+				providerLabels[sqlcProvider.ID] = append(providerLabels[sqlcProvider.ID], *sqlcLabelId)
+			}
+		}
 	}
 
-	return providers
+	results := make([]provider.Provider, len(providers))
+	count := 0
+	for providerId, sqlcProvider := range providers {
+		var plans []provider.Plan
+		sqlcPlans, planExists := providerPlans[providerId]
+		if planExists {
+			plans = slicesx.Select(sqlcPlans, func(sqlcPlan sql.ProviderPlan) provider.Plan {
+				var prices []provider.Price
+				sqlcPrices, priceExists := planPrices[sqlcPlan.ID]
+				if priceExists {
+					prices = slicesx.Select(sqlcPrices, func(sqlcPrice sql.ProviderPrice) provider.Price {
+						return createProviderPriceFromSqlc(sqlcPrice)
+					})
+				}
+
+				return createProviderPlanFromSqlc(sqlcPlan, prices)
+			})
+		}
+
+		sqlcLabels, _ := providerLabels[providerId]
+		results[count] = createProviderFromSqlc(sqlcProvider, plans, sqlcLabels)
+		count++
+	}
+
+	return results
 }

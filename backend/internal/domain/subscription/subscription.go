@@ -222,7 +222,6 @@ func (s *subscription) SetCustomRecurrency(customRecurrency *int32) {
 func (s *subscription) ETagFields() []interface{} {
 	fields := []interface{}{
 		s.friendlyName,
-		s.freeTrial.ETag(),
 		s.providerId,
 		s.planId,
 		s.priceId,
@@ -230,7 +229,18 @@ func (s *subscription) ETagFields() []interface{} {
 		s.startDate,
 		s.endDate,
 		s.recurrency.String(),
-		s.customRecurrency,
+	}
+
+	if s.freeTrial != nil {
+		fields = append(fields, s.freeTrial.ETag())
+	}
+
+	if s.customRecurrency != nil {
+		fields = append(fields, *s.customRecurrency)
+	}
+
+	if s.customPrice != nil {
+		fields = append(fields, s.customPrice.ETag())
 	}
 
 	if s.payer != nil {

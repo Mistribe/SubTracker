@@ -59,7 +59,7 @@ type subscriptionUpdater struct {
 }
 
 func (l subscriptionUpdater) Priority() int {
-	return highPriorty
+	return lowPriority
 }
 
 func (l subscriptionUpdater) Update(ctx context.Context) error {
@@ -79,7 +79,7 @@ func (l subscriptionUpdater) Update(ctx context.Context) error {
 }
 
 func (l subscriptionUpdater) getSystemProviders(ctx context.Context) (map[string]uuid.UUID, error) {
-	providers, err := l.providerRepository.GetSystemProviders(ctx)
+	providers, _, err := l.providerRepository.GetSystemProviders(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +185,8 @@ func (l subscriptionUpdater) updateDatabase(ctx context.Context, subscriptions [
 	return nil
 }
 
-func newSubscriptionUpdater(cfg config.Configuration,
+func newSubscriptionUpdater(
+	cfg config.Configuration,
 	providerRepository provider.Repository,
 	subscriptionRepository subscription.Repository) *subscriptionUpdater {
 	labelPath := cfg.GetStringOrDefault("DATA_SUBSCRIPTION", "")

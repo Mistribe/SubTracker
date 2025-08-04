@@ -96,7 +96,7 @@ func (l providerUpdater) getSystemLabels(ctx context.Context) (labelMap, error) 
 }
 
 func (l providerUpdater) updateDatabase(ctx context.Context, sourceProviders []systemProviderModel) error {
-	systemProviders, err := l.providerRepository.GetSystemProviders(ctx)
+	systemProviders, _, err := l.providerRepository.GetSystemProviders(ctx)
 	if err != nil {
 		return err
 	}
@@ -183,7 +183,8 @@ func (l providerUpdater) updateDatabase(ctx context.Context, sourceProviders []s
 	return nil
 }
 
-func newProviderUpdater(cfg config.Configuration,
+func newProviderUpdater(
+	cfg config.Configuration,
 	providerRepository provider.Repository,
 	logger *slog.Logger,
 	labelRepository label.Repository) *providerUpdater {

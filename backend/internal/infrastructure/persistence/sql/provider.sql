@@ -1,31 +1,122 @@
--- name: GetProviderById :many
-SELECT sqlc.embed(p),
-       sqlc.embed(ppl),
-       sqlc.embed(ppr)
+-- name: getProviderById :many
+SELECT p.id               AS "providers.id",
+       p.owner_type       AS "providers.owner_type",
+       p.owner_family_id  AS "providers.owner_family_id",
+       p.owner_user_id    AS "providers.owner_user_id",
+       p.name             AS "providers.name",
+       p.key              AS "providers.key",
+       p.description      AS "providers.description",
+       p.icon_url         AS "providers.icon_url",
+       p.url              AS "providers.url",
+       p.pricing_page_url AS "providers.pricing_page_url",
+       p.created_at       AS "providers.created_at",
+       p.updated_at       AS "providers.updated_at",
+       p.etag             AS "providers.etag",
+       ppl.id             AS "provider_plans.id",
+       ppl.name           AS "provider_plans.name",
+       ppl.description    AS "provider_plans.description",
+       ppl.provider_id    AS "provider_plans.provider_id",
+       ppl.created_at     AS "provider_plans.created_at",
+       ppl.updated_at     AS "provider_plans.updated_at",
+       ppl.etag           AS "provider_plans.etag",
+       ppr.id             AS "provider_prices.id",
+       ppr.start_date     AS "provider_prices.start_date",
+       ppr.end_date       AS "provider_prices.end_date",
+       ppr.currency       AS "provider_prices.currency",
+       ppr.amount         AS "provider_prices.amount",
+       ppr.plan_id        AS "provider_prices.plan_id",
+       ppr.created_at     AS "provider_prices.created_at",
+       ppr.updated_at     AS "provider_prices.updated_at",
+       ppr.etag           AS "provider_prices.etag",
+       pl.label_id        AS "provider_labels.label_id",
+       pl.provider_id     AS "provider_labels.provider_id"
 FROM public.providers p
          LEFT JOIN public.provider_plans ppl ON ppl.provider_id = p.id
          LEFT JOIN public.provider_prices ppr ON ppl.provider_id = p.id
+         LEFT JOIN public.provider_labels pl ON pl.provider_id = p.id
 WHERE p.id = $1;
 
--- name: GetSystemProviders :many
-SELECT sqlc.embed(p),
-       sqlc.embed(ppl),
-       sqlc.embed(ppr)
+-- sqlc.embed:provider_plans
+-- sqlc.embed:provider_prices
+
+-- name: getSystemProviders :many
+SELECT p.id               AS "providers.id",
+       p.owner_type       AS "providers.owner_type",
+       p.owner_family_id  AS "providers.owner_family_id",
+       p.owner_user_id    AS "providers.owner_user_id",
+       p.name             AS "providers.name",
+       p.key              AS "providers.key",
+       p.description      AS "providers.description",
+       p.icon_url         AS "providers.icon_url",
+       p.url              AS "providers.url",
+       p.pricing_page_url AS "providers.pricing_page_url",
+       p.created_at       AS "providers.created_at",
+       p.updated_at       AS "providers.updated_at",
+       p.etag             AS "providers.etag",
+       ppl.id             AS "provider_plans.id",
+       ppl.name           AS "provider_plans.name",
+       ppl.description    AS "provider_plans.description",
+       ppl.provider_id    AS "provider_plans.provider_id",
+       ppl.created_at     AS "provider_plans.created_at",
+       ppl.updated_at     AS "provider_plans.updated_at",
+       ppl.etag           AS "provider_plans.etag",
+       ppr.id             AS "provider_prices.id",
+       ppr.start_date     AS "provider_prices.start_date",
+       ppr.end_date       AS "provider_prices.end_date",
+       ppr.currency       AS "provider_prices.currency",
+       ppr.amount         AS "provider_prices.amount",
+       ppr.plan_id        AS "provider_prices.plan_id",
+       ppr.created_at     AS "provider_prices.created_at",
+       ppr.updated_at     AS "provider_prices.updated_at",
+       ppr.etag           AS "provider_prices.etag",
+       pl.label_id        AS "provider_labels.label_id",
+       pl.provider_id     AS "provider_labels.provider_id",
+       COUNT(*) OVER ()   AS total_count
 FROM public.providers p
          LEFT JOIN public.provider_plans ppl ON ppl.provider_id = p.id
          LEFT JOIN public.provider_prices ppr ON ppl.provider_id = p.id
+         LEFT JOIN public.provider_labels pl ON pl.provider_id = p.id
 WHERE p.owner_type = 'system'
   AND p.owner_user_id IS NULL
   AND p.owner_family_id IS NULL;
 
--- name: GetProviders :many
-SELECT sqlc.embed(p),
-       sqlc.embed(ppl),
-       sqlc.embed(ppr),
-       COUNT() OVER () AS total_count
+-- name: getProviders :many
+SELECT p.id               AS "providers.id",
+       p.owner_type       AS "providers.owner_type",
+       p.owner_family_id  AS "providers.owner_family_id",
+       p.owner_user_id    AS "providers.owner_user_id",
+       p.name             AS "providers.name",
+       p.key              AS "providers.key",
+       p.description      AS "providers.description",
+       p.icon_url         AS "providers.icon_url",
+       p.url              AS "providers.url",
+       p.pricing_page_url AS "providers.pricing_page_url",
+       p.created_at       AS "providers.created_at",
+       p.updated_at       AS "providers.updated_at",
+       p.etag             AS "providers.etag",
+       ppl.id             AS "provider_plans.id",
+       ppl.name           AS "provider_plans.name",
+       ppl.description    AS "provider_plans.description",
+       ppl.provider_id    AS "provider_plans.provider_id",
+       ppl.created_at     AS "provider_plans.created_at",
+       ppl.updated_at     AS "provider_plans.updated_at",
+       ppl.etag           AS "provider_plans.etag",
+       ppr.id             AS "provider_prices.id",
+       ppr.start_date     AS "provider_prices.start_date",
+       ppr.end_date       AS "provider_prices.end_date",
+       ppr.currency       AS "provider_prices.currency",
+       ppr.amount         AS "provider_prices.amount",
+       ppr.plan_id        AS "provider_prices.plan_id",
+       ppr.created_at     AS "provider_prices.created_at",
+       ppr.updated_at     AS "provider_prices.updated_at",
+       ppr.etag           AS "provider_prices.etag",
+       pl.label_id        AS "provider_labels.label_id",
+       pl.provider_id     AS "provider_labels.provider_id",
+       COUNT(*) OVER ()   AS total_count
 FROM public.providers p
          LEFT JOIN public.provider_plans ppl ON ppl.provider_id = p.id
          LEFT JOIN public.provider_prices ppr ON ppl.provider_id = p.id
+         LEFT JOIN public.provider_labels pl ON pl.provider_id = p.id
 LIMIT $1 OFFSET $2;
 
 

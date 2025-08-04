@@ -12,7 +12,7 @@ type Repository interface {
 	entity.Repository[Provider]
 
 	GetAll(ctx context.Context, parameters entity.QueryParameters) ([]Provider, int64, error)
-	GetSystemProviders(ctx context.Context) ([]Provider, error)
+	GetSystemProviders(ctx context.Context) ([]Provider, int64, error)
 	DeletePlan(ctx context.Context, planId uuid.UUID) (bool, error)
 	DeletePrice(ctx context.Context, id uuid.UUID) (bool, error)
 }
