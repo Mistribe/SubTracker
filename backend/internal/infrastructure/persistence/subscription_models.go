@@ -1,16 +1,19 @@
 package persistence
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
 )
 
-func createSubscriptionFromSqlc(sqlcModel sql.Subscription) subscription.Subscription {
+func createSubscriptionFromSqlc(sqlcModel sql.Subscription, serviceUsers []uuid.UUID) subscription.Subscription {
 	var freeTrial subscription.FreeTrial
 	if sqlcModel.FreeTrialEndDate != nil && sqlcModel.FreeTrialStartDate != nil {
 		freeTrial = subscription.NewFreeTrial(
@@ -49,7 +52,7 @@ func createSubscriptionFromSqlc(sqlcModel sql.Subscription) subscription.Subscri
 		customPrice,
 		owner,
 		payer,
-		nil,
+		serviceUsers,
 		sqlcModel.StartDate,
 		sqlcModel.EndDate,
 		recurrency,
@@ -63,37 +66,38 @@ func createSubscriptionFromSqlc(sqlcModel sql.Subscription) subscription.Subscri
 
 func createSubscriptionFromSqlcRows[T any](rows []T,
 	getSubscriptionFunc func(T) sql.Subscription,
-	getSubscriptionServiceUserFunc func(T) sql.SubscriptionServiceUser) []subscription.Subscription {
+	getSubscriptionServiceUserFunc func(T) *sql.SubscriptionServiceUser) []subscription.Subscription {
 	if len(rows) == 0 {
 		return nil
 	}
 
-	subscriptionMap := make(map[uuid.UUID][]uuid.UUID)
-	var lastSubscription sql.Subscription
+	subscriptions := make(map[uuid.UUID]sql.Subscription)
+	serviceUserSet := slicesx.NewSet[string]()
+	subscriptionServiceUsers := make(map[uuid.UUID][]uuid.UUID)
 
 	for _, row := range rows {
 		sqlcSubscription := getSubscriptionFunc(row)
-		sqlcServiceUser := getSubscriptionServiceUserFunc(row)
-
-		lastSubscription = sqlcSubscription // Keep reference for subscription data
-
-		// Add service user if valid (not null from LEFT JOIN)
-		if sqlcServiceUser.SubscriptionID != uuid.Nil {
-			subscriptionMap[sqlcSubscription.ID] = append(subscriptionMap[sqlcSubscription.ID],
-				sqlcServiceUser.FamilyMemberID)
+		if _, ok := subscriptions[sqlcSubscription.ID]; !ok {
+			subscriptions[sqlcSubscription.ID] = sqlcSubscription
+		}
+		sqlcSubscriptionServiceUser := getSubscriptionServiceUserFunc(row)
+		if sqlcSubscriptionServiceUser != nil {
+			key := fmt.Sprintf("%s:%s", sqlcSubscription.ID, sqlcSubscriptionServiceUser.FamilyMemberID)
+			if !serviceUserSet.Contains(key) {
+				serviceUserSet.Add(key)
+				subscriptionServiceUsers[sqlcSubscription.ID] = append(subscriptionServiceUsers[sqlcSubscription.ID],
+					sqlcSubscriptionServiceUser.FamilyMemberID)
+			}
 		}
 	}
 
-	// Convert to domain subscriptions
-	subscriptions := make([]subscription.Subscription, 0, len(subscriptionMap))
-	for id, serviceUsers := range subscriptionMap {
-		if id == lastSubscription.ID {
-			sub := createSubscriptionFromSqlc(lastSubscription)
-			sub.SetServiceUsers(serviceUsers)
-			sub.Clean()
-			subscriptions = append(subscriptions, sub)
-		}
+	results := make([]subscription.Subscription, len(subscriptions))
+	count := 0
+	for subscriptionId, sqlcSubscription := range subscriptions {
+		sqlcSubscriptionServiceUsers, _ := subscriptionServiceUsers[subscriptionId]
+		results[count] = createSubscriptionFromSqlc(sqlcSubscription, sqlcSubscriptionServiceUsers)
+		count++
 	}
 
-	return subscriptions
+	return results
 }

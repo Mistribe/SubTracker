@@ -167,130 +167,6 @@ func (q *Queries) DeleteSubscriptionServiceUser(ctx context.Context, arg DeleteS
 	return err
 }
 
-const getSubscriptionById = `-- name: GetSubscriptionById :many
-SELECT s.id, s.owner_type, s.owner_family_id, s.owner_user_id, s.friendly_name, s.free_trial_start_date, s.free_trial_end_date, s.provider_id, s.plan_id, s.price_id, s.family_id, s.payer_type, s.payer_member_id, s.start_date, s.end_date, s.recurrency, s.custom_recurrency, s.custom_price_currency, s.custom_price_amount, s.created_at, s.updated_at, s.etag,
-       su.family_member_id, su.subscription_id
-FROM public.subscriptions s
-         INNER JOIN subscription_service_users su ON su.subscription_id = s.id
-WHERE s.id = $1
-`
-
-type GetSubscriptionByIdRow struct {
-	Subscription            Subscription
-	SubscriptionServiceUser SubscriptionServiceUser
-}
-
-func (q *Queries) GetSubscriptionById(ctx context.Context, id uuid.UUID) ([]GetSubscriptionByIdRow, error) {
-	rows, err := q.db.Query(ctx, getSubscriptionById, id)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetSubscriptionByIdRow
-	for rows.Next() {
-		var i GetSubscriptionByIdRow
-		if err := rows.Scan(
-			&i.Subscription.ID,
-			&i.Subscription.OwnerType,
-			&i.Subscription.OwnerFamilyID,
-			&i.Subscription.OwnerUserID,
-			&i.Subscription.FriendlyName,
-			&i.Subscription.FreeTrialStartDate,
-			&i.Subscription.FreeTrialEndDate,
-			&i.Subscription.ProviderID,
-			&i.Subscription.PlanID,
-			&i.Subscription.PriceID,
-			&i.Subscription.FamilyID,
-			&i.Subscription.PayerType,
-			&i.Subscription.PayerMemberID,
-			&i.Subscription.StartDate,
-			&i.Subscription.EndDate,
-			&i.Subscription.Recurrency,
-			&i.Subscription.CustomRecurrency,
-			&i.Subscription.CustomPriceCurrency,
-			&i.Subscription.CustomPriceAmount,
-			&i.Subscription.CreatedAt,
-			&i.Subscription.UpdatedAt,
-			&i.Subscription.Etag,
-			&i.SubscriptionServiceUser.FamilyMemberID,
-			&i.SubscriptionServiceUser.SubscriptionID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getSubscriptions = `-- name: GetSubscriptions :many
-SELECT s.id, s.owner_type, s.owner_family_id, s.owner_user_id, s.friendly_name, s.free_trial_start_date, s.free_trial_end_date, s.provider_id, s.plan_id, s.price_id, s.family_id, s.payer_type, s.payer_member_id, s.start_date, s.end_date, s.recurrency, s.custom_recurrency, s.custom_price_currency, s.custom_price_amount, s.created_at, s.updated_at, s.etag,
-       su.family_member_id, su.subscription_id,
-       COUNT(*) OVER () AS total_count
-FROM public.subscriptions s
-         INNER JOIN subscription_service_users su ON su.subscription_id = s.id
-LIMIT $1 OFFSET $2
-`
-
-type GetSubscriptionsParams struct {
-	Limit  int32
-	Offset int32
-}
-
-type GetSubscriptionsRow struct {
-	Subscription            Subscription
-	SubscriptionServiceUser SubscriptionServiceUser
-	TotalCount              int64
-}
-
-func (q *Queries) GetSubscriptions(ctx context.Context, arg GetSubscriptionsParams) ([]GetSubscriptionsRow, error) {
-	rows, err := q.db.Query(ctx, getSubscriptions, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetSubscriptionsRow
-	for rows.Next() {
-		var i GetSubscriptionsRow
-		if err := rows.Scan(
-			&i.Subscription.ID,
-			&i.Subscription.OwnerType,
-			&i.Subscription.OwnerFamilyID,
-			&i.Subscription.OwnerUserID,
-			&i.Subscription.FriendlyName,
-			&i.Subscription.FreeTrialStartDate,
-			&i.Subscription.FreeTrialEndDate,
-			&i.Subscription.ProviderID,
-			&i.Subscription.PlanID,
-			&i.Subscription.PriceID,
-			&i.Subscription.FamilyID,
-			&i.Subscription.PayerType,
-			&i.Subscription.PayerMemberID,
-			&i.Subscription.StartDate,
-			&i.Subscription.EndDate,
-			&i.Subscription.Recurrency,
-			&i.Subscription.CustomRecurrency,
-			&i.Subscription.CustomPriceCurrency,
-			&i.Subscription.CustomPriceAmount,
-			&i.Subscription.CreatedAt,
-			&i.Subscription.UpdatedAt,
-			&i.Subscription.Etag,
-			&i.SubscriptionServiceUser.FamilyMemberID,
-			&i.SubscriptionServiceUser.SubscriptionID,
-			&i.TotalCount,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const isSubscriptionExists = `-- name: IsSubscriptionExists :one
 SELECT COUNT(*)
 FROM public.subscriptions s
@@ -378,4 +254,210 @@ func (q *Queries) UpdateSubscription(ctx context.Context, arg UpdateSubscription
 		arg.Etag,
 	)
 	return err
+}
+
+const getSubscriptionById = `-- name: getSubscriptionById :many
+SELECT s.id                    AS "subscriptions.id",
+       s.owner_type            AS "subscriptions.owner_type",
+       s.owner_family_id       AS "subscriptions.owner_family_id",
+       s.owner_user_id         AS "subscriptions.owner_user_id",
+       s.friendly_name         AS "subscriptions.friendly_name",
+       s.free_trial_start_date AS "subscriptions.free_trial_start_date",
+       s.free_trial_end_date   AS "subscriptions.free_trial_end_date",
+       s.provider_id           AS "subscriptions.provider_id",
+       s.plan_id               AS "subscriptions.plan_id",
+       s.price_id              AS "subscriptions.price_id",
+       s.family_id             AS "subscriptions.family_id",
+       s.payer_type            AS "subscriptions.payer_type",
+       s.payer_member_id       AS "subscriptions.payer_member_id",
+       s.start_date            AS "subscriptions.start_date",
+       s.end_date              AS "subscriptions.end_date",
+       s.recurrency            AS "subscriptions.recurrency",
+       s.custom_recurrency     AS "subscriptions.custom_recurrency",
+       s.custom_price_currency AS "subscriptions.custom_price_currency",
+       s.custom_price_amount   AS "subscriptions.custom_price_amount",
+       s.created_at            AS "subscriptions.created_at",
+       s.updated_at            AS "subscriptions.updated_at",
+       s.etag                  AS "subscriptions.etag",
+       su.family_member_id     AS "subscription_service_users.family_member_id"
+FROM public.subscriptions s
+         LEFT JOIN subscription_service_users su ON su.subscription_id = s.id
+WHERE s.id = $1
+`
+
+type getSubscriptionByIdRow struct {
+	SubscriptionsID                        uuid.UUID
+	SubscriptionsOwnerType                 string
+	SubscriptionsOwnerFamilyID             *uuid.UUID
+	SubscriptionsOwnerUserID               *string
+	SubscriptionsFriendlyName              *string
+	SubscriptionsFreeTrialStartDate        *time.Time
+	SubscriptionsFreeTrialEndDate          *time.Time
+	SubscriptionsProviderID                uuid.UUID
+	SubscriptionsPlanID                    *uuid.UUID
+	SubscriptionsPriceID                   *uuid.UUID
+	SubscriptionsFamilyID                  *uuid.UUID
+	SubscriptionsPayerType                 *string
+	SubscriptionsPayerMemberID             *uuid.UUID
+	SubscriptionsStartDate                 time.Time
+	SubscriptionsEndDate                   *time.Time
+	SubscriptionsRecurrency                string
+	SubscriptionsCustomRecurrency          *int32
+	SubscriptionsCustomPriceCurrency       *string
+	SubscriptionsCustomPriceAmount         *float64
+	SubscriptionsCreatedAt                 time.Time
+	SubscriptionsUpdatedAt                 time.Time
+	SubscriptionsEtag                      string
+	SubscriptionServiceUsersFamilyMemberID *uuid.UUID
+}
+
+func (q *Queries) getSubscriptionById(ctx context.Context, id uuid.UUID) ([]getSubscriptionByIdRow, error) {
+	rows, err := q.db.Query(ctx, getSubscriptionById, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []getSubscriptionByIdRow
+	for rows.Next() {
+		var i getSubscriptionByIdRow
+		if err := rows.Scan(
+			&i.SubscriptionsID,
+			&i.SubscriptionsOwnerType,
+			&i.SubscriptionsOwnerFamilyID,
+			&i.SubscriptionsOwnerUserID,
+			&i.SubscriptionsFriendlyName,
+			&i.SubscriptionsFreeTrialStartDate,
+			&i.SubscriptionsFreeTrialEndDate,
+			&i.SubscriptionsProviderID,
+			&i.SubscriptionsPlanID,
+			&i.SubscriptionsPriceID,
+			&i.SubscriptionsFamilyID,
+			&i.SubscriptionsPayerType,
+			&i.SubscriptionsPayerMemberID,
+			&i.SubscriptionsStartDate,
+			&i.SubscriptionsEndDate,
+			&i.SubscriptionsRecurrency,
+			&i.SubscriptionsCustomRecurrency,
+			&i.SubscriptionsCustomPriceCurrency,
+			&i.SubscriptionsCustomPriceAmount,
+			&i.SubscriptionsCreatedAt,
+			&i.SubscriptionsUpdatedAt,
+			&i.SubscriptionsEtag,
+			&i.SubscriptionServiceUsersFamilyMemberID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSubscriptions = `-- name: getSubscriptions :many
+SELECT s.id                    AS "subscriptions.id",
+       s.owner_type            AS "subscriptions.owner_type",
+       s.owner_family_id       AS "subscriptions.owner_family_id",
+       s.owner_user_id         AS "subscriptions.owner_user_id",
+       s.friendly_name         AS "subscriptions.friendly_name",
+       s.free_trial_start_date AS "subscriptions.free_trial_start_date",
+       s.free_trial_end_date   AS "subscriptions.free_trial_end_date",
+       s.provider_id           AS "subscriptions.provider_id",
+       s.plan_id               AS "subscriptions.plan_id",
+       s.price_id              AS "subscriptions.price_id",
+       s.family_id             AS "subscriptions.family_id",
+       s.payer_type            AS "subscriptions.payer_type",
+       s.payer_member_id       AS "subscriptions.payer_member_id",
+       s.start_date            AS "subscriptions.start_date",
+       s.end_date              AS "subscriptions.end_date",
+       s.recurrency            AS "subscriptions.recurrency",
+       s.custom_recurrency     AS "subscriptions.custom_recurrency",
+       s.custom_price_currency AS "subscriptions.custom_price_currency",
+       s.custom_price_amount   AS "subscriptions.custom_price_amount",
+       s.created_at            AS "subscriptions.created_at",
+       s.updated_at            AS "subscriptions.updated_at",
+       s.etag                  AS "subscriptions.etag",
+       su.family_member_id     AS "subscription_service_users.family_member_id",
+       COUNT(*) OVER ()        AS total_count
+FROM public.subscriptions s
+         LEFT JOIN subscription_service_users su ON su.subscription_id = s.id
+LIMIT $1 OFFSET $2
+`
+
+type getSubscriptionsParams struct {
+	Limit  int32
+	Offset int32
+}
+
+type getSubscriptionsRow struct {
+	SubscriptionsID                        uuid.UUID
+	SubscriptionsOwnerType                 string
+	SubscriptionsOwnerFamilyID             *uuid.UUID
+	SubscriptionsOwnerUserID               *string
+	SubscriptionsFriendlyName              *string
+	SubscriptionsFreeTrialStartDate        *time.Time
+	SubscriptionsFreeTrialEndDate          *time.Time
+	SubscriptionsProviderID                uuid.UUID
+	SubscriptionsPlanID                    *uuid.UUID
+	SubscriptionsPriceID                   *uuid.UUID
+	SubscriptionsFamilyID                  *uuid.UUID
+	SubscriptionsPayerType                 *string
+	SubscriptionsPayerMemberID             *uuid.UUID
+	SubscriptionsStartDate                 time.Time
+	SubscriptionsEndDate                   *time.Time
+	SubscriptionsRecurrency                string
+	SubscriptionsCustomRecurrency          *int32
+	SubscriptionsCustomPriceCurrency       *string
+	SubscriptionsCustomPriceAmount         *float64
+	SubscriptionsCreatedAt                 time.Time
+	SubscriptionsUpdatedAt                 time.Time
+	SubscriptionsEtag                      string
+	SubscriptionServiceUsersFamilyMemberID *uuid.UUID
+	TotalCount                             int64
+}
+
+func (q *Queries) getSubscriptions(ctx context.Context, arg getSubscriptionsParams) ([]getSubscriptionsRow, error) {
+	rows, err := q.db.Query(ctx, getSubscriptions, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []getSubscriptionsRow
+	for rows.Next() {
+		var i getSubscriptionsRow
+		if err := rows.Scan(
+			&i.SubscriptionsID,
+			&i.SubscriptionsOwnerType,
+			&i.SubscriptionsOwnerFamilyID,
+			&i.SubscriptionsOwnerUserID,
+			&i.SubscriptionsFriendlyName,
+			&i.SubscriptionsFreeTrialStartDate,
+			&i.SubscriptionsFreeTrialEndDate,
+			&i.SubscriptionsProviderID,
+			&i.SubscriptionsPlanID,
+			&i.SubscriptionsPriceID,
+			&i.SubscriptionsFamilyID,
+			&i.SubscriptionsPayerType,
+			&i.SubscriptionsPayerMemberID,
+			&i.SubscriptionsStartDate,
+			&i.SubscriptionsEndDate,
+			&i.SubscriptionsRecurrency,
+			&i.SubscriptionsCustomRecurrency,
+			&i.SubscriptionsCustomPriceCurrency,
+			&i.SubscriptionsCustomPriceAmount,
+			&i.SubscriptionsCreatedAt,
+			&i.SubscriptionsUpdatedAt,
+			&i.SubscriptionsEtag,
+			&i.SubscriptionServiceUsersFamilyMemberID,
+			&i.TotalCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

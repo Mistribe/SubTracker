@@ -45,7 +45,7 @@ func createFamilyFromSqlcRows[T any](rows []T,
 
 		// Add member if valid (not null from LEFT JOIN)
 		if sqlcMember.ID != uuid.Nil {
-			member := createFamilyMemberFromSqlc(sqlcMember)
+			member := createFamilyMemberFromSqlc(*sqlcMember)
 			familyMap[sqlcFamily.ID] = append(familyMap[sqlcFamily.ID], member)
 		}
 	}

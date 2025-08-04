@@ -1,16 +1,58 @@
--- name: GetSubscriptionById :many
-SELECT sqlc.embed(s),
-       sqlc.embed(su)
+-- name: getSubscriptionById :many
+SELECT s.id                    AS "subscriptions.id",
+       s.owner_type            AS "subscriptions.owner_type",
+       s.owner_family_id       AS "subscriptions.owner_family_id",
+       s.owner_user_id         AS "subscriptions.owner_user_id",
+       s.friendly_name         AS "subscriptions.friendly_name",
+       s.free_trial_start_date AS "subscriptions.free_trial_start_date",
+       s.free_trial_end_date   AS "subscriptions.free_trial_end_date",
+       s.provider_id           AS "subscriptions.provider_id",
+       s.plan_id               AS "subscriptions.plan_id",
+       s.price_id              AS "subscriptions.price_id",
+       s.family_id             AS "subscriptions.family_id",
+       s.payer_type            AS "subscriptions.payer_type",
+       s.payer_member_id       AS "subscriptions.payer_member_id",
+       s.start_date            AS "subscriptions.start_date",
+       s.end_date              AS "subscriptions.end_date",
+       s.recurrency            AS "subscriptions.recurrency",
+       s.custom_recurrency     AS "subscriptions.custom_recurrency",
+       s.custom_price_currency AS "subscriptions.custom_price_currency",
+       s.custom_price_amount   AS "subscriptions.custom_price_amount",
+       s.created_at            AS "subscriptions.created_at",
+       s.updated_at            AS "subscriptions.updated_at",
+       s.etag                  AS "subscriptions.etag",
+       su.family_member_id     AS "subscription_service_users.family_member_id"
 FROM public.subscriptions s
-         INNER JOIN subscription_service_users su ON su.subscription_id = s.id
+         LEFT JOIN subscription_service_users su ON su.subscription_id = s.id
 WHERE s.id = $1;
 
--- name: GetSubscriptions :many
-SELECT sqlc.embed(s),
-       sqlc.embed(su),
-       COUNT(*) OVER () AS total_count
+-- name: getSubscriptions :many
+SELECT s.id                    AS "subscriptions.id",
+       s.owner_type            AS "subscriptions.owner_type",
+       s.owner_family_id       AS "subscriptions.owner_family_id",
+       s.owner_user_id         AS "subscriptions.owner_user_id",
+       s.friendly_name         AS "subscriptions.friendly_name",
+       s.free_trial_start_date AS "subscriptions.free_trial_start_date",
+       s.free_trial_end_date   AS "subscriptions.free_trial_end_date",
+       s.provider_id           AS "subscriptions.provider_id",
+       s.plan_id               AS "subscriptions.plan_id",
+       s.price_id              AS "subscriptions.price_id",
+       s.family_id             AS "subscriptions.family_id",
+       s.payer_type            AS "subscriptions.payer_type",
+       s.payer_member_id       AS "subscriptions.payer_member_id",
+       s.start_date            AS "subscriptions.start_date",
+       s.end_date              AS "subscriptions.end_date",
+       s.recurrency            AS "subscriptions.recurrency",
+       s.custom_recurrency     AS "subscriptions.custom_recurrency",
+       s.custom_price_currency AS "subscriptions.custom_price_currency",
+       s.custom_price_amount   AS "subscriptions.custom_price_amount",
+       s.created_at            AS "subscriptions.created_at",
+       s.updated_at            AS "subscriptions.updated_at",
+       s.etag                  AS "subscriptions.etag",
+       su.family_member_id     AS "subscription_service_users.family_member_id",
+       COUNT(*) OVER ()        AS total_count
 FROM public.subscriptions s
-         INNER JOIN subscription_service_users su ON su.subscription_id = s.id
+         LEFT JOIN subscription_service_users su ON su.subscription_id = s.id
 LIMIT $1 OFFSET $2;
 
 -- name: DeleteSubscription :exec

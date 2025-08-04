@@ -36,11 +36,40 @@ func (q *Queries) newFamilyMember(id *uuid.UUID,
 	}
 }
 
-func (q *Queries) GetFamilyById(ctx context.Context, id uuid.UUID) ([]getFamilyByIdRow, error) {
+func (q *Queries) GetFamilyById(ctx context.Context, id uuid.UUID) ([]FamilyRow, error) {
 	rows, err := q.getFamilyById(ctx, id)
 	if err != nil {
 		return nil, nil
 	}
+	if len(rows) == 0 {
+		return nil, nil
+	}
+
+	results := make([]FamilyRow, len(rows))
+	for i, row := range rows {
+		member := q.newFamilyMember(
+			row.FamilyMembersID,
+			row.FamilyMembersName,
+			row.FamilyMembersFamilyID,
+			row.FamilyMembersUserID,
+			row.FamilyMembersType,
+			row.FamilyMembersCreatedAt,
+			row.FamilyMembersUpdatedAt,
+			row.FamilyMembersEtag,
+		)
+		results[i] = FamilyRow{
+			Family: Family{
+				ID:        row.FamiliesID,
+				Name:      row.FamiliesName,
+				OwnerID:   row.FamiliesOwnerID,
+				CreatedAt: row.FamiliesCreatedAt,
+				UpdatedAt: row.FamiliesUpdatedAt,
+				Etag:      row.FamiliesEtag,
+			},
+			Member: member,
+		}
+	}
+	return results, nil
 }
 
 func (q *Queries) GetFamiliesForUser(ctx context.Context,

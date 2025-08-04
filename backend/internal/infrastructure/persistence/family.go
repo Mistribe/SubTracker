@@ -31,10 +31,11 @@ func (r FamilyRepository) GetById(ctx context.Context, id uuid.UUID) (family.Fam
 		return nil, nil
 	}
 	families := createFamilyFromSqlcRows(response,
-		func(row sql.GetFamilyByIdRow) sql.Family {
+		func(row sql.FamilyRow) sql.Family {
 			return row.Family
-		}, func(row sql.GetFamilyByIdRow) sql.FamilyMember {
-			return row.FamilyMember
+		},
+		func(row sql.FamilyRow) *sql.FamilyMember {
+			return row.Member
 		},
 	)
 	if len(families) == 0 {

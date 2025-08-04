@@ -34,11 +34,11 @@ func (r SubscriptionRepository) GetById(ctx context.Context, id uuid.UUID) (subs
 	}
 
 	subscriptions := createSubscriptionFromSqlcRows(response,
-		func(row sql.GetSubscriptionByIdRow) sql.Subscription {
+		func(row sql.SubscriptionRow) sql.Subscription {
 			return row.Subscription
 		},
-		func(row sql.GetSubscriptionByIdRow) sql.SubscriptionServiceUser {
-			return row.SubscriptionServiceUser
+		func(row sql.SubscriptionRow) *sql.SubscriptionServiceUser {
+			return row.ServiceUser
 		},
 	)
 	if len(subscriptions) == 0 {
@@ -50,10 +50,7 @@ func (r SubscriptionRepository) GetById(ctx context.Context, id uuid.UUID) (subs
 
 func (r SubscriptionRepository) GetAll(ctx context.Context,
 	parameters entity.QueryParameters) ([]subscription.Subscription, int64, error) {
-	response, err := r.dbContext.GetQueries(ctx).GetSubscriptions(ctx, sql.GetSubscriptionsParams{
-		Limit:  parameters.Limit,
-		Offset: parameters.Offset,
-	})
+	response, count, err := r.dbContext.GetQueries(ctx).GetSubscriptions(ctx, parameters.Limit, parameters.Offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -63,18 +60,18 @@ func (r SubscriptionRepository) GetAll(ctx context.Context,
 	}
 
 	subscriptions := createSubscriptionFromSqlcRows(response,
-		func(row sql.GetSubscriptionsRow) sql.Subscription {
+		func(row sql.SubscriptionRow) sql.Subscription {
 			return row.Subscription
 		},
-		func(row sql.GetSubscriptionsRow) sql.SubscriptionServiceUser {
-			return row.SubscriptionServiceUser
+		func(row sql.SubscriptionRow) *sql.SubscriptionServiceUser {
+			return row.ServiceUser
 		},
 	)
 	if len(subscriptions) == 0 {
 		return nil, 0, nil
 	}
 
-	return subscriptions, response[0].TotalCount, nil
+	return subscriptions, count, nil
 }
 
 func (r SubscriptionRepository) Save(ctx context.Context, subscriptions ...subscription.Subscription) error {
