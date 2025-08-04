@@ -5,6 +5,12 @@
                 "/data/labels.json"
             ],
             "url": "./data/schemas/labelsSchema.json"
+        },
+        {
+            "fileMatch": [
+                "/data/families.json"
+            ],
+            "url": "./data/schemas/familiesSchema.json"
         }
     ]
 }
