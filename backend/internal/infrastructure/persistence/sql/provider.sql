@@ -36,9 +36,6 @@ FROM public.providers p
          LEFT JOIN public.provider_labels pl ON pl.provider_id = p.id
 WHERE p.id = $1;
 
--- sqlc.embed:provider_plans
--- sqlc.embed:provider_prices
-
 -- name: getSystemProviders :many
 SELECT p.id               AS "providers.id",
        p.owner_type       AS "providers.owner_type",
