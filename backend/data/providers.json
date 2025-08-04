@@ -159,5 +159,16 @@
       "streaming-music",
       "vod"
     ]
+  },
+  {
+    "name": "NordVPN",
+    "key": "nordvpn",
+    "website": "https://nordvpn.com/",
+    "pricing_page": "https://nordvpn.com/pricing/",
+    "icon": "https://1000logos.net/wp-content/uploads/2022/08/NordVPN-Logo-1536x864.png",
+    "categories": [
+      "utilities",
+      "vpn"
+    ]
   }
 ]

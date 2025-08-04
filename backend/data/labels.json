@@ -45,6 +45,11 @@
     "color": "#FF9575CD"
   },
   {
+    "key": "vpn",
+    "name": "VPN",
+    "color": "#FF7723AA"
+  },
+  {
     "key": "shopping",
     "name": "Shopping",
     "color": "#FF798600"

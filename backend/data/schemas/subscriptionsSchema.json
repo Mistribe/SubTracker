@@ -1,0 +1,171 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "title": "Subscriptions Schema",
+  "description": "Schema for subscription management with ownership, pricing, and billing information",
+  "items": {
+    "type": "object",
+    "required": ["id", "friendly_name", "provider_key", "custom_price", "owner", "payer", "service_users", "start_date", "recurrency"],
+    "properties": {
+      "id": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Unique identifier for the subscription"
+      },
+      "friendly_name": {
+        "type": "string",
+        "description": "Human-readable name for the subscription"
+      },
+      "provider_key": {
+        "type": "string",
+        "description": "Key identifying the service provider"
+      },
+      "custom_price": {
+        "$ref": "#/$defs/price",
+        "description": "Custom price for this subscription"
+      },
+      "owner": {
+        "$ref": "#/$defs/owner",
+        "description": "Ownership information for the subscription"
+      },
+      "payer": {
+        "$ref": "#/$defs/payer",
+        "description": "Information about who pays for the subscription"
+      },
+      "service_users": {
+        "type": "array",
+        "description": "List of user IDs who use this service",
+        "items": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "minItems": 0
+      },
+      "start_date": {
+        "type": "string",
+        "format": "date-time",
+        "description": "Start date of the subscription (ISO 8601 format)"
+      },
+      "end_date": {
+        "type": "string",
+        "format": "date-time",
+        "description": "End date of the subscription (ISO 8601 format), optional for ongoing subscriptions"
+      },
+      "recurrency": {
+        "type": "string",
+        "enum": ["monthly", "yearly", "weekly", "daily", "one_time"],
+        "description": "Billing frequency or one-time payment"
+      }
+    }
+  },
+  "$defs": {
+    "price": {
+      "type": "object",
+      "required": ["currency", "amount"],
+      "properties": {
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$",
+          "description": "Currency code in ISO 4217 format (e.g., 'USD', 'EUR')"
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Price amount"
+        }
+      }
+    },
+    "owner": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["family", "personal"],
+          "description": "Type of ownership"
+        },
+        "family_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Family ID when owner type is 'family'"
+        },
+        "user_id": {
+          "type": "string",
+          "description": "User ID when owner type is 'personal'"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "family"
+              }
+            }
+          },
+          "then": {
+            "required": ["family_id"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "personal"
+              }
+            }
+          },
+          "then": {
+            "required": ["user_id"]
+          }
+        }
+      ]
+    },
+    "payer": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["family", "personal"],
+          "description": "Type of payer"
+        },
+        "family_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Family ID when payer type is 'family'"
+        },
+        "user_id": {
+          "type": "string",
+          "description": "User ID when payer type is 'personal'"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "family"
+              }
+            }
+          },
+          "then": {
+            "required": ["family_id"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "personal"
+              }
+            }
+          },
+          "then": {
+            "required": ["user_id"]
+          }
+        }
+      ]
+    }
+  }
+}
