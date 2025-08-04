@@ -45,7 +45,7 @@ func (r LabelRepository) GetAll(ctx context.Context, parameters label.QueryParam
 	var families []uuid.UUID
 	if parameters.Owners.Contains(auth.FamilyOwnerType) {
 		if parameters.FamilyId != nil {
-			if r.authService.IsInFamily(ctx, *parameters.FamilyId) {
+			if !r.authService.IsInFamily(ctx, *parameters.FamilyId) {
 				return nil, 0, family.ErrFamilyNotFound
 			}
 			families = append(families, *parameters.FamilyId)
