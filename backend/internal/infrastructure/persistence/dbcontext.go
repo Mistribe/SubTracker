@@ -39,6 +39,9 @@ func NewDatabaseContext(
 	pgxConfig.MaxConnLifetime = time.Hour        // Maximum connection lifetime
 	pgxConfig.MaxConnIdleTime = 30 * time.Minute // Maximum connection idle time
 
+	// logger
+	overridePgxLogger(pgxConfig, logger)
+
 	// Create connection pool
 	pool, err := pgxpool.NewWithConfig(context.Background(), pgxConfig)
 	if err != nil {
