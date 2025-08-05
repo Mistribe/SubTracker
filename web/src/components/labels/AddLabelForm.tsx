@@ -6,28 +6,36 @@ import {ColorPicker} from "@/components/ui/color-picker";
 import {argbToRgba} from "@/components/ui/utils/color-utils";
 import {Loader2, PlusIcon, SaveIcon, XIcon} from "lucide-react";
 import {OwnerType} from "@/models/ownerType";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import Family from "@/models/family";
 
 interface AddLabelFormProps {
     onAddLabel: (name: string, color: string, ownerType?: OwnerType, familyId?: string) => void;
     isAdding: boolean;
-    ownerType?: OwnerType;
-    familyId?: string;
+    families: Family[];
     title?: string;
 }
 
 export const AddLabelForm = ({
                                  onAddLabel,
                                  isAdding,
-                                 ownerType,
-                                 familyId,
+                                 families,
                              }: AddLabelFormProps) => {
     const [newLabel, setNewLabel] = useState("");
     const [newLabelColor, setNewLabelColor] = useState("#FF000000"); // Default ARGB color
     const [isFormVisible, setIsFormVisible] = useState(false);
+    const [labelType, setLabelType] = useState<"personal" | "family">("personal");
+    const [selectedFamilyId, setSelectedFamilyId] = useState<string>(
+        families.length > 0 ? families[0].id : ""
+    );
 
     const handleAddLabel = () => {
         if (newLabel.trim()) {
-            onAddLabel(newLabel, newLabelColor, ownerType, familyId);
+            if (labelType === "personal") {
+                onAddLabel(newLabel, newLabelColor, OwnerType.Personal);
+            } else if (labelType === "family" && selectedFamilyId) {
+                onAddLabel(newLabel, newLabelColor, OwnerType.Family, selectedFamilyId);
+            }
             setNewLabel(""); // Clear the input after adding
             setIsFormVisible(false); // Hide the form after adding
         }
@@ -95,9 +103,43 @@ export const AddLabelForm = ({
                 {/* Form elements that appear with animation */}
                 <div 
                     className={`flex items-center gap-3 overflow-hidden transition-all duration-300 ease-in-out ${
-                        isFormVisible ? "max-w-[500px] opacity-100" : "max-w-0 opacity-0"
+                        isFormVisible ? "max-w-[800px] opacity-100" : "max-w-0 opacity-0"
                     }`}
                 >
+                    {/* Owner type selector */}
+                    <Select
+                        value={labelType}
+                        onValueChange={(value: "personal" | "family") => setLabelType(value)}
+                    >
+                        <SelectTrigger className="w-[130px] h-9">
+                            <SelectValue placeholder="Label type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="personal">Personal</SelectItem>
+                            <SelectItem value="family" disabled={families.length === 0}>Family</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    
+                    {/* Family selector - only shown when family type is selected and there are multiple families */}
+                    {labelType === "family" && families.length > 1 && (
+                        <Select
+                            value={selectedFamilyId}
+                            onValueChange={setSelectedFamilyId}
+                        >
+                            <SelectTrigger className="w-[150px] h-9">
+                                <SelectValue placeholder="Select family" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {families.map(family => (
+                                    <SelectItem key={family.id} value={family.id}>
+                                        {family.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                    
+                    {/* Label name input */}
                     <div className="flex items-center gap-2 whitespace-nowrap">
                         <div
                             className="w-4 h-4 rounded-full flex-shrink-0"
@@ -110,6 +152,8 @@ export const AddLabelForm = ({
                             className="h-9 text-sm w-48 md:w-64"
                         />
                     </div>
+                    
+                    {/* Color picker */}
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button variant="outline" size="sm" className="h-9 whitespace-nowrap">

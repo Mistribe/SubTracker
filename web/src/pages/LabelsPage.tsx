@@ -1,13 +1,15 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {hexToArgb} from "@/components/ui/utils/color-utils";
 import {useLabelMutations} from "@/hooks/labels/useLabelMutations";
 import {useFamiliesMutations} from "@/hooks/families/useFamiliesMutations";
 import {LabelHeader} from "@/components/labels/LabelHeader";
-import {SystemLabelsSection} from "@/components/labels/SystemLabelsSection";
-import {PersonalLabelsSection} from "@/components/labels/PersonalLabelsSection";
-import {FamilyLabelsSection} from "@/components/labels/FamilyLabelsSection";
+import {useAllLabelsQuery} from "@/hooks/labels/useAllLabelsQuery";
+import {useFamiliesQuery} from "@/hooks/families/useFamiliesQuery";
+import {LabelItem} from "@/components/labels/LabelItem";
+import {EditableLabelItem} from "@/components/labels/EditableLabelItem";
 import Label from "@/models/label";
 import {OwnerType} from "@/models/ownerType";
+import {Loader2} from "lucide-react";
 
 const LabelsPage = () => {
 
@@ -22,10 +24,38 @@ const LabelsPage = () => {
         createFamilyLabelMutation
     } = useFamiliesMutations();
 
-    // State for editing
+    // State for search and editing
+    const [searchText, setSearchText] = useState("");
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState("");
     const [editingColor, setEditingColor] = useState("");
+
+    // Fetch all families
+    const {data: familiesResponse} = useFamiliesQuery();
+    const families = familiesResponse?.families || [];
+
+    // Fetch all labels (system, personal, and family)
+    const {
+        data,
+        isLoading,
+        error,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+    } = useAllLabelsQuery({
+        ownerTypes: [OwnerType.System, OwnerType.Personal, OwnerType.Family],
+        limit: 10,
+    });
+
+    // Keep requesting next pages until every label is fetched
+    useEffect(() => {
+        if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage().catch(() => void 0);
+        }
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+    // Combine all labels from all pages
+    const allLabels = data?.pages.flatMap((page) => page.labels) || [];
 
     const handleStartEditing = (label: Label) => {
         // Prevent editing system labels
@@ -105,47 +135,102 @@ const LabelsPage = () => {
         }
     };
 
-    // We'll handle loading and error states for each section separately
+    // Filter labels based on search text
+    const filteredLabels = allLabels.filter(label =>
+        label.name.toLowerCase().includes(searchText.toLowerCase())
+    );
+
+    // Create a map of family IDs to family objects for easy lookup
+    const familyMap = new Map(families.map(family => [family.id, family]));
+
+    if (isLoading) {
+        return (
+            <div>
+                <LabelHeader
+                    searchText={searchText}
+                    onSearchChange={setSearchText}
+                    onAddLabel={handleAddLabel}
+                    isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
+                    families={families}
+                />
+                <div className="flex flex-col items-center justify-center h-64">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary mb-4"/>
+                    <p className="text-muted-foreground">Loading labels...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div>
+                <LabelHeader
+                    searchText={searchText}
+                    onSearchChange={setSearchText}
+                    onAddLabel={handleAddLabel}
+                    isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
+                    families={families}
+                />
+                <div className="p-6 border rounded-md bg-destructive/10 mt-8">
+                    <p className="text-destructive text-center">Error loading labels</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div>
-            <LabelHeader/>
+            <LabelHeader
+                searchText={searchText}
+                onSearchChange={setSearchText}
+                onAddLabel={handleAddLabel}
+                isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
+                families={families}
+            />
 
             <div className="mt-8">
-                {/* System Labels Section */}
-                <SystemLabelsSection />
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    {filteredLabels.length === 0 ? (
+                        <p className="text-muted-foreground col-span-full text-center py-4">
+                            {searchText ? "No labels match your search" : "No labels found"}
+                        </p>
+                    ) : (
+                        filteredLabels.map((label) => {
+                            // Get family name for family labels
+                            let ownerName;
+                            if (label.owner.type === OwnerType.Family && label.owner.familyId) {
+                                const family = familyMap.get(label.owner.familyId);
+                                ownerName = family?.name || "Unknown Family";
+                            }
 
-                {/* Personal and Family Labels Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Personal Labels Column */}
-                    <PersonalLabelsSection
-                        editingId={editingId}
-                        editingName={editingName}
-                        editingColor={editingColor}
-                        onStartEditing={handleStartEditing}
-                        onSaveEdit={handleSaveEdit}
-                        onCancelEdit={handleCancelEdit}
-                        onDeleteLabel={handleDeleteLabel}
-                        onAddLabel={handleAddLabel}
-                        isUpdating={updateLabelMutation.isPending}
-                        isDeletingId={deleteLabelMutation.isPending ? deleteLabelMutation.variables as string : null}
-                        isAdding={createLabelMutation.isPending}
-                    />
-
-                    {/* Family Labels Column */}
-                    <FamilyLabelsSection
-                        editingId={editingId}
-                        editingName={editingName}
-                        editingColor={editingColor}
-                        onStartEditing={handleStartEditing}
-                        onSaveEdit={handleSaveEdit}
-                        onCancelEdit={handleCancelEdit}
-                        onDeleteLabel={handleDeleteLabel}
-                        onAddLabel={handleAddLabel}
-                        isUpdating={updateLabelMutation.isPending}
-                        isDeletingId={deleteLabelMutation.isPending ? deleteLabelMutation.variables as string : null}
-                        isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
-                    />
+                            return (
+                                <div
+                                    key={label.id}
+                                    className={`${editingId === label.id ? 'bg-muted' : 'hover:bg-muted/50'}`}
+                                >
+                                    {editingId === label.id ? (
+                                        <EditableLabelItem
+                                            label={label}
+                                            initialName={editingName}
+                                            initialColor={editingColor}
+                                            onSave={handleSaveEdit}
+                                            onCancel={handleCancelEdit}
+                                            isSaving={updateLabelMutation.isPending}
+                                        />
+                                    ) : (
+                                        <LabelItem
+                                            label={label}
+                                            ownerName={ownerName}
+                                            onEdit={canModifyLabel(label) ? handleStartEditing : undefined}
+                                            onDelete={canModifyLabel(label) ? handleDeleteLabel : undefined}
+                                            isDeleting={deleteLabelMutation.isPending && deleteLabelMutation.variables === label.id}
+                                            isReadOnly={!canModifyLabel(label)}
+                                        />
+                                    )}
+                                </div>
+                            );
+                        })
+                    )}
                 </div>
             </div>
         </div>
