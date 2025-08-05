@@ -33,13 +33,14 @@ SELECT f.id          AS "families.id",
        fm.updated_at AS "family_members.updated_at",
        fm.etag       AS "family_members.etag",
        f.total_count AS "total_count"
-FROM (SELECT *,
+FROM (SELECT f.*,
              COUNT(*) OVER () AS total_count
-      FROM public.families
-      ORDER BY Id
+      FROM public.families f
+               LEFT JOIN public.family_members fm ON f.id = fm.family_id
+      WHERE fm.user_id = $1
+      ORDER BY f.Id
       LIMIT $2 OFFSET $3) f
-         LEFT JOIN public.family_members fm ON f.id = fm.family_id
-WHERE fm.user_id = $1;
+         LEFT JOIN public.family_members fm ON f.id = fm.family_id;
 
 -- name: IsMemberOfFamily :one
 SELECT COUNT(*)
