@@ -1,16 +1,19 @@
 import {useMemo, useState} from "react";
+import {useNavigate} from "react-router-dom";
 import {useAllSubscriptionsQuery} from "@/hooks/subscriptions/useAllSubscriptionsQuery";
 import {useAllProvidersQuery} from "@/hooks/providers/useAllProvidersQuery";
 import {PageHeader} from "@/components/ui/page-header";
 import {Skeleton} from "@/components/ui/skeleton";
 import {Badge} from "@/components/ui/badge";
-import {CalendarIcon, CreditCardIcon, TagIcon, UsersIcon} from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {CalendarIcon, CreditCardIcon, PlusIcon, TagIcon, UsersIcon} from "lucide-react";
 import {format} from "date-fns";
 import Subscription from "@/models/subscription";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
 
 const SubscriptionsPage = () => {
+    const navigate = useNavigate();
     const [searchText, setSearchText] = useState("");
 
     // Query all subscriptions using the dedicated hook
@@ -78,12 +81,12 @@ const SubscriptionsPage = () => {
         switch (recurrency) {
             case SubscriptionRecurrency.Monthly:
                 return 'Monthly';
-            case SubscriptionRecurrency.Yearly:
-                return 'Yearly';
             case SubscriptionRecurrency.Quarterly:
                 return 'Quarterly';
-            case SubscriptionRecurrency.Weekly:
-                return 'Weekly';
+            case SubscriptionRecurrency.HalfYearly:
+                return 'Half Yearly';
+            case SubscriptionRecurrency.Yearly:
+                return 'Yearly';
             case SubscriptionRecurrency.OneTime:
                 return 'OneTime';
             default:
@@ -234,6 +237,12 @@ const SubscriptionsPage = () => {
                 description="Manage your subscriptions"
                 searchText={searchText}
                 onSearchChange={setSearchText}
+                actionButton={
+                    <Button onClick={() => navigate("/subscriptions/create")}>
+                        <PlusIcon className="mr-2 h-4 w-4" />
+                        Add Subscription
+                    </Button>
+                }
             />
 
             {isLoading ? (
