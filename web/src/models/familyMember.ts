@@ -1,4 +1,5 @@
-import type {FamilyMemberModel} from "@/api/models";
+import {type FamilyMemberModel} from "@/api/models";
+import {FamilyMemberType, fromHttpApi} from "@/models/familyMemberType.ts";
 
 export default class FamilyMember {
     private readonly _id: string;
@@ -6,10 +7,11 @@ export default class FamilyMember {
     private readonly _createdAt: Date;
     private readonly _etag: string;
     private readonly _isYou: boolean;
+    private readonly _type: FamilyMemberType;
 
     constructor(id: string,
                 name: string,
-                isKid: boolean,
+                memberType: FamilyMemberType,
                 familyId: string,
                 isYou: boolean,
                 createdAt: Date,
@@ -17,7 +19,7 @@ export default class FamilyMember {
                 etag: string) {
         this._id = id;
         this._name = name;
-        this._isKid = isKid;
+        this._type = memberType;
         this._isYou = isYou;
         this._familyId = familyId;
         this._createdAt = createdAt;
@@ -39,15 +41,10 @@ export default class FamilyMember {
         this._name = value;
     }
 
-    private _isKid: boolean;
-
-    get isKid(): boolean {
-        return this._isKid;
+    get type(): FamilyMemberType {
+        return this._type;
     }
 
-    set isKid(value: boolean) {
-        this._isKid = value;
-    }
 
     private _updatedAt: Date;
 
@@ -71,6 +68,10 @@ export default class FamilyMember {
         return this._createdAt;
     }
 
+    get isKid(): boolean {
+        return this._type === FamilyMemberType.Kid;
+    }
+
     get etag(): string {
         return this._etag;
     }
@@ -79,7 +80,7 @@ export default class FamilyMember {
         return new FamilyMember(
             model.id || '',
             model.name || '',
-            model.isKid || false,
+            fromHttpApi(model.type),
             model.familyId || '',
             model.isYou || false,
             model.createdAt ? model.createdAt : new Date(),

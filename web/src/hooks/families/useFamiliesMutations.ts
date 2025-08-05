@@ -1,6 +1,7 @@
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
 import type {CreateFamilyMemberModel, CreateFamilyModel, UpdateFamilyMemberModel} from "@/api/models";
+import {FamilyMemberType} from "@/models/familyMemberType.ts";
 
 export const useFamiliesMutations = () => {
     const {apiClient} = useApiClient();
@@ -27,7 +28,7 @@ export const useFamiliesMutations = () => {
         mutationFn: async ({familyId, name, isKid}: { familyId: string, name: string, isKid?: boolean }) => {
             const payload: CreateFamilyMemberModel = {
                 name,
-                isKid: isKid || false
+                type: isKid ? FamilyMemberType.Kid : FamilyMemberType.Adult
             };
 
             return apiClient?.families.byFamilyId(familyId).members.post(payload);
@@ -86,7 +87,7 @@ export const useFamiliesMutations = () => {
         }) => {
             const payload: Partial<UpdateFamilyMemberModel> = {
                 name,
-                isKid
+                type: isKid ? FamilyMemberType.Kid : FamilyMemberType.Adult
             };
 
             return apiClient?.families.byFamilyId(familyId).members.byId(memberId).put(payload);
