@@ -1,0 +1,260 @@
+import {useMemo, useState} from "react";
+import {useAllSubscriptionsQuery} from "@/hooks/subscriptions/useAllSubscriptionsQuery";
+import {useAllProvidersQuery} from "@/hooks/providers/useAllProvidersQuery";
+import {PageHeader} from "@/components/ui/page-header";
+import {Skeleton} from "@/components/ui/skeleton";
+import {Badge} from "@/components/ui/badge";
+import {CalendarIcon, CreditCardIcon, TagIcon, UsersIcon} from "lucide-react";
+import {format} from "date-fns";
+import Subscription from "@/models/subscription";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
+
+const SubscriptionsPage = () => {
+    const [searchText, setSearchText] = useState("");
+
+    // Query all subscriptions using the dedicated hook
+    const {
+        data,
+        isLoading,
+        isError
+    } = useAllSubscriptionsQuery();
+
+    // Query all providers to resolve provider names from IDs
+    const {
+        data: providersData
+    } = useAllProvidersQuery();
+
+    // Flatten all subscriptions from all pages
+    const allSubscriptions = data?.pages.flatMap(page => page.subscriptions) || [];
+
+    // Flatten all providers from all pages and create a mapping from ID to provider
+    const allProviders = providersData?.pages.flatMap(page => page.providers) || [];
+    const providerMap = useMemo(() => {
+        const map = new Map();
+        allProviders.forEach(provider => {
+            map.set(provider.id, provider);
+        });
+        return map;
+    }, [allProviders]);
+
+    // Filter subscriptions based on search text
+    const filteredSubscriptions = useMemo(() => {
+        if (searchText === "") return allSubscriptions;
+
+        const searchLower = searchText.toLowerCase();
+
+        return allSubscriptions.filter(subscription => {
+            // Filter by subscription friendly name
+            if (subscription.friendlyName && subscription.friendlyName.toLowerCase().includes(searchLower)) {
+                return true;
+            }
+
+            // Filter by provider ID, plan ID, or price ID
+            if (subscription.providerId.toLowerCase().includes(searchLower) ||
+                subscription.planId.toLowerCase().includes(searchLower) ||
+                subscription.priceId.toLowerCase().includes(searchLower)) {
+                return true;
+            }
+
+            return false;
+        });
+    }, [allSubscriptions, searchText]);
+
+    // Function to format currency
+    const formatCurrency = (amount: number, currency: string) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currency
+        }).format(amount);
+    };
+
+    // Function to format recurrency
+    const formatRecurrency = (recurrency: SubscriptionRecurrency, customRecurrency: number | null) => {
+        if (recurrency === 'custom' && customRecurrency) {
+            return `Every ${customRecurrency} days`;
+        }
+
+        switch (recurrency) {
+            case SubscriptionRecurrency.Monthly:
+                return 'Monthly';
+            case SubscriptionRecurrency.Yearly:
+                return 'Yearly';
+            case SubscriptionRecurrency.Quarterly:
+                return 'Quarterly';
+            case SubscriptionRecurrency.Weekly:
+                return 'Weekly';
+            case SubscriptionRecurrency.OneTime:
+                return 'OneTime';
+            default:
+                return recurrency;
+        }
+    };
+
+    // Render subscriptions table
+    const renderSubscriptionsTable = (subscriptions: Subscription[]) => {
+        return (
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Recurrency</TableHead>
+                        <TableHead>Provider</TableHead>
+                        <TableHead>Dates</TableHead>
+                        <TableHead>Users</TableHead>
+                        <TableHead>Plan</TableHead>
+                        <TableHead>Status</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {subscriptions.map((subscription) => (
+                        <TableRow key={subscription.id}>
+                            <TableCell className="font-medium">
+                                {subscription.friendlyName || `Subscription ${subscription.id.substring(0, 8)}`}
+                            </TableCell>
+                            <TableCell>
+                                {subscription.customPrice && (
+                                    <Badge variant="outline">
+                                        {formatCurrency(subscription.customPrice.amount, subscription.customPrice.currency)}
+                                    </Badge>
+                                )}
+                            </TableCell>
+                            <TableCell>
+                                {formatRecurrency(subscription.recurrency, subscription.customRecurrency)}
+                            </TableCell>
+                            <TableCell>
+                                <div className="flex items-center">
+                                    <CreditCardIcon className="mr-2 h-4 w-4 text-muted-foreground"/>
+                                    <span>
+                                        {providerMap.get(subscription.providerId)?.name || subscription.providerId}
+                                    </span>
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                <div className="flex items-center">
+                                    <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground"/>
+                                    <span>
+                                        {format(subscription.startDate, 'MMM d, yyyy')}
+                                        {subscription.endDate && <br/>}
+                                        {subscription.endDate && `Ends: ${format(subscription.endDate, 'MMM d, yyyy')}`}
+                                    </span>
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                {subscription.serviceUsers.length > 0 && (
+                                    <div className="flex items-center">
+                                        <UsersIcon className="mr-2 h-4 w-4 text-muted-foreground"/>
+                                        <span>{subscription.serviceUsers.length}</span>
+                                    </div>
+                                )}
+                            </TableCell>
+                            <TableCell>
+                                <div className="flex items-center">
+                                    <TagIcon className="mr-1 h-4 w-4 text-muted-foreground"/>
+                                    <span>{subscription.planId.substring(0, 8)}</span>
+                                </div>
+                            </TableCell>
+                            <TableCell>
+                                {subscription.freeTrial ? "Free Trial" : ""}
+                                {subscription.freeTrial && subscription.isActive ? " - " : ""}
+                                {subscription.isActive
+                                    ? <Badge variant="outline" className="bg-green-50 text-green-700">Active</Badge>
+                                    : <Badge variant="outline" className="bg-red-50 text-red-700">Ended</Badge>}
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        );
+    };
+
+    // Render loading skeleton for table
+    const renderTableSkeleton = () => {
+        return (
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
+                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
+                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
+                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
+                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
+                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
+                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
+                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {Array(8).fill(0).map((_, index) => (
+                        <TableRow key={index}>
+                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
+                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
+                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
+                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
+                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
+                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
+                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
+                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        );
+    };
+
+    // Render error state
+    const renderError = () => {
+        return (
+            <div className="flex flex-col items-center justify-center py-12">
+                <h3 className="text-xl font-semibold mb-2">Error Loading Subscriptions</h3>
+                <p className="text-muted-foreground mb-6">
+                    There was a problem loading your subscriptions. Please try again later.
+                </p>
+            </div>
+        );
+    };
+
+    // Render empty state
+    const renderEmptyState = () => {
+        return (
+            <div className="flex flex-col items-center justify-center py-12">
+                <h3 className="text-xl font-semibold mb-2">No Subscriptions Found</h3>
+                <p className="text-muted-foreground mb-6">
+                    You don't have any subscriptions yet.
+                </p>
+            </div>
+        );
+    };
+
+    return (
+        <div className="container mx-auto py-6">
+            <PageHeader
+                title="Subscriptions"
+                description="Manage your subscriptions"
+                searchText={searchText}
+                onSearchChange={setSearchText}
+            />
+
+            {isLoading ? (
+                renderTableSkeleton()
+            ) : isError ? (
+                renderError()
+            ) : (
+                <>
+                    {filteredSubscriptions.length > 0 ? (
+                        renderSubscriptionsTable(filteredSubscriptions)
+                    ) : searchText !== "" ? (
+                        <div className="text-center mt-8">
+                            <p className="text-muted-foreground">No subscriptions match your search criteria.</p>
+                        </div>
+                    ) : (
+                        renderEmptyState()
+                    )}
+                </>
+            )}
+        </div>
+    );
+};
+
+export default SubscriptionsPage;

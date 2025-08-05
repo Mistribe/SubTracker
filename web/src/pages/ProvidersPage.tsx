@@ -7,7 +7,7 @@ import {ProviderCard} from "@/components/providers/ui/ProviderCard";
 import {ProviderCardSkeletonGrid} from "@/components/providers/ui/ProviderCardSkeleton";
 import {ErrorState} from "@/components/providers/ui/ErrorState";
 import {NoProviders} from "@/components/providers/ui/EmptyStates";
-import {PageHeader} from "@/components/providers/ui/PageHeader";
+import {PageHeader} from "@/components/ui/page-header";
 import Provider from "@/models/provider";
 
 const ProvidersPage = () => {

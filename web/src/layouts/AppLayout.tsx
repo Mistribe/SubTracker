@@ -70,6 +70,19 @@ export function AppLayout({children}: AppLayoutProps) {
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
+                            
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={location.pathname === "/subscriptions"}
+                                    tooltip="Subscriptions"
+                                >
+                                    <Link to="/subscriptions" className="flex items-center">
+                                        <CreditCardIcon className="mr-2 h-4 w-4"/>
+                                        <span>Subscriptions</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
 
                             <SidebarMenuItem>
                                 <SidebarMenuButton

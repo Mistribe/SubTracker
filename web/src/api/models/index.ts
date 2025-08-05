@@ -2453,10 +2453,11 @@ export const PatchFamilyMemberModel_typeObject = {
  * @Description Billing recurrency pattern (monthly, yearly, custom, etc.)
  */
 export const SubscriptionModel_recurrencyObject = {
-    Daily: "daily",
-    Weekly: "weekly",
+    Unknown: "unknown",
+    One_time: "one_time",
     Monthly: "monthly",
     Quarterly: "quarterly",
+    Half_yearly: "half_yearly",
     Yearly: "yearly",
     Custom: "custom",
 } as const;
