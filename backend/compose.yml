@@ -1,4 +1,24 @@
 services:
+  api:
+    build:
+      dockerfile: ./cmd/api/Dockerfile
+      context: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./data:/data"
+    environment:
+      - DATABASE_DSN=host=database user=postgres password=postgres dbname=app port=5432
+      - UPDATER_AT_START=true
+      - DATA_LABEL=/data/labels.json
+      - DATA_FAMILY=/data/families.json
+      - DATA_PROVIDER=/data/providers.json
+      - DATA_SUBSCRIPTION=/data/subscriptions.json
+    env_file:
+      - .env
+    depends_on:
+      database:
+        condition: service_healthy
   database:
     image: postgres:alpine3.21
     environment:
