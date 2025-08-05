@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
@@ -26,6 +26,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {PlanDetailsDialog} from "@/components/providers/plan-details";
+import {useAllLabelsQuery} from "@/hooks/labels/useAllLabelsQuery";
 
 interface ProviderCardProps {
     provider: Provider;
@@ -39,6 +40,24 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
     const {canModifyProvider, canDeleteProvider, deleteProviderMutation} = useProvidersMutations();
     const isEditable = canModifyProvider(provider);
     const isDeletable = canDeleteProvider(provider);
+    
+    // Fetch all labels to map label IDs to label names
+    const { data: labelsData } = useAllLabelsQuery();
+    
+    // Create a mapping from label IDs to label names using state
+    const [labelMap, setLabelMap] = useState(new Map());
+    
+    // Flatten all labels from all pages and create the mapping
+    useEffect(() => {
+        if (labelsData?.pages) {
+            const newLabelMap = new Map();
+            const allLabels = labelsData.pages.flatMap(page => page.labels);
+            allLabels.forEach(label => {
+                newLabelMap.set(label.id, label);
+            });
+            setLabelMap(newLabelMap);
+        }
+    }, [labelsData]);
 
     const handleDeleteProvider = async () => {
         try {
@@ -51,11 +70,20 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
 
     return (
         <Card key={provider.id} className="overflow-hidden">
-            <CardHeader className="pb-2">
+            {provider.iconUrl && (
+                <div className="w-full h-28 overflow-hidden bg-gray-50 -mt-0.5 -mx-0.5">
+                    <img 
+                        src={provider.iconUrl} 
+                        alt={`${provider.name} logo`} 
+                        className="w-full h-full object-contain p-3"
+                    />
+                </div>
+            )}
+            <CardHeader className="py-2 px-3">
                 <div className="flex justify-between items-start">
-                    <CardTitle>{provider.name}</CardTitle>
+                    <CardTitle className="text-lg">{provider.name}</CardTitle>
                     <div className="flex items-center space-x-2">
-                        <Badge variant={getBadgeVariant(provider.owner.type)}>
+                        <Badge variant={getBadgeVariant(provider.owner.type)} className="text-xs">
                             {getBadgeText(provider.owner.type)}
                         </Badge>
                         {isEditable && (
@@ -104,27 +132,37 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
                     </CardDescription>
                 )}
             </CardHeader>
-            <CardContent>
-                {provider.description && <p>{provider.description}</p>}
+            <CardContent className="py-2 px-3">
+                {provider.description && <p className="text-sm">{provider.description}</p>}
                 {provider.labels.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                        {provider.labels.map((label, index) => (
-                            <Badge key={index} variant="outline">{label}</Badge>
-                        ))}
+                    <div className="flex flex-wrap gap-1 mt-1">
+                        {provider.labels.map((labelId, index) => {
+                            const label = labelMap.get(labelId);
+                            return (
+                                <Badge 
+                                    key={index} 
+                                    variant="outline"
+                                    className="text-xs py-0"
+                                    style={{ backgroundColor: label?.color || undefined }}
+                                >
+                                    {label ? label.name : labelId}
+                                </Badge>
+                            );
+                        })}
                     </div>
                 )}
             </CardContent>
-            <CardFooter className="flex flex-col space-y-2 w-full">
+            <CardFooter className="flex flex-col space-y-1 w-full py-2 px-3">
                 <div className="flex justify-between w-full">
                     {provider.pricingPageUrl && (
                         <a href={provider.pricingPageUrl} target="_blank" rel="noopener noreferrer">
-                            <Button variant="outline" size="sm">View Pricing</Button>
+                            <Button variant="outline" size="sm" className="h-7 text-xs">View Pricing</Button>
                         </a>
                     )}
                 </div>
 
                 {provider.plans.length > 0 && (
-                    <div className="flex flex-wrap gap-2 w-full">
+                    <div className="flex flex-wrap gap-1 w-full">
                         {provider.plans.map((plan) => {
                             // Count active prices
                             const activePricesCount = plan.prices.filter(price => price.isActive).length;
@@ -133,7 +171,7 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
                                 <Badge
                                     key={plan.id}
                                     variant="secondary"
-                                    className="cursor-pointer hover:bg-secondary/80 text-sm py-1.5 px-3"
+                                    className="cursor-pointer hover:bg-secondary/80 text-xs py-0.5 px-2"
                                     onClick={() => setSelectedPlan(plan)}
                                 >
                                     {plan.name} {activePricesCount > 0 &&
