@@ -503,10 +503,11 @@ components:
           description: '@Description Billing recurrency pattern (monthly, yearly,
             custom, etc.)'
           enum:
-          - daily
-          - weekly
+          - unknown
+          - one_time
           - monthly
           - quarterly
+          - half_yearly
           - yearly
           - custom
           example: monthly
