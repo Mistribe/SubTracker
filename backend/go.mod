@@ -3,7 +3,7 @@ module github.com/oleexo/subtracker
 go 1.24
 
 require (
-	github.com/MicahParks/keyfunc/v3 v3.4.0
+	github.com/MicahParks/keyfunc/v3 v3.6.1
 	github.com/Oleexo/config-go v1.0.0
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.10.1
@@ -24,7 +24,7 @@ require (
 	github.com/MicahParks/jwkset v0.9.6 // indirect
 	github.com/bytedance/sonic v1.14.0 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
-	github.com/cloudwego/base64x v0.1.5 // indirect
+	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
