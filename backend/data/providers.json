@@ -137,11 +137,11 @@
     ]
   },
   {
-    "name": "Apple streaming-music",
+    "name": "Apple Music",
     "key": "apple-music",
     "website": "https://music.apple.com",
     "pricing_page": "https://music.apple.com",
-    "icon": "https://1000logos.net/wp-content/uploads/2023/01/Apple-streaming-music-Logo-1536x864.png",
+    "icon": "https://1000logos.net/wp-content/uploads/2023/01/Apple-Music-Logo-1536x864.png",
     "categories": [
       "streaming-music",
       "streaming"
