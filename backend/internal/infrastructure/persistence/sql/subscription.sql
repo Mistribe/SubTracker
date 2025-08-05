@@ -50,10 +50,13 @@ SELECT s.id                    AS "subscriptions.id",
        s.updated_at            AS "subscriptions.updated_at",
        s.etag                  AS "subscriptions.etag",
        su.family_member_id     AS "subscription_service_users.family_member_id",
-       COUNT(*) OVER ()        AS total_count
-FROM public.subscriptions s
-         LEFT JOIN subscription_service_users su ON su.subscription_id = s.id
-LIMIT $1 OFFSET $2;
+       s.total_count           AS "total_count"
+FROM (SELECT *,
+             COUNT(*) OVER () AS total_count
+      FROM public.subscriptions
+      ORDER BY Id
+      LIMIT $1 OFFSET $2) s
+         LEFT JOIN subscription_service_users su ON su.subscription_id = s.id;
 
 -- name: DeleteSubscription :exec
 DELETE

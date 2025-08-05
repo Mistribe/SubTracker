@@ -379,10 +379,13 @@ SELECT s.id                    AS "subscriptions.id",
        s.updated_at            AS "subscriptions.updated_at",
        s.etag                  AS "subscriptions.etag",
        su.family_member_id     AS "subscription_service_users.family_member_id",
-       COUNT(*) OVER ()        AS total_count
-FROM public.subscriptions s
+       s.total_count           AS "total_count"
+FROM (SELECT id, owner_type, owner_family_id, owner_user_id, friendly_name, free_trial_start_date, free_trial_end_date, provider_id, plan_id, price_id, family_id, payer_type, payer_member_id, start_date, end_date, recurrency, custom_recurrency, custom_price_currency, custom_price_amount, created_at, updated_at, etag,
+             COUNT(*) OVER () AS total_count
+      FROM public.subscriptions
+      ORDER BY Id
+      LIMIT $1 OFFSET $2) s
          LEFT JOIN subscription_service_users su ON su.subscription_id = s.id
-LIMIT $1 OFFSET $2
 `
 
 type getSubscriptionsParams struct {

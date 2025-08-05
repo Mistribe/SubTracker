@@ -109,12 +109,15 @@ SELECT p.id               AS "providers.id",
        ppr.etag           AS "provider_prices.etag",
        pl.label_id        AS "provider_labels.label_id",
        pl.provider_id     AS "provider_labels.provider_id",
-       COUNT(*) OVER ()   AS total_count
-FROM public.providers p
+       p.total_count      AS "total_count"
+FROM (SELECT *,
+             COUNT(*) OVER () AS total_count
+      FROM public.providers
+      ORDER BY id
+      LIMIT $1 OFFSET $2) p
          LEFT JOIN public.provider_plans ppl ON ppl.provider_id = p.id
          LEFT JOIN public.provider_prices ppr ON ppl.provider_id = p.id
-         LEFT JOIN public.provider_labels pl ON pl.provider_id = p.id
-LIMIT $1 OFFSET $2;
+         LEFT JOIN public.provider_labels pl ON pl.provider_id = p.id;
 
 
 -- name: CreateProviderPrice :exec
