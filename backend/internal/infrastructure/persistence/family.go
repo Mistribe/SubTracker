@@ -157,6 +157,7 @@ func (r FamilyRepository) update(ctx context.Context, fam family.Family) error {
 		Name:      fam.Name(),
 		OwnerID:   fam.OwnerId(),
 		UpdatedAt: fam.UpdatedAt(),
+		Etag:      fam.ETag(),
 	})
 	if err != nil {
 		return err

@@ -80,7 +80,7 @@ UPDATE public.families
 SET name       = $2,
     owner_id   = $3,
     updated_at = $4,
-    etag       = $4
+    etag       = $5
 WHERE id = $1;
 
 -- name: UpdateFamilyMember :exec

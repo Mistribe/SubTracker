@@ -166,7 +166,7 @@ UPDATE public.families
 SET name       = $2,
     owner_id   = $3,
     updated_at = $4,
-    etag       = $4
+    etag       = $5
 WHERE id = $1
 `
 
@@ -175,6 +175,7 @@ type UpdateFamilyParams struct {
 	Name      string
 	OwnerID   string
 	UpdatedAt time.Time
+	Etag      string
 }
 
 func (q *Queries) UpdateFamily(ctx context.Context, arg UpdateFamilyParams) error {
@@ -183,6 +184,7 @@ func (q *Queries) UpdateFamily(ctx context.Context, arg UpdateFamilyParams) erro
 		arg.Name,
 		arg.OwnerID,
 		arg.UpdatedAt,
+		arg.Etag,
 	)
 	return err
 }
