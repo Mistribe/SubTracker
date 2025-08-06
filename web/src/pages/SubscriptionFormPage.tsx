@@ -216,13 +216,14 @@ const SubscriptionFormPage = () => {
                                 {steps.map((step, index) => (
                                     <div 
                                         key={index} 
-                                        className={`flex flex-col items-center ${
+                                        className={`flex flex-col items-center cursor-pointer ${
                                             index === currentStep 
                                                 ? "text-primary font-medium" 
                                                 : index < currentStep 
                                                     ? "text-primary/70" 
                                                     : "text-muted-foreground"
                                         }`}
+                                        onClick={() => setCurrentStep(index)}
                                     >
                                         <div 
                                             className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${
