@@ -24,8 +24,8 @@ CREATE TABLE public.family_members
     etag       varchar(100) NOT NULL
 );
 
-create unique index family_members_user_id_family_id_uidx
-    on public.family_members (user_id, family_id);
+CREATE UNIQUE INDEX family_members_user_id_family_id_uidx
+    ON public.family_members (user_id, family_id);
 
 CREATE TABLE public.labels
 (
@@ -160,7 +160,13 @@ CREATE TABLE public.subscription_service_users
     PRIMARY KEY (family_member_id, subscription_id)
 );
 
-
+CREATE TABLE users
+(
+    id       varchar(100) NOT NULL
+        CONSTRAINT users_pk
+            PRIMARY KEY,
+    currency varchar(3)   NOT NULL
+);
 
 -- +goose StatementEnd
 
@@ -175,4 +181,5 @@ DROP TABLE public.providers;
 DROP TABLE public.labels;
 DROP TABLE public.family_members;
 DROP TABLE public.families;
+DROP TABLE public.users;
 -- +goose StatementEnd
