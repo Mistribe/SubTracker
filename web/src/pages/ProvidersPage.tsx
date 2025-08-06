@@ -8,6 +8,7 @@ import {ProviderCardSkeletonGrid} from "@/components/providers/ui/ProviderCardSk
 import {ErrorState} from "@/components/providers/ui/ErrorState";
 import {NoProviders} from "@/components/providers/ui/EmptyStates";
 import {PageHeader} from "@/components/ui/page-header";
+import {Button} from "@/components/ui/button";
 import Provider from "@/models/provider";
 
 const ProvidersPage = () => {
@@ -67,9 +68,13 @@ const ProvidersPage = () => {
             <PageHeader
                 title="Providers"
                 description="Manage your providers"
-                onAddProvider={() => setIsAddingProvider(true)}
                 searchText={searchText}
                 onSearchChange={setSearchText}
+                actionButton={
+                    <Button onClick={() => setIsAddingProvider(true)}>
+                        Add Provider
+                    </Button>
+                }
             />
 
             {isLoading ? (
