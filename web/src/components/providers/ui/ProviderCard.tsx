@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {PlanDetailsDialog} from "@/components/providers/plan-details";
 import {useAllLabelsQuery} from "@/hooks/labels/useAllLabelsQuery";
+import {argbToRgba} from "@/components/ui/utils/color-utils.ts";
 
 interface ProviderCardProps {
     provider: Provider;
@@ -40,13 +41,13 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
     const {canModifyProvider, canDeleteProvider, deleteProviderMutation} = useProvidersMutations();
     const isEditable = canModifyProvider(provider);
     const isDeletable = canDeleteProvider(provider);
-    
+
     // Fetch all labels to map label IDs to label names
-    const { data: labelsData } = useAllLabelsQuery();
-    
+    const {data: labelsData} = useAllLabelsQuery();
+
     // Create a mapping from label IDs to label names using state
     const [labelMap, setLabelMap] = useState(new Map());
-    
+
     // Flatten all labels from all pages and create the mapping
     useEffect(() => {
         if (labelsData?.pages) {
@@ -72,9 +73,9 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
         <Card key={provider.id} className="overflow-hidden">
             {provider.iconUrl && (
                 <div className="w-full h-28 overflow-hidden bg-gray-50 -mt-0.5 -mx-0.5">
-                    <img 
-                        src={provider.iconUrl} 
-                        alt={`${provider.name} logo`} 
+                    <img
+                        src={provider.iconUrl}
+                        alt={`${provider.name} logo`}
                         className="w-full h-full object-contain p-3"
                     />
                 </div>
@@ -139,11 +140,11 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
                         {provider.labels.map((labelId, index) => {
                             const label = labelMap.get(labelId);
                             return (
-                                <Badge 
-                                    key={index} 
+                                <Badge
+                                    key={index}
                                     variant="outline"
                                     className="text-xs py-0"
-                                    style={{ backgroundColor: label?.color || undefined }}
+                                    style={{backgroundColor: argbToRgba(label?.color)}}
                                 >
                                     {label ? label.name : labelId}
                                 </Badge>

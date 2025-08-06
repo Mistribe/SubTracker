@@ -56,7 +56,8 @@ export const setAlphaInArgb = (argb: string, alphaPercent: number): string => {
 };
 
 // Convert ARGB string to CSS rgba format
-export const argbToRgba = (argb: string): string => {
+export const argbToRgba = (argb: string | undefined): string => {
+    if (!argb) return "rgba(0, 0, 0, 0)";
     // Remove # if present
     const cleanArgb = argb.startsWith("#") ? argb.slice(1) : argb;
 
