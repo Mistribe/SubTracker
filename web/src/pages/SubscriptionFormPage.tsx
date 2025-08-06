@@ -16,7 +16,6 @@ import {BasicInformationSection} from "@/components/subscriptions/form/BasicInfo
 import {RecurrencySection} from "@/components/subscriptions/form/RecurrencySection";
 import {DatesSection} from "@/components/subscriptions/form/DatesSection";
 import {OwnershipSection} from "@/components/subscriptions/form/OwnershipSection";
-import {CustomPriceSection} from "@/components/subscriptions/form/CustomPriceSection";
 import {FreeTrialSection} from "@/components/subscriptions/form/FreeTrialSection";
 import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
 
@@ -46,7 +45,6 @@ const SubscriptionFormPage = () => {
         { title: "Recurrency", component: RecurrencySection },
         { title: "Dates", component: DatesSection },
         { title: "Ownership", component: OwnershipSection },
-        { title: "Custom Price", component: CustomPriceSection },
         { title: "Free Trial", component: FreeTrialSection },
     ];
 
@@ -255,8 +253,7 @@ const SubscriptionFormPage = () => {
                             {currentStep === 1 && <RecurrencySection/>}
                             {currentStep === 2 && <DatesSection/>}
                             {currentStep === 3 && <OwnershipSection families={families}/>}
-                            {currentStep === 4 && <CustomPriceSection/>}
-                            {currentStep === 5 && <FreeTrialSection/>}
+                            {currentStep === 4 && <FreeTrialSection/>}
                         </div>
 
                         {/* Navigation Buttons */}

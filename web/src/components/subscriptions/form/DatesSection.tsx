@@ -1,33 +1,37 @@
 import {useFormContext} from "react-hook-form";
 import {Label} from "@/components/ui/label";
 import {Input} from "@/components/ui/input";
-import {format, isValid} from "date-fns";
 import type {FormValues} from "./SubscriptionFormSchema";
 import {Switch} from "@/components/ui/switch";
-import {useState, useEffect} from "react";
+import {useEffect, useState} from "react";
 
 export const DatesSection = () => {
     const form = useFormContext<FormValues>();
     const startDate = form.watch("startDate");
     const endDate = form.watch("endDate");
     const [hasEndDate, setHasEndDate] = useState<boolean>(!!endDate);
-    
+
     // Update hasEndDate state when endDate changes
     useEffect(() => {
         setHasEndDate(!!endDate);
     }, [endDate]);
 
-    const formatDateForInput = (date: Date | null | undefined): string => {
+    const formatDateForInput = (date: Date | undefined | null): string => {
         if (!date) return "";
+        const d = new Date(date);
+        if (isNaN(d.getTime())) return "";
+        return d.toISOString().split('T')[0];
+    };
 
-        // Handle case where date might be a string
-        const dateObj = date instanceof Date ? date : new Date(date);
-
-        // Check if the date is valid
-        if (!isValid(dateObj)) return "";
-
-        console.log("Formatted date:", format(dateObj, "yyyy-MM-dd"));
-        return format(dateObj, "yyyy-MM-dd");
+    const handleDateChange = (field: "startDate" | "endDate", value: string) => {
+        if (value) {
+            const date = new Date(value);
+            if (!isNaN(date.getTime())) {
+                form.setValue(field, date);
+            }
+        } else {
+            form.setValue(field, undefined);
+        }
     };
 
     return (
@@ -45,10 +49,8 @@ export const DatesSection = () => {
                         <Input
                             id="startDate"
                             type="date"
-                            {...form.register("startDate", {
-                                valueAsDate: true,
-                            })}
                             value={formatDateForInput(startDate)}
+                            onChange={(e) => handleDateChange("startDate", e.target.value)}
                             className="h-12"
                         />
                         {form.formState.errors.startDate && (
@@ -58,10 +60,11 @@ export const DatesSection = () => {
 
                     <div>
                         <div className="flex items-center justify-between mb-2">
-                            <Label htmlFor="hasEndDate" className="text-base">Does your subscription have an end date?</Label>
-                            <Switch 
-                                id="hasEndDate" 
-                                checked={hasEndDate} 
+                            <Label htmlFor="hasEndDate" className="text-base">Does your subscription have an end
+                                date?</Label>
+                            <Switch
+                                id="hasEndDate"
+                                checked={hasEndDate}
                                 onCheckedChange={(checked) => {
                                     setHasEndDate(checked);
                                     if (!checked) {
@@ -70,16 +73,14 @@ export const DatesSection = () => {
                                 }}
                             />
                         </div>
-                        
+
                         {hasEndDate && (
                             <>
                                 <Input
                                     id="endDate"
                                     type="date"
-                                    {...form.register("endDate", {
-                                        valueAsDate: true,
-                                    })}
                                     value={formatDateForInput(endDate)}
+                                    onChange={(e) => handleDateChange("endDate", e.target.value)}
                                     className="h-12"
                                 />
                                 {form.formState.errors.endDate && (
@@ -87,10 +88,10 @@ export const DatesSection = () => {
                                 )}
                             </>
                         )}
-                        
+
                         <p className="text-xs text-muted-foreground mt-1">
-                            {hasEndDate 
-                                ? "Select the end date of your subscription" 
+                            {hasEndDate
+                                ? "Select the end date of your subscription"
                                 : "Your subscription doesn't have a specific end date"}
                         </p>
                     </div>
