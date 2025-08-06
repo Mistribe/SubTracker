@@ -5,6 +5,7 @@ import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import type {FormValues} from "./SubscriptionFormSchema";
 import {OwnerType} from "@/models/ownerType";
 import Family from "@/models/family";
+import {Checkbox} from "@/components/ui/checkbox";
 
 interface OwnershipSectionProps {
     families: Family[];
@@ -42,25 +43,91 @@ export const OwnershipSection = ({families}: OwnershipSectionProps) => {
             </div>
 
             {selectedOwnerType === OwnerType.Family && (
-                <div className="max-w-md mx-auto mt-6">
-                    <Label htmlFor="familyId" className="text-lg mb-2 block">Which family is this for?</Label>
-                    <Select
-                        onValueChange={(value) => form.setValue("familyId", value)}
-                        value={form.watch("familyId") || ""}
-                    >
-                        <SelectTrigger className="h-12">
-                            <SelectValue placeholder="Select a family"/>
-                        </SelectTrigger>
-                        <SelectContent>
-                            {families.map((family) => (
-                                <SelectItem key={family.id} value={family.id}>
-                                    {family.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    {form.formState.errors.familyId && (
-                        <p className="text-sm text-red-500 mt-1">{form.formState.errors.familyId.message}</p>
+                <div className="max-w-md mx-auto mt-6 space-y-6">
+                    <div>
+                        <Label htmlFor="familyId" className="text-lg mb-2 block">Which family is this for?</Label>
+                        <Select
+                            onValueChange={(value) => {
+                                form.setValue("familyId", value);
+                                // Reset service users and payer when family changes
+                                form.setValue("serviceUsers", []);
+                                form.setValue("payerType", "family");
+                                form.setValue("payerId", value);
+                            }}
+                            value={form.watch("familyId") || ""}
+                        >
+                            <SelectTrigger className="h-12">
+                                <SelectValue placeholder="Select a family"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                {families.map((family) => (
+                                    <SelectItem key={family.id} value={family.id}>
+                                        {family.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {form.formState.errors.familyId && (
+                            <p className="text-sm text-red-500 mt-1">{form.formState.errors.familyId.message}</p>
+                        )}
+                    </div>
+                    
+                    {form.watch("familyId") && (
+                        <>
+                            <div>
+                                <Label className="text-lg mb-2 block">Who is using this subscription?</Label>
+                                <div className="space-y-2 mt-2">
+                                    {families.find(f => f.id === form.watch("familyId"))?.members.map((member) => (
+                                        <div key={member.id} className="flex items-center space-x-2">
+                                            <Checkbox 
+                                                id={`member-${member.id}`}
+                                                checked={form.watch("serviceUsers")?.includes(member.id) || false}
+                                                onCheckedChange={(checked) => {
+                                                    const currentUsers = form.watch("serviceUsers") || [];
+                                                    if (checked) {
+                                                        form.setValue("serviceUsers", [...currentUsers, member.id]);
+                                                    } else {
+                                                        form.setValue("serviceUsers", currentUsers.filter(id => id !== member.id));
+                                                    }
+                                                }}
+                                            />
+                                            <Label 
+                                                htmlFor={`member-${member.id}`}
+                                                className="text-sm font-normal cursor-pointer"
+                                            >
+                                                {member.name} {member.isYou ? "(You)" : ""}
+                                            </Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <Label className="text-lg mb-2 block">Who is paying for this subscription?</Label>
+                                <Select
+                                    onValueChange={(value) => {
+                                        const [type, id] = value.split(':');
+                                        form.setValue("payerType", type as "family" | "family_member");
+                                        form.setValue("payerId", id);
+                                    }}
+                                    value={`${form.watch("payerType") || "family"}:${form.watch("payerId") || form.watch("familyId")}`}
+                                >
+                                    <SelectTrigger className="h-12">
+                                        <SelectValue placeholder="Select who is paying"/>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={`family:${form.watch("familyId")}`}>
+                                            Family: {families.find(f => f.id === form.watch("familyId"))?.name}
+                                        </SelectItem>
+                                        {families.find(f => f.id === form.watch("familyId"))?.members.map((member) => (
+                                            <SelectItem key={member.id} value={`family_member:${member.id}`}>
+                                                {member.name} {member.isYou ? "(You)" : ""}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </>
                     )}
                 </div>
             )}

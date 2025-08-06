@@ -16,6 +16,8 @@ export const formSchema = z.object({
     ownerType: z.enum(OwnerType),
     familyId: z.string().optional(),
     serviceUsers: z.array(z.string()).optional(),
+    payerType: z.enum(["family", "family_member"]).optional(),
+    payerId: z.string().optional(),
     customPrice: z.object({
         amount: z.number().positive("Amount must be positive"),
         currency: z.string().min(1, "Currency is required")
