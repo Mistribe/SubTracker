@@ -1,14 +1,16 @@
-import { useFormContext } from "react-hook-form";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FormValues } from "./SubscriptionFormSchema";
-import { SubscriptionRecurrency } from "@/models/subscriptionRecurrency";
+import {useFormContext} from "react-hook-form";
+import {Label} from "@/components/ui/label";
+import {Input} from "@/components/ui/input";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import type {FormValues} from "./SubscriptionFormSchema";
+import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency";
+
+type CustomRecurrencyUnit = "days" | "months" | "years";
 
 export const RecurrencySection = () => {
     const form = useFormContext<FormValues>();
     const selectedRecurrency = form.watch("recurrency");
-    
+
     return (
         <div className="space-y-4">
             <h2 className="text-xl font-semibold">Recurrency</h2>
@@ -57,7 +59,7 @@ export const RecurrencySection = () => {
                                 <div className="w-1/2">
                                     <Label htmlFor="customRecurrencyUnit" className="sr-only">Unit</Label>
                                     <Select
-                                        onValueChange={(value) => form.setValue("customRecurrencyUnit", value)}
+                                        onValueChange={(value) => form.setValue("customRecurrencyUnit", value as CustomRecurrencyUnit)}
                                         defaultValue="days"
                                         value={form.watch("customRecurrencyUnit")}
                                     >

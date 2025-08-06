@@ -1,13 +1,13 @@
-import { useFormContext } from "react-hook-form";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FormValues } from "./SubscriptionFormSchema";
+import {useFormContext} from "react-hook-form";
+import {Label} from "@/components/ui/label";
+import {Input} from "@/components/ui/input";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import type {FormValues} from "./SubscriptionFormSchema";
 
 export const CustomPriceSection = () => {
     const form = useFormContext<FormValues>();
     const hasCustomPrice = form.watch("customPrice") !== undefined;
-    
+
     return (
         <div className="space-y-4">
             <div className="flex items-center space-x-2">
