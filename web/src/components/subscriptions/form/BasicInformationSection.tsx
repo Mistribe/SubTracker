@@ -170,8 +170,8 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
                         </div>
                     )}
 
-                    {/* Custom price input - show when toggle is enabled or provider has no plans */}
-                    {hasCustomPrice && (
+                    {/* Custom price input - show when toggle is enabled or provider has no plans, but only if a provider is selected */}
+                    {selectedProvider && hasCustomPrice && (
                         <div className="mt-4">
                             <Label htmlFor="customPrice" className="text-base mb-2 block">How much does it cost?</Label>
                             <CurrencyInput
