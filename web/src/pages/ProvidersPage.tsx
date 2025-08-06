@@ -66,6 +66,7 @@ const ProvidersPage = () => {
         <div className="container mx-auto py-6">
             <PageHeader
                 title="Providers"
+                description="Manage your providers"
                 onAddProvider={() => setIsAddingProvider(true)}
                 searchText={searchText}
                 onSearchChange={setSearchText}

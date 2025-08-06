@@ -4,6 +4,7 @@ import {FamilyCard} from "@/components/families/FamilyCard";
 import {EmptyFamiliesState} from "@/components/families/EmptyFamiliesState";
 import {FamiliesLoadingError} from "@/components/families/FamiliesLoadingError";
 import {useFamiliesQuery} from "@/hooks/families/useFamiliesQuery";
+import {PageHeader} from "@/components/ui/page-header.tsx";
 
 const FamiliesPage = () => {
     const [offset] = useState(0);
@@ -26,11 +27,12 @@ const FamiliesPage = () => {
     const families = queryResponse?.families || [];
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Families</h1>
-                {families.length > 0 && families.filter(x => x.isOwner).length === 0 && <CreateFamilyDialog/>}
-            </div>
+        <div className="container mx-auto py-6">
+            <PageHeader
+                title="Families"
+                description="Manage your families"
+                actionButton={families.length > 0 && families.filter(x => x.isOwner).length === 0 ? <CreateFamilyDialog/> : undefined}
+            />
 
             {families.length === 0 ? (
                 <EmptyFamiliesState/>

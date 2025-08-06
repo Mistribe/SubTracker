@@ -140,8 +140,8 @@ const SubscriptionFormPage = () => {
             const subscriptionData = {
                 friendlyName: data.friendlyName,
                 providerId: data.providerId,
-                planId: data.planId,
-                priceId: data.priceId,
+                planId: data.planId === "" ? undefined : data.planId,
+                priceId: data.priceId === "" ? undefined : data.priceId,
                 recurrency: data.recurrency,
                 customRecurrency: customRecurrencyInDays,
                 startDate: data.startDate,
@@ -212,7 +212,7 @@ const SubscriptionFormPage = () => {
                     <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
                         // Identify which section contains errors and redirect to that section
                         const errorFields = Object.keys(errors);
-                        
+
                         // Map fields to their respective sections
                         const fieldToSectionMap: Record<string, number> = {
                             // Basic Information (Section 0)
@@ -220,27 +220,27 @@ const SubscriptionFormPage = () => {
                             'planId': 0,
                             'priceId': 0,
                             'friendlyName': 0,
-                            
+
                             // Recurrency (Section 1)
                             'recurrency': 1,
                             'customRecurrencyValue': 1,
                             'customRecurrencyUnit': 1,
-                            
+
                             // Dates (Section 2)
                             'startDate': 2,
                             'endDate': 2,
-                            
+
                             // Ownership (Section 3)
                             'ownerType': 3,
                             'familyId': 3,
                             'serviceUsers': 3,
-                            
+
                             // Free Trial (Section 4)
                             'hasFreeTrialPeriod': 4,
                             'freeTrialStartDate': 4,
                             'freeTrialEndDate': 4,
                         };
-                        
+
                         // Find the earliest section with errors
                         let earliestSectionWithError = steps.length - 1;
                         for (const field of errorFields) {
@@ -249,10 +249,10 @@ const SubscriptionFormPage = () => {
                                 earliestSectionWithError = sectionIndex;
                             }
                         }
-                        
+
                         // Set the current step to the section with errors
                         setCurrentStep(earliestSectionWithError);
-                        
+
                         // Set a general error message
                         setError("Please correct the errors in the form before submitting.");
                     })} className="space-y-6">
@@ -321,7 +321,7 @@ const SubscriptionFormPage = () => {
                                     onClick={async () => {
                                         // Validate current step fields before proceeding
                                         let isValid = true;
-                                        
+
                                         // Step 0: Basic Information
                                         if (currentStep === 0) {
                                             const result = await form.trigger(['providerId']);
@@ -331,7 +331,7 @@ const SubscriptionFormPage = () => {
                                         else if (currentStep === 1) {
                                             const result = await form.trigger(['recurrency']);
                                             isValid = result;
-                                            
+
                                             // If custom recurrency, validate custom fields
                                             if (form.getValues('recurrency') === 'custom') {
                                                 const customResult = await form.trigger(['customRecurrencyValue', 'customRecurrencyUnit']);
@@ -347,7 +347,7 @@ const SubscriptionFormPage = () => {
                                         else if (currentStep === 3) {
                                             const result = await form.trigger(['ownerType']);
                                             isValid = result;
-                                            
+
                                             // If family ownership, validate family ID
                                             if (form.getValues('ownerType') === 'family') {
                                                 const familyResult = await form.trigger(['familyId']);
@@ -358,14 +358,14 @@ const SubscriptionFormPage = () => {
                                         else if (currentStep === 4) {
                                             const result = await form.trigger(['hasFreeTrialPeriod']);
                                             isValid = result;
-                                            
+
                                             // If has free trial period, validate start and end dates
                                             if (form.getValues('hasFreeTrialPeriod')) {
                                                 const trialResult = await form.trigger(['freeTrialStartDate', 'freeTrialEndDate']);
                                                 isValid = isValid && trialResult;
                                             }
                                         }
-                                        
+
                                         if (isValid) {
                                             setCurrentStep(prev => Math.min(steps.length - 1, prev + 1));
                                         }
@@ -375,8 +375,8 @@ const SubscriptionFormPage = () => {
                                     <ChevronRight className="ml-2 h-4 w-4"/>
                                 </Button>
                             ) : (
-                                <Button 
-                                    type="submit" 
+                                <Button
+                                    type="submit"
                                     disabled={form.formState.isSubmitting}
                                 >
                                     {form.formState.isSubmitting ? (
