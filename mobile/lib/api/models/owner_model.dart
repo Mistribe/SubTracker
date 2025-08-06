@@ -14,7 +14,7 @@ class OwnerModel implements AdditionalDataHolder, Parsable {
     String? familyId;
     ///  @Description Type of ownership (personal, family or system)
     OwnerModelType? type_;
-    ///  @Description User ID when an ownership type is personal (required for personal ownership)
+    ///  @Description UserProfile ID when an ownership type is personal (required for personal ownership)
     String? userId;
     /// Instantiates a new [OwnerModel] and sets the default values.
     OwnerModel() :  

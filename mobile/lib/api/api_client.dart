@@ -10,6 +10,7 @@ import './healthz/healthz_request_builder.dart';
 import './labels/labels_request_builder.dart';
 import './providers/providers_request_builder.dart';
 import './subscriptions/subscriptions_request_builder.dart';
+import './users/users_request_builder.dart';
 
 /// auto generated
 /// The main entry point of the SDK, exposes the configuration and the fluent API.
@@ -37,6 +38,10 @@ class ApiClient extends BaseRequestBuilder<ApiClient> {
     ///  The subscriptions property
     SubscriptionsRequestBuilder get subscriptions {
         return SubscriptionsRequestBuilder(pathParameters, requestAdapter);
+    }
+    ///  The users property
+    UsersRequestBuilder get users {
+        return UsersRequestBuilder(pathParameters, requestAdapter);
     }
     /// Clones the requestbuilder.
     @override

@@ -16,7 +16,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
     DateTime? createdAt;
     ///  The custom_price property
     SubscriptionCustomPriceModel? customPrice;
-    ///  @Description Custom recurrency interval in days (required when recurrency is custom)
+    ///  @Description CustomRecurrency recurrency interval in days (required when recurrency is custom)
     int? customRecurrency;
     ///  @Description ISO 8601 timestamp when the subscription expires (null for ongoing subscriptions)
     DateTime? endDate;
