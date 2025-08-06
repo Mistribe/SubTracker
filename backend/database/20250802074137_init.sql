@@ -156,7 +156,7 @@ CREATE TABLE public.subscription_service_users
             REFERENCES public.family_members,
     subscription_id  uuid NOT NULL
         CONSTRAINT fk_subscriptions_service_users
-            REFERENCES public.subscriptions,
+            REFERENCES public.subscriptions ON DELETE CASCADE,
     PRIMARY KEY (family_member_id, subscription_id)
 );
 
