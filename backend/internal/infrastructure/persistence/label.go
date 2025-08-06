@@ -2,6 +2,8 @@ package persistence
 
 import (
 	"context"
+	dsql "database/sql"
+	"errors"
 
 	"github.com/google/uuid"
 
@@ -28,6 +30,10 @@ func NewLabelRepository(dbContext *DatabaseContext,
 func (r LabelRepository) GetById(ctx context.Context, labelId uuid.UUID) (label.Label, error) {
 	response, err := r.dbContext.GetQueries(ctx).GetLabelById(ctx, labelId)
 	if err != nil {
+		if errors.Is(err, dsql.ErrNoRows) {
+			return nil, nil
+		}
+
 		return nil, err
 	}
 

@@ -3,13 +3,13 @@ package subscription
 type RecurrencyType string
 
 const (
-	UnknownRecurrency RecurrencyType = "unknown"
-	OneTime           RecurrencyType = "one_time"
-	Monthly           RecurrencyType = "monthly"
-	Quarterly         RecurrencyType = "quarterly"
-	HalfYearly        RecurrencyType = "half_yearly"
-	Yearly            RecurrencyType = "yearly"
-	Custom            RecurrencyType = "custom"
+	UnknownRecurrency    RecurrencyType = "unknown"
+	OneTimeRecurrency    RecurrencyType = "one_time"
+	MonthlyRecurrency    RecurrencyType = "monthly"
+	QuarterlyRecurrency  RecurrencyType = "quarterly"
+	HalfYearlyRecurrency RecurrencyType = "half_yearly"
+	YearlyRecurrency     RecurrencyType = "yearly"
+	CustomRecurrency     RecurrencyType = "custom"
 )
 
 func (r RecurrencyType) String() string {
@@ -18,18 +18,18 @@ func (r RecurrencyType) String() string {
 
 func ParseRecurrencyType(input string) (RecurrencyType, error) {
 	switch input {
-	case string(OneTime):
-		return OneTime, nil
-	case string(Monthly):
-		return Monthly, nil
-	case string(Quarterly):
-		return Quarterly, nil
-	case string(HalfYearly):
-		return HalfYearly, nil
-	case string(Yearly):
-		return Yearly, nil
-	case string(Custom):
-		return Custom, nil
+	case string(OneTimeRecurrency):
+		return OneTimeRecurrency, nil
+	case string(MonthlyRecurrency):
+		return MonthlyRecurrency, nil
+	case string(QuarterlyRecurrency):
+		return QuarterlyRecurrency, nil
+	case string(HalfYearlyRecurrency):
+		return HalfYearlyRecurrency, nil
+	case string(YearlyRecurrency):
+		return YearlyRecurrency, nil
+	case string(CustomRecurrency):
+		return CustomRecurrency, nil
 	default:
 		return UnknownRecurrency, ErrUnknownRecurrencyType
 	}

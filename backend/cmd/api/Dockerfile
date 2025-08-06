@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=0 GOOS=linux GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
     go build -o ./app/main ./cmd/api/
 
-FROM alpine:3.22
+FROM scratch
 ARG APPUSER=appuser
 ENV UID=1001
 EXPOSE 8080
