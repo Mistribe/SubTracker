@@ -510,6 +510,15 @@ export function createUpdatePriceModelFromDiscriminatorValue(parseNode: ParseNod
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {UpdateProfileModel}
+ */
+// @ts-ignore
+export function createUpdateProfileModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoUpdateProfileModel;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
  * @returns {UpdateProviderModel}
  */
 // @ts-ignore
@@ -524,6 +533,15 @@ export function createUpdateProviderModelFromDiscriminatorValue(parseNode: Parse
 // @ts-ignore
 export function createUpdateSubscriptionModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
     return deserializeIntoUpdateSubscriptionModel;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {UserProfileModel}
+ */
+// @ts-ignore
+export function createUserProfileModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoUserProfileModel;
 }
 /**
  * The deserialization information for the current model
@@ -1041,6 +1059,17 @@ export function deserializeIntoUpdatePriceModel(updatePriceModel: Partial<Update
 }
 /**
  * The deserialization information for the current model
+ * @param UpdateProfileModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoUpdateProfileModel(updateProfileModel: Partial<UpdateProfileModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "currency": n => { updateProfileModel.currency = n.getStringValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
  * @param UpdateProviderModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
@@ -1078,6 +1107,17 @@ export function deserializeIntoUpdateSubscriptionModel(updateSubscriptionModel: 
         "service_users": n => { updateSubscriptionModel.serviceUsers = n.getCollectionOfPrimitiveValues<string>(); },
         "start_date": n => { updateSubscriptionModel.startDate = n.getDateValue(); },
         "updated_at": n => { updateSubscriptionModel.updatedAt = n.getDateValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param UserProfileModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoUserProfileModel(userProfileModel: Partial<UserProfileModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "currency": n => { userProfileModel.currency = n.getStringValue(); },
     }
 }
 export interface EditableOwnerModel extends AdditionalDataHolder, Parsable {
@@ -1240,7 +1280,7 @@ export interface OwnerModel extends AdditionalDataHolder, Parsable {
      */
     type?: OwnerModel_type | null;
     /**
-     * @Description User ID when an ownership type is personal (required for personal ownership)
+     * @Description UserProfile ID when an ownership type is personal (required for personal ownership)
      */
     userId?: string | null;
 }
@@ -2083,6 +2123,18 @@ export function serializeUpdatePriceModel(writer: SerializationWriter, updatePri
 /**
  * Serializes information the current object
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param UpdateProfileModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeUpdateProfileModel(writer: SerializationWriter, updateProfileModel: Partial<UpdateProfileModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!updateProfileModel || isSerializingDerivedType) { return; }
+    writer.writeStringValue("currency", updateProfileModel.currency);
+    writer.writeAdditionalData(updateProfileModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param UpdateProviderModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
@@ -2123,6 +2175,18 @@ export function serializeUpdateSubscriptionModel(writer: SerializationWriter, up
     writer.writeDateValue("updated_at", updateSubscriptionModel.updatedAt);
     writer.writeAdditionalData(updateSubscriptionModel.additionalData);
 }
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param UserProfileModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeUserProfileModel(writer: SerializationWriter, userProfileModel: Partial<UserProfileModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!userProfileModel || isSerializingDerivedType) { return; }
+    writer.writeStringValue("currency", userProfileModel.currency);
+    writer.writeAdditionalData(userProfileModel.additionalData);
+}
 export interface SubscriptionCustomPriceModel extends AdditionalDataHolder, Parsable {
     /**
      * The amount property
@@ -2159,7 +2223,7 @@ export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
      */
     customPrice?: SubscriptionCustomPriceModel | null;
     /**
-     * @Description Custom recurrency interval in days (required when recurrency is custom)
+     * @Description CustomRecurrency recurrency interval in days (required when recurrency is custom)
      */
     customRecurrency?: number | null;
     /**
@@ -2317,6 +2381,12 @@ export interface UpdatePriceModel extends AdditionalDataHolder, Parsable {
      */
     startDate?: Date | null;
 }
+export interface UpdateProfileModel extends AdditionalDataHolder, Parsable {
+    /**
+     * The currency property
+     */
+    currency?: string | null;
+}
 export interface UpdateProviderModel extends AdditionalDataHolder, Parsable {
     /**
      * The description property
@@ -2404,6 +2474,12 @@ export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable 
      * The updated_at property
      */
     updatedAt?: Date | null;
+}
+export interface UserProfileModel extends AdditionalDataHolder, Parsable {
+    /**
+     * The currency property
+     */
+    currency?: string | null;
 }
 export const CreateFamilyMemberModel_typeObject = {
     Owner: "owner",
