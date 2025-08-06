@@ -7,7 +7,7 @@ import {PageHeader} from "@/components/ui/page-header";
 import {Skeleton} from "@/components/ui/skeleton";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {CalendarIcon, CreditCardIcon, PlusIcon, TagIcon, TrashIcon, UsersIcon} from "lucide-react";
+import {CalendarIcon, CreditCardIcon, PencilIcon, PlusIcon, TagIcon, TrashIcon, UsersIcon} from "lucide-react";
 import {format} from "date-fns";
 import Subscription from "@/models/subscription";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
@@ -201,14 +201,24 @@ const SubscriptionsPage = () => {
                                     : <Badge variant="outline" className="bg-red-50 text-red-700">Ended</Badge>}
                             </TableCell>
                             <TableCell>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => handleDeleteClick(subscription)}
-                                    title="Delete subscription"
-                                >
-                                    <TrashIcon className="h-4 w-4 text-red-500" />
-                                </Button>
+                                <div className="flex space-x-1">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => navigate(`/subscriptions/edit/${subscription.id}`)}
+                                        title="Edit subscription"
+                                    >
+                                        <PencilIcon className="h-4 w-4 text-blue-500" />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => handleDeleteClick(subscription)}
+                                        title="Delete subscription"
+                                    >
+                                        <TrashIcon className="h-4 w-4 text-red-500" />
+                                    </Button>
+                                </div>
                             </TableCell>
                         </TableRow>
                     ))}

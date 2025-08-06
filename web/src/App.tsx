@@ -9,7 +9,7 @@ import FamiliesPage from "@/pages/FamiliesPage"
 import LabelsPage from "@/pages/LabelsPage"
 import ProvidersPage from "@/pages/ProvidersPage"
 import SubscriptionsPage from "@/pages/SubscriptionsPage"
-import CreateSubscriptionPage from "@/pages/CreateSubscriptionPage"
+import SubscriptionFormPage from "@/pages/SubscriptionFormPage"
 import {ApiClientProvider} from "@/contexts/ApiClientContext.tsx";
 import {QueryClientProvider, QueryClient} from "@tanstack/react-query";
 
@@ -91,7 +91,17 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <AppLayout>
-                                            <CreateSubscriptionPage/>
+                                            <SubscriptionFormPage/>
+                                        </AppLayout>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/subscriptions/edit/:subscriptionId"
+                                element={
+                                    <ProtectedRoute>
+                                        <AppLayout>
+                                            <SubscriptionFormPage/>
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
