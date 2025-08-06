@@ -2,19 +2,53 @@ import {useMemo, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {useAllSubscriptionsQuery} from "@/hooks/subscriptions/useAllSubscriptionsQuery";
 import {useAllProvidersQuery} from "@/hooks/providers/useAllProvidersQuery";
+import {useSubscriptionsMutations} from "@/hooks/subscriptions/useSubscriptionsMutations";
 import {PageHeader} from "@/components/ui/page-header";
 import {Skeleton} from "@/components/ui/skeleton";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {CalendarIcon, CreditCardIcon, PlusIcon, TagIcon, UsersIcon} from "lucide-react";
+import {CalendarIcon, CreditCardIcon, PlusIcon, TagIcon, TrashIcon, UsersIcon} from "lucide-react";
 import {format} from "date-fns";
 import Subscription from "@/models/subscription";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
+import {DeleteSubscriptionDialog} from "@/components/subscriptions/DeleteSubscriptionDialog";
 
 const SubscriptionsPage = () => {
     const navigate = useNavigate();
     const [searchText, setSearchText] = useState("");
+    const [subscriptionToDelete, setSubscriptionToDelete] = useState<Subscription | null>(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    
+    const { deleteSubscriptionMutation } = useSubscriptionsMutations();
+    
+    // Handler to open the delete dialog
+    const handleDeleteClick = (subscription: Subscription) => {
+        setSubscriptionToDelete(subscription);
+        setIsDeleteDialogOpen(true);
+    };
+    
+    // Handler to close the delete dialog
+    const handleDeleteDialogClose = () => {
+        setIsDeleteDialogOpen(false);
+    };
+    
+    // Handler to confirm deletion
+    const handleDeleteConfirm = async () => {
+        if (!subscriptionToDelete) return;
+        
+        try {
+            setIsDeleting(true);
+            await deleteSubscriptionMutation.mutateAsync(subscriptionToDelete.id);
+            setIsDeleteDialogOpen(false);
+        } catch (error) {
+            console.error("Error deleting subscription:", error);
+        } finally {
+            setIsDeleting(false);
+            setSubscriptionToDelete(null);
+        }
+    };
 
     // Query all subscriptions using the dedicated hook
     const {
@@ -108,6 +142,7 @@ const SubscriptionsPage = () => {
                         <TableHead>Users</TableHead>
                         <TableHead>Plan</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead className="w-[50px]">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -164,6 +199,16 @@ const SubscriptionsPage = () => {
                                 {subscription.isActive
                                     ? <Badge variant="outline" className="bg-green-50 text-green-700">Active</Badge>
                                     : <Badge variant="outline" className="bg-red-50 text-red-700">Ended</Badge>}
+                            </TableCell>
+                            <TableCell>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleDeleteClick(subscription)}
+                                    title="Delete subscription"
+                                >
+                                    <TrashIcon className="h-4 w-4 text-red-500" />
+                                </Button>
                             </TableCell>
                         </TableRow>
                     ))}
@@ -261,6 +306,17 @@ const SubscriptionsPage = () => {
                         renderEmptyState()
                     )}
                 </>
+            )}
+
+            {/* Delete Subscription Dialog */}
+            {subscriptionToDelete && (
+                <DeleteSubscriptionDialog
+                    subscription={subscriptionToDelete}
+                    isOpen={isDeleteDialogOpen}
+                    isSubmitting={isDeleting}
+                    onClose={handleDeleteDialogClose}
+                    onConfirm={handleDeleteConfirm}
+                />
             )}
         </div>
     );

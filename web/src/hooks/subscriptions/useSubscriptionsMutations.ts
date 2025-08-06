@@ -110,7 +110,20 @@ export const useSubscriptionsMutations = () => {
         }
     });
 
+    // Delete subscription mutation
+    const deleteSubscriptionMutation = useMutation({
+        mutationFn: async (subscriptionId: string) => {
+            if (!apiClient) throw new Error("API client not initialized");
+            return apiClient.subscriptions.bySubscriptionId(subscriptionId).delete();
+        },
+        onSuccess: () => {
+            // Invalidate and refetch
+            queryClient.invalidateQueries({queryKey: ['subscriptions']});
+        }
+    });
+
     return {
-        createSubscriptionMutation
+        createSubscriptionMutation,
+        deleteSubscriptionMutation
     };
 };
