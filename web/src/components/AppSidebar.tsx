@@ -28,7 +28,6 @@ import {ModeToggle} from "@/components/mode-toggle";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {Separator} from "@/components/ui/separator";
-import {Badge} from "@/components/ui/badge";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
 import {CreditCardIcon, HomeIcon, LogOutIcon, PackageIcon, TagIcon, UserIcon, UsersIcon} from "lucide-react";
 
@@ -102,11 +101,6 @@ export function AppSidebar() {
                                                 {item.icon}
                                             </div>
                                             <span>{item.label}</span>
-                                            {item.path === "/subscriptions" && (
-                                                <Badge variant="outline" className="ml-auto text-xs py-0 h-5">
-                                                    4
-                                                </Badge>
-                                            )}
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
