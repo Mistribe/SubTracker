@@ -15,12 +15,14 @@ export const OwnershipSection = ({families}: OwnershipSectionProps) => {
     const selectedOwnerType = form.watch("ownerType");
 
     return (
-        <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Ownership</h2>
+        <div className="space-y-6">
+            <div className="text-center">
+                <h2 className="text-2xl font-semibold mb-2">Who is this subscription for?</h2>
+                <p className="text-muted-foreground">The subscription is for me or a family member?</p>
+            </div>
 
-            <div>
-                <Label>Owner Type</Label>
-                <div className="mt-2">
+            <div className="max-w-md mx-auto">
+                <div className="mt-4">
                     <ToggleGroup
                         type="single"
                         defaultValue={OwnerType.Personal}
@@ -29,10 +31,10 @@ export const OwnershipSection = ({families}: OwnershipSectionProps) => {
                         variant="outline"
                         className="w-full"
                     >
-                        <ToggleGroupItem value={OwnerType.Personal} className="flex-1 justify-center">
-                            Personal
+                        <ToggleGroupItem value={OwnerType.Personal} className="flex-1 justify-center py-6">
+                            Just for me
                         </ToggleGroupItem>
-                        <ToggleGroupItem value={OwnerType.Family} className="flex-1 justify-center">
+                        <ToggleGroupItem value={OwnerType.Family} className="flex-1 justify-center py-6">
                             Family
                         </ToggleGroupItem>
                     </ToggleGroup>
@@ -40,13 +42,13 @@ export const OwnershipSection = ({families}: OwnershipSectionProps) => {
             </div>
 
             {selectedOwnerType === OwnerType.Family && (
-                <div>
-                    <Label htmlFor="familyId">Family</Label>
+                <div className="max-w-md mx-auto mt-6">
+                    <Label htmlFor="familyId" className="text-lg mb-2 block">Which family is this for?</Label>
                     <Select
                         onValueChange={(value) => form.setValue("familyId", value)}
                         value={form.watch("familyId") || ""}
                     >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-12">
                             <SelectValue placeholder="Select a family"/>
                         </SelectTrigger>
                         <SelectContent>

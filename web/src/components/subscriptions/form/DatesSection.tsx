@@ -3,11 +3,19 @@ import {Label} from "@/components/ui/label";
 import {Input} from "@/components/ui/input";
 import {format, isValid} from "date-fns";
 import type {FormValues} from "./SubscriptionFormSchema";
+import {Switch} from "@/components/ui/switch";
+import {useState, useEffect} from "react";
 
 export const DatesSection = () => {
     const form = useFormContext<FormValues>();
     const startDate = form.watch("startDate");
     const endDate = form.watch("endDate");
+    const [hasEndDate, setHasEndDate] = useState<boolean>(!!endDate);
+    
+    // Update hasEndDate state when endDate changes
+    useEffect(() => {
+        setHasEndDate(!!endDate);
+    }, [endDate]);
 
     const formatDateForInput = (date: Date | null | undefined): string => {
         if (!date) return "";
@@ -18,42 +26,74 @@ export const DatesSection = () => {
         // Check if the date is valid
         if (!isValid(dateObj)) return "";
 
+        console.log("Formatted date:", format(dateObj, "yyyy-MM-dd"));
         return format(dateObj, "yyyy-MM-dd");
     };
 
     return (
-        <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Dates</h2>
+        <div className="space-y-6">
+            <div className="text-center">
+                <h2 className="text-2xl font-semibold mb-2">When does your subscription start?</h2>
+                <p className="text-muted-foreground">Let us know the important dates for your subscription</p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <Label htmlFor="startDate">Start Date</Label>
-                    <Input
-                        id="startDate"
-                        type="date"
-                        {...form.register("startDate", {
-                            valueAsDate: true,
-                        })}
-                        value={formatDateForInput(startDate)}
-                    />
-                    {form.formState.errors.startDate && (
-                        <p className="text-sm text-red-500 mt-1">{form.formState.errors.startDate.message}</p>
-                    )}
-                </div>
+            <div className="max-w-md mx-auto mt-6">
+                <div className="grid grid-cols-1 gap-6">
+                    <div>
+                        <Label htmlFor="startDate" className="text-base mb-2 block">When did you start this
+                            subscription?</Label>
+                        <Input
+                            id="startDate"
+                            type="date"
+                            {...form.register("startDate", {
+                                valueAsDate: true,
+                            })}
+                            value={formatDateForInput(startDate)}
+                            className="h-12"
+                        />
+                        {form.formState.errors.startDate && (
+                            <p className="text-sm text-red-500 mt-1">{form.formState.errors.startDate.message}</p>
+                        )}
+                    </div>
 
-                <div>
-                    <Label htmlFor="endDate">End Date (Optional)</Label>
-                    <Input
-                        id="endDate"
-                        type="date"
-                        {...form.register("endDate", {
-                            valueAsDate: true,
-                        })}
-                        value={formatDateForInput(endDate)}
-                    />
-                    {form.formState.errors.endDate && (
-                        <p className="text-sm text-red-500 mt-1">{form.formState.errors.endDate.message}</p>
-                    )}
+                    <div>
+                        <div className="flex items-center justify-between mb-2">
+                            <Label htmlFor="hasEndDate" className="text-base">Does your subscription have an end date?</Label>
+                            <Switch 
+                                id="hasEndDate" 
+                                checked={hasEndDate} 
+                                onCheckedChange={(checked) => {
+                                    setHasEndDate(checked);
+                                    if (!checked) {
+                                        form.setValue("endDate", undefined);
+                                    }
+                                }}
+                            />
+                        </div>
+                        
+                        {hasEndDate && (
+                            <>
+                                <Input
+                                    id="endDate"
+                                    type="date"
+                                    {...form.register("endDate", {
+                                        valueAsDate: true,
+                                    })}
+                                    value={formatDateForInput(endDate)}
+                                    className="h-12"
+                                />
+                                {form.formState.errors.endDate && (
+                                    <p className="text-sm text-red-500 mt-1">{form.formState.errors.endDate.message}</p>
+                                )}
+                            </>
+                        )}
+                        
+                        <p className="text-xs text-muted-foreground mt-1">
+                            {hasEndDate 
+                                ? "Select the end date of your subscription" 
+                                : "Your subscription doesn't have a specific end date"}
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

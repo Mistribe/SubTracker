@@ -15,9 +15,7 @@ interface BasicInformationSectionProps {
 export const BasicInformationSection = ({providers}: BasicInformationSectionProps) => {
     const form = useFormContext<FormValues>();
     
-    // Use formState to trigger re-renders when values change
-    // This is more efficient than using multiple watch calls
-    const { dirtyFields } = form.formState;
+    // We'll use direct form values and watches for specific fields
     
     // Get the current values without setting up watchers
     const providerId = form.getValues("providerId");
@@ -49,67 +47,74 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
     }, [watchedPlanId]);
 
     return (
-        <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Basic Information</h2>
+        <div className="space-y-6">
+            <div className="text-center">
+                <h2 className="text-2xl font-semibold mb-2">Tell us about your subscription</h2>
+                <p className="text-muted-foreground">Let's start with the basic details of your subscription</p>
+            </div>
 
-            <div className="grid grid-cols-1 gap-4">
-                <div>
-                    <Label htmlFor="friendlyName">Friendly Name (Optional)</Label>
-                    <Input
-                        id="friendlyName"
-                        {...form.register("friendlyName")}
-                        placeholder="e.g., Netflix Family Plan"
-                    />
-                    {form.formState.errors.friendlyName && (
-                        <p className="text-sm text-red-500 mt-1">{form.formState.errors.friendlyName.message}</p>
-                    )}
-                </div>
-
-                <div>
-                    <Label htmlFor="providerId">Provider</Label>
-                    <ProviderCombobox
-                        providers={providers}
-                        value={form.getValues("providerId") || ""}
-                        onChange={(value) => form.setValue("providerId", value)}
-                        placeholder="Select a provider"
-                        emptyMessage="No provider found. Try a different search."
-                    />
-                    {form.formState.errors.providerId && (
-                        <p className="text-sm text-red-500 mt-1">{form.formState.errors.providerId.message}</p>
-                    )}
-                </div>
-
-                {selectedProvider && selectedProvider.plans.length > 0 && (
+            <div className="max-w-md mx-auto mt-6">
+                <div className="grid grid-cols-1 gap-6">
                     <div>
-                        <Label htmlFor="planId">Plan</Label>
-                        <PlanCombobox
-                            plans={selectedProvider.plans}
-                            value={form.getValues("planId") || ""}
-                            onChange={(value) => form.setValue("planId", value)}
-                            placeholder="Select a plan"
-                            emptyMessage="No plan found. Try a different search."
+                        <Label htmlFor="friendlyName" className="text-base mb-2 block">What would you like to call this subscription?</Label>
+                        <Input
+                            id="friendlyName"
+                            {...form.register("friendlyName")}
+                            placeholder="e.g., Netflix Family Plan"
+                            className="h-12"
                         />
-                        {form.formState.errors.planId && (
-                            <p className="text-sm text-red-500 mt-1">{form.formState.errors.planId.message}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Optional: Give your subscription a friendly name to easily identify it</p>
+                        {form.formState.errors.friendlyName && (
+                            <p className="text-sm text-red-500 mt-1">{form.formState.errors.friendlyName.message}</p>
                         )}
                     </div>
-                )}
 
-                {selectedPlan && selectedPlan.prices.length > 0 && (
                     <div>
-                        <Label htmlFor="priceId">Price</Label>
-                        <PriceCombobox
-                            prices={selectedPlan.prices}
-                            value={form.getValues("priceId") || ""}
-                            onChange={(value) => form.setValue("priceId", value)}
-                            placeholder="Select a price"
-                            emptyMessage="No price found. Try a different search."
+                        <Label htmlFor="providerId" className="text-base mb-2 block">Which service provider is this for?</Label>
+                        <ProviderCombobox
+                            providers={providers}
+                            value={form.getValues("providerId") || ""}
+                            onChange={(value) => form.setValue("providerId", value)}
+                            placeholder="Select a provider"
+                            emptyMessage="No provider found. Try a different search."
                         />
-                        {form.formState.errors.priceId && (
-                            <p className="text-sm text-red-500 mt-1">{form.formState.errors.priceId.message}</p>
+                        {form.formState.errors.providerId && (
+                            <p className="text-sm text-red-500 mt-1">{form.formState.errors.providerId.message}</p>
                         )}
                     </div>
-                )}
+
+                    {selectedProvider && selectedProvider.plans.length > 0 && (
+                        <div>
+                            <Label htmlFor="planId" className="text-base mb-2 block">Which plan are you subscribing to?</Label>
+                            <PlanCombobox
+                                plans={selectedProvider.plans}
+                                value={form.getValues("planId") || ""}
+                                onChange={(value) => form.setValue("planId", value)}
+                                placeholder="Select a plan"
+                                emptyMessage="No plan found. Try a different search."
+                            />
+                            {form.formState.errors.planId && (
+                                <p className="text-sm text-red-500 mt-1">{form.formState.errors.planId.message}</p>
+                            )}
+                        </div>
+                    )}
+
+                    {selectedPlan && selectedPlan.prices.length > 0 && (
+                        <div>
+                            <Label htmlFor="priceId" className="text-base mb-2 block">Which pricing option did you select?</Label>
+                            <PriceCombobox
+                                prices={selectedPlan.prices}
+                                value={form.getValues("priceId") || ""}
+                                onChange={(value) => form.setValue("priceId", value)}
+                                placeholder="Select a price"
+                                emptyMessage="No price found. Try a different search."
+                            />
+                            {form.formState.errors.priceId && (
+                                <p className="text-sm text-red-500 mt-1">{form.formState.errors.priceId.message}</p>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

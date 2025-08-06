@@ -9,7 +9,7 @@ import {useAllSubscriptionsQuery} from "@/hooks/subscriptions/useAllSubscription
 import {PageHeader} from "@/components/ui/page-header";
 import {Button} from "@/components/ui/button";
 import {Alert, AlertDescription} from "@/components/ui/alert";
-import {AlertCircle, Loader2} from "lucide-react";
+import {AlertCircle, ChevronLeft, ChevronRight, Loader2} from "lucide-react";
 import {OwnerType} from "@/models/ownerType";
 import {convertToDays, formSchema, type FormValues} from "@/components/subscriptions/form/SubscriptionFormSchema";
 import {BasicInformationSection} from "@/components/subscriptions/form/BasicInformationSection";
@@ -25,6 +25,7 @@ const SubscriptionFormPage = () => {
     const {subscriptionId} = useParams<{ subscriptionId: string }>();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [currentStep, setCurrentStep] = useState(0);
     const {createSubscriptionMutation, updateSubscriptionMutation} = useSubscriptionsMutations();
     const {data: providersData} = useAllProvidersQuery();
     const {data: familiesData} = useFamiliesQuery({limit: 100});
@@ -38,6 +39,16 @@ const SubscriptionFormPage = () => {
     const subscriptionToEdit = isEditMode
         ? subscriptionsData?.pages.flatMap(page => page.subscriptions).find(sub => sub.id === subscriptionId)
         : undefined;
+        
+    // Define the steps for the wizard
+    const steps = [
+        { title: "Basic Information", component: BasicInformationSection },
+        { title: "Recurrency", component: RecurrencySection },
+        { title: "Dates", component: DatesSection },
+        { title: "Ownership", component: OwnershipSection },
+        { title: "Custom Price", component: CustomPriceSection },
+        { title: "Free Trial", component: FreeTrialSection },
+    ];
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -201,26 +212,85 @@ const SubscriptionFormPage = () => {
                 )}
                 <FormProvider {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                        {/* Form Sections */}
-                        <BasicInformationSection providers={providers}/>
-                        <RecurrencySection/>
-                        <DatesSection/>
-                        <OwnershipSection families={families}/>
-                        <CustomPriceSection/>
-                        <FreeTrialSection/>
+                        {/* Step Indicator */}
+                        <div className="mb-6">
+                            <div className="flex justify-between items-center mb-2">
+                                {steps.map((step, index) => (
+                                    <div 
+                                        key={index} 
+                                        className={`flex flex-col items-center ${
+                                            index === currentStep 
+                                                ? "text-primary font-medium" 
+                                                : index < currentStep 
+                                                    ? "text-primary/70" 
+                                                    : "text-muted-foreground"
+                                        }`}
+                                    >
+                                        <div 
+                                            className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${
+                                                index === currentStep 
+                                                    ? "bg-primary text-primary-foreground" 
+                                                    : index < currentStep 
+                                                        ? "bg-primary/20 text-primary" 
+                                                        : "bg-muted text-muted-foreground"
+                                            }`}
+                                        >
+                                            {index + 1}
+                                        </div>
+                                        <span className="text-xs">{step.title}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="w-full bg-muted h-1 rounded-full overflow-hidden">
+                                <div 
+                                    className="bg-primary h-full transition-all duration-300 ease-in-out" 
+                                    style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+                                />
+                            </div>
+                        </div>
 
-                        {/* Submit Button */}
-                        <div className="flex justify-end">
-                            <Button type="submit" disabled={form.formState.isSubmitting}>
-                                {form.formState.isSubmitting ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-                                        {isEditMode ? "Updating..." : "Creating..."}
-                                    </>
-                                ) : (
-                                    isEditMode ? "Update Subscription" : "Create Subscription"
-                                )}
+                        {/* Current Step Component */}
+                        <div className="py-4">
+                            {currentStep === 0 && <BasicInformationSection providers={providers}/>}
+                            {currentStep === 1 && <RecurrencySection/>}
+                            {currentStep === 2 && <DatesSection/>}
+                            {currentStep === 3 && <OwnershipSection families={families}/>}
+                            {currentStep === 4 && <CustomPriceSection/>}
+                            {currentStep === 5 && <FreeTrialSection/>}
+                        </div>
+
+                        {/* Navigation Buttons */}
+                        <div className="flex justify-between pt-4">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
+                                disabled={currentStep === 0}
+                            >
+                                <ChevronLeft className="mr-2 h-4 w-4" />
+                                Previous
                             </Button>
+                            
+                            {currentStep < steps.length - 1 ? (
+                                <Button
+                                    type="button"
+                                    onClick={() => setCurrentStep(prev => Math.min(steps.length - 1, prev + 1))}
+                                >
+                                    Next
+                                    <ChevronRight className="ml-2 h-4 w-4" />
+                                </Button>
+                            ) : (
+                                <Button type="submit" disabled={form.formState.isSubmitting}>
+                                    {form.formState.isSubmitting ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                                            {isEditMode ? "Updating..." : "Creating..."}
+                                        </>
+                                    ) : (
+                                        isEditMode ? "Update Subscription" : "Create Subscription"
+                                    )}
+                                </Button>
+                            )}
                         </div>
                     </form>
                 </FormProvider>
