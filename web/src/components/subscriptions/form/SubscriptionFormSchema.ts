@@ -6,8 +6,8 @@ import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency";
 export const formSchema = z.object({
     friendlyName: z.string().optional(),
     providerId: z.string().min(1, "Provider is required"),
-    planId: z.string().min(1, "Plan is required"),
-    priceId: z.string().min(1, "Price is required"),
+    planId: z.string().optional(),
+    priceId: z.string().optional(),
     recurrency: z.enum(SubscriptionRecurrency),
     customRecurrencyValue: z.number().positive("Value must be positive").optional(),
     customRecurrencyUnit: z.enum(["days", "months", "years"]).optional(),

@@ -38,14 +38,14 @@ const SubscriptionFormPage = () => {
     const subscriptionToEdit = isEditMode
         ? subscriptionsData?.pages.flatMap(page => page.subscriptions).find(sub => sub.id === subscriptionId)
         : undefined;
-        
+
     // Define the steps for the wizard
     const steps = [
-        { title: "Basic Information", component: BasicInformationSection },
-        { title: "Recurrency", component: RecurrencySection },
-        { title: "Dates", component: DatesSection },
-        { title: "Ownership", component: OwnershipSection },
-        { title: "Free Trial", component: FreeTrialSection },
+        {title: "Basic Information", component: BasicInformationSection},
+        {title: "Recurrency", component: RecurrencySection},
+        {title: "Dates", component: DatesSection},
+        {title: "Ownership", component: OwnershipSection},
+        {title: "Free Trial", component: FreeTrialSection},
     ];
 
     const form = useForm<FormValues>({
@@ -209,28 +209,74 @@ const SubscriptionFormPage = () => {
                     </Alert>
                 )}
                 <FormProvider {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                        // Identify which section contains errors and redirect to that section
+                        const errorFields = Object.keys(errors);
+                        
+                        // Map fields to their respective sections
+                        const fieldToSectionMap: Record<string, number> = {
+                            // Basic Information (Section 0)
+                            'providerId': 0,
+                            'planId': 0,
+                            'priceId': 0,
+                            'friendlyName': 0,
+                            
+                            // Recurrency (Section 1)
+                            'recurrency': 1,
+                            'customRecurrencyValue': 1,
+                            'customRecurrencyUnit': 1,
+                            
+                            // Dates (Section 2)
+                            'startDate': 2,
+                            'endDate': 2,
+                            
+                            // Ownership (Section 3)
+                            'ownerType': 3,
+                            'familyId': 3,
+                            'serviceUsers': 3,
+                            
+                            // Free Trial (Section 4)
+                            'hasFreeTrialPeriod': 4,
+                            'freeTrialStartDate': 4,
+                            'freeTrialEndDate': 4,
+                        };
+                        
+                        // Find the earliest section with errors
+                        let earliestSectionWithError = steps.length - 1;
+                        for (const field of errorFields) {
+                            const sectionIndex = fieldToSectionMap[field];
+                            if (sectionIndex !== undefined && sectionIndex < earliestSectionWithError) {
+                                earliestSectionWithError = sectionIndex;
+                            }
+                        }
+                        
+                        // Set the current step to the section with errors
+                        setCurrentStep(earliestSectionWithError);
+                        
+                        // Set a general error message
+                        setError("Please correct the errors in the form before submitting.");
+                    })} className="space-y-6">
                         {/* Step Indicator */}
                         <div className="mb-6">
                             <div className="flex justify-between items-center mb-2">
                                 {steps.map((step, index) => (
-                                    <div 
-                                        key={index} 
+                                    <div
+                                        key={index}
                                         className={`flex flex-col items-center cursor-pointer ${
-                                            index === currentStep 
-                                                ? "text-primary font-medium" 
-                                                : index < currentStep 
-                                                    ? "text-primary/70" 
+                                            index === currentStep
+                                                ? "text-primary font-medium"
+                                                : index < currentStep
+                                                    ? "text-primary/70"
                                                     : "text-muted-foreground"
                                         }`}
                                         onClick={() => setCurrentStep(index)}
                                     >
-                                        <div 
+                                        <div
                                             className={`w-8 h-8 rounded-full flex items-center justify-center mb-1 ${
-                                                index === currentStep 
-                                                    ? "bg-primary text-primary-foreground" 
-                                                    : index < currentStep 
-                                                        ? "bg-primary/20 text-primary" 
+                                                index === currentStep
+                                                    ? "bg-primary text-primary-foreground"
+                                                    : index < currentStep
+                                                        ? "bg-primary/20 text-primary"
                                                         : "bg-muted text-muted-foreground"
                                             }`}
                                         >
@@ -241,9 +287,9 @@ const SubscriptionFormPage = () => {
                                 ))}
                             </div>
                             <div className="w-full bg-muted h-1 rounded-full overflow-hidden">
-                                <div 
-                                    className="bg-primary h-full transition-all duration-300 ease-in-out" 
-                                    style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+                                <div
+                                    className="bg-primary h-full transition-all duration-300 ease-in-out"
+                                    style={{width: `${((currentStep + 1) / steps.length) * 100}%`}}
                                 />
                             </div>
                         </div>
@@ -265,20 +311,74 @@ const SubscriptionFormPage = () => {
                                 onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
                                 disabled={currentStep === 0}
                             >
-                                <ChevronLeft className="mr-2 h-4 w-4" />
+                                <ChevronLeft className="mr-2 h-4 w-4"/>
                                 Previous
                             </Button>
-                            
+
                             {currentStep < steps.length - 1 ? (
                                 <Button
                                     type="button"
-                                    onClick={() => setCurrentStep(prev => Math.min(steps.length - 1, prev + 1))}
+                                    onClick={async () => {
+                                        // Validate current step fields before proceeding
+                                        let isValid = true;
+                                        
+                                        // Step 0: Basic Information
+                                        if (currentStep === 0) {
+                                            const result = await form.trigger(['providerId']);
+                                            isValid = result;
+                                        }
+                                        // Step 1: Recurrency
+                                        else if (currentStep === 1) {
+                                            const result = await form.trigger(['recurrency']);
+                                            isValid = result;
+                                            
+                                            // If custom recurrency, validate custom fields
+                                            if (form.getValues('recurrency') === 'custom') {
+                                                const customResult = await form.trigger(['customRecurrencyValue', 'customRecurrencyUnit']);
+                                                isValid = isValid && customResult;
+                                            }
+                                        }
+                                        // Step 2: Dates
+                                        else if (currentStep === 2) {
+                                            const result = await form.trigger(['startDate']);
+                                            isValid = result;
+                                        }
+                                        // Step 3: Ownership
+                                        else if (currentStep === 3) {
+                                            const result = await form.trigger(['ownerType']);
+                                            isValid = result;
+                                            
+                                            // If family ownership, validate family ID
+                                            if (form.getValues('ownerType') === 'family') {
+                                                const familyResult = await form.trigger(['familyId']);
+                                                isValid = isValid && familyResult;
+                                            }
+                                        }
+                                        // Step 4: Free Trial
+                                        else if (currentStep === 4) {
+                                            const result = await form.trigger(['hasFreeTrialPeriod']);
+                                            isValid = result;
+                                            
+                                            // If has free trial period, validate start and end dates
+                                            if (form.getValues('hasFreeTrialPeriod')) {
+                                                const trialResult = await form.trigger(['freeTrialStartDate', 'freeTrialEndDate']);
+                                                isValid = isValid && trialResult;
+                                            }
+                                        }
+                                        
+                                        if (isValid) {
+                                            setCurrentStep(prev => Math.min(steps.length - 1, prev + 1));
+                                        }
+                                    }}
                                 >
                                     Next
-                                    <ChevronRight className="ml-2 h-4 w-4" />
+                                    <ChevronRight className="ml-2 h-4 w-4"/>
                                 </Button>
                             ) : (
-                                <Button type="submit" disabled={form.formState.isSubmitting}>
+                                <Button 
+                                    type="submit" 
+                                    disabled={form.formState.isSubmitting}
+                                >
                                     {form.formState.isSubmitting ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
