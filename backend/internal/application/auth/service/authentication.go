@@ -10,10 +10,16 @@ import (
 
 type AuthenticationService struct {
 	authenticationRepository auth.Repository
+	kinde                    KindeService
 }
 
-func NewAuthenticationService(authenticationRepository auth.Repository) auth.Service {
-	return &AuthenticationService{authenticationRepository: authenticationRepository}
+func NewAuthenticationService(
+	authenticationRepository auth.Repository,
+	kinde KindeService) auth.Service {
+	return &AuthenticationService{
+		authenticationRepository: authenticationRepository,
+		kinde:                    kinde,
+	}
 }
 
 func (s AuthenticationService) MustGetUserId(ctx context.Context) string {

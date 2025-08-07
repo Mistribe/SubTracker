@@ -12,6 +12,14 @@ openapi:
 	cd ../scripts &&\
 	./http-client-gen.sh
 
+kinde:
+	@docker run --rm \
+    -v ${PWD}:/local openapitools/openapi-generator-cli generate \
+    -i /local/internal/infrastructure/kinde/kinde-management-api.yaml \
+    -g go \
+    -o /local/internal/infrastructure/kinde/api
+
+
 sqlcg:
 	@sqlc generate
 

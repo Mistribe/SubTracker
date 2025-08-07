@@ -20,6 +20,7 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/provider"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
+	"github.com/oleexo/subtracker/internal/infrastructure/kinde"
 )
 
 func AsCommandHandler[TCommand core.Command, TResult any](f any) any {
