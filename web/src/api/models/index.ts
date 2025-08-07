@@ -501,6 +501,15 @@ export function createUpdatePlanModelFromDiscriminatorValue(parseNode: ParseNode
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {UpdatePreferredCurrencyModel}
+ */
+// @ts-ignore
+export function createUpdatePreferredCurrencyModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoUpdatePreferredCurrencyModel;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
  * @returns {UpdatePriceModel}
  */
 // @ts-ignore
@@ -537,11 +546,11 @@ export function createUpdateSubscriptionModelFromDiscriminatorValue(parseNode: P
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
- * @returns {UserProfileModel}
+ * @returns {UserPreferredCurrencyModel}
  */
 // @ts-ignore
-export function createUserProfileModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
-    return deserializeIntoUserProfileModel;
+export function createUserPreferredCurrencyModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoUserPreferredCurrencyModel;
 }
 /**
  * The deserialization information for the current model
@@ -1044,6 +1053,17 @@ export function deserializeIntoUpdatePlanModel(updatePlanModel: Partial<UpdatePl
 }
 /**
  * The deserialization information for the current model
+ * @param UpdatePreferredCurrencyModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoUpdatePreferredCurrencyModel(updatePreferredCurrencyModel: Partial<UpdatePreferredCurrencyModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "currency": n => { updatePreferredCurrencyModel.currency = n.getStringValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
  * @param UpdatePriceModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
@@ -1065,7 +1085,8 @@ export function deserializeIntoUpdatePriceModel(updatePriceModel: Partial<Update
 // @ts-ignore
 export function deserializeIntoUpdateProfileModel(updateProfileModel: Partial<UpdateProfileModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "currency": n => { updateProfileModel.currency = n.getStringValue(); },
+        "family_name": n => { updateProfileModel.familyName = n.getStringValue(); },
+        "given_name": n => { updateProfileModel.givenName = n.getStringValue(); },
     }
 }
 /**
@@ -1111,13 +1132,13 @@ export function deserializeIntoUpdateSubscriptionModel(updateSubscriptionModel: 
 }
 /**
  * The deserialization information for the current model
- * @param UserProfileModel The instance to deserialize into.
+ * @param UserPreferredCurrencyModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
-export function deserializeIntoUserProfileModel(userProfileModel: Partial<UserProfileModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+export function deserializeIntoUserPreferredCurrencyModel(userPreferredCurrencyModel: Partial<UserPreferredCurrencyModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "currency": n => { userProfileModel.currency = n.getStringValue(); },
+        "currency": n => { userPreferredCurrencyModel.currency = n.getStringValue(); },
     }
 }
 export interface EditableOwnerModel extends AdditionalDataHolder, Parsable {
@@ -2107,6 +2128,18 @@ export function serializeUpdatePlanModel(writer: SerializationWriter, updatePlan
 /**
  * Serializes information the current object
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param UpdatePreferredCurrencyModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeUpdatePreferredCurrencyModel(writer: SerializationWriter, updatePreferredCurrencyModel: Partial<UpdatePreferredCurrencyModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!updatePreferredCurrencyModel || isSerializingDerivedType) { return; }
+    writer.writeStringValue("currency", updatePreferredCurrencyModel.currency);
+    writer.writeAdditionalData(updatePreferredCurrencyModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param UpdatePriceModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
@@ -2129,7 +2162,8 @@ export function serializeUpdatePriceModel(writer: SerializationWriter, updatePri
 // @ts-ignore
 export function serializeUpdateProfileModel(writer: SerializationWriter, updateProfileModel: Partial<UpdateProfileModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!updateProfileModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("currency", updateProfileModel.currency);
+    writer.writeStringValue("family_name", updateProfileModel.familyName);
+    writer.writeStringValue("given_name", updateProfileModel.givenName);
     writer.writeAdditionalData(updateProfileModel.additionalData);
 }
 /**
@@ -2178,14 +2212,14 @@ export function serializeUpdateSubscriptionModel(writer: SerializationWriter, up
 /**
  * Serializes information the current object
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param UserProfileModel The instance to serialize from.
+ * @param UserPreferredCurrencyModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeUserProfileModel(writer: SerializationWriter, userProfileModel: Partial<UserProfileModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!userProfileModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("currency", userProfileModel.currency);
-    writer.writeAdditionalData(userProfileModel.additionalData);
+export function serializeUserPreferredCurrencyModel(writer: SerializationWriter, userPreferredCurrencyModel: Partial<UserPreferredCurrencyModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!userPreferredCurrencyModel || isSerializingDerivedType) { return; }
+    writer.writeStringValue("currency", userPreferredCurrencyModel.currency);
+    writer.writeAdditionalData(userPreferredCurrencyModel.additionalData);
 }
 export interface SubscriptionCustomPriceModel extends AdditionalDataHolder, Parsable {
     /**
@@ -2359,6 +2393,12 @@ export interface UpdatePlanModel extends AdditionalDataHolder, Parsable {
      */
     updateAt?: string | null;
 }
+export interface UpdatePreferredCurrencyModel extends AdditionalDataHolder, Parsable {
+    /**
+     * The currency property
+     */
+    currency?: string | null;
+}
 export interface UpdatePriceModel extends AdditionalDataHolder, Parsable {
     /**
      * The amount property
@@ -2383,9 +2423,13 @@ export interface UpdatePriceModel extends AdditionalDataHolder, Parsable {
 }
 export interface UpdateProfileModel extends AdditionalDataHolder, Parsable {
     /**
-     * The currency property
+     * The family_name property
      */
-    currency?: string | null;
+    familyName?: string | null;
+    /**
+     * The given_name property
+     */
+    givenName?: string | null;
 }
 export interface UpdateProviderModel extends AdditionalDataHolder, Parsable {
     /**
@@ -2475,7 +2519,7 @@ export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable 
      */
     updatedAt?: Date | null;
 }
-export interface UserProfileModel extends AdditionalDataHolder, Parsable {
+export interface UserPreferredCurrencyModel extends AdditionalDataHolder, Parsable {
     /**
      * The currency property
      */

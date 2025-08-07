@@ -1,78 +1,106 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useApiClient } from "@/hooks/use-api-client";
-import { UpdateProfileModel } from "@/api/models";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {useApiClient} from "@/hooks/use-api-client";
+import {type UpdatePreferredCurrencyModel, type UpdateProfileModel} from "@/api/models";
 
 interface ProfileQueryOptions {
-  /**
-   * Whether the query should be enabled (default: true)
-   */
-  enabled?: boolean;
+    /**
+     * Whether the query should be enabled (default: true)
+     */
+    enabled?: boolean;
 }
 
 /**
  * Hook for managing user profile data
  * Provides functions to fetch and update profile information
- * 
+ *
  * @param options - Options for the profile query
  * @returns Object containing profile data, loading states, and update functions
  */
 export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
-  const { enabled = true } = options;
-  const { apiClient } = useApiClient();
-  const queryClient = useQueryClient();
+    const {enabled = true} = options;
+    const {apiClient} = useApiClient();
+    const queryClient = useQueryClient();
 
-  // Query to fetch profile data from the backend
-  const profileQuery = useQuery({
-    queryKey: ['profile'],
-    queryFn: async () => {
-      if (!apiClient) {
-        throw new Error('API client not initialized');
-      }
+    // Query to fetch preferred currency from the backend
+    const preferredCurrencyQuery = useQuery({
+        queryKey: ['preferredCurrency'],
+        queryFn: async () => {
+            if (!apiClient) {
+                throw new Error('API client not initialized');
+            }
 
-      try {
-        const result = await apiClient.users.profile.get();
-        return result;
-      } catch (error) {
-        console.error('Error fetching profile data:', error);
-        throw error;
-      }
-    },
-    enabled: !!apiClient && enabled,
-    // Don't refetch on window focus to avoid unnecessary API calls
-    refetchOnWindowFocus: false,
-  });
+            try {
+                return await apiClient.users.preferred.currency.get();
+            } catch (error) {
+                console.error('Error fetching preferred currency:', error);
+                throw error;
+            }
+        },
+        enabled: !!apiClient && enabled,
+        // Don't refetch on window focus to avoid unnecessary API calls
+        refetchOnWindowFocus: false,
+    });
 
-  // Mutation to update profile data, specifically the preferred currency
-  const updateProfileMutation = useMutation({
-    mutationFn: async (currency: string) => {
-      if (!apiClient) {
-        throw new Error('API client not initialized');
-      }
+    // Mutation to update profile data, specifically the preferred currency
+    const updateProfileMutation = useMutation({
+        mutationFn: async (currency: string) => {
+            if (!apiClient) {
+                throw new Error('API client not initialized');
+            }
 
-      try {
-        const payload: UpdateProfileModel = {
-          currency,
-          additionalData: {}
-        };
+            try {
+                const payload: UpdatePreferredCurrencyModel = {
+                    currency,
+                    additionalData: {}
+                };
 
-        return await apiClient.users.profile.put(payload);
-      } catch (error) {
-        console.error('Error updating profile:', error);
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      // Invalidate and refetch profile data to ensure UI is up-to-date
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-    }
-  });
+                return await apiClient.users.preferred.currency.put(payload);
+            } catch (error) {
+                console.error('Error updating preferred currency:', error);
+                throw error;
+            }
+        },
+        onSuccess: async () => {
+            // Invalidate and refetch profile and preferred currency data to ensure the UI is up to date
+            await queryClient.invalidateQueries({queryKey: ['profile']});
+            await queryClient.invalidateQueries({queryKey: ['preferredCurrency']});
+        }
+    });
 
-  return {
-    profile: profileQuery.data,
-    isLoading: profileQuery.isLoading,
-    isError: profileQuery.isError,
-    error: profileQuery.error,
-    updateProfile: updateProfileMutation.mutate,
-    isUpdating: updateProfileMutation.isPending
-  };
+    // Mutation to update the user profile name (given name and family name)
+    const updateProfileNameMutation = useMutation({
+        mutationFn: async ({givenName, familyName}: { givenName: string; familyName: string }) => {
+            if (!apiClient) {
+                throw new Error('API client not initialized');
+            }
+
+            try {
+                const payload: UpdateProfileModel = {
+                    givenName,
+                    familyName,
+                    additionalData: {}
+                };
+
+                return await apiClient.users.profile.put(payload);
+            } catch (error) {
+                console.error('Error updating profile name:', error);
+                throw error;
+            }
+        },
+        onSuccess: async () => {
+            // Invalidate and refetch profile data to ensure the UI is up to date
+            await queryClient.invalidateQueries({queryKey: ['profile']});
+        }
+    });
+
+    return {
+        preferredCurrency: preferredCurrencyQuery.data,
+        isLoadingPreferredCurrency: preferredCurrencyQuery.isLoading,
+        isErrorPreferredCurrency: preferredCurrencyQuery.isError,
+        errorPreferredCurrency: preferredCurrencyQuery.error,
+        updateProfile: updateProfileMutation.mutate,
+        updateProfileName: (givenName: string, familyName: string) =>
+            updateProfileNameMutation.mutate({givenName, familyName}),
+        isUpdating: updateProfileMutation.isPending || updateProfileNameMutation.isPending
+    };
 };
