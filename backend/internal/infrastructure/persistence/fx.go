@@ -18,7 +18,7 @@ func BuildPersistenceModule() fx.Option {
 			NewFamilyRepository,
 			NewLabelRepository,
 			NewProviderRepository,
-			NewAuthenticationRepository,
+			NewUserRepository,
 			//startup.AsStartupTask(newLabelTask),
 			//startup.AsStartupTask(newRepositoryTask),
 		),

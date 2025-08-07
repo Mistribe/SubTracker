@@ -2,9 +2,8 @@ package application
 
 import (
 	"go.uber.org/fx"
+	"golang.org/x/text/currency"
 
-	authCommand "github.com/oleexo/subtracker/internal/application/auth/command"
-	authQuery "github.com/oleexo/subtracker/internal/application/auth/query"
 	"github.com/oleexo/subtracker/internal/application/auth/service"
 	"github.com/oleexo/subtracker/internal/application/core"
 	fmlyCommand "github.com/oleexo/subtracker/internal/application/family/command"
@@ -15,12 +14,13 @@ import (
 	proQuery "github.com/oleexo/subtracker/internal/application/provider/query"
 	subCommand "github.com/oleexo/subtracker/internal/application/subscription/command"
 	subQuery "github.com/oleexo/subtracker/internal/application/subscription/query"
-	"github.com/oleexo/subtracker/internal/domain/auth"
+	usrCommand "github.com/oleexo/subtracker/internal/application/user/command"
+	usrQuery "github.com/oleexo/subtracker/internal/application/user/query"
 	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/provider"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/internal/infrastructure/kinde"
+	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
 func AsCommandHandler[TCommand core.Command, TResult any](f any) any {
@@ -39,8 +39,9 @@ func BuildApplicationModule() fx.Option {
 	return fx.Module("application",
 		fx.Provide(
 			service.NewAuthenticationService,
-			AsQueryHandler[authQuery.FindProfileQuery, auth.UserProfile](authQuery.NewFindProfileQueryHandler),
-			AsCommandHandler[authCommand.UpdateProfileCommand, auth.UserProfile](authCommand.NewUpdateProfileCommandHandler),
+
+			AsQueryHandler[usrQuery.FindPreferredCurrencyQuery, currency.Unit](usrQuery.NewFindPreferredCurrencyQueryHandler),
+			AsCommandHandler[usrCommand.UpdatePreferredCurrencyCommand, user.Profile](usrCommand.NewUpdatePreferredCurrencyCommandHandler),
 
 			AsQueryHandler[proQuery.FindOneQuery, provider.Provider](proQuery.NewFindOneQueryHandler),
 			AsQueryHandler[proQuery.FindAllQuery, core.PaginatedResponse[provider.Provider]](proQuery.NewFindAllQueryHandler),

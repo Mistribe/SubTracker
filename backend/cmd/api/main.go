@@ -42,7 +42,7 @@ func main() {
 		startup.BuildStartupModule(),
 		system.NewUpdaterModule(),
 		fx.Provide(
-			kinde.NewClient,
+			kinde.NewTokenGenerator,
 		),
 	)
 

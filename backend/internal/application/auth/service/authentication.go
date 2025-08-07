@@ -6,19 +6,20 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
+	"github.com/oleexo/subtracker/internal/infrastructure/kinde"
 )
 
 type AuthenticationService struct {
 	authenticationRepository auth.Repository
-	kinde                    KindeService
+	kindeToken               kinde.TokenGenerator
 }
 
 func NewAuthenticationService(
 	authenticationRepository auth.Repository,
-	kinde KindeService) auth.Service {
+	kindeToken kinde.TokenGenerator) auth.Service {
 	return &AuthenticationService{
 		authenticationRepository: authenticationRepository,
-		kinde:                    kinde,
+		kindeToken:               kindeToken,
 	}
 }
 

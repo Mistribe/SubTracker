@@ -13,11 +13,13 @@ openapi:
 	./http-client-gen.sh
 
 kinde:
+	@rm -fr ./internal/infrastructure/kinde/gen
 	@docker run --rm \
     -v ${PWD}:/local openapitools/openapi-generator-cli generate \
     -i /local/internal/infrastructure/kinde/kinde-management-api.yaml \
     -g go \
-    -o /local/internal/infrastructure/kinde/api
+    --additional-properties=withGoMod=false \
+    -o /local/internal/infrastructure/kinde/gen
 
 
 sqlcg:

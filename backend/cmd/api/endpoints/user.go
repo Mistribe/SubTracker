@@ -5,7 +5,7 @@ import (
 
 	"github.com/oleexo/subtracker/cmd/api/ginfx"
 	"github.com/oleexo/subtracker/cmd/api/middlewares"
-	"github.com/oleexo/subtracker/internal/domain/auth"
+	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
 type UserEndpointGroup struct {
@@ -14,8 +14,8 @@ type UserEndpointGroup struct {
 }
 
 func NewUserEndpointGroup(
-	profileEndpoint *UserGetProfileEndpoint,
-	updateProfileEndpoint *UserUpdateProfileEndpoint,
+	profileEndpoint *UserGetPreferredCurrencyEndpoint,
+	updateProfileEndpoint *UserUpdatePreferredCurrencyEndpoint,
 	authenticationMiddleware *middlewares.AuthenticationMiddleware) *UserEndpointGroup {
 	return &UserEndpointGroup{
 		routes: []ginfx.Route{
@@ -44,7 +44,7 @@ type UserProfileModel struct {
 	Currency string `json:"currency"`
 }
 
-func newUserProfileModel(source auth.UserProfile) UserProfileModel {
+func newUserProfileModel(source user.Profile) UserProfileModel {
 	return UserProfileModel{
 		Currency: source.Currency().String(),
 	}

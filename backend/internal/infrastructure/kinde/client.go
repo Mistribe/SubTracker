@@ -11,11 +11,36 @@ import (
 	"strings"
 
 	"github.com/Oleexo/config-go"
+
+	openapi "github.com/oleexo/subtracker/internal/infrastructure/kinde/gen"
 )
 
-type Client interface {
-	GetToken(ctx context.Context) (string, error)
-	UpdateUser(ctx context.Context, givenName, familyName, email string) error
+type TokenGenerator interface {
+	GetToken() (string, error)
+	GetClient() *openapi.APIClient
+}
+
+func MakeRequest[TOut any](
+	generator TokenGenerator,
+	call func(ctx context.Context, client *openapi.APIClient) (TOut, *http.Response, error)) (TOut, error) {
+	client := generator.GetClient()
+	ctx := context.Background()
+	token, err := generator.GetToken()
+	if err != nil {
+		var rOut TOut
+		return rOut, err
+	}
+
+	ctx = context.WithValue(ctx, openapi.ContextAccessToken, token)
+
+	out, httpResp, err := call(ctx, client)
+	if err != nil {
+		var rOut TOut
+		return rOut, err
+	}
+	defer httpResp.Body.Close()
+
+	return out, nil
 }
 
 type kindeService struct {
@@ -32,7 +57,25 @@ type TokenResponse struct {
 	Scope       string `json:"scope,omitempty"`
 }
 
-func (k kindeService) GetToken(ctx context.Context) (string, error) {
+func (k *kindeService) GetClient() *openapi.APIClient {
+	// Create configuration
+	cfg := openapi.NewConfiguration()
+
+	// Set server URL (customize the subdomain)
+	cfg.Servers = openapi.ServerConfigurations{
+		{
+			URL:         k.domain + "/api",
+			Description: "Kinde API",
+		},
+	}
+
+	// Create API client
+	client := openapi.NewAPIClient(cfg)
+
+	return client
+}
+
+func (k *kindeService) GetToken() (string, error) {
 	tokenURL := fmt.Sprintf("https://%s/oauth2/token", k.domain)
 
 	data := url.Values{}
@@ -71,7 +114,7 @@ func (k kindeService) GetToken(ctx context.Context) (string, error) {
 
 }
 
-func NewClient(cfg config.Configuration) Client {
+func NewTokenGenerator(cfg config.Configuration) TokenGenerator {
 	domain := cfg.GetString("KINDE_AUTH_DOMAIN")
 	clientId := cfg.GetString("KINDE_AUTH_CLIENT_ID")
 	clientSecret := cfg.GetString("KINDE_AUTH_CLIENT_SECRET")
