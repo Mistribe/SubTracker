@@ -1,0 +1,14 @@
+.git
+.gitignore
+.DS_Store
+*.md
+.vscode
+.idea
+.air.toml
+todo.md
+data/
+.run/
+compose.yml
+Makefile
+.mockery.yaml
+subscription_services_*.json
