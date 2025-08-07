@@ -4,6 +4,7 @@ import (
 	"golang.org/x/text/currency"
 
 	"github.com/oleexo/subtracker/internal/domain/entity"
+	"github.com/oleexo/subtracker/pkg/validationx"
 )
 
 type CustomPrice interface {
@@ -11,6 +12,8 @@ type CustomPrice interface {
 
 	Currency() currency.Unit
 	Amount() float64
+
+	GetValidationErrors() validationx.Errors
 }
 
 type customSubscriptionPrice struct {
@@ -43,4 +46,18 @@ func (c customSubscriptionPrice) ETagFields() []interface{} {
 		c.amount,
 		c.currency.String(),
 	}
+}
+
+func (c customSubscriptionPrice) GetValidationErrors() validationx.Errors {
+	var errors validationx.Errors
+
+	if c.amount <= 0 {
+		errors = append(errors, validationx.NewError("amount", "Amount must be greater than 0"))
+	}
+
+	if errors.HasErrors() {
+		return errors
+	}
+
+	return nil
 }

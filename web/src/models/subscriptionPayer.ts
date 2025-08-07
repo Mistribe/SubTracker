@@ -1,15 +1,16 @@
-import type {SubscriptionPayerModel} from "@/api/models";
+import {type SubscriptionPayerModel, SubscriptionPayerModel_typeObject} from "@/api/models";
+import {PayerType} from "@/models/payerType.ts";
 
 export class SubscriptionPayer {
     private readonly _familyId: string | undefined;
     private readonly _memberId: string | undefined;
-    private readonly _type: 'family' | 'family_member';
+    private readonly _type: PayerType;
     private readonly _etag: string | undefined;
 
     constructor(
         familyId: string | undefined,
         memberId: string | undefined,
-        type: 'family' | 'family_member',
+        type: PayerType,
         etag: string | undefined
     ) {
         this._familyId = familyId;
@@ -35,10 +36,21 @@ export class SubscriptionPayer {
     }
 
     static fromModel(model: SubscriptionPayerModel): SubscriptionPayer {
+        let payerType: PayerType;
+        switch (model.type) {
+            case SubscriptionPayerModel_typeObject.Family:
+                payerType = PayerType.Family;
+                break;
+            case SubscriptionPayerModel_typeObject.Family_member:
+                payerType = PayerType.FamilyMember;
+                break;
+            default:
+                payerType = PayerType.Family;
+        }
         return new SubscriptionPayer(
             model.familyId || undefined,
             model.memberId || undefined,
-            (model.type as 'family' | 'family_member') || 'family',
+            payerType,
             model.etag || undefined
         );
     }

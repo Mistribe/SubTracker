@@ -2,11 +2,12 @@ import {useEffect, useState} from "react";
 import {hexToArgb} from "@/components/ui/utils/color-utils";
 import {useLabelMutations} from "@/hooks/labels/useLabelMutations";
 import {useFamiliesMutations} from "@/hooks/families/useFamiliesMutations";
-import {LabelHeader} from "@/components/labels/LabelHeader";
+import {PageHeader} from "@/components/ui/page-header";
 import {useAllLabelsQuery} from "@/hooks/labels/useAllLabelsQuery";
 import {useFamiliesQuery} from "@/hooks/families/useFamiliesQuery";
 import {LabelItem} from "@/components/labels/LabelItem";
 import {EditableLabelItem} from "@/components/labels/EditableLabelItem";
+import {AddLabelDialog} from "@/components/labels/AddLabelDialog";
 import Label from "@/models/label";
 import {OwnerType} from "@/models/ownerType";
 import {Loader2} from "lucide-react";
@@ -146,12 +147,18 @@ const LabelsPage = () => {
     if (isLoading) {
         return (
             <div>
-                <LabelHeader
+                <PageHeader
+                    title="Labels"
                     searchText={searchText}
                     onSearchChange={setSearchText}
-                    onAddLabel={handleAddLabel}
-                    isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
-                    families={families}
+                    searchPlaceholder="Search labels..."
+                    actionButton={
+                        <AddLabelDialog
+                            onAddLabel={handleAddLabel}
+                            isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
+                            families={families}
+                        />
+                    }
                 />
                 <div className="flex flex-col items-center justify-center h-64">
                     <Loader2 className="h-8 w-8 animate-spin text-primary mb-4"/>
@@ -164,12 +171,18 @@ const LabelsPage = () => {
     if (error) {
         return (
             <div>
-                <LabelHeader
+                <PageHeader
+                    title="Labels"
                     searchText={searchText}
                     onSearchChange={setSearchText}
-                    onAddLabel={handleAddLabel}
-                    isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
-                    families={families}
+                    searchPlaceholder="Search labels..."
+                    actionButton={
+                        <AddLabelDialog
+                            onAddLabel={handleAddLabel}
+                            isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
+                            families={families}
+                        />
+                    }
                 />
                 <div className="p-6 border rounded-md bg-destructive/10 mt-8">
                     <p className="text-destructive text-center">Error loading labels</p>
@@ -180,12 +193,18 @@ const LabelsPage = () => {
 
     return (
         <div>
-            <LabelHeader
+            <PageHeader
+                title="Labels"
                 searchText={searchText}
                 onSearchChange={setSearchText}
-                onAddLabel={handleAddLabel}
-                isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
-                families={families}
+                searchPlaceholder="Search labels..."
+                actionButton={
+                    <AddLabelDialog
+                        onAddLabel={handleAddLabel}
+                        isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
+                        families={families}
+                    />
+                }
             />
 
             <div className="mt-8">

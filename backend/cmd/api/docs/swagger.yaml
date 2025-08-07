@@ -105,8 +105,8 @@ components:
           example: personal
           type: string
         userId:
-          description: '@Description User ID when an ownership type is personal (required
-            for personal ownership)'
+          description: '@Description UserProfile ID when an ownership type is personal
+            (required for personal ownership)'
           example: 123e4567-e89b-12d3-a456-426614174001
           type: string
       required:
@@ -453,8 +453,8 @@ components:
         custom_price:
           $ref: '#/components/schemas/endpoints.SubscriptionCustomPriceModel'
         custom_recurrency:
-          description: '@Description Custom recurrency interval in days (required
-            when recurrency is custom)'
+          description: '@Description CustomRecurrency recurrency interval in days
+            (required when recurrency is custom)'
           example: 90
           maximum: 3650
           minimum: 1
@@ -615,6 +615,11 @@ components:
       - provider_id
       - recurrency
       - start_date
+      type: object
+    endpoints.UserProfileModel:
+      properties:
+        currency:
+          type: string
       type: object
     endpoints.createFamilyMemberModel:
       properties:
@@ -1007,6 +1012,13 @@ components:
       - amount
       - currency
       - start_date
+      type: object
+    endpoints.updateProfileModel:
+      properties:
+        currency:
+          type: string
+      required:
+      - currency
       type: object
     endpoints.updateProviderModel:
       properties:
@@ -2419,6 +2431,63 @@ paths:
       summary: Update subscription by ID
       tags:
       - subscription
+  /users/profile:
+    get:
+      description: Returns the profile information for the authenticated user
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.UserProfileModel'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Unauthorized
+      summary: Get user profile
+      tags:
+      - Users
+    put:
+      description: Updates the currency preference in user's profile
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.updateProfileModel'
+        description: Profile update parameters
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.UserProfileModel'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Unauthorized
+      summary: Update user profile
+      tags:
+      - users
 servers:
 - description: Production server
   url: https://api.subtracker.mistribe.com

@@ -20,24 +20,24 @@ const SubscriptionsPage = () => {
     const [subscriptionToDelete, setSubscriptionToDelete] = useState<Subscription | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    
-    const { deleteSubscriptionMutation } = useSubscriptionsMutations();
-    
+
+    const {deleteSubscriptionMutation} = useSubscriptionsMutations();
+
     // Handler to open the delete dialog
     const handleDeleteClick = (subscription: Subscription) => {
         setSubscriptionToDelete(subscription);
         setIsDeleteDialogOpen(true);
     };
-    
+
     // Handler to close the delete dialog
     const handleDeleteDialogClose = () => {
         setIsDeleteDialogOpen(false);
     };
-    
+
     // Handler to confirm deletion
     const handleDeleteConfirm = async () => {
         if (!subscriptionToDelete) return;
-        
+
         try {
             setIsDeleting(true);
             await deleteSubscriptionMutation.mutateAsync(subscriptionToDelete.id);
@@ -107,7 +107,7 @@ const SubscriptionsPage = () => {
     };
 
     // Function to format recurrency
-    const formatRecurrency = (recurrency: SubscriptionRecurrency, customRecurrency: number | null) => {
+    const formatRecurrency = (recurrency: SubscriptionRecurrency, customRecurrency: number | undefined) => {
         if (recurrency === 'custom' && customRecurrency) {
             return `Every ${customRecurrency} days`;
         }
@@ -134,10 +134,10 @@ const SubscriptionsPage = () => {
             <Table>
                 <TableHeader>
                     <TableRow>
+                        <TableHead>Provider</TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Price</TableHead>
                         <TableHead>Recurrency</TableHead>
-                        <TableHead>Provider</TableHead>
                         <TableHead>Dates</TableHead>
                         <TableHead>Users</TableHead>
                         <TableHead>Plan</TableHead>
@@ -148,8 +148,24 @@ const SubscriptionsPage = () => {
                 <TableBody>
                     {subscriptions.map((subscription) => (
                         <TableRow key={subscription.id}>
+                            <TableCell>
+                                <div className="flex items-center">
+                                    {providerMap.get(subscription.providerId)?.iconUrl ? (
+                                        <img 
+                                            src={providerMap.get(subscription.providerId)?.iconUrl || ''} 
+                                            alt={`${providerMap.get(subscription.providerId)?.name} logo`}
+                                            className="mr-2 h-5 w-5 object-contain"
+                                        />
+                                    ) : (
+                                        <CreditCardIcon className="mr-2 h-4 w-4 text-muted-foreground"/>
+                                    )}
+                                    <span>
+                                        {providerMap.get(subscription.providerId)?.name || subscription.providerId}
+                                    </span>
+                                </div>
+                            </TableCell>
                             <TableCell className="font-medium">
-                                {subscription.friendlyName || `Subscription ${subscription.id.substring(0, 8)}`}
+                                {subscription.friendlyName || (providerMap.get(subscription.providerId)?.name || subscription.providerId)}
                             </TableCell>
                             <TableCell>
                                 {subscription.customPrice && (
@@ -160,14 +176,6 @@ const SubscriptionsPage = () => {
                             </TableCell>
                             <TableCell>
                                 {formatRecurrency(subscription.recurrency, subscription.customRecurrency)}
-                            </TableCell>
-                            <TableCell>
-                                <div className="flex items-center">
-                                    <CreditCardIcon className="mr-2 h-4 w-4 text-muted-foreground"/>
-                                    <span>
-                                        {providerMap.get(subscription.providerId)?.name || subscription.providerId}
-                                    </span>
-                                </div>
                             </TableCell>
                             <TableCell>
                                 <div className="flex items-center">
@@ -208,7 +216,7 @@ const SubscriptionsPage = () => {
                                         onClick={() => navigate(`/subscriptions/edit/${subscription.id}`)}
                                         title="Edit subscription"
                                     >
-                                        <PencilIcon className="h-4 w-4 text-blue-500" />
+                                        <PencilIcon className="h-4 w-4 text-blue-500"/>
                                     </Button>
                                     <Button
                                         variant="ghost"
@@ -216,7 +224,7 @@ const SubscriptionsPage = () => {
                                         onClick={() => handleDeleteClick(subscription)}
                                         title="Delete subscription"
                                     >
-                                        <TrashIcon className="h-4 w-4 text-red-500" />
+                                        <TrashIcon className="h-4 w-4 text-red-500"/>
                                     </Button>
                                 </div>
                             </TableCell>
@@ -294,7 +302,7 @@ const SubscriptionsPage = () => {
                 onSearchChange={setSearchText}
                 actionButton={
                     <Button onClick={() => navigate("/subscriptions/create")}>
-                        <PlusIcon className="mr-2 h-4 w-4" />
+                        <PlusIcon className="mr-2 h-4 w-4"/>
                         Add Subscription
                     </Button>
                 }

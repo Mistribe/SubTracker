@@ -269,6 +269,45 @@ func (s *subscription) Equal(other Subscription) bool {
 
 func (s *subscription) GetValidationErrors() validationx.Errors {
 	var errors validationx.Errors
-	// todo
-	return errors
+
+	if s.friendlyName != nil && len(*s.friendlyName) > 100 {
+		errors = append(errors,
+			validationx.NewError("friendlyName", "FriendlyName cannot be longer than 100 characters"))
+	}
+
+	if s.freeTrial != nil {
+		if err := s.freeTrial.GetValidationErrors(); err != nil {
+			errors = append(errors, err...)
+		}
+	}
+
+	if s.customPrice != nil {
+		if err := s.customPrice.GetValidationErrors(); err != nil {
+			errors = append(errors, err...)
+		}
+	}
+
+	if s.serviceUsers != nil && s.serviceUsers.Len() > MaxFamilyMemberPerSubscriptionCount {
+		errors = append(errors, validationx.NewError("serviceUsers", "Number of service users cannot exceed 10"))
+	}
+
+	if s.recurrency == CustomRecurrency && s.customRecurrency == nil {
+		errors = append(errors,
+			validationx.NewError("customRecurrency",
+				"CustomRecurrency is required when Recurrency is CustomRecurrency"))
+	}
+
+	if s.customRecurrency != nil && *s.customRecurrency <= 0 {
+		errors = append(errors, validationx.NewError("customRecurrency", "CustomRecurrency must be greater than 0"))
+	}
+
+	if s.endDate != nil && !s.endDate.IsZero() && s.endDate.Before(s.startDate) {
+		errors = append(errors, validationx.NewError("endDate", "EndDate must be after StartDate"))
+	}
+
+	if errors.HasErrors() {
+		return errors
+	}
+
+	return nil
 }

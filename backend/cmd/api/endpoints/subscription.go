@@ -158,7 +158,7 @@ type SubscriptionModel struct {
 	EndDate *time.Time `json:"end_date,omitempty" format:"date-time" example:"2024-01-01T00:00:00Z"`
 	// @Description Billing recurrency pattern (monthly, yearly, custom, etc.)
 	Recurrency string `json:"recurrency" binding:"required" example:"monthly" enums:"unknown,one_time,monthly,quarterly,half_yearly,yearly,custom"`
-	// @Description Custom recurrency interval in days (required when recurrency is custom)
+	// @Description CustomRecurrency recurrency interval in days (required when recurrency is custom)
 	CustomRecurrency *int32 `json:"custom_recurrency,omitempty" example:"90" minimum:"1" maximum:"3650"`
 	// @Description Information about who pays for this subscription within the family
 	Payer *SubscriptionPayerModel `json:"payer,omitempty"`

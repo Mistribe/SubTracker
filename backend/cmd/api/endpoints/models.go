@@ -15,7 +15,7 @@ type OwnerModel struct {
 	Type string `json:"type" binding:"required" example:"personal" enums:"personal,family,system"`
 	// @Description Family ID when an ownership type is family (required for family ownership)
 	FamilyId *string `json:"family_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174000"`
-	// @Description User ID when an ownership type is personal (required for personal ownership)
+	// @Description UserProfile ID when an ownership type is personal (required for personal ownership)
 	UserId *string `json:"userId,omitempty" example:"123e4567-e89b-12d3-a456-426614174001"`
 	// @Description Entity tag for optimistic concurrency control
 	Etag string `json:"etag" binding:"required" example:"W/\"123456789\""`

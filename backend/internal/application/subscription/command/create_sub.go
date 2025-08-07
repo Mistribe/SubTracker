@@ -47,17 +47,15 @@ func (h CreateSubscriptionCommandHandler) Handle(
 func (h CreateSubscriptionCommandHandler) createSubscription(
 	ctx context.Context,
 	cmd CreateSubscriptionCommand) result.Result[subscription.Subscription] {
-	err := ensureRelatedEntityExists(ctx, h.familyRepository, cmd.Subscription)
-	if err != nil {
+	if err := ensureRelatedEntityExists(ctx, h.familyRepository, cmd.Subscription); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	if err = cmd.Subscription.GetValidationErrors(); err != nil {
+	if err := cmd.Subscription.GetValidationErrors(); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	err = h.subscriptionRepository.Save(ctx, cmd.Subscription)
-	if err != nil {
+	if err := h.subscriptionRepository.Save(ctx, cmd.Subscription); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 

@@ -1,8 +1,18 @@
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
 import {OwnerType} from "@/models/ownerType";
-import type {CreateSubscriptionModel, EditableOwnerModel, EditableSubscriptionPayerModel, SubscriptionCustomPriceModel, SubscriptionFreeTrialModel, UpdateSubscriptionModel} from "@/api/models";
+import {
+    type CreateSubscriptionModel,
+    type EditableOwnerModel,
+    type EditableSubscriptionPayerModel,
+    type EditableSubscriptionPayerModel_type,
+    EditableSubscriptionPayerModel_typeObject,
+    type SubscriptionCustomPriceModel,
+    type SubscriptionFreeTrialModel,
+    type UpdateSubscriptionModel
+} from "@/api/models";
 import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency";
+import {PayerType} from "@/models/payerType.ts";
 
 export const useSubscriptionsMutations = () => {
     const {apiClient} = useApiClient();
@@ -13,8 +23,8 @@ export const useSubscriptionsMutations = () => {
         mutationFn: async (subscriptionData: {
             friendlyName?: string,
             providerId: string,
-            planId: string,
-            priceId: string,
+            planId?: string,
+            priceId?: string,
             recurrency: SubscriptionRecurrency,
             customRecurrency?: number,
             startDate: Date,
@@ -22,7 +32,7 @@ export const useSubscriptionsMutations = () => {
             ownerType?: OwnerType,
             familyId?: string,
             payer?: {
-                type: OwnerType,
+                type: PayerType,
                 familyId?: string,
                 memberId?: string
             },
@@ -66,8 +76,20 @@ export const useSubscriptionsMutations = () => {
 
             // Add payer information if specified
             if (subscriptionData.payer) {
+                let payerType: EditableSubscriptionPayerModel_type;
+                switch (subscriptionData.payer.type) {
+                    case PayerType.FamilyMember:
+                        payerType = EditableSubscriptionPayerModel_typeObject.Family_member;
+                        break;
+                    case PayerType.Family:
+                        payerType = EditableSubscriptionPayerModel_typeObject.Family;
+                        break;
+                    default:
+                        payerType = EditableSubscriptionPayerModel_typeObject.Family;
+                        break;
+                }
                 const payer: EditableSubscriptionPayerModel = {
-                    type: subscriptionData.payer.type
+                    type: payerType
                 };
 
                 // Add family ID and member ID if provided
@@ -125,15 +147,15 @@ export const useSubscriptionsMutations = () => {
     // Update subscription mutation
     const updateSubscriptionMutation = useMutation({
         mutationFn: async ({
-            subscriptionId,
-            subscriptionData
-        }: {
+                               subscriptionId,
+                               subscriptionData
+                           }: {
             subscriptionId: string,
             subscriptionData: {
                 friendlyName?: string,
                 providerId: string,
-                planId: string,
-                priceId: string,
+                planId?: string,
+                priceId?: string,
                 recurrency: SubscriptionRecurrency,
                 customRecurrency?: number,
                 startDate: Date,
@@ -141,7 +163,7 @@ export const useSubscriptionsMutations = () => {
                 ownerType?: OwnerType,
                 familyId?: string,
                 payer?: {
-                    type: OwnerType,
+                    type: PayerType,
                     familyId?: string,
                     memberId?: string
                 },
@@ -186,8 +208,20 @@ export const useSubscriptionsMutations = () => {
 
             // Add payer information if specified
             if (subscriptionData.payer) {
+                let payerType: EditableSubscriptionPayerModel_type;
+                switch (subscriptionData.payer.type) {
+                    case PayerType.FamilyMember:
+                        payerType = EditableSubscriptionPayerModel_typeObject.Family_member;
+                        break;
+                    case PayerType.Family:
+                        payerType = EditableSubscriptionPayerModel_typeObject.Family;
+                        break;
+                    default:
+                        payerType = EditableSubscriptionPayerModel_typeObject.Family;
+                        break;
+                }
                 const payer: EditableSubscriptionPayerModel = {
-                    type: subscriptionData.payer.type
+                    type: payerType
                 };
 
                 // Add family ID and member ID if provided

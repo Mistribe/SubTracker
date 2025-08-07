@@ -72,7 +72,7 @@ func NewOwner(ownerType OwnerType, familyId *uuid.UUID, userId *string) Owner {
 	switch ownerType {
 	case PersonalOwnerType:
 		if userId == nil {
-			panic("missing user id for a personal owner type")
+			panic("missing userProfile id for a personal owner type")
 		}
 		return NewPersonalOwner(*userId)
 	case FamilyOwnerType:
@@ -179,7 +179,7 @@ func (o systemOwner) FamilyId() uuid.UUID {
 }
 
 func (o systemOwner) UserId() string {
-	panic("system owner cannot have user id")
+	panic("system owner cannot have userProfile id")
 }
 
 func (o systemOwner) Type() OwnerType {
