@@ -6,20 +6,16 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
-	"github.com/oleexo/subtracker/internal/infrastructure/kinde"
+	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
 type AuthenticationService struct {
-	authenticationRepository auth.Repository
-	kindeToken               kinde.TokenGenerator
+	userRepository user.Repository
 }
 
-func NewAuthenticationService(
-	authenticationRepository auth.Repository,
-	kindeToken kinde.TokenGenerator) auth.Service {
+func NewAuthenticationService(userRepository user.Repository) auth.Service {
 	return &AuthenticationService{
-		authenticationRepository: authenticationRepository,
-		kindeToken:               kindeToken,
+		userRepository: userRepository,
 	}
 }
 
@@ -34,7 +30,7 @@ func (s AuthenticationService) MustGetUserId(ctx context.Context) string {
 func (s AuthenticationService) MustGetFamilies(ctx context.Context) []uuid.UUID {
 	userId := s.MustGetUserId(ctx)
 	// todo cache
-	families, err := s.authenticationRepository.GetUserFamilies(ctx, userId)
+	families, err := s.userRepository.GetUserFamilies(ctx, userId)
 	if err != nil {
 		panic(err)
 	}
