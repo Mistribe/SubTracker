@@ -4,18 +4,22 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/text/currency"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/user/query"
-	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
 type UserGetPreferredCurrencyEndpoint struct {
-	handler core.QueryHandler[query.FindPreferredCurrencyQuery, user.Profile]
+	handler core.QueryHandler[query.FindPreferredCurrencyQuery, currency.Unit]
 }
 
-func NewUserGetPreferredCurrencyEndpoint(handler core.QueryHandler[query.FindPreferredCurrencyQuery, user.Profile]) *UserGetPreferredCurrencyEndpoint {
+func NewUserGetPreferredCurrencyEndpoint(handler core.QueryHandler[query.FindPreferredCurrencyQuery, currency.Unit]) *UserGetPreferredCurrencyEndpoint {
 	return &UserGetPreferredCurrencyEndpoint{handler: handler}
+}
+
+type UserPreferredCurrencyModel struct {
+	Currency string `json:"currency"`
 }
 
 // Handle godoc
@@ -24,17 +28,19 @@ func NewUserGetPreferredCurrencyEndpoint(handler core.QueryHandler[query.FindPre
 //	@Description	Returns the preferred currency for the authenticated user
 //	@Tags			Users
 //	@Produce		json
-//	@Success		200	{object}	UserProfileModel
+//	@Success		200	{object}	UserPreferredCurrencyModel
 //	@Failure		401	{object}	httpError	"Unauthorized"
-//	@Router			/users/profile [get]
+//	@Router			/users/preferred/currency [get]
 func (e UserGetPreferredCurrencyEndpoint) Handle(c *gin.Context) {
 	q := query.NewFindPreferredCurrencyQuery()
 
 	r := e.handler.Handle(c, q)
 	handleResponse(c,
 		r,
-		withMapping[user.Profile](func(up user.Profile) any {
-			return newUserProfileModel(up)
+		withMapping[currency.Unit](func(up currency.Unit) any {
+			return UserPreferredCurrencyModel{
+				Currency: up.String(),
+			}
 		}))
 }
 

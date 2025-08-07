@@ -19,6 +19,10 @@ kinde:
     -i /local/internal/infrastructure/kinde/kinde-management-api.yaml \
     -g go \
     --additional-properties=withGoMod=false \
+    --global-property=apiDocs=false \
+    --global-property=modelDocs=false \
+    --global-property=apiTests=false \
+    --global-property=modelTests=false \
     -o /local/internal/infrastructure/kinde/gen
 
 

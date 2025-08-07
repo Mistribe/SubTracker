@@ -33,10 +33,10 @@ type updateProfileModel struct {
 //	@Produce		json
 //	@Param			Authorization	header		string				true	"Bearer token"
 //	@Param			request			body		updateProfileModel	true	"Profile update parameters"
-//	@Success		200				{object}	UserProfileModel
+//	@Success		204
 //	@Failure		400				{object}	httpError
 //	@Failure		401				{object}	httpError
-//	@Router			/users/profile [put]
+//	@Router			/users/preferred/currency [put]
 func (e UserUpdatePreferredCurrencyEndpoint) Handle(c *gin.Context) {
 	var model updateProfileModel
 	if err := c.ShouldBindJSON(&model); err != nil {
@@ -58,7 +58,7 @@ func (e UserUpdatePreferredCurrencyEndpoint) Handle(c *gin.Context) {
 
 func (e UserUpdatePreferredCurrencyEndpoint) Pattern() []string {
 	return []string{
-		"/profile",
+		"/preferred/currency",
 	}
 }
 

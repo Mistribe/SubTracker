@@ -20,7 +20,6 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/domain/provider"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/internal/domain/user"
 )
 
 func AsCommandHandler[TCommand core.Command, TResult any](f any) any {
@@ -41,7 +40,8 @@ func BuildApplicationModule() fx.Option {
 			service.NewAuthenticationService,
 
 			AsQueryHandler[usrQuery.FindPreferredCurrencyQuery, currency.Unit](usrQuery.NewFindPreferredCurrencyQueryHandler),
-			AsCommandHandler[usrCommand.UpdatePreferredCurrencyCommand, user.Profile](usrCommand.NewUpdatePreferredCurrencyCommandHandler),
+			AsCommandHandler[usrCommand.UpdatePreferredCurrencyCommand, bool](usrCommand.NewUpdatePreferredCurrencyCommandHandler),
+			AsCommandHandler[usrCommand.UpdateProfileCommand, bool](usrCommand.NewUpdateProfileCommandHandler),
 
 			AsQueryHandler[proQuery.FindOneQuery, provider.Provider](proQuery.NewFindOneQueryHandler),
 			AsQueryHandler[proQuery.FindAllQuery, core.PaginatedResponse[provider.Provider]](proQuery.NewFindAllQueryHandler),
