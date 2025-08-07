@@ -64,7 +64,7 @@ func (k *kindeService) GetClient() *openapi.APIClient {
 	// Set server URL (customize the subdomain)
 	cfg.Servers = openapi.ServerConfigurations{
 		{
-			URL:         k.domain + "/api",
+			URL:         k.domain,
 			Description: "Kinde API",
 		},
 	}
@@ -76,7 +76,7 @@ func (k *kindeService) GetClient() *openapi.APIClient {
 }
 
 func (k *kindeService) GetToken() (string, error) {
-	tokenURL := fmt.Sprintf("https://%s/oauth2/token", k.domain)
+	tokenURL := fmt.Sprintf("%s/oauth2/token", k.domain)
 
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
@@ -116,14 +116,14 @@ func (k *kindeService) GetToken() (string, error) {
 
 func NewTokenGenerator(cfg config.Configuration) TokenGenerator {
 	domain := cfg.GetString("KINDE_AUTH_DOMAIN")
-	clientId := cfg.GetString("KINDE_AUTH_CLIENT_ID")
-	clientSecret := cfg.GetString("KINDE_AUTH_CLIENT_SECRET")
-	audiences := cfg.GetStringOrDefault("KINDE_AUTH_AUDIENCES", "https://api.kinde.com/api")
-
+	clientId := cfg.GetString("KINDE_API_CLIENT_ID")
+	clientSecret := cfg.GetString("KINDE_API_CLIENT_SECRET")
+	audienceValue := cfg.GetStringOrDefault("KINDE_API_AUDIENCES", "https://api.kinde.com/api")
+	audiences := strings.Split(audienceValue, ",")
 	return &kindeService{
 		domain:       domain,
 		clientId:     clientId,
 		clientSecret: clientSecret,
-		audiences:    []string{audiences},
+		audiences:    audiences,
 	}
 }
