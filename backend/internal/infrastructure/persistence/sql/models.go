@@ -115,3 +115,8 @@ type SubscriptionServiceUser struct {
 	FamilyMemberID uuid.UUID
 	SubscriptionID uuid.UUID
 }
+
+type User struct {
+	ID       string
+	Currency string
+}

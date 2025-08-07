@@ -12,6 +12,8 @@ func BuildRoutesModule() fx.Option {
 	return fx.Module("routes",
 		fx.Provide(
 			middlewares.NewAuthenticationMiddleware,
+			middlewares.NewLanguageMiddleware,
+
 			endpoints.NewSubscriptionGetEndpoint,
 			endpoints.NewSubscriptionGetAllEndpoint,
 			endpoints.NewSubscriptionCreateEndpoint,

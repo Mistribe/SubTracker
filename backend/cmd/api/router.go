@@ -14,7 +14,8 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	ginfx2 "github.com/oleexo/subtracker/cmd/api/ginfx"
+	"github.com/oleexo/subtracker/cmd/api/ginfx"
+	"github.com/oleexo/subtracker/cmd/api/middlewares"
 )
 
 const (
@@ -25,14 +26,15 @@ const (
 type EchoServerParams struct {
 	fx.In
 
-	Lifecycle   fx.Lifecycle
-	Logger      *slog.Logger
-	Routes      []ginfx2.Route      `group:"routes"`
-	RouteGroups []ginfx2.RouteGroup `group:"route_groups"`
-	Config      cfg.Configuration
+	Lifecycle          fx.Lifecycle
+	Logger             *slog.Logger
+	Routes             []ginfx.Route      `group:"routes"`
+	RouteGroups        []ginfx.RouteGroup `group:"route_groups"`
+	Config             cfg.Configuration
+	LanguageMiddleware *middlewares.LanguageMiddleware
 }
 
-func registerRouteGroups(e *gin.Engine, routeGroups []ginfx2.RouteGroup) {
+func registerRouteGroups(e *gin.Engine, routeGroups []ginfx.RouteGroup) {
 	for _, group := range routeGroups {
 		routePrefix := group.Prefix()
 		routeGroup := e.Group(routePrefix)
@@ -43,7 +45,7 @@ func registerRouteGroups(e *gin.Engine, routeGroups []ginfx2.RouteGroup) {
 	}
 }
 
-func registerRoutes(e *gin.RouterGroup, routes []ginfx2.Route) {
+func registerRoutes(e *gin.RouterGroup, routes []ginfx.Route) {
 	for _, route := range routes {
 		for _, pattern := range route.Pattern() {
 			var handlers []gin.HandlerFunc
@@ -75,6 +77,9 @@ func newGinEngine(parameters EchoServerParams) *gin.Engine {
 
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	// Add language middleware
+	e.Use(parameters.LanguageMiddleware.Middleware())
+
 	registerRouteGroups(e, parameters.RouteGroups)
 	registerRoutes(&e.RouterGroup, parameters.Routes)
 
@@ -98,7 +103,7 @@ func newHttpServer(
 		OnStart: func(ctx context.Context) error {
 			go func() {
 				if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-					// Handle the error (e.g., log it)
+					// Middleware the error (e.g., log it)
 				}
 			}()
 			return nil

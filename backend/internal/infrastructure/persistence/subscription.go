@@ -48,7 +48,8 @@ func (r SubscriptionRepository) GetById(ctx context.Context, id uuid.UUID) (subs
 	return subscriptions[0], nil
 }
 
-func (r SubscriptionRepository) GetAll(ctx context.Context,
+func (r SubscriptionRepository) GetAll(
+	ctx context.Context,
 	parameters entity.QueryParameters) ([]subscription.Subscription, int64, error) {
 	response, count, err := r.dbContext.GetQueries(ctx).GetSubscriptions(ctx, parameters.Limit, parameters.Offset)
 	if err != nil {
@@ -285,7 +286,7 @@ func (r SubscriptionRepository) update(ctx context.Context, sub subscription.Sub
 		}
 	}
 
-	// Handle tracked changes for service users (additions & deletions, no updates required).
+	// Middleware tracked changes for service users (additions & deletions, no updates required).
 	if err := saveTrackedSlice(
 		ctx,
 		r.dbContext,

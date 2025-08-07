@@ -24,7 +24,7 @@ func NewProviderPatchEndpoint(handler core.CommandHandler[command.PatchProviderC
 	return &ProviderPatchEndpoint{handler: handler}
 }
 
-// Handle godoc
+// Middleware godoc
 //
 //	@Summary		Patch provider with plans and prices
 //	@Description	Update or create a provider with all its plans and prices. If provider doesn't exist, it will be created.

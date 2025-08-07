@@ -11,8 +11,25 @@ import (
 	"github.com/google/uuid"
 )
 
+const createUserProfile = `-- name: CreateUserProfile :exec
+INSERT INTO public.users (id, currency)
+VALUES ($1, $2)
+ON CONFLICT (id)
+    DO UPDATE SET currency = EXCLUDED.currency
+`
+
+type CreateUserProfileParams struct {
+	ID       string
+	Currency string
+}
+
+func (q *Queries) CreateUserProfile(ctx context.Context, arg CreateUserProfileParams) error {
+	_, err := q.db.Exec(ctx, createUserProfile, arg.ID, arg.Currency)
+	return err
+}
+
 const getUserFamilyIds = `-- name: GetUserFamilyIds :many
-SELECT fm.family_id FROM family_members fm
+SELECT fm.family_id FROM public.family_members fm
 where fm.user_id = $1
 `
 
@@ -34,4 +51,16 @@ func (q *Queries) GetUserFamilyIds(ctx context.Context, userID *string) ([]uuid.
 		return nil, err
 	}
 	return items, nil
+}
+
+const getUserProfile = `-- name: GetUserProfile :one
+SELECT id, currency from public.users u
+where u.id = $1
+`
+
+func (q *Queries) GetUserProfile(ctx context.Context, id string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserProfile, id)
+	var i User
+	err := row.Scan(&i.ID, &i.Currency)
+	return i, err
 }

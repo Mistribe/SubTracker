@@ -4,10 +4,15 @@ import (
 	"context"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
+	"github.com/oleexo/subtracker/internal/domain/lang"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type FindProfileQuery struct {
+}
+
+func NewFindProfileQuery() FindProfileQuery {
+	return FindProfileQuery{}
 }
 
 type FindProfileQueryHandler struct {
@@ -20,7 +25,7 @@ func NewFindProfileQueryHandler(authRepository auth.Repository) *FindProfileQuer
 	}
 }
 
-func (h FindProfileQueryHandler) Handler(ctx context.Context, _ FindProfileQuery) result.Result[auth.UserProfile] {
+func (h FindProfileQueryHandler) Handle(ctx context.Context, _ FindProfileQuery) result.Result[auth.UserProfile] {
 	userId, ok := auth.GetUserIdFromContext(ctx)
 	if !ok {
 		return result.Fail[auth.UserProfile](auth.ErrNotAuthorized)
@@ -31,7 +36,8 @@ func (h FindProfileQueryHandler) Handler(ctx context.Context, _ FindProfileQuery
 	}
 
 	if profile == nil {
-		return result.Fail[auth.UserProfile](auth.ErrUnknownUser)
+		info := lang.FromContext(ctx)
+		profile = auth.NewUserProfile(userId, info.MostPreferred().PreferredCurrency())
 	}
 
 	return result.Success(profile)
