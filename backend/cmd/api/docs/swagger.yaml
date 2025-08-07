@@ -574,6 +574,16 @@ components:
       - family_id
       - type
       type: object
+    endpoints.UpdateProfileModel:
+      properties:
+        family_name:
+          type: string
+        given_name:
+          type: string
+      required:
+      - family_name
+      - given_name
+      type: object
     endpoints.UpdateSubscriptionModel:
       properties:
         custom_price:
@@ -616,7 +626,7 @@ components:
       - recurrency
       - start_date
       type: object
-    endpoints.UserProfileModel:
+    endpoints.UserPreferredCurrencyModel:
       properties:
         currency:
           type: string
@@ -993,6 +1003,13 @@ components:
         updateAt:
           type: string
       type: object
+    endpoints.updatePreferredCurrencyModel:
+      properties:
+        currency:
+          type: string
+      required:
+      - currency
+      type: object
     endpoints.updatePriceModel:
       properties:
         amount:
@@ -1012,13 +1029,6 @@ components:
       - amount
       - currency
       - start_date
-      type: object
-    endpoints.updateProfileModel:
-      properties:
-        currency:
-          type: string
-      required:
-      - currency
       type: object
     endpoints.updateProviderModel:
       properties:
@@ -2431,15 +2441,15 @@ paths:
       summary: Update subscription by ID
       tags:
       - subscription
-  /users/profile:
+  /users/preferred/currency:
     get:
-      description: Returns the profile information for the authenticated user
+      description: Returns the preferred currency for the authenticated user
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.UserProfileModel'
+                $ref: '#/components/schemas/endpoints.UserPreferredCurrencyModel'
           description: OK
         "401":
           content:
@@ -2447,11 +2457,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/endpoints.httpError'
           description: Unauthorized
-      summary: Get user profile
+      summary: Get user preferred currency
       tags:
       - Users
     put:
-      description: Updates the currency preference in user's profile
+      description: Updates the preferred currency for the authenticated user
       parameters:
       - description: Bearer token
         in: header
@@ -2463,16 +2473,47 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/endpoints.updateProfileModel'
+              $ref: '#/components/schemas/endpoints.updatePreferredCurrencyModel'
         description: Profile update parameters
         required: true
       responses:
-        "200":
+        "204":
+          description: No Content
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.UserProfileModel'
-          description: OK
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Unauthorized
+      summary: Update user preferred currency
+      tags:
+      - users
+  /users/profile:
+    put:
+      description: Updates the given name and family name for the authenticated user
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.UpdateProfileModel'
+        description: Profile update parameters
+        required: true
+      responses:
+        "204":
+          description: No Content
         "400":
           content:
             application/json:

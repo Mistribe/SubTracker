@@ -20,7 +20,7 @@ func NewUserUpdatePreferredCurrencyEndpoint(handler core.CommandHandler[command.
 	}
 }
 
-type updateProfileModel struct {
+type updatePreferredCurrencyModel struct {
 	Currency string `json:"currency" binding:"required"`
 }
 
@@ -31,14 +31,14 @@ type updateProfileModel struct {
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			Authorization	header		string				true	"Bearer token"
-//	@Param			request			body		updateProfileModel	true	"Profile update parameters"
+//	@Param			Authorization	header	string							true	"Bearer token"
+//	@Param			request			body	updatePreferredCurrencyModel	true	"Profile update parameters"
 //	@Success		204
-//	@Failure		400				{object}	httpError
-//	@Failure		401				{object}	httpError
+//	@Failure		400	{object}	httpError
+//	@Failure		401	{object}	httpError
 //	@Router			/users/preferred/currency [put]
 func (e UserUpdatePreferredCurrencyEndpoint) Handle(c *gin.Context) {
-	var model updateProfileModel
+	var model updatePreferredCurrencyModel
 	if err := c.ShouldBindJSON(&model); err != nil {
 		c.JSON(http.StatusBadRequest, httpError{Message: err.Error()})
 		return

@@ -25,11 +25,11 @@ type UpdateProfileModel struct {
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			Authorization	header		string				true	"Bearer token"
-//	@Param			request			body		UpdateProfileModel	true	"Profile update parameters"
+//	@Param			Authorization	header	string				true	"Bearer token"
+//	@Param			request			body	UpdateProfileModel	true	"Profile update parameters"
 //	@Success		204
-//	@Failure		400				{object}	httpError
-//	@Failure		401				{object}	httpError
+//	@Failure		400	{object}	httpError
+//	@Failure		401	{object}	httpError
 //	@Router			/users/profile [put]
 func (e UserUpdateProfileEndpoint) Handle(c *gin.Context) {
 	var model UpdateProfileModel
