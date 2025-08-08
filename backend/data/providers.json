@@ -177,6 +177,7 @@
     "pricing_page": "https://www.bouyguestelecom.fr/offres-internet",
     "icon": "https://upload.wikimedia.org/wikipedia/fr/thumb/2/2b/Bouygues_T%C3%A9l%C3%A9com.png/1280px-Bouygues_T%C3%A9l%C3%A9com.png",
     "categories": [
+     "mobile",
       "internet"
     ]
   },
@@ -189,6 +190,17 @@
     "categories": [
       "mobile",
       "internet"
+    ]
+  },
+  {
+    "name": "Google One",
+    "key": "google-one",
+    "website": "https://one.google.com/about/",
+    "pricing_page": "https://one.google.com/about/",
+    "icon": "https://1000logos.net/wp-content/uploads/2019/06/Google-Logo.jpg",
+    "categories": [
+      "storage",
+      "AI"
     ]
   }
 ]
