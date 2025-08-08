@@ -10,6 +10,17 @@ import (
 	"github.com/google/uuid"
 )
 
+type CurrencyRate struct {
+	ID           uuid.UUID
+	FromCurrency string
+	ToCurrency   string
+	RateDate     time.Time
+	ExchangeRate float64
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	Etag         string
+}
+
 type Family struct {
 	ID        uuid.UUID
 	Name      string

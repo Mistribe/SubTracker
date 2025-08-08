@@ -6,6 +6,8 @@ import (
 
 	"github.com/oleexo/subtracker/internal/application/auth/service"
 	"github.com/oleexo/subtracker/internal/application/core"
+	currencyCommand "github.com/oleexo/subtracker/internal/application/currency/command"
+	currencyQuery "github.com/oleexo/subtracker/internal/application/currency/query"
 	fmlyCommand "github.com/oleexo/subtracker/internal/application/family/command"
 	fmlyQuery "github.com/oleexo/subtracker/internal/application/family/query"
 	lblCommand "github.com/oleexo/subtracker/internal/application/label/command"
@@ -38,6 +40,9 @@ func BuildApplicationModule() fx.Option {
 	return fx.Module("application",
 		fx.Provide(
 			service.NewAuthenticationService,
+
+			AsQueryHandler[currencyQuery.ConvertCurrencyQuery, currencyQuery.ConvertCurrencyResult](currencyQuery.NewConvertCurrencyQueryHandler),
+			AsCommandHandler[currencyCommand.UpdateCurrencyRatesCommand, bool](currencyCommand.NewUpdateCurrencyRatesCommandHandler),
 
 			AsQueryHandler[usrQuery.FindPreferredCurrencyQuery, currency.Unit](usrQuery.NewFindPreferredCurrencyQueryHandler),
 			AsCommandHandler[usrCommand.UpdatePreferredCurrencyCommand, bool](usrCommand.NewUpdatePreferredCurrencyCommandHandler),

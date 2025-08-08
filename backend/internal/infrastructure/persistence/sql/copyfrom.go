@@ -9,6 +9,45 @@ import (
 	"context"
 )
 
+// iteratorForCreateCurrencyRates implements pgx.CopyFromSource.
+type iteratorForCreateCurrencyRates struct {
+	rows                 []CreateCurrencyRatesParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForCreateCurrencyRates) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForCreateCurrencyRates) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].ID,
+		r.rows[0].FromCurrency,
+		r.rows[0].ToCurrency,
+		r.rows[0].RateDate,
+		r.rows[0].ExchangeRate,
+		r.rows[0].CreatedAt,
+		r.rows[0].UpdatedAt,
+		r.rows[0].Etag,
+	}, nil
+}
+
+func (r iteratorForCreateCurrencyRates) Err() error {
+	return nil
+}
+
+func (q *Queries) CreateCurrencyRates(ctx context.Context, arg []CreateCurrencyRatesParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"public", "currency_rates"}, []string{"id", "from_currency", "to_currency", "rate_date", "exchange_rate", "created_at", "updated_at", "etag"}, &iteratorForCreateCurrencyRates{rows: arg})
+}
+
 // iteratorForCreateFamilies implements pgx.CopyFromSource.
 type iteratorForCreateFamilies struct {
 	rows                 []CreateFamiliesParams

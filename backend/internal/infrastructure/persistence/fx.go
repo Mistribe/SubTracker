@@ -19,6 +19,7 @@ func BuildPersistenceModule() fx.Option {
 			NewLabelRepository,
 			NewProviderRepository,
 			NewUserRepository,
+			NewCurrencyRateRepository,
 			//startup.AsStartupTask(newLabelTask),
 			//startup.AsStartupTask(newRepositoryTask),
 		),

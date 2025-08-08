@@ -8,6 +8,7 @@ import (
 
 	"github.com/oleexo/subtracker/internal/application"
 	"github.com/oleexo/subtracker/internal/application/system"
+	"github.com/oleexo/subtracker/internal/infrastructure/exch"
 	"github.com/oleexo/subtracker/internal/infrastructure/kinde"
 	"github.com/oleexo/subtracker/internal/infrastructure/logfx"
 	"github.com/oleexo/subtracker/internal/infrastructure/persistence"
@@ -43,6 +44,7 @@ func main() {
 		system.NewUpdaterModule(),
 		fx.Provide(
 			kinde.NewTokenGenerator,
+			exch.NewClient,
 		),
 	)
 

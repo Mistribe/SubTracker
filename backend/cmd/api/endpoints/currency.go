@@ -13,10 +13,12 @@ type CurrencyEndpointGroup struct {
 
 func NewCurrencyGroupEndpointGroup(
 	supportedEndpoint *CurrencySupportedEndpoint,
+	convertEndpoint *CurrencyConvertEndpoint,
 	authenticationMiddleware *middlewares.AuthenticationMiddleware) *CurrencyEndpointGroup {
 	return &CurrencyEndpointGroup{
 		routes: []ginfx.Route{
 			supportedEndpoint,
+			convertEndpoint,
 		},
 		middlewares: []gin.HandlerFunc{
 			authenticationMiddleware.Middleware(),

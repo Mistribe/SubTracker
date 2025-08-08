@@ -56,6 +56,7 @@ func BuildRoutesModule() fx.Option {
 			ginfx.AsRouteGroup(endpoints.NewProviderEndpointGroup),
 
 			endpoints.NewCurrencySupportedEndpoint,
+			endpoints.NewCurrencyConvertEndpoint,
 			ginfx.AsRouteGroup(endpoints.NewCurrencyGroupEndpointGroup),
 
 			endpoints.NewUserGetPreferredCurrencyEndpoint,
