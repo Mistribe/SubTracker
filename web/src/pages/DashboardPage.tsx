@@ -6,6 +6,7 @@ import {addDays, addMonths, addYears} from "date-fns";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import UpcomingRenewals from "@/components/dashboard/UpcomingRenewals";
 import TopProviders from "@/components/dashboard/TopProviders";
+import PriceEvolutionGraph from "@/components/dashboard/PriceEvolutionGraph";
 import {PageHeader} from "@/components/ui/page-header";
 
 const DashboardPage = () => {
@@ -192,6 +193,14 @@ const DashboardPage = () => {
                 {/* Top 5 Providers by Expense */}
                 <TopProviders
                     providers={providerSpending}
+                    isLoading={isLoadingSubscriptions || isLoadingProviders}
+                />
+            </div>
+
+            {/* Monthly Price Evolution Graph */}
+            <div className="mb-8">
+                <PriceEvolutionGraph
+                    subscriptions={allSubscriptions}
                     isLoading={isLoadingSubscriptions || isLoadingProviders}
                 />
             </div>
