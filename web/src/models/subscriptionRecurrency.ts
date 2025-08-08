@@ -1,14 +1,16 @@
 import {type SubscriptionModel_recurrency, SubscriptionModel_recurrencyObject} from "@/api/models";
 
-export enum SubscriptionRecurrency {
-    Unknown = 'unknown',
-    OneTime = 'one_time',
-    Monthly = 'monthly',
-    Quarterly = 'quarterly',
-    HalfYearly = 'half_yearly',
-    Yearly = 'yearly',
-    Custom = 'custom'
-}
+export const SubscriptionRecurrency = {
+    Unknown: 'unknown',
+    OneTime: 'one_time',
+    Monthly: 'monthly',
+    Quarterly: 'quarterly',
+    HalfYearly: 'half_yearly',
+    Yearly: 'yearly',
+    Custom: 'custom'
+} as const;
+
+export type SubscriptionRecurrency = (typeof SubscriptionRecurrency)[keyof typeof SubscriptionRecurrency];
 
 export function fromHttpApi(recurrency: SubscriptionModel_recurrency | null | undefined): SubscriptionRecurrency {
     if (!recurrency) {

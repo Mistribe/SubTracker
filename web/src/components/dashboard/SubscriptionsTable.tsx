@@ -1,8 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import {Button} from "@/components/ui/button";
+import {Skeleton} from "@/components/ui/skeleton";
 import Subscription from "@/models/subscription";
-import { format } from "date-fns";
-import { formatCurrency, formatRecurrency } from "./utils";
+import {format} from "date-fns";
+import {formatCurrency, formatRecurrency} from "./utils";
 
 interface SubscriptionWithNextRenewal extends Subscription {
     nextRenewalDate: Date;
@@ -21,11 +21,11 @@ interface SubscriptionsTableProps {
 }
 
 const SubscriptionsTable = ({
-    subscriptions,
-    subscriptionsWithNextRenewal,
-    providerMap,
-    isLoading
-}: SubscriptionsTableProps) => {
+                                subscriptions,
+                                subscriptionsWithNextRenewal,
+                                providerMap,
+                                isLoading
+                            }: SubscriptionsTableProps) => {
     return (
         <div>
             <div className="flex justify-between items-center mb-4">
@@ -37,10 +37,10 @@ const SubscriptionsTable = ({
 
             {isLoading ? (
                 <div className="space-y-2">
-                    {[...Array(3)].map((_, i) => (
-                        <div key={i} className="p-4 border rounded-lg">
-                            <Skeleton className="h-6 w-full mb-2" />
-                            <Skeleton className="h-4 w-3/4" />
+                    {Array.from({length: 3}).map((_, i) => (
+                        <div key={`skeleton-${i}`} className="p-4 border rounded-lg">
+                            <Skeleton className="h-6 w-full mb-2"/>
+                            <Skeleton className="h-4 w-3/4"/>
                         </div>
                     ))}
                 </div>
@@ -57,42 +57,42 @@ const SubscriptionsTable = ({
                         </tr>
                         </thead>
                         <tbody>
-                        {subscriptions.map(subscription => (
-                            <tr key={subscription.id} className="border-b">
+                        {subscriptions.map((subscription, idx) => (
+                            <tr key={subscription.id ?? `${subscription.providerId}-${idx}`} className="border-b">
                                 <td className="p-3">
-                                    {subscription.friendlyName || 
-                                     providerMap.get(subscription.providerId)?.name || 
-                                     subscription.providerId}
+                                    {subscription.friendlyName ||
+                                        providerMap.get(subscription.providerId)?.name ||
+                                        subscription.providerId}
                                 </td>
                                 <td className="p-3">
-                                    {subscription.customPrice ? 
-                                     formatCurrency(subscription.customPrice.amount) : 
-                                     'N/A'}
+                                    {subscription.customPrice ?
+                                        formatCurrency(subscription.customPrice.amount) :
+                                        'N/A'}
                                 </td>
                                 <td className="p-3">
                                     {formatRecurrency(subscription.recurrency, subscription.customRecurrency)}
                                 </td>
                                 <td className="p-3">
-                                    {subscription.isActive ? 
-                                     format(
-                                         subscriptionsWithNextRenewal.find(s => s.id === subscription.id)?.nextRenewalDate || 
-                                         new Date(), 
-                                         'MMM d, yyyy'
-                                     ) : 
-                                     'Ended'}
+                                    {subscription.isActive ?
+                                        format(
+                                            subscriptionsWithNextRenewal.find(s => s.id === subscription.id)?.nextRenewalDate ||
+                                            new Date(),
+                                            'MMM d, yyyy'
+                                        ) :
+                                        'Ended'}
                                 </td>
                                 <td className="p-3">
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
                                         className="text-blue-500 hover:underline mr-2"
                                         onClick={() => window.location.href = `/subscriptions/edit/${subscription.id}`}
                                     >
                                         Edit
                                     </Button>
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
                                         className="text-red-500 hover:underline"
                                     >
                                         Delete
@@ -104,7 +104,8 @@ const SubscriptionsTable = ({
                     </table>
                 </div>
             ) : (
-                <p className="text-muted-foreground">No subscriptions found. Add your first subscription to get started.</p>
+                <p className="text-muted-foreground">No subscriptions found. Add your first subscription to get
+                    started.</p>
             )}
         </div>
     );

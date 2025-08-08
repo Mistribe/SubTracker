@@ -1,5 +1,5 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { formatCurrency } from "./utils";
+import {Skeleton} from "@/components/ui/skeleton";
+import {formatCurrency} from "./utils";
 
 interface Provider {
     id: string;
@@ -12,16 +12,16 @@ interface TopProvidersProps {
     isLoading: boolean;
 }
 
-const TopProviders = ({ providers, isLoading }: TopProvidersProps) => {
+const TopProviders = ({providers, isLoading}: TopProvidersProps) => {
     return (
         <div className="mb-8">
             <h3 className="text-xl font-semibold mb-4">Top Providers by Expense</h3>
             {isLoading ? (
                 <div className="space-y-2">
-                    {[...Array(5)].map((_, i) => (
-                        <div key={i} className="p-4 border rounded-lg">
-                            <Skeleton className="h-6 w-full mb-2" />
-                            <Skeleton className="h-4 w-1/2" />
+                    {Array.from({length: 5}).map((_, i) => (
+                        <div key={`topprov-skeleton-${i}`} className="p-4 border rounded-lg">
+                            <Skeleton className="h-6 w-full mb-2"/>
+                            <Skeleton className="h-4 w-1/2"/>
                         </div>
                     ))}
                 </div>

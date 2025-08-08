@@ -50,7 +50,7 @@ export default class Owner {
     }
 
     public static fromModel(model: OwnerModel): Owner {
-        let ownerType = OwnerType.System; // Default
+        let ownerType: OwnerType = OwnerType.System; // Default
         if (model.type && isValidOwnerType(model.type)) {
             ownerType = model.type as OwnerType;
         }

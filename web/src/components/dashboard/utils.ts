@@ -1,4 +1,4 @@
-import { SubscriptionRecurrency } from "@/models/subscriptionRecurrency";
+import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency";
 
 // Format currency
 export const formatCurrency = (amount: number) => {
@@ -9,7 +9,7 @@ export const formatCurrency = (amount: number) => {
 };
 
 // Format recurrency
-export const formatRecurrency = (recurrency: SubscriptionRecurrency, customRecurrency: number | null) => {
+export const formatRecurrency = (recurrency: SubscriptionRecurrency, customRecurrency: number | undefined) => {
     if (recurrency === SubscriptionRecurrency.Custom && customRecurrency) {
         return `Every ${customRecurrency} days`;
     }

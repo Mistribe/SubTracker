@@ -1,6 +1,6 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { format } from "date-fns";
-import { formatCurrency, formatRecurrency } from "./utils";
+import {Skeleton} from "@/components/ui/skeleton";
+import {format} from "date-fns";
+import {formatCurrency, formatRecurrency} from "./utils";
 import Subscription from "@/models/subscription";
 
 interface SubscriptionWithNextRenewal extends Subscription {
@@ -19,26 +19,27 @@ interface UpcomingRenewalsProps {
 }
 
 const UpcomingRenewals = ({
-    upcomingRenewals,
-    providerMap,
-    isLoading
-}: UpcomingRenewalsProps) => {
+                              upcomingRenewals,
+                              providerMap,
+                              isLoading
+                          }: UpcomingRenewalsProps) => {
     return (
         <div className="mb-8">
             <h3 className="text-xl font-semibold mb-4">Upcoming Renewals</h3>
             {isLoading ? (
                 <div className="space-y-2">
-                    {[...Array(5)].map((_, i) => (
-                        <div key={i} className="p-4 border rounded-lg">
-                            <Skeleton className="h-6 w-full mb-2" />
-                            <Skeleton className="h-4 w-1/2" />
+                    {Array.from({length: 5}).map((_, i) => (
+                        <div key={`upcoming-skeleton-${i}`} className="p-4 border rounded-lg">
+                            <Skeleton className="h-6 w-full mb-2"/>
+                            <Skeleton className="h-4 w-1/2"/>
                         </div>
                     ))}
                 </div>
             ) : upcomingRenewals.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {upcomingRenewals.map((sub) => (
-                        <div key={sub.id} className="p-4 border rounded-lg">
+                    {upcomingRenewals.map((sub, idx) => (
+                        <div key={sub.id ?? `${sub.providerId}-${format(sub.nextRenewalDate, 'yyyy-MM-dd')}-${idx}`}
+                             className="p-4 border rounded-lg">
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h4 className="font-medium">
@@ -55,7 +56,8 @@ const UpcomingRenewals = ({
                                 )}
                             </div>
                             <div className="mt-2 text-sm">
-                                <span className="font-medium">Next renewal:</span> {format(sub.nextRenewalDate, 'MMM d, yyyy')}
+                                <span
+                                    className="font-medium">Next renewal:</span> {format(sub.nextRenewalDate, 'MMM d, yyyy')}
                             </div>
                         </div>
                     ))}

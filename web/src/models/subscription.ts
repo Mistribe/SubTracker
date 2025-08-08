@@ -3,7 +3,8 @@ import Owner from "@/models/owner.ts";
 import {SubscriptionPayer} from "@/models/subscriptionPayer.ts";
 import {SubscriptionCustomPrice} from "@/models/subscriptionCustomPrice.ts";
 import {SubscriptionFreeTrial} from "@/models/subscriptionFreeTrial.ts";
-import {fromHttpApi, type SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
+import {fromHttpApi, SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
+import {addDays, addMonths, addYears} from "date-fns";
 
 export default class Subscription {
     private readonly _id: string;
@@ -154,6 +155,85 @@ export default class Subscription {
             model.customPrice ? SubscriptionCustomPrice.fromModel(model.customPrice) : undefined,
             model.freeTrial ? SubscriptionFreeTrial.fromModel(model.freeTrial) : undefined
         );
+    }
+
+    nextRenewDates(n: number): Date[] {
+        // No renewals for unknown or one-time subscriptions
+        if (this._recurrency === SubscriptionRecurrency.Unknown ||
+            this._recurrency === SubscriptionRecurrency.OneTime) {
+            return [];
+        }
+
+        const dates: Date[] = [];
+        const today = new Date();
+        const end = this._endDate;
+
+        // Helper to stop if endDate exists and current is after endDate
+        const withinEndDate = (d: Date) => !end || d <= end;
+
+        let current = new Date(this._startDate);
+
+        switch (this._recurrency) {
+            case SubscriptionRecurrency.Monthly: {
+                while (current < today) {
+                    current = addMonths(current, 1);
+                }
+                for (let i = 0; i < n && withinEndDate(current); i++) {
+                    dates.push(new Date(current));
+                    current = addMonths(current, 1);
+                }
+                break;
+            }
+            case SubscriptionRecurrency.Quarterly: {
+                while (current < today) {
+                    current = addMonths(current, 3);
+                }
+                for (let i = 0; i < n && withinEndDate(current); i++) {
+                    dates.push(new Date(current));
+                    current = addMonths(current, 3);
+                }
+                break;
+            }
+            case SubscriptionRecurrency.HalfYearly: {
+                while (current < today) {
+                    current = addMonths(current, 6);
+                }
+                for (let i = 0; i < n && withinEndDate(current); i++) {
+                    dates.push(new Date(current));
+                    current = addMonths(current, 6);
+                }
+                break;
+            }
+            case SubscriptionRecurrency.Yearly: {
+                while (current < today) {
+                    current = addYears(current, 1);
+                }
+                for (let i = 0; i < n && withinEndDate(current); i++) {
+                    dates.push(new Date(current));
+                    current = addYears(current, 1);
+                }
+                break;
+            }
+            case SubscriptionRecurrency.Custom: {
+                const intervalDays = this._customRecurrency || 0;
+                if (intervalDays <= 0) {
+                    return [];
+                }
+                while (current < today) {
+                    current = addDays(current, intervalDays);
+                }
+                for (let i = 0; i < n && withinEndDate(current); i++) {
+                    dates.push(new Date(current));
+                    current = addDays(current, intervalDays);
+                }
+                break;
+            }
+            default:
+                // Safety: If a new recurrency type is added and not handled, return empty.
+                return [];
+        }
+
+        return dates;
     }
 }
 

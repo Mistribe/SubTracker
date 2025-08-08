@@ -1,10 +1,12 @@
 import {type FamilyMemberModel_type, FamilyMemberModel_typeObject} from "@/api/models";
 
-export enum FamilyMemberType {
-    Owner = 'owner',
-    Adult = 'adult',
-    Kid = 'kid'
-}
+export const FamilyMemberType = {
+    Owner: 'owner',
+    Adult: 'adult',
+    Kid: 'kid'
+} as const;
+
+export type FamilyMemberType = (typeof FamilyMemberType)[keyof typeof FamilyMemberType];
 
 export function fromHttpApi(memberType: FamilyMemberModel_type | null | undefined): FamilyMemberType {
     switch (memberType) {
