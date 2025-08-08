@@ -53,5 +53,10 @@
     "key": "shopping",
     "name": "Shopping",
     "color": "#FF798600"
+  },
+  {
+    "key": "storage",
+    "name": "Storage",
+    "color": "#FF798900"
   }
 ]
