@@ -201,6 +201,7 @@ const DashboardPage = () => {
             <div className="mb-8">
                 <PriceEvolutionGraph
                     subscriptions={allSubscriptions}
+                    providerMap={providerMap}
                     isLoading={isLoadingSubscriptions || isLoadingProviders}
                 />
             </div>

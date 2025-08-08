@@ -8,25 +8,42 @@ import {
     ChartTooltip,
     ChartTooltipContent
 } from "@/components/ui/chart";
-import {CartesianGrid, Line, LineChart, XAxis, YAxis} from "recharts";
+import {Bar, CartesianGrid, ComposedChart, Line, XAxis, YAxis} from "recharts";
 import {formatCurrency} from "./utils";
 import {ChevronLeft, ChevronRight, RefreshCw, TrendingUp} from "lucide-react";
 import type Subscription from "@/models/subscription";
 import {addMonths, format, startOfMonth, subMonths} from "date-fns";
 
+interface Provider {
+    id: string;
+    name: string;
+}
+
 interface PriceEvolutionGraphProps {
     subscriptions: Subscription[];
+    providerMap: Map<string, Provider>;
     isLoading: boolean;
+}
+
+// Interface for subscription data by provider
+interface ProviderSubscriptionData {
+    providerId: string;
+    providerName: string;
+    monthlyPrice: number;
 }
 
 interface MonthlyData {
     month: string;
     date: Date;
     monthlySubscriptionsTotal: number;
+    // Dynamic provider data will be added to this object
+    [key: string]: string | Date | number | ProviderSubscriptionData[];
+    providerData: ProviderSubscriptionData[];
 }
 
 const PriceEvolutionGraph = ({
                                  subscriptions,
+                                 providerMap,
                                  isLoading
                              }: PriceEvolutionGraphProps) => {
     // State to track the reference date for time navigation
@@ -57,36 +74,80 @@ const PriceEvolutionGraph = ({
             const monthDate = addMonths(currentMonth, i);
             const monthStr = format(monthDate, 'MMM yyyy');
             
-            // Calculate total for subscriptions that are active in this specific month
-            // This shows how subscription costs change over time based on start/end dates
-            const monthlySubscriptionsTotal = subscriptions
-                .filter(subscription => {
-                    const startDate = subscription.startDate;
-                    const endDate = subscription.endDate;
+            // Filter subscriptions that are active in this specific month
+            const activeSubscriptions = subscriptions.filter(subscription => {
+                const startDate = subscription.startDate;
+                const endDate = subscription.endDate;
+                
+                // Check if subscription is active for this month:
+                // 1. Start date is before or equal to the end of this month
+                // 2. End date is undefined or after the start of this month
+                const monthEnd = addMonths(monthDate, 1);
+                const isActiveInMonth = 
+                    startDate <= monthEnd && 
+                    (!endDate || endDate >= monthDate);
                     
-                    // Check if subscription is active for this month:
-                    // 1. Start date is before or equal to the end of this month
-                    // 2. End date is undefined or after the start of this month
-                    const monthEnd = addMonths(monthDate, 1);
-                    const isActiveInMonth = 
-                        startDate <= monthEnd && 
-                        (!endDate || endDate >= monthDate);
-                        
-                    return isActiveInMonth;
-                })
-                .reduce((sum, subscription) => {
-                    return sum + subscription.getMonthlyPrice();
-                }, 0);
-
-            data.push({
+                return isActiveInMonth;
+            });
+            
+            // Calculate total for all active subscriptions in this month
+            const monthlySubscriptionsTotal = activeSubscriptions.reduce((sum, subscription) => {
+                return sum + subscription.getMonthlyPrice();
+            }, 0);
+            
+            // Group subscriptions by provider
+            const providerData: ProviderSubscriptionData[] = [];
+            
+            // Create a map to aggregate subscription costs by provider
+            const providerCosts = new Map<string, number>();
+            
+            activeSubscriptions.forEach(subscription => {
+                const providerId = subscription.providerId;
+                const monthlyPrice = subscription.getMonthlyPrice();
+                
+                if (providerCosts.has(providerId)) {
+                    providerCosts.set(providerId, providerCosts.get(providerId)! + monthlyPrice);
+                } else {
+                    providerCosts.set(providerId, monthlyPrice);
+                }
+            });
+            
+            // Convert the map to an array of provider data
+            providerCosts.forEach((monthlyPrice, providerId) => {
+                const providerName = providerMap.get(providerId)?.name || providerId;
+                
+                providerData.push({
+                    providerId,
+                    providerName,
+                    monthlyPrice
+                });
+                
+                // Also add the provider cost as a direct property on the data object
+                // This will be used for the line chart
+            });
+            
+            // Sort provider data by monthly price (descending)
+            providerData.sort((a, b) => b.monthlyPrice - a.monthlyPrice);
+            
+            // Create the monthly data object
+            const monthlyDataObj: MonthlyData = {
                 month: monthStr,
                 date: monthDate,
-                monthlySubscriptionsTotal
+                monthlySubscriptionsTotal,
+                providerData
+            };
+            
+            // Add each provider's cost as a direct property
+            providerData.forEach(provider => {
+                const key = `provider_${provider.providerId}`;
+                monthlyDataObj[key] = provider.monthlyPrice;
             });
+            
+            data.push(monthlyDataObj);
         }
 
         return data;
-    }, [subscriptions, referenceDate]);
+    }, [subscriptions, providerMap, referenceDate]);
 
     // Calculate the visible date range for display
     const dateRangeStart = format(monthlyData[0].date, 'MMM yyyy');
@@ -144,16 +205,57 @@ const PriceEvolutionGraph = ({
 
                         <ChartContainer
                             config={{
-                                monthlySubscriptions: {
-                                    label: "Monthly Subscriptions",
+                                totalSubscriptions: {
+                                    label: "Total Subscriptions",
                                     theme: {
                                         light: "#0891b2", // cyan-600
                                         dark: "#06b6d4"   // cyan-500
                                     }
-                                }
+                                },
+                                // Add dynamic provider colors
+                                ...Object.fromEntries(
+                                    // Get unique providers across all months
+                                    Array.from(
+                                        new Set(
+                                            monthlyData.flatMap(data => 
+                                                data.providerData.map(p => p.providerId)
+                                            )
+                                        )
+                                    ).map((providerId, index) => {
+                                        // Find provider name from any month that has this provider
+                                        const providerName = monthlyData.find(
+                                            data => data.providerData.some(p => p.providerId === providerId)
+                                        )?.providerData.find(p => p.providerId === providerId)?.providerName || providerId;
+                                        
+                                        // Generate a color based on index
+                                        // Using a set of predefined colors for better visual distinction
+                                        const colors = [
+                                            { light: "#f97316", dark: "#fb923c" }, // orange
+                                            { light: "#a855f7", dark: "#c084fc" }, // purple
+                                            { light: "#ec4899", dark: "#f472b6" }, // pink
+                                            { light: "#14b8a6", dark: "#2dd4bf" }, // teal
+                                            { light: "#f59e0b", dark: "#fbbf24" }, // amber
+                                            { light: "#8b5cf6", dark: "#a78bfa" }, // violet
+                                            { light: "#ef4444", dark: "#f87171" }, // red
+                                            { light: "#10b981", dark: "#34d399" }, // emerald
+                                            { light: "#6366f1", dark: "#818cf8" }, // indigo
+                                            { light: "#0ea5e9", dark: "#38bdf8" }  // sky
+                                        ];
+                                        
+                                        const colorIndex = index % colors.length;
+                                        
+                                        return [
+                                            `provider_${providerId}`,
+                                            {
+                                                label: providerName,
+                                                theme: colors[colorIndex]
+                                            }
+                                        ];
+                                    })
+                                )
                             }}
                         >
-                            <LineChart
+                            <ComposedChart
                                 data={monthlyData}
                                 margin={{top: 10, right: 30, left: 20, bottom: 30}}
                             >
@@ -175,21 +277,42 @@ const PriceEvolutionGraph = ({
                                         />
                                     }
                                 />
-                                <Line
-                                    type="monotone"
+                                
+                                {/* Bar chart for total subscription costs */}
+                                <Bar
                                     dataKey="monthlySubscriptionsTotal"
-                                    name="monthlySubscriptions"
-                                    strokeWidth={2}
-                                    dot={{strokeWidth: 2}}
-                                    activeDot={{r: 6}}
+                                    name="totalSubscriptions"
+                                    fill="var(--color-totalSubscriptions-bg)"
+                                    barSize={20}
+                                    opacity={0.7}
                                 />
+                                
+                                {/* Line charts for each provider */}
+                                {Array.from(
+                                    new Set(
+                                        monthlyData.flatMap(data => 
+                                            data.providerData.map(p => p.providerId)
+                                        )
+                                    )
+                                ).map(providerId => (
+                                    <Line
+                                        key={providerId}
+                                        type="monotone"
+                                        dataKey={`provider_${providerId}`}
+                                        name={`provider_${providerId}`}
+                                        strokeWidth={2}
+                                        dot={{strokeWidth: 2}}
+                                        activeDot={{r: 4}}
+                                    />
+                                ))}
+                                
                                 <ChartLegend
                                     content={<ChartLegendContent/>}
                                     verticalAlign="bottom"
-                                    height={36}
+                                    height={60}
                                     wrapperStyle={{paddingTop: '10px'}}
                                 />
-                            </LineChart>
+                            </ComposedChart>
                         </ChartContainer>
                     </div>
                 )}
