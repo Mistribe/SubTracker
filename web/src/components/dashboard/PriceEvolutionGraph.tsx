@@ -81,11 +81,11 @@ const PriceEvolutionGraph = ({
                 
                 // Check if subscription is active for this month:
                 // 1. Start date is before or equal to the end of this month
-                // 2. End date is undefined or after the start of this month
+                // 2. End date is undefined or strictly after the start of this month (end date is exclusive)
                 const monthEnd = addMonths(monthDate, 1);
                 const isActiveInMonth = 
                     startDate <= monthEnd && 
-                    (!endDate || endDate >= monthDate);
+                    (!endDate || endDate > monthDate);
                     
                 return isActiveInMonth;
             });
