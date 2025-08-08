@@ -4,7 +4,8 @@ import {SubscriptionPayer} from "@/models/subscriptionPayer.ts";
 import {SubscriptionCustomPrice} from "@/models/subscriptionCustomPrice.ts";
 import {SubscriptionFreeTrial} from "@/models/subscriptionFreeTrial.ts";
 import {fromHttpApi, SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
-import {addDays, addMonths, addYears} from "date-fns";
+import {addMonths, addYears} from "date-fns";
+import {monthsBetween} from "@/utils/date.ts";
 
 export default class Subscription {
     private readonly _id: string;
@@ -16,6 +17,8 @@ export default class Subscription {
     private readonly _planId: string;
     private readonly _priceId: string;
     private readonly _recurrency: SubscriptionRecurrency;
+    // The number of months between recurrent payments.
+    // Only used for custom recurrency.
     private readonly _customRecurrency: number | undefined;
     private readonly _startDate: Date;
     private readonly _endDate: Date | undefined;
@@ -157,6 +160,75 @@ export default class Subscription {
         );
     }
 
+    getMonthlyPrice(): number {
+        if (!this._customPrice?.amount) {
+            return 0;
+        }
+
+        switch (this._recurrency) {
+            case SubscriptionRecurrency.Monthly:
+                return this._customPrice.amount;
+            case SubscriptionRecurrency.Quarterly:
+                return this._customPrice.amount / 3;
+            case SubscriptionRecurrency.HalfYearly:
+                return this._customPrice.amount / 6;
+            case SubscriptionRecurrency.Yearly:
+                return this._customPrice.amount / 12;
+            case SubscriptionRecurrency.Custom:
+                if (this._customRecurrency) {
+                    return this._customPrice.amount / this._customRecurrency;
+                }
+                return 0;
+            case SubscriptionRecurrency.OneTime: {
+                if (!this._endDate) {
+                    return 0;
+                }
+                const numberOfMonths = monthsBetween(this._startDate, this._endDate, {includePartial: true});
+                if (numberOfMonths <= 0) {
+                    return 0;
+                }
+                return this._customPrice.amount / numberOfMonths;
+            }
+            default:
+                return 0;
+        }
+    }
+
+    getYearlyPrice(): number {
+        if (!this._customPrice?.amount) {
+            return 0;
+        }
+
+        switch (this._recurrency) {
+            case SubscriptionRecurrency.Monthly:
+                return this._customPrice.amount * 12;
+            case SubscriptionRecurrency.Quarterly:
+                return this._customPrice.amount * 4;
+            case SubscriptionRecurrency.HalfYearly:
+                return this._customPrice.amount * 2;
+            case SubscriptionRecurrency.Yearly:
+                return this._customPrice.amount;
+            case SubscriptionRecurrency.Custom:
+                if (this._customRecurrency) {
+                    return (this._customPrice.amount * 12) / this._customRecurrency;
+                }
+                return 0;
+            case SubscriptionRecurrency.OneTime: {
+                if (!this._endDate) {
+                    return 0;
+                }
+                const numberOfMonths = monthsBetween(this._startDate, this._endDate, {includePartial: true});
+                if (numberOfMonths <= 0) {
+                    return 0;
+                }
+
+                return (this._customPrice.amount * 12) / numberOfMonths;
+            }
+            default:
+                return 0;
+        }
+    }
+
     nextRenewDates(n: number): Date[] {
         // No renewals for unknown or one-time subscriptions
         if (this._recurrency === SubscriptionRecurrency.Unknown ||
@@ -215,16 +287,16 @@ export default class Subscription {
                 break;
             }
             case SubscriptionRecurrency.Custom: {
-                const intervalDays = this._customRecurrency || 0;
-                if (intervalDays <= 0) {
+                const intervalMonths = this._customRecurrency || 0;
+                if (intervalMonths <= 0) {
                     return [];
                 }
                 while (current < today) {
-                    current = addDays(current, intervalDays);
+                    current = addMonths(current, intervalMonths);
                 }
                 for (let i = 0; i < n && withinEndDate(current); i++) {
                     dates.push(new Date(current));
-                    current = addDays(current, intervalDays);
+                    current = addMonths(current, intervalMonths);
                 }
                 break;
             }

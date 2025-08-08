@@ -1,8 +1,8 @@
-import { useMemo } from "react";
-import { useAllSubscriptionsQuery } from "@/hooks/subscriptions/useAllSubscriptionsQuery";
-import { useAllProvidersQuery } from "@/hooks/providers/useAllProvidersQuery";
-import { SubscriptionRecurrency } from "@/models/subscriptionRecurrency";
-import { addMonths, addYears, addDays } from "date-fns";
+import {useMemo} from "react";
+import {useAllSubscriptionsQuery} from "@/hooks/subscriptions/useAllSubscriptionsQuery";
+import {useAllProvidersQuery} from "@/hooks/providers/useAllProvidersQuery";
+import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency";
+import {addDays, addMonths, addYears} from "date-fns";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import UpcomingRenewals from "@/components/dashboard/UpcomingRenewals";
 import TopProviders from "@/components/dashboard/TopProviders";
@@ -10,17 +10,17 @@ import SubscriptionsTable from "@/components/dashboard/SubscriptionsTable";
 
 const DashboardPage = () => {
     // Fetch all subscriptions
-    const { data: subscriptionsData, isLoading: isLoadingSubscriptions } = useAllSubscriptionsQuery();
-    
+    const {data: subscriptionsData, isLoading: isLoadingSubscriptions} = useAllSubscriptionsQuery();
+
     // Fetch all providers
-    const { data: providersData, isLoading: isLoadingProviders } = useAllProvidersQuery();
-    
+    const {data: providersData, isLoading: isLoadingProviders} = useAllProvidersQuery();
+
     // Flatten all subscriptions from all pages
-    const allSubscriptions = useMemo(() => 
-        subscriptionsData?.pages.flatMap(page => page.subscriptions) || [], 
+    const allSubscriptions = useMemo(() =>
+            subscriptionsData?.pages.flatMap(page => page.subscriptions) || [],
         [subscriptionsData]
     );
-    
+
     // Flatten all providers from all pages and create a mapping from ID to provider
     const providerMap = useMemo(() => {
         const map = new Map();
@@ -29,36 +29,30 @@ const DashboardPage = () => {
         });
         return map;
     }, [providersData]);
-    
+
     // Calculate monthly expenses
     const totalMonthly = useMemo(() => {
         return allSubscriptions
-            .filter(sub => sub.recurrency === SubscriptionRecurrency.Monthly && sub.isActive)
+            .filter(sub => sub.isActive)
             .reduce((sum, sub) => {
-                if (sub.customPrice) {
-                    return sum + sub.customPrice.amount;
-                }
-                return sum;
+                return sum + sub.getMonthlyPrice()
             }, 0);
     }, [allSubscriptions]);
-    
+
     // Calculate yearly expenses
     const totalYearly = useMemo(() => {
         return allSubscriptions
-            .filter(sub => sub.recurrency === SubscriptionRecurrency.Yearly && sub.isActive)
+            .filter(sub => sub.isActive)
             .reduce((sum, sub) => {
-                if (sub.customPrice) {
-                    return sum + sub.customPrice.amount;
-                }
-                return sum;
+                return sum + sub.getYearlyPrice()
             }, 0);
     }, [allSubscriptions]);
-    
+
     // Count active subscriptions
     const activeSubscriptionsCount = useMemo(() => {
         return allSubscriptions.filter(sub => sub.isActive).length;
     }, [allSubscriptions]);
-    
+
     // Calculate next renewal date for each subscription
     const subscriptionsWithNextRenewal = useMemo(() => {
         return allSubscriptions
@@ -66,7 +60,7 @@ const DashboardPage = () => {
             .map(sub => {
                 let nextRenewalDate;
                 const today = new Date();
-                
+
                 // Calculate next renewal based on recurrency
                 switch (sub.recurrency) {
                     case SubscriptionRecurrency.Monthly:
@@ -107,7 +101,7 @@ const DashboardPage = () => {
                     default:
                         nextRenewalDate = sub.endDate || today;
                 }
-                
+
                 return {
                     ...sub,
                     nextRenewalDate
@@ -115,23 +109,23 @@ const DashboardPage = () => {
             })
             .sort((a, b) => a.nextRenewalDate.getTime() - b.nextRenewalDate.getTime());
     }, [allSubscriptions]);
-    
+
     // Get top 5 upcoming renewals
     const topUpcomingRenewals = useMemo(() => {
         return subscriptionsWithNextRenewal.slice(0, 5);
     }, [subscriptionsWithNextRenewal]);
-    
+
     // Calculate spending by provider
     const providerSpending = useMemo(() => {
         const spending = new Map();
-        
+
         allSubscriptions.forEach(sub => {
             if (!sub.customPrice || !sub.isActive) return;
-            
+
             const providerId = sub.providerId;
             const providerName = providerMap.get(providerId)?.name || providerId;
             const amount = sub.customPrice.amount;
-            
+
             // Convert all subscriptions to yearly cost for fair comparison
             let yearlyAmount = amount;
             switch (sub.recurrency) {
@@ -150,7 +144,7 @@ const DashboardPage = () => {
                     }
                     break;
             }
-            
+
             if (spending.has(providerId)) {
                 spending.set(providerId, {
                     id: providerId,
@@ -165,7 +159,7 @@ const DashboardPage = () => {
                 });
             }
         });
-        
+
         return Array.from(spending.values())
             .sort((a, b) => b.amount - a.amount)
             .slice(0, 5);
@@ -179,7 +173,7 @@ const DashboardPage = () => {
             </div>
 
             {/* Summary Cards */}
-            <SummaryCards 
+            <SummaryCards
                 totalMonthly={totalMonthly}
                 totalYearly={totalYearly}
                 activeSubscriptionsCount={activeSubscriptionsCount}
@@ -187,20 +181,20 @@ const DashboardPage = () => {
             />
 
             {/* Top 5 Upcoming Renewals */}
-            <UpcomingRenewals 
+            <UpcomingRenewals
                 upcomingRenewals={topUpcomingRenewals}
                 providerMap={providerMap}
                 isLoading={isLoadingSubscriptions}
             />
 
             {/* Top 5 Providers by Expense */}
-            <TopProviders 
+            <TopProviders
                 providers={providerSpending}
                 isLoading={isLoadingSubscriptions || isLoadingProviders}
             />
 
             {/* All Subscriptions */}
-            <SubscriptionsTable 
+            <SubscriptionsTable
                 subscriptions={allSubscriptions}
                 subscriptionsWithNextRenewal={subscriptionsWithNextRenewal}
                 providerMap={providerMap}
