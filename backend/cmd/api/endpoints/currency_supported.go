@@ -4,9 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/text/currency"
+
 	dcurrency "github.com/oleexo/subtracker/internal/domain/currency"
 	"github.com/oleexo/subtracker/pkg/slicesx"
-	"golang.org/x/text/currency"
 )
 
 type CurrencySupportedEndpoint struct {
@@ -16,7 +17,7 @@ func NewCurrencySupportedEndpoint() *CurrencySupportedEndpoint {
 	return &CurrencySupportedEndpoint{}
 }
 
-// CurrencySupportedEndpoint godoc
+// Handle godoc
 //
 //	@Summary		Get Supported Currencies
 //	@Description	get details of all supported currencies
