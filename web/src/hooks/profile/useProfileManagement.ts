@@ -3,6 +3,7 @@ import {useApiClient} from "@/hooks/use-api-client";
 import {type UpdatePreferredCurrencyModel, type UpdateProfileModel} from "@/api/models";
 import currencyCodes from "currency-codes";
 import getSymbolFromCurrency from "currency-symbol-map";
+import {useKindeAuth} from "@kinde-oss/kinde-auth-react";
 
 interface ProfileQueryOptions {
     /**
@@ -31,6 +32,7 @@ const fallbackCurrencyCodes = ["USD", "EUR"]
  */
 export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
     const {enabled = true} = options;
+    const {logout} = useKindeAuth()
     const {apiClient} = useApiClient();
     const queryClient = useQueryClient();
 
@@ -102,7 +104,7 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
     })
 
     // Mutation to update profile data, specifically the preferred currency
-    const updateProfileMutation = useMutation({
+    const updatePreferredCurrencyMutation = useMutation({
         mutationFn: async (currency: string) => {
             if (!apiClient) {
                 throw new Error('API client not initialized');
@@ -153,6 +155,25 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
         }
     });
 
+    const deleteUserMutation = useMutation({
+        mutationFn: async () => {
+            if (!apiClient) {
+                throw new Error('API client not initialized');
+            }
+
+            try {
+                return await apiClient.users.delete();
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                throw error;
+            }
+        },
+        onSuccess: async () => {
+            await logout();
+            window.location.href = '/';
+        }
+    })
+
     return {
         preferredCurrency: preferredCurrencyQuery.data,
         isLoadingPreferredCurrency: preferredCurrencyQuery.isLoading,
@@ -162,9 +183,10 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
         isLoadingAvailableCurrencies: availableCurrencyQuery.isLoading,
         isErrorAvailableCurrencies: availableCurrencyQuery.isError,
         errorAvailableCurrencies: availableCurrencyQuery.error,
-        updateProfile: updateProfileMutation.mutate,
+        updateProfile: updatePreferredCurrencyMutation.mutate,
         updateProfileName: (givenName: string, familyName: string) =>
             updateProfileNameMutation.mutate({givenName, familyName}),
-        isUpdating: updateProfileMutation.isPending || updateProfileNameMutation.isPending,
+        deleteUser: deleteUserMutation.mutate,
+        isUpdating: updatePreferredCurrencyMutation.isPending || updateProfileNameMutation.isPending
     };
 };

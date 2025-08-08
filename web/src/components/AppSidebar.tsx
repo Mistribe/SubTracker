@@ -30,41 +30,50 @@ import {ScrollArea} from "@/components/ui/scroll-area";
 import {Separator} from "@/components/ui/separator";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
 import {Badge} from "@/components/ui/badge";
-import {AlertTriangleIcon, CreditCardIcon, HomeIcon, LogOutIcon, PackageIcon, TagIcon, UserIcon, UsersIcon} from "lucide-react";
+import {
+    AlertTriangleIcon,
+    CreditCardIcon,
+    HomeIcon,
+    LogOutIcon,
+    PackageIcon,
+    TagIcon,
+    UserIcon,
+    UsersIcon
+} from "lucide-react";
 
 export function AppSidebar() {
     const {user, logout} = useKindeAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const {state, isMobile} = useSidebar();
-    
+
     // Get environment from VITE_TARGET_ENV or default to development
     const getEnvironmentInfo = () => {
         const env = import.meta.env.VITE_TARGET_ENV || 'development';
-        
-        switch(env) {
+
+        switch (env) {
             case 'development':
-                return { 
-                    show: true, 
-                    text: 'alpha', 
+                return {
+                    show: true,
+                    text: 'alpha',
                     variant: 'secondary' as const,
-                    icon: <AlertTriangleIcon className="h-3 w-3" />
+                    icon: <AlertTriangleIcon className="h-3 w-3"/>
                 };
             case 'staging':
-                return { 
-                    show: true, 
-                    text: 'beta', 
+                return {
+                    show: true,
+                    text: 'beta',
                     variant: 'outline' as const,
-                    icon: <AlertTriangleIcon className="h-3 w-3" />
+                    icon: <AlertTriangleIcon className="h-3 w-3"/>
                 };
             case 'production':
-                return { show: false };
+                return {show: false};
             default:
-                return { 
-                    show: true, 
-                    text: 'alpha', 
+                return {
+                    show: true,
+                    text: 'alpha',
                     variant: 'secondary' as const,
-                    icon: <AlertTriangleIcon className="h-3 w-3" />
+                    icon: <AlertTriangleIcon className="h-3 w-3"/>
                 };
         }
     };
@@ -87,7 +96,6 @@ export function AppSidebar() {
         {path: "/providers", icon: <PackageIcon className="h-4 w-4"/>, label: "Providers"},
         {path: "/families", icon: <UsersIcon className="h-4 w-4"/>, label: "Families"},
         {path: "/labels", icon: <TagIcon className="h-4 w-4"/>, label: "Labels"},
-        {path: "/profile", icon: <UserIcon className="h-4 w-4"/>, label: "Profile"},
     ];
 
     // Get environment information
@@ -97,8 +105,8 @@ export function AppSidebar() {
         <Sidebar collapsible="icon">
             {environmentInfo.show && (
                 <div className={`w-full text-center py-1 ${state === "collapsed" ? "px-2" : "px-4"}`}>
-                    <Badge 
-                        variant={environmentInfo.variant} 
+                    <Badge
+                        variant={environmentInfo.variant}
                         className={`w-full flex items-center justify-center gap-1 ${state === "collapsed" ? "py-1" : ""}`}
                     >
                         {environmentInfo.icon}
@@ -159,26 +167,52 @@ export function AppSidebar() {
             <SidebarFooter>
                 <Separator className="my-2"/>
                 <div className="p-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col space-y-3">
+                        {/* User profile section */}
                         <div className="flex items-center gap-3">
-                            <Avatar className="h-9 w-9 border">
+                            <Avatar className="h-10 w-10 border shadow-sm">
                                 <AvatarImage src={user?.picture || ""} alt={user?.givenName || "User"}/>
                                 <AvatarFallback className="bg-primary/10 text-primary">{getInitials()}</AvatarFallback>
                             </Avatar>
                             {state === "expanded" && (
                                 <div className="flex flex-col">
-                                    <span className="text-sm font-medium">{user?.givenName} {user?.familyName}</span>
-                                    <span
-                                        className="text-xs text-muted-foreground truncate max-w-[120px]">{user?.email}</span>
+                                    <Link
+                                        to="/profile"
+                                        className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
+                                    >
+                                        {user?.givenName} {user?.familyName}
+                                        <UserIcon className="h-3 w-3 ml-1"/>
+                                    </Link>
+                                    <span className="text-xs text-muted-foreground truncate max-w-[150px]">
+                                        {user?.email}
+                                    </span>
                                 </div>
                             )}
+                            {state === "collapsed" && (
+                                <TooltipProvider delayDuration={0}>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Link to="/profile"
+                                                  className="rounded-md p-1 text-muted-foreground hover:text-primary hover:bg-muted">
+                                                <UserIcon className="h-4 w-4"/>
+                                            </Link>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right" hidden={isMobile}>
+                                            Profile
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            )}
                         </div>
-                        <div className={`flex items-center gap-1 ${state === "collapsed" ? "mx-auto" : ""}`}>
+
+                        {/* Actions section */}
+                        <div
+                            className={`flex ${state === "collapsed" ? "justify-center" : "justify-between"} items-center`}>
                             <TooltipProvider delayDuration={0}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <div>
-                                            <ModeToggle variant="ghost" size="sm"/>
+                                            <ModeToggle/>
                                         </div>
                                     </TooltipTrigger>
                                     <TooltipContent side="right" hidden={state !== "collapsed" || isMobile}>
@@ -191,7 +225,7 @@ export function AppSidebar() {
                                     <TooltipTrigger asChild>
                                         <button
                                             onClick={handleLogout}
-                                            className="rounded-md p-2 text-muted-foreground hover:text-foreground hover:bg-muted"
+                                            className="rounded-md p-2 text-muted-foreground hover:text-destructive hover:bg-muted transition-colors"
                                         >
                                             <LogOutIcon className="h-4 w-4"/>
                                         </button>

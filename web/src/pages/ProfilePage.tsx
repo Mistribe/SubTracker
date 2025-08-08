@@ -17,6 +17,11 @@ const ProfilePage = () => {
     const {user: kindeUser} = useKindeAuth();
     // Get theme information from theme context
     const {theme} = useTheme();
+
+    // Check if user is using an external provider
+    const isExternalProvider = kindeUser?.identities?.[0]?.type !== 'password' ||
+        kindeUser?.identityProvider !== undefined ||
+        kindeUser?.provider !== undefined;
     // Use profile management hook for currency preferences and profile updates
     const {
         preferredCurrency,
@@ -26,6 +31,7 @@ const ProfilePage = () => {
         isLoadingAvailableCurrencies,
         isErrorAvailableCurrencies,
         updateProfile,
+        deleteUser,
         updateProfileName,
         isUpdating
     } = useProfileManagement();
@@ -76,6 +82,12 @@ const ProfilePage = () => {
         {value: "USD", label: "US Dollar ($)"},
         {value: "EUR", label: "Euro (€)"}
     ];
+
+    // Define the onChangePassword function only for users not using external providers
+    const handleChangePassword = isExternalProvider ? undefined : () => {
+        // Handle password change
+        console.log("Change password");
+    };
 
     return (
         <div className="container mx-auto py-6">
@@ -148,13 +160,9 @@ const ProfilePage = () => {
                         // Handle email notifications toggle
                         console.log("Toggle email notifications");
                     }}
-                    onChangePassword={() => {
-                        // Handle password change
-                        console.log("Change password");
-                    }}
+                    onChangePassword={handleChangePassword}
                     onDeleteAccount={() => {
-                        // Handle account deletion
-                        console.log("Delete account");
+                        deleteUser();
                     }}
                 />
             </div>
