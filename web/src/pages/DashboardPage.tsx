@@ -6,7 +6,7 @@ import {addDays, addMonths, addYears} from "date-fns";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import UpcomingRenewals from "@/components/dashboard/UpcomingRenewals";
 import TopProviders from "@/components/dashboard/TopProviders";
-import SubscriptionsTable from "@/components/dashboard/SubscriptionsTable";
+import {PageHeader} from "@/components/ui/page-header";
 
 const DashboardPage = () => {
     // Fetch all subscriptions
@@ -103,7 +103,7 @@ const DashboardPage = () => {
                 }
 
                 return {
-                    ...sub,
+                    subscription: sub,
                     nextRenewalDate
                 };
             })
@@ -167,10 +167,10 @@ const DashboardPage = () => {
 
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Dashboard</h1>
-            </div>
+        <div className="container mx-auto py-6">
+            <PageHeader
+                title="Dashboard"
+            />
 
             {/* Summary Cards */}
             <SummaryCards
@@ -180,26 +180,21 @@ const DashboardPage = () => {
                 isLoading={isLoadingSubscriptions}
             />
 
-            {/* Top 5 Upcoming Renewals */}
-            <UpcomingRenewals
-                upcomingRenewals={topUpcomingRenewals}
-                providerMap={providerMap}
-                isLoading={isLoadingSubscriptions}
-            />
+            {/* Side by side: Upcoming Renewals and Top Providers */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                {/* Top 5 Upcoming Renewals */}
+                <UpcomingRenewals
+                    upcomingRenewals={topUpcomingRenewals}
+                    providerMap={providerMap}
+                    isLoading={isLoadingSubscriptions}
+                />
 
-            {/* Top 5 Providers by Expense */}
-            <TopProviders
-                providers={providerSpending}
-                isLoading={isLoadingSubscriptions || isLoadingProviders}
-            />
-
-            {/* All Subscriptions */}
-            <SubscriptionsTable
-                subscriptions={allSubscriptions}
-                subscriptionsWithNextRenewal={subscriptionsWithNextRenewal}
-                providerMap={providerMap}
-                isLoading={isLoadingSubscriptions}
-            />
+                {/* Top 5 Providers by Expense */}
+                <TopProviders
+                    providers={providerSpending}
+                    isLoading={isLoadingSubscriptions || isLoadingProviders}
+                />
+            </div>
         </div>
     );
 };

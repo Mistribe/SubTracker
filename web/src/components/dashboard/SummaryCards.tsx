@@ -1,5 +1,16 @@
 import {Skeleton} from "@/components/ui/skeleton";
 import {formatCurrency} from "./utils";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle
+} from "@/components/ui/card";
+import {
+    CreditCard,
+    TrendingUp,
+    Calendar
+} from "lucide-react";
 
 interface SummaryCardsProps {
     totalMonthly: number;
@@ -16,36 +27,63 @@ const SummaryCards = ({
                       }: SummaryCardsProps) => {
     return (
         <div className="mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Monthly Expenses */}
-                <div className="p-6 border rounded-lg bg-card">
-                    <h3 className="text-xl font-medium mb-2">Monthly Expenses</h3>
-                    {isLoading ? (
-                        <Skeleton className="h-8 w-24"/>
-                    ) : (
-                        <p className="text-3xl font-bold">{formatCurrency(totalMonthly)}</p>
-                    )}
-                </div>
+                <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-l-4 border-l-blue-500">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                        <CardTitle className="text-xl font-medium">Monthly Expenses</CardTitle>
+                        <CreditCard className="h-5 w-5 text-blue-500 animate-pulse" />
+                    </CardHeader>
+                    <CardContent>
+                        {isLoading ? (
+                            <Skeleton className="h-10 w-28"/>
+                        ) : (
+                            <div className="flex items-center">
+                                <p className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent">
+                                    {formatCurrency(totalMonthly)}
+                                </p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
 
                 {/* Yearly Expenses */}
-                <div className="p-6 border rounded-lg bg-card">
-                    <h3 className="text-xl font-medium mb-2">Yearly Expenses</h3>
-                    {isLoading ? (
-                        <Skeleton className="h-8 w-24"/>
-                    ) : (
-                        <p className="text-3xl font-bold">{formatCurrency(totalYearly)}</p>
-                    )}
-                </div>
+                <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-l-4 border-l-purple-500">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                        <CardTitle className="text-xl font-medium">Yearly Expenses</CardTitle>
+                        <TrendingUp className="h-5 w-5 text-purple-500 animate-pulse" />
+                    </CardHeader>
+                    <CardContent>
+                        {isLoading ? (
+                            <Skeleton className="h-10 w-28"/>
+                        ) : (
+                            <div className="flex items-center">
+                                <p className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-purple-700 bg-clip-text text-transparent">
+                                    {formatCurrency(totalYearly)}
+                                </p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
 
                 {/* Active Subscriptions */}
-                <div className="p-6 border rounded-lg bg-card">
-                    <h3 className="text-xl font-medium mb-2">Active Subscriptions</h3>
-                    {isLoading ? (
-                        <Skeleton className="h-8 w-24"/>
-                    ) : (
-                        <p className="text-3xl font-bold">{activeSubscriptionsCount}</p>
-                    )}
-                </div>
+                <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-l-4 border-l-green-500">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                        <CardTitle className="text-xl font-medium">Active Subscriptions</CardTitle>
+                        <Calendar className="h-5 w-5 text-green-500 animate-pulse" />
+                    </CardHeader>
+                    <CardContent>
+                        {isLoading ? (
+                            <Skeleton className="h-10 w-28"/>
+                        ) : (
+                            <div className="flex items-center">
+                                <p className="text-3xl font-bold bg-gradient-to-r from-green-500 to-green-700 bg-clip-text text-transparent">
+                                    {activeSubscriptionsCount}
+                                </p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
