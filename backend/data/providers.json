@@ -167,8 +167,28 @@
     "pricing_page": "https://nordvpn.com/pricing/",
     "icon": "https://1000logos.net/wp-content/uploads/2022/08/NordVPN-Logo-1536x864.png",
     "categories": [
-      "utilities",
       "vpn"
+    ]
+  },
+  {
+    "name": "Bouygues Telecom",
+    "key": "bouygues-telecom",
+    "website": "https://www.bouyguestelecom.fr/",
+    "pricing_page": "https://www.bouyguestelecom.fr/offres-internet",
+    "icon": "https://upload.wikimedia.org/wikipedia/fr/thumb/2/2b/Bouygues_T%C3%A9l%C3%A9com.png/1280px-Bouygues_T%C3%A9l%C3%A9com.png",
+    "categories": [
+      "internet"
+    ]
+  },
+  {
+    "name": "Red-By-SFR",
+    "key": "red-by-sfr",
+    "website": "https://www.red-by-sfr.fr/",
+    "pricing_page": "https://www.red-by-sfr.fr/forfaits-mobiles/",
+    "icon": "https://upload.wikimedia.org/wikipedia/fr/thumb/6/6f/Logo_Red_By_SFR_2016.svg/langfr-330px-Logo_Red_By_SFR_2016.svg.png",
+    "categories": [
+      "mobile",
+      "internet"
     ]
   }
 ]

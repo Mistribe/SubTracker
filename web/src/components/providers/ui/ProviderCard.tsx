@@ -72,7 +72,7 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
     return (
         <Card key={provider.id} className="overflow-hidden">
             {provider.iconUrl && (
-                <div className="w-full h-28 overflow-hidden bg-gray-50 -mt-0.5 -mx-0.5">
+                <div className="w-full h-20 overflow-hidden -mt-0.5 -mx-0.5">
                     <img
                         src={provider.iconUrl}
                         alt={`${provider.name} logo`}
