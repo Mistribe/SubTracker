@@ -9,12 +9,18 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/Oleexo/config-go"
 
 	openapi "github.com/oleexo/subtracker/internal/infrastructure/kinde/gen"
 )
 
+// TokenGenerator is an interface for generating authentication tokens and providing API clients
+// The implementation includes token caching based on the ExpiresIn value:
+// - Tokens with ExpiresIn > 0 are cached until they expire (with a small buffer to ensure they don't expire during use)
+// - Tokens with ExpiresIn = 0 are not cached, and each call to GetToken() will make a new request
 type TokenGenerator interface {
 	GetToken() (string, error)
 	GetClient() *openapi.APIClient
@@ -48,6 +54,11 @@ type kindeService struct {
 	clientId     string
 	clientSecret string
 	audiences    []string
+
+	// Token caching
+	cachedToken    string
+	tokenExpiresAt time.Time
+	tokenMutex     sync.Mutex
 }
 
 type TokenResponse struct {
@@ -76,6 +87,16 @@ func (k *kindeService) GetClient() *openapi.APIClient {
 }
 
 func (k *kindeService) GetToken() (string, error) {
+	// Lock for thread safety
+	k.tokenMutex.Lock()
+	defer k.tokenMutex.Unlock()
+
+	// Check if we have a cached token that's still valid
+	if k.cachedToken != "" && time.Now().Before(k.tokenExpiresAt) {
+		return k.cachedToken, nil
+	}
+
+	// No valid cached token, request a new one
 	tokenURL := fmt.Sprintf("%s/oauth2/token", k.domain)
 
 	data := url.Values{}
@@ -110,8 +131,18 @@ func (k *kindeService) GetToken() (string, error) {
 		return "", fmt.Errorf("failed to parse response: %w", err)
 	}
 
-	return tokenResp.AccessToken, nil
+	// Cache the token with its expiration time only if ExpiresIn is greater than 0
+	if tokenResp.ExpiresIn > 0 {
+		// Apply a small buffer (10 seconds) to ensure we don't use a token that's about to expire
+		k.cachedToken = tokenResp.AccessToken
+		k.tokenExpiresAt = time.Now().Add(time.Duration(tokenResp.ExpiresIn-10) * time.Second)
+	} else {
+		// If ExpiresIn is 0 or negative, don't cache the token
+		k.cachedToken = ""
+		k.tokenExpiresAt = time.Time{}
+	}
 
+	return tokenResp.AccessToken, nil
 }
 
 func NewTokenGenerator(cfg config.Configuration) TokenGenerator {
@@ -125,5 +156,8 @@ func NewTokenGenerator(cfg config.Configuration) TokenGenerator {
 		clientId:     clientId,
 		clientSecret: clientSecret,
 		audiences:    audiences,
+		// Initialize cache-related fields with zero values
+		cachedToken:    "",
+		tokenExpiresAt: time.Time{},
 	}
 }
