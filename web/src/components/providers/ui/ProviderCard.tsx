@@ -76,11 +76,11 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
                     <img
                         src={provider.iconUrl}
                         alt={`${provider.name} logo`}
-                        className="w-full h-full object-contain p-3"
+                        className="w-full h-full object-contain p-1"
                     />
                 </div>
             )}
-            <CardHeader className="py-2 px-3">
+            <CardHeader className="py-1 px-3">
                 <div className="flex justify-between items-start">
                     <CardTitle className="text-lg">{provider.name}</CardTitle>
                     <div className="flex items-center space-x-2">
@@ -133,17 +133,17 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
                     </CardDescription>
                 )}
             </CardHeader>
-            <CardContent className="py-2 px-3">
+            <CardContent className="py-1 px-3">
                 {provider.description && <p className="text-sm">{provider.description}</p>}
                 {provider.labels.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
+                    <div className="flex flex-wrap gap-1 my-1">
                         {provider.labels.map((labelId, index) => {
                             const label = labelMap.get(labelId);
                             return (
                                 <Badge
                                     key={index}
                                     variant="outline"
-                                    className="text-xs py-0"
+                                    className="text-xs py-0.5"
                                     style={{backgroundColor: argbToRgba(label?.color)}}
                                 >
                                     {label ? label.name : labelId}
@@ -153,7 +153,7 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
                     </div>
                 )}
             </CardContent>
-            <CardFooter className="flex flex-col space-y-1 w-full py-2 px-3">
+            <CardFooter className="flex flex-col space-y-1 w-full py-1 px-3">
                 <div className="flex justify-between w-full">
                     {provider.pricingPageUrl && (
                         <a href={provider.pricingPageUrl} target="_blank" rel="noopener noreferrer">

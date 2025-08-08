@@ -64,7 +64,7 @@ const ProvidersPage = () => {
 
 
     return (
-        <div className="container mx-auto py-6">
+        <div className="container mx-auto py-4">
             <PageHeader
                 title="Providers"
                 description="Manage your providers"
@@ -94,7 +94,7 @@ const ProvidersPage = () => {
                     </div>
 
                     {filteredProviders.length === 0 && (
-                        <div className="text-center mt-8">
+                        <div className="text-center mt-1">
                             <p className="text-muted-foreground">No providers match your search criteria.</p>
                         </div>
                     )}
