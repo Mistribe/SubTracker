@@ -14,7 +14,7 @@ import { ProvidersRequestBuilderNavigationMetadata, ProvidersRequestBuilderReque
 // @ts-ignore
 import { SubscriptionsRequestBuilderNavigationMetadata, SubscriptionsRequestBuilderRequestsMetadata, type SubscriptionsRequestBuilder } from './subscriptions/index.js';
 // @ts-ignore
-import { type UsersRequestBuilder, UsersRequestBuilderNavigationMetadata } from './users/index.js';
+import { type UsersRequestBuilder, UsersRequestBuilderNavigationMetadata, UsersRequestBuilderRequestsMetadata } from './users/index.js';
 // @ts-ignore
 import { apiClientProxifier, ParseNodeFactoryRegistry, SerializationWriterFactoryRegistry, type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type NavigationMetadata, type RequestAdapter } from '@microsoft/kiota-abstractions';
 // @ts-ignore
@@ -124,6 +124,7 @@ export const ApiClientNavigationMetadata: Record<Exclude<keyof ApiClient, KeysTo
         navigationMetadata: SubscriptionsRequestBuilderNavigationMetadata,
     },
     users: {
+        requestsMetadata: UsersRequestBuilderRequestsMetadata,
         navigationMetadata: UsersRequestBuilderNavigationMetadata,
     },
 };

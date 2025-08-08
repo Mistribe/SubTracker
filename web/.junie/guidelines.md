@@ -68,4 +68,4 @@ The project uses modern web development practices with a component-based archite
 - ❌ **Avoid**: Custom CSS files, inline styles, or other CSS frameworks
 - ❌ **Avoid**: Writing custom components when shadcn/ui equivalents exist
 
-
+DONT RUN `npm run dev`

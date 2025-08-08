@@ -1,6 +1,8 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
 import {type UpdatePreferredCurrencyModel, type UpdateProfileModel} from "@/api/models";
+import currencyCodes from "currency-codes";
+import getSymbolFromCurrency from "currency-symbol-map";
 
 interface ProfileQueryOptions {
     /**
@@ -8,6 +10,17 @@ interface ProfileQueryOptions {
      */
     enabled?: boolean;
 }
+
+/**
+ * Currency object with code, name, and symbol
+ */
+interface Currency {
+    code: string;
+    name: string;
+    symbol: string;
+}
+
+const fallbackCurrencyCodes = ["USD", "EUR"]
 
 /**
  * Hook for managing user profile data
@@ -40,6 +53,53 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
         // Don't refetch on window focus to avoid unnecessary API calls
         refetchOnWindowFocus: false,
     });
+
+    const availableCurrencyQuery = useQuery({
+        queryKey: ['availableCurrencies'],
+        queryFn: async () => {
+            if (!apiClient) {
+                throw new Error('API client not initialized');
+            }
+
+            try {
+                // Get currency codes from the API
+                let response = await apiClient.currencies.supported.get();
+
+                if (!response || response.length === 0) {
+                    console.warn('No supported currencies found');
+                    response = fallbackCurrencyCodes;
+                }
+                // Transform currency codes to objects with code, name, and symbol
+                const currencies: Currency[] = response.map((currencyCode: string) => {
+                    try {
+                        const currencyDetails = currencyCodes.code(currencyCode);
+                        const symbol = getSymbolFromCurrency(currencyCode) || '';
+
+                        return {
+                            code: currencyCode,
+                            name: currencyDetails?.currency || currencyCode,
+                            symbol: symbol
+                        };
+                    } catch (error) {
+                        // Fallback for unsupported currency codes
+                        console.warn(`Currency code not found: ${currencyCode}`, error);
+                        return {
+                            code: currencyCode,
+                            name: currencyCode,
+                            symbol: ''
+                        };
+                    }
+                });
+
+                return currencies;
+            } catch (error) {
+                console.error('Error fetching available currencies:', error);
+                throw error;
+            }
+        },
+        enabled: !!apiClient,
+        refetchOnWindowFocus: false,
+    })
 
     // Mutation to update profile data, specifically the preferred currency
     const updateProfileMutation = useMutation({
@@ -98,9 +158,13 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
         isLoadingPreferredCurrency: preferredCurrencyQuery.isLoading,
         isErrorPreferredCurrency: preferredCurrencyQuery.isError,
         errorPreferredCurrency: preferredCurrencyQuery.error,
+        availableCurrencies: availableCurrencyQuery.data,
+        isLoadingAvailableCurrencies: availableCurrencyQuery.isLoading,
+        isErrorAvailableCurrencies: availableCurrencyQuery.isError,
+        errorAvailableCurrencies: availableCurrencyQuery.error,
         updateProfile: updateProfileMutation.mutate,
         updateProfileName: (givenName: string, familyName: string) =>
             updateProfileNameMutation.mutate({givenName, familyName}),
-        isUpdating: updateProfileMutation.isPending || updateProfileNameMutation.isPending
+        isUpdating: updateProfileMutation.isPending || updateProfileNameMutation.isPending,
     };
 };

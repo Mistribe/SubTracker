@@ -22,6 +22,9 @@ const ProfilePage = () => {
         preferredCurrency,
         isLoadingPreferredCurrency,
         isErrorPreferredCurrency,
+        availableCurrencies,
+        isLoadingAvailableCurrencies,
+        isErrorAvailableCurrencies,
         updateProfile,
         updateProfileName,
         isUpdating
@@ -48,7 +51,7 @@ const ProfilePage = () => {
             }));
         }
     }, [kindeUser]);
-    
+
     // Update preferred currency when it's loaded from the backend
     useEffect(() => {
         if (preferredCurrency) {
@@ -64,18 +67,14 @@ const ProfilePage = () => {
         setUser(prev => ({...prev, preferredTheme: theme}));
     }, [theme]);
 
-    // List of common currencies
-    const currencies = [
+    // Format available currencies from API for the dropdown
+    const currencies = availableCurrencies?.map(currency => ({
+        value: currency.code,
+        label: `${currency.name} (${currency.symbol})`
+    })) || [
+        // Fallback currencies if API data is not available
         {value: "USD", label: "US Dollar ($)"},
-        {value: "EUR", label: "Euro (€)"},
-        {value: "GBP", label: "British Pound (£)"},
-        {value: "JPY", label: "Japanese Yen (¥)"},
-        {value: "CAD", label: "Canadian Dollar (C$)"},
-        {value: "AUD", label: "Australian Dollar (A$)"},
-        {value: "CHF", label: "Swiss Franc (Fr)"},
-        {value: "CNY", label: "Chinese Yuan (¥)"},
-        {value: "INR", label: "Indian Rupee (₹)"},
-        {value: "BRL", label: "Brazilian Real (R$)"}
+        {value: "EUR", label: "Euro (€)"}
     ];
 
     return (
@@ -84,17 +83,18 @@ const ProfilePage = () => {
                 title="Profile"
                 description="Manage your profile and preferences"
             />
-            
-            {isLoadingPreferredCurrency && (
+
+            {(isLoadingPreferredCurrency || isLoadingAvailableCurrencies) && (
                 <div className="flex justify-center my-12">
                     <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                        <div
+                            className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
                         <p className="text-muted-foreground">Loading profile data...</p>
                     </div>
                 </div>
             )}
-            
-            {isErrorPreferredCurrency && (
+
+            {(isErrorPreferredCurrency || isErrorAvailableCurrencies) && (
                 <div className="bg-destructive/10 text-destructive p-4 rounded-md my-6">
                     <h3 className="font-medium">Error loading profile</h3>
                     <p>There was a problem loading your profile data. Please try refreshing the page.</p>
@@ -105,10 +105,10 @@ const ProfilePage = () => {
                 {/* User Profile Section */}
                 <div className="space-y-8">
                     {/* User Avatar and Basic Info */}
-                    <UserProfileSection 
-                        name={`${user.givenName} ${user.familyName}`} 
-                        email={user.email} 
-                        picture={kindeUser?.picture} 
+                    <UserProfileSection
+                        name={`${user.givenName} ${user.familyName}`}
+                        email={user.email}
+                        picture={kindeUser?.picture}
                     />
 
                     {/* Profile Details */}
@@ -135,7 +135,7 @@ const ProfilePage = () => {
                     onCurrencyChange={(value) => {
                         // Update local state for immediate UI feedback
                         setUser(prev => ({...prev, preferredCurrency: value}));
-                        
+
                         // Persist to backend using the profile management hook
                         updateProfile(value);
                     }}
