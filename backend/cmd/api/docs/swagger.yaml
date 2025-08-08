@@ -2441,6 +2441,27 @@ paths:
       summary: Update subscription by ID
       tags:
       - subscription
+  /users:
+    delete:
+      description: Deletes the authenticated user's account
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.httpError'
+          description: Internal Server Error
+      summary: Delete user
+      tags:
+      - users
   /users/preferred/currency:
     get:
       description: Returns the preferred currency for the authenticated user

@@ -16,12 +16,14 @@ func NewUserEndpointGroup(
 	preferredCurrencyEndpoint *UserGetPreferredCurrencyEndpoint,
 	updatePreferredCurrencyEndpoint *UserUpdatePreferredCurrencyEndpoint,
 	updateProfileEndpoint *UserUpdateProfileEndpoint,
+	deleteEndpoint *UserDeleteEndpoint,
 	authenticationMiddleware *middlewares.AuthenticationMiddleware) *UserEndpointGroup {
 	return &UserEndpointGroup{
 		routes: []ginfx.Route{
 			preferredCurrencyEndpoint,
 			updatePreferredCurrencyEndpoint,
 			updateProfileEndpoint,
+			deleteEndpoint,
 		},
 		middlewares: []gin.HandlerFunc{
 			authenticationMiddleware.Middleware(),

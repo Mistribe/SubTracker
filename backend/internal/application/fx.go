@@ -42,6 +42,7 @@ func BuildApplicationModule() fx.Option {
 			AsQueryHandler[usrQuery.FindPreferredCurrencyQuery, currency.Unit](usrQuery.NewFindPreferredCurrencyQueryHandler),
 			AsCommandHandler[usrCommand.UpdatePreferredCurrencyCommand, bool](usrCommand.NewUpdatePreferredCurrencyCommandHandler),
 			AsCommandHandler[usrCommand.UpdateProfileCommand, bool](usrCommand.NewUpdateProfileCommandHandler),
+			AsCommandHandler[usrCommand.DeleteUserCommand, bool](usrCommand.NewDeleteUserCommandHandler),
 
 			AsQueryHandler[proQuery.FindOneQuery, provider.Provider](proQuery.NewFindOneQueryHandler),
 			AsQueryHandler[proQuery.FindAllQuery, core.PaginatedResponse[provider.Provider]](proQuery.NewFindAllQueryHandler),
