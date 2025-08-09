@@ -11,7 +11,6 @@ import (
 	"github.com/Oleexo/config-go"
 	"golang.org/x/text/currency"
 
-	dcurrency "github.com/oleexo/subtracker/internal/domain/currency"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
@@ -20,7 +19,7 @@ const (
 )
 
 type Client interface {
-	GetLiveExchangeRates() (LiveExchangeRates, error)
+	GetLiveExchangeRates(currencies []currency.Unit) (LiveExchangeRates, error)
 }
 
 type client struct {
@@ -49,11 +48,11 @@ type LiveExchangeRates struct {
 	Rates     map[currency.Unit]float64
 }
 
-func (c *client) GetLiveExchangeRates() (LiveExchangeRates, error) {
+func (c *client) GetLiveExchangeRates(currencies []currency.Unit) (LiveExchangeRates, error) {
 	if c.fakeData {
 		return getLiveFakeData(), nil
 	}
-	supportedCurrencies := slicesx.Select(dcurrency.GetSupportedCurrencies(), func(in currency.Unit) string {
+	supportedCurrencies := slicesx.Select(currencies, func(in currency.Unit) string {
 		return in.String()
 	})
 	url := fmt.Sprintf("%s/live?access_key=%s&format=1&currencies=%s", exchangeRateHost, c.apiKey,

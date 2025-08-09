@@ -13,12 +13,9 @@ import (
 )
 
 const createCurrencyRate = `-- name: CreateCurrencyRate :exec
-INSERT INTO public.currency_rates (
-    id, from_currency, to_currency, rate_date, exchange_rate, 
-    created_at, updated_at, etag
-) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
-)
+INSERT INTO public.currency_rates (id, from_currency, to_currency, rate_date, exchange_rate,
+                                   created_at, updated_at, etag)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 `
 
 type CreateCurrencyRateParams struct {
@@ -58,7 +55,8 @@ type CreateCurrencyRatesParams struct {
 }
 
 const deleteCurrencyRate = `-- name: DeleteCurrencyRate :exec
-DELETE FROM public.currency_rates
+DELETE
+FROM public.currency_rates
 WHERE id = $1
 `
 
@@ -67,99 +65,35 @@ func (q *Queries) DeleteCurrencyRate(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
-const getCurrencyRateByDate = `-- name: GetCurrencyRateByDate :one
-SELECT id, from_currency, to_currency, rate_date, exchange_rate, created_at, updated_at, etag FROM public.currency_rates
-WHERE from_currency = $1 AND to_currency = $2
-  AND rate_date <= $3
-ORDER BY rate_date DESC
-LIMIT 1
-`
-
-type GetCurrencyRateByDateParams struct {
-	FromCurrency string
-	ToCurrency   string
-	RateDate     time.Time
-}
-
-func (q *Queries) GetCurrencyRateByDate(ctx context.Context, arg GetCurrencyRateByDateParams) (CurrencyRate, error) {
-	row := q.db.QueryRow(ctx, getCurrencyRateByDate, arg.FromCurrency, arg.ToCurrency, arg.RateDate)
-	var i CurrencyRate
-	err := row.Scan(
-		&i.ID,
-		&i.FromCurrency,
-		&i.ToCurrency,
-		&i.RateDate,
-		&i.ExchangeRate,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Etag,
-	)
-	return i, err
-}
-
 const getCurrencyRateById = `-- name: GetCurrencyRateById :one
-SELECT id, from_currency, to_currency, rate_date, exchange_rate, created_at, updated_at, etag FROM public.currency_rates
-WHERE id = $1
+SELECT cr.id, cr.from_currency, cr.to_currency, cr.rate_date, cr.exchange_rate, cr.created_at, cr.updated_at, cr.etag
+FROM public.currency_rates cr
+WHERE cr.id = $1
 `
 
-func (q *Queries) GetCurrencyRateById(ctx context.Context, id uuid.UUID) (CurrencyRate, error) {
+type GetCurrencyRateByIdRow struct {
+	CurrencyRate CurrencyRate
+}
+
+func (q *Queries) GetCurrencyRateById(ctx context.Context, id uuid.UUID) (GetCurrencyRateByIdRow, error) {
 	row := q.db.QueryRow(ctx, getCurrencyRateById, id)
-	var i CurrencyRate
+	var i GetCurrencyRateByIdRow
 	err := row.Scan(
-		&i.ID,
-		&i.FromCurrency,
-		&i.ToCurrency,
-		&i.RateDate,
-		&i.ExchangeRate,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Etag,
+		&i.CurrencyRate.ID,
+		&i.CurrencyRate.FromCurrency,
+		&i.CurrencyRate.ToCurrency,
+		&i.CurrencyRate.RateDate,
+		&i.CurrencyRate.ExchangeRate,
+		&i.CurrencyRate.CreatedAt,
+		&i.CurrencyRate.UpdatedAt,
+		&i.CurrencyRate.Etag,
 	)
 	return i, err
-}
-
-const getCurrencyRates = `-- name: GetCurrencyRates :many
-SELECT id, from_currency, to_currency, rate_date, exchange_rate, created_at, updated_at, etag FROM public.currency_rates
-ORDER BY from_currency, to_currency, rate_date DESC
-LIMIT $1 OFFSET $2
-`
-
-type GetCurrencyRatesParams struct {
-	Limit  int32
-	Offset int32
-}
-
-func (q *Queries) GetCurrencyRates(ctx context.Context, arg GetCurrencyRatesParams) ([]CurrencyRate, error) {
-	rows, err := q.db.Query(ctx, getCurrencyRates, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []CurrencyRate
-	for rows.Next() {
-		var i CurrencyRate
-		if err := rows.Scan(
-			&i.ID,
-			&i.FromCurrency,
-			&i.ToCurrency,
-			&i.RateDate,
-			&i.ExchangeRate,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Etag,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const getCurrencyRatesByDate = `-- name: GetCurrencyRatesByDate :many
-SELECT cr.id, cr.from_currency, cr.to_currency, cr.rate_date, cr.exchange_rate, cr.created_at, cr.updated_at, cr.etag FROM public.currency_rates cr
+SELECT cr.id, cr.from_currency, cr.to_currency, cr.rate_date, cr.exchange_rate, cr.created_at, cr.updated_at, cr.etag
+FROM public.currency_rates cr
 WHERE cr.rate_date = $1
 ORDER BY cr.from_currency, cr.to_currency
 `
@@ -197,48 +131,22 @@ func (q *Queries) GetCurrencyRatesByDate(ctx context.Context, rateDate time.Time
 	return items, nil
 }
 
-const getCurrencyRatesCount = `-- name: GetCurrencyRatesCount :one
-SELECT COUNT(*) FROM public.currency_rates
+const getLatestUpdateDate = `-- name: GetLatestUpdateDate :one
+SELECT MAX(cr.updated_at)::timestamp AS latest_update_date
+FROM public.currency_rates cr
 `
 
-func (q *Queries) GetCurrencyRatesCount(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, getCurrencyRatesCount)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const getLatestCurrencyRate = `-- name: GetLatestCurrencyRate :one
-SELECT id, from_currency, to_currency, rate_date, exchange_rate, created_at, updated_at, etag FROM public.currency_rates
-WHERE from_currency = $1 AND to_currency = $2
-ORDER BY rate_date DESC
-LIMIT 1
-`
-
-type GetLatestCurrencyRateParams struct {
-	FromCurrency string
-	ToCurrency   string
-}
-
-func (q *Queries) GetLatestCurrencyRate(ctx context.Context, arg GetLatestCurrencyRateParams) (CurrencyRate, error) {
-	row := q.db.QueryRow(ctx, getLatestCurrencyRate, arg.FromCurrency, arg.ToCurrency)
-	var i CurrencyRate
-	err := row.Scan(
-		&i.ID,
-		&i.FromCurrency,
-		&i.ToCurrency,
-		&i.RateDate,
-		&i.ExchangeRate,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.Etag,
-	)
-	return i, err
+func (q *Queries) GetLatestUpdateDate(ctx context.Context) (time.Time, error) {
+	row := q.db.QueryRow(ctx, getLatestUpdateDate)
+	var latest_update_date time.Time
+	err := row.Scan(&latest_update_date)
+	return latest_update_date, err
 }
 
 const isCurrencyRateExists = `-- name: IsCurrencyRateExists :one
-SELECT COUNT(*) FROM public.currency_rates
-WHERE id = ANY($1::uuid[])
+SELECT COUNT(*)
+FROM public.currency_rates
+WHERE id = ANY ($1::uuid[])
 `
 
 func (q *Queries) IsCurrencyRateExists(ctx context.Context, dollar_1 []uuid.UUID) (int64, error) {
@@ -251,11 +159,11 @@ func (q *Queries) IsCurrencyRateExists(ctx context.Context, dollar_1 []uuid.UUID
 const updateCurrencyRate = `-- name: UpdateCurrencyRate :exec
 UPDATE public.currency_rates
 SET from_currency = $2,
-    to_currency = $3,
-    rate_date = $4,
+    to_currency   = $3,
+    rate_date     = $4,
     exchange_rate = $5,
-    updated_at = $6,
-    etag = $7
+    updated_at    = $6,
+    etag          = $7
 WHERE id = $1
 `
 

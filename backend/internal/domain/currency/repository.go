@@ -12,4 +12,5 @@ type Repository interface {
 	entity.Repository[Rate]
 
 	GetRatesByDate(ctx context.Context, date time.Time) ([]Rate, error)
+	GetLatestUpdateDate(ctx context.Context) (time.Time, error)
 }

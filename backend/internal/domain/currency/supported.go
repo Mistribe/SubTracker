@@ -1,6 +1,10 @@
 package currency
 
-import "golang.org/x/text/currency"
+import (
+	"time"
+
+	"golang.org/x/text/currency"
+)
 
 func GetSupportedCurrencies() []currency.Unit {
 	return []currency.Unit{
@@ -16,3 +20,7 @@ func GetSupportedCurrencies() []currency.Unit {
 		currency.NOK,
 	}
 }
+
+var (
+	TimeBetweenSync = time.Hour * 24
+)

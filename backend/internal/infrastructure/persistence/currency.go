@@ -25,6 +25,14 @@ func NewCurrencyRateRepository(dbContext *DatabaseContext) currency.Repository {
 	}
 }
 
+func (r CurrencyRateRepository) GetLatestUpdateDate(ctx context.Context) (time.Time, error) {
+	row, err := r.dbContext.GetQueries(ctx).GetLatestUpdateDate(ctx)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return row, nil
+}
+
 func (r CurrencyRateRepository) GetById(ctx context.Context, entityId uuid.UUID) (currency.Rate, error) {
 	row, err := r.dbContext.GetQueries(ctx).GetCurrencyRateById(ctx, entityId)
 	if err != nil {
@@ -33,7 +41,7 @@ func (r CurrencyRateRepository) GetById(ctx context.Context, entityId uuid.UUID)
 		}
 		return nil, err
 	}
-	return createCurrencyRateFromSqlc(row), nil
+	return createCurrencyRateFromSqlc(row.CurrencyRate), nil
 }
 
 func (r CurrencyRateRepository) GetRatesByDate(ctx context.Context, date time.Time) ([]currency.Rate, error) {

@@ -32,6 +32,7 @@ type rate struct {
 
 // NewRate creates a new currency rate
 func NewRate(
+	id uuid.UUID,
 	fromCurrency currency.Unit,
 	toCurrency currency.Unit,
 	rateDate time.Time,
@@ -39,7 +40,7 @@ func NewRate(
 	createdAt time.Time,
 	updatedAt time.Time) Rate {
 	return &rate{
-		Base:         entity.NewBase(uuid.New(), createdAt, updatedAt, true, false),
+		Base:         entity.NewBase(id, createdAt, updatedAt, true, false),
 		fromCurrency: fromCurrency,
 		toCurrency:   toCurrency,
 		rateDate:     rateDate,

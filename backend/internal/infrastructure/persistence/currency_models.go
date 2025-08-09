@@ -15,6 +15,7 @@ func createCurrencyRateFromSqlc(sqlcCurrencyRate sql.CurrencyRate) currency.Rate
 		panic(err)
 	}
 	return currency.NewRate(
+		sqlcCurrencyRate.ID,
 		fromCurrency,
 		toCurrency,
 		sqlcCurrencyRate.RateDate,
