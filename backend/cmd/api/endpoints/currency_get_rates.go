@@ -12,22 +12,22 @@ import (
 	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
-// CurrencyRateResponse represents the response body for currency conversion
-type CurrencyRateResponse struct {
+// CurrencyGetRateResponse represents the response body for currency conversion
+type CurrencyGetRateResponse struct {
 	Timestamp time.Time          `json:"timestamp"`
 	Rates     map[string]float64 `json:"rates"`
 }
 
-// CurrencyRateEndpoint handles currency conversion requests
-type CurrencyRateEndpoint struct {
+// CurrencyGetRateEndpoint handles currency conversion requests
+type CurrencyGetRateEndpoint struct {
 	convertHandler core.QueryHandler[query.CurrencyRateQuery, query.CurrencyRateResponse]
 }
 
-// NewCurrencyRateEndpoint creates a new CurrencyRateEndpoint
-func NewCurrencyRateEndpoint(
+// NewCurrencyGetRateEndpoint creates a new CurrencyGetRateEndpoint
+func NewCurrencyGetRateEndpoint(
 	convertHandler core.QueryHandler[query.CurrencyRateQuery, query.CurrencyRateResponse],
-) *CurrencyRateEndpoint {
-	return &CurrencyRateEndpoint{
+) *CurrencyGetRateEndpoint {
+	return &CurrencyGetRateEndpoint{
 		convertHandler: convertHandler,
 	}
 }
@@ -38,11 +38,11 @@ func NewCurrencyRateEndpoint(
 //	@Description	Get exchange rates for all currencies at a specific date
 //	@Produce		json
 //	@Param			date	query		string	false	"Conversion date in RFC3339 format (default: current time)"
-//	@Success		200		{object}	CurrencyRateResponse
+//	@Success		200		{object}	CurrencyGetRateResponse
 //	@Failure		400		{object}	ErrorResponse
 //	@Failure		500		{object}	ErrorResponse
 //	@Router			/currency/rates [get]
-func (e CurrencyRateEndpoint) Handle(c *gin.Context) {
+func (e CurrencyGetRateEndpoint) Handle(c *gin.Context) {
 	conversionDateParam := c.DefaultQuery("date", time.Now().Format(time.RFC3339))
 	conversionDate, err := time.Parse(time.RFC3339, conversionDateParam)
 	if err != nil {
@@ -59,7 +59,7 @@ func (e CurrencyRateEndpoint) Handle(c *gin.Context) {
 	handleResponse(c,
 		r,
 		withMapping[query.CurrencyRateResponse](func(c query.CurrencyRateResponse) any {
-			return CurrencyRateResponse{
+			return CurrencyGetRateResponse{
 				Timestamp: c.Timestamp,
 				Rates: slicesx.ToMap(c.Rates,
 					func(key currency.Rate) string {
@@ -73,16 +73,16 @@ func (e CurrencyRateEndpoint) Handle(c *gin.Context) {
 		}))
 }
 
-func (e CurrencyRateEndpoint) Pattern() []string {
+func (e CurrencyGetRateEndpoint) Pattern() []string {
 	return []string{
 		"/rates",
 	}
 }
 
-func (e CurrencyRateEndpoint) Method() string {
+func (e CurrencyGetRateEndpoint) Method() string {
 	return http.MethodGet
 }
 
-func (e CurrencyRateEndpoint) Middlewares() []gin.HandlerFunc {
+func (e CurrencyGetRateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
