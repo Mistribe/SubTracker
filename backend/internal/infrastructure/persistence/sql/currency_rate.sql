@@ -15,6 +15,11 @@ WHERE from_currency = $1 AND to_currency = $2
 ORDER BY rate_date DESC
 LIMIT 1;
 
+-- name: GetCurrencyRatesByDate :many
+SELECT sqlc.embed(cr) FROM public.currency_rates cr
+WHERE cr.rate_date = $1
+ORDER BY cr.from_currency, cr.to_currency;
+
 -- name: CreateCurrencyRate :exec
 INSERT INTO public.currency_rates (
     id, from_currency, to_currency, rate_date, exchange_rate, 

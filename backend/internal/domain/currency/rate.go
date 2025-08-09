@@ -9,14 +9,25 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/entity"
 )
 
+type Rate interface {
+	entity.Entity
+	entity.ETagEntity
+
+	FromCurrency() currency.Unit
+	ToCurrency() currency.Unit
+	RateDate() time.Time
+	ExchangeRate() float64
+	Equal(other Rate) bool
+}
+
 // Rate represents a currency exchange rate at a specific date
-type Rate struct {
+type rate struct {
 	*entity.Base
+
 	fromCurrency currency.Unit
 	toCurrency   currency.Unit
 	rateDate     time.Time
 	exchangeRate float64
-	etag         string
 }
 
 // NewRate creates a new currency rate
@@ -24,76 +35,54 @@ func NewRate(
 	fromCurrency currency.Unit,
 	toCurrency currency.Unit,
 	rateDate time.Time,
-	exchangeRate float64) *Rate {
-	now := time.Now().UTC()
-	return &Rate{
-		Base:         entity.NewBase(uuid.New(), now, now, true, false),
-		fromCurrency: fromCurrency,
-		toCurrency:   toCurrency,
-		rateDate:     rateDate,
-		exchangeRate: exchangeRate,
-		etag:         uuid.NewString(),
-	}
-}
-
-// FromExisting creates a Rate from existing data
-func FromExisting(
-	id uuid.UUID,
-	fromCurrency currency.Unit,
-	toCurrency currency.Unit,
-	rateDate time.Time,
 	exchangeRate float64,
 	createdAt time.Time,
-	updatedAt time.Time,
-	etag string) *Rate {
-	return &Rate{
-		Base:         entity.NewBase(id, createdAt, updatedAt, false, true),
+	updatedAt time.Time) Rate {
+	return &rate{
+		Base:         entity.NewBase(uuid.New(), createdAt, updatedAt, true, false),
 		fromCurrency: fromCurrency,
 		toCurrency:   toCurrency,
 		rateDate:     rateDate,
 		exchangeRate: exchangeRate,
-		etag:         etag,
 	}
 }
 
 // FromCurrency returns the source currency
-func (r *Rate) FromCurrency() currency.Unit {
+func (r *rate) FromCurrency() currency.Unit {
 	return r.fromCurrency
 }
 
 // ToCurrency returns the target currency
-func (r *Rate) ToCurrency() currency.Unit {
+func (r *rate) ToCurrency() currency.Unit {
 	return r.toCurrency
 }
 
 // RateDate returns the date of the exchange rate
-func (r *Rate) RateDate() time.Time {
+func (r *rate) RateDate() time.Time {
 	return r.rateDate
 }
 
 // ExchangeRate returns the exchange rate value
-func (r *Rate) ExchangeRate() float64 {
+func (r *rate) ExchangeRate() float64 {
 	return r.exchangeRate
 }
 
-// ETag returns the entity tag
-func (r *Rate) ETag() string {
-	return r.etag
+func (r *rate) Equal(other Rate) bool {
+	if other == nil {
+		return false
+	}
+
+	return r.ETag() == other.ETag()
 }
 
-// SetExchangeRate updates the exchange rate value
-func (r *Rate) SetExchangeRate(value float64) {
-	if r.exchangeRate != value {
-		r.exchangeRate = value
-		r.updateModified()
+func (r *rate) ETagFields() []interface{} {
+	return []interface{}{
+		r.fromCurrency.String(),
+		r.toCurrency.String(),
+		r.rateDate,
+		r.exchangeRate,
 	}
 }
-
-// updateModified updates the modification tracking fields
-func (r *Rate) updateModified() {
-	r.SetUpdatedAt(time.Now().UTC())
-	r.etag = uuid.NewString()
+func (r *rate) ETag() string {
+	return entity.CalculateETag(r)
 }
-
-// Ensure Rate implements the Entity interface
-var _ entity.Entity = (*Rate)(nil)

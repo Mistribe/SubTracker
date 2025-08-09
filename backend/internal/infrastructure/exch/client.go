@@ -24,13 +24,16 @@ type Client interface {
 }
 
 type client struct {
-	apiKey string
+	apiKey   string
+	fakeData bool
 }
 
 func NewClient(cfg config.Configuration) Client {
 	apiKey := cfg.GetString("EXCHANGERATE_HOST_API_KEY")
+	fakeData := cfg.GetBoolOrDefault("ECHANGERATE_FAKE_DATA", false)
 	return &client{
-		apiKey: apiKey,
+		apiKey:   apiKey,
+		fakeData: fakeData,
 	}
 }
 
@@ -47,6 +50,9 @@ type LiveExchangeRates struct {
 }
 
 func (c *client) GetLiveExchangeRates() (LiveExchangeRates, error) {
+	if c.fakeData {
+		return getLiveFakeData(), nil
+	}
 	supportedCurrencies := slicesx.Select(dcurrency.GetSupportedCurrencies(), func(in currency.Unit) string {
 		return in.String()
 	})

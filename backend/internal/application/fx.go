@@ -41,7 +41,7 @@ func BuildApplicationModule() fx.Option {
 		fx.Provide(
 			service.NewAuthenticationService,
 
-			AsQueryHandler[currencyQuery.ConvertCurrencyQuery, currencyQuery.ConvertCurrencyResult](currencyQuery.NewConvertCurrencyQueryHandler),
+			AsQueryHandler[currencyQuery.CurrencyRateQuery, currencyQuery.CurrencyRateResponse](currencyQuery.NewCurrencyRateQueryHandler),
 			AsCommandHandler[currencyCommand.UpdateCurrencyRatesCommand, bool](currencyCommand.NewUpdateCurrencyRatesCommandHandler),
 
 			AsQueryHandler[usrQuery.FindPreferredCurrencyQuery, currency.Unit](usrQuery.NewFindPreferredCurrencyQueryHandler),

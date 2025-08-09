@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"github.com/gin-gonic/gin"
+
 	"github.com/oleexo/subtracker/cmd/api/ginfx"
 	"github.com/oleexo/subtracker/cmd/api/middlewares"
 )
@@ -13,7 +14,7 @@ type CurrencyEndpointGroup struct {
 
 func NewCurrencyGroupEndpointGroup(
 	supportedEndpoint *CurrencySupportedEndpoint,
-	convertEndpoint *CurrencyConvertEndpoint,
+	convertEndpoint *CurrencyRateEndpoint,
 	authenticationMiddleware *middlewares.AuthenticationMiddleware) *CurrencyEndpointGroup {
 	return &CurrencyEndpointGroup{
 		routes: []ginfx.Route{

@@ -158,6 +158,45 @@ func (q *Queries) GetCurrencyRates(ctx context.Context, arg GetCurrencyRatesPara
 	return items, nil
 }
 
+const getCurrencyRatesByDate = `-- name: GetCurrencyRatesByDate :many
+SELECT cr.id, cr.from_currency, cr.to_currency, cr.rate_date, cr.exchange_rate, cr.created_at, cr.updated_at, cr.etag FROM public.currency_rates cr
+WHERE cr.rate_date = $1
+ORDER BY cr.from_currency, cr.to_currency
+`
+
+type GetCurrencyRatesByDateRow struct {
+	CurrencyRate CurrencyRate
+}
+
+func (q *Queries) GetCurrencyRatesByDate(ctx context.Context, rateDate time.Time) ([]GetCurrencyRatesByDateRow, error) {
+	rows, err := q.db.Query(ctx, getCurrencyRatesByDate, rateDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCurrencyRatesByDateRow
+	for rows.Next() {
+		var i GetCurrencyRatesByDateRow
+		if err := rows.Scan(
+			&i.CurrencyRate.ID,
+			&i.CurrencyRate.FromCurrency,
+			&i.CurrencyRate.ToCurrency,
+			&i.CurrencyRate.RateDate,
+			&i.CurrencyRate.ExchangeRate,
+			&i.CurrencyRate.CreatedAt,
+			&i.CurrencyRate.UpdatedAt,
+			&i.CurrencyRate.Etag,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCurrencyRatesCount = `-- name: GetCurrencyRatesCount :one
 SELECT COUNT(*) FROM public.currency_rates
 `
