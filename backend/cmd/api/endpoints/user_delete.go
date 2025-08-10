@@ -20,8 +20,8 @@ type UserDeleteEndpoint struct {
 //	@Tags			users
 //	@Produce		json
 //	@Success		204
-//	@Failure		401	{object}	httpError
-//	@Failure		500	{object}	httpError
+//	@Failure		401	{object}	HttpErrorResponse
+//	@Failure		500	{object}	HttpErrorResponse
 //	@Router			/users [delete]
 func (e UserDeleteEndpoint) Handle(c *gin.Context) {
 	cmd := command.NewDeleteUserCommand()

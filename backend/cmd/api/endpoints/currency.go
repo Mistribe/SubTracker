@@ -15,7 +15,7 @@ type CurrencyEndpointGroup struct {
 func NewCurrencyGroupEndpointGroup(
 	supportedEndpoint *CurrencySupportedEndpoint,
 	convertEndpoint *CurrencyGetRateEndpoint,
-	updateRatesEndpoint *CurrencyUpdateRatesEndpoint,
+	updateRatesEndpoint *CurrencyRefreshRatesEndpoint,
 	authenticationMiddleware *middlewares.AuthenticationMiddleware) *CurrencyEndpointGroup {
 	return &CurrencyEndpointGroup{
 		routes: []ginfx.Route{

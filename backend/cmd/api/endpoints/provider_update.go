@@ -60,14 +60,14 @@ func (m updateProviderModel) Command(providerId uuid.UUID) (command.UpdateProvid
 //	@Param			providerId	path		string				true	"Provider ID (UUID format)"
 //	@Param			provider	body		updateProviderModel	true	"Updated provider data"
 //	@Success		200			{object}	ProviderModel		"Successfully updated provider"
-//	@Failure		400			{object}	httpError			"Bad Request - Invalid input data or provider ID"
-//	@Failure		404			{object}	httpError			"Provider not found"
-//	@Failure		500			{object}	httpError			"Internal Server Error"
+//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid input data or provider ID"
+//	@Failure		404			{object}	HttpErrorResponse	"Provider not found"
+//	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/providers/{providerId} [put]
 func (e ProviderUpdateEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("providerId")
 	if idParam == "" {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: "id parameter is required",
 		})
 		return
@@ -75,7 +75,7 @@ func (e ProviderUpdateEndpoint) Handle(c *gin.Context) {
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: "invalid id format",
 		})
 		return
@@ -83,14 +83,14 @@ func (e ProviderUpdateEndpoint) Handle(c *gin.Context) {
 
 	var model updateProviderModel
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
 	}
 	cmd, err := model.Command(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		c.Abort()

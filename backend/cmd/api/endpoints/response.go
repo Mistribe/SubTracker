@@ -40,7 +40,7 @@ func withNoContent[TValue any]() handleResponseOptionFunc[TValue] {
 }
 
 func handleErrorResponse(c *gin.Context, err error) {
-	c.JSON(http.StatusBadRequest, httpError{Message: err.Error()})
+	c.JSON(http.StatusBadRequest, HttpErrorResponse{Message: err.Error()})
 }
 
 func handleResponse[TValue any](

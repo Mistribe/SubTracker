@@ -25,14 +25,14 @@ func NewFamilyDeleteEndpoint(handler core.CommandHandler[command.DeleteFamilyCom
 //	@Tags			family
 //	@Param			familyId	path	string	true	"Family ID (UUID format)"
 //	@Success		204			"No Content - Family successfully deleted"
-//	@Failure		400			{object}	httpError	"Bad Request - Invalid family ID format"
-//	@Failure		404			{object}	httpError	"Family not found"
-//	@Failure		500			{object}	httpError	"Internal Server Error"
+//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid family ID format"
+//	@Failure		404			{object}	HttpErrorResponse	"Family not found"
+//	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/families/{familyId} [delete]
 func (e FamilyDeleteEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("familyId")
 	if idParam == "" {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: "familyId parameter is required",
 		})
 		return
@@ -40,7 +40,7 @@ func (e FamilyDeleteEndpoint) Handle(c *gin.Context) {
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: "invalid familyId format",
 		})
 		return

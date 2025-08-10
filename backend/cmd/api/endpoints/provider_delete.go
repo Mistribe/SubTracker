@@ -1,8 +1,9 @@
 package endpoints
 
 import (
-	"github.com/google/uuid"
 	"net/http"
+
+	"github.com/google/uuid"
 
 	"github.com/gin-gonic/gin"
 
@@ -25,14 +26,14 @@ func NewProviderDeleteEndpoint(handler core.CommandHandler[command.DeleteProvide
 //	@Tags			providers
 //	@Param			providerId	path	string	true	"Provider ID (UUID format)"
 //	@Success		204			"No Content - Provider successfully deleted"
-//	@Failure		400			{object}	httpError	"Bad Request - Invalid provider ID format"
-//	@Failure		404			{object}	httpError	"Provider not found"
-//	@Failure		500			{object}	httpError	"Internal Server Error"
+//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid provider ID format"
+//	@Failure		404			{object}	HttpErrorResponse	"Provider not found"
+//	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/providers/{providerId} [delete]
 func (e ProviderDeleteEndpoint) Handle(c *gin.Context) {
 	providerId, err := uuid.Parse(c.Param("providerId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return

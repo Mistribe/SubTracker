@@ -77,14 +77,14 @@ func (m createProviderModel) Command(userId string) (command.CreateProviderComma
 //	@Produce		json
 //	@Param			provider	body		createProviderModel	true	"Provider creation data"
 //	@Success		201			{object}	ProviderModel		"Successfully created provider"
-//	@Failure		400			{object}	httpError			"Bad Request - Invalid input data"
-//	@Failure		401			{object}	httpError			"Unauthorized - Invalid user authentication"
-//	@Failure		500			{object}	httpError			"Internal Server Error"
+//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid input data"
+//	@Failure		401			{object}	HttpErrorResponse	"Unauthorized - Invalid user authentication"
+//	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/providers [post]
 func (e ProviderCreateEndpoint) Handle(c *gin.Context) {
 	var model createProviderModel
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -92,7 +92,7 @@ func (e ProviderCreateEndpoint) Handle(c *gin.Context) {
 
 	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, httpError{
+		c.JSON(http.StatusUnauthorized, HttpErrorResponse{
 			Message: "invalid user id",
 		})
 		return
@@ -100,7 +100,7 @@ func (e ProviderCreateEndpoint) Handle(c *gin.Context) {
 
 	cmd, err := model.Command(userId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		c.Abort()

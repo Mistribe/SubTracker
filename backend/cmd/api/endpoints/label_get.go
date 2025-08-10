@@ -22,14 +22,14 @@ type LabelGetEndpoint struct {
 //	@Produce		json
 //	@Param			id	path		string	true	"Label ID (UUID format)"
 //	@Success		200	{object}	labelModel
-//	@Failure		400	{object}	httpError	"Bad Request - Invalid ID format"
-//	@Failure		404	{object}	httpError	"Label not found"
-//	@Failure		500	{object}	httpError	"Internal Server Error"
+//	@Failure		400	{object}	HttpErrorResponse	"Bad Request - Invalid ID format"
+//	@Failure		404	{object}	HttpErrorResponse	"Label not found"
+//	@Failure		500	{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/labels/{id} [get]
 func (s LabelGetEndpoint) Handle(c *gin.Context) {
 	id, err := paramAsUuid(c, "id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return

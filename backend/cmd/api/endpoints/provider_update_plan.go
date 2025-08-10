@@ -1,13 +1,15 @@
 package endpoints
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/provider/command"
 	"github.com/oleexo/subtracker/internal/domain/provider"
-	"net/http"
-	"time"
 )
 
 type ProviderPlanUpdateEndpoint struct {
@@ -41,18 +43,18 @@ func (m updatePlanModel) Command(providerId, planId uuid.UUID) (command.UpdatePl
 //	@Tags			providers
 //	@Accept			json
 //	@Produce		json
-//	@Param			providerId	path		string			true	"Provider ID (UUID format)"
-//	@Param			planId		path		string			true	"Plan ID (UUID format)"
-//	@Param			plan		body		updatePlanModel	true	"Updated plan data"
-//	@Success		200			{object}	PlanModel		"Successfully updated plan"
-//	@Failure		400			{object}	httpError		"Bad Request - Invalid input data or IDs"
-//	@Failure		404			{object}	httpError		"Provider or plan not found"
-//	@Failure		500			{object}	httpError		"Internal Server Error"
+//	@Param			providerId	path		string				true	"Provider ID (UUID format)"
+//	@Param			planId		path		string				true	"Plan ID (UUID format)"
+//	@Param			plan		body		updatePlanModel		true	"Updated plan data"
+//	@Success		200			{object}	PlanModel			"Successfully updated plan"
+//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid input data or IDs"
+//	@Failure		404			{object}	HttpErrorResponse	"Provider or plan not found"
+//	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/providers/{providerId}/plans/{planId} [put]
 func (e ProviderPlanUpdateEndpoint) Handle(c *gin.Context) {
 	var model updatePlanModel
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -60,7 +62,7 @@ func (e ProviderPlanUpdateEndpoint) Handle(c *gin.Context) {
 
 	providerId, err := uuid.Parse(c.Param("providerId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -68,7 +70,7 @@ func (e ProviderPlanUpdateEndpoint) Handle(c *gin.Context) {
 
 	planId, err := uuid.Parse(c.Param("planId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -76,7 +78,7 @@ func (e ProviderPlanUpdateEndpoint) Handle(c *gin.Context) {
 
 	cmd, err := model.Command(providerId, planId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return

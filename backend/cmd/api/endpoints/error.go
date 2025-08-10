@@ -1,5 +1,5 @@
 package endpoints
 
-type httpError struct {
+type HttpErrorResponse struct {
 	Message string `json:"message" binding:"required"`
 }

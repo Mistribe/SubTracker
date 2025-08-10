@@ -22,17 +22,17 @@ type FamilyGetEndpoint struct {
 //	@Description	Retrieve a family and its members by family ID
 //	@Tags			family
 //	@Produce		json
-//	@Param			familyId	path		string		true	"Family ID (UUID format)"
-//	@Success		200			{object}	familyModel	"Successfully retrieved family"
-//	@Failure		400			{object}	httpError	"Bad Request - Invalid ID format"
-//	@Failure		401			{object}	httpError	"Unauthorized - Invalid user authentication"
-//	@Failure		404			{object}	httpError	"Family not found"
-//	@Failure		500			{object}	httpError	"Internal Server Error"
+//	@Param			familyId	path		string				true	"Family ID (UUID format)"
+//	@Success		200			{object}	familyModel			"Successfully retrieved family"
+//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid ID format"
+//	@Failure		401			{object}	HttpErrorResponse	"Unauthorized - Invalid user authentication"
+//	@Failure		404			{object}	HttpErrorResponse	"Family not found"
+//	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/families/{familyId} [get]
 func (f FamilyGetEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("familyId")
 	if idParam == "" {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: "id parameter is required",
 		})
 		return
@@ -40,7 +40,7 @@ func (f FamilyGetEndpoint) Handle(c *gin.Context) {
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: "invalid id format",
 		})
 		return
@@ -48,7 +48,7 @@ func (f FamilyGetEndpoint) Handle(c *gin.Context) {
 
 	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, httpError{
+		c.JSON(http.StatusUnauthorized, HttpErrorResponse{
 			Message: "invalid user id",
 		})
 		return

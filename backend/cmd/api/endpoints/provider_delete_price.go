@@ -1,11 +1,13 @@
 package endpoints
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/provider/command"
-	"net/http"
 )
 
 type ProviderPriceDeleteEndpoint struct {
@@ -25,21 +27,21 @@ func NewProviderPriceDeleteEndpoint(handler core.CommandHandler[command.DeletePr
 //	@Param			planId		path	string	true	"Plan ID (UUID format)"
 //	@Param			priceId		path	string	true	"Price ID (UUID format)"
 //	@Success		204			"No Content - Price successfully deleted"
-//	@Failure		400			{object}	httpError	"Bad Request - Invalid ID format"
-//	@Failure		404			{object}	httpError	"Provider, plan, or price not found"
-//	@Failure		500			{object}	httpError	"Internal Server Error"
+//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid ID format"
+//	@Failure		404			{object}	HttpErrorResponse	"Provider, plan, or price not found"
+//	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/providers/{providerId}/plans/{planId}/prices/{priceId} [delete]
 func (e ProviderPriceDeleteEndpoint) Handle(c *gin.Context) {
 	providerId, err := uuid.Parse(c.Param("providerId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
 	}
 	planId, err := uuid.Parse(c.Param("planId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -47,7 +49,7 @@ func (e ProviderPriceDeleteEndpoint) Handle(c *gin.Context) {
 
 	priceId, err := uuid.Parse(c.Param("priceId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return

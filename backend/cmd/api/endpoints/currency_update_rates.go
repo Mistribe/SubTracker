@@ -9,43 +9,43 @@ import (
 	"github.com/oleexo/subtracker/internal/application/currency/command"
 )
 
-type CurrencyUpdateRatesEndpoint struct {
-	handler core.CommandHandler[command.UpdateCurrencyRatesCommand, bool]
+type CurrencyRefreshRatesEndpoint struct {
+	handler core.CommandHandler[command.RefreshCurrencyRatesCommand, bool]
 }
 
-func NewCurrencyUpdateRatesEndpoint(
-	handler core.CommandHandler[command.UpdateCurrencyRatesCommand, bool],
-) *CurrencyUpdateRatesEndpoint {
-	return &CurrencyUpdateRatesEndpoint{
+func NewCurrencyRefreshRatesEndpoint(
+	handler core.CommandHandler[command.RefreshCurrencyRatesCommand, bool],
+) *CurrencyRefreshRatesEndpoint {
+	return &CurrencyRefreshRatesEndpoint{
 		handler: handler,
 	}
 }
 
 // Handle godoc
 //
-//	@Summary		Update Currency Rates
-//	@Description	Update exchange rates for all currencies
+//	@Summary		refresh Currency Rates
+//	@Description	refresh exchange rates for all currencies
 //	@Produce		json
-//	@Success		200		{object}	bool
-//	@Failure		400		{object}	ErrorResponse
-//	@Failure		500		{object}	ErrorResponse
-//	@Router			/currency/rates/update [post]
-func (e CurrencyUpdateRatesEndpoint) Handle(c *gin.Context) {
-	cmd := command.UpdateCurrencyRatesCommand{}
+//	@Success		200	{object}	bool
+//	@Failure		400	{object}	HttpErrorResponse
+//	@Failure		500	{object}	HttpErrorResponse
+//	@Router			/currency/rates/refresh [post]
+func (e CurrencyRefreshRatesEndpoint) Handle(c *gin.Context) {
+	cmd := command.RefreshCurrencyRatesCommand{}
 	r := e.handler.Handle(c.Request.Context(), cmd)
 	handleResponse(c, r, nil)
 }
 
-func (e CurrencyUpdateRatesEndpoint) Pattern() []string {
+func (e CurrencyRefreshRatesEndpoint) Pattern() []string {
 	return []string{
-		"/rates/update",
+		"/rates/refresh",
 	}
 }
 
-func (e CurrencyUpdateRatesEndpoint) Method() string {
+func (e CurrencyRefreshRatesEndpoint) Method() string {
 	return http.MethodPost
 }
 
-func (e CurrencyUpdateRatesEndpoint) Middlewares() []gin.HandlerFunc {
+func (e CurrencyRefreshRatesEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

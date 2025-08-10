@@ -25,9 +25,9 @@ type FamilyGetAllEndpoint struct {
 //	@Param			limit	query		integer								false	"Number of items per page (default: 10)"
 //	@Param			offset	query		integer								false	"Page number (default: 1)"
 //	@Success		200		{object}	PaginatedResponseModel[familyModel]	"Paginated list of families"
-//	@Failure		400		{object}	httpError							"Bad Request - Invalid query parameters"
-//	@Failure		401		{object}	httpError							"Unauthorized - Invalid user authentication"
-//	@Failure		500		{object}	httpError							"Internal Server Error"
+//	@Failure		400		{object}	HttpErrorResponse					"Bad Request - Invalid query parameters"
+//	@Failure		401		{object}	HttpErrorResponse					"Unauthorized - Invalid user authentication"
+//	@Failure		500		{object}	HttpErrorResponse					"Internal Server Error"
 //	@Router			/families [get]
 func (f FamilyGetAllEndpoint) Handle(c *gin.Context) {
 	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 32)
@@ -41,7 +41,7 @@ func (f FamilyGetAllEndpoint) Handle(c *gin.Context) {
 	q := query.NewFindAllQuery(int32(limit), int32(offset))
 	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, httpError{
+		c.JSON(http.StatusUnauthorized, HttpErrorResponse{
 			Message: "invalid user id",
 		})
 		return

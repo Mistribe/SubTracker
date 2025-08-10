@@ -29,7 +29,7 @@ type UserPreferredCurrencyModel struct {
 //	@Tags			Users
 //	@Produce		json
 //	@Success		200	{object}	UserPreferredCurrencyModel
-//	@Failure		401	{object}	httpError	"Unauthorized"
+//	@Failure		401	{object}	HttpErrorResponse	"Unauthorized"
 //	@Router			/users/preferred/currency [get]
 func (e UserGetPreferredCurrencyEndpoint) Handle(c *gin.Context) {
 	q := query.NewFindPreferredCurrencyQuery()

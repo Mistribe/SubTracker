@@ -49,14 +49,14 @@ func (m updateLabelModel) Command(id uuid.UUID) (command.UpdateLabelCommand, err
 //	@Param			id		path		string				true	"Label ID (UUID format)"
 //	@Param			label	body		updateLabelModel	true	"Updated label data"
 //	@Success		200		{object}	labelModel			"Successfully updated label"
-//	@Failure		400		{object}	httpError			"Bad Request - Invalid ID format or input data"
-//	@Failure		404		{object}	httpError			"Label not found"
-//	@Failure		500		{object}	httpError			"Internal Server Error"
+//	@Failure		400		{object}	HttpErrorResponse	"Bad Request - Invalid ID format or input data"
+//	@Failure		404		{object}	HttpErrorResponse	"Label not found"
+//	@Failure		500		{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/labels/{id} [put]
 func (l LabelUpdateEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")
 	if idParam == "" {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: "id parameter is required",
 		})
 		return
@@ -64,7 +64,7 @@ func (l LabelUpdateEndpoint) Handle(c *gin.Context) {
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: "invalid id format",
 		})
 		return
@@ -72,14 +72,14 @@ func (l LabelUpdateEndpoint) Handle(c *gin.Context) {
 
 	var model updateLabelModel
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
 	}
 	cmd, err := model.Command(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		c.Abort()

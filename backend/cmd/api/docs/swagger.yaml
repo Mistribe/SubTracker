@@ -43,6 +43,15 @@ components:
       - recurrency
       - start_date
       type: object
+    endpoints.CurrencyGetRateResponse:
+      properties:
+        rates:
+          additionalProperties:
+            type: number
+          type: object
+        timestamp:
+          type: string
+      type: object
     endpoints.EditableOwnerModel:
       properties:
         family_id:
@@ -82,6 +91,13 @@ components:
       required:
       - family_id
       - type
+      type: object
+    endpoints.HttpErrorResponse:
+      properties:
+        message:
+          type: string
+      required:
+      - message
       type: object
     endpoints.OwnerModel:
       description: '@Description Ownership information specifying whether this subscription
@@ -850,13 +866,6 @@ components:
       - name
       - updated_at
       type: object
-    endpoints.httpError:
-      properties:
-        message:
-          type: string
-      required:
-      - message
-      type: object
     endpoints.labelModel:
       description: Label object used for categorizing and organizing subscriptions
         with customizable colors
@@ -1084,6 +1093,58 @@ paths:
                 type: array
           description: currencies
       summary: Get Supported Currencies
+  /currency/rates:
+    get:
+      description: Get exchange rates for all currencies at a specific date
+      parameters:
+      - description: 'Conversion date in RFC3339 format (default: current time)'
+        in: query
+        name: date
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.CurrencyGetRateResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Get Currency Rates
+  /currency/rates/refresh:
+    post:
+      description: refresh exchange rates for all currencies
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: boolean
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Internal Server Error
+      summary: refresh Currency Rates
   /families:
     get:
       description: Retrieve a paginated list of families for the authenticated user
@@ -1109,19 +1170,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid query parameters
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized - Invalid user authentication
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Get all families
       tags:
@@ -1147,25 +1208,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid input data
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized - Invalid user authentication
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Family not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Patch family with members
       tags:
@@ -1191,19 +1252,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid input data
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized - Invalid user authentication
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Create a new family
       tags:
@@ -1225,19 +1286,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid family ID format
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Family not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Delete family by ID
       tags:
@@ -1262,25 +1323,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid ID format
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized - Invalid user authentication
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Family not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Get family by ID
       tags:
@@ -1312,25 +1373,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid input data or family ID
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized - Invalid user authentication
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Family not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Update a family
       tags:
@@ -1363,25 +1424,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid input data or family ID
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized - Invalid user authentication
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Family not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Add a new family member
       tags:
@@ -1409,19 +1470,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid ID format
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Family or family member not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Delete family member by ID
       tags:
@@ -1460,25 +1521,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid input data or ID format
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized - Invalid user authentication
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Family or family member not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Update family member by ID
       tags:
@@ -1537,13 +1598,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid query parameters
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Get all labels
       tags:
@@ -1568,19 +1629,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid input data
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized - Invalid user authentication
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Create a new label
       tags:
@@ -1602,19 +1663,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid ID format
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Label not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Delete label by ID
       tags:
@@ -1639,19 +1700,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid ID format
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Label not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Get label by ID
       tags:
@@ -1683,19 +1744,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid ID format or input data
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Label not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Update label by ID
       tags:
@@ -1716,7 +1777,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Get default labels
       tags:
@@ -1747,13 +1808,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid query parameters
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Get all providers
       tags:
@@ -1778,19 +1839,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid input data
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized - Invalid user authentication
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Create a new provider
       tags:
@@ -1813,19 +1874,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid provider ID format
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Provider not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Delete provider by ID
       tags:
@@ -1850,19 +1911,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid provider ID format
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Provider not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Get provider by ID
       tags:
@@ -1894,19 +1955,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid input data or provider ID
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Provider not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Update provider by ID
       tags:
@@ -1939,19 +2000,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid input data or provider ID
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Provider not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Create a new provider plan
       tags:
@@ -1979,19 +2040,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid ID format
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Provider or plan not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Delete provider plan by ID
       tags:
@@ -2029,19 +2090,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid input data or IDs
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Provider or plan not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Update provider plan by ID
       tags:
@@ -2080,19 +2141,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid input data or IDs
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Provider or plan not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Create a new provider price
       tags:
@@ -2126,19 +2187,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid ID format
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Provider, plan, or price not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Delete provider price by ID
       tags:
@@ -2182,19 +2243,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid input data or IDs
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Provider, plan, or price not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Update provider price by ID
       tags:
@@ -2225,13 +2286,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid query parameters
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Get all subscriptions
       tags:
@@ -2257,25 +2318,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid input data
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized - Invalid user authentication
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Subscription not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Patch subscription
       tags:
@@ -2301,19 +2362,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid input data
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized - Invalid user authentication
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Create a new subscription
       tags:
@@ -2335,19 +2396,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid subscription ID format
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Subscription not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Delete subscription by ID
       tags:
@@ -2373,19 +2434,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid subscription ID format
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Subscription not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Get subscription by ID
       tags:
@@ -2418,25 +2479,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request - Invalid input data or subscription ID
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized - Invalid user authentication
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Subscription not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Update subscription by ID
       tags:
@@ -2451,13 +2512,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Delete user
       tags:
@@ -2476,7 +2537,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized
       summary: Get user preferred currency
       tags:
@@ -2504,13 +2565,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized
       summary: Update user preferred currency
       tags:
@@ -2539,13 +2600,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Bad Request
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.httpError'
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Unauthorized
       summary: Update user profile
       tags:

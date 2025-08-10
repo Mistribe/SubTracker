@@ -68,14 +68,14 @@ func (m createPriceModel) Command(providerId, planId uuid.UUID) (command.CreateP
 //	@Param			planId		path		string				true	"Plan ID (UUID format)"
 //	@Param			price		body		createPriceModel	true	"Price creation data"
 //	@Success		201			{object}	PriceModel			"Successfully created price"
-//	@Failure		400			{object}	httpError			"Bad Request - Invalid input data or IDs"
-//	@Failure		404			{object}	httpError			"Provider or plan not found"
-//	@Failure		500			{object}	httpError			"Internal Server Error"
+//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid input data or IDs"
+//	@Failure		404			{object}	HttpErrorResponse	"Provider or plan not found"
+//	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/providers/{providerId}/plans/{planId}/prices [post]
 func (e ProviderPriceCreateEndpoint) Handle(c *gin.Context) {
 	var model createPriceModel
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -83,14 +83,14 @@ func (e ProviderPriceCreateEndpoint) Handle(c *gin.Context) {
 
 	providerId, err := uuid.Parse(c.Param("providerId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
 	}
 	planId, err := uuid.Parse(c.Param("planId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -98,7 +98,7 @@ func (e ProviderPriceCreateEndpoint) Handle(c *gin.Context) {
 
 	cmd, err := model.Command(providerId, planId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return

@@ -26,8 +26,8 @@ func NewDefaultLabelEndpoint(handler core.QueryHandler[query.DefaultLabelQuery, 
 //	@Description	Retrieves a list of default system labels available to all users
 //	@Tags			label
 //	@Produce		json
-//	@Success		200	{array}	labelModel		"List of default labels"
-//	@Failure		500	{object}	httpError	"Internal Server Error"
+//	@Success		200	{array}		labelModel			"List of default labels"
+//	@Failure		500	{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/labels/default [get]
 func (e DefaultLabelEndpoint) Handle(c *gin.Context) {
 	r := e.handler.Handle(c, query.DefaultLabelQuery{})

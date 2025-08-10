@@ -1,13 +1,15 @@
 package endpoints
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/provider/command"
 	"github.com/oleexo/subtracker/internal/domain/provider"
-	"net/http"
-	"time"
 )
 
 type ProviderPlanCreateEndpoint struct {
@@ -56,14 +58,14 @@ func (m createPlanModel) Command(providerId uuid.UUID) (command.CreatePlanComman
 //	@Param			providerId	path		string			true	"Provider ID (UUID format)"
 //	@Param			plan		body		createPlanModel	true	"Plan creation data"
 //	@Success		201			{object}	PlanModel		"Successfully created plan"
-//	@Failure		400			{object}	httpError		"Bad Request - Invalid input data or provider ID"
-//	@Failure		404			{object}	httpError		"Provider not found"
-//	@Failure		500			{object}	httpError		"Internal Server Error"
+//	@Failure		400			{object}	HttpErrorResponse		"Bad Request - Invalid input data or provider ID"
+//	@Failure		404			{object}	HttpErrorResponse		"Provider not found"
+//	@Failure		500			{object}	HttpErrorResponse		"Internal Server Error"
 //	@Router			/providers/{providerId}/plans [post]
 func (e ProviderPlanCreateEndpoint) Handle(c *gin.Context) {
 	var model createPlanModel
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -71,7 +73,7 @@ func (e ProviderPlanCreateEndpoint) Handle(c *gin.Context) {
 
 	providerId, err := uuid.Parse(c.Param("providerId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -79,7 +81,7 @@ func (e ProviderPlanCreateEndpoint) Handle(c *gin.Context) {
 
 	cmd, err := model.Command(providerId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return

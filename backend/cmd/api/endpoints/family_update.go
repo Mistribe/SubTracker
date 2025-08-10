@@ -44,15 +44,15 @@ func (m updateFamilyModel) Command(familyId uuid.UUID) (command.UpdateFamilyComm
 //	@Param			familyId	path		string				true	"Family ID (UUID format)"
 //	@Param			family		body		updateFamilyModel	true	"Updated family data"
 //	@Success		200			{object}	familyModel			"Successfully updated family"
-//	@Failure		400			{object}	httpError			"Bad Request - Invalid input data or family ID"
-//	@Failure		401			{object}	httpError			"Unauthorized - Invalid user authentication"
-//	@Failure		404			{object}	httpError			"Family not found"
-//	@Failure		500			{object}	httpError			"Internal Server Error"
+//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid input data or family ID"
+//	@Failure		401			{object}	HttpErrorResponse	"Unauthorized - Invalid user authentication"
+//	@Failure		404			{object}	HttpErrorResponse	"Family not found"
+//	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/families/{familyId} [put]
 func (f FamilyUpdateEndpoint) Handle(c *gin.Context) {
 	familyId, err := uuid.Parse(c.Param("familyId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -60,7 +60,7 @@ func (f FamilyUpdateEndpoint) Handle(c *gin.Context) {
 
 	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, httpError{
+		c.JSON(http.StatusUnauthorized, HttpErrorResponse{
 			Message: "invalid user id",
 		})
 		return
@@ -68,7 +68,7 @@ func (f FamilyUpdateEndpoint) Handle(c *gin.Context) {
 
 	var model updateFamilyModel
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -76,7 +76,7 @@ func (f FamilyUpdateEndpoint) Handle(c *gin.Context) {
 
 	cmd, err := model.Command(familyId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		c.Abort()

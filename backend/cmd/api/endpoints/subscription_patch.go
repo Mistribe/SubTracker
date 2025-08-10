@@ -147,15 +147,15 @@ func (m PatchSubscriptionModel) Command(userId string) (command.PatchSubscriptio
 //	@Produce		json
 //	@Param			subscription	body		PatchSubscriptionModel	true	"Complete subscription data"
 //	@Success		200				{object}	SubscriptionModel		"Successfully updated subscription"
-//	@Failure		400				{object}	httpError				"Bad Request - Invalid input data"
-//	@Failure		401				{object}	httpError				"Unauthorized - Invalid user authentication"
-//	@Failure		404				{object}	httpError				"Subscription not found"
-//	@Failure		500				{object}	httpError				"Internal Server Error"
+//	@Failure		400				{object}	HttpErrorResponse		"Bad Request - Invalid input data"
+//	@Failure		401				{object}	HttpErrorResponse		"Unauthorized - Invalid user authentication"
+//	@Failure		404				{object}	HttpErrorResponse		"Subscription not found"
+//	@Failure		500				{object}	HttpErrorResponse		"Internal Server Error"
 //	@Router			/subscriptions [patch]
 func (e SubscriptionPatchEndpoint) Handle(c *gin.Context) {
 	var model PatchSubscriptionModel
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -163,7 +163,7 @@ func (e SubscriptionPatchEndpoint) Handle(c *gin.Context) {
 
 	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, httpError{
+		c.JSON(http.StatusUnauthorized, HttpErrorResponse{
 			Message: "invalid user id",
 		})
 		return
@@ -171,7 +171,7 @@ func (e SubscriptionPatchEndpoint) Handle(c *gin.Context) {
 
 	cmd, err := model.Command(userId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		c.Abort()

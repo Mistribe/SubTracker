@@ -28,8 +28,8 @@ func NewSubscriptionGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery,
 //	@Param			limit	query		integer										false	"Number of items per page (default: 10)"
 //	@Param			offset	query		integer										false	"Page number (default: 0)"
 //	@Success		200		{object}	PaginatedResponseModel[SubscriptionModel]	"Paginated list of subscriptions"
-//	@Failure		400		{object}	httpError									"Bad Request - Invalid query parameters"
-//	@Failure		500		{object}	httpError									"Internal Server Error"
+//	@Failure		400		{object}	HttpErrorResponse							"Bad Request - Invalid query parameters"
+//	@Failure		500		{object}	HttpErrorResponse							"Internal Server Error"
 //	@Router			/subscriptions [get]
 func (s SubscriptionGetAllEndpoint) Handle(c *gin.Context) {
 	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 32)

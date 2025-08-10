@@ -34,19 +34,19 @@ type updatePreferredCurrencyModel struct {
 //	@Param			Authorization	header	string							true	"Bearer token"
 //	@Param			request			body	updatePreferredCurrencyModel	true	"Profile update parameters"
 //	@Success		204
-//	@Failure		400	{object}	httpError
-//	@Failure		401	{object}	httpError
+//	@Failure		400	{object}	HttpErrorResponse
+//	@Failure		401	{object}	HttpErrorResponse
 //	@Router			/users/preferred/currency [put]
 func (e UserUpdatePreferredCurrencyEndpoint) Handle(c *gin.Context) {
 	var model updatePreferredCurrencyModel
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, httpError{Message: err.Error()})
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{Message: err.Error()})
 		return
 	}
 
 	newCurrency, err := currency.ParseISO(model.Currency)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{Message: err.Error()})
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{Message: err.Error()})
 		return
 	}
 

@@ -13,34 +13,34 @@ import (
 	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
-// UpdateCurrencyRatesCommand represents a command to update currency rates if they are older than one day
-type UpdateCurrencyRatesCommand struct {
+// RefreshCurrencyRatesCommand represents a command to update currency rates if they are older than one day
+type RefreshCurrencyRatesCommand struct {
 	// No parameters needed as this is a system operation
 }
 
-// UpdateCurrencyRatesCommandHandler handles the update currency rates command
-type UpdateCurrencyRatesCommandHandler struct {
+// RefreshCurrencyRatesCommandHandler handles the update currency rates command
+type RefreshCurrencyRatesCommandHandler struct {
 	repository currency.Repository
 	exchClient exch.Client
 	logger     *slog.Logger
 }
 
-// NewUpdateCurrencyRatesCommandHandler creates a new UpdateCurrencyRatesCommandHandler
-func NewUpdateCurrencyRatesCommandHandler(
+// NewRefreshCurrencyRatesCommandHandler creates a new RefreshCurrencyRatesCommandHandler
+func NewRefreshCurrencyRatesCommandHandler(
 	repository currency.Repository,
 	exchClient exch.Client,
 	logger *slog.Logger,
-) *UpdateCurrencyRatesCommandHandler {
-	return &UpdateCurrencyRatesCommandHandler{
+) *RefreshCurrencyRatesCommandHandler {
+	return &RefreshCurrencyRatesCommandHandler{
 		repository: repository,
 		exchClient: exchClient,
 		logger:     logger,
 	}
 }
 
-// Handle processes the UpdateCurrencyRatesCommand
-func (h *UpdateCurrencyRatesCommandHandler) Handle(ctx context.Context,
-	_ UpdateCurrencyRatesCommand) result.Result[bool] {
+// Handle processes the RefreshCurrencyRatesCommand
+func (h *RefreshCurrencyRatesCommandHandler) Handle(ctx context.Context,
+	_ RefreshCurrencyRatesCommand) result.Result[bool] {
 	// Get the supported currencies
 	supportedCurrencies := currency.GetSupportedCurrencies()
 

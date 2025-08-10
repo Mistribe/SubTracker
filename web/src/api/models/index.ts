@@ -70,6 +70,24 @@ export function createCreateSubscriptionModelFromDiscriminatorValue(parseNode: P
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {CurrencyGetRateResponse_rates}
+ */
+// @ts-ignore
+export function createCurrencyGetRateResponse_ratesFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoCurrencyGetRateResponse_rates;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {CurrencyGetRateResponse}
+ */
+// @ts-ignore
+export function createCurrencyGetRateResponseFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoCurrencyGetRateResponse;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
  * @returns {EditableOwnerModel}
  */
 // @ts-ignore
@@ -143,11 +161,11 @@ export function createFamilyModelFromDiscriminatorValue(parseNode: ParseNode | u
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
- * @returns {HttpError}
+ * @returns {HttpErrorResponse}
  */
 // @ts-ignore
-export function createHttpErrorFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
-    return deserializeIntoHttpError;
+export function createHttpErrorResponseFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoHttpErrorResponse;
 }
 export interface CreateLabelModel extends AdditionalDataHolder, Parsable {
     /**
@@ -552,6 +570,18 @@ export function createUpdateSubscriptionModelFromDiscriminatorValue(parseNode: P
 export function createUserPreferredCurrencyModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
     return deserializeIntoUserPreferredCurrencyModel;
 }
+export interface CurrencyGetRateResponse extends AdditionalDataHolder, Parsable {
+    /**
+     * The rates property
+     */
+    rates?: CurrencyGetRateResponse_rates | null;
+    /**
+     * The timestamp property
+     */
+    timestamp?: string | null;
+}
+export interface CurrencyGetRateResponse_rates extends AdditionalDataHolder, Parsable {
+}
 /**
  * The deserialization information for the current model
  * @param CreateFamilyMemberModel The instance to deserialize into.
@@ -671,6 +701,28 @@ export function deserializeIntoCreateSubscriptionModel(createSubscriptionModel: 
 }
 /**
  * The deserialization information for the current model
+ * @param CurrencyGetRateResponse The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoCurrencyGetRateResponse(currencyGetRateResponse: Partial<CurrencyGetRateResponse> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "rates": n => { currencyGetRateResponse.rates = n.getObjectValue<CurrencyGetRateResponse_rates>(createCurrencyGetRateResponse_ratesFromDiscriminatorValue); },
+        "timestamp": n => { currencyGetRateResponse.timestamp = n.getStringValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param CurrencyGetRateResponse_rates The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoCurrencyGetRateResponse_rates(currencyGetRateResponse_rates: Partial<CurrencyGetRateResponse_rates> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+    }
+}
+/**
+ * The deserialization information for the current model
  * @param EditableOwnerModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
@@ -731,13 +783,13 @@ export function deserializeIntoFamilyModel(familyModel: Partial<FamilyModel> | u
 }
 /**
  * The deserialization information for the current model
- * @param HttpError The instance to deserialize into.
+ * @param HttpErrorResponse The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
-export function deserializeIntoHttpError(httpError: Partial<HttpError> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+export function deserializeIntoHttpErrorResponse(httpErrorResponse: Partial<HttpErrorResponse> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "message": n => { httpError.messageEscaped = n.getStringValue(); },
+        "message": n => { httpErrorResponse.messageEscaped = n.getStringValue(); },
     }
 }
 /**
@@ -1241,7 +1293,7 @@ export interface FamilyModel extends AdditionalDataHolder, Parsable {
      */
     updatedAt?: Date | null;
 }
-export interface HttpError extends AdditionalDataHolder, ApiError, Parsable {
+export interface HttpErrorResponse extends AdditionalDataHolder, ApiError, Parsable {
     /**
      * The message property
      */
@@ -1720,6 +1772,30 @@ export function serializeCreateSubscriptionModel(writer: SerializationWriter, cr
 }
 /**
  * Serializes information the current object
+ * @param CurrencyGetRateResponse The instance to serialize from.
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeCurrencyGetRateResponse(writer: SerializationWriter, currencyGetRateResponse: Partial<CurrencyGetRateResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!currencyGetRateResponse || isSerializingDerivedType) { return; }
+    writer.writeObjectValue<CurrencyGetRateResponse_rates>("rates", currencyGetRateResponse.rates, serializeCurrencyGetRateResponse_rates);
+    writer.writeStringValue("timestamp", currencyGetRateResponse.timestamp);
+    writer.writeAdditionalData(currencyGetRateResponse.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param CurrencyGetRateResponse_rates The instance to serialize from.
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeCurrencyGetRateResponse_rates(writer: SerializationWriter, currencyGetRateResponse_rates: Partial<CurrencyGetRateResponse_rates> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!currencyGetRateResponse_rates || isSerializingDerivedType) { return; }
+    writer.writeAdditionalData(currencyGetRateResponse_rates.additionalData);
+}
+/**
+ * Serializes information the current object
  * @param EditableOwnerModel The instance to serialize from.
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
@@ -1784,15 +1860,15 @@ export function serializeFamilyModel(writer: SerializationWriter, familyModel: P
 }
 /**
  * Serializes information the current object
- * @param HttpError The instance to serialize from.
+ * @param HttpErrorResponse The instance to serialize from.
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeHttpError(writer: SerializationWriter, httpError: Partial<HttpError> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!httpError || isSerializingDerivedType) { return; }
-    writer.writeStringValue("message", httpError.messageEscaped);
-    writer.writeAdditionalData(httpError.additionalData);
+export function serializeHttpErrorResponse(writer: SerializationWriter, httpErrorResponse: Partial<HttpErrorResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!httpErrorResponse || isSerializingDerivedType) { return; }
+    writer.writeStringValue("message", httpErrorResponse.messageEscaped);
+    writer.writeAdditionalData(httpErrorResponse.additionalData);
 }
 /**
  * Serializes information the current object

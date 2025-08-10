@@ -139,15 +139,15 @@ func (m UpdateSubscriptionModel) Command(userId string, id uuid.UUID) (command.U
 //	@Param			subscriptionId	path		string					true	"Subscription ID (UUID format)"
 //	@Param			subscription	body		UpdateSubscriptionModel	true	"Updated subscription data"
 //	@Success		200				{object}	SubscriptionModel		"Successfully updated subscription"
-//	@Failure		400				{object}	httpError				"Bad Request - Invalid input data or subscription ID"
-//	@Failure		401				{object}	httpError				"Unauthorized - Invalid user authentication"
-//	@Failure		404				{object}	httpError				"Subscription not found"
-//	@Failure		500				{object}	httpError				"Internal Server Error"
+//	@Failure		400				{object}	HttpErrorResponse		"Bad Request - Invalid input data or subscription ID"
+//	@Failure		401				{object}	HttpErrorResponse		"Unauthorized - Invalid user authentication"
+//	@Failure		404				{object}	HttpErrorResponse		"Subscription not found"
+//	@Failure		500				{object}	HttpErrorResponse		"Internal Server Error"
 //	@Router			/subscriptions/{subscriptionId} [put]
 func (s SubscriptionUpdateEndpoint) Handle(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("subscriptionId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -155,7 +155,7 @@ func (s SubscriptionUpdateEndpoint) Handle(c *gin.Context) {
 
 	var model UpdateSubscriptionModel
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -163,7 +163,7 @@ func (s SubscriptionUpdateEndpoint) Handle(c *gin.Context) {
 
 	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, httpError{
+		c.JSON(http.StatusUnauthorized, HttpErrorResponse{
 			Message: "invalid user id",
 		})
 		return
@@ -171,7 +171,7 @@ func (s SubscriptionUpdateEndpoint) Handle(c *gin.Context) {
 
 	cmd, err := model.Command(userId, id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		c.Abort()

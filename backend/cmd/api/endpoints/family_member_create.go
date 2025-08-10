@@ -72,15 +72,15 @@ func (m createFamilyMemberModel) Command(familyId uuid.UUID) (command.CreateFami
 //	@Param			familyId	path		string					true	"Family ID (UUID format)"
 //	@Param			member		body		createFamilyMemberModel	true	"Family member creation data"
 //	@Success		201			{object}	familyModel				"Successfully added family member"
-//	@Failure		400			{object}	httpError				"Bad Request - Invalid input data or family ID"
-//	@Failure		401			{object}	httpError				"Unauthorized - Invalid user authentication"
-//	@Failure		404			{object}	httpError				"Family not found"
-//	@Failure		500			{object}	httpError				"Internal Server Error"
+//	@Failure		400			{object}	HttpErrorResponse		"Bad Request - Invalid input data or family ID"
+//	@Failure		401			{object}	HttpErrorResponse		"Unauthorized - Invalid user authentication"
+//	@Failure		404			{object}	HttpErrorResponse		"Family not found"
+//	@Failure		500			{object}	HttpErrorResponse		"Internal Server Error"
 //	@Router			/families/{familyId}/members [post]
 func (f FamilyMemberCreateEndpoint) Handle(c *gin.Context) {
 	familyId, err := uuid.Parse(c.Param("familyId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -88,7 +88,7 @@ func (f FamilyMemberCreateEndpoint) Handle(c *gin.Context) {
 
 	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, httpError{
+		c.JSON(http.StatusUnauthorized, HttpErrorResponse{
 			Message: "invalid user id",
 		})
 		return
@@ -96,7 +96,7 @@ func (f FamilyMemberCreateEndpoint) Handle(c *gin.Context) {
 
 	var model createFamilyMemberModel
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
@@ -104,7 +104,7 @@ func (f FamilyMemberCreateEndpoint) Handle(c *gin.Context) {
 
 	cmd, err := model.Command(familyId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		c.Abort()

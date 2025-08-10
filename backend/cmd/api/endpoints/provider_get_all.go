@@ -28,8 +28,8 @@ func NewProviderGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, cor
 //	@Param			offset	query		int										false	"Offset (default: 0)"
 //	@Param			limit	query		int										false	"Limit per request (default: 10)"
 //	@Success		200		{object}	PaginatedResponseModel[ProviderModel]	"Paginated list of providers"
-//	@Failure		400		{object}	httpError								"Bad Request - Invalid query parameters"
-//	@Failure		500		{object}	httpError								"Internal Server Error"
+//	@Failure		400		{object}	HttpErrorResponse						"Bad Request - Invalid query parameters"
+//	@Failure		500		{object}	HttpErrorResponse						"Internal Server Error"
 //	@Router			/providers [get]
 func (e ProviderGetAllEndpoint) Handle(c *gin.Context) {
 	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 32)

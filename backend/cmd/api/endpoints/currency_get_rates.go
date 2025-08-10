@@ -39,8 +39,8 @@ func NewCurrencyGetRateEndpoint(
 //	@Produce		json
 //	@Param			date	query		string	false	"Conversion date in RFC3339 format (default: current time)"
 //	@Success		200		{object}	CurrencyGetRateResponse
-//	@Failure		400		{object}	ErrorResponse
-//	@Failure		500		{object}	ErrorResponse
+//	@Failure		400		{object}	HttpErrorResponse
+//	@Failure		500		{object}	HttpErrorResponse
 //	@Router			/currency/rates [get]
 func (e CurrencyGetRateEndpoint) Handle(c *gin.Context) {
 	conversionDateParam := c.DefaultQuery("date", time.Now().Format(time.RFC3339))

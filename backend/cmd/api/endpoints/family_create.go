@@ -17,7 +17,7 @@ type FamilyCreateEndpoint struct {
 	handler core.CommandHandler[command.CreateFamilyCommand, family.Family]
 }
 
-// @name CreateFamily
+// @name	CreateFamily
 type createFamilyModel struct {
 	Id          *string    `json:"id,omitempty"`
 	Name        string     `json:"name" binding:"required"`
@@ -52,21 +52,21 @@ func (m createFamilyModel) Command() (command.CreateFamilyCommand, error) {
 //	@Produce		json
 //	@Param			family	body		createFamilyModel	true	"Family creation data"
 //	@Success		201		{object}	familyModel			"Successfully created family"
-//	@Failure		400		{object}	httpError			"Bad Request - Invalid input data"
-//	@Failure		401		{object}	httpError			"Unauthorized - Invalid user authentication"
-//	@Failure		500		{object}	httpError			"Internal Server Error"
+//	@Failure		400		{object}	HttpErrorResponse	"Bad Request - Invalid input data"
+//	@Failure		401		{object}	HttpErrorResponse	"Unauthorized - Invalid user authentication"
+//	@Failure		500		{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/families [post]
 func (f FamilyCreateEndpoint) Handle(c *gin.Context) {
 	var model createFamilyModel
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
 	}
 	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, httpError{
+		c.JSON(http.StatusUnauthorized, HttpErrorResponse{
 			Message: "invalid user id",
 		})
 		return
@@ -74,7 +74,7 @@ func (f FamilyCreateEndpoint) Handle(c *gin.Context) {
 
 	cmd, err := model.Command()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		c.Abort()

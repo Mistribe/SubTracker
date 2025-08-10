@@ -22,14 +22,14 @@ type SubscriptionGetEndpoint struct {
 //	@Produce		json
 //	@Param			subscriptionId	path		string				true	"Subscription ID (UUID format)"
 //	@Success		200				{object}	SubscriptionModel	"Successfully retrieved subscription"
-//	@Failure		400				{object}	httpError			"Bad Request - Invalid subscription ID format"
-//	@Failure		404				{object}	httpError			"Subscription not found"
-//	@Failure		500				{object}	httpError			"Internal Server Error"
+//	@Failure		400				{object}	HttpErrorResponse	"Bad Request - Invalid subscription ID format"
+//	@Failure		404				{object}	HttpErrorResponse	"Subscription not found"
+//	@Failure		500				{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/subscriptions/{subscriptionId} [get]
 func (e SubscriptionGetEndpoint) Handle(c *gin.Context) {
 	id, err := paramAsUuid(c, "subscriptionId")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 	}

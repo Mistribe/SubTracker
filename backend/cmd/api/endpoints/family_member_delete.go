@@ -22,14 +22,14 @@ type FamilyMemberDeleteEndpoint struct {
 //	@Param			familyId	path	string	true	"Family ID (UUID format)"
 //	@Param			id			path	string	true	"Family member ID (UUID format)"
 //	@Success		204			"No Content - Family member successfully deleted"
-//	@Failure		400			{object}	httpError	"Bad Request - Invalid ID format"
-//	@Failure		404			{object}	httpError	"Family or family member not found"
-//	@Failure		500			{object}	httpError	"Internal Server Error"
+//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid ID format"
+//	@Failure		404			{object}	HttpErrorResponse	"Family or family member not found"
+//	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/families/{familyId}/members/{id} [delete]
 func (f FamilyMemberDeleteEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")
 	if idParam == "" {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: "id parameter is required",
 		})
 		return
@@ -37,7 +37,7 @@ func (f FamilyMemberDeleteEndpoint) Handle(c *gin.Context) {
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: "invalid id format",
 		})
 		return
@@ -45,7 +45,7 @@ func (f FamilyMemberDeleteEndpoint) Handle(c *gin.Context) {
 
 	familyIdParam := c.Param("familyId")
 	if familyIdParam == "" {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: "family id parameter is required",
 		})
 		return
@@ -53,7 +53,7 @@ func (f FamilyMemberDeleteEndpoint) Handle(c *gin.Context) {
 
 	familyId, err := uuid.Parse(familyIdParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: "invalid family id format",
 		})
 	}

@@ -32,8 +32,8 @@ func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, core.P
 //	@Param			offset		query		integer								false	"Offset (default: 0)"
 //	@Param			familyId	query		string								false	"Family ID (UUID format)"
 //	@Success		200			{object}	PaginatedResponseModel[labelModel]	"Paginated list of labels"
-//	@Failure		400			{object}	httpError							"Bad Request - Invalid query parameters"
-//	@Failure		500			{object}	httpError							"Internal Server Error"
+//	@Failure		400			{object}	HttpErrorResponse					"Bad Request - Invalid query parameters"
+//	@Failure		500			{object}	HttpErrorResponse					"Internal Server Error"
 //	@Router			/labels [get]
 func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
 	ownerTypeParams := c.QueryArray("owner_type")
@@ -59,7 +59,7 @@ func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
 	familyIdParam := c.Query("familyId")
 	familyId, err := parseUuidOrNil(&familyIdParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, httpError{
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
 		c.Abort()
