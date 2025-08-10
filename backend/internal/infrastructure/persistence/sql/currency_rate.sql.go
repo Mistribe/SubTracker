@@ -132,7 +132,7 @@ func (q *Queries) GetCurrencyRatesByDate(ctx context.Context, rateDate time.Time
 }
 
 const getLatestUpdateDate = `-- name: GetLatestUpdateDate :one
-SELECT MAX(cr.updated_at)::timestamp AS latest_update_date
+SELECT COALESCE(MAX(cr.updated_at), 'epoch'::timestamp)::timestamp AS latest_update_date
 FROM public.currency_rates cr
 `
 

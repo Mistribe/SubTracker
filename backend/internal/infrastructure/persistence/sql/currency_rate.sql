@@ -10,7 +10,7 @@ WHERE cr.rate_date = $1
 ORDER BY cr.from_currency, cr.to_currency;
 
 -- name: GetLatestUpdateDate :one
-SELECT MAX(cr.updated_at)::timestamp AS latest_update_date
+SELECT COALESCE(MAX(cr.updated_at), 'epoch'::timestamp)::timestamp AS latest_update_date
 FROM public.currency_rates cr;
 
 -- name: CreateCurrencyRate :exec

@@ -52,6 +52,15 @@ components:
         timestamp:
           type: string
       type: object
+    endpoints.CurrencyRefreshRatesResponse:
+      properties:
+        rates:
+          additionalProperties:
+            type: number
+          type: object
+        timestamp:
+          type: string
+      type: object
     endpoints.EditableOwnerModel:
       properties:
         family_id:
@@ -1080,20 +1089,7 @@ info:
   version: "1.0"
 openapi: 3.1.0
 paths:
-  /currencies/supported:
-    get:
-      description: get details of all supported currencies
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  type: string
-                type: array
-          description: currencies
-      summary: Get Supported Currencies
-  /currency/rates:
+  /currencies/rates:
     get:
       description: Get exchange rates for all currencies at a specific date
       parameters:
@@ -1122,7 +1118,7 @@ paths:
                 $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Get Currency Rates
-  /currency/rates/refresh:
+  /currencies/rates/refresh:
     post:
       description: refresh exchange rates for all currencies
       responses:
@@ -1130,7 +1126,7 @@ paths:
           content:
             application/json:
               schema:
-                type: boolean
+                $ref: '#/components/schemas/endpoints.CurrencyRefreshRatesResponse'
           description: OK
         "400":
           content:
@@ -1145,6 +1141,19 @@ paths:
                 $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: refresh Currency Rates
+  /currencies/supported:
+    get:
+      description: get details of all supported currencies
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: currencies
+      summary: Get Supported Currencies
   /families:
     get:
       description: Retrieve a paginated list of families for the authenticated user

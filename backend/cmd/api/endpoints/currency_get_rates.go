@@ -41,7 +41,7 @@ func NewCurrencyGetRateEndpoint(
 //	@Success		200		{object}	CurrencyGetRateResponse
 //	@Failure		400		{object}	HttpErrorResponse
 //	@Failure		500		{object}	HttpErrorResponse
-//	@Router			/currency/rates [get]
+//	@Router			/currencies/rates [get]
 func (e CurrencyGetRateEndpoint) Handle(c *gin.Context) {
 	conversionDateParam := c.DefaultQuery("date", time.Now().Format(time.RFC3339))
 	conversionDate, err := time.Parse(time.RFC3339, conversionDateParam)

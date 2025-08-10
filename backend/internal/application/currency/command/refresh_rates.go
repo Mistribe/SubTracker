@@ -18,6 +18,11 @@ type RefreshCurrencyRatesCommand struct {
 	// No parameters needed as this is a system operation
 }
 
+type RefreshCurrencyRatesResponse struct {
+	Timestamp time.Time
+	Rates     []currency.Rate
+}
+
 // RefreshCurrencyRatesCommandHandler handles the update currency rates command
 type RefreshCurrencyRatesCommandHandler struct {
 	repository currency.Repository
@@ -40,25 +45,33 @@ func NewRefreshCurrencyRatesCommandHandler(
 
 // Handle processes the RefreshCurrencyRatesCommand
 func (h *RefreshCurrencyRatesCommandHandler) Handle(ctx context.Context,
-	_ RefreshCurrencyRatesCommand) result.Result[bool] {
+	_ RefreshCurrencyRatesCommand) result.Result[RefreshCurrencyRatesResponse] {
 	// Get the supported currencies
 	supportedCurrencies := currency.GetSupportedCurrencies()
 
 	lastUpdatedDate, err := h.repository.GetLatestUpdateDate(ctx)
 	if err != nil {
 		h.logger.Error("Failed to get latest currency rates update date", "error", err)
-		return result.Fail[bool](err)
+		return result.Fail[RefreshCurrencyRatesResponse](err)
 	}
 
 	if lastUpdatedDate.Add(currency.TimeBetweenSync).After(time.Now()) {
 		h.logger.Info("Currency rates are up to date")
-		return result.Success(true)
+		rates, err := h.repository.GetRatesByDate(ctx, lastUpdatedDate)
+		if err != nil {
+			h.logger.Error("Failed to get currency rates", "error", err)
+			return result.Fail[RefreshCurrencyRatesResponse](err)
+		}
+		return result.Success(RefreshCurrencyRatesResponse{
+			Timestamp: lastUpdatedDate,
+			Rates:     rates,
+		})
 	}
 
 	latestRates, err := h.exchClient.GetLiveExchangeRates(supportedCurrencies)
 	if err != nil {
 		h.logger.Error("Failed to get live exchange rates", "error", err)
-		return result.Fail[bool](err)
+		return result.Fail[RefreshCurrencyRatesResponse](err)
 	}
 
 	rates := slicesx.MapToArr(latestRates.Rates, func(c currency.Unit, v float64) currency.Rate {
@@ -75,9 +88,12 @@ func (h *RefreshCurrencyRatesCommandHandler) Handle(ctx context.Context,
 
 	if err := h.repository.Save(ctx, rates...); err != nil {
 		h.logger.Error("Failed to save currency rates", "error", err)
-		return result.Fail[bool](err)
+		return result.Fail[RefreshCurrencyRatesResponse](err)
 	}
 
 	h.logger.Info("Successfully updated currency rates", "count", len(rates))
-	return result.Success(true)
+	return result.Success(RefreshCurrencyRatesResponse{
+		Timestamp: latestRates.Timestamp,
+		Rates:     rates,
+	})
 }

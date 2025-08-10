@@ -33,7 +33,9 @@ func ToMap[TKey comparable, TOut any, TValue any](source []TValue,
 	valueSelector func(TValue) TOut) map[TKey]TOut {
 	result := make(map[TKey]TOut)
 	for _, v := range source {
-		result[keySelector(v)] = valueSelector(v)
+		key := keySelector(v)
+		value := valueSelector(v)
+		result[key] = value
 	}
 
 	return result
