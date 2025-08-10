@@ -8,6 +8,9 @@ import UpcomingRenewals from "@/components/dashboard/UpcomingRenewals";
 import TopProviders from "@/components/dashboard/TopProviders";
 import PriceEvolutionGraph from "@/components/dashboard/PriceEvolutionGraph";
 import {PageHeader} from "@/components/ui/page-header";
+import { usePreferredCurrency } from "@/hooks/currencies/usePreferredCurrency";
+import { useCurrencyRates } from "@/hooks/currencies/useCurrencyRates";
+import { subscriptionMonthlyPriceInCurrency, subscriptionYearlyPriceInCurrency } from "@/utils/currency";
 
 const DashboardPage = () => {
     // Fetch all subscriptions
@@ -31,28 +34,35 @@ const DashboardPage = () => {
         return map;
     }, [providersData]);
 
-    // Calculate monthly expenses
+    // Preferred currency and rates
+    const { preferredCurrency } = usePreferredCurrency();
+    const { rates, isLoading: isLoadingRates } = useCurrencyRates();
+
+    // Calculate monthly expenses in preferred currency using rates
     const totalMonthly = useMemo(() => {
         return allSubscriptions
             .filter(sub => sub.isActive)
             .reduce((sum, sub) => {
-                return sum + sub.getMonthlyPrice()
+                return sum + subscriptionMonthlyPriceInCurrency(sub, preferredCurrency, rates);
             }, 0);
-    }, [allSubscriptions]);
+    }, [allSubscriptions, preferredCurrency, rates]);
 
-    // Calculate yearly expenses
+    // Calculate yearly expenses in preferred currency using rates
     const totalYearly = useMemo(() => {
         return allSubscriptions
             .filter(sub => sub.isActive)
             .reduce((sum, sub) => {
-                return sum + sub.getYearlyPrice()
+                return sum + subscriptionYearlyPriceInCurrency(sub, preferredCurrency, rates);
             }, 0);
-    }, [allSubscriptions]);
+    }, [allSubscriptions, preferredCurrency, rates]);
 
     // Count active subscriptions
     const activeSubscriptionsCount = useMemo(() => {
         return allSubscriptions.filter(sub => sub.isActive).length;
     }, [allSubscriptions]);
+
+    // Determine totals currency: use user's preferred currency for consistency
+    const totalsCurrency = preferredCurrency;
 
     // Calculate next renewal date for each subscription
     const subscriptionsWithNextRenewal = useMemo(() => {
@@ -116,47 +126,29 @@ const DashboardPage = () => {
         return subscriptionsWithNextRenewal.slice(0, 5);
     }, [subscriptionsWithNextRenewal]);
 
-    // Calculate spending by provider
+    // Calculate spending by provider (convert to preferred currency yearly)
     const providerSpending = useMemo(() => {
-        const spending = new Map();
+        const spending = new Map<string, { id: string; name: string; amount: number }>();
 
         allSubscriptions.forEach(sub => {
             if (!sub.customPrice || !sub.isActive) return;
 
             const providerId = sub.providerId;
             const providerName = providerMap.get(providerId)?.name || providerId;
-            const amount = sub.customPrice.amount;
 
-            // Convert all subscriptions to yearly cost for fair comparison
-            let yearlyAmount = amount;
-            switch (sub.recurrency) {
-                case SubscriptionRecurrency.Monthly:
-                    yearlyAmount = amount * 12;
-                    break;
-                case SubscriptionRecurrency.Quarterly:
-                    yearlyAmount = amount * 4;
-                    break;
-                case SubscriptionRecurrency.HalfYearly:
-                    yearlyAmount = amount * 2;
-                    break;
-                case SubscriptionRecurrency.Custom:
-                    if (sub.customRecurrency) {
-                        yearlyAmount = amount * (365 / sub.customRecurrency);
-                    }
-                    break;
-            }
+            const yearlyInPreferred = subscriptionYearlyPriceInCurrency(sub, preferredCurrency, rates);
 
             if (spending.has(providerId)) {
                 spending.set(providerId, {
                     id: providerId,
                     name: providerName,
-                    amount: spending.get(providerId).amount + yearlyAmount
+                    amount: spending.get(providerId)!.amount + yearlyInPreferred,
                 });
             } else {
                 spending.set(providerId, {
                     id: providerId,
                     name: providerName,
-                    amount: yearlyAmount
+                    amount: yearlyInPreferred,
                 });
             }
         });
@@ -164,7 +156,7 @@ const DashboardPage = () => {
         return Array.from(spending.values())
             .sort((a, b) => b.amount - a.amount)
             .slice(0, 5);
-    }, [allSubscriptions, providerMap]);
+    }, [allSubscriptions, providerMap, preferredCurrency, rates]);
 
 
     return (
@@ -178,7 +170,8 @@ const DashboardPage = () => {
                 totalMonthly={totalMonthly}
                 totalYearly={totalYearly}
                 activeSubscriptionsCount={activeSubscriptionsCount}
-                isLoading={isLoadingSubscriptions}
+                isLoading={isLoadingSubscriptions || isLoadingRates}
+                totalsCurrency={totalsCurrency}
             />
 
             {/* Side by side: Upcoming Renewals and Top Providers */}

@@ -1,6 +1,7 @@
 import {Skeleton} from "@/components/ui/skeleton";
 import {format} from "date-fns";
-import {formatCurrency, formatRecurrency} from "./utils";
+import {formatRecurrency} from "./utils";
+import { Money } from "@/components/ui/money";
 import type {SubscriptionWithNextRenewal} from "@/models/subscriptionWithNextRenewal";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Calendar, Clock} from "lucide-react";
@@ -60,9 +61,8 @@ const UpcomingRenewals = ({
                                             </p>
                                         </div>
                                         {item.subscription.customPrice && (
-                                            <span
-                                                className="font-semibold bg-gradient-to-r from-cyan-500 to-cyan-700 bg-clip-text text-transparent">
-                                                {formatCurrency(item.subscription.customPrice.amount)}
+                                            <span className="font-semibold bg-gradient-to-r from-cyan-500 to-cyan-700 bg-clip-text text-transparent">
+                                                <Money amount={item.subscription.customPrice.amount} currency={item.subscription.customPrice.currency} />
                                             </span>
                                         )}
                                     </div>

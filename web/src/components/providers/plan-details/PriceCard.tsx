@@ -3,6 +3,7 @@ import { Card, CardFooter } from "@/components/ui/card";
 import { Pencil, Trash2 } from "lucide-react";
 import Price from "@/models/price";
 import { PriceForm, type PriceFormValues } from "../PriceForm";
+import { Money } from "@/components/ui/money";
 
 interface PriceCardProps {
     price: Price;
@@ -40,7 +41,12 @@ export function PriceCard({
         <Card key={price.id} className={cardClassName}>
             <div className="p-2 flex items-center justify-between">
                 <div>
-                    <div className={isActive ? "font-medium" : ""}>{price.amount} {price.currency}</div>
+                    <div className={isActive ? "font-medium" : ""}>
+                        <span>
+                            {/* Display in preferred currency, with original in parentheses when converted */}
+                            <Money amount={price.amount} currency={price.currency} />
+                        </span>
+                    </div>
                     <div className="text-xs text-gray-500">
                         {price.endDate 
                             ? `${price.startDate.toLocaleDateString()} - ${price.endDate.toLocaleDateString()}`

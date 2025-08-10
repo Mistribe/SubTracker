@@ -88,6 +88,24 @@ export function createCurrencyGetRateResponseFromDiscriminatorValue(parseNode: P
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {CurrencyRefreshRatesResponse_rates}
+ */
+// @ts-ignore
+export function createCurrencyRefreshRatesResponse_ratesFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoCurrencyRefreshRatesResponse_rates;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {CurrencyRefreshRatesResponse}
+ */
+// @ts-ignore
+export function createCurrencyRefreshRatesResponseFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoCurrencyRefreshRatesResponse;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
  * @returns {EditableOwnerModel}
  */
 // @ts-ignore
@@ -582,6 +600,18 @@ export interface CurrencyGetRateResponse extends AdditionalDataHolder, Parsable 
 }
 export interface CurrencyGetRateResponse_rates extends AdditionalDataHolder, Parsable {
 }
+export interface CurrencyRefreshRatesResponse extends AdditionalDataHolder, Parsable {
+    /**
+     * The rates property
+     */
+    rates?: CurrencyRefreshRatesResponse_rates | null;
+    /**
+     * The timestamp property
+     */
+    timestamp?: string | null;
+}
+export interface CurrencyRefreshRatesResponse_rates extends AdditionalDataHolder, Parsable {
+}
 /**
  * The deserialization information for the current model
  * @param CreateFamilyMemberModel The instance to deserialize into.
@@ -718,6 +748,28 @@ export function deserializeIntoCurrencyGetRateResponse(currencyGetRateResponse: 
  */
 // @ts-ignore
 export function deserializeIntoCurrencyGetRateResponse_rates(currencyGetRateResponse_rates: Partial<CurrencyGetRateResponse_rates> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param CurrencyRefreshRatesResponse The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoCurrencyRefreshRatesResponse(currencyRefreshRatesResponse: Partial<CurrencyRefreshRatesResponse> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "rates": n => { currencyRefreshRatesResponse.rates = n.getObjectValue<CurrencyRefreshRatesResponse_rates>(createCurrencyRefreshRatesResponse_ratesFromDiscriminatorValue); },
+        "timestamp": n => { currencyRefreshRatesResponse.timestamp = n.getStringValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param CurrencyRefreshRatesResponse_rates The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoCurrencyRefreshRatesResponse_rates(currencyRefreshRatesResponse_rates: Partial<CurrencyRefreshRatesResponse_rates> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
     }
 }
@@ -1793,6 +1845,30 @@ export function serializeCurrencyGetRateResponse(writer: SerializationWriter, cu
 export function serializeCurrencyGetRateResponse_rates(writer: SerializationWriter, currencyGetRateResponse_rates: Partial<CurrencyGetRateResponse_rates> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!currencyGetRateResponse_rates || isSerializingDerivedType) { return; }
     writer.writeAdditionalData(currencyGetRateResponse_rates.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param CurrencyRefreshRatesResponse The instance to serialize from.
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeCurrencyRefreshRatesResponse(writer: SerializationWriter, currencyRefreshRatesResponse: Partial<CurrencyRefreshRatesResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!currencyRefreshRatesResponse || isSerializingDerivedType) { return; }
+    writer.writeObjectValue<CurrencyRefreshRatesResponse_rates>("rates", currencyRefreshRatesResponse.rates, serializeCurrencyRefreshRatesResponse_rates);
+    writer.writeStringValue("timestamp", currencyRefreshRatesResponse.timestamp);
+    writer.writeAdditionalData(currencyRefreshRatesResponse.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param CurrencyRefreshRatesResponse_rates The instance to serialize from.
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeCurrencyRefreshRatesResponse_rates(writer: SerializationWriter, currencyRefreshRatesResponse_rates: Partial<CurrencyRefreshRatesResponse_rates> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!currencyRefreshRatesResponse_rates || isSerializingDerivedType) { return; }
+    writer.writeAdditionalData(currencyRefreshRatesResponse_rates.additionalData);
 }
 /**
  * Serializes information the current object

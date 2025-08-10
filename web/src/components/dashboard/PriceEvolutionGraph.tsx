@@ -9,10 +9,12 @@ import {
     ChartTooltipContent
 } from "@/components/ui/chart";
 import {Bar, CartesianGrid, ComposedChart, Line, XAxis, YAxis} from "recharts";
-import {formatCurrency} from "./utils";
 import {ChevronLeft, ChevronRight, RefreshCw, TrendingUp} from "lucide-react";
 import type Subscription from "@/models/subscription";
 import {addMonths, format, startOfMonth, subMonths} from "date-fns";
+import { usePreferredCurrency } from "@/hooks/currencies/usePreferredCurrency";
+import { useCurrencyRates } from "@/hooks/currencies/useCurrencyRates";
+import { subscriptionMonthlyPriceInCurrency } from "@/utils/currency";
 
 interface Provider {
     id: string;
@@ -65,6 +67,9 @@ const PriceEvolutionGraph = ({
     };
 
     // Generate monthly data for the past 6 months and next 6 months from the reference date
+    const { preferredCurrency } = usePreferredCurrency();
+    const { rates } = useCurrencyRates();
+
     const monthlyData = useMemo(() => {
         const data: MonthlyData[] = [];
         const currentMonth = startOfMonth(referenceDate);
@@ -90,9 +95,9 @@ const PriceEvolutionGraph = ({
                 return isActiveInMonth;
             });
             
-            // Calculate total for all active subscriptions in this month
+            // Calculate total for all active subscriptions in this month (converted to preferred currency)
             const monthlySubscriptionsTotal = activeSubscriptions.reduce((sum, subscription) => {
-                return sum + subscription.getMonthlyPrice();
+                return sum + subscriptionMonthlyPriceInCurrency(subscription, preferredCurrency, rates);
             }, 0);
             
             // Group subscriptions by provider
@@ -103,7 +108,7 @@ const PriceEvolutionGraph = ({
             
             activeSubscriptions.forEach(subscription => {
                 const providerId = subscription.providerId;
-                const monthlyPrice = subscription.getMonthlyPrice();
+                const monthlyPrice = subscriptionMonthlyPriceInCurrency(subscription, preferredCurrency, rates);
                 
                 if (providerCosts.has(providerId)) {
                     providerCosts.set(providerId, providerCosts.get(providerId)! + monthlyPrice);
@@ -147,7 +152,7 @@ const PriceEvolutionGraph = ({
         }
 
         return data;
-    }, [subscriptions, providerMap, referenceDate]);
+    }, [subscriptions, providerMap, referenceDate, preferredCurrency, rates]);
 
     // Calculate the visible date range for display
     const dateRangeStart = format(monthlyData[0].date, 'MMM yyyy');
@@ -266,13 +271,13 @@ const PriceEvolutionGraph = ({
                                 />
                                 <YAxis
                                     tick={{fontSize: 12}}
-                                    tickFormatter={(value) => formatCurrency(value).replace('.00', '')}
+                                    tickFormatter={(value) => new Intl.NumberFormat(undefined, { style: 'currency', currency: preferredCurrency, maximumFractionDigits: 0 }).format(value as number)}
                                 />
                                 <ChartTooltip
                                     content={
                                         <ChartTooltipContent
                                             formatter={(value) => (
-                                                <span>{formatCurrency(value as number)}</span>
+                                                <span>{new Intl.NumberFormat(undefined, { style: 'currency', currency: preferredCurrency }).format(value as number)}</span>
                                             )}
                                         />
                                     }

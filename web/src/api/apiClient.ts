@@ -4,8 +4,6 @@
 // @ts-ignore
 import { CurrenciesRequestBuilderNavigationMetadata, type CurrenciesRequestBuilder } from './currencies/index.js';
 // @ts-ignore
-import { CurrencyRequestBuilderNavigationMetadata, type CurrencyRequestBuilder } from './currency/index.js';
-// @ts-ignore
 import { FamiliesRequestBuilderNavigationMetadata, FamiliesRequestBuilderRequestsMetadata, type FamiliesRequestBuilder } from './families/index.js';
 // @ts-ignore
 import { HealthzRequestBuilderNavigationMetadata, type HealthzRequestBuilder } from './healthz/index.js';
@@ -36,10 +34,6 @@ export interface ApiClient extends BaseRequestBuilder<ApiClient> {
      * The currencies property
      */
     get currencies(): CurrenciesRequestBuilder;
-    /**
-     * The currency property
-     */
-    get currency(): CurrencyRequestBuilder;
     /**
      * The families property
      */
@@ -109,9 +103,6 @@ export const ApiClientUriTemplate = "{+baseurl}";
 export const ApiClientNavigationMetadata: Record<Exclude<keyof ApiClient, KeysToExcludeForNavigationMetadata>, NavigationMetadata> = {
     currencies: {
         navigationMetadata: CurrenciesRequestBuilderNavigationMetadata,
-    },
-    currency: {
-        navigationMetadata: CurrencyRequestBuilderNavigationMetadata,
     },
     families: {
         requestsMetadata: FamiliesRequestBuilderRequestsMetadata,

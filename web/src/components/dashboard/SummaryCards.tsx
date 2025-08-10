@@ -1,5 +1,4 @@
 import {Skeleton} from "@/components/ui/skeleton";
-import {formatCurrency} from "./utils";
 import {
     Card,
     CardContent,
@@ -11,19 +10,23 @@ import {
     TrendingUp,
     Calendar
 } from "lucide-react";
+import Money from "@/components/ui/money";
 
 interface SummaryCardsProps {
     totalMonthly: number;
     totalYearly: number;
     activeSubscriptionsCount: number;
     isLoading: boolean;
+    /** Source currency for the aggregated totals (e.g., "USD"). */
+    totalsCurrency: string;
 }
 
 const SummaryCards = ({
                           totalMonthly,
                           totalYearly,
                           activeSubscriptionsCount,
-                          isLoading
+                          isLoading,
+                          totalsCurrency,
                       }: SummaryCardsProps) => {
     return (
         <div className="mb-8">
@@ -39,9 +42,11 @@ const SummaryCards = ({
                             <Skeleton className="h-10 w-28"/>
                         ) : (
                             <div className="flex items-center">
-                                <p className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent">
-                                    {formatCurrency(totalMonthly)}
-                                </p>
+                                <Money
+                                    amount={totalMonthly}
+                                    currency={totalsCurrency}
+                                    className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent"
+                                />
                             </div>
                         )}
                     </CardContent>
@@ -58,9 +63,11 @@ const SummaryCards = ({
                             <Skeleton className="h-10 w-28"/>
                         ) : (
                             <div className="flex items-center">
-                                <p className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-purple-700 bg-clip-text text-transparent">
-                                    {formatCurrency(totalYearly)}
-                                </p>
+                                <Money
+                                    amount={totalYearly}
+                                    currency={totalsCurrency}
+                                    className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-purple-700 bg-clip-text text-transparent"
+                                />
                             </div>
                         )}
                     </CardContent>

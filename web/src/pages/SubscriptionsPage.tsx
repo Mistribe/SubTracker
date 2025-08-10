@@ -11,6 +11,7 @@ import {CalendarIcon, CreditCardIcon, PencilIcon, PlusIcon, TagIcon, TrashIcon, 
 import {format} from "date-fns";
 import Subscription from "@/models/subscription";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import { Money } from "@/components/ui/money";
 import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
 import {DeleteSubscriptionDialog} from "@/components/subscriptions/DeleteSubscriptionDialog";
 
@@ -98,13 +99,7 @@ const SubscriptionsPage = () => {
         });
     }, [allSubscriptions, searchText]);
 
-    // Function to format currency
-    const formatCurrency = (amount: number, currency: string) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: currency
-        }).format(amount);
-    };
+    // Use Money component for currency display (conversion handled in UI).
 
     // Function to format recurrency
     const formatRecurrency = (recurrency: SubscriptionRecurrency, customRecurrency: number | undefined) => {
@@ -170,7 +165,7 @@ const SubscriptionsPage = () => {
                             <TableCell>
                                 {subscription.customPrice && (
                                     <Badge variant="outline">
-                                        {formatCurrency(subscription.customPrice.amount, subscription.customPrice.currency)}
+                                        <Money amount={subscription.customPrice.amount} currency={subscription.customPrice.currency} />
                                     </Badge>
                                 )}
                             </TableCell>
