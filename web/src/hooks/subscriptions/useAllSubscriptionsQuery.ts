@@ -4,6 +4,7 @@ import type {SubscriptionModel} from "@/api/models";
 import type {SubscriptionsRequestBuilderGetQueryParameters} from "@/api/subscriptions";
 import Subscription from "@/models/subscription";
 import {OwnerType} from "@/models/ownerType";
+import {useEffect} from "react";
 
 interface AllSubscriptionsQueryOptions {
     ownerTypes?: OwnerType[];
@@ -17,15 +18,13 @@ interface AllSubscriptionsQueryOptions {
  */
 export const useAllSubscriptionsQuery = (options: AllSubscriptionsQueryOptions = {}) => {
     const {
-        ownerTypes,
-        familyId,
-        limit = 10,
+        limit = 50,
     } = options;
 
     const {apiClient} = useApiClient();
 
-    return useInfiniteQuery({
-        queryKey: ['subscriptions', 'all', ownerTypes, familyId, limit],
+    const query = useInfiniteQuery({
+        queryKey: ['subscriptions', 'all', limit],
         enabled: !!apiClient,
         staleTime: 5 * 60 * 1000, // 5 minutes
         refetchOnWindowFocus: true,
@@ -39,15 +38,6 @@ export const useAllSubscriptionsQuery = (options: AllSubscriptionsQueryOptions =
                 limit,
                 offset: pageParam,
             };
-
-            if (ownerTypes && ownerTypes.length > 0) {
-                // Convert OwnerType enum values to strings for the API
-                queryParameters.ownerType = ownerTypes.map(type => type.toString());
-            }
-
-            if (familyId) {
-                queryParameters.familyId = familyId;
-            }
 
             try {
                 const result = await apiClient.subscriptions.get({queryParameters});
@@ -79,4 +69,13 @@ export const useAllSubscriptionsQuery = (options: AllSubscriptionsQueryOptions =
             return undefined;
         },
     });
+
+    useEffect(() => {
+        if (query.hasNextPage && !query.isFetchingNextPage) {
+            query.fetchNextPage();
+        }
+    }, [query, query.hasNextPage, query.isFetchingNextPage]);
+
+
+    return query;
 };
