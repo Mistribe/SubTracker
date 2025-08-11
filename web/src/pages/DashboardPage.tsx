@@ -10,7 +10,8 @@ import {usePreferredCurrency} from "@/hooks/currencies/usePreferredCurrency";
 import {useCurrencyRates} from "@/hooks/currencies/useCurrencyRates";
 import {convertAmount, subscriptionMonthlyPriceInCurrency, subscriptionYearlyPriceInCurrency} from "@/utils/currency";
 import type Provider from "@/models/provider.ts";
-import type {ProviderSpending, SubscriptionWithNextRenewal} from "@/models/subscriptionWithNextRenewal.ts";
+import type {SubscriptionWithNextRenewal} from "@/models/subscriptionWithNextRenewal.ts";
+import type {ProviderSpending} from "@/models/providerSpending.ts";
 import type Subscription from "@/models/subscription.ts";
 
 const DashboardPage = () => {
