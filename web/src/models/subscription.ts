@@ -5,7 +5,7 @@ import {SubscriptionCustomPrice} from "@/models/subscriptionCustomPrice.ts";
 import {SubscriptionFreeTrial} from "@/models/subscriptionFreeTrial.ts";
 import {fromHttpApi, SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
 import {addMonths, addYears} from "date-fns";
-import {monthsBetween} from "@/utils/date.ts";
+import {daysBetween, monthsBetween} from "@/utils/date.ts";
 
 export default class Subscription {
     private readonly _id: string;
@@ -160,6 +160,13 @@ export default class Subscription {
         );
     }
 
+    getDailyPrice(): number {
+        if (!this._customPrice?.amount) {
+            return 0;
+        }
+        return this.getMonthlyPrice() / 30;
+    }
+
     getMonthlyPrice(): number {
         if (!this._customPrice?.amount) {
             return 0;
@@ -229,7 +236,50 @@ export default class Subscription {
         }
     }
 
-    nextRenewDates(n: number): Date[] {
+    public getTotalAmount(): number {
+        const startDate = this._startDate;
+        let endDate = this._endDate;
+        if (!endDate) {
+            endDate = new Date();
+        }
+        const numberOfMonths = daysBetween(startDate, endDate, {includePartial: true});
+        if (numberOfMonths <= 0) {
+            return 0;
+        }
+
+        const dailyPrice = this.getDailyPrice();
+        if (dailyPrice <= 0) {
+            return 0;
+        }
+        return numberOfMonths * dailyPrice;
+    }
+
+    public getAmount(): number {
+        if (this._customPrice) {
+            return this._customPrice.amount;
+        }
+        // todo price plan are not implemented yet
+        return 0;
+    }
+
+    public getCurrency(): string {
+        if (this._customPrice) {
+            return this._customPrice.currency;
+        }
+
+        // todo price plan are not implemented yet
+        return 'USD'
+    }
+
+    public getNextRenewalDate(): Date | undefined {
+        const dates = this.getNextRenewalDates(1);
+        if (dates.length > 0) {
+            return dates[0];
+        }
+        return undefined;
+    }
+
+    public getNextRenewalDates(n: number): Date[] {
         // No renewals for unknown or one-time subscriptions
         if (this._recurrency === SubscriptionRecurrency.Unknown ||
             this._recurrency === SubscriptionRecurrency.OneTime) {
