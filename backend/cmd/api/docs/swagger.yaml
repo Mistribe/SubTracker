@@ -43,23 +43,29 @@ components:
       - recurrency
       - start_date
       type: object
-    endpoints.CurrencyGetRateResponse:
+    endpoints.CurrencyRateModel:
       properties:
-        rates:
-          additionalProperties:
-            type: number
-          type: object
-        timestamp:
+        currency:
           type: string
+        rate:
+          type: number
+      required:
+      - currency
+      - rate
       type: object
-    endpoints.CurrencyRefreshRatesResponse:
+    endpoints.CurrencyRatesModel:
       properties:
         rates:
-          additionalProperties:
-            type: number
-          type: object
+          items:
+            $ref: '#/components/schemas/endpoints.CurrencyRateModel'
+          type: array
+          uniqueItems: false
         timestamp:
+          format: date-time
           type: string
+      required:
+      - rates
+      - timestamp
       type: object
     endpoints.EditableOwnerModel:
       properties:
@@ -1103,7 +1109,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.CurrencyGetRateResponse'
+                $ref: '#/components/schemas/endpoints.CurrencyRatesModel'
           description: OK
         "400":
           content:
@@ -1126,7 +1132,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/endpoints.CurrencyRefreshRatesResponse'
+                $ref: '#/components/schemas/endpoints.CurrencyRatesModel'
           description: OK
         "400":
           content:

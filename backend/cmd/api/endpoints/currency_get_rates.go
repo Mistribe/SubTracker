@@ -38,7 +38,7 @@ func NewCurrencyGetRateEndpoint(
 //	@Description	Get exchange rates for all currencies at a specific date
 //	@Produce		json
 //	@Param			date	query		string	false	"Conversion date in RFC3339 format (default: current time)"
-//	@Success		200		{object}	CurrencyGetRateResponse
+//	@Success		200		{object}	CurrencyRatesModel
 //	@Failure		400		{object}	HttpErrorResponse
 //	@Failure		500		{object}	HttpErrorResponse
 //	@Router			/currencies/rates [get]
@@ -59,14 +59,14 @@ func (e CurrencyGetRateEndpoint) Handle(c *gin.Context) {
 	handleResponse(c,
 		r,
 		withMapping[query.CurrencyRateResponse](func(c query.CurrencyRateResponse) any {
-			return CurrencyGetRateResponse{
+			return CurrencyRatesModel{
 				Timestamp: c.Timestamp,
-				Rates: slicesx.ToMap(c.Rates,
-					func(key currency.Rate) string {
-						return key.ToCurrency().String()
-					},
-					func(value currency.Rate) float64 {
-						return value.ExchangeRate()
+				Rates: slicesx.Select(c.Rates,
+					func(key currency.Rate) CurrencyRateModel {
+						return CurrencyRateModel{
+							Rate:     key.ExchangeRate(),
+							Currency: key.ToCurrency().String(),
+						}
 					},
 				),
 			}

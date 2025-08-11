@@ -1,6 +1,8 @@
 package endpoints
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/oleexo/subtracker/cmd/api/ginfx"
@@ -39,4 +41,13 @@ func (g CurrencyEndpointGroup) Routes() []ginfx.Route {
 
 func (g CurrencyEndpointGroup) Middlewares() []gin.HandlerFunc {
 	return g.middlewares
+}
+
+type CurrencyRateModel struct {
+	Rate     float64 `json:"rate" binding:"required"`
+	Currency string  `json:"currency" binding:"required"`
+}
+type CurrencyRatesModel struct {
+	Rates     []CurrencyRateModel `json:"rates" binding:"required"`
+	Timestamp time.Time           `json:"timestamp" binding:"required" format:"date-time"`
 }

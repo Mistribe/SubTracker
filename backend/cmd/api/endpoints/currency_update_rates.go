@@ -34,7 +34,7 @@ type CurrencyRefreshRatesResponse struct {
 //	@Summary		refresh Currency Rates
 //	@Description	refresh exchange rates for all currencies
 //	@Produce		json
-//	@Success		200	{object}	CurrencyRefreshRatesResponse
+//	@Success		200	{object}	CurrencyRatesModel
 //	@Failure		400	{object}	HttpErrorResponse
 //	@Failure		500	{object}	HttpErrorResponse
 //	@Router			/currencies/rates/refresh [post]
@@ -43,14 +43,14 @@ func (e CurrencyRefreshRatesEndpoint) Handle(c *gin.Context) {
 	r := e.handler.Handle(c.Request.Context(), cmd)
 	handleResponse(c, r,
 		withMapping[command.RefreshCurrencyRatesResponse](func(c command.RefreshCurrencyRatesResponse) any {
-			return CurrencyRefreshRatesResponse{
+			return CurrencyRatesModel{
 				Timestamp: c.Timestamp,
-				Rates: slicesx.ToMap(c.Rates,
-					func(key currency.Rate) string {
-						return key.ToCurrency().String()
-					},
-					func(value currency.Rate) float64 {
-						return value.ExchangeRate()
+				Rates: slicesx.Select(c.Rates,
+					func(key currency.Rate) CurrencyRateModel {
+						return CurrencyRateModel{
+							Rate:     key.ExchangeRate(),
+							Currency: key.ToCurrency().String(),
+						}
 					},
 				),
 			}
