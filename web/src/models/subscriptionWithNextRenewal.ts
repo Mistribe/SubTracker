@@ -4,3 +4,4 @@ export interface SubscriptionWithNextRenewal {
     subscription: Subscription;
     nextRenewalDate: Date;
 }
+

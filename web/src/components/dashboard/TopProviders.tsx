@@ -1,31 +1,22 @@
 import {Skeleton} from "@/components/ui/skeleton";
-import {formatCurrency} from "./utils";
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle
-} from "@/components/ui/card";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Building2, DollarSign} from "lucide-react";
-
-interface Provider {
-    id: string;
-    name: string;
-    amount: number;
-}
+import Money from "@/components/ui/money.tsx";
+import type {ProviderSpending} from "@/models/subscriptionWithNextRenewal.ts";
 
 interface TopProvidersProps {
-    providers: Provider[];
+    providers: ProviderSpending[];
     isLoading: boolean;
 }
 
 const TopProviders = ({providers, isLoading}: TopProvidersProps) => {
     return (
         <div>
-            <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg border-t-4 border-t-purple-500">
+            <Card
+                className="overflow-hidden transition-all duration-300 hover:shadow-lg border-t-4 border-t-purple-500">
                 <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                     <CardTitle className="text-xl font-medium">Top Providers by Expense</CardTitle>
-                    <Building2 className="h-5 w-5 text-purple-500 animate-pulse" />
+                    <Building2 className="h-5 w-5 text-purple-500 animate-pulse"/>
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
@@ -40,17 +31,19 @@ const TopProviders = ({providers, isLoading}: TopProvidersProps) => {
                     ) : providers.length > 0 ? (
                         <div className="space-y-3">
                             {providers.map((provider) => (
-                                <div key={provider.id} className="p-3 border rounded-lg bg-card transition-all duration-200 hover:bg-muted/20">
+                                <div key={provider.id}
+                                     className="p-3 border rounded-lg bg-card transition-all duration-200 hover:bg-muted/20">
                                     <div className="flex justify-between items-start">
                                         <div className="flex items-center">
                                             <h4 className="font-medium">{provider.name}</h4>
                                         </div>
-                                        <span className="font-semibold bg-gradient-to-r from-purple-500 to-purple-700 bg-clip-text text-transparent">
-                                            {formatCurrency(provider.amount)}
+                                        <span
+                                            className="font-semibold bg-gradient-to-r from-purple-500 to-purple-700 bg-clip-text text-transparent">
+                                            <Money amount={provider.amount} currency={provider.currency}/>
                                         </span>
                                     </div>
                                     <p className="text-sm text-muted-foreground mt-1 flex items-center">
-                                        <DollarSign className="h-3 w-3 mr-1 text-purple-500" />
+                                        <DollarSign className="h-3 w-3 mr-1 text-purple-500"/>
                                         Annual cost
                                     </p>
                                 </div>

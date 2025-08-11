@@ -10,7 +10,7 @@ import {usePreferredCurrency} from "@/hooks/currencies/usePreferredCurrency";
 import {useCurrencyRates} from "@/hooks/currencies/useCurrencyRates";
 import {convertAmount, subscriptionMonthlyPriceInCurrency, subscriptionYearlyPriceInCurrency} from "@/utils/currency";
 import type Provider from "@/models/provider.ts";
-import type {SubscriptionWithNextRenewal} from "@/models/subscriptionWithNextRenewal.ts";
+import type {ProviderSpending, SubscriptionWithNextRenewal} from "@/models/subscriptionWithNextRenewal.ts";
 import type Subscription from "@/models/subscription.ts";
 
 const DashboardPage = () => {
@@ -73,7 +73,7 @@ const DashboardPage = () => {
 
     // Calculate spending by provider (convert to preferred currency yearly)
     const providerSpending = useMemo(() => {
-        const spending = new Map<string, { id: string; name: string; amount: number }>();
+        const spending = new Map<string, ProviderSpending>();
 
         allSubscriptions.forEach((sub: Subscription) => {
             const providerId = sub.providerId;
@@ -92,12 +92,14 @@ const DashboardPage = () => {
                     id: providerId,
                     name: providerName,
                     amount: spending.get(providerId)!.amount + subscriptionAmount,
+                    currency: preferredCurrency
                 });
             } else {
                 spending.set(providerId, {
                     id: providerId,
                     name: providerName,
                     amount: subscriptionAmount,
+                    currency: preferredCurrency
                 });
             }
         });
