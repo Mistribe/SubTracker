@@ -58,5 +58,10 @@
     "key": "storage",
     "name": "Storage",
     "color": "#FF798900"
+  },
+  {
+    "key": "work",
+    "name": "Work",
+    "color": "#FFa855b4"
   }
 ]

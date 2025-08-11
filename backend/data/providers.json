@@ -201,5 +201,15 @@
     "categories": [
       "storage"
     ]
+  },
+  {
+    "name": "Jetbrains",
+    "key": "jetbrains",
+    "website": "https://www.jetbrains.com/",
+    "pricing_page": "https://www.jetbrains.com/store/?section=personal&billing=yearly",
+    "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/JetBrains_company_logo.svg/500px-JetBrains_company_logo.svg.png",
+    "categories": [
+      "work"
+    ]
   }
 ]

@@ -52,7 +52,8 @@
             "shopping",
             "storage",
             "internet",
-            "mobile"
+            "mobile",
+            "work"
           ]
         },
         "minItems": 1

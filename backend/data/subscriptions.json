@@ -145,5 +145,85 @@
       "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
     },
     "recurrency": "monthly"
+  },
+  {
+    "id": "b426d65e-046d-4516-9ea8-f03186074bae",
+    "friendly_name": "Jetbrains Ultimate",
+    "provider_key": "jetbrains",
+    "custom_price": {
+      "currency": "EUR",
+        "amount": 277.20
+    },
+    "start_date": "2024-03-28T00:00:00Z",
+    "end_date": "2025-03-27T00:00:00Z",
+    "recurrency": "yearly",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "b426d65e-046d-4516-9ea8-f03186074bae",
+    "friendly_name": "Jetbrains Ultimate",
+    "provider_key": "jetbrains",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 277.20
+    },
+    "start_date": "2025-03-28T00:00:00Z",
+    "end_date": "2026-03-27T00:00:00Z",
+    "recurrency": "yearly",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "8c7fa62a-3e8c-4a20-bbc1-dd15dff7086d",
+    "friendly_name": "Jetbrains Ultimate",
+    "provider_key": "jetbrains",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 69.96
+    },
+    "start_date": "2026-03-28T00:00:00Z",
+    "end_date": "2026-07-27T00:00:00Z",
+    "recurrency": "custom",
+    "custom_recurrency": 4,
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "ce31782a-9ecd-4dbd-9595-81d5b6effd91",
+    "friendly_name": "Jetbrains Ultimate",
+    "provider_key": "jetbrains",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 207.60
+    },
+    "start_date": "2026-07-28T00:00:00Z",
+    "recurrency": "yearly",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "a1834a3a-f756-4242-9cef-869bd3d2c985",
+    "friendly_name": "Jetbrains AI",
+    "provider_key": "jetbrains",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 120
+    },
+    "start_date": "2025-04-13T00:00:00Z",
+    "end_date": "2026-04-12T00:00:00Z",
+    "recurrency": "yearly",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
   }
 ]

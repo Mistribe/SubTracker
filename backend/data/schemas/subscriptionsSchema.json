@@ -53,10 +53,28 @@
       },
       "recurrency": {
         "type": "string",
-        "enum": ["monthly", "yearly", "weekly", "daily", "one_time"],
+        "enum": ["monthly", "yearly", "weekly", "daily", "one_time", "custom"],
         "description": "Billing frequency or one-time payment"
+      },
+      "custom_recurrency": {
+        "type": "number",
+        "description": "Custom billing frequency for custom recurrency"
       }
-    }
+    },
+    "allOf": [
+      {
+        "if": {
+          "properties": {
+            "recurrency": {
+              "const": "custom"
+            }
+          }
+        },
+        "then": {
+          "required": ["custom_recurrency"]
+        }
+      }
+    ]
   },
   "$defs": {
     "price": {
