@@ -63,7 +63,7 @@ func (e CurrencyGetRateEndpoint) Handle(c *gin.Context) {
 				Timestamp: c.Timestamp,
 				Rates: slicesx.ToMap(c.Rates,
 					func(key currency.Rate) string {
-						return key.FromCurrency().String()
+						return key.ToCurrency().String()
 					},
 					func(value currency.Rate) float64 {
 						return value.ExchangeRate()
