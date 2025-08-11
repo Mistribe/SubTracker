@@ -18,7 +18,7 @@ func createCurrencyRateFromSqlc(sqlcCurrencyRate sql.CurrencyRate) currency.Rate
 		sqlcCurrencyRate.ID,
 		fromCurrency,
 		toCurrency,
-		sqlcCurrencyRate.RateDate,
+		sqlcCurrencyRate.RateDate.Time,
 		sqlcCurrencyRate.ExchangeRate,
 		sqlcCurrencyRate.CreatedAt,
 		sqlcCurrencyRate.UpdatedAt,

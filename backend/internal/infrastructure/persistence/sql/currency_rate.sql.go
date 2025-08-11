@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createCurrencyRate = `-- name: CreateCurrencyRate :exec
@@ -22,7 +23,7 @@ type CreateCurrencyRateParams struct {
 	ID           uuid.UUID
 	FromCurrency string
 	ToCurrency   string
-	RateDate     time.Time
+	RateDate     pgtype.Date
 	ExchangeRate float64
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
@@ -47,7 +48,7 @@ type CreateCurrencyRatesParams struct {
 	ID           uuid.UUID
 	FromCurrency string
 	ToCurrency   string
-	RateDate     time.Time
+	RateDate     pgtype.Date
 	ExchangeRate float64
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
@@ -102,7 +103,7 @@ type GetCurrencyRatesByDateRow struct {
 	CurrencyRate CurrencyRate
 }
 
-func (q *Queries) GetCurrencyRatesByDate(ctx context.Context, rateDate time.Time) ([]GetCurrencyRatesByDateRow, error) {
+func (q *Queries) GetCurrencyRatesByDate(ctx context.Context, rateDate pgtype.Date) ([]GetCurrencyRatesByDateRow, error) {
 	rows, err := q.db.Query(ctx, getCurrencyRatesByDate, rateDate)
 	if err != nil {
 		return nil, err
@@ -171,7 +172,7 @@ type UpdateCurrencyRateParams struct {
 	ID           uuid.UUID
 	FromCurrency string
 	ToCurrency   string
-	RateDate     time.Time
+	RateDate     pgtype.Date
 	ExchangeRate float64
 	UpdatedAt    time.Time
 	Etag         string

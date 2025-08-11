@@ -12,6 +12,9 @@ openapi:
 	cd ../scripts &&\
 	./http-client-gen.sh
 
+run-deps:
+	@docker compose down -v && docker compose up --build database database.migration
+
 kinde:
 	@rm -fr ./internal/infrastructure/kinde/gen
 	@docker run --rm \

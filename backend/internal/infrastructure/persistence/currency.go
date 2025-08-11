@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/oleexo/subtracker/internal/domain/currency"
 	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
@@ -45,7 +46,10 @@ func (r CurrencyRateRepository) GetById(ctx context.Context, entityId uuid.UUID)
 }
 
 func (r CurrencyRateRepository) GetRatesByDate(ctx context.Context, date time.Time) ([]currency.Rate, error) {
-	rows, err := r.dbContext.GetQueries(ctx).GetCurrencyRatesByDate(ctx, date)
+	rows, err := r.dbContext.GetQueries(ctx).GetCurrencyRatesByDate(ctx, pgtype.Date{
+		Time:  date,
+		Valid: true,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +100,7 @@ func (r CurrencyRateRepository) create(ctx context.Context, rates []currency.Rat
 			ID:           rate.Id(),
 			FromCurrency: rate.FromCurrency().String(),
 			ToCurrency:   rate.ToCurrency().String(),
-			RateDate:     rate.RateDate(),
+			RateDate:     pgtype.Date{Time: rate.RateDate(), Valid: true},
 			ExchangeRate: rate.ExchangeRate(),
 			CreatedAt:    rate.CreatedAt(),
 			UpdatedAt:    rate.UpdatedAt(),
@@ -121,7 +125,7 @@ func (r CurrencyRateRepository) update(ctx context.Context, rate currency.Rate) 
 		ID:           rate.Id(),
 		FromCurrency: rate.FromCurrency().String(),
 		ToCurrency:   rate.ToCurrency().String(),
-		RateDate:     rate.RateDate(),
+		RateDate:     pgtype.Date{Time: rate.RateDate(), Valid: true},
 		ExchangeRate: rate.ExchangeRate(),
 		UpdatedAt:    rate.UpdatedAt(),
 		Etag:         rate.ETag(),

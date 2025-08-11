@@ -8,13 +8,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type CurrencyRate struct {
 	ID           uuid.UUID
 	FromCurrency string
 	ToCurrency   string
-	RateDate     time.Time
+	RateDate     pgtype.Date
 	ExchangeRate float64
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
