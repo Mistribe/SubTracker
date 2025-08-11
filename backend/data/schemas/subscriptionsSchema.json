@@ -5,7 +5,7 @@
   "description": "Schema for subscription management with ownership, pricing, and billing information",
   "items": {
     "type": "object",
-    "required": ["id", "friendly_name", "provider_key", "custom_price", "owner", "payer", "service_users", "start_date", "recurrency"],
+    "required": ["id", "friendly_name", "provider_key", "custom_price", "owner", "start_date", "recurrency"],
     "properties": {
       "id": {
         "type": "string",
@@ -130,29 +130,12 @@
           "enum": ["family", "personal"],
           "description": "Type of payer"
         },
-        "family_id": {
-          "type": "string",
-          "format": "uuid",
-          "description": "Family ID when payer type is 'family'"
-        },
         "user_id": {
           "type": "string",
           "description": "User ID when payer type is 'personal'"
         }
       },
       "allOf": [
-        {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "family"
-              }
-            }
-          },
-          "then": {
-            "required": ["family_id"]
-          }
-        },
         {
           "if": {
             "properties": {

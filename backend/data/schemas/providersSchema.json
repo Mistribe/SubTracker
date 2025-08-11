@@ -11,7 +11,7 @@
       "website",
       "pricing_page",
       "icon",
-      "categories"
+      "categories",
     ],
     "properties": {
       "name": {
@@ -49,7 +49,10 @@
             "vod",
             "streaming-music",
             "streaming-video",
-            "shopping"
+            "shopping",
+            "storage",
+            "internet",
+            "mobile"
           ]
         },
         "minItems": 1

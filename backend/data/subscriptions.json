@@ -79,10 +79,6 @@
             "type": "personal",
             "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
         },
-        "service_users": [
-            "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
-            "16e151e4-3e17-490d-9228-f275b1d1d833"
-        ],
         "start_date": "2018-02-21T00:00:00Z",
         "end_date": "2020-02-21T00:00:00Z",
         "recurrency": "one_time"
@@ -99,10 +95,6 @@
             "type": "personal",
             "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
         },
-        "service_users": [
-            "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
-            "16e151e4-3e17-490d-9228-f275b1d1d833"
-        ],
         "start_date": "2020-02-22T00:00:00Z",
         "end_date": "2023-02-22T00:00:00Z",
         "recurrency": "one_time"
@@ -119,10 +111,6 @@
             "type": "personal",
             "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
         },
-        "service_users": [
-            "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
-            "16e151e4-3e17-490d-9228-f275b1d1d833"
-        ],
         "start_date": "2023-06-07T00:00:00Z",
         "end_date": "2025-06-07T00:00:00Z",
         "recurrency": "one_time"
@@ -139,12 +127,23 @@
             "type": "personal",
             "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
         },
-        "service_users": [
-            "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
-            "16e151e4-3e17-490d-9228-f275b1d1d833"
-        ],
         "start_date": "2025-06-22T00:00:00Z",
         "end_date": "2028-01-06T00:00:00Z",
         "recurrency": "one_time"
-    }
+    },
+  {
+    "id": "f2a01127-8584-4ea3-962b-b16cecdc98c8",
+    "friendly_name": "Mobile 300Go",
+    "provider_key": "bouygues-telecom",
+    "custom_price": {
+      "currency": "EUR",
+        "amount": 15.99
+    },
+    "start_date": "2020-05-23T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    },
+    "recurrency": "monthly"
+  }
 ]
