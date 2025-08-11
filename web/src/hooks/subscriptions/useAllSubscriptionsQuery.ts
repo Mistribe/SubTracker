@@ -9,7 +9,7 @@ import {useEffect} from "react";
 interface AllSubscriptionsQueryOptions {
     ownerTypes?: OwnerType[];
     familyId?: string;
-    limit?: number; // page size, API maximum is 10
+    limit?: number;
 }
 
 /**
