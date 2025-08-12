@@ -10,6 +10,7 @@ import {NoProviders} from "@/components/providers/ui/EmptyStates";
 import {PageHeader} from "@/components/ui/page-header";
 import {Button} from "@/components/ui/button";
 import Provider from "@/models/provider";
+import {PlusIcon} from "lucide-react";
 
 const ProvidersPage = () => {
     const [isAddingProvider, setIsAddingProvider] = useState(false);
@@ -64,7 +65,7 @@ const ProvidersPage = () => {
 
 
     return (
-        <div className="container mx-auto py-4">
+        <div className="container mx-auto py-6">
             <PageHeader
                 title="Providers"
                 description="Manage your providers"
@@ -72,6 +73,7 @@ const ProvidersPage = () => {
                 onSearchChange={setSearchText}
                 actionButton={
                     <Button onClick={() => setIsAddingProvider(true)}>
+                        <PlusIcon className="mr-2 h-4 w-4"/>
                         Add Provider
                     </Button>
                 }

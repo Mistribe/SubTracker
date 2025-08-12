@@ -146,7 +146,7 @@ const LabelsPage = () => {
 
     if (isLoading) {
         return (
-            <div>
+            <div className="container mx-auto py-6">
                 <PageHeader
                     title="Labels"
                     searchText={searchText}
@@ -170,7 +170,7 @@ const LabelsPage = () => {
 
     if (error) {
         return (
-            <div>
+            <div className="container mx-auto py-6">
                 <PageHeader
                     title="Labels"
                     searchText={searchText}
@@ -192,7 +192,7 @@ const LabelsPage = () => {
     }
 
     return (
-        <div>
+        <div className="container mx-auto py-6">
             <PageHeader
                 title="Labels"
                 searchText={searchText}
