@@ -1,6 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../models/http_error.dart';
+import '../models/http_error_response.dart';
 import './preferred/preferred_request_builder.dart';
 import './profile/profile_request_builder.dart';
 
@@ -33,8 +33,8 @@ class UsersRequestBuilder extends BaseRequestBuilder<UsersRequestBuilder> {
     Future<void> deleteAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toDeleteRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '401' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '401' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.sendNoContent(requestInfo, errorMapping);
     }

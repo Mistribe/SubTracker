@@ -1,6 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../../models/http_error.dart';
+import '../../models/http_error_response.dart';
 import '../../models/label_model.dart';
 import '../../models/update_label_model.dart';
 
@@ -25,9 +25,9 @@ class LabelsItemRequestBuilder extends BaseRequestBuilder<LabelsItemRequestBuild
     Future<void> deleteAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toDeleteRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '404' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '404' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.sendNoContent(requestInfo, errorMapping);
     }
@@ -36,9 +36,9 @@ class LabelsItemRequestBuilder extends BaseRequestBuilder<LabelsItemRequestBuild
     Future<LabelModel?> getAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '404' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '404' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<LabelModel>(requestInfo, LabelModel.createFromDiscriminatorValue, errorMapping);
     }
@@ -48,9 +48,9 @@ class LabelsItemRequestBuilder extends BaseRequestBuilder<LabelsItemRequestBuild
     Future<LabelModel?> putAsync(UpdateLabelModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPutRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '404' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '404' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<LabelModel>(requestInfo, LabelModel.createFromDiscriminatorValue, errorMapping);
     }

@@ -1,6 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../../../models/http_error.dart';
+import '../../../models/http_error_response.dart';
 import '../../../models/update_preferred_currency_model.dart';
 import '../../../models/user_preferred_currency_model.dart';
 
@@ -25,7 +25,7 @@ class CurrencyRequestBuilder extends BaseRequestBuilder<CurrencyRequestBuilder> 
     Future<UserPreferredCurrencyModel?> getAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '401' :  HttpError.createFromDiscriminatorValue,
+            '401' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<UserPreferredCurrencyModel>(requestInfo, UserPreferredCurrencyModel.createFromDiscriminatorValue, errorMapping);
     }
@@ -35,8 +35,8 @@ class CurrencyRequestBuilder extends BaseRequestBuilder<CurrencyRequestBuilder> 
     Future<void> putAsync(UpdatePreferredCurrencyModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPutRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '401' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '401' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.sendNoContent(requestInfo, errorMapping);
     }

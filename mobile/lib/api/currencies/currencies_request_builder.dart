@@ -1,10 +1,15 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
+import './rates/rates_request_builder.dart';
 import './supported/supported_request_builder.dart';
 
 /// auto generated
 /// Builds and executes requests for operations under \currencies
 class CurrenciesRequestBuilder extends BaseRequestBuilder<CurrenciesRequestBuilder> {
+    ///  The rates property
+    RatesRequestBuilder get rates {
+        return RatesRequestBuilder(pathParameters, requestAdapter);
+    }
     ///  The supported property
     SupportedRequestBuilder get supported {
         return SupportedRequestBuilder(pathParameters, requestAdapter);

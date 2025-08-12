@@ -1,7 +1,7 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import '../models/create_label_model.dart';
-import '../models/http_error.dart';
+import '../models/http_error_response.dart';
 import '../models/label_model.dart';
 import '../models/paginated_response_model_endpoints_label_model.dart';
 import './default_/default_request_builder.dart';
@@ -40,8 +40,8 @@ class LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBuilder> {
     Future<PaginatedResponseModelEndpointsLabelModel?> getAsync([void Function(RequestConfiguration<LabelsRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<PaginatedResponseModelEndpointsLabelModel>(requestInfo, PaginatedResponseModelEndpointsLabelModel.createFromDiscriminatorValue, errorMapping);
     }
@@ -51,9 +51,9 @@ class LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBuilder> {
     Future<LabelModel?> postAsync(CreateLabelModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPostRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '401' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '401' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<LabelModel>(requestInfo, LabelModel.createFromDiscriminatorValue, errorMapping);
     }

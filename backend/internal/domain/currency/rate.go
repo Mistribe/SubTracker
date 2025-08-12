@@ -9,6 +9,18 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/entity"
 )
 
+type Rates []Rate
+
+func (r Rates) FindExchangeRate(from currency.Unit, to currency.Unit) (float64, bool) {
+	for _, element := range r {
+		if element.FromCurrency() == from && element.ToCurrency() == to {
+			return element.ExchangeRate(), true
+		}
+	}
+
+	return 0, false
+}
+
 type Rate interface {
 	entity.Entity
 	entity.ETagEntity

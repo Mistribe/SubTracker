@@ -1,7 +1,7 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import '../../models/family_model.dart';
-import '../../models/http_error.dart';
+import '../../models/http_error_response.dart';
 import '../../models/update_family_model.dart';
 import './members/members_request_builder.dart';
 
@@ -30,9 +30,9 @@ class WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFamilyItemRequ
     Future<void> deleteAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toDeleteRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '404' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '404' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.sendNoContent(requestInfo, errorMapping);
     }
@@ -41,10 +41,10 @@ class WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFamilyItemRequ
     Future<FamilyModel?> getAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '401' :  HttpError.createFromDiscriminatorValue,
-            '404' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '401' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '404' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<FamilyModel>(requestInfo, FamilyModel.createFromDiscriminatorValue, errorMapping);
     }
@@ -54,10 +54,10 @@ class WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFamilyItemRequ
     Future<FamilyModel?> putAsync(UpdateFamilyModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPutRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '401' :  HttpError.createFromDiscriminatorValue,
-            '404' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '401' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '404' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<FamilyModel>(requestInfo, FamilyModel.createFromDiscriminatorValue, errorMapping);
     }

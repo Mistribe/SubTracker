@@ -605,6 +605,48 @@ components:
       - family_id
       - type
       type: object
+    endpoints.SubscriptionSummaryResponse:
+      description: Response containing subscription summary information
+      properties:
+        top_providers:
+          items:
+            $ref: '#/components/schemas/endpoints.SubscriptionSummaryTopProviderResponse'
+          type: array
+          uniqueItems: false
+        total_monthly:
+          example: 299.99
+          type: number
+        total_yearly:
+          example: 3599.88
+          type: number
+        upcoming_renewals:
+          items:
+            $ref: '#/components/schemas/endpoints.SubscriptionSummaryUpcomingRenewalResponse'
+          type: array
+          uniqueItems: false
+      type: object
+    endpoints.SubscriptionSummaryTopProviderResponse:
+      properties:
+        provider_id:
+          type: string
+        total:
+          type: number
+      required:
+      - provider_id
+      type: object
+    endpoints.SubscriptionSummaryUpcomingRenewalResponse:
+      properties:
+        at:
+          format: date-time
+          type: string
+        provider_id:
+          type: string
+        total:
+          type: number
+      required:
+      - at
+      - provider_id
+      type: object
     endpoints.UpdateProfileModel:
       properties:
         family_name:
@@ -2517,6 +2559,51 @@ paths:
       summary: Update subscription by ID
       tags:
       - subscription
+  /summary:
+    get:
+      description: Returns summary information about subscriptions including total
+        costs and upcoming renewals
+      parameters:
+      - description: Number of top providers to return
+        in: query
+        name: top_providers
+        required: true
+        schema:
+          type: integer
+      - description: Number of upcoming renewals to return
+        in: query
+        name: upcoming_renewals
+        required: true
+        schema:
+          type: integer
+      - description: Include monthly total costs
+        in: query
+        name: total_monthly
+        required: true
+        schema:
+          type: boolean
+      - description: Include yearly total costs
+        in: query
+        name: total_yearly
+        required: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.SubscriptionSummaryResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Bad Request
+      summary: Get subscription summary
+      tags:
+      - Subscriptions
   /users:
     delete:
       description: Deletes the authenticated user's account

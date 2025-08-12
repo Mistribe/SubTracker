@@ -1,0 +1,113 @@
+package endpoints
+
+import (
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+
+	"github.com/oleexo/subtracker/internal/application/core"
+	"github.com/oleexo/subtracker/internal/application/subscription/query"
+	"github.com/oleexo/subtracker/pkg/slicesx"
+)
+
+type SubscriptionSummaryEndpoint struct {
+	handler core.QueryHandler[query.SummaryQuery, query.SummaryQueryResponse]
+}
+
+// @Description	Request parameters for subscription summary
+type SubscriptionSummaryRequest struct {
+	TopProviders     uint8 `json:"top_providers" form:"top_providers" binding:"required" example:"5" description:"Number of top providers to return"`
+	UpcomingRenewals uint8 `json:"upcoming_renewals" form:"upcoming_renewals" binding:"required" example:"3" description:"Number of upcoming renewals to return"`
+	TotalMonthly     bool  `json:"total_monthly" form:"total_monthly" binding:"required" example:"true" description:"Include monthly total costs"`
+	TotalYearly      bool  `json:"total_yearly" form:"total_yearly" binding:"required" example:"true" description:"Include yearly total costs"`
+}
+
+type SubscriptionSummaryTopProviderResponse struct {
+	ProviderId string  `json:"provider_id" binding:"required"`
+	Total      float64 `json:"total"`
+}
+
+type SubscriptionSummaryUpcomingRenewalResponse struct {
+	ProviderId string    `json:"provider_id" binding:"required"`
+	At         time.Time `json:"at" binding:"required" format:"date-time"`
+	Total      float64   `json:"total"`
+}
+
+// @Description	Response containing subscription summary information
+type SubscriptionSummaryResponse struct {
+	TotalMonthly     float64                                      `json:"total_monthly" example:"299.99" description:"Total monthly subscription costs"`
+	TotalYearly      float64                                      `json:"total_yearly" example:"3599.88" description:"Total yearly subscription costs"`
+	TopProviders     []SubscriptionSummaryTopProviderResponse     `json:"top_providers" description:"List of top providers by cost"`
+	UpcomingRenewals []SubscriptionSummaryUpcomingRenewalResponse `json:"upcoming_renewals" description:"List of upcoming subscription renewals"`
+}
+
+// Handle godoc
+//
+//	@Summary		Get subscription summary
+//	@Description	Returns summary information about subscriptions including total costs and upcoming renewals
+//	@Tags			Subscriptions
+//	@Produce		json
+//	@Param			top_providers		query		integer	true	"Number of top providers to return"
+//	@Param			upcoming_renewals	query		integer	true	"Number of upcoming renewals to return"
+//	@Param			total_monthly		query		boolean	true	"Include monthly total costs"
+//	@Param			total_yearly		query		boolean	true	"Include yearly total costs"
+//	@Success		200					{object}	SubscriptionSummaryResponse
+//	@Failure		400					{object}	HttpErrorResponse
+//	@Router			/summary [get]
+func (e SubscriptionSummaryEndpoint) Handle(c *gin.Context) {
+	var model SubscriptionSummaryRequest
+	if err := c.ShouldBindQuery(&model); err != nil {
+		c.JSON(http.StatusBadRequest, HttpErrorResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	q := query.SummaryQuery{
+		TopProviders:     model.TopProviders,
+		UpcomingRenewals: model.UpcomingRenewals,
+		TotalMonthly:     model.TotalMonthly,
+		TotalYearly:      model.TotalYearly,
+	}
+
+	r := e.handler.Handle(c, q)
+	handleResponse(c,
+		r,
+		withMapping[query.SummaryQueryResponse](func(res query.SummaryQueryResponse) any {
+			return SubscriptionSummaryResponse{
+				TotalMonthly: res.TotalMonthly,
+				TotalYearly:  res.TotalYearly,
+				TopProviders: slicesx.MapToArr(res.TopProviders,
+					func(providerId uuid.UUID, amount float64) SubscriptionSummaryTopProviderResponse {
+						return SubscriptionSummaryTopProviderResponse{
+							ProviderId: providerId.String(),
+							Total:      amount,
+						}
+					}),
+				UpcomingRenewals: slicesx.Select(res.UpcomingRenewals,
+					func(upcomingRenewal query.SummaryQueryUpcomingRenewalsResponse) SubscriptionSummaryUpcomingRenewalResponse {
+						return SubscriptionSummaryUpcomingRenewalResponse{
+							ProviderId: upcomingRenewal.ProviderId.String(),
+							At:         upcomingRenewal.At,
+							Total:      upcomingRenewal.Total,
+						}
+					}),
+			}
+		}))
+}
+
+func (e SubscriptionSummaryEndpoint) Pattern() []string {
+	return []string{
+		"/summary",
+	}
+}
+
+func (e SubscriptionSummaryEndpoint) Method() string {
+	return http.MethodGet
+}
+
+func (e SubscriptionSummaryEndpoint) Middlewares() []gin.HandlerFunc {
+	return nil
+}

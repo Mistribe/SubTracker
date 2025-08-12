@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
+	"github.com/oleexo/subtracker/internal/domain/currency"
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 	"github.com/oleexo/subtracker/pkg/validationx"
@@ -47,6 +48,15 @@ type Subscription interface {
 	Recurrency() RecurrencyType
 	// CustomRecurrency When the recurrency is custom, this is the number of month between each recurrence
 	CustomRecurrency() *int32
+
+	// GetRecurrencyAmount returns the amount of the subscription for the given recurrency type
+	GetRecurrencyAmount(to RecurrencyType) currency.Amount
+	// GetNextRenewalDate returns the next renewal date of the subscription
+	GetNextRenewalDate() *time.Time
+	// GetPrice returns the price of the subscription from custom or price Id
+	GetPrice() currency.Amount
+	// GetTotalSpent returns the total spent of the subscription
+	GetTotalSpent() currency.Amount
 
 	SetFriendlyName(name *string)
 	SetFreeTrial(trial FreeTrial)
@@ -114,6 +124,137 @@ func NewSubscription(
 		endDate:          endDate,
 		recurrency:       recurrency,
 		customRecurrency: customRecurrency,
+	}
+}
+
+func (s *subscription) GetTotalSpent() currency.Amount {
+	if s.customPrice == nil && s.priceId == nil {
+		return currency.NewInvalidAmount()
+	}
+
+	price := s.GetRecurrencyAmount(MonthlyRecurrency)
+	if !price.IsValid() {
+		return currency.NewInvalidAmount()
+	}
+
+	now := time.Now()
+	endDate := now
+	if s.endDate != nil {
+		endDate = *s.endDate
+	}
+
+	if s.startDate.After(now) {
+		return currency.NewAmount(0, price.Currency())
+	}
+
+	months := s.getMonthsUntilNextRenewal()
+	if months == 0 {
+		return currency.NewAmount(0, price.Currency())
+	}
+
+	// Calculate total months between start and end dates
+	totalMonths := (endDate.Year()-s.startDate.Year())*12 + int(endDate.Month()-s.startDate.Month())
+	if totalMonths < 0 {
+		totalMonths = 0
+	}
+
+	// Calculate number of full billing cycles
+	cycles := totalMonths / months
+	if totalMonths%months != 0 && endDate.Day() >= s.startDate.Day() {
+		cycles++
+	}
+
+	return currency.NewAmount(price.Value()*float64(cycles), price.Currency())
+}
+
+func (s *subscription) GetPrice() currency.Amount {
+	if s.customPrice != nil {
+		return currency.NewAmount(s.customPrice.Amount(), s.customPrice.Currency())
+	}
+
+	if s.priceId != nil {
+		panic("not implemented yet")
+	}
+
+	return currency.NewInvalidAmount()
+}
+
+func (s *subscription) GetRecurrencyAmount(to RecurrencyType) currency.Amount {
+	if s.customPrice != nil {
+		return currency.NewAmount(
+			toRecurrencyPrice(s.customPrice.Amount(), s.recurrency, to),
+			s.customPrice.Currency(),
+		)
+	}
+
+	if s.priceId != nil {
+		panic("not implemented yet")
+	}
+
+	return currency.NewInvalidAmount()
+}
+
+func (s *subscription) GetNextRenewalDate() *time.Time {
+	if s.endDate != nil {
+		return nil
+	}
+
+	months := s.getMonthsUntilNextRenewal()
+	if months == 0 {
+		return nil
+	}
+
+	now := time.Now()
+
+	// If the subscription starts in the future, next renewal is the start date
+	if s.startDate.After(now) {
+		next := s.startDate
+		return &next
+	}
+
+	// Total whole months between start and now (may be adjusted below)
+	diffMonths := (now.Year()-s.startDate.Year())*12 + int(now.Month()-s.startDate.Month())
+
+	// Align start by diffMonths and adjust to ensure aligned date is <= now.
+	// This avoids partial-month overcounting.
+	aligned := s.startDate.AddDate(0, diffMonths, 0)
+	if aligned.After(now) {
+		diffMonths--
+		aligned = s.startDate.AddDate(0, diffMonths, 0)
+	}
+
+	// Compute the minimal k such that start + k*months >= now
+	// This is a ceiling division: k = ceil(diffMonths / months)
+	k := diffMonths / months
+	if diffMonths%months != 0 {
+		k++
+	}
+
+	next := s.startDate.AddDate(0, k*months, 0)
+	// Safety: in rare edge cases (e.g., time-of-day differences), ensure next is not in the past
+	if next.Before(now) {
+		next = next.AddDate(0, months, 0)
+	}
+	return &next
+}
+
+func (s *subscription) getMonthsUntilNextRenewal() int {
+	switch s.recurrency {
+	case MonthlyRecurrency:
+		return 1
+	case QuarterlyRecurrency:
+		return 3
+	case HalfYearlyRecurrency:
+		return 6
+	case YearlyRecurrency:
+		return 12
+	case CustomRecurrency:
+		if s.customRecurrency != nil {
+			return int(*s.customRecurrency)
+		}
+		return 0
+	default:
+		return 0
 	}
 }
 

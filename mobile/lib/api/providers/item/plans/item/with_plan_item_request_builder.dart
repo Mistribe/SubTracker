@@ -1,6 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../../../../models/http_error.dart';
+import '../../../../models/http_error_response.dart';
 import '../../../../models/plan_model.dart';
 import '../../../../models/update_plan_model.dart';
 import './prices/prices_request_builder.dart';
@@ -30,9 +30,9 @@ class WithPlanItemRequestBuilder extends BaseRequestBuilder<WithPlanItemRequestB
     Future<void> deleteAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toDeleteRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '404' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '404' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.sendNoContent(requestInfo, errorMapping);
     }
@@ -42,9 +42,9 @@ class WithPlanItemRequestBuilder extends BaseRequestBuilder<WithPlanItemRequestB
     Future<PlanModel?> putAsync(UpdatePlanModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPutRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '404' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '404' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<PlanModel>(requestInfo, PlanModel.createFromDiscriminatorValue, errorMapping);
     }

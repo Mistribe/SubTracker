@@ -14,6 +14,8 @@ import { ProvidersRequestBuilderNavigationMetadata, ProvidersRequestBuilderReque
 // @ts-ignore
 import { SubscriptionsRequestBuilderNavigationMetadata, SubscriptionsRequestBuilderRequestsMetadata, type SubscriptionsRequestBuilder } from './subscriptions/index.js';
 // @ts-ignore
+import { SummaryRequestBuilderRequestsMetadata, type SummaryRequestBuilder } from './summary/index.js';
+// @ts-ignore
 import { type UsersRequestBuilder, UsersRequestBuilderNavigationMetadata, UsersRequestBuilderRequestsMetadata } from './users/index.js';
 // @ts-ignore
 import { apiClientProxifier, ParseNodeFactoryRegistry, SerializationWriterFactoryRegistry, type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type NavigationMetadata, type RequestAdapter } from '@microsoft/kiota-abstractions';
@@ -54,6 +56,10 @@ export interface ApiClient extends BaseRequestBuilder<ApiClient> {
      * The subscriptions property
      */
     get subscriptions(): SubscriptionsRequestBuilder;
+    /**
+     * The summary property
+     */
+    get summary(): SummaryRequestBuilder;
     /**
      * The users property
      */
@@ -122,6 +128,9 @@ export const ApiClientNavigationMetadata: Record<Exclude<keyof ApiClient, KeysTo
     subscriptions: {
         requestsMetadata: SubscriptionsRequestBuilderRequestsMetadata,
         navigationMetadata: SubscriptionsRequestBuilderNavigationMetadata,
+    },
+    summary: {
+        requestsMetadata: SummaryRequestBuilderRequestsMetadata,
     },
     users: {
         requestsMetadata: UsersRequestBuilderRequestsMetadata,

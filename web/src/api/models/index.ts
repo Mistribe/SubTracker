@@ -483,6 +483,33 @@ export function createSubscriptionPayerModelFromDiscriminatorValue(parseNode: Pa
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {SubscriptionSummaryResponse}
+ */
+// @ts-ignore
+export function createSubscriptionSummaryResponseFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoSubscriptionSummaryResponse;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {SubscriptionSummaryTopProviderResponse}
+ */
+// @ts-ignore
+export function createSubscriptionSummaryTopProviderResponseFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoSubscriptionSummaryTopProviderResponse;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {SubscriptionSummaryUpcomingRenewalResponse}
+ */
+// @ts-ignore
+export function createSubscriptionSummaryUpcomingRenewalResponseFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoSubscriptionSummaryUpcomingRenewalResponse;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
  * @returns {UpdateFamilyMemberModel}
  */
 // @ts-ignore
@@ -1060,6 +1087,45 @@ export function deserializeIntoSubscriptionPayerModel(subscriptionPayerModel: Pa
         "family_id": n => { subscriptionPayerModel.familyId = n.getStringValue(); },
         "memberId": n => { subscriptionPayerModel.memberId = n.getStringValue(); },
         "type": n => { subscriptionPayerModel.type = n.getEnumValue<SubscriptionPayerModel_type>(SubscriptionPayerModel_typeObject); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param SubscriptionSummaryResponse The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoSubscriptionSummaryResponse(subscriptionSummaryResponse: Partial<SubscriptionSummaryResponse> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "top_providers": n => { subscriptionSummaryResponse.topProviders = n.getCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>(createSubscriptionSummaryTopProviderResponseFromDiscriminatorValue); },
+        "total_monthly": n => { subscriptionSummaryResponse.totalMonthly = n.getNumberValue(); },
+        "total_yearly": n => { subscriptionSummaryResponse.totalYearly = n.getNumberValue(); },
+        "upcoming_renewals": n => { subscriptionSummaryResponse.upcomingRenewals = n.getCollectionOfObjectValues<SubscriptionSummaryUpcomingRenewalResponse>(createSubscriptionSummaryUpcomingRenewalResponseFromDiscriminatorValue); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param SubscriptionSummaryTopProviderResponse The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoSubscriptionSummaryTopProviderResponse(subscriptionSummaryTopProviderResponse: Partial<SubscriptionSummaryTopProviderResponse> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "provider_id": n => { subscriptionSummaryTopProviderResponse.providerId = n.getStringValue(); },
+        "total": n => { subscriptionSummaryTopProviderResponse.total = n.getNumberValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param SubscriptionSummaryUpcomingRenewalResponse The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoSubscriptionSummaryUpcomingRenewalResponse(subscriptionSummaryUpcomingRenewalResponse: Partial<SubscriptionSummaryUpcomingRenewalResponse> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "at": n => { subscriptionSummaryUpcomingRenewalResponse.at = n.getDateValue(); },
+        "provider_id": n => { subscriptionSummaryUpcomingRenewalResponse.providerId = n.getStringValue(); },
+        "total": n => { subscriptionSummaryUpcomingRenewalResponse.total = n.getNumberValue(); },
     }
 }
 /**
@@ -2161,6 +2227,48 @@ export function serializeSubscriptionPayerModel(writer: SerializationWriter, sub
 /**
  * Serializes information the current object
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param SubscriptionSummaryResponse The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeSubscriptionSummaryResponse(writer: SerializationWriter, subscriptionSummaryResponse: Partial<SubscriptionSummaryResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!subscriptionSummaryResponse || isSerializingDerivedType) { return; }
+    writer.writeCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>("top_providers", subscriptionSummaryResponse.topProviders, serializeSubscriptionSummaryTopProviderResponse);
+    writer.writeNumberValue("total_monthly", subscriptionSummaryResponse.totalMonthly);
+    writer.writeNumberValue("total_yearly", subscriptionSummaryResponse.totalYearly);
+    writer.writeCollectionOfObjectValues<SubscriptionSummaryUpcomingRenewalResponse>("upcoming_renewals", subscriptionSummaryResponse.upcomingRenewals, serializeSubscriptionSummaryUpcomingRenewalResponse);
+    writer.writeAdditionalData(subscriptionSummaryResponse.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param SubscriptionSummaryTopProviderResponse The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeSubscriptionSummaryTopProviderResponse(writer: SerializationWriter, subscriptionSummaryTopProviderResponse: Partial<SubscriptionSummaryTopProviderResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!subscriptionSummaryTopProviderResponse || isSerializingDerivedType) { return; }
+    writer.writeStringValue("provider_id", subscriptionSummaryTopProviderResponse.providerId);
+    writer.writeNumberValue("total", subscriptionSummaryTopProviderResponse.total);
+    writer.writeAdditionalData(subscriptionSummaryTopProviderResponse.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param SubscriptionSummaryUpcomingRenewalResponse The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeSubscriptionSummaryUpcomingRenewalResponse(writer: SerializationWriter, subscriptionSummaryUpcomingRenewalResponse: Partial<SubscriptionSummaryUpcomingRenewalResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!subscriptionSummaryUpcomingRenewalResponse || isSerializingDerivedType) { return; }
+    writer.writeDateValue("at", subscriptionSummaryUpcomingRenewalResponse.at);
+    writer.writeStringValue("provider_id", subscriptionSummaryUpcomingRenewalResponse.providerId);
+    writer.writeNumberValue("total", subscriptionSummaryUpcomingRenewalResponse.total);
+    writer.writeAdditionalData(subscriptionSummaryUpcomingRenewalResponse.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param UpdateFamilyMemberModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
@@ -2428,6 +2536,51 @@ export interface SubscriptionPayerModel extends AdditionalDataHolder, Parsable {
     type?: SubscriptionPayerModel_type | null;
 }
 export type SubscriptionPayerModel_type = (typeof SubscriptionPayerModel_typeObject)[keyof typeof SubscriptionPayerModel_typeObject];
+/**
+ * Response containing subscription summary information
+ */
+export interface SubscriptionSummaryResponse extends AdditionalDataHolder, Parsable {
+    /**
+     * The top_providers property
+     */
+    topProviders?: SubscriptionSummaryTopProviderResponse[] | null;
+    /**
+     * The total_monthly property
+     */
+    totalMonthly?: number | null;
+    /**
+     * The total_yearly property
+     */
+    totalYearly?: number | null;
+    /**
+     * The upcoming_renewals property
+     */
+    upcomingRenewals?: SubscriptionSummaryUpcomingRenewalResponse[] | null;
+}
+export interface SubscriptionSummaryTopProviderResponse extends AdditionalDataHolder, Parsable {
+    /**
+     * The provider_id property
+     */
+    providerId?: string | null;
+    /**
+     * The total property
+     */
+    total?: number | null;
+}
+export interface SubscriptionSummaryUpcomingRenewalResponse extends AdditionalDataHolder, Parsable {
+    /**
+     * The at property
+     */
+    at?: Date | null;
+    /**
+     * The provider_id property
+     */
+    providerId?: string | null;
+    /**
+     * The total property
+     */
+    total?: number | null;
+}
 export interface UpdateFamilyMemberModel extends AdditionalDataHolder, Parsable {
     /**
      * The name property

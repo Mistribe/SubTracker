@@ -64,6 +64,7 @@ func BuildApplicationModule() fx.Option {
 
 			AsQueryHandler[subQuery.FindOneQuery, subscription.Subscription](subQuery.NewFindOneQueryHandler),
 			AsQueryHandler[subQuery.FindAllQuery, core.PaginatedResponse[subscription.Subscription]](subQuery.NewFindAllQueryHandler),
+			AsQueryHandler[subQuery.SummaryQuery, subQuery.SummaryQueryResponse](subQuery.NewSummaryQueryHandler),
 
 			AsCommandHandler[subCommand.CreateSubscriptionCommand, subscription.Subscription](subCommand.NewCreateSubscriptionCommandHandler),
 			AsCommandHandler[subCommand.UpdateSubscriptionCommand, subscription.Subscription](subCommand.NewUpdateSubscriptionCommandHandler),

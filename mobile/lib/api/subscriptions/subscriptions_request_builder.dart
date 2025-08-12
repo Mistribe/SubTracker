@@ -1,7 +1,7 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import '../models/create_subscription_model.dart';
-import '../models/http_error.dart';
+import '../models/http_error_response.dart';
 import '../models/paginated_response_model_endpoints_subscription_model.dart';
 import '../models/patch_subscription_model.dart';
 import '../models/subscription_model.dart';
@@ -36,8 +36,8 @@ class SubscriptionsRequestBuilder extends BaseRequestBuilder<SubscriptionsReques
     Future<PaginatedResponseModelEndpointsSubscriptionModel?> getAsync([void Function(RequestConfiguration<SubscriptionsRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<PaginatedResponseModelEndpointsSubscriptionModel>(requestInfo, PaginatedResponseModelEndpointsSubscriptionModel.createFromDiscriminatorValue, errorMapping);
     }
@@ -47,10 +47,10 @@ class SubscriptionsRequestBuilder extends BaseRequestBuilder<SubscriptionsReques
     Future<SubscriptionModel?> patchAsync(PatchSubscriptionModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPatchRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '401' :  HttpError.createFromDiscriminatorValue,
-            '404' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '401' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '404' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<SubscriptionModel>(requestInfo, SubscriptionModel.createFromDiscriminatorValue, errorMapping);
     }
@@ -60,9 +60,9 @@ class SubscriptionsRequestBuilder extends BaseRequestBuilder<SubscriptionsReques
     Future<SubscriptionModel?> postAsync(CreateSubscriptionModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPostRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '401' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '401' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<SubscriptionModel>(requestInfo, SubscriptionModel.createFromDiscriminatorValue, errorMapping);
     }

@@ -42,3 +42,13 @@ func MustParseRecurrencyType(input string) RecurrencyType {
 	}
 	return t
 }
+
+func toRecurrencyPrice(
+	amount float64,
+	from RecurrencyType,
+	to RecurrencyType) float64 {
+	if from == to {
+		return amount
+	}
+	return amount * 12
+}

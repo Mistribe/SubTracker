@@ -2,7 +2,7 @@
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import '../models/create_family_model.dart';
 import '../models/family_model.dart';
-import '../models/http_error.dart';
+import '../models/http_error_response.dart';
 import '../models/paginated_response_model_endpoints_family_model.dart';
 import '../models/patch_family_model.dart';
 import './families_request_builder_get_query_parameters.dart';
@@ -36,9 +36,9 @@ class FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesRequestBuilder> 
     Future<PaginatedResponseModelEndpointsFamilyModel?> getAsync([void Function(RequestConfiguration<FamiliesRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '401' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '401' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<PaginatedResponseModelEndpointsFamilyModel>(requestInfo, PaginatedResponseModelEndpointsFamilyModel.createFromDiscriminatorValue, errorMapping);
     }
@@ -48,10 +48,10 @@ class FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesRequestBuilder> 
     Future<FamilyModel?> patchAsync(PatchFamilyModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPatchRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '401' :  HttpError.createFromDiscriminatorValue,
-            '404' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '401' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '404' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<FamilyModel>(requestInfo, FamilyModel.createFromDiscriminatorValue, errorMapping);
     }
@@ -61,9 +61,9 @@ class FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesRequestBuilder> 
     Future<FamilyModel?> postAsync(CreateFamilyModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPostRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '401' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '401' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<FamilyModel>(requestInfo, FamilyModel.createFromDiscriminatorValue, errorMapping);
     }

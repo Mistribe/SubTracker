@@ -1,7 +1,7 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import '../models/create_provider_model.dart';
-import '../models/http_error.dart';
+import '../models/http_error_response.dart';
 import '../models/paginated_response_model_endpoints_provider_model.dart';
 import '../models/provider_model.dart';
 import './item/with_provider_item_request_builder.dart';
@@ -35,8 +35,8 @@ class ProvidersRequestBuilder extends BaseRequestBuilder<ProvidersRequestBuilder
     Future<PaginatedResponseModelEndpointsProviderModel?> getAsync([void Function(RequestConfiguration<ProvidersRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<PaginatedResponseModelEndpointsProviderModel>(requestInfo, PaginatedResponseModelEndpointsProviderModel.createFromDiscriminatorValue, errorMapping);
     }
@@ -46,9 +46,9 @@ class ProvidersRequestBuilder extends BaseRequestBuilder<ProvidersRequestBuilder
     Future<ProviderModel?> postAsync(CreateProviderModel body, [void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toPostRequestInformation(body, requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpError.createFromDiscriminatorValue,
-            '401' :  HttpError.createFromDiscriminatorValue,
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '401' :  HttpErrorResponse.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<ProviderModel>(requestInfo, ProviderModel.createFromDiscriminatorValue, errorMapping);
     }

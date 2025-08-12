@@ -1,6 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../../models/http_error.dart';
+import '../../models/http_error_response.dart';
 import '../../models/label_model.dart';
 
 /// auto generated
@@ -24,7 +24,7 @@ class DefaultRequestBuilder extends BaseRequestBuilder<DefaultRequestBuilder> {
     Future<Iterable<LabelModel>?> getAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
-            '500' :  HttpError.createFromDiscriminatorValue,
+            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.sendCollection<LabelModel>(requestInfo, LabelModel.createFromDiscriminatorValue, errorMapping);
     }
