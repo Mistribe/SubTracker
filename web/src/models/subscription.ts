@@ -27,6 +27,7 @@ export default class Subscription {
     private readonly _serviceUsers: string[];
     private readonly _customPrice: SubscriptionCustomPrice | undefined;
     private readonly _freeTrial: SubscriptionFreeTrial | undefined;
+    private readonly _isActive: boolean;
 
     constructor(
         id: string,
@@ -45,7 +46,8 @@ export default class Subscription {
         payer: SubscriptionPayer | undefined,
         serviceUsers: string[],
         customPrice: SubscriptionCustomPrice | undefined,
-        freeTrial: SubscriptionFreeTrial | undefined
+        freeTrial: SubscriptionFreeTrial | undefined,
+        isActive: boolean,
     ) {
         this._id = id;
         this._createdAt = createdAt;
@@ -64,6 +66,7 @@ export default class Subscription {
         this._serviceUsers = serviceUsers;
         this._customPrice = customPrice;
         this._freeTrial = freeTrial;
+        this._isActive = isActive;
     }
 
     get id(): string {
@@ -79,7 +82,7 @@ export default class Subscription {
     }
 
     get isActive(): boolean {
-        return this._endDate === undefined || this._endDate > new Date();
+        return this._isActive;
     }
 
     get etag(): string {
@@ -156,7 +159,8 @@ export default class Subscription {
             model.payer ? SubscriptionPayer.fromModel(model.payer) : undefined,
             model.serviceUsers || [],
             model.customPrice ? SubscriptionCustomPrice.fromModel(model.customPrice) : undefined,
-            model.freeTrial ? SubscriptionFreeTrial.fromModel(model.freeTrial) : undefined
+            model.freeTrial ? SubscriptionFreeTrial.fromModel(model.freeTrial) : undefined,
+            model.isActive || false,
         );
     }
 

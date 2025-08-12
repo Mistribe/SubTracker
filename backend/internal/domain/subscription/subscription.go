@@ -232,7 +232,10 @@ func (s *subscription) GetRecurrencyAmount(to RecurrencyType) currency.Amount {
 
 func (s *subscription) GetNextRenewalDate() *time.Time {
 	if s.endDate != nil {
-		return nil
+		if s.endDate.Before(time.Now()) {
+			return nil
+		}
+		return s.endDate
 	}
 
 	months := s.getMonthsUntilNextRenewal()
