@@ -28,6 +28,7 @@ type SummaryQueryUpcomingRenewalsResponse struct {
 
 type SummaryQueryResponse struct {
 	Currency         currency.Unit
+	Active           uint16
 	TotalMonthly     float64
 	TotalYearly      float64
 	UpcomingRenewals []SummaryQueryUpcomingRenewalsResponse
@@ -75,6 +76,9 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 		Currency: preferredCurrency,
 	}
 	for sub := range h.subscriptionRepository.GetAllIt(ctx, userId) {
+		if sub.IsActive() {
+			response.Active++
+		}
 		if query.TotalMonthly {
 			if sub.IsActive() {
 				monthlyAmount := sub.GetRecurrencyAmount(subscription.MonthlyRecurrency)

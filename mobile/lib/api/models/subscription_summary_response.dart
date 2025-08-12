@@ -6,6 +6,8 @@ import './subscription_summary_upcoming_renewal_response.dart';
 /// auto generated
 /// Response containing subscription summary information
 class SubscriptionSummaryResponse implements AdditionalDataHolder, Parsable {
+    ///  The active property
+    int? active;
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
@@ -29,6 +31,7 @@ class SubscriptionSummaryResponse implements AdditionalDataHolder, Parsable {
     @override
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
+        deserializerMap['active'] = (node) => active = node.getIntValue();
         deserializerMap['top_providers'] = (node) => topProviders = node.getCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>(SubscriptionSummaryTopProviderResponse.createFromDiscriminatorValue);
         deserializerMap['total_monthly'] = (node) => totalMonthly = node.getDoubleValue();
         deserializerMap['total_yearly'] = (node) => totalYearly = node.getDoubleValue();
@@ -39,6 +42,7 @@ class SubscriptionSummaryResponse implements AdditionalDataHolder, Parsable {
     ///  [writer] Serialization writer to use to serialize this model
     @override
     void serialize(SerializationWriter writer) {
+        writer.writeIntValue('active', active);
         writer.writeCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>('top_providers', topProviders);
         writer.writeDoubleValue('total_monthly', totalMonthly);
         writer.writeDoubleValue('total_yearly', totalYearly);

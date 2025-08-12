@@ -8,7 +8,7 @@ import PriceEvolutionGraph from "@/components/dashboard/PriceEvolutionGraph";
 import {PageHeader} from "@/components/ui/page-header";
 import {usePreferredCurrency} from "@/hooks/currencies/usePreferredCurrency";
 import {useCurrencyRates} from "@/hooks/currencies/useCurrencyRates";
-import {convertAmount, subscriptionMonthlyPriceInCurrency, subscriptionYearlyPriceInCurrency} from "@/utils/currency";
+import {convertAmount} from "@/utils/currency";
 import {useSubscriptionSummaryQuery} from "@/hooks/subscriptions/useSubscriptionSummaryQuery";
 import type Provider from "@/models/provider.ts";
 import type {SubscriptionWithNextRenewal} from "@/models/subscriptionWithNextRenewal.ts";
@@ -39,25 +39,9 @@ const DashboardPage = () => {
         topProviders: summaryTopProviders,
         isLoading: isLoadingSummary,
     } = useSubscriptionSummaryQuery({topProviders: 5, totalMonthly: true, totalYearly: true, upcomingRenewals: 5});
-
-    const totalMonthlyComputed = useMemo(() => {
-        return allSubscriptions
-            .filter(sub => sub.isActive)
-            .reduce((sum, sub) => {
-                return sum + subscriptionMonthlyPriceInCurrency(sub, preferredCurrency, rates);
-            }, 0);
-    }, [allSubscriptions, preferredCurrency, rates]);
-
-    const totalYearlyComputed = useMemo(() => {
-        return allSubscriptions
-            .filter(sub => sub.isActive)
-            .reduce((sum, sub) => {
-                return sum + subscriptionYearlyPriceInCurrency(sub, preferredCurrency, rates);
-            }, 0);
-    }, [allSubscriptions, preferredCurrency, rates]);
-
-    const totalMonthly = summaryMonthly ?? totalMonthlyComputed;
-    const totalYearly = summaryYearly ?? totalYearlyComputed;
+    
+    const totalMonthly = summaryMonthly;
+    const totalYearly = summaryYearly;
 
     const activeSubscriptionsCount = useMemo(() => {
         return allSubscriptions.filter(sub => sub.isActive).length;

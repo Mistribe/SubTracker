@@ -1098,6 +1098,7 @@ export function deserializeIntoSubscriptionPayerModel(subscriptionPayerModel: Pa
 // @ts-ignore
 export function deserializeIntoSubscriptionSummaryResponse(subscriptionSummaryResponse: Partial<SubscriptionSummaryResponse> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
+        "active": n => { subscriptionSummaryResponse.active = n.getNumberValue(); },
         "top_providers": n => { subscriptionSummaryResponse.topProviders = n.getCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>(createSubscriptionSummaryTopProviderResponseFromDiscriminatorValue); },
         "total_monthly": n => { subscriptionSummaryResponse.totalMonthly = n.getNumberValue(); },
         "total_yearly": n => { subscriptionSummaryResponse.totalYearly = n.getNumberValue(); },
@@ -2235,6 +2236,7 @@ export function serializeSubscriptionPayerModel(writer: SerializationWriter, sub
 // @ts-ignore
 export function serializeSubscriptionSummaryResponse(writer: SerializationWriter, subscriptionSummaryResponse: Partial<SubscriptionSummaryResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!subscriptionSummaryResponse || isSerializingDerivedType) { return; }
+    writer.writeNumberValue("active", subscriptionSummaryResponse.active);
     writer.writeCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>("top_providers", subscriptionSummaryResponse.topProviders, serializeSubscriptionSummaryTopProviderResponse);
     writer.writeNumberValue("total_monthly", subscriptionSummaryResponse.totalMonthly);
     writer.writeNumberValue("total_yearly", subscriptionSummaryResponse.totalYearly);
@@ -2546,6 +2548,10 @@ export type SubscriptionPayerModel_type = (typeof SubscriptionPayerModel_typeObj
  * Response containing subscription summary information
  */
 export interface SubscriptionSummaryResponse extends AdditionalDataHolder, Parsable {
+    /**
+     * The active property
+     */
+    active?: number | null;
     /**
      * The top_providers property
      */

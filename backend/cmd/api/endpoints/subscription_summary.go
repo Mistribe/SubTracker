@@ -41,6 +41,7 @@ type SubscriptionSummaryUpcomingRenewalResponse struct {
 
 // @Description	Response containing subscription summary information
 type SubscriptionSummaryResponse struct {
+	Active           uint16                                       `json:"active" example:"10" description:"Number of active subscriptions"`
 	TotalMonthly     float64                                      `json:"total_monthly" example:"299.99" description:"Total monthly subscription costs"`
 	TotalYearly      float64                                      `json:"total_yearly" example:"3599.88" description:"Total yearly subscription costs"`
 	TopProviders     []SubscriptionSummaryTopProviderResponse     `json:"top_providers" description:"List of top providers by cost"`
@@ -81,6 +82,7 @@ func (e SubscriptionSummaryEndpoint) Handle(c *gin.Context) {
 		r,
 		withMapping[query.SummaryQueryResponse](func(res query.SummaryQueryResponse) any {
 			return SubscriptionSummaryResponse{
+				Active:       res.Active,
 				TotalMonthly: res.TotalMonthly,
 				TotalYearly:  res.TotalYearly,
 				TopProviders: slicesx.MapToArr(res.TopProviders,

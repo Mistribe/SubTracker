@@ -614,6 +614,9 @@ components:
     endpoints.SubscriptionSummaryResponse:
       description: Response containing subscription summary information
       properties:
+        active:
+          example: 10
+          type: integer
         top_providers:
           items:
             $ref: '#/components/schemas/endpoints.SubscriptionSummaryTopProviderResponse'
