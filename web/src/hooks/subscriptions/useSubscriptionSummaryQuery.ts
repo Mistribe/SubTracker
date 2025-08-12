@@ -61,6 +61,7 @@ export function useSubscriptionSummaryQuery(options: UseSubscriptionSummaryQuery
         data: query.data,
 
         // convenience accessors (with safe fallbacks)
+        activeSubscriptions: query.data?.active ?? 0,
         totalMonthly: query.data?.totalMonthly ?? 0,
         totalYearly: query.data?.totalYearly ?? 0,
         topProviders: query.data?.topProviders ?? [],

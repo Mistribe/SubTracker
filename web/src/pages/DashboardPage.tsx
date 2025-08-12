@@ -34,19 +34,17 @@ const DashboardPage = () => {
     const {preferredCurrency} = usePreferredCurrency();
     const {rates, isLoading: isLoadingRates} = useCurrencyRates();
     const {
+        activeSubscriptions: summaryActiveSubscriptions,
+        upcomingRenewals: summaryUpcomingRenewals,
         totalMonthly: summaryMonthly,
         totalYearly: summaryYearly,
         topProviders: summaryTopProviders,
         isLoading: isLoadingSummary,
     } = useSubscriptionSummaryQuery({topProviders: 5, totalMonthly: true, totalYearly: true, upcomingRenewals: 5});
-    
+
     const totalMonthly = summaryMonthly;
     const totalYearly = summaryYearly;
-
-    const activeSubscriptionsCount = useMemo(() => {
-        return allSubscriptions.filter(sub => sub.isActive).length;
-    }, [allSubscriptions]);
-
+    const activeSubscriptionsCount = summaryActiveSubscriptions;
     const totalsCurrency = preferredCurrency;
 
     const subscriptionsWithNextRenewal = useMemo(() => {
