@@ -11,17 +11,22 @@ interface Provider {
     name: string;
 }
 
+import type { SubscriptionSummaryUpcomingRenewalResponse } from "@/api/models";
+
 interface UpcomingRenewalsProps {
-    upcomingRenewals: SubscriptionWithNextRenewal[];
+    upcomingRenewals?: SubscriptionWithNextRenewal[];
+    summaryUpcomingRenewals?: SubscriptionSummaryUpcomingRenewalResponse[];
     providerMap: Map<string, Provider>;
     isLoading: boolean;
 }
 
 const UpcomingRenewals = ({
-                              upcomingRenewals,
-                              providerMap,
-                              isLoading
-                          }: UpcomingRenewalsProps) => {
+                               upcomingRenewals = [],
+                               summaryUpcomingRenewals = [],
+                               providerMap,
+                               isLoading
+                           }: UpcomingRenewalsProps) => {
+    const hasSummary = summaryUpcomingRenewals && summaryUpcomingRenewals.length > 0;
     return (
         <div>
             <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg border-t-4 border-t-cyan-500">
@@ -36,6 +41,28 @@ const UpcomingRenewals = ({
                                 <div key={`upcoming-skeleton-${i}`} className="p-3 border rounded-lg bg-muted/30">
                                     <Skeleton className="h-6 w-full mb-2"/>
                                     <Skeleton className="h-4 w-1/2"/>
+                                </div>
+                            ))}
+                        </div>
+                    ) : hasSummary ? (
+                        <div className="space-y-3">
+                            {summaryUpcomingRenewals.map((item, idx) => (
+                                <div
+                                    key={`${item.providerId}-${item.at?.toString() ?? ""}-${idx}`}
+                                    className="p-3 border rounded-lg bg-card transition-all duration-200 hover:bg-muted/20"
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h4 className="font-medium">
+                                                {providerMap.get(item.providerId ?? "")?.name || item.providerId}
+                                            </h4>
+                                        </div>
+                                    </div>
+                                    <div className="mt-2 text-sm flex items-center">
+                                        <Clock className="h-3 w-3 mr-1 text-cyan-500"/>
+                                        <span className="font-medium">Next renewal:</span>{" "}
+                                        {item.at ? format(item.at, 'MMM d, yyyy') : ""}
+                                    </div>
                                 </div>
                             ))}
                         </div>
