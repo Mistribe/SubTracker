@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/subscription/query"
@@ -85,11 +84,11 @@ func (e SubscriptionSummaryEndpoint) Handle(c *gin.Context) {
 				Active:       res.Active,
 				TotalMonthly: res.TotalMonthly,
 				TotalYearly:  res.TotalYearly,
-				TopProviders: slicesx.MapToArr(res.TopProviders,
-					func(providerId uuid.UUID, amount float64) SubscriptionSummaryTopProviderResponse {
+				TopProviders: slicesx.Select(res.TopProviders,
+					func(topProvider query.SummaryQueryTopProvidersResponse) SubscriptionSummaryTopProviderResponse {
 						return SubscriptionSummaryTopProviderResponse{
-							ProviderId: providerId.String(),
-							Total:      amount,
+							ProviderId: topProvider.ProviderId.String(),
+							Total:      topProvider.Total,
 						}
 					}),
 				UpcomingRenewals: slicesx.Select(res.UpcomingRenewals,

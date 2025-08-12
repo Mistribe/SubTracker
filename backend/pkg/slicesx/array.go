@@ -28,7 +28,8 @@ func SelectMany[TIn any, TOut any](source []TIn, f func(TIn) []TOut) []TOut {
 	return result
 }
 
-func ToMap[TKey comparable, TOut any, TValue any](source []TValue,
+func ToMap[TKey comparable, TOut any, TValue any](
+	source []TValue,
 	keySelector func(TValue) TKey,
 	valueSelector func(TValue) TOut) map[TKey]TOut {
 	result := make(map[TKey]TOut)
@@ -38,5 +39,18 @@ func ToMap[TKey comparable, TOut any, TValue any](source []TValue,
 		result[key] = value
 	}
 
+	return result
+}
+
+func Take[T any](source []T, count int) []T {
+	if count >= len(source) {
+		return source
+	}
+
+	if count <= 0 {
+		return []T{}
+	}
+	result := make([]T, count)
+	copy(result, source[:count])
 	return result
 }

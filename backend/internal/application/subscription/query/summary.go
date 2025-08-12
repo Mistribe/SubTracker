@@ -2,6 +2,7 @@ package query
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -11,6 +12,7 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 type SummaryQuery struct {
@@ -26,13 +28,18 @@ type SummaryQueryUpcomingRenewalsResponse struct {
 	Total      float64
 }
 
+type SummaryQueryTopProvidersResponse struct {
+	ProviderId uuid.UUID
+	Total      float64
+}
+
 type SummaryQueryResponse struct {
 	Currency         currency.Unit
 	Active           uint16
 	TotalMonthly     float64
 	TotalYearly      float64
 	UpcomingRenewals []SummaryQueryUpcomingRenewalsResponse
-	TopProviders     map[uuid.UUID]float64
+	TopProviders     []SummaryQueryTopProvidersResponse
 }
 
 type SummaryQueryHandler struct {
@@ -75,6 +82,7 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 	response := SummaryQueryResponse{
 		Currency: preferredCurrency,
 	}
+	topProviders := make(map[uuid.UUID]float64)
 	for sub := range h.subscriptionRepository.GetAllIt(ctx, userId) {
 		if sub.IsActive() {
 			response.Active++
@@ -113,18 +121,30 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 		if query.TopProviders > 0 {
 			totalSpent := sub.GetTotalSpent()
 			if totalSpent.IsValid() {
-				if response.TopProviders == nil {
-					response.TopProviders = make(map[uuid.UUID]float64)
-				}
-				existingValue, ok := response.TopProviders[sub.ProviderId()]
+				existingValue, ok := topProviders[sub.ProviderId()]
 				if ok {
-					response.TopProviders[sub.ProviderId()] = existingValue + totalSpent.Value()
+					topProviders[sub.ProviderId()] = existingValue + totalSpent.Value()
 				} else {
-					response.TopProviders[sub.ProviderId()] = totalSpent.Value()
+					topProviders[sub.ProviderId()] = totalSpent.Value()
 				}
 			}
 		}
 	}
 
+	sort.Slice(response.UpcomingRenewals, func(i, j int) bool {
+		return response.UpcomingRenewals[i].At.Before(response.UpcomingRenewals[j].At)
+	})
+	response.UpcomingRenewals = slicesx.Take(response.UpcomingRenewals, int(query.UpcomingRenewals))
+	response.TopProviders = slicesx.MapToArr(topProviders,
+		func(providerId uuid.UUID, total float64) SummaryQueryTopProvidersResponse {
+			return SummaryQueryTopProvidersResponse{
+				ProviderId: providerId,
+				Total:      total,
+			}
+		})
+	sort.Slice(response.TopProviders, func(i, j int) bool {
+		return response.TopProviders[i].Total > response.TopProviders[j].Total
+	})
+	response.TopProviders = slicesx.Take(response.TopProviders, int(query.TopProviders))
 	return result.Success(response)
 }
