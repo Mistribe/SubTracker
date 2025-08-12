@@ -4,6 +4,8 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"sort"
+	"strings"
 	"time"
 
 	cfg "github.com/Oleexo/config-go"
@@ -46,20 +48,65 @@ func registerRouteGroups(e *gin.Engine, routeGroups []ginfx.RouteGroup) {
 }
 
 func registerRoutes(e *gin.RouterGroup, routes []ginfx.Route) {
+	// Order routes: static before param, param before wildcard
+	type routeEntry struct {
+		method      string
+		pattern     string
+		middlewares []gin.HandlerFunc
+		handle      gin.HandlerFunc
+	}
+
+	var entries []routeEntry
 	for _, route := range routes {
 		for _, pattern := range route.Pattern() {
-			var handlers []gin.HandlerFunc
-			idx := 0
-			handlers = make([]gin.HandlerFunc, len(route.Middlewares())+1)
-			if route.Middlewares() != nil && len(route.Middlewares()) > 0 {
-				for i, m := range route.Middlewares() {
-					handlers[i] = m
-					idx += 1
-				}
-			}
-			handlers[idx] = route.Handle
-			e.Handle(route.Method(), pattern, handlers...)
+			entries = append(entries, routeEntry{
+				method:      route.Method(),
+				pattern:     pattern,
+				middlewares: route.Middlewares(),
+				handle:      route.Handle,
+			})
 		}
+	}
+
+	score := func(p string) int {
+		switch {
+		case strings.Contains(p, "/*"):
+			return 2 // wildcard lowest
+		case strings.Contains(p, "/:"):
+			return 1 // param middle
+		default:
+			return 0 // static highest
+		}
+	}
+
+	sort.SliceStable(entries, func(i, j int) bool {
+		si, sj := score(entries[i].pattern), score(entries[j].pattern)
+		if si != sj {
+			return si < sj
+		}
+		// Within the same class, register more specific (longer) paths first
+		if len(entries[i].pattern) != len(entries[j].pattern) {
+			return len(entries[i].pattern) > len(entries[j].pattern)
+		}
+		// Stable fallback by method+pattern to avoid nondeterminism
+		if entries[i].method != entries[j].method {
+			return entries[i].method < entries[j].method
+		}
+		return entries[i].pattern < entries[j].pattern
+	})
+
+	for _, it := range entries {
+		var handlers []gin.HandlerFunc
+		idx := 0
+		handlers = make([]gin.HandlerFunc, len(it.middlewares)+1)
+		if it.middlewares != nil && len(it.middlewares) > 0 {
+			for i, m := range it.middlewares {
+				handlers[i] = m
+				idx += 1
+			}
+		}
+		handlers[idx] = it.handle
+		e.Handle(it.method, it.pattern, handlers...)
 	}
 }
 

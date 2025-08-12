@@ -43,7 +43,8 @@ func (a Amount) ToCurrency(
 		return NewInvalidAmount()
 	}
 
-	return NewAmount(usdValue/exchangeRate, to)
+	currencyValue := usdValue * exchangeRate
+	return NewAmount(currencyValue, to)
 }
 
 func (a Amount) ToUSD(rates Rates) Amount {

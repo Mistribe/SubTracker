@@ -1,5 +1,5 @@
 import {useMemo} from "react";
-import {useAllSubscriptionsQuery} from "@/hooks/subscriptions/useAllSubscriptionsQuery";
+import {useSubscriptionsQuery} from "@/hooks/subscriptions/useSubscriptionsQuery.ts";
 import {useAllProvidersQuery} from "@/hooks/providers/useAllProvidersQuery";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import UpcomingRenewals from "@/components/dashboard/UpcomingRenewals";
@@ -9,13 +9,14 @@ import {PageHeader} from "@/components/ui/page-header";
 import {usePreferredCurrency} from "@/hooks/currencies/usePreferredCurrency";
 import {useCurrencyRates} from "@/hooks/currencies/useCurrencyRates";
 import {convertAmount, subscriptionMonthlyPriceInCurrency, subscriptionYearlyPriceInCurrency} from "@/utils/currency";
+import {useSubscriptionSummaryQuery} from "@/hooks/subscriptions/useSubscriptionSummaryQuery";
 import type Provider from "@/models/provider.ts";
 import type {SubscriptionWithNextRenewal} from "@/models/subscriptionWithNextRenewal.ts";
 import type {ProviderSpending} from "@/models/providerSpending.ts";
 import type Subscription from "@/models/subscription.ts";
 
 const DashboardPage = () => {
-    const {data: subscriptionsData, isLoading: isLoadingSubscriptions} = useAllSubscriptionsQuery();
+    const {data: subscriptionsData, isLoading: isLoadingSubscriptions} = useSubscriptionsQuery();
     const {data: providersData, isLoading: isLoadingProviders} = useAllProvidersQuery();
 
     const allSubscriptions: Subscription[] = useMemo(() =>
@@ -32,8 +33,14 @@ const DashboardPage = () => {
 
     const {preferredCurrency} = usePreferredCurrency();
     const {rates, isLoading: isLoadingRates} = useCurrencyRates();
+    const {
+        totalMonthly: summaryMonthly,
+        totalYearly: summaryYearly,
+        topProviders: summaryTopProviders,
+        isLoading: isLoadingSummary,
+    } = useSubscriptionSummaryQuery({topProviders: 5, totalMonthly: true, totalYearly: true, upcomingRenewals: 5});
 
-    const totalMonthly = useMemo(() => {
+    const totalMonthlyComputed = useMemo(() => {
         return allSubscriptions
             .filter(sub => sub.isActive)
             .reduce((sum, sub) => {
@@ -41,13 +48,16 @@ const DashboardPage = () => {
             }, 0);
     }, [allSubscriptions, preferredCurrency, rates]);
 
-    const totalYearly = useMemo(() => {
+    const totalYearlyComputed = useMemo(() => {
         return allSubscriptions
             .filter(sub => sub.isActive)
             .reduce((sum, sub) => {
                 return sum + subscriptionYearlyPriceInCurrency(sub, preferredCurrency, rates);
             }, 0);
     }, [allSubscriptions, preferredCurrency, rates]);
+
+    const totalMonthly = summaryMonthly ?? totalMonthlyComputed;
+    const totalYearly = summaryYearly ?? totalYearlyComputed;
 
     const activeSubscriptionsCount = useMemo(() => {
         return allSubscriptions.filter(sub => sub.isActive).length;
@@ -110,6 +120,18 @@ const DashboardPage = () => {
             .slice(0, 5);
     }, [allSubscriptions, providerMap, preferredCurrency, rates]);
 
+    const topProvidersData = useMemo(() => {
+        if (summaryTopProviders && summaryTopProviders.length > 0) {
+            return summaryTopProviders.map(tp => ({
+                id: tp.providerId ?? "",
+                name: providerMap.get(tp.providerId ?? "")?.name || (tp.providerId ?? ""),
+                amount: tp.total ?? 0,
+                currency: preferredCurrency,
+            }));
+        }
+        return providerSpending;
+    }, [summaryTopProviders, providerMap, preferredCurrency, providerSpending]);
+
 
     return (
         <div className="container mx-auto py-6">
@@ -122,7 +144,7 @@ const DashboardPage = () => {
                 totalMonthly={totalMonthly}
                 totalYearly={totalYearly}
                 activeSubscriptionsCount={activeSubscriptionsCount}
-                isLoading={isLoadingSubscriptions || isLoadingRates}
+                isLoading={isLoadingSubscriptions || isLoadingRates || isLoadingSummary}
                 totalsCurrency={totalsCurrency}
             />
 
@@ -135,8 +157,8 @@ const DashboardPage = () => {
                 />
 
                 <TopProviders
-                    providers={providerSpending}
-                    isLoading={isLoadingSubscriptions || isLoadingProviders}
+                    providers={topProvidersData}
+                    isLoading={isLoadingSubscriptions || isLoadingProviders || isLoadingSummary}
                 />
             </div>
 

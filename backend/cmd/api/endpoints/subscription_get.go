@@ -32,6 +32,7 @@ func (e SubscriptionGetEndpoint) Handle(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
+		return
 	}
 	q := query.NewFindOneQuery(id)
 	r := e.handler.Handle(c, q)

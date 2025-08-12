@@ -3,6 +3,7 @@ package query
 import (
 	"context"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/entity"
 
 	"github.com/oleexo/subtracker/internal/application/core"
@@ -23,18 +24,25 @@ func NewFindAllQuery(size, page int32) FindAllQuery {
 }
 
 type FindAllQueryHandler struct {
-	repository subscription.Repository
+	subscriptionRepository subscription.Repository
+	authService            auth.Service
 }
 
-func NewFindAllQueryHandler(repository subscription.Repository) *FindAllQueryHandler {
-	return &FindAllQueryHandler{repository: repository}
+func NewFindAllQueryHandler(
+	subscriptionRepository subscription.Repository,
+	authService auth.Service) *FindAllQueryHandler {
+	return &FindAllQueryHandler{
+		subscriptionRepository: subscriptionRepository,
+		authService:            authService,
+	}
 }
 
 func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[core.PaginatedResponse[subscription.Subscription]] {
+	userId := h.authService.MustGetUserId(ctx)
 	parameters := entity.NewQueryParameters(query.Limit, query.Offset)
-	subs, count, err := h.repository.GetAll(ctx, parameters)
+	subs, count, err := h.subscriptionRepository.GetAllForUser(ctx, userId, parameters)
 	if err != nil {
 		return result.Fail[core.PaginatedResponse[subscription.Subscription]](err)
 	}

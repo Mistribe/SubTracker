@@ -57,6 +57,8 @@ type Subscription interface {
 	GetPrice() currency.Amount
 	// GetTotalSpent returns the total spent of the subscription
 	GetTotalSpent() currency.Amount
+	// IsActive returns true if the subscription is active
+	IsActive() bool
 
 	SetFriendlyName(name *string)
 	SetFreeTrial(trial FreeTrial)
@@ -127,6 +129,17 @@ func NewSubscription(
 	}
 }
 
+func (s *subscription) IsActive() bool {
+	if s.startDate.After(time.Now()) {
+		return false
+	}
+	if s.endDate != nil {
+		return s.endDate.After(time.Now())
+	}
+
+	return true
+}
+
 func (s *subscription) GetTotalSpent() currency.Amount {
 	if s.customPrice == nil && s.priceId == nil {
 		return currency.NewInvalidAmount()
@@ -147,24 +160,12 @@ func (s *subscription) GetTotalSpent() currency.Amount {
 		return currency.NewAmount(0, price.Currency())
 	}
 
-	months := s.getMonthsUntilNextRenewal()
-	if months == 0 {
+	months := monthsBetweenCalendar(s.startDate, endDate)
+	if months <= 0 {
 		return currency.NewAmount(0, price.Currency())
 	}
 
-	// Calculate total months between start and end dates
-	totalMonths := (endDate.Year()-s.startDate.Year())*12 + int(endDate.Month()-s.startDate.Month())
-	if totalMonths < 0 {
-		totalMonths = 0
-	}
-
-	// Calculate number of full billing cycles
-	cycles := totalMonths / months
-	if totalMonths%months != 0 && endDate.Day() >= s.startDate.Day() {
-		cycles++
-	}
-
-	return currency.NewAmount(price.Value()*float64(cycles), price.Currency())
+	return currency.NewAmount(price.Value()*float64(months), price.Currency())
 }
 
 func (s *subscription) GetPrice() currency.Amount {
@@ -179,10 +180,45 @@ func (s *subscription) GetPrice() currency.Amount {
 	return currency.NewInvalidAmount()
 }
 
+func (s *subscription) getMonths() int {
+	switch s.recurrency {
+	case CustomRecurrency:
+		if s.customRecurrency != nil {
+			return int(*s.customRecurrency)
+		}
+		return 0
+	case OneTimeRecurrency:
+		var endDate time.Time
+		startDate := s.startDate
+		if s.endDate != nil {
+			endDate = *s.endDate
+		} else {
+			endDate = time.Now()
+		}
+		return monthsBetweenCalendar(startDate, endDate)
+	default:
+		return s.recurrency.TotalMonths()
+	}
+}
+
+func (s *subscription) getMonthlyPrice() currency.Amount {
+	var price float64
+	numberOfMonths := s.getMonths()
+	if s.customPrice != nil {
+		price = s.customPrice.Amount()
+	} else if s.priceId != nil {
+		panic("not implemented yet")
+	}
+
+	return currency.NewAmount(price/float64(numberOfMonths), s.customPrice.Currency())
+}
+
 func (s *subscription) GetRecurrencyAmount(to RecurrencyType) currency.Amount {
 	if s.customPrice != nil {
+		monthlyPrice := s.getMonthlyPrice()
+
 		return currency.NewAmount(
-			toRecurrencyPrice(s.customPrice.Amount(), s.recurrency, to),
+			monthlyPrice.Value()*float64(to.TotalMonths()),
 			s.customPrice.Currency(),
 		)
 	}

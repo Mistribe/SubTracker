@@ -1064,6 +1064,7 @@ export function deserializeIntoSubscriptionModel(subscriptionModel: Partial<Subs
         "free_trial": n => { subscriptionModel.freeTrial = n.getObjectValue<SubscriptionFreeTrialModel>(createSubscriptionFreeTrialModelFromDiscriminatorValue); },
         "friendly_name": n => { subscriptionModel.friendlyName = n.getStringValue(); },
         "id": n => { subscriptionModel.id = n.getStringValue(); },
+        "is_active": n => { subscriptionModel.isActive = n.getBooleanValue(); },
         "owner": n => { subscriptionModel.owner = n.getObjectValue<OwnerModel>(createOwnerModelFromDiscriminatorValue); },
         "payer": n => { subscriptionModel.payer = n.getObjectValue<SubscriptionPayerModel>(createSubscriptionPayerModelFromDiscriminatorValue); },
         "plan_id": n => { subscriptionModel.planId = n.getStringValue(); },
@@ -2198,6 +2199,7 @@ export function serializeSubscriptionModel(writer: SerializationWriter, subscrip
     writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", subscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
     writer.writeStringValue("friendly_name", subscriptionModel.friendlyName);
     writer.writeStringValue("id", subscriptionModel.id);
+    writer.writeBooleanValue("is_active", subscriptionModel.isActive);
     writer.writeObjectValue<OwnerModel>("owner", subscriptionModel.owner, serializeOwnerModel);
     writer.writeObjectValue<SubscriptionPayerModel>("payer", subscriptionModel.payer, serializeSubscriptionPayerModel);
     writer.writeStringValue("plan_id", subscriptionModel.planId);
@@ -2476,6 +2478,10 @@ export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
      * @Description Unique identifier for the subscription (UUID format)
      */
     id?: string | null;
+    /**
+     * @Description Indicates whether the subscription is currently active or not
+     */
+    isActive?: boolean | null;
     /**
      * @Description Ownership information specifying whether this subscription belongs to a user or family
      */

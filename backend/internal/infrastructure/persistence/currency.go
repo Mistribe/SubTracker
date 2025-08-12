@@ -45,7 +45,7 @@ func (r CurrencyRateRepository) GetById(ctx context.Context, entityId uuid.UUID)
 	return createCurrencyRateFromSqlc(row.CurrencyRate), nil
 }
 
-func (r CurrencyRateRepository) GetRatesByDate(ctx context.Context, date time.Time) ([]currency.Rate, error) {
+func (r CurrencyRateRepository) GetRatesByDate(ctx context.Context, date time.Time) (currency.Rates, error) {
 	rows, err := r.dbContext.GetQueries(ctx).GetCurrencyRatesByDate(ctx, pgtype.Date{
 		Time:  date,
 		Valid: true,

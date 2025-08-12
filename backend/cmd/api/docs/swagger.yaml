@@ -514,6 +514,11 @@ components:
             format)'
           example: 123e4567-e89b-12d3-a456-426614174000
           type: string
+        is_active:
+          description: '@Description Indicates whether the subscription is currently
+            active or not'
+          example: true
+          type: boolean
         owner:
           $ref: '#/components/schemas/endpoints.OwnerModel'
         payer:
@@ -569,6 +574,7 @@ components:
       - created_at
       - etag
       - id
+      - is_active
       - owner
       - provider_id
       - recurrency
@@ -2559,7 +2565,7 @@ paths:
       summary: Update subscription by ID
       tags:
       - subscription
-  /summary:
+  /subscriptions/summary:
     get:
       description: Returns summary information about subscriptions including total
         costs and upcoming renewals

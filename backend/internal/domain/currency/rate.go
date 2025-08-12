@@ -21,6 +21,26 @@ func (r Rates) FindExchangeRate(from currency.Unit, to currency.Unit) (float64, 
 	return 0, false
 }
 
+func (r Rates) WithReverse() Rates {
+	result := make(Rates, 0, len(r)*2)
+	result = append(result, r...)
+
+	for _, element := range r {
+		reverseRate := NewRate(
+			uuid.New(),
+			element.ToCurrency(),
+			element.FromCurrency(),
+			element.RateDate(),
+			1/element.ExchangeRate(),
+			element.CreatedAt(),
+			element.UpdatedAt(),
+		)
+		result = append(result, reverseRate)
+	}
+
+	return result
+}
+
 type Rate interface {
 	entity.Entity
 	entity.ETagEntity

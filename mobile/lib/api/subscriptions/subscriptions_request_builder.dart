@@ -7,10 +7,15 @@ import '../models/patch_subscription_model.dart';
 import '../models/subscription_model.dart';
 import './item/with_subscription_item_request_builder.dart';
 import './subscriptions_request_builder_get_query_parameters.dart';
+import './summary/summary_request_builder.dart';
 
 /// auto generated
 /// Builds and executes requests for operations under \subscriptions
 class SubscriptionsRequestBuilder extends BaseRequestBuilder<SubscriptionsRequestBuilder> {
+    ///  The summary property
+    SummaryRequestBuilder get summary {
+        return SummaryRequestBuilder(pathParameters, requestAdapter);
+    }
     /// Gets an item from the ApiSdk.subscriptions.item collection
     ///  [subscriptionId] Subscription ID (UUID format)
     WithSubscriptionItemRequestBuilder bySubscriptionId(String subscriptionId) {

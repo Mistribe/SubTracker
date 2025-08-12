@@ -6,12 +6,18 @@ import { createHttpErrorResponseFromDiscriminatorValue, createPaginatedResponseM
 // @ts-ignore
 import { type WithSubscriptionItemRequestBuilder, WithSubscriptionItemRequestBuilderRequestsMetadata } from './item/index.js';
 // @ts-ignore
+import { SummaryRequestBuilderRequestsMetadata, type SummaryRequestBuilder } from './summary/index.js';
+// @ts-ignore
 import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type NavigationMetadata, type Parsable, type ParsableFactory, type RequestConfiguration, type RequestInformation, type RequestsMetadata } from '@microsoft/kiota-abstractions';
 
 /**
  * Builds and executes requests for operations under /subscriptions
  */
 export interface SubscriptionsRequestBuilder extends BaseRequestBuilder<SubscriptionsRequestBuilder> {
+    /**
+     * The summary property
+     */
+    get summary(): SummaryRequestBuilder;
     /**
      * Gets an item from the ApiSdk.subscriptions.item collection
      * @param subscriptionId Subscription ID (UUID format)
@@ -92,6 +98,9 @@ export const SubscriptionsRequestBuilderNavigationMetadata: Record<Exclude<keyof
     bySubscriptionId: {
         requestsMetadata: WithSubscriptionItemRequestBuilderRequestsMetadata,
         pathParametersMappings: ["subscriptionId"],
+    },
+    summary: {
+        requestsMetadata: SummaryRequestBuilderRequestsMetadata,
     },
 };
 /**

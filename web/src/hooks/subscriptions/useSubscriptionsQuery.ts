@@ -4,7 +4,6 @@ import type {SubscriptionModel} from "@/api/models";
 import type {SubscriptionsRequestBuilderGetQueryParameters} from "@/api/subscriptions";
 import Subscription from "@/models/subscription";
 import {OwnerType} from "@/models/ownerType";
-import {useEffect} from "react";
 
 interface AllSubscriptionsQueryOptions {
     ownerTypes?: OwnerType[];
@@ -16,7 +15,7 @@ interface AllSubscriptionsQueryOptions {
  * Fetches **all** subscriptions that match the given filters by requesting as
  * many pages as required. Internally relies on `useInfiniteQuery`.
  */
-export const useAllSubscriptionsQuery = (options: AllSubscriptionsQueryOptions = {}) => {
+export const useSubscriptionsQuery = (options: AllSubscriptionsQueryOptions = {}) => {
     const {
         limit = 50,
     } = options;
@@ -69,12 +68,6 @@ export const useAllSubscriptionsQuery = (options: AllSubscriptionsQueryOptions =
             return undefined;
         },
     });
-
-    useEffect(() => {
-        if (query.hasNextPage && !query.isFetchingNextPage) {
-            query.fetchNextPage();
-        }
-    }, [query, query.hasNextPage, query.isFetchingNextPage]);
 
 
     return query;

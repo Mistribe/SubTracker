@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+	"iter"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,6 +13,8 @@ import (
 	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 )
+
+const batchSize = 10
 
 type SubscriptionRepository struct {
 	dbContext *DatabaseContext
@@ -48,10 +51,38 @@ func (r SubscriptionRepository) GetById(ctx context.Context, id uuid.UUID) (subs
 	return subscriptions[0], nil
 }
 
+func (r SubscriptionRepository) GetByIdForUser(ctx context.Context, userId string, id uuid.UUID) (
+	subscription.Subscription,
+	error) {
+	response, err := r.dbContext.GetQueries(ctx).GetSubscriptionByIdForUser(ctx, id, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(response) == 0 {
+		return nil, nil
+	}
+
+	subscriptions := createSubscriptionFromSqlcRows(response,
+		func(row sql.SubscriptionRow) sql.Subscription {
+			return row.Subscription
+		},
+		func(row sql.SubscriptionRow) *sql.SubscriptionServiceUser {
+			return row.ServiceUser
+		},
+	)
+	if len(subscriptions) == 0 {
+		return nil, nil
+	}
+
+	return subscriptions[0], nil
+}
+
 func (r SubscriptionRepository) GetAll(
 	ctx context.Context,
 	parameters entity.QueryParameters) ([]subscription.Subscription, int64, error) {
-	response, count, err := r.dbContext.GetQueries(ctx).GetSubscriptions(ctx, parameters.Limit, parameters.Offset)
+	response, count, err := r.dbContext.GetQueries(ctx).
+		GetSubscriptions(ctx, parameters.Limit, parameters.Offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -73,6 +104,61 @@ func (r SubscriptionRepository) GetAll(
 	}
 
 	return subscriptions, count, nil
+}
+
+func (r SubscriptionRepository) GetAllForUser(
+	ctx context.Context,
+	userId string,
+	parameters entity.QueryParameters) ([]subscription.Subscription, int64, error) {
+	response, count, err := r.dbContext.GetQueries(ctx).
+		GetSubscriptionsForUser(ctx, userId, parameters.Limit, parameters.Offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if len(response) == 0 {
+		return nil, 0, nil
+	}
+
+	subscriptions := createSubscriptionFromSqlcRows(response,
+		func(row sql.SubscriptionRow) sql.Subscription {
+			return row.Subscription
+		},
+		func(row sql.SubscriptionRow) *sql.SubscriptionServiceUser {
+			return row.ServiceUser
+		},
+	)
+	if len(subscriptions) == 0 {
+		return nil, 0, nil
+	}
+
+	return subscriptions, count, nil
+}
+
+func (r SubscriptionRepository) GetAllIt(ctx context.Context, userId string) iter.Seq[subscription.Subscription] {
+	return func(yield func(subscription.Subscription) bool) {
+		offset := int32(0)
+		for {
+			subs, _, err := r.GetAllForUser(ctx, userId, entity.QueryParameters{
+				Limit:  batchSize,
+				Offset: offset,
+			})
+			if err != nil || len(subs) == 0 {
+				return
+			}
+
+			for _, sub := range subs {
+				if !yield(sub) {
+					return
+				}
+			}
+
+			if len(subs) < batchSize {
+				return
+			}
+			offset += batchSize
+		}
+	}
 }
 
 func (r SubscriptionRepository) Save(ctx context.Context, subscriptions ...subscription.Subscription) error {

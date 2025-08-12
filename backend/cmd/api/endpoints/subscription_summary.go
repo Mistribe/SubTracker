@@ -16,6 +16,10 @@ type SubscriptionSummaryEndpoint struct {
 	handler core.QueryHandler[query.SummaryQuery, query.SummaryQueryResponse]
 }
 
+func NewSubscriptionSummaryEndpoint(handler core.QueryHandler[query.SummaryQuery, query.SummaryQueryResponse]) *SubscriptionSummaryEndpoint {
+	return &SubscriptionSummaryEndpoint{handler: handler}
+}
+
 // @Description	Request parameters for subscription summary
 type SubscriptionSummaryRequest struct {
 	TopProviders     uint8 `json:"top_providers" form:"top_providers" binding:"required" example:"5" description:"Number of top providers to return"`
@@ -55,7 +59,7 @@ type SubscriptionSummaryResponse struct {
 //	@Param			total_yearly		query		boolean	true	"Include yearly total costs"
 //	@Success		200					{object}	SubscriptionSummaryResponse
 //	@Failure		400					{object}	HttpErrorResponse
-//	@Router			/summary [get]
+//	@Router			/subscriptions/summary [get]
 func (e SubscriptionSummaryEndpoint) Handle(c *gin.Context) {
 	var model SubscriptionSummaryRequest
 	if err := c.ShouldBindQuery(&model); err != nil {

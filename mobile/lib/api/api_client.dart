@@ -10,7 +10,6 @@ import './healthz/healthz_request_builder.dart';
 import './labels/labels_request_builder.dart';
 import './providers/providers_request_builder.dart';
 import './subscriptions/subscriptions_request_builder.dart';
-import './summary/summary_request_builder.dart';
 import './users/users_request_builder.dart';
 
 /// auto generated
@@ -39,10 +38,6 @@ class ApiClient extends BaseRequestBuilder<ApiClient> {
     ///  The subscriptions property
     SubscriptionsRequestBuilder get subscriptions {
         return SubscriptionsRequestBuilder(pathParameters, requestAdapter);
-    }
-    ///  The summary property
-    SummaryRequestBuilder get summary {
-        return SummaryRequestBuilder(pathParameters, requestAdapter);
     }
     ///  The users property
     UsersRequestBuilder get users {

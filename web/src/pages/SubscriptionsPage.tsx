@@ -1,6 +1,6 @@
 import {useMemo, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {useAllSubscriptionsQuery} from "@/hooks/subscriptions/useAllSubscriptionsQuery";
+import {useSubscriptionsQuery} from "@/hooks/subscriptions/useSubscriptionsQuery.ts";
 import {useAllProvidersQuery} from "@/hooks/providers/useAllProvidersQuery";
 import {useSubscriptionsMutations} from "@/hooks/subscriptions/useSubscriptionsMutations";
 import {PageHeader} from "@/components/ui/page-header";
@@ -11,7 +11,7 @@ import {CalendarIcon, CreditCardIcon, PencilIcon, PlusIcon, TagIcon, TrashIcon, 
 import {format} from "date-fns";
 import Subscription from "@/models/subscription";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import { Money } from "@/components/ui/money";
+import {Money} from "@/components/ui/money";
 import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
 import {DeleteSubscriptionDialog} from "@/components/subscriptions/DeleteSubscriptionDialog";
 
@@ -56,7 +56,7 @@ const SubscriptionsPage = () => {
         data,
         isLoading,
         isError
-    } = useAllSubscriptionsQuery();
+    } = useSubscriptionsQuery();
 
     // Query all providers to resolve provider names from IDs
     const {
@@ -146,8 +146,8 @@ const SubscriptionsPage = () => {
                             <TableCell>
                                 <div className="flex items-center">
                                     {providerMap.get(subscription.providerId)?.iconUrl ? (
-                                        <img 
-                                            src={providerMap.get(subscription.providerId)?.iconUrl || ''} 
+                                        <img
+                                            src={providerMap.get(subscription.providerId)?.iconUrl || ''}
                                             alt={`${providerMap.get(subscription.providerId)?.name} logo`}
                                             className="mr-2 h-5 w-5 object-contain"
                                         />
@@ -165,7 +165,8 @@ const SubscriptionsPage = () => {
                             <TableCell>
                                 {subscription.customPrice && (
                                     <Badge variant="outline">
-                                        <Money amount={subscription.customPrice.amount} currency={subscription.customPrice.currency} />
+                                        <Money amount={subscription.customPrice.amount}
+                                               currency={subscription.customPrice.currency}/>
                                     </Badge>
                                 )}
                             </TableCell>

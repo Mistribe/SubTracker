@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
@@ -18,15 +19,22 @@ func NewFindOneQuery(id uuid.UUID) FindOneQuery {
 }
 
 type FindOneQueryHandler struct {
-	repository subscription.Repository
+	subscriptionRepository subscription.Repository
+	authService            auth.Service
 }
 
-func NewFindOneQueryHandler(repository subscription.Repository) *FindOneQueryHandler {
-	return &FindOneQueryHandler{repository: repository}
+func NewFindOneQueryHandler(
+	subscriptionRepository subscription.Repository,
+	authService auth.Service) *FindOneQueryHandler {
+	return &FindOneQueryHandler{
+		subscriptionRepository: subscriptionRepository,
+		authService:            authService,
+	}
 }
 
 func (h FindOneQueryHandler) Handle(ctx context.Context, query FindOneQuery) result.Result[subscription.Subscription] {
-	sub, err := h.repository.GetById(ctx, query.id)
+	userId := h.authService.MustGetUserId(ctx)
+	sub, err := h.subscriptionRepository.GetByIdForUser(ctx, userId, query.id)
 	if err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}

@@ -64,34 +64,45 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 	if err != nil {
 		return result.Fail[SummaryQueryResponse](err)
 	}
-	preferredCurrency := userProfile.Currency()
+	preferredCurrency := currency.USD
+	if userProfile != nil {
+		preferredCurrency = userProfile.Currency()
+	}
+
+	currencyRates = currencyRates.WithReverse()
 
 	response := SummaryQueryResponse{
 		Currency: preferredCurrency,
 	}
-	for sub := range h.subscriptionRepository.GetAllIt(ctx) {
+	for sub := range h.subscriptionRepository.GetAllIt(ctx, userId) {
 		if query.TotalMonthly {
-			monthlyAmount := sub.GetRecurrencyAmount(subscription.MonthlyRecurrency)
-			if monthlyAmount.IsValid() {
-				response.TotalMonthly += monthlyAmount.ToCurrency(preferredCurrency, currencyRates).Value()
+			if sub.IsActive() {
+				monthlyAmount := sub.GetRecurrencyAmount(subscription.MonthlyRecurrency)
+				if monthlyAmount.IsValid() {
+					response.TotalMonthly += monthlyAmount.ToCurrency(preferredCurrency, currencyRates).Value()
+				}
 			}
 		}
 		if query.TotalYearly {
-			yearlyAmount := sub.GetRecurrencyAmount(subscription.YearlyRecurrency)
-			if yearlyAmount.IsValid() {
-				response.TotalYearly += yearlyAmount.ToCurrency(preferredCurrency, currencyRates).Value()
+			if sub.IsActive() {
+				yearlyAmount := sub.GetRecurrencyAmount(subscription.YearlyRecurrency)
+				if yearlyAmount.IsValid() {
+					response.TotalYearly += yearlyAmount.ToCurrency(preferredCurrency, currencyRates).Value()
+				}
 			}
 		}
 
 		if query.UpcomingRenewals > 0 {
-			renewalDate := sub.GetNextRenewalDate()
-			price := sub.GetPrice().ToCurrency(preferredCurrency, currencyRates)
-			if renewalDate != nil && price.IsValid() {
-				response.UpcomingRenewals = append(response.UpcomingRenewals, SummaryQueryUpcomingRenewalsResponse{
-					ProviderId: sub.ProviderId(),
-					At:         *renewalDate,
-					Total:      price.Value(),
-				})
+			if sub.IsActive() {
+				renewalDate := sub.GetNextRenewalDate()
+				price := sub.GetPrice().ToCurrency(preferredCurrency, currencyRates)
+				if renewalDate != nil && price.IsValid() {
+					response.UpcomingRenewals = append(response.UpcomingRenewals, SummaryQueryUpcomingRenewalsResponse{
+						ProviderId: sub.ProviderId(),
+						At:         *renewalDate,
+						Total:      price.Value(),
+					})
+				}
 			}
 		}
 

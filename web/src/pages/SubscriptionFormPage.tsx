@@ -5,7 +5,7 @@ import {useNavigate, useParams} from "react-router-dom";
 import {useSubscriptionsMutations} from "@/hooks/subscriptions/useSubscriptionsMutations";
 import {useAllProvidersQuery} from "@/hooks/providers/useAllProvidersQuery";
 import {useFamiliesQuery} from "@/hooks/families/useFamiliesQuery";
-import {useAllSubscriptionsQuery} from "@/hooks/subscriptions/useAllSubscriptionsQuery";
+import {useSubscriptionsQuery} from "@/hooks/subscriptions/useSubscriptionsQuery.ts";
 import {PageHeader} from "@/components/ui/page-header";
 import {Button} from "@/components/ui/button";
 import {Alert, AlertDescription} from "@/components/ui/alert";
@@ -28,7 +28,7 @@ const SubscriptionFormPage = () => {
     const {createSubscriptionMutation, updateSubscriptionMutation} = useSubscriptionsMutations();
     const {data: providersData} = useAllProvidersQuery();
     const {data: familiesData} = useFamiliesQuery({limit: 100});
-    const {data: subscriptionsData} = useAllSubscriptionsQuery();
+    const {data: subscriptionsData} = useSubscriptionsQuery();
 
     const isEditMode = !!subscriptionId;
     const providers = providersData?.pages.flatMap(page => page.providers) || [];
