@@ -22,7 +22,7 @@ export const useSubscriptionsQuery = (options: AllSubscriptionsQueryOptions = {}
 
     const {apiClient} = useApiClient();
 
-    const query = useInfiniteQuery({
+    return useInfiniteQuery({
         queryKey: ['subscriptions', 'all', limit],
         enabled: !!apiClient,
         staleTime: 5 * 60 * 1000, // 5 minutes
@@ -68,7 +68,4 @@ export const useSubscriptionsQuery = (options: AllSubscriptionsQueryOptions = {}
             return undefined;
         },
     });
-
-
-    return query;
 };

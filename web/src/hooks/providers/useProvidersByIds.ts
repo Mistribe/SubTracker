@@ -15,6 +15,7 @@ export const useProvidersByIds = (ids?: (string | null | undefined)[]) => {
       queryKey: ["provider", id],
       enabled: !!apiClient && !!id,
       staleTime: 5 * 60 * 1000,
+      gcTime: 30 * 60 * 1000,
       refetchOnWindowFocus: false,
       queryFn: async () => {
         if (!apiClient) throw new Error("API client not initialized");

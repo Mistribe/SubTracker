@@ -1,13 +1,13 @@
-import {useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {useSubscriptionsQuery} from "@/hooks/subscriptions/useSubscriptionsQuery.ts";
-import {useAllProvidersQuery} from "@/hooks/providers/useAllProvidersQuery";
+import {useProvidersByIds} from "@/hooks/providers/useProvidersByIds";
 import {useSubscriptionsMutations} from "@/hooks/subscriptions/useSubscriptionsMutations";
 import {PageHeader} from "@/components/ui/page-header";
 import {Skeleton} from "@/components/ui/skeleton";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {CalendarIcon, CreditCardIcon, PencilIcon, PlusIcon, TagIcon, TrashIcon, UsersIcon} from "lucide-react";
+import {CalendarIcon, CreditCardIcon, Loader2, PencilIcon, PlusIcon, TagIcon, TrashIcon, UsersIcon} from "lucide-react";
 import {format} from "date-fns";
 import Subscription from "@/models/subscription";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
@@ -21,6 +21,8 @@ const SubscriptionsPage = () => {
     const [subscriptionToDelete, setSubscriptionToDelete] = useState<Subscription | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    const sentinelRef = useRef<HTMLDivElement | null>(null);
 
     const {deleteSubscriptionMutation} = useSubscriptionsMutations();
 
@@ -55,26 +57,26 @@ const SubscriptionsPage = () => {
     const {
         data,
         isLoading,
-        isError
+        isError,
+        hasNextPage,
+        fetchNextPage,
+        isFetchingNextPage,
     } = useSubscriptionsQuery();
-
-    // Query all providers to resolve provider names from IDs
-    const {
-        data: providersData
-    } = useAllProvidersQuery();
 
     // Flatten all subscriptions from all pages
     const allSubscriptions = data?.pages.flatMap(page => page.subscriptions) || [];
 
-    // Flatten all providers from all pages and create a mapping from ID to provider
-    const allProviders = providersData?.pages.flatMap(page => page.providers) || [];
-    const providerMap = useMemo(() => {
-        const map = new Map();
-        allProviders.forEach(provider => {
-            map.set(provider.id, provider);
+    // Build a unique list of provider IDs from subscriptions
+    const providerIds = useMemo(() => {
+        const ids = new Set<string>();
+        allSubscriptions.forEach(s => {
+            if (s.providerId) ids.add(s.providerId);
         });
-        return map;
-    }, [allProviders]);
+        return Array.from(ids);
+    }, [allSubscriptions]);
+
+    // Fetch providers individually and build a map (cached by React Query)
+    const { providerMap } = useProvidersByIds(providerIds);
 
     // Filter subscriptions based on search text
     const filteredSubscriptions = useMemo(() => {
@@ -98,6 +100,28 @@ const SubscriptionsPage = () => {
             return false;
         });
     }, [allSubscriptions, searchText]);
+
+    // Infinite scroll: observe sentinel and fetch next page when visible
+    useEffect(() => {
+        const el = sentinelRef.current;
+        if (!el) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const [entry] = entries;
+                if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+                    fetchNextPage();
+                }
+            },
+            {root: null, rootMargin: '400px', threshold: 0}
+        );
+
+        observer.observe(el);
+        return () => {
+            observer.unobserve(el);
+            observer.disconnect();
+        };
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     // Use Money component for currency display (conversion handled in UI).
 
@@ -226,6 +250,16 @@ const SubscriptionsPage = () => {
                             </TableCell>
                         </TableRow>
                     ))}
+                    {isFetchingNextPage && (
+                        <TableRow>
+                            <TableCell colSpan={9} className="py-4 text-center">
+                                <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Loading more subscriptions...
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                    )}
                 </TableBody>
             </Table>
         );
@@ -320,6 +354,10 @@ const SubscriptionsPage = () => {
                         renderEmptyState()
                     )}
                 </>
+            )}
+
+            {hasNextPage && (
+                <div ref={sentinelRef} className="h-1" aria-hidden />
             )}
 
             {/* Delete Subscription Dialog */}

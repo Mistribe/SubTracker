@@ -7,6 +7,7 @@ export default class FamilyMember {
     private readonly _createdAt: Date;
     private readonly _etag: string;
     private readonly _isYou: boolean;
+    private readonly _hasAccount: boolean;
     private readonly _type: FamilyMemberType;
 
     constructor(id: string,
@@ -14,6 +15,7 @@ export default class FamilyMember {
                 memberType: FamilyMemberType,
                 familyId: string,
                 isYou: boolean,
+                hasAccount: boolean,
                 createdAt: Date,
                 updatedAt: Date,
                 etag: string) {
@@ -25,10 +27,15 @@ export default class FamilyMember {
         this._createdAt = createdAt;
         this._updatedAt = updatedAt;
         this._etag = etag;
+        this._hasAccount = hasAccount;
     }
 
     get isYou(): boolean {
         return this._isYou;
+    }
+
+    get hasAccount(): boolean {
+        return this._hasAccount;
     }
 
     private _name: string;
@@ -83,6 +90,7 @@ export default class FamilyMember {
             fromHttpApi(model.type),
             model.familyId || '',
             model.isYou || false,
+            model.hasAccount || false,
             model.createdAt ? model.createdAt : new Date(),
             model.updatedAt ? model.updatedAt : new Date(),
             model.etag || ''

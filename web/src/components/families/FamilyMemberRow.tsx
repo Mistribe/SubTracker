@@ -3,7 +3,8 @@ import {TableCell, TableRow} from "@/components/ui/table";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Checkbox} from "@/components/ui/checkbox";
-import {CheckIcon, Loader2, XIcon} from "lucide-react";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
+import {CheckIcon, Loader2, UserCheck, UserX, XIcon} from "lucide-react";
 import FamilyMember from "@/models/familyMember.ts";
 import {useFamiliesMutations} from "@/hooks/families/useFamiliesMutations";
 import {FamilyMemberType} from "@/models/familyMemberType.ts";
@@ -99,11 +100,30 @@ export const FamilyMemberRow = ({member, familyId, isOwner}: FamilyMemberRowProp
                         placeholder="Member name"
                     />
                 ) : (
-                    member.isYou ? (
-                        <span>{member.name} <i>(You)</i></span>
-                    ) : (
-                        <span>{member.name}</span>
-                    )
+                    <div className="flex items-center gap-2">
+                        <span>
+                            {member.name} {member.isYou && <i>(You)</i>}
+                        </span>
+                        <TooltipProvider delayDuration={200}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span
+                                        className="inline-flex h-6 w-6 items-center justify-center rounded-full hover:bg-muted/50"
+                                        aria-label={member.hasAccount ? "Account linked" : "No account linked"}
+                                    >
+                                        {member.hasAccount ? (
+                                            <UserCheck className="h-3.5 w-3.5 text-emerald-600"/>
+                                        ) : (
+                                            <UserX className="h-3.5 w-3.5 text-muted-foreground"/>
+                                        )}
+                                    </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">
+                                    <p className="text-xs">{member.hasAccount ? "Account linked" : "No account linked"}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </div>
                 )}
             </TableCell>
             <TableCell>

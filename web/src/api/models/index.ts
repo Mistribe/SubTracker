@@ -825,6 +825,7 @@ export function deserializeIntoFamilyMemberModel(familyMemberModel: Partial<Fami
         "created_at": n => { familyMemberModel.createdAt = n.getDateValue(); },
         "etag": n => { familyMemberModel.etag = n.getStringValue(); },
         "family_id": n => { familyMemberModel.familyId = n.getStringValue(); },
+        "has_account": n => { familyMemberModel.hasAccount = n.getBooleanValue(); },
         "id": n => { familyMemberModel.id = n.getStringValue(); },
         "is_you": n => { familyMemberModel.isYou = n.getBooleanValue(); },
         "name": n => { familyMemberModel.name = n.getStringValue(); },
@@ -1348,6 +1349,10 @@ export interface FamilyMemberModel extends AdditionalDataHolder, Parsable {
      * @Description ID of the family this member belongs to
      */
     familyId?: string | null;
+    /**
+     * @Description Indicates whether this member has an account with the service provider
+     */
+    hasAccount?: boolean | null;
     /**
      * @Description Unique identifier for the family member
      */
@@ -1958,6 +1963,7 @@ export function serializeFamilyMemberModel(writer: SerializationWriter, familyMe
     writer.writeDateValue("created_at", familyMemberModel.createdAt);
     writer.writeStringValue("etag", familyMemberModel.etag);
     writer.writeStringValue("family_id", familyMemberModel.familyId);
+    writer.writeBooleanValue("has_account", familyMemberModel.hasAccount);
     writer.writeStringValue("id", familyMemberModel.id);
     writer.writeBooleanValue("is_you", familyMemberModel.isYou);
     writer.writeStringValue("name", familyMemberModel.name);
