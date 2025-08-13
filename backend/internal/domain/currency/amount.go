@@ -10,6 +10,31 @@ type Amount struct {
 	isValid  bool
 }
 
+func (a Amount) IsZero() bool {
+	return a.value == 0
+}
+
+func (a Amount) IsNegative() bool {
+	return a.value < 0
+}
+
+func (a Amount) IsPositive() bool {
+	return a.value > 0
+}
+
+func (a Amount) IsEqual(other Amount) bool {
+	return a.value == other.value &&
+		a.currency == other.currency
+}
+
+func (a Amount) IsGreaterThan(other Amount) bool {
+	return a.value > other.value
+}
+
+func (a Amount) IsLessThan(other Amount) bool {
+	return a.value < other.value
+}
+
 func (a Amount) Value() float64 {
 	return a.value
 }

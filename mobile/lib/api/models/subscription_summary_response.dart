@@ -1,5 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
+import './amount_model.dart';
 import './subscription_summary_top_provider_response.dart';
 import './subscription_summary_upcoming_renewal_response.dart';
 
@@ -14,9 +15,9 @@ class SubscriptionSummaryResponse implements AdditionalDataHolder, Parsable {
     ///  The top_providers property
     Iterable<SubscriptionSummaryTopProviderResponse>? topProviders;
     ///  The total_monthly property
-    double? totalMonthly;
+    AmountModel? totalMonthly;
     ///  The total_yearly property
-    double? totalYearly;
+    AmountModel? totalYearly;
     ///  The upcoming_renewals property
     Iterable<SubscriptionSummaryUpcomingRenewalResponse>? upcomingRenewals;
     /// Instantiates a new [SubscriptionSummaryResponse] and sets the default values.
@@ -33,8 +34,8 @@ class SubscriptionSummaryResponse implements AdditionalDataHolder, Parsable {
         var deserializerMap = <String, void Function(ParseNode)>{};
         deserializerMap['active'] = (node) => active = node.getIntValue();
         deserializerMap['top_providers'] = (node) => topProviders = node.getCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>(SubscriptionSummaryTopProviderResponse.createFromDiscriminatorValue);
-        deserializerMap['total_monthly'] = (node) => totalMonthly = node.getDoubleValue();
-        deserializerMap['total_yearly'] = (node) => totalYearly = node.getDoubleValue();
+        deserializerMap['total_monthly'] = (node) => totalMonthly = node.getObjectValue<AmountModel>(AmountModel.createFromDiscriminatorValue);
+        deserializerMap['total_yearly'] = (node) => totalYearly = node.getObjectValue<AmountModel>(AmountModel.createFromDiscriminatorValue);
         deserializerMap['upcoming_renewals'] = (node) => upcomingRenewals = node.getCollectionOfObjectValues<SubscriptionSummaryUpcomingRenewalResponse>(SubscriptionSummaryUpcomingRenewalResponse.createFromDiscriminatorValue);
         return deserializerMap;
     }
@@ -44,8 +45,8 @@ class SubscriptionSummaryResponse implements AdditionalDataHolder, Parsable {
     void serialize(SerializationWriter writer) {
         writer.writeIntValue('active', active);
         writer.writeCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>('top_providers', topProviders);
-        writer.writeDoubleValue('total_monthly', totalMonthly);
-        writer.writeDoubleValue('total_yearly', totalYearly);
+        writer.writeObjectValue<AmountModel>('total_monthly', totalMonthly);
+        writer.writeObjectValue<AmountModel>('total_yearly', totalYearly);
         writer.writeCollectionOfObjectValues<SubscriptionSummaryUpcomingRenewalResponse>('upcoming_renewals', upcomingRenewals);
         writer.writeAdditionalData(additionalData);
     }

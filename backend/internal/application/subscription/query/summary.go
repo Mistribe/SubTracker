@@ -25,19 +25,19 @@ type SummaryQuery struct {
 type SummaryQueryUpcomingRenewalsResponse struct {
 	ProviderId uuid.UUID
 	At         time.Time
-	Total      float64
+	Total      currency.Amount
+	Source     *currency.Amount
 }
 
 type SummaryQueryTopProvidersResponse struct {
 	ProviderId uuid.UUID
-	Total      float64
+	Total      currency.Amount
 }
 
 type SummaryQueryResponse struct {
-	Currency         currency.Unit
 	Active           uint16
-	TotalMonthly     float64
-	TotalYearly      float64
+	TotalMonthly     currency.Amount
+	TotalYearly      currency.Amount
 	UpcomingRenewals []SummaryQueryUpcomingRenewalsResponse
 	TopProviders     []SummaryQueryTopProvidersResponse
 }
@@ -79,19 +79,20 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 
 	currencyRates = currencyRates.WithReverse()
 
-	response := SummaryQueryResponse{
-		Currency: preferredCurrency,
-	}
 	topProviders := make(map[uuid.UUID]float64)
+	var upcomingRenewals []SummaryQueryUpcomingRenewalsResponse
+	totalMonthly := 0.0
+	totalYearly := 0.0
+	var active uint16
 	for sub := range h.subscriptionRepository.GetAllIt(ctx, userId) {
 		if sub.IsActive() {
-			response.Active++
+			active++
 		}
 		if query.TotalMonthly {
 			if sub.IsActive() {
 				monthlyAmount := sub.GetRecurrencyAmount(subscription.MonthlyRecurrency)
 				if monthlyAmount.IsValid() {
-					response.TotalMonthly += monthlyAmount.ToCurrency(preferredCurrency, currencyRates).Value()
+					totalMonthly += monthlyAmount.ToCurrency(preferredCurrency, currencyRates).Value()
 				}
 			}
 		}
@@ -99,7 +100,7 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 			if sub.IsActive() {
 				yearlyAmount := sub.GetRecurrencyAmount(subscription.YearlyRecurrency)
 				if yearlyAmount.IsValid() {
-					response.TotalYearly += yearlyAmount.ToCurrency(preferredCurrency, currencyRates).Value()
+					totalYearly += yearlyAmount.ToCurrency(preferredCurrency, currencyRates).Value()
 				}
 			}
 		}
@@ -107,12 +108,13 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 		if query.UpcomingRenewals > 0 {
 			if sub.IsActive() {
 				renewalDate := sub.GetNextRenewalDate()
-				price := sub.GetPrice().ToCurrency(preferredCurrency, currencyRates)
+				price := sub.GetPrice()
 				if renewalDate != nil && price.IsValid() {
-					response.UpcomingRenewals = append(response.UpcomingRenewals, SummaryQueryUpcomingRenewalsResponse{
+					upcomingRenewals = append(upcomingRenewals, SummaryQueryUpcomingRenewalsResponse{
 						ProviderId: sub.ProviderId(),
 						At:         *renewalDate,
-						Total:      price.Value(),
+						Total:      price.ToCurrency(preferredCurrency, currencyRates),
+						Source:     &price,
 					})
 				}
 			}
@@ -131,19 +133,25 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 		}
 	}
 
+	response := SummaryQueryResponse{
+		Active:           active,
+		TotalMonthly:     currency.NewAmount(totalMonthly, preferredCurrency),
+		TotalYearly:      currency.NewAmount(totalYearly, preferredCurrency),
+		UpcomingRenewals: upcomingRenewals,
+		TopProviders: slicesx.MapToArr(topProviders,
+			func(providerId uuid.UUID, total float64) SummaryQueryTopProvidersResponse {
+				return SummaryQueryTopProvidersResponse{
+					ProviderId: providerId,
+					Total:      currency.NewAmount(total, preferredCurrency),
+				}
+			}),
+	}
 	sort.Slice(response.UpcomingRenewals, func(i, j int) bool {
 		return response.UpcomingRenewals[i].At.Before(response.UpcomingRenewals[j].At)
 	})
 	response.UpcomingRenewals = slicesx.Take(response.UpcomingRenewals, int(query.UpcomingRenewals))
-	response.TopProviders = slicesx.MapToArr(topProviders,
-		func(providerId uuid.UUID, total float64) SummaryQueryTopProvidersResponse {
-			return SummaryQueryTopProvidersResponse{
-				ProviderId: providerId,
-				Total:      total,
-			}
-		})
 	sort.Slice(response.TopProviders, func(i, j int) bool {
-		return response.TopProviders[i].Total > response.TopProviders[j].Total
+		return response.TopProviders[i].Total.IsGreaterThan(response.TopProviders[j].Total)
 	})
 	response.TopProviders = slicesx.Take(response.TopProviders, int(query.TopProviders))
 	return result.Success(response)

@@ -28,21 +28,22 @@ type SubscriptionSummaryRequest struct {
 }
 
 type SubscriptionSummaryTopProviderResponse struct {
-	ProviderId string  `json:"provider_id" binding:"required"`
-	Total      float64 `json:"total"`
+	ProviderId string      `json:"provider_id" binding:"required"`
+	Total      AmountModel `json:"total"`
 }
 
 type SubscriptionSummaryUpcomingRenewalResponse struct {
-	ProviderId string    `json:"provider_id" binding:"required"`
-	At         time.Time `json:"at" binding:"required" format:"date-time"`
-	Total      float64   `json:"total"`
+	ProviderId string       `json:"provider_id" binding:"required"`
+	At         time.Time    `json:"at" binding:"required" format:"date-time"`
+	Total      AmountModel  `json:"total"`
+	Source     *AmountModel `json:"source"`
 }
 
 // @Description	Response containing subscription summary information
 type SubscriptionSummaryResponse struct {
 	Active           uint16                                       `json:"active" example:"10" description:"Number of active subscriptions"`
-	TotalMonthly     float64                                      `json:"total_monthly" example:"299.99" description:"Total monthly subscription costs"`
-	TotalYearly      float64                                      `json:"total_yearly" example:"3599.88" description:"Total yearly subscription costs"`
+	TotalMonthly     AmountModel                                  `json:"total_monthly" description:"Total monthly subscription costs"`
+	TotalYearly      AmountModel                                  `json:"total_yearly"  description:"Total yearly subscription costs"`
 	TopProviders     []SubscriptionSummaryTopProviderResponse     `json:"top_providers" description:"List of top providers by cost"`
 	UpcomingRenewals []SubscriptionSummaryUpcomingRenewalResponse `json:"upcoming_renewals" description:"List of upcoming subscription renewals"`
 }
@@ -82,22 +83,28 @@ func (e SubscriptionSummaryEndpoint) Handle(c *gin.Context) {
 		withMapping[query.SummaryQueryResponse](func(res query.SummaryQueryResponse) any {
 			return SubscriptionSummaryResponse{
 				Active:       res.Active,
-				TotalMonthly: res.TotalMonthly,
-				TotalYearly:  res.TotalYearly,
+				TotalMonthly: newAmount(res.TotalMonthly),
+				TotalYearly:  newAmount(res.TotalYearly),
 				TopProviders: slicesx.Select(res.TopProviders,
 					func(topProvider query.SummaryQueryTopProvidersResponse) SubscriptionSummaryTopProviderResponse {
 						return SubscriptionSummaryTopProviderResponse{
 							ProviderId: topProvider.ProviderId.String(),
-							Total:      topProvider.Total,
+							Total:      newAmount(topProvider.Total),
 						}
 					}),
 				UpcomingRenewals: slicesx.Select(res.UpcomingRenewals,
 					func(upcomingRenewal query.SummaryQueryUpcomingRenewalsResponse) SubscriptionSummaryUpcomingRenewalResponse {
-						return SubscriptionSummaryUpcomingRenewalResponse{
+						m := SubscriptionSummaryUpcomingRenewalResponse{
 							ProviderId: upcomingRenewal.ProviderId.String(),
 							At:         upcomingRenewal.At,
-							Total:      upcomingRenewal.Total,
+							Total:      newAmount(upcomingRenewal.Total),
 						}
+						if upcomingRenewal.Source != nil {
+							s := newAmount(*upcomingRenewal.Source)
+							m.Source = &s
+						}
+
+						return m
 					}),
 			}
 		}))

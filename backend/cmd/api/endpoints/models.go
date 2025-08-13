@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
+	"github.com/oleexo/subtracker/internal/domain/currency"
 )
 
 // OwnerModel represents ownership information for resources
@@ -66,4 +67,16 @@ func newOwnerModel(source auth.Owner) OwnerModel {
 	}
 
 	return model
+}
+
+type AmountModel struct {
+	Value    float64 `json:"value" binding:"required" example:"100.00"`
+	Currency string  `json:"currency" binding:"required" example:"USD"`
+}
+
+func newAmount(amount currency.Amount) AmountModel {
+	return AmountModel{
+		Value:    amount.Value(),
+		Currency: amount.Currency().String(),
+	}
 }

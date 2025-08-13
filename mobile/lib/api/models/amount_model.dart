@@ -1,38 +1,37 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import './amount_model.dart';
 
 /// auto generated
-class SubscriptionSummaryTopProviderResponse implements AdditionalDataHolder, Parsable {
+class AmountModel implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
-    ///  The provider_id property
-    String? providerId;
-    ///  The total property
-    AmountModel? total;
-    /// Instantiates a new [SubscriptionSummaryTopProviderResponse] and sets the default values.
-    SubscriptionSummaryTopProviderResponse() :  
+    ///  The currency property
+    String? currency;
+    ///  The value property
+    double? value;
+    /// Instantiates a new [AmountModel] and sets the default values.
+    AmountModel() :  
         additionalData = {};
     /// Creates a new instance of the appropriate class based on discriminator value
     ///  [parseNode] The parse node to use to read the discriminator value and create the object
-    static SubscriptionSummaryTopProviderResponse createFromDiscriminatorValue(ParseNode parseNode) {
-        return SubscriptionSummaryTopProviderResponse();
+    static AmountModel createFromDiscriminatorValue(ParseNode parseNode) {
+        return AmountModel();
     }
     /// The deserialization information for the current model
     @override
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
-        deserializerMap['provider_id'] = (node) => providerId = node.getStringValue();
-        deserializerMap['total'] = (node) => total = node.getObjectValue<AmountModel>(AmountModel.createFromDiscriminatorValue);
+        deserializerMap['currency'] = (node) => currency = node.getStringValue();
+        deserializerMap['value'] = (node) => value = node.getDoubleValue();
         return deserializerMap;
     }
     /// Serializes information the current object
     ///  [writer] Serialization writer to use to serialize this model
     @override
     void serialize(SerializationWriter writer) {
-        writer.writeStringValue('provider_id', providerId);
-        writer.writeObjectValue<AmountModel>('total', total);
+        writer.writeStringValue('currency', currency);
+        writer.writeDoubleValue('value', value);
         writer.writeAdditionalData(additionalData);
     }
 }

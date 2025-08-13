@@ -4,6 +4,25 @@
 // @ts-ignore
 import { type AdditionalDataHolder, type ApiError, type Parsable, type ParseNode, type SerializationWriter } from '@microsoft/kiota-abstractions';
 
+export interface AmountModel extends AdditionalDataHolder, Parsable {
+    /**
+     * The currency property
+     */
+    currency?: string | null;
+    /**
+     * The value property
+     */
+    value?: number | null;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {AmountModel}
+ */
+// @ts-ignore
+export function createAmountModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoAmountModel;
+}
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
@@ -619,6 +638,18 @@ export interface CurrencyRatesModel extends AdditionalDataHolder, Parsable {
 }
 /**
  * The deserialization information for the current model
+ * @param AmountModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoAmountModel(amountModel: Partial<AmountModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "currency": n => { amountModel.currency = n.getStringValue(); },
+        "value": n => { amountModel.value = n.getNumberValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
  * @param CreateFamilyMemberModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
@@ -1100,8 +1131,8 @@ export function deserializeIntoSubscriptionSummaryResponse(subscriptionSummaryRe
     return {
         "active": n => { subscriptionSummaryResponse.active = n.getNumberValue(); },
         "top_providers": n => { subscriptionSummaryResponse.topProviders = n.getCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>(createSubscriptionSummaryTopProviderResponseFromDiscriminatorValue); },
-        "total_monthly": n => { subscriptionSummaryResponse.totalMonthly = n.getNumberValue(); },
-        "total_yearly": n => { subscriptionSummaryResponse.totalYearly = n.getNumberValue(); },
+        "total_monthly": n => { subscriptionSummaryResponse.totalMonthly = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
+        "total_yearly": n => { subscriptionSummaryResponse.totalYearly = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
         "upcoming_renewals": n => { subscriptionSummaryResponse.upcomingRenewals = n.getCollectionOfObjectValues<SubscriptionSummaryUpcomingRenewalResponse>(createSubscriptionSummaryUpcomingRenewalResponseFromDiscriminatorValue); },
     }
 }
@@ -1114,7 +1145,7 @@ export function deserializeIntoSubscriptionSummaryResponse(subscriptionSummaryRe
 export function deserializeIntoSubscriptionSummaryTopProviderResponse(subscriptionSummaryTopProviderResponse: Partial<SubscriptionSummaryTopProviderResponse> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "provider_id": n => { subscriptionSummaryTopProviderResponse.providerId = n.getStringValue(); },
-        "total": n => { subscriptionSummaryTopProviderResponse.total = n.getNumberValue(); },
+        "total": n => { subscriptionSummaryTopProviderResponse.total = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
     }
 }
 /**
@@ -1127,7 +1158,8 @@ export function deserializeIntoSubscriptionSummaryUpcomingRenewalResponse(subscr
     return {
         "at": n => { subscriptionSummaryUpcomingRenewalResponse.at = n.getDateValue(); },
         "provider_id": n => { subscriptionSummaryUpcomingRenewalResponse.providerId = n.getStringValue(); },
-        "total": n => { subscriptionSummaryUpcomingRenewalResponse.total = n.getNumberValue(); },
+        "source": n => { subscriptionSummaryUpcomingRenewalResponse.source = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
+        "total": n => { subscriptionSummaryUpcomingRenewalResponse.total = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
     }
 }
 /**
@@ -1726,6 +1758,19 @@ export interface ProviderModel extends AdditionalDataHolder, Parsable {
 }
 /**
  * Serializes information the current object
+ * @param AmountModel The instance to serialize from.
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeAmountModel(writer: SerializationWriter, amountModel: Partial<AmountModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!amountModel || isSerializingDerivedType) { return; }
+    writer.writeStringValue("currency", amountModel.currency);
+    writer.writeNumberValue("value", amountModel.value);
+    writer.writeAdditionalData(amountModel.additionalData);
+}
+/**
+ * Serializes information the current object
  * @param CreateFamilyMemberModel The instance to serialize from.
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
@@ -2238,8 +2283,8 @@ export function serializeSubscriptionSummaryResponse(writer: SerializationWriter
     if (!subscriptionSummaryResponse || isSerializingDerivedType) { return; }
     writer.writeNumberValue("active", subscriptionSummaryResponse.active);
     writer.writeCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>("top_providers", subscriptionSummaryResponse.topProviders, serializeSubscriptionSummaryTopProviderResponse);
-    writer.writeNumberValue("total_monthly", subscriptionSummaryResponse.totalMonthly);
-    writer.writeNumberValue("total_yearly", subscriptionSummaryResponse.totalYearly);
+    writer.writeObjectValue<AmountModel>("total_monthly", subscriptionSummaryResponse.totalMonthly, serializeAmountModel);
+    writer.writeObjectValue<AmountModel>("total_yearly", subscriptionSummaryResponse.totalYearly, serializeAmountModel);
     writer.writeCollectionOfObjectValues<SubscriptionSummaryUpcomingRenewalResponse>("upcoming_renewals", subscriptionSummaryResponse.upcomingRenewals, serializeSubscriptionSummaryUpcomingRenewalResponse);
     writer.writeAdditionalData(subscriptionSummaryResponse.additionalData);
 }
@@ -2253,7 +2298,7 @@ export function serializeSubscriptionSummaryResponse(writer: SerializationWriter
 export function serializeSubscriptionSummaryTopProviderResponse(writer: SerializationWriter, subscriptionSummaryTopProviderResponse: Partial<SubscriptionSummaryTopProviderResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!subscriptionSummaryTopProviderResponse || isSerializingDerivedType) { return; }
     writer.writeStringValue("provider_id", subscriptionSummaryTopProviderResponse.providerId);
-    writer.writeNumberValue("total", subscriptionSummaryTopProviderResponse.total);
+    writer.writeObjectValue<AmountModel>("total", subscriptionSummaryTopProviderResponse.total, serializeAmountModel);
     writer.writeAdditionalData(subscriptionSummaryTopProviderResponse.additionalData);
 }
 /**
@@ -2267,7 +2312,8 @@ export function serializeSubscriptionSummaryUpcomingRenewalResponse(writer: Seri
     if (!subscriptionSummaryUpcomingRenewalResponse || isSerializingDerivedType) { return; }
     writer.writeDateValue("at", subscriptionSummaryUpcomingRenewalResponse.at);
     writer.writeStringValue("provider_id", subscriptionSummaryUpcomingRenewalResponse.providerId);
-    writer.writeNumberValue("total", subscriptionSummaryUpcomingRenewalResponse.total);
+    writer.writeObjectValue<AmountModel>("source", subscriptionSummaryUpcomingRenewalResponse.source, serializeAmountModel);
+    writer.writeObjectValue<AmountModel>("total", subscriptionSummaryUpcomingRenewalResponse.total, serializeAmountModel);
     writer.writeAdditionalData(subscriptionSummaryUpcomingRenewalResponse.additionalData);
 }
 /**
@@ -2559,11 +2605,11 @@ export interface SubscriptionSummaryResponse extends AdditionalDataHolder, Parsa
     /**
      * The total_monthly property
      */
-    totalMonthly?: number | null;
+    totalMonthly?: AmountModel | null;
     /**
      * The total_yearly property
      */
-    totalYearly?: number | null;
+    totalYearly?: AmountModel | null;
     /**
      * The upcoming_renewals property
      */
@@ -2577,7 +2623,7 @@ export interface SubscriptionSummaryTopProviderResponse extends AdditionalDataHo
     /**
      * The total property
      */
-    total?: number | null;
+    total?: AmountModel | null;
 }
 export interface SubscriptionSummaryUpcomingRenewalResponse extends AdditionalDataHolder, Parsable {
     /**
@@ -2589,9 +2635,13 @@ export interface SubscriptionSummaryUpcomingRenewalResponse extends AdditionalDa
      */
     providerId?: string | null;
     /**
+     * The source property
+     */
+    source?: AmountModel | null;
+    /**
      * The total property
      */
-    total?: number | null;
+    total?: AmountModel | null;
 }
 export interface UpdateFamilyMemberModel extends AdditionalDataHolder, Parsable {
     /**

@@ -1,5 +1,17 @@
 components:
   schemas:
+    endpoints.AmountModel:
+      properties:
+        currency:
+          example: USD
+          type: string
+        value:
+          example: 100
+          type: number
+      required:
+      - currency
+      - value
+      type: object
     endpoints.CreateSubscriptionModel:
       properties:
         created_at:
@@ -623,11 +635,9 @@ components:
           type: array
           uniqueItems: false
         total_monthly:
-          example: 299.99
-          type: number
+          $ref: '#/components/schemas/endpoints.AmountModel'
         total_yearly:
-          example: 3599.88
-          type: number
+          $ref: '#/components/schemas/endpoints.AmountModel'
         upcoming_renewals:
           items:
             $ref: '#/components/schemas/endpoints.SubscriptionSummaryUpcomingRenewalResponse'
@@ -639,7 +649,7 @@ components:
         provider_id:
           type: string
         total:
-          type: number
+          $ref: '#/components/schemas/endpoints.AmountModel'
       required:
       - provider_id
       type: object
@@ -650,8 +660,10 @@ components:
           type: string
         provider_id:
           type: string
+        source:
+          $ref: '#/components/schemas/endpoints.AmountModel'
         total:
-          type: number
+          $ref: '#/components/schemas/endpoints.AmountModel'
       required:
       - at
       - provider_id

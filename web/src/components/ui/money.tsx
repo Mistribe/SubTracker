@@ -1,101 +1,75 @@
-import React, { useMemo } from "react";
-import { usePreferredCurrency } from "@/hooks/currencies/usePreferredCurrency";
-import { useCurrencyRates } from "@/hooks/currencies/useCurrencyRates";
+import React, {useMemo} from "react";
+import type {Amount} from "@/models/amount.ts";
 
 export interface MoneyProps {
-  amount: number;
-  currency: string; // source currency (e.g., "USD")
-  className?: string;
-  /**
-   * Optional override for preferred currency (primarily for testing or special cases).
-   */
-  preferredCurrencyOverride?: string;
-  /**
-   * Minimum fraction digits when formatting. Defaults to 2.
-   */
-  minimumFractionDigits?: number;
-  /**
-   * Maximum fraction digits when formatting. Defaults to 2.
-   */
-  maximumFractionDigits?: number;
+    // Supports new API: pass an Amount instance, and optional source Amount.
+    // Backward compatibility: accepts a number with a separate currency prop.
+    amount: Amount | undefined | null;
+    source?: Amount;
+    className?: string;
+    /**
+     * Minimum fraction digits when formatting. Defaults to 2.
+     */
+    minimumFractionDigits?: number;
+    /**
+     * Maximum fraction digits when formatting. Defaults to 2.
+     */
+    maximumFractionDigits?: number;
 }
 
-function format(amount: number, currency: string, min = 2, max = 2) {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency,
-      minimumFractionDigits: min,
-      maximumFractionDigits: max,
-    }).format(amount);
-  } catch {
-    // Fallback if currency code is invalid for the current runtime
-    return `${amount.toFixed(Math.max(min, Math.min(max, 2)))} ${currency}`;
-  }
-}
-
-function convertAmount(amount: number, from: string, to: string, rates: Record<string, number>): number | null {
-  if (from === to) return amount;
-  const fromRate = rates[from];
-  const toRate = rates[to];
-  if (typeof fromRate !== "number" || typeof toRate !== "number") return null;
-  // Convert via base: amount_in_base = amount / fromRate; amount_in_to = amount_in_base * toRate
-  const amountInBase = amount / fromRate;
-  return amountInBase * toRate;
+function format(amount: number | undefined, currency: string | undefined, min = 2, max = 2) {
+    if (amount === undefined || currency === undefined) {
+        return "Unknown value";
+    }
+    try {
+        return new Intl.NumberFormat(undefined, {
+            style: "currency",
+            currency,
+            minimumFractionDigits: min,
+            maximumFractionDigits: max,
+        }).format(amount);
+    } catch {
+        // Fallback if currency code is invalid for the current runtime
+        return `${amount.toFixed(Math.max(min, Math.min(max, 2)))} ${currency}`;
+    }
 }
 
 export const Money: React.FC<MoneyProps> = ({
-  amount,
-  currency,
-  className,
-  preferredCurrencyOverride,
-  minimumFractionDigits = 2,
-  maximumFractionDigits = 2,
-}) => {
-  const { preferredCurrency } = usePreferredCurrency();
-  const { rates } = useCurrencyRates();
+                                                amount,
+                                                source,
+                                                className,
+                                                minimumFractionDigits = 2,
+                                                maximumFractionDigits = 2,
+                                            }) => {
+    const {displayMain, displayOriginal} = useMemo(() => {
+        const main = format(
+            amount?.value,
+            amount?.currency,
+            minimumFractionDigits,
+            maximumFractionDigits,
+        );
 
-  const targetCurrency = preferredCurrencyOverride ?? preferredCurrency;
+        const showSource = !!source && source.currency !== amount?.currency;
+        const original = showSource
+            ? format(
+                source!.value,
+                source!.currency,
+                minimumFractionDigits,
+                maximumFractionDigits,
+            )
+            : null;
 
-  const { displayMain, displayOriginal } = useMemo(() => {
-    if (!currency || !targetCurrency) {
-      return {
-        displayMain: format(amount, currency || targetCurrency || "USD", minimumFractionDigits, maximumFractionDigits),
-        displayOriginal: null as string | null,
-      };
-    }
+        return {displayMain: main, displayOriginal: original};
+    }, [amount, source, minimumFractionDigits, maximumFractionDigits]);
 
-    if (currency === targetCurrency) {
-      return {
-        displayMain: format(amount, targetCurrency, minimumFractionDigits, maximumFractionDigits),
-        displayOriginal: null as string | null,
-      };
-    }
-
-    const converted = convertAmount(amount, currency, targetCurrency, rates);
-
-    if (converted == null) {
-      // Cannot convert due to missing rates; show original only
-      return {
-        displayMain: format(amount, currency, minimumFractionDigits, maximumFractionDigits),
-        displayOriginal: null as string | null,
-      };
-    }
-
-    return {
-      displayMain: format(converted, targetCurrency, minimumFractionDigits, maximumFractionDigits),
-      displayOriginal: format(amount, currency, minimumFractionDigits, maximumFractionDigits),
-    };
-  }, [amount, currency, targetCurrency, rates, minimumFractionDigits, maximumFractionDigits]);
-
-  return (
-    <span className={className}>
-      {displayMain}
-      {displayOriginal && (
-        <span className="text-muted-foreground"> ({displayOriginal})</span>
-      )}
-    </span>
-  );
+    return (
+        <span className={className}>
+            {displayMain}
+            {displayOriginal && (
+                <span className="text-muted-foreground"> ({displayOriginal})</span>
+            )}
+        </span>
+    );
 };
 
 export default Money;

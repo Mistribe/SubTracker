@@ -1,7 +1,8 @@
 import {useQuery} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
 import type {SummaryRequestBuilderGetQueryParameters} from "@/api/summary";
-import type {SubscriptionSummaryResponse} from "@/api/models";
+import type Summary from "@/models/summary.ts";
+import {type Amount, zeroAmount} from "@/models/amount.ts";
 
 export interface UseSubscriptionSummaryQueryOptions {
     /** Number of top providers to return */
@@ -31,7 +32,7 @@ export function useSubscriptionSummaryQuery(options: UseSubscriptionSummaryQuery
 
     const {apiClient} = useApiClient();
 
-    const query = useQuery<SubscriptionSummaryResponse | undefined>({
+    const query = useQuery<Summary | undefined>({
         queryKey: [
             "subscriptions",
             "summary",
@@ -52,7 +53,15 @@ export function useSubscriptionSummaryQuery(options: UseSubscriptionSummaryQuery
                 totalYearly,
                 upcomingRenewals,
             };
-            return await apiClient.subscriptions.summary.get({queryParameters});
+            const response = await apiClient.subscriptions.summary.get({queryParameters});
+
+            return {
+                activeSubscriptions: response?.active ?? 0,
+                totalMonthly: response?.totalMonthly as Amount ?? zeroAmount,
+                totalYearly: response?.totalYearly as Amount ?? zeroAmount,
+                topProviders: response?.topProviders ?? [],
+                upcomingRenewals: response?.upcomingRenewals ?? [],
+            } as Summary;
         },
     });
 
@@ -61,9 +70,9 @@ export function useSubscriptionSummaryQuery(options: UseSubscriptionSummaryQuery
         data: query.data,
 
         // convenience accessors (with safe fallbacks)
-        activeSubscriptions: query.data?.active ?? 0,
-        totalMonthly: query.data?.totalMonthly ?? 0,
-        totalYearly: query.data?.totalYearly ?? 0,
+        activeSubscriptions: query.data?.activeSubscriptions ?? 0,
+        totalMonthly: query.data?.totalMonthly ?? zeroAmount,
+        totalYearly: query.data?.totalYearly ?? zeroAmount,
         topProviders: query.data?.topProviders ?? [],
         upcomingRenewals: query.data?.upcomingRenewals ?? [],
 

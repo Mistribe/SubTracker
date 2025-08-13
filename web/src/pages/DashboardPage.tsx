@@ -6,9 +6,10 @@ import UpcomingRenewals from "@/components/dashboard/UpcomingRenewals";
 import TopProviders from "@/components/dashboard/TopProviders";
 import PriceEvolutionGraph from "@/components/dashboard/PriceEvolutionGraph";
 import {PageHeader} from "@/components/ui/page-header";
-import {usePreferredCurrency} from "@/hooks/currencies/usePreferredCurrency";
 import {useSubscriptionSummaryQuery} from "@/hooks/subscriptions/useSubscriptionSummaryQuery";
 import type Subscription from "@/models/subscription.ts";
+import type {ProviderSpending} from "@/models/providerSpending.ts";
+import {zeroAmount} from "@/models/amount.ts";
 
 const DashboardPage = () => {
     const {data: subscriptionsData, isLoading: isLoadingSubscriptions} = useSubscriptionsQuery();
@@ -17,8 +18,6 @@ const DashboardPage = () => {
             subscriptionsData?.pages.flatMap(page => page.subscriptions) || [],
         [subscriptionsData]);
 
-
-    const {preferredCurrency} = usePreferredCurrency();
     const {
         activeSubscriptions: summaryActiveSubscriptions,
         upcomingRenewals: summaryUpcomingRenewals,
@@ -44,19 +43,17 @@ const DashboardPage = () => {
     const totalMonthly = summaryMonthly;
     const totalYearly = summaryYearly;
     const activeSubscriptionsCount = summaryActiveSubscriptions;
-    const totalsCurrency = preferredCurrency;
 
     const topProvidersData = useMemo(() => {
         if (summaryTopProviders && summaryTopProviders.length > 0) {
             return summaryTopProviders.map(tp => ({
                 id: tp.providerId ?? "",
-                name: providerMap.get(tp.providerId ?? "")?.name || (tp.providerId ?? ""),
-                amount: tp.total ?? 0,
-                currency: preferredCurrency,
-            }));
+                providerName: providerMap.get(tp.providerId ?? "")?.name || (tp.providerId ?? ""),
+                amount: tp.total ?? zeroAmount,
+            })) as ProviderSpending[];
         }
         return [];
-    }, [summaryTopProviders, providerMap, preferredCurrency]);
+    }, [summaryTopProviders, providerMap]);
 
 
     return (
@@ -71,7 +68,6 @@ const DashboardPage = () => {
                 totalYearly={totalYearly}
                 activeSubscriptionsCount={activeSubscriptionsCount}
                 isLoading={isLoadingSubscriptions || isLoadingSummary}
-                totalsCurrency={totalsCurrency}
             />
 
             {/* Side by side: Upcoming Renewals and Top Providers */}

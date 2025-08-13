@@ -1,5 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
+import './amount_model.dart';
 
 /// auto generated
 class SubscriptionSummaryUpcomingRenewalResponse implements AdditionalDataHolder, Parsable {
@@ -10,8 +11,10 @@ class SubscriptionSummaryUpcomingRenewalResponse implements AdditionalDataHolder
     DateTime? at;
     ///  The provider_id property
     String? providerId;
+    ///  The source property
+    AmountModel? source;
     ///  The total property
-    double? total;
+    AmountModel? total;
     /// Instantiates a new [SubscriptionSummaryUpcomingRenewalResponse] and sets the default values.
     SubscriptionSummaryUpcomingRenewalResponse() :  
         additionalData = {};
@@ -26,7 +29,8 @@ class SubscriptionSummaryUpcomingRenewalResponse implements AdditionalDataHolder
         var deserializerMap = <String, void Function(ParseNode)>{};
         deserializerMap['at'] = (node) => at = node.getDateTimeValue();
         deserializerMap['provider_id'] = (node) => providerId = node.getStringValue();
-        deserializerMap['total'] = (node) => total = node.getDoubleValue();
+        deserializerMap['source'] = (node) => source = node.getObjectValue<AmountModel>(AmountModel.createFromDiscriminatorValue);
+        deserializerMap['total'] = (node) => total = node.getObjectValue<AmountModel>(AmountModel.createFromDiscriminatorValue);
         return deserializerMap;
     }
     /// Serializes information the current object
@@ -35,7 +39,8 @@ class SubscriptionSummaryUpcomingRenewalResponse implements AdditionalDataHolder
     void serialize(SerializationWriter writer) {
         writer.writeDateTimeValue('at', at);
         writer.writeStringValue('provider_id', providerId);
-        writer.writeDoubleValue('total', total);
+        writer.writeObjectValue<AmountModel>('source', source);
+        writer.writeObjectValue<AmountModel>('total', total);
         writer.writeAdditionalData(additionalData);
     }
 }
