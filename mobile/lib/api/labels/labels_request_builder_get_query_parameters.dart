@@ -2,25 +2,21 @@
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 
 /// auto generated
-/// Retrieve a paginated list of labels with optional filtering by owner type
+/// Retrieve a paginated list of labels with optional filtering by owner type and search text
 class LabelsRequestBuilderGetQueryParameters implements AbstractQueryParameters {
-    ///  Family ID (UUID format)
-    String? familyId;
-    ///  Number of items (default: 10)
+    ///  Maximum number of items to return (default: 10)
     int? limit;
-    ///  Offset (default: 0)
+    ///  Number of items to skip for pagination (default: 0)
     int? offset;
-    ///  Owner types to filter by (system,personal,family). Can be provided multiple times.
-    /// @QueryParameter('owner_type')
-    List<String>? ownerType;
+    ///  Search text to filter labels by name
+    String? search;
     /// Extracts the query parameters into a map for the URI template parsing.
     @override
     Map<String, dynamic> toMap() {
         return {
-            'familyId' : familyId,
             'limit' : limit,
             'offset' : offset,
-            'owner_type' : ownerType,
+            'search' : search,
         };
     }
 }

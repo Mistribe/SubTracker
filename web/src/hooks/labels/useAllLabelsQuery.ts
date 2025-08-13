@@ -9,6 +9,7 @@ interface AllLabelsQueryOptions {
     ownerTypes?: OwnerType[];
     familyId?: string;
     limit?: number; // page size, API maximum is 10
+    search?: string;
 }
 
 /**
@@ -17,15 +18,14 @@ interface AllLabelsQueryOptions {
  */
 export const useAllLabelsQuery = (options: AllLabelsQueryOptions = {}) => {
     const {
-        ownerTypes,
-        familyId,
         limit = 10,
+        search,
     } = options;
 
     const {apiClient} = useApiClient();
 
     return useInfiniteQuery({
-        queryKey: ['labels', 'all', ownerTypes, familyId, limit],
+        queryKey: ['labels', 'all', limit, (search ?? '').trim()],
         enabled: !!apiClient,
         staleTime: 5 * 60 * 1000,
         initialPageParam: 0,
@@ -39,13 +39,10 @@ export const useAllLabelsQuery = (options: AllLabelsQueryOptions = {}) => {
                 offset: pageParam,
             };
 
-            if (ownerTypes && ownerTypes.length > 0) {
-                // Convert OwnerType enum values to strings for the API
-                queryParameters.ownerType = ownerTypes.map(type => type.toString());
-            }
-
-            if (familyId) {
-                queryParameters.familyId = familyId;
+            const trimmedSearch = (search ?? '').trim();
+            if (trimmedSearch) {
+                // Use backend-side search when a search term is provided
+                queryParameters.search = trimmedSearch;
             }
 
             try {

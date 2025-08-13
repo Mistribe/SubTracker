@@ -25,7 +25,7 @@ export interface LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBu
      */
      byId(id: string) : LabelsItemRequestBuilder;
     /**
-     * Retrieve a paginated list of labels with optional filtering by owner type
+     * Retrieve a paginated list of labels with optional filtering by owner type and search text
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {Promise<PaginatedResponseModelEndpoints_labelModel>}
      * @throws {HttpErrorResponse} error when the service returns a 400 status code
@@ -43,7 +43,7 @@ export interface LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBu
      */
      post(body: CreateLabelModel, requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<LabelModel | undefined>;
     /**
-     * Retrieve a paginated list of labels with optional filtering by owner type
+     * Retrieve a paginated list of labels with optional filtering by owner type and search text
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
      * @returns {RequestInformation}
      */
@@ -57,36 +57,26 @@ export interface LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBu
      toPostRequestInformation(body: CreateLabelModel, requestConfiguration?: RequestConfiguration<object> | undefined) : RequestInformation;
 }
 /**
- * Retrieve a paginated list of labels with optional filtering by owner type
+ * Retrieve a paginated list of labels with optional filtering by owner type and search text
  */
 export interface LabelsRequestBuilderGetQueryParameters {
     /**
-     * Family ID (UUID format)
-     */
-    familyId?: string;
-    /**
-     * Number of items (default: 10)
+     * Maximum number of items to return (default: 10)
      */
     limit?: number;
     /**
-     * Offset (default: 0)
+     * Number of items to skip for pagination (default: 0)
      */
     offset?: number;
     /**
-     * Owner types to filter by (system,personal,family). Can be provided multiple times.
+     * Search text to filter labels by name
      */
-    ownerType?: string[];
+    search?: string;
 }
 /**
  * Uri template for the request builder.
  */
-export const LabelsRequestBuilderUriTemplate = "{+baseurl}/labels{?familyId*,limit*,offset*,owner_type*}";
-/**
- * Mapper for query parameters from symbol name to serialization name represented as a constant.
- */
-const LabelsRequestBuilderGetQueryParametersMapper: Record<string, string> = {
-    "ownerType": "owner_type",
-};
+export const LabelsRequestBuilderUriTemplate = "{+baseurl}/labels{?limit*,offset*,search*}";
 /**
  * Metadata for all the navigation properties in the request builder.
  */
@@ -112,7 +102,6 @@ export const LabelsRequestBuilderRequestsMetadata: RequestsMetadata = {
         },
         adapterMethodName: "send",
         responseBodyFactory:  createPaginatedResponseModelEndpoints_labelModelFromDiscriminatorValue,
-        queryParametersMapper: LabelsRequestBuilderGetQueryParametersMapper,
     },
     post: {
         uriTemplate: LabelsRequestBuilderUriTemplate,

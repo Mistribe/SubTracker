@@ -30,12 +30,12 @@ class LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBuilder> {
     /// Instantiates a new [LabelsRequestBuilder] and sets the default values.
     ///  [pathParameters] Path parameters for the request
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    LabelsRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/labels{?familyId*,limit*,offset*,owner_type*}", pathParameters) ;
+    LabelsRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/labels{?limit*,offset*,search*}", pathParameters) ;
     /// Instantiates a new [LabelsRequestBuilder] and sets the default values.
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    LabelsRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/labels{?familyId*,limit*,offset*,owner_type*}", {RequestInformation.rawUrlKey : rawUrl}) ;
-    /// Retrieve a paginated list of labels with optional filtering by owner type
+    LabelsRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/labels{?limit*,offset*,search*}", {RequestInformation.rawUrlKey : rawUrl}) ;
+    /// Retrieve a paginated list of labels with optional filtering by owner type and search text
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<PaginatedResponseModelEndpointsLabelModel?> getAsync([void Function(RequestConfiguration<LabelsRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
@@ -57,7 +57,7 @@ class LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBuilder> {
         };
         return await requestAdapter.send<LabelModel>(requestInfo, LabelModel.createFromDiscriminatorValue, errorMapping);
     }
-    /// Retrieve a paginated list of labels with optional filtering by owner type
+    /// Retrieve a paginated list of labels with optional filtering by owner type and search text
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toGetRequestInformation([void Function(RequestConfiguration<LabelsRequestBuilderGetQueryParameters>)? requestConfiguration]) {
         var requestInfo = RequestInformation(httpMethod : HttpMethod.get, urlTemplate : urlTemplate, pathParameters :  pathParameters);

@@ -46,6 +46,7 @@ const LabelsPage = () => {
     } = useAllLabelsQuery({
         ownerTypes: [OwnerType.System, OwnerType.Personal, OwnerType.Family],
         limit: 10,
+        search: searchText,
     });
 
     // Keep requesting next pages until every label is fetched
@@ -136,10 +137,6 @@ const LabelsPage = () => {
         }
     };
 
-    // Filter labels based on search text
-    const filteredLabels = allLabels.filter(label =>
-        label.name.toLowerCase().includes(searchText.toLowerCase())
-    );
 
     // Create a map of family IDs to family objects for easy lookup
     const familyMap = new Map(families.map(family => [family.id, family]));
@@ -209,12 +206,12 @@ const LabelsPage = () => {
 
             <div className="mt-8">
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                    {filteredLabels.length === 0 ? (
+                    {allLabels.length === 0 ? (
                         <p className="text-muted-foreground col-span-full text-center py-4">
                             {searchText ? "No labels match your search" : "No labels found"}
                         </p>
                     ) : (
-                        filteredLabels.map((label) => {
+                        allLabels.map((label) => {
                             // Get family name for family labels
                             let ownerName;
                             if (label.owner.type === OwnerType.Family && label.owner.familyId) {
