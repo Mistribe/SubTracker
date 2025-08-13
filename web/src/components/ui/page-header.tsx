@@ -50,22 +50,22 @@ export const PageHeader = ({
                         <p className="text-muted-foreground mt-1">{description}</p>
                     )}
                 </div>
+                {/* Search input */}
+                {onSearchChange && (
+                    <div className="flex justify-center w-120">
+                        <Input
+                            placeholder={searchPlaceholder}
+                            value={searchText}
+                            onChange={(e) => onSearchChange(e.target.value)}
+                            className="max-w-md"
+                        />
+                    </div>
+                )}
 
                 {/* Action button */}
                 {actionButton && actionButton}
             </div>
 
-            {/* Search input */}
-            {onSearchChange && (
-                <div className="flex justify-center">
-                    <Input
-                        placeholder={searchPlaceholder}
-                        value={searchText}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        className="max-w-md"
-                    />
-                </div>
-            )}
         </div>
     );
 };
