@@ -858,6 +858,11 @@ components:
           description: '@Description ID of the family this member belongs to'
           example: 123e4567-e89b-12d3-a456-426614174000
           type: string
+        has_account:
+          description: '@Description Indicates whether this member has an account
+            with the service provider'
+          example: true
+          type: boolean
         id:
           description: '@Description Unique identifier for the family member'
           example: 123e4567-e89b-12d3-a456-426614174001
@@ -887,6 +892,7 @@ components:
       - created_at
       - etag
       - family_id
+      - has_account
       - id
       - is_you
       - name

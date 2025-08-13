@@ -105,6 +105,8 @@ type familyMemberModel struct {
 	FamilyId string `json:"family_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
 	// @Description Indicates whether this member is the current authenticated user
 	IsYou bool `json:"is_you" binding:"required" example:"false"`
+	// @Description Indicates whether this member has an account with the service provider
+	HasAccount bool `json:"has_account" binding:"required" example:"true"`
 	// @Description Timestamp when the member was created
 	CreatedAt time.Time `json:"created_at" binding:"required" format:"date-time"`
 	// @Description Timestamp when the member was last updated
@@ -126,6 +128,7 @@ func newFamilyMemberModel(currentUserId string, source family.Member) familyMemb
 
 	if source.UserId() != nil {
 		model.IsYou = *source.UserId() == currentUserId
+		model.HasAccount = true
 	}
 
 	return model
