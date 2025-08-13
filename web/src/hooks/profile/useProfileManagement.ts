@@ -124,8 +124,14 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
         },
         onSuccess: async () => {
             // Invalidate and refetch profile and preferred currency data to ensure the UI is up to date
-            await queryClient.invalidateQueries({queryKey: ['profile']});
-            await queryClient.invalidateQueries({queryKey: ['preferredCurrency']});
+            await queryClient.invalidateQueries({ queryKey: ['profile'] });
+            await queryClient.invalidateQueries({ queryKey: ['preferredCurrency'] });
+
+            // Also invalidate the global preferred currency hook used across the app
+            await queryClient.invalidateQueries({ queryKey: ['user', 'preferred', 'currency'] });
+
+            // Invalidate subscription summary so totals are recomputed with the new preferred currency
+            await queryClient.invalidateQueries({ queryKey: ['subscriptions', 'summary'] });
         }
     });
 

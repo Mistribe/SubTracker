@@ -1,31 +1,32 @@
 import {Skeleton} from "@/components/ui/skeleton";
 import {format} from "date-fns";
 import {formatRecurrency} from "./utils";
-import { Money } from "@/components/ui/money";
+import {Money} from "@/components/ui/money";
 import type {SubscriptionWithNextRenewal} from "@/models/subscriptionWithNextRenewal";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Calendar, Clock} from "lucide-react";
+import type {SubscriptionSummaryUpcomingRenewalResponse} from "@/api/models";
 
 interface Provider {
     id: string;
     name: string;
 }
 
-import type { SubscriptionSummaryUpcomingRenewalResponse } from "@/api/models";
-
 interface UpcomingRenewalsProps {
     upcomingRenewals?: SubscriptionWithNextRenewal[];
     summaryUpcomingRenewals?: SubscriptionSummaryUpcomingRenewalResponse[];
     providerMap: Map<string, Provider>;
+    currency: string;
     isLoading: boolean;
 }
 
 const UpcomingRenewals = ({
-                               upcomingRenewals = [],
-                               summaryUpcomingRenewals = [],
-                               providerMap,
-                               isLoading
-                           }: UpcomingRenewalsProps) => {
+                              upcomingRenewals = [],
+                              summaryUpcomingRenewals = [],
+                              providerMap,
+                              currency,
+                              isLoading
+                          }: UpcomingRenewalsProps) => {
     const hasSummary = summaryUpcomingRenewals && summaryUpcomingRenewals.length > 0;
     return (
         <div>
@@ -52,11 +53,13 @@ const UpcomingRenewals = ({
                                     className="p-3 border rounded-lg bg-card transition-all duration-200 hover:bg-muted/20"
                                 >
                                     <div className="flex justify-between items-start">
-                                        <div>
-                                            <h4 className="font-medium">
-                                                {providerMap.get(item.providerId ?? "")?.name || item.providerId}
-                                            </h4>
-                                        </div>
+                                        <h4 className="flex items-center font-medium">
+                                            {providerMap.get(item.providerId ?? "")?.name || item.providerId}
+                                        </h4>
+                                        <span
+                                            className="font-semibold bg-gradient-to-r from-cyan-500 to-cyan-700 bg-clip-text text-transparent">
+                                                <Money amount={item.total} currency={currency}/>
+                                            </span>
                                     </div>
                                     <div className="mt-2 text-sm flex items-center">
                                         <Clock className="h-3 w-3 mr-1 text-cyan-500"/>
@@ -88,8 +91,10 @@ const UpcomingRenewals = ({
                                             </p>
                                         </div>
                                         {item.subscription.customPrice && (
-                                            <span className="font-semibold bg-gradient-to-r from-cyan-500 to-cyan-700 bg-clip-text text-transparent">
-                                                <Money amount={item.subscription.customPrice.amount} currency={item.subscription.customPrice.currency} />
+                                            <span
+                                                className="font-semibold bg-gradient-to-r from-cyan-500 to-cyan-700 bg-clip-text text-transparent">
+                                                <Money amount={item.subscription.customPrice.amount}
+                                                       currency={item.subscription.customPrice.currency}/>
                                             </span>
                                         )}
                                     </div>

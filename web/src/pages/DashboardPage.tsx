@@ -7,10 +7,7 @@ import TopProviders from "@/components/dashboard/TopProviders";
 import PriceEvolutionGraph from "@/components/dashboard/PriceEvolutionGraph";
 import {PageHeader} from "@/components/ui/page-header";
 import {usePreferredCurrency} from "@/hooks/currencies/usePreferredCurrency";
-import {useCurrencyRates} from "@/hooks/currencies/useCurrencyRates";
-import {convertAmount} from "@/utils/currency";
 import {useSubscriptionSummaryQuery} from "@/hooks/subscriptions/useSubscriptionSummaryQuery";
-import type {ProviderSpending} from "@/models/providerSpending.ts";
 import type Subscription from "@/models/subscription.ts";
 
 const DashboardPage = () => {
@@ -22,7 +19,6 @@ const DashboardPage = () => {
 
 
     const {preferredCurrency} = usePreferredCurrency();
-    const {rates, isLoading: isLoadingRates} = useCurrencyRates();
     const {
         activeSubscriptions: summaryActiveSubscriptions,
         upcomingRenewals: summaryUpcomingRenewals,
@@ -34,56 +30,21 @@ const DashboardPage = () => {
 
     const providerIds = useMemo(() => {
         const ids = new Set<string>();
-        (summaryTopProviders ?? []).forEach(tp => { if (tp.providerId) ids.add(tp.providerId); });
-        (summaryUpcomingRenewals ?? []).forEach(u => { if (u.providerId) ids.add(u.providerId); });
+        (summaryTopProviders ?? []).forEach(tp => {
+            if (tp.providerId) ids.add(tp.providerId);
+        });
+        (summaryUpcomingRenewals ?? []).forEach(u => {
+            if (u.providerId) ids.add(u.providerId);
+        });
         return Array.from(ids);
     }, [summaryTopProviders, summaryUpcomingRenewals]);
 
-    const { providerMap, isLoading: isLoadingProvidersByIds } = useProvidersByIds(providerIds);
+    const {providerMap, isLoading: isLoadingProvidersByIds} = useProvidersByIds(providerIds);
 
     const totalMonthly = summaryMonthly;
     const totalYearly = summaryYearly;
     const activeSubscriptionsCount = summaryActiveSubscriptions;
     const totalsCurrency = preferredCurrency;
-
-
-    // Calculate spending by provider (convert to preferred currency yearly)
-    const providerSpending = useMemo(() => {
-        const spending = new Map<string, ProviderSpending>();
-
-        allSubscriptions.forEach((sub: Subscription) => {
-            const providerId = sub.providerId;
-            const providerName = providerMap.get(providerId)?.name || providerId;
-            const subscriptionAmount = convertAmount(sub.getTotalAmount(),
-                sub.getCurrency(),
-                preferredCurrency,
-                rates);
-            if (!subscriptionAmount) {
-                console.log(`Error converting amount for subscription ${sub.id}(${providerName}): ${sub.getAmount()} ${sub.getCurrency()} -> ${preferredCurrency}`);
-                return;
-            }
-
-            if (spending.has(providerId)) {
-                spending.set(providerId, {
-                    id: providerId,
-                    name: providerName,
-                    amount: spending.get(providerId)!.amount + subscriptionAmount,
-                    currency: preferredCurrency
-                });
-            } else {
-                spending.set(providerId, {
-                    id: providerId,
-                    name: providerName,
-                    amount: subscriptionAmount,
-                    currency: preferredCurrency
-                });
-            }
-        });
-
-        return Array.from(spending.values())
-            .sort((a, b) => b.amount - a.amount)
-            .slice(0, 5);
-    }, [allSubscriptions, providerMap, preferredCurrency, rates]);
 
     const topProvidersData = useMemo(() => {
         if (summaryTopProviders && summaryTopProviders.length > 0) {
@@ -94,8 +55,8 @@ const DashboardPage = () => {
                 currency: preferredCurrency,
             }));
         }
-        return providerSpending;
-    }, [summaryTopProviders, providerMap, preferredCurrency, providerSpending]);
+        return [];
+    }, [summaryTopProviders, providerMap, preferredCurrency]);
 
 
     return (
@@ -109,7 +70,7 @@ const DashboardPage = () => {
                 totalMonthly={totalMonthly}
                 totalYearly={totalYearly}
                 activeSubscriptionsCount={activeSubscriptionsCount}
-                isLoading={isLoadingSubscriptions || isLoadingRates || isLoadingSummary}
+                isLoading={isLoadingSubscriptions || isLoadingSummary}
                 totalsCurrency={totalsCurrency}
             />
 
