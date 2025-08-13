@@ -2,14 +2,16 @@ import {Skeleton} from "@/components/ui/skeleton";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Building2, DollarSign} from "lucide-react";
 import Money from "@/components/ui/money.tsx";
-import type {ProviderSpending} from "@/models/providerSpending.ts";
+import type TopProvider from "@/models/topProvider.ts";
+import type Provider from "@/models/provider.ts";
 
 interface TopProvidersProps {
-    providers: ProviderSpending[];
+    providers: TopProvider[];
+    providerMap: Map<string, Provider>;
     isLoading: boolean;
 }
 
-const TopProviders = ({providers, isLoading}: TopProvidersProps) => {
+const TopProviders = ({providers, providerMap, isLoading}: TopProvidersProps) => {
     return (
         <div>
             <Card
@@ -31,15 +33,15 @@ const TopProviders = ({providers, isLoading}: TopProvidersProps) => {
                     ) : providers.length > 0 ? (
                         <div className="space-y-3">
                             {providers.map((provider) => (
-                                <div key={provider.id}
+                                <div key={provider.providerId}
                                      className="p-3 border rounded-lg bg-card transition-all duration-200 hover:bg-muted/20">
                                     <div className="flex justify-between items-start">
                                         <div className="flex items-center">
-                                            <h4 className="font-medium">{provider.providerName}</h4>
+                                            <h4 className="font-medium">{providerMap.get(provider.providerId ?? "")?.name || provider.providerId}</h4>
                                         </div>
                                         <span
                                             className="font-semibold bg-gradient-to-r from-purple-500 to-purple-700 bg-clip-text text-transparent">
-                                            <Money amount={provider.amount}/>
+                                            <Money amount={provider.total}/>
                                         </span>
                                     </div>
                                     <p className="text-sm text-muted-foreground mt-1 flex items-center">

@@ -8,8 +8,6 @@ import PriceEvolutionGraph from "@/components/dashboard/PriceEvolutionGraph";
 import {PageHeader} from "@/components/ui/page-header";
 import {useSubscriptionSummaryQuery} from "@/hooks/subscriptions/useSubscriptionSummaryQuery";
 import type Subscription from "@/models/subscription.ts";
-import type {ProviderSpending} from "@/models/providerSpending.ts";
-import {zeroAmount} from "@/models/amount.ts";
 
 const DashboardPage = () => {
     const {data: subscriptionsData, isLoading: isLoadingSubscriptions} = useSubscriptionsQuery();
@@ -40,22 +38,6 @@ const DashboardPage = () => {
 
     const {providerMap, isLoading: isLoadingProvidersByIds} = useProvidersByIds(providerIds);
 
-    const totalMonthly = summaryMonthly;
-    const totalYearly = summaryYearly;
-    const activeSubscriptionsCount = summaryActiveSubscriptions;
-
-    const topProvidersData = useMemo(() => {
-        if (summaryTopProviders && summaryTopProviders.length > 0) {
-            return summaryTopProviders.map(tp => ({
-                id: tp.providerId ?? "",
-                providerName: providerMap.get(tp.providerId ?? "")?.name || (tp.providerId ?? ""),
-                amount: tp.total ?? zeroAmount,
-            })) as ProviderSpending[];
-        }
-        return [];
-    }, [summaryTopProviders, providerMap]);
-
-
     return (
         <div className="container mx-auto py-6">
             <PageHeader
@@ -64,9 +46,9 @@ const DashboardPage = () => {
 
             {/* Summary Cards */}
             <SummaryCards
-                totalMonthly={totalMonthly}
-                totalYearly={totalYearly}
-                activeSubscriptionsCount={activeSubscriptionsCount}
+                totalMonthly={summaryMonthly}
+                totalYearly={summaryYearly}
+                activeSubscriptionsCount={summaryActiveSubscriptions}
                 isLoading={isLoadingSubscriptions || isLoadingSummary}
             />
 
@@ -79,7 +61,8 @@ const DashboardPage = () => {
                 />
 
                 <TopProviders
-                    providers={topProvidersData}
+                    providers={summaryTopProviders}
+                    providerMap={providerMap}
                     isLoading={isLoadingSubscriptions || isLoadingProvidersByIds || isLoadingSummary}
                 />
             </div>
