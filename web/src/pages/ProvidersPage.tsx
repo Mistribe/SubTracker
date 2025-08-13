@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {useAllProvidersQuery} from "@/hooks/providers/useAllProvidersQuery";
 import {AddProviderForm} from "@/components/providers/AddProviderForm";
 import {EditProviderForm} from "@/components/providers/EditProviderForm";
@@ -23,26 +23,11 @@ const ProvidersPage = () => {
         fetchNextPage,
         hasNextPage,
         isFetchingNextPage,
-    } = useAllProvidersQuery();
+    } = useAllProvidersQuery({ search: searchText });
 
     // Flatten all providers from all pages
     const allProviders = data?.pages.flatMap(page => page.providers) || [];
 
-    // Filter providers based on search text
-    const filteredProviders = useMemo(() => {
-        if (searchText === "") return allProviders;
-
-        const searchLower = searchText.toLowerCase();
-
-        return allProviders.filter(provider => {
-            // Filter by provider name or description only (avoid eager labels fetching)
-            if (provider.name.toLowerCase().includes(searchLower) ||
-                (provider.description && provider.description.toLowerCase().includes(searchLower))) {
-                return true;
-            }
-            return false;
-        });
-    }, [allProviders, searchText]);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
@@ -80,7 +65,7 @@ const ProvidersPage = () => {
             ) : (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {filteredProviders.map((provider) => (
+                        {allProviders.map((provider) => (
                             <ProviderCard
                                 key={provider.id}
                                 provider={provider}
@@ -89,14 +74,14 @@ const ProvidersPage = () => {
                         ))}
                     </div>
 
-                    {filteredProviders.length === 0 && (
+                    {searchText.trim() && allProviders.length === 0 && (
                         <div className="text-center mt-1">
                             <p className="text-muted-foreground">No providers match your search criteria.</p>
                         </div>
                     )}
 
                     <NoProviders
-                        show={allProviders.length === 0}
+                        show={!searchText.trim() && allProviders.length === 0}
                         onAddProvider={() => setIsAddingProvider(true)}
                     />
 

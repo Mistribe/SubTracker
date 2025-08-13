@@ -8,12 +8,15 @@ class SubscriptionsRequestBuilderGetQueryParameters implements AbstractQueryPara
     int? limit;
     ///  Page number (default: 0)
     int? offset;
+    ///  Search text
+    String? search;
     /// Extracts the query parameters into a map for the URI template parsing.
     @override
     Map<String, dynamic> toMap() {
         return {
             'limit' : limit,
             'offset' : offset,
+            'search' : search,
         };
     }
 }

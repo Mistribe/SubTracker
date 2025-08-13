@@ -25,6 +25,7 @@ func NewProviderGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, cor
 //	@Description	Retrieve a paginated list of all providers with their plans and prices
 //	@Tags			providers
 //	@Produce		json
+//	@Param			search	query		string									false	"Search term"
 //	@Param			offset	query		int										false	"Offset (default: 0)"
 //	@Param			limit	query		int										false	"Limit per request (default: 10)"
 //	@Success		200		{object}	PaginatedResponseModel[ProviderModel]	"Paginated list of providers"
@@ -32,6 +33,7 @@ func NewProviderGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, cor
 //	@Failure		500		{object}	HttpErrorResponse						"Internal Server Error"
 //	@Router			/providers [get]
 func (e ProviderGetAllEndpoint) Handle(c *gin.Context) {
+	search := c.DefaultQuery("search", "")
 	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 32)
 	if err != nil {
 		limit = 10
@@ -40,7 +42,7 @@ func (e ProviderGetAllEndpoint) Handle(c *gin.Context) {
 	if err != nil {
 		offset = 1
 	}
-	q := query.NewFindAllQuery(int32(limit), int32(offset))
+	q := query.NewFindAllQuery(search, int32(limit), int32(offset))
 	r := e.handler.Handle(c, q)
 	handleResponse(c,
 		r,

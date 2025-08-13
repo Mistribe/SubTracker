@@ -84,7 +84,7 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 	totalMonthly := 0.0
 	totalYearly := 0.0
 	var active uint16
-	for sub := range h.subscriptionRepository.GetAllIt(ctx, userId) {
+	for sub := range h.subscriptionRepository.GetAllIt(ctx, userId, "") {
 		if sub.IsActive() {
 			active++
 		}

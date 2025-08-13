@@ -12,11 +12,9 @@ type QueryParameters struct {
 	entity.QueryParameters
 
 	SearchText string
-	UserId     string
 }
 
 func NewQueryParameters(
-	userId string,
 	searchText string,
 	limit, offset int32) QueryParameters {
 	return QueryParameters{
@@ -25,7 +23,6 @@ func NewQueryParameters(
 			Offset: offset,
 		},
 		SearchText: searchText,
-		UserId:     userId,
 	}
 }
 
@@ -33,6 +30,6 @@ type Repository interface {
 	entity.Repository[Label]
 
 	GetSystemLabels(ctx context.Context) ([]Label, error)
-	GetAll(ctx context.Context, parameters QueryParameters) ([]Label, int64, error)
+	GetAll(ctx context.Context, userId string, parameters QueryParameters) ([]Label, int64, error)
 	GetByIdForUser(ctx context.Context, userId string, id uuid.UUID) (Label, error)
 }

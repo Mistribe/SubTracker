@@ -8,12 +8,15 @@ class ProvidersRequestBuilderGetQueryParameters implements AbstractQueryParamete
     int? limit;
     ///  Offset (default: 0)
     int? offset;
+    ///  Search term
+    String? search;
     /// Extracts the query parameters into a map for the URI template parsing.
     @override
     Map<String, dynamic> toMap() {
         return {
             'limit' : limit,
             'offset' : offset,
+            'search' : search,
         };
     }
 }

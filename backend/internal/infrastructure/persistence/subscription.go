@@ -80,7 +80,7 @@ func (r SubscriptionRepository) GetByIdForUser(ctx context.Context, userId strin
 
 func (r SubscriptionRepository) GetAll(
 	ctx context.Context,
-	parameters entity.QueryParameters) ([]subscription.Subscription, int64, error) {
+	parameters subscription.QueryParameters) ([]subscription.Subscription, int64, error) {
 	response, count, err := r.dbContext.GetQueries(ctx).
 		GetSubscriptions(ctx, parameters.Limit, parameters.Offset)
 	if err != nil {
@@ -109,9 +109,17 @@ func (r SubscriptionRepository) GetAll(
 func (r SubscriptionRepository) GetAllForUser(
 	ctx context.Context,
 	userId string,
-	parameters entity.QueryParameters) ([]subscription.Subscription, int64, error) {
-	response, count, err := r.dbContext.GetQueries(ctx).
-		GetSubscriptionsForUser(ctx, userId, parameters.Limit, parameters.Offset)
+	parameters subscription.QueryParameters) ([]subscription.Subscription, int64, error) {
+	var response []sql.SubscriptionRow
+	var count int64
+	var err error
+	if parameters.SearchText != "" {
+		response, count, err = r.dbContext.GetQueries(ctx).
+			GetSubscriptionsForUserWithSearch(ctx, userId, parameters.SearchText, parameters.Limit, parameters.Offset)
+	} else {
+		response, count, err = r.dbContext.GetQueries(ctx).
+			GetSubscriptionsForUser(ctx, userId, parameters.Limit, parameters.Offset)
+	}
 	if err != nil {
 		return nil, 0, err
 	}
@@ -135,13 +143,18 @@ func (r SubscriptionRepository) GetAllForUser(
 	return subscriptions, count, nil
 }
 
-func (r SubscriptionRepository) GetAllIt(ctx context.Context, userId string) iter.Seq[subscription.Subscription] {
+func (r SubscriptionRepository) GetAllIt(
+	ctx context.Context,
+	userId, searchText string) iter.Seq[subscription.Subscription] {
 	return func(yield func(subscription.Subscription) bool) {
 		offset := int32(0)
 		for {
-			subs, _, err := r.GetAllForUser(ctx, userId, entity.QueryParameters{
-				Limit:  batchSize,
-				Offset: offset,
+			subs, _, err := r.GetAllForUser(ctx, userId, subscription.QueryParameters{
+				QueryParameters: entity.QueryParameters{
+					Limit:  batchSize,
+					Offset: offset,
+				},
+				SearchText: searchText,
 			})
 			if err != nil || len(subs) == 0 {
 				return

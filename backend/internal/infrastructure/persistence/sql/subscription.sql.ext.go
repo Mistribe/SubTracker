@@ -11,6 +11,67 @@ type SubscriptionRow struct {
 	ServiceUser  *SubscriptionServiceUser
 }
 
+func (q *Queries) GetSubscriptionsForUserWithSearch(
+	ctx context.Context,
+	userId, searchText string,
+	limit, offset int32) (
+	[]SubscriptionRow,
+	int64,
+	error) {
+	rows, err := q.getSubscriptionsForUserWithSearch(ctx, getSubscriptionsForUserWithSearchParams{
+		FriendlyName: &searchText,
+		UserID:       &userId,
+		Limit:        limit,
+		Offset:       offset,
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	if len(rows) == 0 {
+		return nil, 0, nil
+	}
+	totalCount := rows[0].TotalCount
+	results := make([]SubscriptionRow, len(rows))
+	for i, row := range rows {
+		var serviceUser *SubscriptionServiceUser
+		if row.SubscriptionServiceUsersFamilyMemberID != nil {
+			serviceUser = &SubscriptionServiceUser{
+				FamilyMemberID: *row.SubscriptionServiceUsersFamilyMemberID,
+				SubscriptionID: row.SubscriptionsID,
+			}
+		}
+		results[i] = SubscriptionRow{
+			Subscription: Subscription{
+				ID:                  row.SubscriptionsID,
+				OwnerType:           row.SubscriptionsOwnerType,
+				OwnerFamilyID:       row.SubscriptionsOwnerFamilyID,
+				OwnerUserID:         row.SubscriptionsOwnerUserID,
+				FriendlyName:        row.SubscriptionsFriendlyName,
+				FreeTrialStartDate:  row.SubscriptionsFreeTrialStartDate,
+				FreeTrialEndDate:    row.SubscriptionsFreeTrialEndDate,
+				ProviderID:          row.SubscriptionsProviderID,
+				PlanID:              row.SubscriptionsPlanID,
+				PriceID:             row.SubscriptionsPriceID,
+				FamilyID:            row.SubscriptionsFamilyID,
+				PayerType:           row.SubscriptionsPayerType,
+				PayerMemberID:       row.SubscriptionsPayerMemberID,
+				StartDate:           row.SubscriptionsStartDate,
+				EndDate:             row.SubscriptionsEndDate,
+				Recurrency:          row.SubscriptionsRecurrency,
+				CustomRecurrency:    row.SubscriptionsCustomRecurrency,
+				CustomPriceCurrency: row.SubscriptionsCustomPriceCurrency,
+				CustomPriceAmount:   row.SubscriptionsCustomPriceAmount,
+				CreatedAt:           row.SubscriptionsCreatedAt,
+				UpdatedAt:           row.SubscriptionsUpdatedAt,
+				Etag:                row.SubscriptionsEtag,
+			},
+			ServiceUser: serviceUser,
+		}
+	}
+
+	return results, totalCount, nil
+}
+
 func (q *Queries) GetSubscriptionsForUser(ctx context.Context, userId string, limit, offset int32) (
 	[]SubscriptionRow,
 	int64,

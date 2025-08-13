@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
-	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/internal/domain/provider"
 	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
 	"github.com/oleexo/subtracker/pkg/slicesx"
@@ -21,11 +20,39 @@ func NewProviderRepository(repository *DatabaseContext) provider.Repository {
 }
 
 func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (provider.Provider, error) {
-	_, ok := auth.GetUserIdFromContext(ctx)
-	if !ok {
+	response, err := r.dbContext.GetQueries(ctx).GetProviderById(ctx, providerId)
+	if err != nil {
+		return nil, err
+	}
+	if len(response) == 0 {
 		return nil, nil
 	}
-	response, err := r.dbContext.GetQueries(ctx).GetProviderById(ctx, providerId)
+	providers := createProviderFromSqlcRows(response,
+		func(row sql.ProviderRow) sql.Provider {
+			return row.Provider
+		},
+		func(row sql.ProviderRow) *sql.ProviderPlan {
+			return row.ProviderPlan
+		},
+		func(row sql.ProviderRow) *sql.ProviderPrice {
+			return row.ProviderPrice
+		},
+		func(row sql.ProviderRow) *uuid.UUID {
+			return row.ProviderLabel
+		},
+	)
+
+	if len(providers) == 0 {
+		return nil, nil
+	}
+
+	return providers[0], nil
+}
+
+func (r ProviderRepository) GetByIdForUser(ctx context.Context, userId string, providerId uuid.UUID) (
+	provider.Provider,
+	error) {
+	response, err := r.dbContext.GetQueries(ctx).GetProviderByIdForUser(ctx, userId, providerId)
 	if err != nil {
 		return nil, err
 	}
@@ -84,16 +111,57 @@ func (r ProviderRepository) GetSystemProviders(ctx context.Context) ([]provider.
 	return providers, count, nil
 }
 
-func (r ProviderRepository) GetAll(ctx context.Context, parameters entity.QueryParameters) (
+func (r ProviderRepository) GetAll(ctx context.Context, parameters provider.QueryParameters) (
 	[]provider.Provider,
 	int64,
 	error) {
-	_, ok := auth.GetUserIdFromContext(ctx)
-	if !ok {
+	var response []sql.ProviderRow
+	var count int64
+	var err error
+	response, count, err = r.dbContext.GetQueries(ctx).GetProviders(ctx, parameters.Limit, parameters.Offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	if len(response) == 0 {
+		return nil, 0, nil
+	}
+	providers := createProviderFromSqlcRows(response,
+		func(row sql.ProviderRow) sql.Provider {
+			return row.Provider
+		},
+		func(row sql.ProviderRow) *sql.ProviderPlan {
+			return row.ProviderPlan
+		},
+		func(row sql.ProviderRow) *sql.ProviderPrice {
+			return row.ProviderPrice
+		},
+		func(row sql.ProviderRow) *uuid.UUID {
+			return row.ProviderLabel
+		},
+	)
+
+	if len(providers) == 0 {
 		return nil, 0, nil
 	}
 
-	response, count, err := r.dbContext.GetQueries(ctx).GetProviders(ctx, parameters.Limit, parameters.Offset)
+	return providers, count, nil
+}
+
+func (r ProviderRepository) GetAllForUser(
+	ctx context.Context,
+	userId string,
+	parameters provider.QueryParameters) ([]provider.Provider, int64, error) {
+	var response []sql.ProviderRow
+	var count int64
+	var err error
+	if parameters.SearchText != "" {
+		response, count, err = r.dbContext.GetQueries(ctx).
+			GetProvidersForUserWithSearch(ctx, userId, parameters.SearchText, parameters.Limit, parameters.Offset)
+
+	} else {
+		response, count, err = r.dbContext.GetQueries(ctx).
+			GetProvidersForUser(ctx, userId, parameters.Limit, parameters.Offset)
+	}
 	if err != nil {
 		return nil, 0, err
 	}

@@ -44,8 +44,8 @@ func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[core.PaginatedResponse[label.Label]] {
 	userId := h.authService.MustGetUserId(ctx)
-	params := label.NewQueryParameters(userId, query.SearchText, query.Limit, query.Offset)
-	lbs, count, err := h.labelRepository.GetAll(ctx, params)
+	params := label.NewQueryParameters(query.SearchText, query.Limit, query.Offset)
+	lbs, count, err := h.labelRepository.GetAll(ctx, userId, params)
 	if err != nil {
 		return result.Fail[core.PaginatedResponse[label.Label]](err)
 	}

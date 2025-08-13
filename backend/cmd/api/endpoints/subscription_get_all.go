@@ -25,6 +25,7 @@ func NewSubscriptionGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery,
 //	@Description	Retrieve a paginated list of all subscriptions for the authenticated user
 //	@Tags			subscription
 //	@Produce		json
+//	@Param			search	query		string										false	"Search text"
 //	@Param			limit	query		integer										false	"Number of items per page (default: 10)"
 //	@Param			offset	query		integer										false	"Page number (default: 0)"
 //	@Success		200		{object}	PaginatedResponseModel[SubscriptionModel]	"Paginated list of subscriptions"
@@ -32,6 +33,7 @@ func NewSubscriptionGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery,
 //	@Failure		500		{object}	HttpErrorResponse							"Internal Server Error"
 //	@Router			/subscriptions [get]
 func (s SubscriptionGetAllEndpoint) Handle(c *gin.Context) {
+	searchText := c.DefaultQuery("search", "")
 	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 32)
 	if err != nil {
 		limit = 10
@@ -40,7 +42,7 @@ func (s SubscriptionGetAllEndpoint) Handle(c *gin.Context) {
 	if err != nil {
 		offset = 1
 	}
-	q := query.NewFindAllQuery(int32(limit), int32(offset))
+	q := query.NewFindAllQuery(searchText, int32(limit), int32(offset))
 	r := s.handler.Handle(c, q)
 	handleResponse(c,
 		r,

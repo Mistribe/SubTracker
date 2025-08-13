@@ -86,11 +86,15 @@ export interface SubscriptionsRequestBuilderGetQueryParameters {
      * Page number (default: 0)
      */
     offset?: number;
+    /**
+     * Search text
+     */
+    search?: string;
 }
 /**
  * Uri template for the request builder.
  */
-export const SubscriptionsRequestBuilderUriTemplate = "{+baseurl}/subscriptions{?limit*,offset*}";
+export const SubscriptionsRequestBuilderUriTemplate = "{+baseurl}/subscriptions{?limit*,offset*,search*}";
 /**
  * Metadata for all the navigation properties in the request builder.
  */

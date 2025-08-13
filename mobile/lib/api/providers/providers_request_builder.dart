@@ -25,11 +25,11 @@ class ProvidersRequestBuilder extends BaseRequestBuilder<ProvidersRequestBuilder
     /// Instantiates a new [ProvidersRequestBuilder] and sets the default values.
     ///  [pathParameters] Path parameters for the request
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    ProvidersRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/providers{?limit*,offset*}", pathParameters) ;
+    ProvidersRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/providers{?limit*,offset*,search*}", pathParameters) ;
     /// Instantiates a new [ProvidersRequestBuilder] and sets the default values.
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    ProvidersRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/providers{?limit*,offset*}", {RequestInformation.rawUrlKey : rawUrl}) ;
+    ProvidersRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/providers{?limit*,offset*,search*}", {RequestInformation.rawUrlKey : rawUrl}) ;
     /// Retrieve a paginated list of all providers with their plans and prices
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<PaginatedResponseModelEndpointsProviderModel?> getAsync([void Function(RequestConfiguration<ProvidersRequestBuilderGetQueryParameters>)? requestConfiguration]) async {

@@ -1863,6 +1863,11 @@ paths:
       description: Retrieve a paginated list of all providers with their plans and
         prices
       parameters:
+      - description: Search term
+        in: query
+        name: search
+        schema:
+          type: string
       - description: 'Offset (default: 0)'
         in: query
         name: offset
@@ -2341,6 +2346,11 @@ paths:
       description: Retrieve a paginated list of all subscriptions for the authenticated
         user
       parameters:
+      - description: Search text
+        in: query
+        name: search
+        schema:
+          type: string
       - description: 'Number of items per page (default: 10)'
         in: query
         name: limit

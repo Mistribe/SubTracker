@@ -62,11 +62,15 @@ export interface ProvidersRequestBuilderGetQueryParameters {
      * Offset (default: 0)
      */
     offset?: number;
+    /**
+     * Search term
+     */
+    search?: string;
 }
 /**
  * Uri template for the request builder.
  */
-export const ProvidersRequestBuilderUriTemplate = "{+baseurl}/providers{?limit*,offset*}";
+export const ProvidersRequestBuilderUriTemplate = "{+baseurl}/providers{?limit*,offset*,search*}";
 /**
  * Metadata for all the navigation properties in the request builder.
  */

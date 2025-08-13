@@ -4,35 +4,45 @@ import (
 	"context"
 
 	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/domain/entity"
+	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/provider"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
 
 type FindAllQuery struct {
-	Limit  int32
-	Offset int32
+	Limit      int32
+	Offset     int32
+	SearchText string
 }
 
-func NewFindAllQuery(limit, offset int32) FindAllQuery {
+func NewFindAllQuery(searchText string, limit, offset int32) FindAllQuery {
 	return FindAllQuery{
-		Limit:  limit,
-		Offset: offset,
+		Limit:      limit,
+		Offset:     offset,
+		SearchText: searchText,
 	}
 }
 
 type FindAllQueryHandler struct {
-	repository provider.Repository
+	providerRepository provider.Repository
+	authService        auth.Service
 }
 
-func NewFindAllQueryHandler(repository provider.Repository) *FindAllQueryHandler {
-	return &FindAllQueryHandler{repository: repository}
+func NewFindAllQueryHandler(
+	providerRepository provider.Repository,
+	authService auth.Service) *FindAllQueryHandler {
+	return &FindAllQueryHandler{
+		providerRepository: providerRepository,
+		authService:        authService,
+	}
 }
 
 func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[core.PaginatedResponse[provider.Provider]] {
-	providers, count, err := h.repository.GetAll(ctx, entity.NewQueryParameters(query.Limit, query.Offset))
+	userId := h.authService.MustGetUserId(ctx)
+	providers, count, err := h.providerRepository.GetAllForUser(ctx, userId,
+		provider.NewQueryParameters(query.SearchText, query.Limit, query.Offset))
 	if err != nil {
 		return result.Fail[core.PaginatedResponse[provider.Provider]](err)
 	}

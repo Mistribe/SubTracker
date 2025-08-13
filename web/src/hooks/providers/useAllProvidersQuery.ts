@@ -9,6 +9,7 @@ interface AllProvidersQueryOptions {
     ownerTypes?: OwnerType[];
     familyId?: string;
     limit?: number; // page size, API maximum is 10
+    search?: string;
 }
 
 /**
@@ -17,15 +18,16 @@ interface AllProvidersQueryOptions {
  */
 export const useAllProvidersQuery = (options: AllProvidersQueryOptions = {}) => {
     const {
-        ownerTypes,
-        familyId,
         limit = 10,
+        search,
     } = options;
 
     const {apiClient} = useApiClient();
 
+    const trimmedSearch = (search ?? '').trim();
+
     return useInfiniteQuery({
-        queryKey: ['providers', 'all', ownerTypes, familyId, limit],
+        queryKey: ['providers', 'all', limit, trimmedSearch],
         enabled: !!apiClient,
         staleTime: 5 * 60 * 1000, // 5 minutes
         refetchOnWindowFocus: true,
@@ -40,13 +42,8 @@ export const useAllProvidersQuery = (options: AllProvidersQueryOptions = {}) => 
                 offset: pageParam,
             };
 
-            if (ownerTypes && ownerTypes.length > 0) {
-                // Convert OwnerType enum values to strings for the API
-                queryParameters.ownerType = ownerTypes.map(type => type.toString());
-            }
-
-            if (familyId) {
-                queryParameters.familyId = familyId;
+            if (trimmedSearch) {
+                queryParameters.search = trimmedSearch;
             }
 
             try {

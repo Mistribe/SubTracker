@@ -480,6 +480,143 @@ func (q *Queries) getProviderById(ctx context.Context, id uuid.UUID) ([]getProvi
 	return items, nil
 }
 
+const getProviderByIdForUser = `-- name: getProviderByIdForUser :many
+SELECT p.id               AS "providers.id",
+       p.owner_type       AS "providers.owner_type",
+       p.owner_family_id  AS "providers.owner_family_id",
+       p.owner_user_id    AS "providers.owner_user_id",
+       p.name             AS "providers.name",
+       p.key              AS "providers.key",
+       p.description      AS "providers.description",
+       p.icon_url         AS "providers.icon_url",
+       p.url              AS "providers.url",
+       p.pricing_page_url AS "providers.pricing_page_url",
+       p.created_at       AS "providers.created_at",
+       p.updated_at       AS "providers.updated_at",
+       p.etag             AS "providers.etag",
+       ppl.id             AS "provider_plans.id",
+       ppl.name           AS "provider_plans.name",
+       ppl.description    AS "provider_plans.description",
+       ppl.provider_id    AS "provider_plans.provider_id",
+       ppl.created_at     AS "provider_plans.created_at",
+       ppl.updated_at     AS "provider_plans.updated_at",
+       ppl.etag           AS "provider_plans.etag",
+       ppr.id             AS "provider_prices.id",
+       ppr.start_date     AS "provider_prices.start_date",
+       ppr.end_date       AS "provider_prices.end_date",
+       ppr.currency       AS "provider_prices.currency",
+       ppr.amount         AS "provider_prices.amount",
+       ppr.plan_id        AS "provider_prices.plan_id",
+       ppr.created_at     AS "provider_prices.created_at",
+       ppr.updated_at     AS "provider_prices.updated_at",
+       ppr.etag           AS "provider_prices.etag",
+       pl.label_id        AS "provider_labels.label_id",
+       pl.provider_id     AS "provider_labels.provider_id"
+FROM public.providers p
+         LEFT JOIN public.provider_plans ppl ON ppl.provider_id = p.id
+         LEFT JOIN public.provider_prices ppr ON ppl.provider_id = p.id
+         LEFT JOIN public.provider_labels pl ON pl.provider_id = p.id
+         LEFT JOIN public.families f ON f.id = p.owner_family_id
+         LEFT JOIN public.family_members fm ON fm.family_id = f.id
+WHERE p.id = $1
+  AND (
+    p.owner_type = 'system' OR
+    (p.owner_type = 'personal' AND p.owner_user_id = $2) OR
+    (p.owner_type = 'family' AND fm.user_id = $2)
+    )
+`
+
+type getProviderByIdForUserParams struct {
+	ID          uuid.UUID
+	OwnerUserID *string
+}
+
+type getProviderByIdForUserRow struct {
+	ProvidersID              uuid.UUID
+	ProvidersOwnerType       string
+	ProvidersOwnerFamilyID   *uuid.UUID
+	ProvidersOwnerUserID     *string
+	ProvidersName            string
+	ProvidersKey             *string
+	ProvidersDescription     *string
+	ProvidersIconUrl         *string
+	ProvidersUrl             *string
+	ProvidersPricingPageUrl  *string
+	ProvidersCreatedAt       time.Time
+	ProvidersUpdatedAt       time.Time
+	ProvidersEtag            string
+	ProviderPlansID          *uuid.UUID
+	ProviderPlansName        *string
+	ProviderPlansDescription *string
+	ProviderPlansProviderID  *uuid.UUID
+	ProviderPlansCreatedAt   *time.Time
+	ProviderPlansUpdatedAt   *time.Time
+	ProviderPlansEtag        *string
+	ProviderPricesID         *uuid.UUID
+	ProviderPricesStartDate  *time.Time
+	ProviderPricesEndDate    *time.Time
+	ProviderPricesCurrency   *string
+	ProviderPricesAmount     *float64
+	ProviderPricesPlanID     *uuid.UUID
+	ProviderPricesCreatedAt  *time.Time
+	ProviderPricesUpdatedAt  *time.Time
+	ProviderPricesEtag       *string
+	ProviderLabelsLabelID    *uuid.UUID
+	ProviderLabelsProviderID *uuid.UUID
+}
+
+func (q *Queries) getProviderByIdForUser(ctx context.Context, arg getProviderByIdForUserParams) ([]getProviderByIdForUserRow, error) {
+	rows, err := q.db.Query(ctx, getProviderByIdForUser, arg.ID, arg.OwnerUserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []getProviderByIdForUserRow
+	for rows.Next() {
+		var i getProviderByIdForUserRow
+		if err := rows.Scan(
+			&i.ProvidersID,
+			&i.ProvidersOwnerType,
+			&i.ProvidersOwnerFamilyID,
+			&i.ProvidersOwnerUserID,
+			&i.ProvidersName,
+			&i.ProvidersKey,
+			&i.ProvidersDescription,
+			&i.ProvidersIconUrl,
+			&i.ProvidersUrl,
+			&i.ProvidersPricingPageUrl,
+			&i.ProvidersCreatedAt,
+			&i.ProvidersUpdatedAt,
+			&i.ProvidersEtag,
+			&i.ProviderPlansID,
+			&i.ProviderPlansName,
+			&i.ProviderPlansDescription,
+			&i.ProviderPlansProviderID,
+			&i.ProviderPlansCreatedAt,
+			&i.ProviderPlansUpdatedAt,
+			&i.ProviderPlansEtag,
+			&i.ProviderPricesID,
+			&i.ProviderPricesStartDate,
+			&i.ProviderPricesEndDate,
+			&i.ProviderPricesCurrency,
+			&i.ProviderPricesAmount,
+			&i.ProviderPricesPlanID,
+			&i.ProviderPricesCreatedAt,
+			&i.ProviderPricesUpdatedAt,
+			&i.ProviderPricesEtag,
+			&i.ProviderLabelsLabelID,
+			&i.ProviderLabelsProviderID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getProviders = `-- name: getProviders :many
 SELECT p.id               AS "providers.id",
        p.owner_type       AS "providers.owner_type",
@@ -572,6 +709,299 @@ func (q *Queries) getProviders(ctx context.Context, arg getProvidersParams) ([]g
 	var items []getProvidersRow
 	for rows.Next() {
 		var i getProvidersRow
+		if err := rows.Scan(
+			&i.ProvidersID,
+			&i.ProvidersOwnerType,
+			&i.ProvidersOwnerFamilyID,
+			&i.ProvidersOwnerUserID,
+			&i.ProvidersName,
+			&i.ProvidersKey,
+			&i.ProvidersDescription,
+			&i.ProvidersIconUrl,
+			&i.ProvidersUrl,
+			&i.ProvidersPricingPageUrl,
+			&i.ProvidersCreatedAt,
+			&i.ProvidersUpdatedAt,
+			&i.ProvidersEtag,
+			&i.ProviderPlansID,
+			&i.ProviderPlansName,
+			&i.ProviderPlansDescription,
+			&i.ProviderPlansProviderID,
+			&i.ProviderPlansCreatedAt,
+			&i.ProviderPlansUpdatedAt,
+			&i.ProviderPlansEtag,
+			&i.ProviderPricesID,
+			&i.ProviderPricesStartDate,
+			&i.ProviderPricesEndDate,
+			&i.ProviderPricesCurrency,
+			&i.ProviderPricesAmount,
+			&i.ProviderPricesPlanID,
+			&i.ProviderPricesCreatedAt,
+			&i.ProviderPricesUpdatedAt,
+			&i.ProviderPricesEtag,
+			&i.ProviderLabelsLabelID,
+			&i.ProviderLabelsProviderID,
+			&i.TotalCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getProvidersForUser = `-- name: getProvidersForUser :many
+SELECT p.id               AS "providers.id",
+       p.owner_type       AS "providers.owner_type",
+       p.owner_family_id  AS "providers.owner_family_id",
+       p.owner_user_id    AS "providers.owner_user_id",
+       p.name             AS "providers.name",
+       p.key              AS "providers.key",
+       p.description      AS "providers.description",
+       p.icon_url         AS "providers.icon_url",
+       p.url              AS "providers.url",
+       p.pricing_page_url AS "providers.pricing_page_url",
+       p.created_at       AS "providers.created_at",
+       p.updated_at       AS "providers.updated_at",
+       p.etag             AS "providers.etag",
+       ppl.id             AS "provider_plans.id",
+       ppl.name           AS "provider_plans.name",
+       ppl.description    AS "provider_plans.description",
+       ppl.provider_id    AS "provider_plans.provider_id",
+       ppl.created_at     AS "provider_plans.created_at",
+       ppl.updated_at     AS "provider_plans.updated_at",
+       ppl.etag           AS "provider_plans.etag",
+       ppr.id             AS "provider_prices.id",
+       ppr.start_date     AS "provider_prices.start_date",
+       ppr.end_date       AS "provider_prices.end_date",
+       ppr.currency       AS "provider_prices.currency",
+       ppr.amount         AS "provider_prices.amount",
+       ppr.plan_id        AS "provider_prices.plan_id",
+       ppr.created_at     AS "provider_prices.created_at",
+       ppr.updated_at     AS "provider_prices.updated_at",
+       ppr.etag           AS "provider_prices.etag",
+       pl.label_id        AS "provider_labels.label_id",
+       pl.provider_id     AS "provider_labels.provider_id",
+       p.total_count      AS "total_count"
+FROM (SELECT p.id, p.owner_type, p.owner_family_id, p.owner_user_id, p.name, p.key, p.description, p.icon_url, p.url, p.pricing_page_url, p.created_at, p.updated_at, p.etag,
+             COUNT(*) OVER () AS total_count
+      FROM public.providers p
+               LEFT JOIN public.families f ON f.id = p.owner_family_id
+               LEFT JOIN public.family_members fm ON fm.family_id = f.id
+      WHERE p.owner_type = 'system'
+         OR (p.owner_type = 'personal' AND p.owner_user_id = $1)
+         OR (p.owner_type = 'family' AND fm.user_id = $1)
+      ORDER BY p.id
+      LIMIT $2 OFFSET $3) p
+         LEFT JOIN public.provider_plans ppl ON ppl.provider_id = p.id
+         LEFT JOIN public.provider_prices ppr ON ppl.provider_id = p.id
+         LEFT JOIN public.provider_labels pl ON pl.provider_id = p.id
+`
+
+type getProvidersForUserParams struct {
+	OwnerUserID *string
+	Limit       int32
+	Offset      int32
+}
+
+type getProvidersForUserRow struct {
+	ProvidersID              uuid.UUID
+	ProvidersOwnerType       string
+	ProvidersOwnerFamilyID   *uuid.UUID
+	ProvidersOwnerUserID     *string
+	ProvidersName            string
+	ProvidersKey             *string
+	ProvidersDescription     *string
+	ProvidersIconUrl         *string
+	ProvidersUrl             *string
+	ProvidersPricingPageUrl  *string
+	ProvidersCreatedAt       time.Time
+	ProvidersUpdatedAt       time.Time
+	ProvidersEtag            string
+	ProviderPlansID          *uuid.UUID
+	ProviderPlansName        *string
+	ProviderPlansDescription *string
+	ProviderPlansProviderID  *uuid.UUID
+	ProviderPlansCreatedAt   *time.Time
+	ProviderPlansUpdatedAt   *time.Time
+	ProviderPlansEtag        *string
+	ProviderPricesID         *uuid.UUID
+	ProviderPricesStartDate  *time.Time
+	ProviderPricesEndDate    *time.Time
+	ProviderPricesCurrency   *string
+	ProviderPricesAmount     *float64
+	ProviderPricesPlanID     *uuid.UUID
+	ProviderPricesCreatedAt  *time.Time
+	ProviderPricesUpdatedAt  *time.Time
+	ProviderPricesEtag       *string
+	ProviderLabelsLabelID    *uuid.UUID
+	ProviderLabelsProviderID *uuid.UUID
+	TotalCount               int64
+}
+
+func (q *Queries) getProvidersForUser(ctx context.Context, arg getProvidersForUserParams) ([]getProvidersForUserRow, error) {
+	rows, err := q.db.Query(ctx, getProvidersForUser, arg.OwnerUserID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []getProvidersForUserRow
+	for rows.Next() {
+		var i getProvidersForUserRow
+		if err := rows.Scan(
+			&i.ProvidersID,
+			&i.ProvidersOwnerType,
+			&i.ProvidersOwnerFamilyID,
+			&i.ProvidersOwnerUserID,
+			&i.ProvidersName,
+			&i.ProvidersKey,
+			&i.ProvidersDescription,
+			&i.ProvidersIconUrl,
+			&i.ProvidersUrl,
+			&i.ProvidersPricingPageUrl,
+			&i.ProvidersCreatedAt,
+			&i.ProvidersUpdatedAt,
+			&i.ProvidersEtag,
+			&i.ProviderPlansID,
+			&i.ProviderPlansName,
+			&i.ProviderPlansDescription,
+			&i.ProviderPlansProviderID,
+			&i.ProviderPlansCreatedAt,
+			&i.ProviderPlansUpdatedAt,
+			&i.ProviderPlansEtag,
+			&i.ProviderPricesID,
+			&i.ProviderPricesStartDate,
+			&i.ProviderPricesEndDate,
+			&i.ProviderPricesCurrency,
+			&i.ProviderPricesAmount,
+			&i.ProviderPricesPlanID,
+			&i.ProviderPricesCreatedAt,
+			&i.ProviderPricesUpdatedAt,
+			&i.ProviderPricesEtag,
+			&i.ProviderLabelsLabelID,
+			&i.ProviderLabelsProviderID,
+			&i.TotalCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getProvidersForUserWithSearch = `-- name: getProvidersForUserWithSearch :many
+SELECT DISTINCT p.id               AS "providers.id",
+                p.owner_type       AS "providers.owner_type",
+                p.owner_family_id  AS "providers.owner_family_id",
+                p.owner_user_id    AS "providers.owner_user_id",
+                p.name             AS "providers.name",
+                p.key              AS "providers.key",
+                p.description      AS "providers.description",
+                p.icon_url         AS "providers.icon_url",
+                p.url              AS "providers.url",
+                p.pricing_page_url AS "providers.pricing_page_url",
+                p.created_at       AS "providers.created_at",
+                p.updated_at       AS "providers.updated_at",
+                p.etag             AS "providers.etag",
+                ppl.id             AS "provider_plans.id",
+                ppl.name           AS "provider_plans.name",
+                ppl.description    AS "provider_plans.description",
+                ppl.provider_id    AS "provider_plans.provider_id",
+                ppl.created_at     AS "provider_plans.created_at",
+                ppl.updated_at     AS "provider_plans.updated_at",
+                ppl.etag           AS "provider_plans.etag",
+                ppr.id             AS "provider_prices.id",
+                ppr.start_date     AS "provider_prices.start_date",
+                ppr.end_date       AS "provider_prices.end_date",
+                ppr.currency       AS "provider_prices.currency",
+                ppr.amount         AS "provider_prices.amount",
+                ppr.plan_id        AS "provider_prices.plan_id",
+                ppr.created_at     AS "provider_prices.created_at",
+                ppr.updated_at     AS "provider_prices.updated_at",
+                ppr.etag           AS "provider_prices.etag",
+                pl.label_id        AS "provider_labels.label_id",
+                pl.provider_id     AS "provider_labels.provider_id",
+                p.total_count      AS "total_count"
+FROM (SELECT p.id, p.owner_type, p.owner_family_id, p.owner_user_id, p.name, p.key, p.description, p.icon_url, p.url, p.pricing_page_url, p.created_at, p.updated_at, p.etag,
+             COUNT(*) OVER () AS total_count
+      FROM public.providers p
+               LEFT JOIN public.families f ON f.id = p.owner_family_id
+               LEFT JOIN public.family_members fm ON fm.family_id = f.id
+               LEFT JOIN public.provider_labels pl ON pl.provider_id = p.id
+               LEFT JOIN public.labels l ON l.id = pl.label_id
+      WHERE (p.owner_type = 'system'
+          OR (p.owner_type = 'personal' AND p.owner_user_id = $1)
+          OR (p.owner_type = 'family' AND fm.user_id = $1))
+        AND (p.name ILIKE $2 OR l.name ILIKE $2)
+      ORDER BY p.id
+      LIMIT $3 OFFSET $4) p
+         LEFT JOIN public.provider_plans ppl ON ppl.provider_id = p.id
+         LEFT JOIN public.provider_prices ppr ON ppl.provider_id = p.id
+         LEFT JOIN public.provider_labels pl ON pl.provider_id = p.id
+`
+
+type getProvidersForUserWithSearchParams struct {
+	OwnerUserID *string
+	Name        string
+	Limit       int32
+	Offset      int32
+}
+
+type getProvidersForUserWithSearchRow struct {
+	ProvidersID              uuid.UUID
+	ProvidersOwnerType       string
+	ProvidersOwnerFamilyID   *uuid.UUID
+	ProvidersOwnerUserID     *string
+	ProvidersName            string
+	ProvidersKey             *string
+	ProvidersDescription     *string
+	ProvidersIconUrl         *string
+	ProvidersUrl             *string
+	ProvidersPricingPageUrl  *string
+	ProvidersCreatedAt       time.Time
+	ProvidersUpdatedAt       time.Time
+	ProvidersEtag            string
+	ProviderPlansID          *uuid.UUID
+	ProviderPlansName        *string
+	ProviderPlansDescription *string
+	ProviderPlansProviderID  *uuid.UUID
+	ProviderPlansCreatedAt   *time.Time
+	ProviderPlansUpdatedAt   *time.Time
+	ProviderPlansEtag        *string
+	ProviderPricesID         *uuid.UUID
+	ProviderPricesStartDate  *time.Time
+	ProviderPricesEndDate    *time.Time
+	ProviderPricesCurrency   *string
+	ProviderPricesAmount     *float64
+	ProviderPricesPlanID     *uuid.UUID
+	ProviderPricesCreatedAt  *time.Time
+	ProviderPricesUpdatedAt  *time.Time
+	ProviderPricesEtag       *string
+	ProviderLabelsLabelID    *uuid.UUID
+	ProviderLabelsProviderID *uuid.UUID
+	TotalCount               int64
+}
+
+func (q *Queries) getProvidersForUserWithSearch(ctx context.Context, arg getProvidersForUserWithSearchParams) ([]getProvidersForUserWithSearchRow, error) {
+	rows, err := q.db.Query(ctx, getProvidersForUserWithSearch,
+		arg.OwnerUserID,
+		arg.Name,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []getProvidersForUserWithSearchRow
+	for rows.Next() {
+		var i getProvidersForUserWithSearchRow
 		if err := rows.Scan(
 			&i.ProvidersID,
 			&i.ProvidersOwnerType,

@@ -57,12 +57,15 @@ func (r LabelRepository) GetByIdForUser(ctx context.Context, userId string, labe
 	return lbl, nil
 }
 
-func (r LabelRepository) GetAll(ctx context.Context, parameters label.QueryParameters) ([]label.Label, int64, error) {
+func (r LabelRepository) GetAll(ctx context.Context, userId string, parameters label.QueryParameters) (
+	[]label.Label,
+	int64,
+	error) {
 	var labels []label.Label
 	var totalCount int64
 	if parameters.SearchText != "" {
 		response, err := r.dbContext.GetQueries(ctx).GetLabelsWithSearchText(ctx, sql.GetLabelsWithSearchTextParams{
-			OwnerUserID: &parameters.UserId,
+			OwnerUserID: &userId,
 			Name:        fmt.Sprintf("%%%s%%", parameters.SearchText),
 			Limit:       parameters.Limit,
 			Offset:      parameters.Offset,
@@ -79,7 +82,7 @@ func (r LabelRepository) GetAll(ctx context.Context, parameters label.QueryParam
 		})
 	} else {
 		response, err := r.dbContext.GetQueries(ctx).GetLabels(ctx, sql.GetLabelsParams{
-			OwnerUserID: &parameters.UserId,
+			OwnerUserID: &userId,
 			Limit:       parameters.Limit,
 			Offset:      parameters.Offset,
 		})

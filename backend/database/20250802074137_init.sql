@@ -1,5 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 CREATE TABLE public.families
 (
     id         uuid         NOT NULL PRIMARY KEY,
@@ -9,6 +11,9 @@ CREATE TABLE public.families
     updated_at timestamp    NOT NULL,
     etag       varchar(100) NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_families_owner
+    ON public.families (owner_id);
 
 CREATE TABLE public.family_members
 (
@@ -27,6 +32,10 @@ CREATE TABLE public.family_members
 CREATE UNIQUE INDEX family_members_user_id_family_id_uidx
     ON public.family_members (user_id, family_id);
 
+-- Matches the predicate (fm.family_id = p.owner_family_id AND fm.user_id = $1)
+CREATE INDEX IF NOT EXISTS idx_family_members_family_user
+    ON public.family_members (family_id, user_id);
+
 CREATE TABLE public.labels
 (
     id              uuid         NOT NULL PRIMARY KEY,
@@ -42,6 +51,14 @@ CREATE TABLE public.labels
     updated_at      timestamp    NOT NULL,
     etag            varchar(100) NOT NULL
 );
+
+-- For l.name ILIKE '%term%'
+CREATE INDEX IF NOT EXISTS idx_labels_name_trgm
+    ON public.labels USING gin (name gin_trgm_ops);
+
+-- FK support for labels.owner_family_id lookups and deletes
+CREATE INDEX IF NOT EXISTS idx_labels_owner_family_id
+    ON public.labels (owner_family_id);
 
 CREATE TABLE public.providers
 (
@@ -62,6 +79,20 @@ CREATE TABLE public.providers
     etag             varchar(100) NOT NULL
 );
 
+-- Personal providers branch
+CREATE INDEX IF NOT EXISTS idx_providers_personal_user
+    ON public.providers (owner_user_id)
+    WHERE owner_type = 'personal';
+
+-- Family providers branch
+CREATE INDEX IF NOT EXISTS idx_providers_owner_family_id
+    ON public.providers (owner_family_id);
+
+-- For p.name ILIKE '%term%'
+CREATE INDEX IF NOT EXISTS idx_providers_name_trgm
+    ON public.providers USING gin (name gin_trgm_ops);
+
+
 
 CREATE TABLE public.provider_labels
 (
@@ -76,6 +107,11 @@ CREATE TABLE public.provider_labels
     PRIMARY KEY (label_id, provider_id)
 );
 
+-- Final LEFT JOIN pl ON pl.provider_id = pr.id
+CREATE INDEX IF NOT EXISTS idx_provider_labels_provider
+    ON public.provider_labels (provider_id);
+
+-- Note: PRIMARY KEY (label_id, provider_id) already covers lookups by label_id.
 
 CREATE TABLE public.provider_plans
 (
@@ -90,6 +126,9 @@ CREATE TABLE public.provider_plans
     updated_at  timestamp    NOT NULL,
     etag        varchar(100) NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_provider_plans_provider
+    ON public.provider_plans (provider_id);
 
 
 CREATE TABLE public.provider_prices
@@ -108,6 +147,9 @@ CREATE TABLE public.provider_prices
     updated_at timestamp    NOT NULL,
     etag       varchar(100) NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_provider_prices_plan
+    ON public.provider_prices (plan_id);
 
 
 CREATE TABLE public.subscriptions
@@ -148,6 +190,19 @@ CREATE TABLE public.subscriptions
     etag                  varchar(100) NOT NULL
 );
 
+-- FK support and common lookups on subscriptions
+CREATE INDEX IF NOT EXISTS idx_subscriptions_provider_id
+    ON public.subscriptions (provider_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_plan_id
+    ON public.subscriptions (plan_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_price_id
+    ON public.subscriptions (price_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_family_id
+    ON public.subscriptions (family_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_owner_family_id
+    ON public.subscriptions (owner_family_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_payer_member_id
+    ON public.subscriptions (payer_member_id);
 
 CREATE TABLE public.subscription_service_users
 (
@@ -159,6 +214,9 @@ CREATE TABLE public.subscription_service_users
             REFERENCES public.subscriptions ON DELETE CASCADE,
     PRIMARY KEY (family_member_id, subscription_id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_subscription_service_users_subscription
+    ON public.subscription_service_users (subscription_id);
 
 CREATE TABLE users
 (
