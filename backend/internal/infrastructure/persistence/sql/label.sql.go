@@ -163,23 +163,16 @@ const getLabels = `-- name: GetLabels :many
 SELECT l.id, l.owner_type, l.owner_family_id, l.owner_user_id, l.name, l.key, l.color, l.created_at, l.updated_at, l.etag,
        COUNT(*) OVER () AS total_count
 FROM labels l
-WHERE (
-          -- Personal owner condition
-          ('personal' = ANY ($1::varchar[]) AND l.owner_user_id = $2)
-              OR
-              -- System owner condition
-          ('system' = ANY ($1::varchar[]))
-              OR
-              -- Family owner condition
-          ('family' = ANY ($1::varchar[]) AND l.owner_family_id = ANY ($3::uuid[]))
-          )
-LIMIT $4 OFFSET $5
+         LEFT JOIN public.families f ON f.id = l.owner_family_id
+         LEFT JOIN public.family_members fm ON fm.family_id = f.id
+WHERE l.owner_type = 'system'
+   OR (l.owner_type = 'personal' AND l.owner_user_id = $1)
+   OR (l.owner_type = 'family' AND fm.user_id = $1)
+LIMIT $2 OFFSET $3
 `
 
 type GetLabelsParams struct {
-	Column1     []string
 	OwnerUserID *string
-	Column3     []uuid.UUID
 	Limit       int32
 	Offset      int32
 }
@@ -190,13 +183,7 @@ type GetLabelsRow struct {
 }
 
 func (q *Queries) GetLabels(ctx context.Context, arg GetLabelsParams) ([]GetLabelsRow, error) {
-	rows, err := q.db.Query(ctx, getLabels,
-		arg.Column1,
-		arg.OwnerUserID,
-		arg.Column3,
-		arg.Limit,
-		arg.Offset,
-	)
+	rows, err := q.db.Query(ctx, getLabels, arg.OwnerUserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -204,6 +191,68 @@ func (q *Queries) GetLabels(ctx context.Context, arg GetLabelsParams) ([]GetLabe
 	var items []GetLabelsRow
 	for rows.Next() {
 		var i GetLabelsRow
+		if err := rows.Scan(
+			&i.Label.ID,
+			&i.Label.OwnerType,
+			&i.Label.OwnerFamilyID,
+			&i.Label.OwnerUserID,
+			&i.Label.Name,
+			&i.Label.Key,
+			&i.Label.Color,
+			&i.Label.CreatedAt,
+			&i.Label.UpdatedAt,
+			&i.Label.Etag,
+			&i.TotalCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getLabelsWithSearchText = `-- name: GetLabelsWithSearchText :many
+SELECT l.id, l.owner_type, l.owner_family_id, l.owner_user_id, l.name, l.key, l.color, l.created_at, l.updated_at, l.etag,
+       COUNT(*) OVER () AS total_count
+FROM labels l
+         LEFT JOIN public.families f ON f.id = l.owner_family_id
+         LEFT JOIN public.family_members fm ON fm.family_id = f.id
+WHERE (l.owner_type = 'system'
+    OR (l.owner_type = 'personal' AND l.owner_user_id = $1)
+    OR (l.owner_type = 'family' AND fm.user_id = $1))
+  AND l.name ILIKE $2
+LIMIT $3 OFFSET $4
+`
+
+type GetLabelsWithSearchTextParams struct {
+	OwnerUserID *string
+	Name        string
+	Limit       int32
+	Offset      int32
+}
+
+type GetLabelsWithSearchTextRow struct {
+	Label      Label
+	TotalCount int64
+}
+
+func (q *Queries) GetLabelsWithSearchText(ctx context.Context, arg GetLabelsWithSearchTextParams) ([]GetLabelsWithSearchTextRow, error) {
+	rows, err := q.db.Query(ctx, getLabelsWithSearchText,
+		arg.OwnerUserID,
+		arg.Name,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetLabelsWithSearchTextRow
+	for rows.Next() {
+		var i GetLabelsWithSearchTextRow
 		if err := rows.Scan(
 			&i.Label.ID,
 			&i.Label.OwnerType,

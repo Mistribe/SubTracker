@@ -5,31 +5,27 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/entity"
 )
 
 type QueryParameters struct {
 	entity.QueryParameters
 
-	Owners   auth.OwnerTypes
-	FamilyId *uuid.UUID
+	SearchText string
+	UserId     string
 }
 
 func NewQueryParameters(
-	limit, offset int32,
-	owners []auth.OwnerType,
-	familyId *uuid.UUID) QueryParameters {
-	if len(owners) == 0 {
-		owners = append(owners, auth.SystemOwnerType, auth.PersonalOwnerType, auth.FamilyOwnerType)
-	}
+	userId string,
+	searchText string,
+	limit, offset int32) QueryParameters {
 	return QueryParameters{
 		QueryParameters: entity.QueryParameters{
 			Limit:  limit,
 			Offset: offset,
 		},
-		Owners:   owners,
-		FamilyId: familyId,
+		SearchText: searchText,
+		UserId:     userId,
 	}
 }
 

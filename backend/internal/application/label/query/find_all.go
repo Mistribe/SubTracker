@@ -3,8 +3,6 @@ package query
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/label"
@@ -12,37 +10,42 @@ import (
 )
 
 type FindAllQuery struct {
-	Owners   []auth.OwnerType
-	Limit    int32
-	Offset   int32
-	FamilyId *uuid.UUID
+	Limit      int32
+	Offset     int32
+	SearchText string
 }
 
-func NewFindAllQuery(owners []auth.OwnerType,
+func NewFindAllQuery(
+	searchText string,
 	limit int32,
-	offset int32,
-	familyId *uuid.UUID) FindAllQuery {
+	offset int32) FindAllQuery {
 	return FindAllQuery{
-		Owners:   owners,
-		Limit:    limit,
-		Offset:   offset,
-		FamilyId: familyId,
+		SearchText: searchText,
+		Limit:      limit,
+		Offset:     offset,
 	}
 }
 
 type FindAllQueryHandler struct {
-	repository label.Repository
+	labelRepository label.Repository
+	authService     auth.Service
 }
 
-func NewFindAllQueryHandler(repository label.Repository) *FindAllQueryHandler {
-	return &FindAllQueryHandler{repository: repository}
+func NewFindAllQueryHandler(
+	labelRepository label.Repository,
+	authService auth.Service) *FindAllQueryHandler {
+	return &FindAllQueryHandler{
+		labelRepository: labelRepository,
+		authService:     authService,
+	}
 }
 
 func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[core.PaginatedResponse[label.Label]] {
-	params := label.NewQueryParameters(query.Limit, query.Offset, query.Owners, query.FamilyId)
-	lbs, count, err := h.repository.GetAll(ctx, params)
+	userId := h.authService.MustGetUserId(ctx)
+	params := label.NewQueryParameters(userId, query.SearchText, query.Limit, query.Offset)
+	lbs, count, err := h.labelRepository.GetAll(ctx, params)
 	if err != nil {
 		return result.Fail[core.PaginatedResponse[label.Label]](err)
 	}

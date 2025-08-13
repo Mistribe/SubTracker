@@ -1646,31 +1646,23 @@ paths:
   /labels:
     get:
       description: Retrieve a paginated list of labels with optional filtering by
-        owner type
+        owner type and search text
       parameters:
-      - description: Owner types to filter by (system,personal,family). Can be provided
-          multiple times.
+      - description: Search text to filter labels by name
         in: query
-        name: owner_type
+        name: search
         schema:
-          items:
-            type: string
-          type: array
-      - description: 'Number of items (default: 10)'
+          type: string
+      - description: 'Maximum number of items to return (default: 10)'
         in: query
         name: limit
         schema:
           type: integer
-      - description: 'Offset (default: 0)'
+      - description: 'Number of items to skip for pagination (default: 0)'
         in: query
         name: offset
         schema:
           type: integer
-      - description: Family ID (UUID format)
-        in: query
-        name: familyId
-        schema:
-          type: string
       responses:
         "200":
           content:

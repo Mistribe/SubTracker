@@ -4,27 +4,23 @@ import (
 	"context"
 	dsql "database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
-	"github.com/oleexo/subtracker/internal/domain/family"
 	"github.com/oleexo/subtracker/internal/domain/label"
 	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 type LabelRepository struct {
-	dbContext   *DatabaseContext
-	authService auth.Service
+	dbContext *DatabaseContext
 }
 
-func NewLabelRepository(
-	dbContext *DatabaseContext,
-	authService auth.Service) label.Repository {
+func NewLabelRepository(dbContext *DatabaseContext) label.Repository {
 	return &LabelRepository{
-		dbContext:   dbContext,
-		authService: authService,
+		dbContext: dbContext,
 	}
 }
 
@@ -62,43 +58,44 @@ func (r LabelRepository) GetByIdForUser(ctx context.Context, userId string, labe
 }
 
 func (r LabelRepository) GetAll(ctx context.Context, parameters label.QueryParameters) ([]label.Label, int64, error) {
-	userId, ok := auth.GetUserIdFromContext(ctx)
-	if !ok {
-		return nil, 0, nil
-	}
-
-	var families []uuid.UUID
-	if parameters.Owners.Contains(auth.FamilyOwnerType) {
-		if parameters.FamilyId != nil {
-			if !r.authService.IsInFamily(ctx, *parameters.FamilyId) {
-				return nil, 0, family.ErrFamilyNotFound
-			}
-			families = append(families, *parameters.FamilyId)
-		} else {
-			families = r.authService.MustGetFamilies(ctx)
+	var labels []label.Label
+	var totalCount int64
+	if parameters.SearchText != "" {
+		response, err := r.dbContext.GetQueries(ctx).GetLabelsWithSearchText(ctx, sql.GetLabelsWithSearchTextParams{
+			OwnerUserID: &parameters.UserId,
+			Name:        fmt.Sprintf("%%%s%%", parameters.SearchText),
+			Limit:       parameters.Limit,
+			Offset:      parameters.Offset,
+		})
+		if err != nil {
+			return nil, 0, err
 		}
+		if len(response) == 0 {
+			return nil, 0, nil
+		}
+		totalCount = response[0].TotalCount
+		labels = slicesx.Select(response, func(model sql.GetLabelsWithSearchTextRow) label.Label {
+			return createLabelFromSqlc(model.Label)
+		})
+	} else {
+		response, err := r.dbContext.GetQueries(ctx).GetLabels(ctx, sql.GetLabelsParams{
+			OwnerUserID: &parameters.UserId,
+			Limit:       parameters.Limit,
+			Offset:      parameters.Offset,
+		})
+		if err != nil {
+			return nil, 0, err
+		}
+		if len(response) == 0 {
+			return nil, 0, nil
+		}
+		totalCount = response[0].TotalCount
+		labels = slicesx.Select(response, func(model sql.GetLabelsRow) label.Label {
+			return createLabelFromSqlc(model.Label)
+		})
 	}
 
-	response, err := r.dbContext.GetQueries(ctx).GetLabels(ctx, sql.GetLabelsParams{
-		Column1:     parameters.Owners.Strings(),
-		OwnerUserID: &userId,
-		Column3:     families,
-		Limit:       parameters.Limit,
-		Offset:      parameters.Offset,
-	})
-	if err != nil {
-		return nil, 0, err
-	}
-
-	if len(response) == 0 {
-		return nil, 0, nil
-	}
-
-	labels := slicesx.Select(response, func(model sql.GetLabelsRow) label.Label {
-		return createLabelFromSqlc(model.Label)
-	})
-
-	return labels, response[0].TotalCount, nil
+	return labels, totalCount, nil
 }
 
 func (r LabelRepository) GetSystemLabels(ctx context.Context) ([]label.Label, error) {

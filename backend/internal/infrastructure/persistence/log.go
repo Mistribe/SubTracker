@@ -3,12 +3,14 @@ package persistence
 import (
 	"context"
 	"log/slog"
+	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/tracelog"
 )
 
-func overridePgxLogger(config *pgxpool.Config,
+func overridePgxLogger(
+	config *pgxpool.Config,
 	logger *slog.Logger) {
 	config.ConnConfig.Tracer = &tracelog.TraceLog{
 		Logger:   newpgxSlogLogger(logger),
@@ -24,7 +26,18 @@ func (p *pgxSlogLogger) Log(ctx context.Context, level tracelog.LogLevel, msg st
 	slogLevel := p.convertLogLevel(level)
 	var args []interface{}
 	for key, value := range data {
-		args = append(args, slog.Any(key, value))
+		if value == nil {
+			continue
+		}
+		if key == "sql" {
+			sql := value.(string)
+			sql = strings.Replace(sql, "\n", " ", -1)
+			sql = strings.Replace(sql, "\t", " ", -1)
+			sql = strings.TrimSpace(sql)
+			args = append(args, slog.Any("sql", sql))
+		} else {
+			args = append(args, slog.Any(key, value))
+		}
 	}
 	p.logger.Log(ctx, slogLevel, msg, args...)
 }
@@ -42,7 +55,7 @@ func (p *pgxSlogLogger) convertLogLevel(level tracelog.LogLevel) slog.Level {
 	case tracelog.LogLevelError:
 		return slog.LevelError
 	default:
-		return slog.LevelDebug
+		return slog.LevelInfo
 	}
 }
 

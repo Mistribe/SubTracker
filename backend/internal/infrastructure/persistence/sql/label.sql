@@ -19,17 +19,24 @@ WHERE l.id = $1
 SELECT sqlc.embed(l),
        COUNT(*) OVER () AS total_count
 FROM labels l
-WHERE (
-          -- Personal owner condition
-          ('personal' = ANY ($1::varchar[]) AND l.owner_user_id = $2)
-              OR
-              -- System owner condition
-          ('system' = ANY ($1::varchar[]))
-              OR
-              -- Family owner condition
-          ('family' = ANY ($1::varchar[]) AND l.owner_family_id = ANY ($3::uuid[]))
-          )
-LIMIT $4 OFFSET $5;
+         LEFT JOIN public.families f ON f.id = l.owner_family_id
+         LEFT JOIN public.family_members fm ON fm.family_id = f.id
+WHERE l.owner_type = 'system'
+   OR (l.owner_type = 'personal' AND l.owner_user_id = $1)
+   OR (l.owner_type = 'family' AND fm.user_id = $1)
+LIMIT $2 OFFSET $3;
+
+-- name: GetLabelsWithSearchText :many
+SELECT sqlc.embed(l),
+       COUNT(*) OVER () AS total_count
+FROM labels l
+         LEFT JOIN public.families f ON f.id = l.owner_family_id
+         LEFT JOIN public.family_members fm ON fm.family_id = f.id
+WHERE (l.owner_type = 'system'
+    OR (l.owner_type = 'personal' AND l.owner_user_id = $1)
+    OR (l.owner_type = 'family' AND fm.user_id = $1))
+  AND l.name ILIKE $2
+LIMIT $3 OFFSET $4;
 
 -- name: GetSystemLabels :many
 SELECT *
