@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
@@ -26,13 +26,27 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {PlanDetailsDialog} from "@/components/providers/plan-details";
-import {useAllLabelsQuery} from "@/hooks/labels/useAllLabelsQuery";
 import {argbToRgba} from "@/components/ui/utils/color-utils.ts";
+import { useLabelQuery } from "@/hooks/labels/useLabelQuery";
 
 interface ProviderCardProps {
     provider: Provider;
     onEdit: (provider: Provider) => void;
 }
+
+interface LabelPillProps { labelId: string; }
+const LabelPill = ({ labelId }: LabelPillProps) => {
+    const { data: label, isLoading } = useLabelQuery(labelId);
+    return (
+        <Badge
+            variant="outline"
+            className="text-xs py-0.5"
+            style={{ backgroundColor: label?.color ? argbToRgba(label.color) : undefined }}
+        >
+            {label ? label.name : (isLoading ? "..." : labelId)}
+        </Badge>
+    );
+};
 
 export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
     const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
@@ -41,24 +55,6 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
     const {canModifyProvider, canDeleteProvider, deleteProviderMutation} = useProvidersMutations();
     const isEditable = canModifyProvider(provider);
     const isDeletable = canDeleteProvider(provider);
-
-    // Fetch all labels to map label IDs to label names
-    const {data: labelsData} = useAllLabelsQuery();
-
-    // Create a mapping from label IDs to label names using state
-    const [labelMap, setLabelMap] = useState(new Map());
-
-    // Flatten all labels from all pages and create the mapping
-    useEffect(() => {
-        if (labelsData?.pages) {
-            const newLabelMap = new Map();
-            const allLabels = labelsData.pages.flatMap(page => page.labels);
-            allLabels.forEach(label => {
-                newLabelMap.set(label.id, label);
-            });
-            setLabelMap(newLabelMap);
-        }
-    }, [labelsData]);
 
     const handleDeleteProvider = async () => {
         try {
@@ -137,19 +133,9 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
                 {provider.description && <p className="text-sm">{provider.description}</p>}
                 {provider.labels.length > 0 && (
                     <div className="flex flex-wrap gap-1 my-1">
-                        {provider.labels.map((labelId, index) => {
-                            const label = labelMap.get(labelId);
-                            return (
-                                <Badge
-                                    key={index}
-                                    variant="outline"
-                                    className="text-xs py-0.5"
-                                    style={{backgroundColor: argbToRgba(label?.color)}}
-                                >
-                                    {label ? label.name : labelId}
-                                </Badge>
-                            );
-                        })}
+                        {provider.labels.map((labelId) => (
+                            <LabelPill key={labelId} labelId={labelId} />
+                        ))}
                     </div>
                 )}
             </CardContent>
