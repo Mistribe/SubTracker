@@ -119,19 +119,59 @@ func (q *Queries) GetLabelById(ctx context.Context, id uuid.UUID) (Label, error)
 	return i, err
 }
 
+const getLabelByIdForUser = `-- name: GetLabelByIdForUser :one
+SELECT l.id, l.owner_type, l.owner_family_id, l.owner_user_id, l.name, l.key, l.color, l.created_at, l.updated_at, l.etag
+FROM public.labels l
+         LEFT JOIN public.families f ON f.id = l.owner_family_id
+         LEFT JOIN public.family_members fm ON fm.family_id = f.id
+WHERE l.id = $1
+  AND (
+    l.owner_type = 'system' OR
+    (l.owner_type = 'personal' AND l.owner_user_id = $2) OR
+    (l.owner_type = 'family' AND fm.user_id = $2)
+    )
+`
+
+type GetLabelByIdForUserParams struct {
+	ID          uuid.UUID
+	OwnerUserID *string
+}
+
+type GetLabelByIdForUserRow struct {
+	Label Label
+}
+
+func (q *Queries) GetLabelByIdForUser(ctx context.Context, arg GetLabelByIdForUserParams) (GetLabelByIdForUserRow, error) {
+	row := q.db.QueryRow(ctx, getLabelByIdForUser, arg.ID, arg.OwnerUserID)
+	var i GetLabelByIdForUserRow
+	err := row.Scan(
+		&i.Label.ID,
+		&i.Label.OwnerType,
+		&i.Label.OwnerFamilyID,
+		&i.Label.OwnerUserID,
+		&i.Label.Name,
+		&i.Label.Key,
+		&i.Label.Color,
+		&i.Label.CreatedAt,
+		&i.Label.UpdatedAt,
+		&i.Label.Etag,
+	)
+	return i, err
+}
+
 const getLabels = `-- name: GetLabels :many
 SELECT l.id, l.owner_type, l.owner_family_id, l.owner_user_id, l.name, l.key, l.color, l.created_at, l.updated_at, l.etag,
        COUNT(*) OVER () AS total_count
 FROM labels l
 WHERE (
           -- Personal owner condition
-          ('personal' = ANY($1::varchar[]) AND l.owner_user_id = $2)
+          ('personal' = ANY ($1::varchar[]) AND l.owner_user_id = $2)
               OR
               -- System owner condition
-          ('system'= ANY($1::varchar[]))
+          ('system' = ANY ($1::varchar[]))
               OR
               -- Family owner condition
-          ('family' = ANY($1::varchar[]) AND l.owner_family_id = ANY ($3::uuid[]))
+          ('family' = ANY ($1::varchar[]) AND l.owner_family_id = ANY ($3::uuid[]))
           )
 LIMIT $4 OFFSET $5
 `

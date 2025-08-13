@@ -57,6 +57,8 @@ func (s LabelGetEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewLabelGetEndpoint() *LabelGetEndpoint {
-	return &LabelGetEndpoint{}
+func NewLabelGetEndpoint(handler core.QueryHandler[query.FindOneQuery, label.Label]) *LabelGetEndpoint {
+	return &LabelGetEndpoint{
+		handler: handler,
+	}
 }

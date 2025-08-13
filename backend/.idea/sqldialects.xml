@@ -3,6 +3,7 @@
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/internal/infrastructure/persistence/sql/currency_rate.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/internal/infrastructure/persistence/sql/family.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/internal/infrastructure/persistence/sql/label.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/internal/infrastructure/persistence/sql/provider.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/internal/infrastructure/persistence/sql/subscription.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/internal/infrastructure/persistence/sql/user.sql" dialect="PostgreSQL" />

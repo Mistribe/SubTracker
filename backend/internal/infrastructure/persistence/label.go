@@ -19,7 +19,8 @@ type LabelRepository struct {
 	authService auth.Service
 }
 
-func NewLabelRepository(dbContext *DatabaseContext,
+func NewLabelRepository(
+	dbContext *DatabaseContext,
 	authService auth.Service) label.Repository {
 	return &LabelRepository{
 		dbContext:   dbContext,
@@ -38,6 +39,24 @@ func (r LabelRepository) GetById(ctx context.Context, labelId uuid.UUID) (label.
 	}
 
 	lbl := createLabelFromSqlc(response)
+	lbl.Clean()
+	return lbl, nil
+}
+
+func (r LabelRepository) GetByIdForUser(ctx context.Context, userId string, labelId uuid.UUID) (label.Label, error) {
+	response, err := r.dbContext.GetQueries(ctx).GetLabelByIdForUser(ctx, sql.GetLabelByIdForUserParams{
+		ID:          labelId,
+		OwnerUserID: &userId,
+	})
+	if err != nil {
+		if errors.Is(err, dsql.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	lbl := createLabelFromSqlc(response.Label)
 	lbl.Clean()
 	return lbl, nil
 }

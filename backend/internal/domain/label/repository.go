@@ -16,7 +16,8 @@ type QueryParameters struct {
 	FamilyId *uuid.UUID
 }
 
-func NewQueryParameters(limit, offset int32,
+func NewQueryParameters(
+	limit, offset int32,
 	owners []auth.OwnerType,
 	familyId *uuid.UUID) QueryParameters {
 	if len(owners) == 0 {
@@ -37,4 +38,5 @@ type Repository interface {
 
 	GetSystemLabels(ctx context.Context) ([]Label, error)
 	GetAll(ctx context.Context, parameters QueryParameters) ([]Label, int64, error)
+	GetByIdForUser(ctx context.Context, userId string, id uuid.UUID) (Label, error)
 }
