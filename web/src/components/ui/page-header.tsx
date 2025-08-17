@@ -1,4 +1,5 @@
 import type {ReactNode} from "react";
+import {useEffect, useRef, useState} from "react";
 import {Input} from "@/components/ui/input";
 
 export interface PageHeaderProps {
@@ -31,6 +32,12 @@ export interface PageHeaderProps {
      * Search placeholder text
      */
     searchPlaceholder?: string;
+
+    /**
+     * Debounce delay (ms) applied before calling onSearchChange
+     * Defaults to 300ms for a balance between responsiveness and fewer calls
+     */
+    searchDebounceMs?: number;
 }
 
 export const PageHeader = ({
@@ -39,8 +46,45 @@ export const PageHeader = ({
                                searchText = "",
                                onSearchChange,
                                actionButton,
-                               searchPlaceholder = "Search..."
+                               searchPlaceholder = "Search...",
+                               searchDebounceMs = 300,
                            }: PageHeaderProps) => {
+    // Local input state for instant UI feedback
+    const [localValue, setLocalValue] = useState<string>(searchText ?? "");
+
+    // Keep local value in sync when the parent-controlled value changes
+    useEffect(() => {
+        setLocalValue(searchText ?? "");
+    }, [searchText]);
+
+    // Track the last value that has been emitted to avoid redundant calls
+    const lastEmittedRef = useRef<string | undefined>(undefined);
+
+    // Debounce changes before notifying the parent
+    useEffect(() => {
+        if (!onSearchChange) return;
+
+        // If delay is 0 or negative, emit immediately for maximum responsiveness
+        if ((searchDebounceMs ?? 0) <= 0) {
+            if (lastEmittedRef.current !== localValue) {
+                lastEmittedRef.current = localValue;
+                onSearchChange(localValue);
+            }
+            return;
+        }
+
+        const handle = window.setTimeout(() => {
+            if (lastEmittedRef.current !== localValue) {
+                lastEmittedRef.current = localValue;
+                onSearchChange(localValue);
+            }
+        }, searchDebounceMs);
+
+        return () => {
+            window.clearTimeout(handle);
+        };
+    }, [localValue, onSearchChange, searchDebounceMs]);
+
     return (
         <div className="flex flex-col gap-4 mb-6">
             <div className="flex justify-between items-center">
@@ -55,8 +99,8 @@ export const PageHeader = ({
                     <div className="flex justify-center w-120">
                         <Input
                             placeholder={searchPlaceholder}
-                            value={searchText}
-                            onChange={(e) => onSearchChange(e.target.value)}
+                            value={localValue}
+                            onChange={(e) => setLocalValue(e.target.value)}
                             className="max-w-md"
                         />
                     </div>

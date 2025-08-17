@@ -61,7 +61,7 @@ const SubscriptionsPage = () => {
         hasNextPage,
         fetchNextPage,
         isFetchingNextPage,
-    } = useSubscriptionsQuery();
+    } = useSubscriptionsQuery({ search: searchText || undefined });
 
     // Flatten all subscriptions from all pages
     const allSubscriptions = data?.pages.flatMap(page => page.subscriptions) || [];
@@ -76,30 +76,8 @@ const SubscriptionsPage = () => {
     }, [allSubscriptions]);
 
     // Fetch providers individually and build a map (cached by React Query)
-    const { providerMap } = useProvidersByIds(providerIds);
+    const {providerMap} = useProvidersByIds(providerIds);
 
-    // Filter subscriptions based on search text
-    const filteredSubscriptions = useMemo(() => {
-        if (searchText === "") return allSubscriptions;
-
-        const searchLower = searchText.toLowerCase();
-
-        return allSubscriptions.filter(subscription => {
-            // Filter by subscription friendly name
-            if (subscription.friendlyName && subscription.friendlyName.toLowerCase().includes(searchLower)) {
-                return true;
-            }
-
-            // Filter by provider ID, plan ID, or price ID
-            if (subscription.providerId.toLowerCase().includes(searchLower) ||
-                subscription.planId.toLowerCase().includes(searchLower) ||
-                subscription.priceId.toLowerCase().includes(searchLower)) {
-                return true;
-            }
-
-            return false;
-        });
-    }, [allSubscriptions, searchText]);
 
     // Infinite scroll: observe sentinel and fetch next page when visible
     useEffect(() => {
@@ -189,8 +167,7 @@ const SubscriptionsPage = () => {
                             <TableCell>
                                 {subscription.customPrice && (
                                     <Badge variant="outline">
-                                        <Money amount={subscription.customPrice.amount}
-                                               currency={subscription.customPrice.currency}/>
+                                        <Money amount={subscription.customPrice}/>
                                     </Badge>
                                 )}
                             </TableCell>
@@ -254,7 +231,7 @@ const SubscriptionsPage = () => {
                         <TableRow>
                             <TableCell colSpan={9} className="py-4 text-center">
                                 <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <Loader2 className="h-4 w-4 animate-spin"/>
                                     Loading more subscriptions...
                                 </div>
                             </TableCell>
@@ -344,8 +321,8 @@ const SubscriptionsPage = () => {
                 renderError()
             ) : (
                 <>
-                    {filteredSubscriptions.length > 0 ? (
-                        renderSubscriptionsTable(filteredSubscriptions)
+                    {allSubscriptions.length > 0 ? (
+                        renderSubscriptionsTable(allSubscriptions)
                     ) : searchText !== "" ? (
                         <div className="text-center mt-8">
                             <p className="text-muted-foreground">No subscriptions match your search criteria.</p>
@@ -357,7 +334,7 @@ const SubscriptionsPage = () => {
             )}
 
             {hasNextPage && (
-                <div ref={sentinelRef} className="h-1" aria-hidden />
+                <div ref={sentinelRef} className="h-1" aria-hidden/>
             )}
 
             {/* Delete Subscription Dialog */}

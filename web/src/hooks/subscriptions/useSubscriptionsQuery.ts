@@ -3,27 +3,26 @@ import {useApiClient} from "@/hooks/use-api-client";
 import type {SubscriptionModel} from "@/api/models";
 import type {SubscriptionsRequestBuilderGetQueryParameters} from "@/api/subscriptions";
 import Subscription from "@/models/subscription";
-import {OwnerType} from "@/models/ownerType";
 
-interface AllSubscriptionsQueryOptions {
-    ownerTypes?: OwnerType[];
-    familyId?: string;
+interface SubscriptionsQueryOptions {
     limit?: number;
+    search?: string;
 }
 
 /**
  * Fetches **all** subscriptions that match the given filters by requesting as
  * many pages as required. Internally relies on `useInfiniteQuery`.
  */
-export const useSubscriptionsQuery = (options: AllSubscriptionsQueryOptions = {}) => {
+export const useSubscriptionsQuery = (options: SubscriptionsQueryOptions = {}) => {
     const {
-        limit = 50,
+        limit = 10,
+        search,
     } = options;
 
     const {apiClient} = useApiClient();
 
     return useInfiniteQuery({
-        queryKey: ['subscriptions', 'all', limit],
+        queryKey: ['subscriptions', 'all', limit, search],
         enabled: !!apiClient,
         staleTime: 5 * 60 * 1000, // 5 minutes
         refetchOnWindowFocus: true,
@@ -34,6 +33,7 @@ export const useSubscriptionsQuery = (options: AllSubscriptionsQueryOptions = {}
             }
 
             const queryParameters: SubscriptionsRequestBuilderGetQueryParameters = {
+                search: search,
                 limit,
                 offset: pageParam,
             };

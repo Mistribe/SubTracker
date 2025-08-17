@@ -1,11 +1,11 @@
 import type {SubscriptionModel} from "@/api/models";
 import Owner from "@/models/owner.ts";
 import {SubscriptionPayer} from "@/models/subscriptionPayer.ts";
-import {SubscriptionCustomPrice} from "@/models/subscriptionCustomPrice.ts";
 import {SubscriptionFreeTrial} from "@/models/subscriptionFreeTrial.ts";
 import {fromHttpApi, SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
 import {addMonths, addYears} from "date-fns";
 import {daysBetween, monthsBetween} from "@/utils/date.ts";
+import type {Amount} from "@/models/amount.ts";
 
 export default class Subscription {
     private readonly _id: string;
@@ -25,7 +25,7 @@ export default class Subscription {
     private readonly _owner: Owner;
     private readonly _payer: SubscriptionPayer | undefined;
     private readonly _serviceUsers: string[];
-    private readonly _customPrice: SubscriptionCustomPrice | undefined;
+    private readonly _customPrice: Amount | undefined;
     private readonly _freeTrial: SubscriptionFreeTrial | undefined;
     private readonly _isActive: boolean;
 
@@ -45,7 +45,7 @@ export default class Subscription {
         owner: Owner,
         payer: SubscriptionPayer | undefined,
         serviceUsers: string[],
-        customPrice: SubscriptionCustomPrice | undefined,
+        customPrice: Amount | undefined,
         freeTrial: SubscriptionFreeTrial | undefined,
         isActive: boolean,
     ) {
@@ -133,7 +133,7 @@ export default class Subscription {
         return this._serviceUsers;
     }
 
-    get customPrice(): SubscriptionCustomPrice | undefined {
+    get customPrice(): Amount | undefined {
         return this._customPrice;
     }
 
@@ -158,36 +158,39 @@ export default class Subscription {
             Owner.fromModel(model.owner || {}),
             model.payer ? SubscriptionPayer.fromModel(model.payer) : undefined,
             model.serviceUsers || [],
-            model.customPrice ? SubscriptionCustomPrice.fromModel(model.customPrice) : undefined,
+            model.customPrice ? {
+                value: model.customPrice.amount,
+                currency: model.customPrice.currency
+            } as Amount : undefined,
             model.freeTrial ? SubscriptionFreeTrial.fromModel(model.freeTrial) : undefined,
             model.isActive || false,
         );
     }
 
     getDailyPrice(): number {
-        if (!this._customPrice?.amount) {
+        if (!this._customPrice?.value) {
             return 0;
         }
         return this.getMonthlyPrice() / 30;
     }
 
     getMonthlyPrice(): number {
-        if (!this._customPrice?.amount) {
+        if (!this._customPrice?.value) {
             return 0;
         }
 
         switch (this._recurrency) {
             case SubscriptionRecurrency.Monthly:
-                return this._customPrice.amount;
+                return this._customPrice.value;
             case SubscriptionRecurrency.Quarterly:
-                return this._customPrice.amount / 3;
+                return this._customPrice.value / 3;
             case SubscriptionRecurrency.HalfYearly:
-                return this._customPrice.amount / 6;
+                return this._customPrice.value / 6;
             case SubscriptionRecurrency.Yearly:
-                return this._customPrice.amount / 12;
+                return this._customPrice.value / 12;
             case SubscriptionRecurrency.Custom:
                 if (this._customRecurrency) {
-                    return this._customPrice.amount / this._customRecurrency;
+                    return this._customPrice.value / this._customRecurrency;
                 }
                 return 0;
             case SubscriptionRecurrency.OneTime: {
@@ -198,7 +201,7 @@ export default class Subscription {
                 if (numberOfMonths <= 0) {
                     return 0;
                 }
-                return this._customPrice.amount / numberOfMonths;
+                return this._customPrice.value / numberOfMonths;
             }
             default:
                 return 0;
@@ -206,22 +209,22 @@ export default class Subscription {
     }
 
     getYearlyPrice(): number {
-        if (!this._customPrice?.amount) {
+        if (!this._customPrice?.value) {
             return 0;
         }
 
         switch (this._recurrency) {
             case SubscriptionRecurrency.Monthly:
-                return this._customPrice.amount * 12;
+                return this._customPrice.value * 12;
             case SubscriptionRecurrency.Quarterly:
-                return this._customPrice.amount * 4;
+                return this._customPrice.value * 4;
             case SubscriptionRecurrency.HalfYearly:
-                return this._customPrice.amount * 2;
+                return this._customPrice.value * 2;
             case SubscriptionRecurrency.Yearly:
-                return this._customPrice.amount;
+                return this._customPrice.value;
             case SubscriptionRecurrency.Custom:
                 if (this._customRecurrency) {
-                    return (this._customPrice.amount * 12) / this._customRecurrency;
+                    return (this._customPrice.value * 12) / this._customRecurrency;
                 }
                 return 0;
             case SubscriptionRecurrency.OneTime: {
@@ -233,7 +236,7 @@ export default class Subscription {
                     return 0;
                 }
 
-                return (this._customPrice.amount * 12) / numberOfMonths;
+                return (this._customPrice.value * 12) / numberOfMonths;
             }
             default:
                 return 0;
@@ -260,7 +263,7 @@ export default class Subscription {
 
     public getAmount(): number {
         if (this._customPrice) {
-            return this._customPrice.amount;
+            return this._customPrice.value;
         }
         // todo price plan are not implemented yet
         return 0;
