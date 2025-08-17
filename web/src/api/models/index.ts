@@ -10,6 +10,10 @@ export interface AmountModel extends AdditionalDataHolder, Parsable {
      */
     currency?: string | null;
     /**
+     * The source property
+     */
+    source?: AmountModel | null;
+    /**
      * The value property
      */
     value?: number | null;
@@ -404,15 +408,6 @@ export function createProviderModelFromDiscriminatorValue(parseNode: ParseNode |
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
- * @returns {SubscriptionCustomPriceModel}
- */
-// @ts-ignore
-export function createSubscriptionCustomPriceModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
-    return deserializeIntoSubscriptionCustomPriceModel;
-}
-/**
- * Creates a new instance of the appropriate class based on discriminator value
- * @param parseNode The parse node to use to read the discriminator value and create the object
  * @returns {SubscriptionFreeTrialModel}
  */
 // @ts-ignore
@@ -427,7 +422,7 @@ export interface CreateSubscriptionModel extends AdditionalDataHolder, Parsable 
     /**
      * The custom_price property
      */
-    customPrice?: SubscriptionCustomPriceModel | null;
+    customPrice?: AmountModel | null;
     /**
      * The custom_recurrency property
      */
@@ -645,6 +640,7 @@ export interface CurrencyRatesModel extends AdditionalDataHolder, Parsable {
 export function deserializeIntoAmountModel(amountModel: Partial<AmountModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "currency": n => { amountModel.currency = n.getStringValue(); },
+        "source": n => { amountModel.source = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
         "value": n => { amountModel.value = n.getNumberValue(); },
     }
 }
@@ -749,7 +745,7 @@ export function deserializeIntoCreateProviderModel(createProviderModel: Partial<
 export function deserializeIntoCreateSubscriptionModel(createSubscriptionModel: Partial<CreateSubscriptionModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "created_at": n => { createSubscriptionModel.createdAt = n.getStringValue(); },
-        "custom_price": n => { createSubscriptionModel.customPrice = n.getObjectValue<SubscriptionCustomPriceModel>(createSubscriptionCustomPriceModelFromDiscriminatorValue); },
+        "custom_price": n => { createSubscriptionModel.customPrice = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
         "custom_recurrency": n => { createSubscriptionModel.customRecurrency = n.getNumberValue(); },
         "end_date": n => { createSubscriptionModel.endDate = n.getDateValue(); },
         "free_trial": n => { createSubscriptionModel.freeTrial = n.getObjectValue<SubscriptionFreeTrialModel>(createSubscriptionFreeTrialModelFromDiscriminatorValue); },
@@ -981,7 +977,7 @@ export function deserializeIntoPatchFamilyModel(patchFamilyModel: Partial<PatchF
 // @ts-ignore
 export function deserializeIntoPatchSubscriptionModel(patchSubscriptionModel: Partial<PatchSubscriptionModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "custom_price": n => { patchSubscriptionModel.customPrice = n.getObjectValue<SubscriptionCustomPriceModel>(createSubscriptionCustomPriceModelFromDiscriminatorValue); },
+        "custom_price": n => { patchSubscriptionModel.customPrice = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
         "custom_recurrency": n => { patchSubscriptionModel.customRecurrency = n.getNumberValue(); },
         "end_date": n => { patchSubscriptionModel.endDate = n.getDateValue(); },
         "free_trial": n => { patchSubscriptionModel.freeTrial = n.getObjectValue<SubscriptionFreeTrialModel>(createSubscriptionFreeTrialModelFromDiscriminatorValue); },
@@ -1058,18 +1054,6 @@ export function deserializeIntoProviderModel(providerModel: Partial<ProviderMode
 }
 /**
  * The deserialization information for the current model
- * @param SubscriptionCustomPriceModel The instance to deserialize into.
- * @returns {Record<string, (node: ParseNode) => void>}
- */
-// @ts-ignore
-export function deserializeIntoSubscriptionCustomPriceModel(subscriptionCustomPriceModel: Partial<SubscriptionCustomPriceModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
-    return {
-        "amount": n => { subscriptionCustomPriceModel.amount = n.getNumberValue(); },
-        "currency": n => { subscriptionCustomPriceModel.currency = n.getStringValue(); },
-    }
-}
-/**
- * The deserialization information for the current model
  * @param SubscriptionFreeTrialModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
@@ -1089,7 +1073,7 @@ export function deserializeIntoSubscriptionFreeTrialModel(subscriptionFreeTrialM
 export function deserializeIntoSubscriptionModel(subscriptionModel: Partial<SubscriptionModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "created_at": n => { subscriptionModel.createdAt = n.getDateValue(); },
-        "custom_price": n => { subscriptionModel.customPrice = n.getObjectValue<SubscriptionCustomPriceModel>(createSubscriptionCustomPriceModelFromDiscriminatorValue); },
+        "custom_price": n => { subscriptionModel.customPrice = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
         "custom_recurrency": n => { subscriptionModel.customRecurrency = n.getNumberValue(); },
         "end_date": n => { subscriptionModel.endDate = n.getDateValue(); },
         "etag": n => { subscriptionModel.etag = n.getStringValue(); },
@@ -1277,7 +1261,7 @@ export function deserializeIntoUpdateProviderModel(updateProviderModel: Partial<
 // @ts-ignore
 export function deserializeIntoUpdateSubscriptionModel(updateSubscriptionModel: Partial<UpdateSubscriptionModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
-        "custom_price": n => { updateSubscriptionModel.customPrice = n.getObjectValue<SubscriptionCustomPriceModel>(createSubscriptionCustomPriceModelFromDiscriminatorValue); },
+        "custom_price": n => { updateSubscriptionModel.customPrice = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
         "custom_recurrency": n => { updateSubscriptionModel.customRecurrency = n.getNumberValue(); },
         "end_date": n => { updateSubscriptionModel.endDate = n.getDateValue(); },
         "free_trial": n => { updateSubscriptionModel.freeTrial = n.getObjectValue<SubscriptionFreeTrialModel>(createSubscriptionFreeTrialModelFromDiscriminatorValue); },
@@ -1576,7 +1560,7 @@ export interface PatchSubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
      * The custom_price property
      */
-    customPrice?: SubscriptionCustomPriceModel | null;
+    customPrice?: AmountModel | null;
     /**
      * The custom_recurrency property
      */
@@ -1771,6 +1755,7 @@ export interface ProviderModel extends AdditionalDataHolder, Parsable {
 export function serializeAmountModel(writer: SerializationWriter, amountModel: Partial<AmountModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!amountModel || isSerializingDerivedType) { return; }
     writer.writeStringValue("currency", amountModel.currency);
+    writer.writeObjectValue<AmountModel>("source", amountModel.source, serializeAmountModel);
     writer.writeNumberValue("value", amountModel.value);
     writer.writeAdditionalData(amountModel.additionalData);
 }
@@ -1882,7 +1867,7 @@ export function serializeCreateProviderModel(writer: SerializationWriter, create
 export function serializeCreateSubscriptionModel(writer: SerializationWriter, createSubscriptionModel: Partial<CreateSubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!createSubscriptionModel || isSerializingDerivedType) { return; }
     writer.writeStringValue("created_at", createSubscriptionModel.createdAt);
-    writer.writeObjectValue<SubscriptionCustomPriceModel>("custom_price", createSubscriptionModel.customPrice, serializeSubscriptionCustomPriceModel);
+    writer.writeObjectValue<AmountModel>("custom_price", createSubscriptionModel.customPrice, serializeAmountModel);
     writer.writeNumberValue("custom_recurrency", createSubscriptionModel.customRecurrency);
     writer.writeDateValue("end_date", createSubscriptionModel.endDate);
     writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", createSubscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
@@ -2130,7 +2115,7 @@ export function serializePatchFamilyModel(writer: SerializationWriter, patchFami
 // @ts-ignore
 export function serializePatchSubscriptionModel(writer: SerializationWriter, patchSubscriptionModel: Partial<PatchSubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!patchSubscriptionModel || isSerializingDerivedType) { return; }
-    writer.writeObjectValue<SubscriptionCustomPriceModel>("custom_price", patchSubscriptionModel.customPrice, serializeSubscriptionCustomPriceModel);
+    writer.writeObjectValue<AmountModel>("custom_price", patchSubscriptionModel.customPrice, serializeAmountModel);
     writer.writeNumberValue("custom_recurrency", patchSubscriptionModel.customRecurrency);
     writer.writeDateValue("end_date", patchSubscriptionModel.endDate);
     writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", patchSubscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
@@ -2211,19 +2196,6 @@ export function serializeProviderModel(writer: SerializationWriter, providerMode
 /**
  * Serializes information the current object
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param SubscriptionCustomPriceModel The instance to serialize from.
- * @param writer Serialization writer to use to serialize this model
- */
-// @ts-ignore
-export function serializeSubscriptionCustomPriceModel(writer: SerializationWriter, subscriptionCustomPriceModel: Partial<SubscriptionCustomPriceModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!subscriptionCustomPriceModel || isSerializingDerivedType) { return; }
-    writer.writeNumberValue("amount", subscriptionCustomPriceModel.amount);
-    writer.writeStringValue("currency", subscriptionCustomPriceModel.currency);
-    writer.writeAdditionalData(subscriptionCustomPriceModel.additionalData);
-}
-/**
- * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param SubscriptionFreeTrialModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
@@ -2244,7 +2216,7 @@ export function serializeSubscriptionFreeTrialModel(writer: SerializationWriter,
 export function serializeSubscriptionModel(writer: SerializationWriter, subscriptionModel: Partial<SubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!subscriptionModel || isSerializingDerivedType) { return; }
     writer.writeDateValue("created_at", subscriptionModel.createdAt);
-    writer.writeObjectValue<SubscriptionCustomPriceModel>("custom_price", subscriptionModel.customPrice, serializeSubscriptionCustomPriceModel);
+    writer.writeObjectValue<AmountModel>("custom_price", subscriptionModel.customPrice, serializeAmountModel);
     writer.writeNumberValue("custom_recurrency", subscriptionModel.customRecurrency);
     writer.writeDateValue("end_date", subscriptionModel.endDate);
     writer.writeStringValue("etag", subscriptionModel.etag);
@@ -2445,7 +2417,7 @@ export function serializeUpdateProviderModel(writer: SerializationWriter, update
 // @ts-ignore
 export function serializeUpdateSubscriptionModel(writer: SerializationWriter, updateSubscriptionModel: Partial<UpdateSubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!updateSubscriptionModel || isSerializingDerivedType) { return; }
-    writer.writeObjectValue<SubscriptionCustomPriceModel>("custom_price", updateSubscriptionModel.customPrice, serializeSubscriptionCustomPriceModel);
+    writer.writeObjectValue<AmountModel>("custom_price", updateSubscriptionModel.customPrice, serializeAmountModel);
     writer.writeNumberValue("custom_recurrency", updateSubscriptionModel.customRecurrency);
     writer.writeDateValue("end_date", updateSubscriptionModel.endDate);
     writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", updateSubscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
@@ -2473,16 +2445,6 @@ export function serializeUserPreferredCurrencyModel(writer: SerializationWriter,
     writer.writeStringValue("currency", userPreferredCurrencyModel.currency);
     writer.writeAdditionalData(userPreferredCurrencyModel.additionalData);
 }
-export interface SubscriptionCustomPriceModel extends AdditionalDataHolder, Parsable {
-    /**
-     * The amount property
-     */
-    amount?: number | null;
-    /**
-     * The currency property
-     */
-    currency?: string | null;
-}
 /**
  * @Description Number of free trial days remaining (null if no trial or trial expired)
  */
@@ -2507,7 +2469,7 @@ export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
      * The custom_price property
      */
-    customPrice?: SubscriptionCustomPriceModel | null;
+    customPrice?: AmountModel | null;
     /**
      * @Description CustomRecurrency recurrency interval in days (required when recurrency is custom)
      */
@@ -2774,7 +2736,7 @@ export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable 
     /**
      * The custom_price property
      */
-    customPrice?: SubscriptionCustomPriceModel | null;
+    customPrice?: AmountModel | null;
     /**
      * The custom_recurrency property
      */

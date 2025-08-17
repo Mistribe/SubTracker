@@ -29,14 +29,13 @@ import (
 // @servers.url			http://localhost:8080
 // @servers.description	Development server
 func main() {
-	app := fx.New(
+	opts := []fx.Option{
 		configfx.BuildConfigModule(
 			dotenv.WithDotenv(),
 			envs.WithEnvironmentVariables(),
 		),
 		fx.WithLogger(logfx.NewFxLogger),
 		logfx.BuildLoggerModule(),
-		application.BuildApplicationModule(),
 		persistence.BuildPersistenceModule(),
 		BuildRoutesModule(),
 		BuildHttpServerModule(),
@@ -46,7 +45,9 @@ func main() {
 			kinde.NewTokenGenerator,
 			exch.NewClient,
 		),
-	)
+	}
+	opts = append(opts, application.BuildApplicationModules()...)
+	app := fx.New(opts...)
 
 	app.Run()
 }

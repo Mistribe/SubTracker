@@ -27,7 +27,7 @@ type UpdateSubscriptionModel struct {
 	ProviderId       string                          `json:"provider_id" binding:"required"`
 	PlanId           *string                         `json:"plan_id,omitempty"`
 	PriceId          *string                         `json:"price_id,omitempty"`
-	CustomPrice      *SubscriptionCustomPriceModel   `json:"custom_price,omitempty"`
+	CustomPrice      *AmountModel                    `json:"custom_price,omitempty"`
 	ServiceUsers     []string                        `json:"service_users,omitempty"`
 	StartDate        time.Time                       `json:"start_date" binding:"required" format:"date-time"`
 	EndDate          *time.Time                      `json:"end_date,omitempty" format:"date-time"`

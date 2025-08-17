@@ -1,8 +1,8 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
+import './amount_model.dart';
 import './editable_owner_model.dart';
 import './editable_subscription_payer_model.dart';
-import './subscription_custom_price_model.dart';
 import './subscription_free_trial_model.dart';
 
 /// auto generated
@@ -13,7 +13,7 @@ class CreateSubscriptionModel implements AdditionalDataHolder, Parsable {
     ///  The created_at property
     String? createdAt;
     ///  The custom_price property
-    SubscriptionCustomPriceModel? customPrice;
+    AmountModel? customPrice;
     ///  The custom_recurrency property
     int? customRecurrency;
     ///  The end_date property
@@ -53,7 +53,7 @@ class CreateSubscriptionModel implements AdditionalDataHolder, Parsable {
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
         deserializerMap['created_at'] = (node) => createdAt = node.getStringValue();
-        deserializerMap['custom_price'] = (node) => customPrice = node.getObjectValue<SubscriptionCustomPriceModel>(SubscriptionCustomPriceModel.createFromDiscriminatorValue);
+        deserializerMap['custom_price'] = (node) => customPrice = node.getObjectValue<AmountModel>(AmountModel.createFromDiscriminatorValue);
         deserializerMap['custom_recurrency'] = (node) => customRecurrency = node.getIntValue();
         deserializerMap['end_date'] = (node) => endDate = node.getDateTimeValue();
         deserializerMap['free_trial'] = (node) => freeTrial = node.getObjectValue<SubscriptionFreeTrialModel>(SubscriptionFreeTrialModel.createFromDiscriminatorValue);
@@ -74,7 +74,7 @@ class CreateSubscriptionModel implements AdditionalDataHolder, Parsable {
     @override
     void serialize(SerializationWriter writer) {
         writer.writeStringValue('created_at', createdAt);
-        writer.writeObjectValue<SubscriptionCustomPriceModel>('custom_price', customPrice);
+        writer.writeObjectValue<AmountModel>('custom_price', customPrice);
         writer.writeIntValue('custom_recurrency', customRecurrency);
         writer.writeDateTimeValue('end_date', endDate);
         writer.writeObjectValue<SubscriptionFreeTrialModel>('free_trial', freeTrial);

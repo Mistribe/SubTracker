@@ -170,7 +170,7 @@ func (s *subscription) GetTotalSpent() currency.Amount {
 
 func (s *subscription) GetPrice() currency.Amount {
 	if s.customPrice != nil {
-		return currency.NewAmount(s.customPrice.Amount(), s.customPrice.Currency())
+		return currency.NewAmount(s.customPrice.Value(), s.customPrice.Currency())
 	}
 
 	if s.priceId != nil {
@@ -205,7 +205,7 @@ func (s *subscription) getMonthlyPrice() currency.Amount {
 	var price float64
 	numberOfMonths := s.getMonths()
 	if s.customPrice != nil {
-		price = s.customPrice.Amount()
+		price = s.customPrice.Value()
 	} else if s.priceId != nil {
 		panic("not implemented yet")
 	}

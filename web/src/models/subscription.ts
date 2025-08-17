@@ -5,7 +5,7 @@ import {SubscriptionFreeTrial} from "@/models/subscriptionFreeTrial.ts";
 import {fromHttpApi, SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
 import {addMonths, addYears} from "date-fns";
 import {daysBetween, monthsBetween} from "@/utils/date.ts";
-import type {Amount} from "@/models/amount.ts";
+import {type Amount, fromModel} from "@/models/amount.ts";
 
 export default class Subscription {
     private readonly _id: string;
@@ -17,8 +17,6 @@ export default class Subscription {
     private readonly _planId: string;
     private readonly _priceId: string;
     private readonly _recurrency: SubscriptionRecurrency;
-    // The number of months between recurrent payments.
-    // Only used for custom recurrency.
     private readonly _customRecurrency: number | undefined;
     private readonly _startDate: Date;
     private readonly _endDate: Date | undefined;
@@ -158,10 +156,7 @@ export default class Subscription {
             Owner.fromModel(model.owner || {}),
             model.payer ? SubscriptionPayer.fromModel(model.payer) : undefined,
             model.serviceUsers || [],
-            model.customPrice ? {
-                value: model.customPrice.amount,
-                currency: model.customPrice.currency
-            } as Amount : undefined,
+            model.customPrice ? fromModel(model.customPrice) : undefined,
             model.freeTrial ? SubscriptionFreeTrial.fromModel(model.freeTrial) : undefined,
             model.isActive || false,
         );

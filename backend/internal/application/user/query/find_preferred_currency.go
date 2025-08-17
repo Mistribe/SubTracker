@@ -6,7 +6,6 @@ import (
 	"golang.org/x/text/currency"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
-	"github.com/oleexo/subtracker/internal/domain/lang"
 	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/langext/result"
 )
@@ -19,12 +18,12 @@ func NewFindPreferredCurrencyQuery() FindPreferredCurrencyQuery {
 }
 
 type FindPreferredCurrencyQueryHandler struct {
-	userRepository user.Repository
+	userService user.Service
 }
 
-func NewFindPreferredCurrencyQueryHandler(userRepository user.Repository) *FindPreferredCurrencyQueryHandler {
+func NewFindPreferredCurrencyQueryHandler(userService user.Service) *FindPreferredCurrencyQueryHandler {
 	return &FindPreferredCurrencyQueryHandler{
-		userRepository: userRepository,
+		userService: userService,
 	}
 }
 
@@ -35,15 +34,5 @@ func (h FindPreferredCurrencyQueryHandler) Handle(
 	if !ok {
 		return result.Fail[currency.Unit](auth.ErrNotAuthorized)
 	}
-	profile, err := h.userRepository.GetUserProfile(ctx, userId)
-	if err != nil {
-		return result.Fail[currency.Unit](err)
-	}
-
-	if profile == nil {
-		info := lang.FromContext(ctx)
-		return result.Success(info.MostPreferred().PreferredCurrency())
-	}
-
-	return result.Success(profile.Currency())
+	return result.Success(h.userService.GetPreferredCurrency(ctx, userId))
 }

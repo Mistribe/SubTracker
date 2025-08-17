@@ -8,6 +8,8 @@ class AmountModel implements AdditionalDataHolder, Parsable {
     Map<String, Object?> additionalData;
     ///  The currency property
     String? currency;
+    ///  The source property
+    AmountModel? source;
     ///  The value property
     double? value;
     /// Instantiates a new [AmountModel] and sets the default values.
@@ -23,6 +25,7 @@ class AmountModel implements AdditionalDataHolder, Parsable {
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
         deserializerMap['currency'] = (node) => currency = node.getStringValue();
+        deserializerMap['source'] = (node) => source = node.getObjectValue<AmountModel>(AmountModel.createFromDiscriminatorValue);
         deserializerMap['value'] = (node) => value = node.getDoubleValue();
         return deserializerMap;
     }
@@ -31,6 +34,7 @@ class AmountModel implements AdditionalDataHolder, Parsable {
     @override
     void serialize(SerializationWriter writer) {
         writer.writeStringValue('currency', currency);
+        writer.writeObjectValue<AmountModel>('source', source);
         writer.writeDoubleValue('value', value);
         writer.writeAdditionalData(additionalData);
     }

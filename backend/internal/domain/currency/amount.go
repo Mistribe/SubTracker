@@ -4,50 +4,68 @@ import (
 	"golang.org/x/text/currency"
 )
 
-type Amount struct {
+type Amount interface {
+	IsZero() bool
+	IsNegative() bool
+	IsPositive() bool
+	IsEqual(other Amount) bool
+	IsGreaterThan(other Amount) bool
+	IsLessThan(other Amount) bool
+	Value() float64
+	Source() Amount
+	Currency() Unit
+	IsValid() bool
+	ToCurrency(to currency.Unit, rates Rates) Amount
+}
+type amount struct {
 	value    float64
 	currency Unit
+	source   Amount
 	isValid  bool
 }
 
-func (a Amount) IsZero() bool {
+func (a amount) Source() Amount {
+	return a.source
+}
+
+func (a amount) IsZero() bool {
 	return a.value == 0
 }
 
-func (a Amount) IsNegative() bool {
+func (a amount) IsNegative() bool {
 	return a.value < 0
 }
 
-func (a Amount) IsPositive() bool {
+func (a amount) IsPositive() bool {
 	return a.value > 0
 }
 
-func (a Amount) IsEqual(other Amount) bool {
-	return a.value == other.value &&
-		a.currency == other.currency
+func (a amount) IsEqual(other Amount) bool {
+	return a.value == other.Value() &&
+		a.currency == other.Currency()
 }
 
-func (a Amount) IsGreaterThan(other Amount) bool {
-	return a.value > other.value
+func (a amount) IsGreaterThan(other Amount) bool {
+	return a.value > other.Value()
 }
 
-func (a Amount) IsLessThan(other Amount) bool {
-	return a.value < other.value
+func (a amount) IsLessThan(other Amount) bool {
+	return a.value < other.Value()
 }
 
-func (a Amount) Value() float64 {
+func (a amount) Value() float64 {
 	return a.value
 }
 
-func (a Amount) Currency() Unit {
+func (a amount) Currency() Unit {
 	return a.currency
 }
 
-func (a Amount) IsValid() bool {
+func (a amount) IsValid() bool {
 	return a.isValid
 }
 
-func (a Amount) ToCurrency(
+func (a amount) ToCurrency(
 	to currency.Unit,
 	rates Rates) Amount {
 	if !a.isValid {
@@ -57,22 +75,27 @@ func (a Amount) ToCurrency(
 		return a
 	}
 
-	var usdValue float64
+	var usdAmount Amount
 	if a.currency == USD {
-		usdValue = a.value
+		usdAmount = a
 	} else {
-		usdValue = a.ToUSD(rates).Value()
+		usdAmount = a.ToUSD(rates)
 	}
 	exchangeRate, ok := rates.FindExchangeRate(USD, to)
 	if !ok {
 		return NewInvalidAmount()
 	}
 
-	currencyValue := usdValue * exchangeRate
-	return NewAmount(currencyValue, to)
+	currencyValue := usdAmount.Value() * exchangeRate
+	return amount{
+		value:    currencyValue,
+		currency: to,
+		source:   usdAmount,
+		isValid:  true,
+	}
 }
 
-func (a Amount) ToUSD(rates Rates) Amount {
+func (a amount) ToUSD(rates Rates) Amount {
 	if !a.isValid {
 		return a
 	}
@@ -86,11 +109,16 @@ func (a Amount) ToUSD(rates Rates) Amount {
 		return NewInvalidAmount()
 	}
 
-	return NewAmount(a.value*exchangeRate, USD)
+	return amount{
+		value:    a.value * exchangeRate,
+		currency: USD,
+		source:   &a,
+		isValid:  true,
+	}
 }
 
 func NewAmount(value float64, unit Unit) Amount {
-	return Amount{
+	return amount{
 		value:    value,
 		currency: unit,
 		isValid:  true,
@@ -98,7 +126,7 @@ func NewAmount(value float64, unit Unit) Amount {
 }
 
 func NewInvalidAmount() Amount {
-	return Amount{
+	return amount{
 		isValid: false,
 	}
 }

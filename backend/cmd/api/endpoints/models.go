@@ -7,6 +7,7 @@ import (
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/currency"
+	"github.com/oleexo/subtracker/pkg/x"
 )
 
 // OwnerModel represents ownership information for resources
@@ -70,13 +71,19 @@ func newOwnerModel(source auth.Owner) OwnerModel {
 }
 
 type AmountModel struct {
-	Value    float64 `json:"value" binding:"required" example:"100.00"`
-	Currency string  `json:"currency" binding:"required" example:"USD"`
+	Value    float64      `json:"value" binding:"required" example:"100.00"`
+	Currency string       `json:"currency" binding:"required" example:"USD"`
+	Source   *AmountModel `json:"source,omitempty"`
 }
 
 func newAmount(amount currency.Amount) AmountModel {
+	var source *AmountModel
+	if amount.Source() != nil {
+		source = x.P(newAmount(amount.Source()))
+	}
 	return AmountModel{
 		Value:    amount.Value(),
 		Currency: amount.Currency().String(),
+		Source:   source,
 	}
 }

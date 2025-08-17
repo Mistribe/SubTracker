@@ -4,16 +4,14 @@ import {useSubscriptionsQuery} from "@/hooks/subscriptions/useSubscriptionsQuery
 import {useProvidersByIds} from "@/hooks/providers/useProvidersByIds";
 import {useSubscriptionsMutations} from "@/hooks/subscriptions/useSubscriptionsMutations";
 import {PageHeader} from "@/components/ui/page-header";
-import {Skeleton} from "@/components/ui/skeleton";
-import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {CalendarIcon, CreditCardIcon, Loader2, PencilIcon, PlusIcon, TagIcon, TrashIcon, UsersIcon} from "lucide-react";
-import {format} from "date-fns";
+import {PlusIcon} from "lucide-react";
 import Subscription from "@/models/subscription";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {Money} from "@/components/ui/money";
-import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
 import {DeleteSubscriptionDialog} from "@/components/subscriptions/DeleteSubscriptionDialog";
+import { SubscriptionsTable } from "@/components/subscriptions/ui/SubscriptionsTable";
+import { SubscriptionsTableSkeleton } from "@/components/subscriptions/ui/SubscriptionsTableSkeleton";
+import { SubscriptionsErrorState } from "@/components/subscriptions/ui/SubscriptionsErrorState";
+import { SubscriptionsEmptyState } from "@/components/subscriptions/ui/SubscriptionsEmptyState";
 
 const SubscriptionsPage = () => {
     const navigate = useNavigate();
@@ -103,202 +101,9 @@ const SubscriptionsPage = () => {
 
     // Use Money component for currency display (conversion handled in UI).
 
-    // Function to format recurrency
-    const formatRecurrency = (recurrency: SubscriptionRecurrency, customRecurrency: number | undefined) => {
-        if (recurrency === 'custom' && customRecurrency) {
-            return `Every ${customRecurrency} days`;
-        }
 
-        switch (recurrency) {
-            case SubscriptionRecurrency.Monthly:
-                return 'Monthly';
-            case SubscriptionRecurrency.Quarterly:
-                return 'Quarterly';
-            case SubscriptionRecurrency.HalfYearly:
-                return 'Half Yearly';
-            case SubscriptionRecurrency.Yearly:
-                return 'Yearly';
-            case SubscriptionRecurrency.OneTime:
-                return 'OneTime';
-            default:
-                return recurrency;
-        }
-    };
 
-    // Render subscriptions table
-    const renderSubscriptionsTable = (subscriptions: Subscription[]) => {
-        return (
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Provider</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Recurrency</TableHead>
-                        <TableHead>Dates</TableHead>
-                        <TableHead>Users</TableHead>
-                        <TableHead>Plan</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="w-[50px]">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {subscriptions.map((subscription) => (
-                        <TableRow key={subscription.id}>
-                            <TableCell>
-                                <div className="flex items-center">
-                                    {providerMap.get(subscription.providerId)?.iconUrl ? (
-                                        <img
-                                            src={providerMap.get(subscription.providerId)?.iconUrl || ''}
-                                            alt={`${providerMap.get(subscription.providerId)?.name} logo`}
-                                            className="mr-2 h-5 w-5 object-contain"
-                                        />
-                                    ) : (
-                                        <CreditCardIcon className="mr-2 h-4 w-4 text-muted-foreground"/>
-                                    )}
-                                    <span>
-                                        {providerMap.get(subscription.providerId)?.name || subscription.providerId}
-                                    </span>
-                                </div>
-                            </TableCell>
-                            <TableCell className="font-medium">
-                                {subscription.friendlyName || (providerMap.get(subscription.providerId)?.name || subscription.providerId)}
-                            </TableCell>
-                            <TableCell>
-                                {subscription.customPrice && (
-                                    <Badge variant="outline">
-                                        <Money amount={subscription.customPrice}/>
-                                    </Badge>
-                                )}
-                            </TableCell>
-                            <TableCell>
-                                {formatRecurrency(subscription.recurrency, subscription.customRecurrency)}
-                            </TableCell>
-                            <TableCell>
-                                <div className="flex items-center">
-                                    <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground"/>
-                                    <span>
-                                        {format(subscription.startDate, 'MMM d, yyyy')}
-                                        {subscription.endDate && <br/>}
-                                        {subscription.endDate && `Ends: ${format(subscription.endDate, 'MMM d, yyyy')}`}
-                                    </span>
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                {subscription.serviceUsers.length > 0 && (
-                                    <div className="flex items-center">
-                                        <UsersIcon className="mr-2 h-4 w-4 text-muted-foreground"/>
-                                        <span>{subscription.serviceUsers.length}</span>
-                                    </div>
-                                )}
-                            </TableCell>
-                            <TableCell>
-                                <div className="flex items-center">
-                                    <TagIcon className="mr-1 h-4 w-4 text-muted-foreground"/>
-                                    <span>{subscription.planId.substring(0, 8)}</span>
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                {subscription.freeTrial ? "Free Trial" : ""}
-                                {subscription.freeTrial && subscription.isActive ? " - " : ""}
-                                {subscription.isActive
-                                    ? <Badge variant="outline" className="bg-green-50 text-green-700">Active</Badge>
-                                    : <Badge variant="outline" className="bg-red-50 text-red-700">Ended</Badge>}
-                            </TableCell>
-                            <TableCell>
-                                <div className="flex space-x-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => navigate(`/subscriptions/edit/${subscription.id}`)}
-                                        title="Edit subscription"
-                                    >
-                                        <PencilIcon className="h-4 w-4 text-blue-500"/>
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => handleDeleteClick(subscription)}
-                                        title="Delete subscription"
-                                    >
-                                        <TrashIcon className="h-4 w-4 text-red-500"/>
-                                    </Button>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                    {isFetchingNextPage && (
-                        <TableRow>
-                            <TableCell colSpan={9} className="py-4 text-center">
-                                <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                                    <Loader2 className="h-4 w-4 animate-spin"/>
-                                    Loading more subscriptions...
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
-        );
-    };
 
-    // Render loading skeleton for table
-    const renderTableSkeleton = () => {
-        return (
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
-                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
-                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
-                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
-                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
-                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
-                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
-                        <TableHead><Skeleton className="h-4 w-20"/></TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {Array(8).fill(0).map((_, index) => (
-                        <TableRow key={index}>
-                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
-                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
-                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
-                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
-                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
-                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
-                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
-                            <TableCell><Skeleton className="h-4 w-full"/></TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        );
-    };
-
-    // Render error state
-    const renderError = () => {
-        return (
-            <div className="flex flex-col items-center justify-center py-12">
-                <h3 className="text-xl font-semibold mb-2">Error Loading Subscriptions</h3>
-                <p className="text-muted-foreground mb-6">
-                    There was a problem loading your subscriptions. Please try again later.
-                </p>
-            </div>
-        );
-    };
-
-    // Render empty state
-    const renderEmptyState = () => {
-        return (
-            <div className="flex flex-col items-center justify-center py-12">
-                <h3 className="text-xl font-semibold mb-2">No Subscriptions Found</h3>
-                <p className="text-muted-foreground mb-6">
-                    You don't have any subscriptions yet.
-                </p>
-            </div>
-        );
-    };
 
     return (
         <div className="container mx-auto py-6">
@@ -316,19 +121,25 @@ const SubscriptionsPage = () => {
             />
 
             {isLoading ? (
-                renderTableSkeleton()
+                <SubscriptionsTableSkeleton />
             ) : isError ? (
-                renderError()
+                <SubscriptionsErrorState />
             ) : (
                 <>
                     {allSubscriptions.length > 0 ? (
-                        renderSubscriptionsTable(allSubscriptions)
+                        <SubscriptionsTable
+                            subscriptions={allSubscriptions}
+                            providerMap={providerMap}
+                            onEdit={(s) => navigate(`/subscriptions/edit/${s.id}`)}
+                            onDelete={handleDeleteClick}
+                            isFetchingNextPage={isFetchingNextPage}
+                        />
                     ) : searchText !== "" ? (
                         <div className="text-center mt-8">
                             <p className="text-muted-foreground">No subscriptions match your search criteria.</p>
                         </div>
                     ) : (
-                        renderEmptyState()
+                        <SubscriptionsEmptyState />
                     )}
                 </>
             )}

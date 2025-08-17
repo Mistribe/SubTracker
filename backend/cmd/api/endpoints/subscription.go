@@ -9,6 +9,7 @@ import (
 	"github.com/oleexo/subtracker/cmd/api/ginfx"
 	"github.com/oleexo/subtracker/cmd/api/middlewares"
 	"github.com/oleexo/subtracker/pkg/slicesx"
+	"github.com/oleexo/subtracker/pkg/x"
 
 	"github.com/gin-gonic/gin"
 
@@ -81,22 +82,7 @@ func newSubscriptionFreeTrial(model *SubscriptionFreeTrialModel) subscription.Fr
 	return subscription.NewFreeTrial(model.StartDate, model.EndDate)
 }
 
-type SubscriptionCustomPriceModel struct {
-	Currency string  `json:"currency" binding:"required"`
-	Amount   float64 `json:"amount" binding:"required"`
-}
-
-func newSubscriptionCustomPriceModel(source subscription.CustomPrice) *SubscriptionCustomPriceModel {
-	if source == nil {
-		return nil
-	}
-	return &SubscriptionCustomPriceModel{
-		Currency: source.Currency().String(),
-		Amount:   source.Amount(),
-	}
-}
-
-func newSubscriptionCustomPrice(model *SubscriptionCustomPriceModel) (subscription.CustomPrice, error) {
+func newSubscriptionCustomPrice(model *AmountModel) (subscription.CustomPrice, error) {
 	if model == nil {
 		return nil, nil
 	}
@@ -106,7 +92,7 @@ func newSubscriptionCustomPrice(model *SubscriptionCustomPriceModel) (subscripti
 		return nil, err
 	}
 
-	return subscription.NewCustomPrice(model.Amount, cry), nil
+	return subscription.NewCustomPrice(model.Value, cry), nil
 
 }
 
@@ -148,8 +134,8 @@ type SubscriptionModel struct {
 	// @Description ID of the specific plan being subscribed to
 	PlanId *string `json:"plan_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174003"`
 	// @Description ID of the pricing tier for this subscription
-	PriceId     *string                       `json:"price_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174004"`
-	CustomPrice *SubscriptionCustomPriceModel `json:"custom_price,omitempty"`
+	PriceId     *string      `json:"price_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174004"`
+	CustomPrice *AmountModel `json:"custom_price,omitempty"`
 	// @Description Ownership information specifying whether this subscription belongs to a user or family
 	Owner OwnerModel `json:"owner" binding:"required"`
 	// @Description List of family member IDs who use this service (for shared subscriptions)
@@ -212,7 +198,7 @@ func newSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 		CreatedAt:        source.CreatedAt(),
 		UpdatedAt:        source.UpdatedAt(),
 		Etag:             source.ETag(),
-		CustomPrice:      newSubscriptionCustomPriceModel(source.CustomPrice()),
+		CustomPrice:      x.P(newAmount(source.CustomPrice())),
 	}
 
 	if source.PlanId() != nil {

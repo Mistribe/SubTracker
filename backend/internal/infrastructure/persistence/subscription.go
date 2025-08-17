@@ -239,7 +239,7 @@ func (r SubscriptionRepository) create(ctx context.Context, subscriptions []subs
 			}
 
 			if sub.CustomPrice() != nil {
-				customPriceAmount := sub.CustomPrice().Amount()
+				customPriceAmount := sub.CustomPrice().Value()
 				args.CustomPriceAmount = &customPriceAmount
 				customPriceCurrency := sub.CustomPrice().Currency().String()
 				args.CustomPriceCurrency = &customPriceCurrency
@@ -325,7 +325,7 @@ func (r SubscriptionRepository) update(ctx context.Context, sub subscription.Sub
 			}(),
 			CustomPriceAmount: func() *float64 {
 				if cp := sub.CustomPrice(); cp != nil {
-					amt := cp.Amount()
+					amt := cp.Value()
 					return &amt
 				}
 				return nil

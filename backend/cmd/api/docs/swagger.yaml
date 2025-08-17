@@ -5,6 +5,8 @@ components:
         currency:
           example: USD
           type: string
+        source:
+          $ref: '#/components/schemas/endpoints.AmountModel'
         value:
           example: 100
           type: number
@@ -17,7 +19,7 @@ components:
         created_at:
           type: string
         custom_price:
-          $ref: '#/components/schemas/endpoints.SubscriptionCustomPriceModel'
+          $ref: '#/components/schemas/endpoints.AmountModel'
         custom_recurrency:
           type: integer
         end_date:
@@ -235,7 +237,7 @@ components:
     endpoints.PatchSubscriptionModel:
       properties:
         custom_price:
-          $ref: '#/components/schemas/endpoints.SubscriptionCustomPriceModel'
+          $ref: '#/components/schemas/endpoints.AmountModel'
         custom_recurrency:
           type: integer
         end_date:
@@ -462,16 +464,6 @@ components:
       - plans
       - updated_at
       type: object
-    endpoints.SubscriptionCustomPriceModel:
-      properties:
-        amount:
-          type: number
-        currency:
-          type: string
-      required:
-      - amount
-      - currency
-      type: object
     endpoints.SubscriptionFreeTrialModel:
       description: '@Description Number of free trial days remaining (null if no trial
         or trial expired)'
@@ -494,7 +486,7 @@ components:
           format: date-time
           type: string
         custom_price:
-          $ref: '#/components/schemas/endpoints.SubscriptionCustomPriceModel'
+          $ref: '#/components/schemas/endpoints.AmountModel'
         custom_recurrency:
           description: '@Description CustomRecurrency recurrency interval in days
             (required when recurrency is custom)'
@@ -681,7 +673,7 @@ components:
     endpoints.UpdateSubscriptionModel:
       properties:
         custom_price:
-          $ref: '#/components/schemas/endpoints.SubscriptionCustomPriceModel'
+          $ref: '#/components/schemas/endpoints.AmountModel'
         custom_recurrency:
           type: integer
         end_date:

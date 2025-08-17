@@ -1,7 +1,7 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
+import './amount_model.dart';
 import './owner_model.dart';
-import './subscription_custom_price_model.dart';
 import './subscription_free_trial_model.dart';
 import './subscription_model_recurrency.dart';
 import './subscription_payer_model.dart';
@@ -15,7 +15,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
     ///  @Description ISO 8601 timestamp when the subscription was originally created
     DateTime? createdAt;
     ///  The custom_price property
-    SubscriptionCustomPriceModel? customPrice;
+    AmountModel? customPrice;
     ///  @Description CustomRecurrency recurrency interval in days (required when recurrency is custom)
     int? customRecurrency;
     ///  @Description ISO 8601 timestamp when the subscription expires (null for ongoing subscriptions)
@@ -61,7 +61,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
         deserializerMap['created_at'] = (node) => createdAt = node.getDateTimeValue();
-        deserializerMap['custom_price'] = (node) => customPrice = node.getObjectValue<SubscriptionCustomPriceModel>(SubscriptionCustomPriceModel.createFromDiscriminatorValue);
+        deserializerMap['custom_price'] = (node) => customPrice = node.getObjectValue<AmountModel>(AmountModel.createFromDiscriminatorValue);
         deserializerMap['custom_recurrency'] = (node) => customRecurrency = node.getIntValue();
         deserializerMap['end_date'] = (node) => endDate = node.getDateTimeValue();
         deserializerMap['etag'] = (node) => etag = node.getStringValue();
@@ -85,7 +85,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
     @override
     void serialize(SerializationWriter writer) {
         writer.writeDateTimeValue('created_at', createdAt);
-        writer.writeObjectValue<SubscriptionCustomPriceModel>('custom_price', customPrice);
+        writer.writeObjectValue<AmountModel>('custom_price', customPrice);
         writer.writeIntValue('custom_recurrency', customRecurrency);
         writer.writeDateTimeValue('end_date', endDate);
         writer.writeStringValue('etag', etag);

@@ -2,12 +2,12 @@ import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
 import {OwnerType} from "@/models/ownerType";
 import {
+    type AmountModel,
     type CreateSubscriptionModel,
     type EditableOwnerModel,
     type EditableSubscriptionPayerModel,
     type EditableSubscriptionPayerModel_type,
     EditableSubscriptionPayerModel_typeObject,
-    type SubscriptionCustomPriceModel,
     type SubscriptionFreeTrialModel,
     type UpdateSubscriptionModel
 } from "@/api/models";
@@ -106,8 +106,8 @@ export const useSubscriptionsMutations = () => {
 
             // Add custom price if specified
             if (subscriptionData.customPrice) {
-                const customPrice: SubscriptionCustomPriceModel = {
-                    amount: subscriptionData.customPrice.amount,
+                const customPrice: AmountModel = {
+                    value: subscriptionData.customPrice.amount,
                     currency: subscriptionData.customPrice.currency
                 };
 
@@ -238,8 +238,8 @@ export const useSubscriptionsMutations = () => {
 
             // Add custom price if specified
             if (subscriptionData.customPrice) {
-                const customPrice: SubscriptionCustomPriceModel = {
-                    amount: subscriptionData.customPrice.amount,
+                const customPrice: AmountModel = {
+                    value: subscriptionData.customPrice.amount,
                     currency: subscriptionData.customPrice.currency
                 };
 
