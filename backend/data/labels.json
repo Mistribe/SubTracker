@@ -63,5 +63,25 @@
     "key": "work",
     "name": "Work",
     "color": "#FFa855b4"
+  },
+  {
+    "key": "cloud",
+    "name": "Cloud",
+    "color": "#FFa855b4"
+  },
+  {
+    "key": "hosting",
+    "name": "Hosting",
+    "color": "#FFa855b4"
+  },
+  {
+    "key": "hosting",
+    "name": "Hosting",
+    "color": "#FFa855b4"
+  },
+  {
+    "key": "kid",
+    "name": "Kid",
+    "color": "#FFa855b4"
   }
 ]

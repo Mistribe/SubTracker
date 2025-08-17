@@ -151,17 +151,8 @@ func (r ProviderRepository) GetAllForUser(
 	ctx context.Context,
 	userId string,
 	parameters provider.QueryParameters) ([]provider.Provider, int64, error) {
-	var response []sql.ProviderRow
-	var count int64
-	var err error
-	if parameters.SearchText != "" {
-		response, count, err = r.dbContext.GetQueries(ctx).
-			GetProvidersForUserWithSearch(ctx, userId, parameters.SearchText, parameters.Limit, parameters.Offset)
-
-	} else {
-		response, count, err = r.dbContext.GetQueries(ctx).
-			GetProvidersForUser(ctx, userId, parameters.Limit, parameters.Offset)
-	}
+	response, count, err := r.dbContext.GetQueries(ctx).
+		GetProvidersForUser(ctx, userId, parameters.SearchText, parameters.Limit, parameters.Offset)
 	if err != nil {
 		return nil, 0, err
 	}

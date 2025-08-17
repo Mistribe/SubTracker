@@ -61,6 +61,38 @@ FROM public.subscriptions s
 WHERE s.id = $1;
 
 -- name: getSubscriptionsForUser :many
+WITH providers AS (SELECT p.id, p.name
+                   FROM public.providers p
+                   WHERE p.owner_type = 'system'
+                      OR (p.owner_type = 'personal' AND p.owner_user_id = $1)
+                      OR (p.owner_type = 'family' AND EXISTS (SELECT 1
+                                                              FROM public.family_members fm
+                                                              WHERE fm.family_id = p.owner_family_id
+                                                                AND fm.user_id = $1))),
+     matches AS (SELECT s.id
+                 FROM public.subscriptions s
+                 WHERE (
+                     s.owner_type = 'system'
+                         OR (s.owner_type = 'personal' AND s.owner_user_id = $1)
+                         OR (s.owner_type = 'family' AND EXISTS (SELECT 1
+                                                                 FROM public.family_members fm
+                                                                 WHERE fm.family_id = s.owner_family_id
+                                                                   AND fm.user_id = $1))
+                     )
+                   AND (
+                     -- Match everything when the search term is NULL or empty
+                     NULLIF(BTRIM($2), '') IS NULL
+                         OR s.friendly_name ILIKE '%' || $2 || '%'
+                         OR EXISTS (SELECT 1
+                                    FROM providers p
+                                    WHERE p.name ILIKE '%' || $2 || '%' AND p.id = s.provider_id)
+                     )),
+     counted AS (SELECT m.id, COUNT(*) OVER () AS total_count
+                 FROM matches m),
+     paged AS (SELECT c.id, c.total_count
+               FROM counted c
+               ORDER BY c.id
+               LIMIT $3 OFFSET $4)
 SELECT s.id                    AS "subscriptions.id",
        s.owner_type            AS "subscriptions.owner_type",
        s.owner_family_id       AS "subscriptions.owner_family_id",
@@ -84,61 +116,9 @@ SELECT s.id                    AS "subscriptions.id",
        s.updated_at            AS "subscriptions.updated_at",
        s.etag                  AS "subscriptions.etag",
        su.family_member_id     AS "subscription_service_users.family_member_id",
-       s.total_count           AS "total_count"
-FROM (SELECT s.*,
-             COUNT(*) OVER () AS total_count
-      FROM public.subscriptions s
-               LEFT JOIN subscription_service_users su ON su.subscription_id = s.id
-               LEFT JOIN families f ON f.id = s.family_id
-               LEFT JOIN family_members fm ON fm.id = su.family_member_id
-               LEFT JOIN public.labels l ON l.id = s.plan_id
-               LEFT JOIN public.providers p ON p.id = s.provider_id
-      WHERE (s.owner_type = 'family' AND fm.user_id = $1)
-         OR (s.owner_type = 'personal' AND s.owner_user_id = $1)
-      ORDER BY s.Id
-      LIMIT $2 OFFSET $3) s
-         LEFT JOIN subscription_service_users su ON su.subscription_id = s.id;
-
--- name: getSubscriptionsForUserWithSearch :many
-SELECT s.id                    AS "subscriptions.id",
-       s.owner_type            AS "subscriptions.owner_type",
-       s.owner_family_id       AS "subscriptions.owner_family_id",
-       s.owner_user_id         AS "subscriptions.owner_user_id",
-       s.friendly_name         AS "subscriptions.friendly_name",
-       s.free_trial_start_date AS "subscriptions.free_trial_start_date",
-       s.free_trial_end_date   AS "subscriptions.free_trial_end_date",
-       s.provider_id           AS "subscriptions.provider_id",
-       s.plan_id               AS "subscriptions.plan_id",
-       s.price_id              AS "subscriptions.price_id",
-       s.family_id             AS "subscriptions.family_id",
-       s.payer_type            AS "subscriptions.payer_type",
-       s.payer_member_id       AS "subscriptions.payer_member_id",
-       s.start_date            AS "subscriptions.start_date",
-       s.end_date              AS "subscriptions.end_date",
-       s.recurrency            AS "subscriptions.recurrency",
-       s.custom_recurrency     AS "subscriptions.custom_recurrency",
-       s.custom_price_currency AS "subscriptions.custom_price_currency",
-       s.custom_price_amount   AS "subscriptions.custom_price_amount",
-       s.created_at            AS "subscriptions.created_at",
-       s.updated_at            AS "subscriptions.updated_at",
-       s.etag                  AS "subscriptions.etag",
-       su.family_member_id     AS "subscription_service_users.family_member_id",
-       s.total_count           AS "total_count"
-FROM (SELECT s.*,
-             COUNT(*) OVER () AS total_count
-      FROM public.subscriptions s
-               LEFT JOIN subscription_service_users su ON su.subscription_id = s.id
-               LEFT JOIN families f ON f.id = s.family_id
-               LEFT JOIN family_members fm ON fm.id = su.family_member_id
-               LEFT JOIN public.labels l ON l.id = s.plan_id
-               LEFT JOIN public.providers p ON p.id = s.provider_id
-      WHERE ((s.owner_type = 'family' AND fm.user_id = $1)
-          OR (s.owner_type = 'personal' AND s.owner_user_id = $1))
-        AND (s.friendly_name ILIKE $2 OR
-             l.name ILIKE $2 OR
-             p.name ILIKE $2)
-      ORDER BY s.Id
-      LIMIT $3 OFFSET $4) s
+       p.total_count           AS "total_count"
+FROM paged p
+         JOIN public.subscriptions s ON s.id = p.id
          LEFT JOIN subscription_service_users su ON su.subscription_id = s.id;
 
 -- name: getSubscriptions :many

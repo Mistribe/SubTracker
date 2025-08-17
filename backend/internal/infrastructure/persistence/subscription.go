@@ -110,16 +110,8 @@ func (r SubscriptionRepository) GetAllForUser(
 	ctx context.Context,
 	userId string,
 	parameters subscription.QueryParameters) ([]subscription.Subscription, int64, error) {
-	var response []sql.SubscriptionRow
-	var count int64
-	var err error
-	if parameters.SearchText != "" {
-		response, count, err = r.dbContext.GetQueries(ctx).
-			GetSubscriptionsForUserWithSearch(ctx, userId, parameters.SearchText, parameters.Limit, parameters.Offset)
-	} else {
-		response, count, err = r.dbContext.GetQueries(ctx).
-			GetSubscriptionsForUser(ctx, userId, parameters.Limit, parameters.Offset)
-	}
+	response, count, err := r.dbContext.GetQueries(ctx).
+		GetSubscriptionsForUser(ctx, userId, parameters.SearchText, parameters.Limit, parameters.Offset)
 	if err != nil {
 		return nil, 0, err
 	}

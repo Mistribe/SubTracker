@@ -1,143 +1,189 @@
 [
-    {
-        "id": "e9a14ff0-6805-4161-8367-1998e7478ff8",
-        "friendly_name": "Spotify Premium Duo",
-        "provider_key": "spotify",
-        "custom_price": {
-            "currency": "EUR",
-            "amount": 14.99
-        },
-        "owner": {
-            "type": "family",
-            "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
-        },
-        "payer": {
-            "type": "family"
-        },
-        "service_users": [
-            "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
-            "16e151e4-3e17-490d-9228-f275b1d1d833"
-        ],
-        "start_date": "2023-08-28T00:00:00Z",
-        "end_date": "2024-06-28T00:00:00Z",
-        "recurrency": "monthly"
+  {
+    "id": "e9a14ff0-6805-4161-8367-1998e7478ff8",
+    "friendly_name": "Spotify Premium Duo",
+    "provider_key": "spotify",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 14.99
     },
-    {
-        "id": "5f36c92c-6ea8-4d67-ac9d-5ebaf42f736e",
-        "friendly_name": "Spotify Premium Duo",
-        "provider_key": "spotify",
-        "custom_price": {
-            "currency": "EUR",
-            "amount": 15.17
-        },
-        "owner": {
-            "type": "family",
-            "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
-        },
-        "payer": {
-            "type": "family"
-        },
-        "service_users": [
-            "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
-            "16e151e4-3e17-490d-9228-f275b1d1d833"
-        ],
-        "start_date": "2024-06-28T00:00:00Z",
-        "end_date": "2025-06-28T00:00:00Z",
-        "recurrency": "monthly"
+    "owner": {
+      "type": "family",
+      "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
     },
-    {
-        "id": "67892312-eccb-4aa7-b5ec-376cda1f2f91",
-        "friendly_name": "Spotify Premium Duo",
-        "provider_key": "spotify",
-        "custom_price": {
-            "currency": "EUR",
-            "amount": 17.20
-        },
-        "owner": {
-            "type": "family",
-            "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
-        },
-        "payer": {
-            "type": "family"
-        },
-        "service_users": [
-            "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
-            "16e151e4-3e17-490d-9228-f275b1d1d833"
-        ],
-        "start_date": "2025-06-28T00:00:00Z",
-        "recurrency": "monthly"
+    "payer": {
+      "type": "family"
     },
-    {
-        "id": "008e6e52-3f4b-4df0-876c-d0790a4ff3fe",
-        "friendly_name": "NordVPN",
-        "provider_key": "nordvpn",
-        "custom_price": {
-            "currency": "USD",
-            "amount": 79
-        },
-        "owner": {
-            "type": "personal",
-            "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
-        },
-        "start_date": "2018-02-21T00:00:00Z",
-        "end_date": "2020-02-21T00:00:00Z",
-        "recurrency": "one_time"
+    "service_users": [
+      "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+      "16e151e4-3e17-490d-9228-f275b1d1d833"
+    ],
+    "start_date": "2023-08-28T00:00:00Z",
+    "end_date": "2024-06-28T00:00:00Z",
+    "recurrency": "monthly"
+  },
+  {
+    "id": "ad17a366-2cb7-45e1-a8fe-caf919a4fdc1",
+    "friendly_name": "Spotify Premium Duo",
+    "provider_key": "spotify",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 12.99
     },
-    {
-        "id": "6c2649fb-0d85-4b20-a320-acd6ae8dafad",
-        "friendly_name": "NordVPN",
-        "provider_key": "nordvpn",
-        "custom_price": {
-            "currency": "USD",
-            "amount": 100.66
-        },
-        "owner": {
-            "type": "personal",
-            "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
-        },
-        "start_date": "2020-02-22T00:00:00Z",
-        "end_date": "2023-02-22T00:00:00Z",
-        "recurrency": "one_time"
+    "owner": {
+      "type": "family",
+      "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
     },
-    {
-        "id": "109c0f3a-eb70-4a95-b00d-71b5fd381c54",
-        "friendly_name": "NordVPN",
-        "provider_key": "nordvpn",
-        "custom_price": {
-            "currency": "EUR",
-            "amount": 100.51
-        },
-        "owner": {
-            "type": "personal",
-            "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
-        },
-        "start_date": "2023-06-07T00:00:00Z",
-        "end_date": "2025-06-07T00:00:00Z",
-        "recurrency": "one_time"
+    "payer": {
+      "type": "family"
     },
-    {
-        "id": "5daa9a8a-cd5a-45e2-abd9-002c8d5921ff",
-        "friendly_name": "NordVPN",
-        "provider_key": "nordvpn",
-        "custom_price": {
-            "currency": "EUR",
-            "amount": 179.86
-        },
-        "owner": {
-            "type": "personal",
-            "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
-        },
-        "start_date": "2025-06-22T00:00:00Z",
-        "end_date": "2028-01-06T00:00:00Z",
-        "recurrency": "one_time"
+    "service_users": [
+      "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+      "16e151e4-3e17-490d-9228-f275b1d1d833"
+    ],
+    "start_date": "2022-08-28T00:00:00Z",
+    "end_date": "2023-08-28T00:00:00Z",
+    "recurrency": "monthly"
+  },
+  {
+    "id": "0831174c-5cb4-42bf-8deb-ad95f4c2d101",
+    "friendly_name": "Spotify Premium Duo",
+    "provider_key": "spotify",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 14.99
     },
+    "owner": {
+      "type": "family",
+      "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
+    },
+    "payer": {
+      "type": "family"
+    },
+    "service_users": [
+      "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+      "16e151e4-3e17-490d-9228-f275b1d1d833"
+    ],
+    "start_date": "2023-08-28T00:00:00Z",
+    "end_date": "2024-05-28T00:00:00Z",
+    "recurrency": "monthly"
+  },
+  {
+    "id": "5f36c92c-6ea8-4d67-ac9d-5ebaf42f736e",
+    "friendly_name": "Spotify Premium Duo",
+    "provider_key": "spotify",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 15.17
+    },
+    "owner": {
+      "type": "family",
+      "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
+    },
+    "payer": {
+      "type": "family"
+    },
+    "service_users": [
+      "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+      "16e151e4-3e17-490d-9228-f275b1d1d833"
+    ],
+    "start_date": "2024-06-28T00:00:00Z",
+    "end_date": "2025-06-28T00:00:00Z",
+    "recurrency": "monthly"
+  },
+  {
+    "id": "67892312-eccb-4aa7-b5ec-376cda1f2f91",
+    "friendly_name": "Spotify Premium Duo",
+    "provider_key": "spotify",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 17.20
+    },
+    "owner": {
+      "type": "family",
+      "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
+    },
+    "payer": {
+      "type": "family"
+    },
+    "service_users": [
+      "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+      "16e151e4-3e17-490d-9228-f275b1d1d833"
+    ],
+    "start_date": "2025-06-28T00:00:00Z",
+    "recurrency": "monthly"
+  },
+  {
+    "id": "008e6e52-3f4b-4df0-876c-d0790a4ff3fe",
+    "friendly_name": "NordVPN",
+    "provider_key": "nordvpn",
+    "custom_price": {
+      "currency": "USD",
+      "amount": 79
+    },
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    },
+    "start_date": "2018-02-21T00:00:00Z",
+    "end_date": "2020-02-21T00:00:00Z",
+    "recurrency": "one_time"
+  },
+  {
+    "id": "6c2649fb-0d85-4b20-a320-acd6ae8dafad",
+    "friendly_name": "NordVPN",
+    "provider_key": "nordvpn",
+    "custom_price": {
+      "currency": "USD",
+      "amount": 100.66
+    },
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    },
+    "start_date": "2020-02-22T00:00:00Z",
+    "end_date": "2023-02-22T00:00:00Z",
+    "recurrency": "one_time"
+  },
+  {
+    "id": "109c0f3a-eb70-4a95-b00d-71b5fd381c54",
+    "friendly_name": "NordVPN",
+    "provider_key": "nordvpn",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 100.51
+    },
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    },
+    "start_date": "2023-06-07T00:00:00Z",
+    "end_date": "2025-06-07T00:00:00Z",
+    "recurrency": "one_time"
+  },
+  {
+    "id": "5daa9a8a-cd5a-45e2-abd9-002c8d5921ff",
+    "friendly_name": "NordVPN",
+    "provider_key": "nordvpn",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 179.86
+    },
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    },
+    "start_date": "2025-06-22T00:00:00Z",
+    "end_date": "2028-01-06T00:00:00Z",
+    "recurrency": "one_time"
+  },
   {
     "id": "f2a01127-8584-4ea3-962b-b16cecdc98c8",
     "friendly_name": "Mobile 300Go",
     "provider_key": "bouygues-telecom",
     "custom_price": {
       "currency": "EUR",
-        "amount": 15.99
+      "amount": 15.99
     },
     "start_date": "2020-05-23T00:00:00Z",
     "owner": {
@@ -152,7 +198,7 @@
     "provider_key": "jetbrains",
     "custom_price": {
       "currency": "EUR",
-        "amount": 277.20
+      "amount": 277.20
     },
     "start_date": "2024-03-28T00:00:00Z",
     "end_date": "2025-03-27T00:00:00Z",
@@ -225,5 +271,116 @@
       "type": "personal",
       "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
     }
+  },
+  {
+    "id": "03646b87-0572-4fa2-b51d-a62daa9e8da8",
+    "friendly_name": "Amazon prime",
+    "provider_key": "amazon-prime",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 69.90
+    },
+    "start_date": "2025-08-10T00:00:00Z",
+    "recurrency": "yearly",
+    "owner": {
+      "type": "family",
+      "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
+    },
+    "payer": {
+      "type": "family"
+    },
+    "service_users": [
+      "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+      "16e151e4-3e17-490d-9228-f275b1d1d833"
+    ]
+  },
+  {
+    "id": "83680a05-6974-4680-b6ee-65f1394f9689",
+    "friendly_name": "Internet",
+    "provider_key": "bouygues-telecom",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 23.99
+    },
+    "start_date": "2025-08-19T00:00:00Z",
+    "recurrency": "monthly",
+    "owner": {
+      "type": "family",
+      "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
+    },
+    "payer": {
+      "type": "family"
+    },
+    "service_users": [
+      "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+      "16e151e4-3e17-490d-9228-f275b1d1d833"
+    ]
+  },
+  {
+    "id": "d6352624-ce1a-46ae-8f56-a66f116ab397",
+    "friendly_name": "Nounou top",
+    "provider_key": "nounou-top",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 9.99
+    },
+    "start_date": "2025-08-07T00:00:00Z",
+    "recurrency": "monthly",
+    "owner": {
+      "type": "family",
+      "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
+    },
+    "payer": {
+      "type": "family"
+    },
+    "service_users": [
+      "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+      "16e151e4-3e17-490d-9228-f275b1d1d833"
+    ]
+  },
+  {
+    "id": "933f38c8-98e3-4ede-8670-70dad4cecaf5",
+    "friendly_name": "mistribe.com",
+    "provider_key": "ovh-cloud",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 15.11
+    },
+    "recurrency": "yearly",
+    "start_date": "2024-07-03T00:00:00Z",
+    "end_date": "2025-07-03T00:00:00Z",
+    "owner": {
+      "type": "family",
+      "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
+    },
+    "payer": {
+      "type": "family"
+    },
+    "service_users": [
+      "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+      "16e151e4-3e17-490d-9228-f275b1d1d833"
+    ]
+  },
+  {
+    "id": "c757f1fe-f0f7-4cb1-8a62-06322eee4b2c",
+    "friendly_name": "mistribe.com",
+    "provider_key": "ovh-cloud",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 16.19
+    },
+    "recurrency": "yearly",
+    "start_date": "2025-07-03T00:00:00Z",
+    "owner": {
+      "type": "family",
+      "family_id": "d317369c-c6ec-4e04-9277-d7477a9635e9"
+    },
+    "payer": {
+      "type": "family"
+    },
+    "service_users": [
+      "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
+      "16e151e4-3e17-490d-9228-f275b1d1d833"
+    ]
   }
 ]

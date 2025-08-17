@@ -11,7 +11,7 @@
       "website",
       "pricing_page",
       "icon",
-      "categories",
+      "categories"
     ],
     "properties": {
       "name": {
@@ -53,7 +53,10 @@
             "storage",
             "internet",
             "mobile",
-            "work"
+            "work",
+            "kid",
+            "cloud",
+            "hosting"
           ]
         },
         "minItems": 1

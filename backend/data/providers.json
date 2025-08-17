@@ -177,7 +177,7 @@
     "pricing_page": "https://www.bouyguestelecom.fr/offres-internet",
     "icon": "https://upload.wikimedia.org/wikipedia/fr/thumb/2/2b/Bouygues_T%C3%A9l%C3%A9com.png/1280px-Bouygues_T%C3%A9l%C3%A9com.png",
     "categories": [
-     "mobile",
+      "mobile",
       "internet"
     ]
   },
@@ -210,6 +210,27 @@
     "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/JetBrains_company_logo.svg/500px-JetBrains_company_logo.svg.png",
     "categories": [
       "work"
+    ]
+  },
+  {
+    "name": "Nounou Top",
+    "key": "nounou-top",
+    "categories": [
+      "kid"
+    ],
+    "icon": "https://www.nounou-top.fr/assets/brands/logos-original/nounou-top-bb65782fdf37a51e3ed90d49865e5523a556006f2ec5d983645a75c00bf59421.svg",
+    "pricing_page": "https://www.nounou-top.fr/gestion",
+    "website": "https://www.nounou-top.fr/"
+  },
+  {
+    "name": "OVH Cloud",
+    "key": "ovh-cloud",
+    "website": "https://www.ovh.com/",
+    "pricing_page": "https://www.ovh.com/fr/public-cloud/",
+    "icon": "https://en.wikipedia.org/wiki/OVHcloud#/media/File:Logo-OVH.svg",
+    "categories": [
+      "hosting",
+      "cloud"
     ]
   }
 ]
