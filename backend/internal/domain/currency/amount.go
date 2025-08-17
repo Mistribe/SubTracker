@@ -90,7 +90,7 @@ func (a amount) ToCurrency(
 	return amount{
 		value:    currencyValue,
 		currency: to,
-		source:   usdAmount,
+		source:   &a,
 		isValid:  true,
 	}
 }
