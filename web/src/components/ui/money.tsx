@@ -5,7 +5,6 @@ export interface MoneyProps {
     // Supports new API: pass an Amount instance, and optional source Amount.
     // Backward compatibility: accepts a number with a separate currency prop.
     amount: Amount | undefined | null;
-    source?: Amount;
     className?: string;
     /**
      * Minimum fraction digits when formatting. Defaults to 2.
@@ -36,7 +35,6 @@ function format(amount: number | undefined, currency: string | undefined, min = 
 
 export const Money: React.FC<MoneyProps> = ({
                                                 amount,
-                                                source,
                                                 className,
                                                 minimumFractionDigits = 2,
                                                 maximumFractionDigits = 2,
@@ -49,18 +47,18 @@ export const Money: React.FC<MoneyProps> = ({
             maximumFractionDigits,
         );
 
-        const showSource = !!source && source.currency !== amount?.currency;
+        const showSource = !!amount?.source && amount.currency !== amount?.currency;
         const original = showSource
             ? format(
-                source!.value,
-                source!.currency,
+                amount.value,
+                amount.currency,
                 minimumFractionDigits,
                 maximumFractionDigits,
             )
             : null;
 
         return {displayMain: main, displayOriginal: original};
-    }, [amount, source, minimumFractionDigits, maximumFractionDigits]);
+    }, [amount,  minimumFractionDigits, maximumFractionDigits]);
 
     return (
         <span className={className}>

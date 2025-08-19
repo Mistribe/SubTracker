@@ -1,6 +1,8 @@
 import type {ReactNode} from "react";
 import {useEffect, useRef, useState} from "react";
 import {Input} from "@/components/ui/input";
+import {Button} from "@/components/ui/button.tsx";
+import {SlidersHorizontalIcon} from "lucide-react";
 
 export interface PageHeaderProps {
     /**
@@ -24,6 +26,12 @@ export interface PageHeaderProps {
     onSearchChange?: (value: string) => void;
 
     /**
+     * A callback function that is invoked when a filter action is triggered.
+     * Typically used to handle the application of filters in a user interface or
+     * other context-dependent logic.
+     */
+    onFilter?: () => void;
+    /**
      * Custom action button
      */
     actionButton?: ReactNode;
@@ -46,6 +54,7 @@ export const PageHeader = ({
                                searchText = "",
                                onSearchChange,
                                actionButton,
+                               onFilter,
                                searchPlaceholder = "Search...",
                                searchDebounceMs = 300,
                            }: PageHeaderProps) => {
@@ -103,6 +112,11 @@ export const PageHeader = ({
                             onChange={(e) => setLocalValue(e.target.value)}
                             className="max-w-md"
                         />
+                        {onFilter && (
+                            <Button size="icon" onClick={onFilter}>
+                                <SlidersHorizontalIcon />
+                            </Button>
+                        )}
                     </div>
                 )}
 
