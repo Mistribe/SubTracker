@@ -7,6 +7,8 @@ import Subscription from "@/models/subscription";
 interface SubscriptionsQueryOptions {
     limit?: number;
     search?: string;
+    sortBy?: 'provider' | 'name' | 'price' | 'recurrency' | 'dates' | 'status';
+    sortOrder?: 'asc' | 'desc';
 }
 
 /**
@@ -17,12 +19,14 @@ export const useSubscriptionsQuery = (options: SubscriptionsQueryOptions = {}) =
     const {
         limit = 10,
         search,
+        sortBy,
+        sortOrder,
     } = options;
 
     const {apiClient} = useApiClient();
 
     return useInfiniteQuery({
-        queryKey: ['subscriptions', "preferredCurrency", limit, search],
+        queryKey: ['subscriptions', "preferredCurrency", limit, search, sortBy, sortOrder],
         enabled: !!apiClient,
         staleTime: 5 * 60 * 1000, // 5 minutes
         refetchOnWindowFocus: true,
@@ -36,6 +40,8 @@ export const useSubscriptionsQuery = (options: SubscriptionsQueryOptions = {}) =
                 search: search,
                 limit,
                 offset: pageParam,
+                sortBy: sortBy,
+                sortOrder: sortOrder,
             };
 
             try {

@@ -10,7 +10,10 @@ import {
     CircleCheckIcon, CircleXIcon,
     CreditCardIcon, EllipsisVerticalIcon,
     Loader2,
-    UsersIcon
+    UsersIcon,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown,
 } from "lucide-react";
 import {format} from "date-fns";
 import {
@@ -19,6 +22,7 @@ import {
     DropdownMenuItem, DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
+import type { SortingState } from "@tanstack/react-table";
 
 export type SubscriptionsTableProps = {
     subscriptions: Subscription[];
@@ -26,6 +30,8 @@ export type SubscriptionsTableProps = {
     onEdit: (subscription: Subscription) => void;
     onDelete: (subscription: Subscription) => void;
     isFetchingNextPage?: boolean;
+    sorting?: SortingState;
+    onSortingChange?: (sorting: SortingState) => void;
 };
 
 
@@ -35,19 +41,147 @@ export function SubscriptionsTable({
                                        onEdit,
                                        onDelete,
                                        isFetchingNextPage,
+                                       sorting,
+                                       onSortingChange,
                                    }: SubscriptionsTableProps) {
+    const getSortState = (id: string): 'none' | 'asc' | 'desc' => {
+        const current = sorting && sorting.length > 0 ? sorting[0] : undefined;
+        if (!current || current.id !== id) return 'none';
+        return current.desc ? 'desc' : 'asc';
+    };
+
+    const toggleSort = (id: string) => {
+        const state = getSortState(id);
+        if (!onSortingChange) return;
+        if (state === 'none') {
+            onSortingChange([{ id, desc: false }]);
+        } else if (state === 'asc') {
+            onSortingChange([{ id, desc: true }]);
+        } else {
+            onSortingChange([]);
+        }
+    };
+
     return (
         <div className="overflow-hidden rounded-lg border">
             <Table>
                 <TableHeader className="bg-muted sticky">
                     <TableRow>
-                        <TableHead>Provider</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Recurrency</TableHead>
-                        <TableHead>Dates</TableHead>
+                        <TableHead>
+                            <Button
+                                variant="ghost"
+                                className="px-0 font-semibold hover:bg-transparent"
+                                onClick={() => toggleSort('provider')}
+                            >
+                                <span>Provider</span>
+                                {(() => {
+                                    const state = getSortState('provider');
+                                    return state === 'asc' ? (
+                                        <ArrowUp className="ml-2 h-4 w-4" />
+                                    ) : state === 'desc' ? (
+                                        <ArrowDown className="ml-2 h-4 w-4" />
+                                    ) : (
+                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+                                    );
+                                })()}
+                            </Button>
+                        </TableHead>
+                        <TableHead>
+                            <Button
+                                variant="ghost"
+                                className="px-0 font-semibold hover:bg-transparent"
+                                onClick={() => toggleSort('name')}
+                            >
+                                <span>Name</span>
+                                {(() => {
+                                    const state = getSortState('name');
+                                    return state === 'asc' ? (
+                                        <ArrowUp className="ml-2 h-4 w-4" />
+                                    ) : state === 'desc' ? (
+                                        <ArrowDown className="ml-2 h-4 w-4" />
+                                    ) : (
+                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+                                    );
+                                })()}
+                            </Button>
+                        </TableHead>
+                        <TableHead>
+                            <Button
+                                variant="ghost"
+                                className="px-0 font-semibold hover:bg-transparent"
+                                onClick={() => toggleSort('price')}
+                            >
+                                <span>Price</span>
+                                {(() => {
+                                    const state = getSortState('price');
+                                    return state === 'asc' ? (
+                                        <ArrowUp className="ml-2 h-4 w-4" />
+                                    ) : state === 'desc' ? (
+                                        <ArrowDown className="ml-2 h-4 w-4" />
+                                    ) : (
+                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+                                    );
+                                })()}
+                            </Button>
+                        </TableHead>
+                        <TableHead>
+                            <Button
+                                variant="ghost"
+                                className="px-0 font-semibold hover:bg-transparent"
+                                onClick={() => toggleSort('recurrency')}
+                            >
+                                <span>Recurrency</span>
+                                {(() => {
+                                    const state = getSortState('recurrency');
+                                    return state === 'asc' ? (
+                                        <ArrowUp className="ml-2 h-4 w-4" />
+                                    ) : state === 'desc' ? (
+                                        <ArrowDown className="ml-2 h-4 w-4" />
+                                    ) : (
+                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+                                    );
+                                })()}
+                            </Button>
+                        </TableHead>
+                        <TableHead>
+                            <Button
+                                variant="ghost"
+                                className="px-0 font-semibold hover:bg-transparent"
+                                onClick={() => toggleSort('dates')}
+                            >
+                                <span>Dates</span>
+                                {(() => {
+                                    const state = getSortState('dates');
+                                    return state === 'asc' ? (
+                                        <ArrowUp className="ml-2 h-4 w-4" />
+                                    ) : state === 'desc' ? (
+                                        <ArrowDown className="ml-2 h-4 w-4" />
+                                    ) : (
+                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+                                    );
+                                })()}
+                            </Button>
+                        </TableHead>
                         <TableHead>Users</TableHead>
-                        <TableHead>Status</TableHead>
+                        <TableHead>
+                            <Button
+                                variant="ghost"
+                                className="px-0 font-semibold hover:bg-transparent"
+                                onClick={() => toggleSort('status')}
+                            >
+                                <span>Status</span>
+                                {(() => {
+                                    const state = getSortState('status');
+                                    return state === 'asc' ? (
+                                        <ArrowUp className="ml-2 h-4 w-4" />
+                                    ) : state === 'desc' ? (
+                                        <ArrowDown className="ml-2 h-4 w-4" />
+                                    ) : (
+                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+                                    );
+                                })()}
+                            </Button>
+                        </TableHead>
                         <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                 </TableHeader>

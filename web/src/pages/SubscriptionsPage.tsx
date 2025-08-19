@@ -12,6 +12,7 @@ import { SubscriptionsTable } from "@/components/subscriptions/ui/SubscriptionsT
 import { SubscriptionsTableSkeleton } from "@/components/subscriptions/ui/SubscriptionsTableSkeleton";
 import { SubscriptionsErrorState } from "@/components/subscriptions/ui/SubscriptionsErrorState";
 import { SubscriptionsEmptyState } from "@/components/subscriptions/ui/SubscriptionsEmptyState";
+import type { SortingState } from "@tanstack/react-table";
 
 const SubscriptionsPage = () => {
     const navigate = useNavigate();
@@ -19,6 +20,7 @@ const SubscriptionsPage = () => {
     const [subscriptionToDelete, setSubscriptionToDelete] = useState<Subscription | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [sorting, setSorting] = useState<SortingState>([]);
 
     const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -59,7 +61,11 @@ const SubscriptionsPage = () => {
         hasNextPage,
         fetchNextPage,
         isFetchingNextPage,
-    } = useSubscriptionsQuery({ search: searchText || undefined });
+    } = useSubscriptionsQuery({ 
+        search: searchText || undefined,
+        sortBy: sorting.length > 0 ? (sorting[0].id as 'provider' | 'name' | 'price' | 'recurrency' | 'dates' | 'status') : undefined,
+        sortOrder: sorting.length > 0 ? (sorting[0].desc ? 'desc' : 'asc') : undefined,
+    });
 
     // Flatten all subscriptions from all pages
     const allSubscriptions = data?.pages.flatMap(page => page.subscriptions) || [];
@@ -133,6 +139,8 @@ const SubscriptionsPage = () => {
                             onEdit={(s) => navigate(`/subscriptions/edit/${s.id}`)}
                             onDelete={handleDeleteClick}
                             isFetchingNextPage={isFetchingNextPage}
+                            sorting={sorting}
+                            onSortingChange={setSorting}
                         />
                     ) : searchText !== "" ? (
                         <div className="text-center mt-8">

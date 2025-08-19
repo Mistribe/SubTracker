@@ -90,11 +90,19 @@ export interface SubscriptionsRequestBuilderGetQueryParameters {
      * Search text
      */
     search?: string;
+    /**
+     * Sort by field
+     */
+    sortBy?: string;
+    /**
+     * Sort order (asc, desc)
+     */
+    sortOrder?: string;
 }
 /**
  * Uri template for the request builder.
  */
-export const SubscriptionsRequestBuilderUriTemplate = "{+baseurl}/subscriptions{?limit*,offset*,search*}";
+export const SubscriptionsRequestBuilderUriTemplate = "{+baseurl}/subscriptions{?limit*,offset*,search*,sortBy*,sortOrder*}";
 /**
  * Metadata for all the navigation properties in the request builder.
  */
