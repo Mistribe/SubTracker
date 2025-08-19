@@ -22,7 +22,7 @@ export const useSubscriptionsQuery = (options: SubscriptionsQueryOptions = {}) =
     const {apiClient} = useApiClient();
 
     return useInfiniteQuery({
-        queryKey: ['subscriptions', 'all', limit, search],
+        queryKey: ['subscriptions', "preferredCurrency", limit, search],
         enabled: !!apiClient,
         staleTime: 5 * 60 * 1000, // 5 minutes
         refetchOnWindowFocus: true,

@@ -36,6 +36,7 @@ export function useSubscriptionSummaryQuery(options: UseSubscriptionSummaryQuery
         queryKey: [
             "subscriptions",
             "summary",
+            "preferredCurrency",
             topProviders,
             totalMonthly,
             totalYearly,
