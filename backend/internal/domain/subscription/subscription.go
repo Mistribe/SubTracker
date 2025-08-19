@@ -59,6 +59,8 @@ type Subscription interface {
 	GetTotalSpent() currency.Amount
 	// IsActive returns true if the subscription is active
 	IsActive() bool
+	// IsActiveAt determines whether the subscription is active at the given time t.
+	IsActiveAt(t time.Time) bool
 
 	SetFriendlyName(name *string)
 	SetFreeTrial(trial FreeTrial)
@@ -127,6 +129,16 @@ func NewSubscription(
 		recurrency:       recurrency,
 		customRecurrency: customRecurrency,
 	}
+}
+
+func (s *subscription) IsActiveAt(t time.Time) bool {
+	if s.startDate.After(t) {
+		return false
+	}
+	if s.endDate != nil {
+		return s.endDate.After(t)
+	}
+	return true
 }
 
 func (s *subscription) IsActive() bool {

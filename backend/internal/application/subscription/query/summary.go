@@ -37,7 +37,9 @@ type SummaryQueryTopProvidersResponse struct {
 type SummaryQueryResponse struct {
 	Active           uint16
 	TotalMonthly     currency.Amount
+	TotalLastMonth   currency.Amount
 	TotalYearly      currency.Amount
+	TotalLastYear    currency.Amount
 	UpcomingRenewals []SummaryQueryUpcomingRenewalsResponse
 	TopProviders     []SummaryQueryTopProvidersResponse
 }
@@ -83,6 +85,10 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 	var upcomingRenewals []SummaryQueryUpcomingRenewalsResponse
 	totalMonthly := 0.0
 	totalYearly := 0.0
+	totalLastMonth := 0.0
+	totalLastYear := 0.0
+	lastMonth := time.Now().AddDate(0, -1, 0)
+	lastYear := time.Now().AddDate(-1, 0, 0)
 	var active uint16
 	for sub := range h.subscriptionRepository.GetAllIt(ctx, userId, "") {
 		if sub.IsActive() {
@@ -95,12 +101,24 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 					totalMonthly += monthlyAmount.ToCurrency(preferredCurrency, currencyRates).Value()
 				}
 			}
+			if sub.IsActiveAt(lastMonth) {
+				lastMonthAmount := sub.GetRecurrencyAmount(subscription.MonthlyRecurrency)
+				if lastMonthAmount.IsValid() {
+					totalLastMonth += lastMonthAmount.ToCurrency(preferredCurrency, currencyRates).Value()
+				}
+			}
 		}
 		if query.TotalYearly {
 			if sub.IsActive() {
 				yearlyAmount := sub.GetRecurrencyAmount(subscription.YearlyRecurrency)
 				if yearlyAmount.IsValid() {
 					totalYearly += yearlyAmount.ToCurrency(preferredCurrency, currencyRates).Value()
+				}
+			}
+			if sub.IsActiveAt(lastYear) {
+				lastYearAmount := sub.GetRecurrencyAmount(subscription.YearlyRecurrency)
+				if lastYearAmount.IsValid() {
+					totalLastYear += lastYearAmount.ToCurrency(preferredCurrency, currencyRates).Value()
 				}
 			}
 		}
@@ -137,6 +155,8 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 		Active:           active,
 		TotalMonthly:     currency.NewAmount(totalMonthly, preferredCurrency),
 		TotalYearly:      currency.NewAmount(totalYearly, preferredCurrency),
+		TotalLastMonth:   currency.NewAmount(totalLastMonth, preferredCurrency),
+		TotalLastYear:    currency.NewAmount(totalLastYear, preferredCurrency),
 		UpcomingRenewals: upcomingRenewals,
 		TopProviders: slicesx.MapToArr(topProviders,
 			func(providerId uuid.UUID, total float64) SummaryQueryTopProvidersResponse {

@@ -12,6 +12,21 @@ openapi:
 	cd ../scripts &&\
 	./http-client-gen.sh
 
+clients: typescript-client dart-client
+
+typescript-client:
+	docker pull mcr.microsoft.com/openapi/kiota && \
+    docker run --rm -v ../web/src/api:/app/output \
+    -v ./cmd/api/docs/swagger.yaml:/app/openapi.yaml \
+    --user $(id -u):$(id -g) \
+    mcr.microsoft.com/openapi/kiota generate --language typescript
+
+dart-client:
+	docker pull mcr.microsoft.com/openapi/kiota && \
+    docker run --rm -v ../mobile/lib/api:/app/output \
+    -v ./cmd/api/docs/swagger.yaml:/app/openapi.yaml \
+    --user $(id -u):$(id -g) \
+    mcr.microsoft.com/openapi/kiota generate --language dart
 run-deps:
 	@docker compose down -v && docker compose up --build database database.migration
 

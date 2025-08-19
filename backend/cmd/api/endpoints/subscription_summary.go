@@ -44,6 +44,8 @@ type SubscriptionSummaryResponse struct {
 	Active           uint16                                       `json:"active" example:"10" description:"Number of active subscriptions"`
 	TotalMonthly     AmountModel                                  `json:"total_monthly" description:"Total monthly subscription costs"`
 	TotalYearly      AmountModel                                  `json:"total_yearly"  description:"Total yearly subscription costs"`
+	TotalLastMonth   AmountModel                                  `json:"total_last_month" description:"Total monthly subscription costs for last month"`
+	TotalLastYear    AmountModel                                  `json:"total_last_year" description:"Total yearly subscription costs for last year"`
 	TopProviders     []SubscriptionSummaryTopProviderResponse     `json:"top_providers" description:"List of top providers by cost"`
 	UpcomingRenewals []SubscriptionSummaryUpcomingRenewalResponse `json:"upcoming_renewals" description:"List of upcoming subscription renewals"`
 }
@@ -82,9 +84,11 @@ func (e SubscriptionSummaryEndpoint) Handle(c *gin.Context) {
 		r,
 		withMapping[query.SummaryQueryResponse](func(res query.SummaryQueryResponse) any {
 			return SubscriptionSummaryResponse{
-				Active:       res.Active,
-				TotalMonthly: newAmount(res.TotalMonthly),
-				TotalYearly:  newAmount(res.TotalYearly),
+				Active:         res.Active,
+				TotalMonthly:   newAmount(res.TotalMonthly),
+				TotalYearly:    newAmount(res.TotalYearly),
+				TotalLastMonth: newAmount(res.TotalLastMonth),
+				TotalLastYear:  newAmount(res.TotalLastYear),
 				TopProviders: slicesx.Select(res.TopProviders,
 					func(topProvider query.SummaryQueryTopProvidersResponse) SubscriptionSummaryTopProviderResponse {
 						return SubscriptionSummaryTopProviderResponse{

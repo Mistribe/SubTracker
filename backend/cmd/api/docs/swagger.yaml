@@ -626,6 +626,10 @@ components:
             $ref: '#/components/schemas/endpoints.SubscriptionSummaryTopProviderResponse'
           type: array
           uniqueItems: false
+        total_last_month:
+          $ref: '#/components/schemas/endpoints.AmountModel'
+        total_last_year:
+          $ref: '#/components/schemas/endpoints.AmountModel'
         total_monthly:
           $ref: '#/components/schemas/endpoints.AmountModel'
         total_yearly:
