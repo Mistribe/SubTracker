@@ -79,6 +79,10 @@ export interface SubscriptionsRequestBuilder extends BaseRequestBuilder<Subscrip
  */
 export interface SubscriptionsRequestBuilderGetQueryParameters {
     /**
+     * Filter by start date (RFC3339)
+     */
+    fromDate?: string;
+    /**
      * Number of items per page (default: 10)
      */
     limit?: number;
@@ -86,6 +90,14 @@ export interface SubscriptionsRequestBuilderGetQueryParameters {
      * Page number (default: 0)
      */
     offset?: number;
+    /**
+     * Filter by provider IDs
+     */
+    providers?: string[];
+    /**
+     * Filter by recurrency types
+     */
+    recurrencies?: string[];
     /**
      * Search text
      */
@@ -98,11 +110,29 @@ export interface SubscriptionsRequestBuilderGetQueryParameters {
      * Sort order (asc, desc)
      */
     sortOrder?: string;
+    /**
+     * Filter by end date (RFC3339)
+     */
+    toDate?: string;
+    /**
+     * Filter by user IDs
+     */
+    users?: string[];
+    /**
+     * Include inactive subscriptions
+     */
+    withInactive?: boolean;
 }
 /**
  * Uri template for the request builder.
  */
-export const SubscriptionsRequestBuilderUriTemplate = "{+baseurl}/subscriptions{?limit*,offset*,search*,sortBy*,sortOrder*}";
+export const SubscriptionsRequestBuilderUriTemplate = "{+baseurl}/subscriptions{?fromDate*,limit*,offset*,providers*,recurrencies*,search*,sortBy*,sortOrder*,toDate*,users*,with_inactive*}";
+/**
+ * Mapper for query parameters from symbol name to serialization name represented as a constant.
+ */
+const SubscriptionsRequestBuilderGetQueryParametersMapper: Record<string, string> = {
+    "withInactive": "with_inactive",
+};
 /**
  * Metadata for all the navigation properties in the request builder.
  */
@@ -128,6 +158,7 @@ export const SubscriptionsRequestBuilderRequestsMetadata: RequestsMetadata = {
         },
         adapterMethodName: "send",
         responseBodyFactory:  createPaginatedResponseModelEndpoints_SubscriptionModelFromDiscriminatorValue,
+        queryParametersMapper: SubscriptionsRequestBuilderGetQueryParametersMapper,
     },
     patch: {
         uriTemplate: SubscriptionsRequestBuilderUriTemplate,

@@ -105,16 +105,16 @@ export const PageHeader = ({
                 </div>
                 {/* Search input */}
                 {onSearchChange && (
-                    <div className="flex justify-center w-120">
+                    <div className="flex justify-center space-x-2">
                         <Input
                             placeholder={searchPlaceholder}
                             value={localValue}
                             onChange={(e) => setLocalValue(e.target.value)}
-                            className="max-w-md"
+                            className="w-120"
                         />
                         {onFilter && (
                             <Button size="icon" onClick={onFilter}>
-                                <SlidersHorizontalIcon />
+                                <SlidersHorizontalIcon/>
                             </Button>
                         )}
                     </div>

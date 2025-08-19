@@ -8,11 +8,13 @@ import {Button} from "@/components/ui/button";
 import {PlusIcon} from "lucide-react";
 import Subscription from "@/models/subscription";
 import {DeleteSubscriptionDialog} from "@/components/subscriptions/DeleteSubscriptionDialog";
-import { SubscriptionsTable } from "@/components/subscriptions/ui/SubscriptionsTable";
-import { SubscriptionsTableSkeleton } from "@/components/subscriptions/ui/SubscriptionsTableSkeleton";
-import { SubscriptionsErrorState } from "@/components/subscriptions/ui/SubscriptionsErrorState";
-import { SubscriptionsEmptyState } from "@/components/subscriptions/ui/SubscriptionsEmptyState";
-import type { SortingState } from "@tanstack/react-table";
+import {SubscriptionsTable} from "@/components/subscriptions/ui/SubscriptionsTable";
+import {SubscriptionsTableSkeleton} from "@/components/subscriptions/ui/SubscriptionsTableSkeleton";
+import {SubscriptionsErrorState} from "@/components/subscriptions/ui/SubscriptionsErrorState";
+import {SubscriptionsEmptyState} from "@/components/subscriptions/ui/SubscriptionsEmptyState";
+import {SubscriptionsFilters} from "@/components/subscriptions/ui/SubscriptionsFilters";
+import type {SortingState} from "@tanstack/react-table";
+import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
 
 const SubscriptionsPage = () => {
     const navigate = useNavigate();
@@ -21,6 +23,33 @@ const SubscriptionsPage = () => {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [sorting, setSorting] = useState<SortingState>([]);
+
+    // Filters state for drawer
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [fromDateStr, setFromDateStr] = useState<string>("");
+    const [toDateStr, setToDateStr] = useState<string>("");
+    const [providersFilter, setProvidersFilter] = useState<string[]>([]);
+    const [recurrenciesFilter, setRecurrenciesFilter] = useState<SubscriptionRecurrency[]>([]);
+    const [usersCsv, setUsersCsv] = useState<string>("");
+    const [withInactive, setWithInactive] = useState<boolean>(false);
+
+    const toggleProvider = (id: string) => {
+        setProvidersFilter(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    };
+
+    const toggleRecurrency = (r: SubscriptionRecurrency) => {
+        setRecurrenciesFilter(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]);
+    };
+
+    const handleClearFilters = () => {
+        setFromDateStr("");
+        setToDateStr("");
+        setProvidersFilter([]);
+        setRecurrenciesFilter([]);
+        setUsersCsv("");
+        setWithInactive(false);
+    };
+
 
     const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -53,6 +82,11 @@ const SubscriptionsPage = () => {
         }
     };
 
+    // Derived filter values
+    const fromDate = fromDateStr ? new Date(fromDateStr) : undefined;
+    const toDate = toDateStr ? new Date(toDateStr) : undefined;
+    const users = usersCsv ? usersCsv.split(",").map(s => s.trim()).filter(Boolean) : [];
+
     // Query all subscriptions using the dedicated hook
     const {
         data,
@@ -61,10 +95,17 @@ const SubscriptionsPage = () => {
         hasNextPage,
         fetchNextPage,
         isFetchingNextPage,
-    } = useSubscriptionsQuery({ 
+    } = useSubscriptionsQuery({
+        limit: 10,
         search: searchText || undefined,
-        sortBy: sorting.length > 0 ? (sorting[0].id as 'provider' | 'name' | 'price' | 'recurrency' | 'dates' | 'status') : undefined,
+        sortBy: sorting.length > 0 ? (sorting[0].id as 'provider' | 'name' | 'recurrency' | 'dates') : undefined,
         sortOrder: sorting.length > 0 ? (sorting[0].desc ? 'desc' : 'asc') : undefined,
+        fromDate,
+        toDate,
+        providers: providersFilter.length ? providersFilter : undefined,
+        recurrencies: recurrenciesFilter.length ? recurrenciesFilter : undefined,
+        users: users.length ? users : undefined,
+        withInactive,
     });
 
     // Flatten all subscriptions from all pages
@@ -107,9 +148,7 @@ const SubscriptionsPage = () => {
 
     // Use Money component for currency display (conversion handled in UI).
 
-
-
-
+    const openFilter = () => setIsFilterOpen(true);
 
     return (
         <div className="container mx-auto py-6">
@@ -124,12 +163,13 @@ const SubscriptionsPage = () => {
                         Add Subscription
                     </Button>
                 }
+                onFilter={openFilter}
             />
 
             {isLoading ? (
-                <SubscriptionsTableSkeleton />
+                <SubscriptionsTableSkeleton/>
             ) : isError ? (
-                <SubscriptionsErrorState />
+                <SubscriptionsErrorState/>
             ) : (
                 <>
                     {allSubscriptions.length > 0 ? (
@@ -147,7 +187,7 @@ const SubscriptionsPage = () => {
                             <p className="text-muted-foreground">No subscriptions match your search criteria.</p>
                         </div>
                     ) : (
-                        <SubscriptionsEmptyState />
+                        <SubscriptionsEmptyState/>
                     )}
                 </>
             )}
@@ -155,6 +195,26 @@ const SubscriptionsPage = () => {
             {hasNextPage && (
                 <div ref={sentinelRef} className="h-1" aria-hidden/>
             )}
+
+            <SubscriptionsFilters
+                open={isFilterOpen}
+                onOpenChange={setIsFilterOpen}
+                fromDateStr={fromDateStr}
+                onFromDateChange={setFromDateStr}
+                toDateStr={toDateStr}
+                onToDateChange={setToDateStr}
+                providerMap={providerMap}
+                providersFilter={providersFilter}
+                onToggleProvider={toggleProvider}
+                recurrenciesFilter={recurrenciesFilter}
+                onToggleRecurrency={toggleRecurrency}
+                usersCsv={usersCsv}
+                onUsersCsvChange={setUsersCsv}
+                withInactive={withInactive}
+                onWithInactiveChange={setWithInactive}
+                onClear={handleClearFilters}
+                onApply={() => setIsFilterOpen(false)}
+            />
 
             {/* Delete Subscription Dialog */}
             {subscriptionToDelete && (

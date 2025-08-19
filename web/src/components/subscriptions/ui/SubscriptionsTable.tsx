@@ -6,23 +6,26 @@ import Provider from "@/models/provider";
 import Subscription from "@/models/subscription";
 import {RecurrencyBadge} from "@/components/subscriptions/ui/RecurrencyBadge";
 import {
+    ArrowDown,
+    ArrowUp,
+    ArrowUpDown,
     CalendarIcon,
-    CircleCheckIcon, CircleXIcon,
-    CreditCardIcon, EllipsisVerticalIcon,
+    CircleCheckIcon,
+    CircleXIcon,
+    CreditCardIcon,
+    EllipsisVerticalIcon,
     Loader2,
     UsersIcon,
-    ArrowUpDown,
-    ArrowUp,
-    ArrowDown,
 } from "lucide-react";
 import {format} from "date-fns";
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem, DropdownMenuSeparator,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
-import type { SortingState } from "@tanstack/react-table";
+import type {SortingState} from "@tanstack/react-table";
 
 export type SubscriptionsTableProps = {
     subscriptions: Subscription[];
@@ -54,9 +57,9 @@ export function SubscriptionsTable({
         const state = getSortState(id);
         if (!onSortingChange) return;
         if (state === 'none') {
-            onSortingChange([{ id, desc: false }]);
+            onSortingChange([{id, desc: false}]);
         } else if (state === 'asc') {
-            onSortingChange([{ id, desc: true }]);
+            onSortingChange([{id, desc: true}]);
         } else {
             onSortingChange([]);
         }
@@ -77,11 +80,11 @@ export function SubscriptionsTable({
                                 {(() => {
                                     const state = getSortState('provider');
                                     return state === 'asc' ? (
-                                        <ArrowUp className="ml-2 h-4 w-4" />
+                                        <ArrowUp className="ml-2 h-4 w-4"/>
                                     ) : state === 'desc' ? (
-                                        <ArrowDown className="ml-2 h-4 w-4" />
+                                        <ArrowDown className="ml-2 h-4 w-4"/>
                                     ) : (
-                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground"/>
                                     );
                                 })()}
                             </Button>
@@ -96,33 +99,17 @@ export function SubscriptionsTable({
                                 {(() => {
                                     const state = getSortState('name');
                                     return state === 'asc' ? (
-                                        <ArrowUp className="ml-2 h-4 w-4" />
+                                        <ArrowUp className="ml-2 h-4 w-4"/>
                                     ) : state === 'desc' ? (
-                                        <ArrowDown className="ml-2 h-4 w-4" />
+                                        <ArrowDown className="ml-2 h-4 w-4"/>
                                     ) : (
-                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground"/>
                                     );
                                 })()}
                             </Button>
                         </TableHead>
                         <TableHead>
-                            <Button
-                                variant="ghost"
-                                className="px-0 font-semibold hover:bg-transparent"
-                                onClick={() => toggleSort('price')}
-                            >
-                                <span>Price</span>
-                                {(() => {
-                                    const state = getSortState('price');
-                                    return state === 'asc' ? (
-                                        <ArrowUp className="ml-2 h-4 w-4" />
-                                    ) : state === 'desc' ? (
-                                        <ArrowDown className="ml-2 h-4 w-4" />
-                                    ) : (
-                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
-                                    );
-                                })()}
-                            </Button>
+                            Price
                         </TableHead>
                         <TableHead>
                             <Button
@@ -134,11 +121,11 @@ export function SubscriptionsTable({
                                 {(() => {
                                     const state = getSortState('recurrency');
                                     return state === 'asc' ? (
-                                        <ArrowUp className="ml-2 h-4 w-4" />
+                                        <ArrowUp className="ml-2 h-4 w-4"/>
                                     ) : state === 'desc' ? (
-                                        <ArrowDown className="ml-2 h-4 w-4" />
+                                        <ArrowDown className="ml-2 h-4 w-4"/>
                                     ) : (
-                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground"/>
                                     );
                                 })()}
                             </Button>
@@ -153,34 +140,18 @@ export function SubscriptionsTable({
                                 {(() => {
                                     const state = getSortState('dates');
                                     return state === 'asc' ? (
-                                        <ArrowUp className="ml-2 h-4 w-4" />
+                                        <ArrowUp className="ml-2 h-4 w-4"/>
                                     ) : state === 'desc' ? (
-                                        <ArrowDown className="ml-2 h-4 w-4" />
+                                        <ArrowDown className="ml-2 h-4 w-4"/>
                                     ) : (
-                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
+                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground"/>
                                     );
                                 })()}
                             </Button>
                         </TableHead>
                         <TableHead>Users</TableHead>
                         <TableHead>
-                            <Button
-                                variant="ghost"
-                                className="px-0 font-semibold hover:bg-transparent"
-                                onClick={() => toggleSort('status')}
-                            >
-                                <span>Status</span>
-                                {(() => {
-                                    const state = getSortState('status');
-                                    return state === 'asc' ? (
-                                        <ArrowUp className="ml-2 h-4 w-4" />
-                                    ) : state === 'desc' ? (
-                                        <ArrowDown className="ml-2 h-4 w-4" />
-                                    ) : (
-                                        <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground" />
-                                    );
-                                })()}
-                            </Button>
+                            Status
                         </TableHead>
                         <TableHead className="w-[50px]"></TableHead>
                     </TableRow>

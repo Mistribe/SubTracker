@@ -3,12 +3,19 @@ import {useApiClient} from "@/hooks/use-api-client";
 import type {SubscriptionModel} from "@/api/models";
 import type {SubscriptionsRequestBuilderGetQueryParameters} from "@/api/subscriptions";
 import Subscription from "@/models/subscription";
+import type {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
 
 interface SubscriptionsQueryOptions {
     limit?: number;
     search?: string;
-    sortBy?: 'provider' | 'name' | 'price' | 'recurrency' | 'dates' | 'status';
+    sortBy?: 'provider' | 'name' | 'recurrency' | 'dates';
     sortOrder?: 'asc' | 'desc';
+    fromDate?: Date;
+    toDate?: Date;
+    providers?: string[];
+    recurrencies?: SubscriptionRecurrency[];
+    users?: string[];
+    withInactive?: boolean;
 }
 
 /**
@@ -21,12 +28,31 @@ export const useSubscriptionsQuery = (options: SubscriptionsQueryOptions = {}) =
         search,
         sortBy,
         sortOrder,
+        fromDate,
+        toDate,
+        providers,
+        recurrencies,
+        users,
+        withInactive,
     } = options;
 
     const {apiClient} = useApiClient();
 
     return useInfiniteQuery({
-        queryKey: ['subscriptions', "preferredCurrency", limit, search, sortBy, sortOrder],
+        queryKey: [
+            'subscriptions',
+            'preferredCurrency',
+            limit,
+            search,
+            sortBy,
+            sortOrder,
+            fromDate ? fromDate.toISOString() : null,
+            toDate ? toDate.toISOString() : null,
+            providers ?? [],
+            recurrencies ?? [],
+            users ?? [],
+            withInactive ?? false,
+        ],
         enabled: !!apiClient,
         staleTime: 5 * 60 * 1000, // 5 minutes
         refetchOnWindowFocus: true,
@@ -38,10 +64,16 @@ export const useSubscriptionsQuery = (options: SubscriptionsQueryOptions = {}) =
 
             const queryParameters: SubscriptionsRequestBuilderGetQueryParameters = {
                 search: search,
+                fromDate: fromDate?.toISOString(),
+                toDate: toDate?.toISOString(),
                 limit,
                 offset: pageParam,
                 sortBy: sortBy,
                 sortOrder: sortOrder,
+                providers: providers,
+                recurrencies: recurrencies,
+                users: users,
+                withInactive: withInactive
             };
 
             try {

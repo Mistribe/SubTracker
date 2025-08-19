@@ -91,7 +91,28 @@ export function createApiClient(requestAdapter: RequestAdapter) {
     const pathParameters: Record<string, unknown> = {
         "baseurl": requestAdapter.baseUrl,
     };
-    return apiClientProxifier<ApiClient>(requestAdapter, pathParameters, ApiClientNavigationMetadata, undefined);
+    const proxied = apiClientProxifier<ApiClient>(requestAdapter, pathParameters, ApiClientNavigationMetadata, undefined);
+    // Wrap the Kiota proxified client to gracefully handle React/JS engine symbol and probe accesses
+    // that are not actual navigation properties (e.g., Symbol(react.memo_cache_sentinel), thenable checks, etc.).
+    const wrapped = new Proxy(proxied as unknown as object, {
+        get(target, prop, receiver) {
+            // Ignore any symbol-based property access coming from React internals
+            if (typeof prop === 'symbol') {
+                // Provide a friendly toStringTag if requested
+                if (prop === Symbol.toStringTag) return 'ApiClient';
+                return undefined;
+            }
+            // Prevent promise-like detection from treating the client as a thenable
+            if (prop === 'then') return undefined;
+            try {
+                // Delegate to the inner Kiota proxy. If it throws for unknown navigation property, return undefined.
+                return Reflect.get(target as any, prop, receiver);
+            } catch {
+                return undefined;
+            }
+        },
+    }) as ApiClient;
+    return wrapped;
 }
 /**
  * Uri template for the request builder.
