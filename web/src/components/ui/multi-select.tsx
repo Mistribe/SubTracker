@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -79,7 +78,12 @@ export function MultiSelect({
                       {opt!.label}
                       <X
                         className="h-3 w-3 cursor-pointer"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           handleToggle(opt!.value);
                         }}
