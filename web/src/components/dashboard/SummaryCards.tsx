@@ -7,6 +7,8 @@ import type {Amount} from "@/models/amount.ts";
 interface SummaryCardsProps {
     totalMonthly: Amount;
     totalYearly: Amount;
+    totalLastMonth: Amount;
+    totalLastYear: Amount;
     activeSubscriptionsCount: number;
     isLoading: boolean;
 }
@@ -14,6 +16,8 @@ interface SummaryCardsProps {
 const SummaryCards = ({
                           totalMonthly,
                           totalYearly,
+                          totalLastMonth,
+                          totalLastYear,
                           activeSubscriptionsCount,
                           isLoading,
                       }: SummaryCardsProps) => {

@@ -21,6 +21,8 @@ const DashboardPage = () => {
         upcomingRenewals: summaryUpcomingRenewals,
         totalMonthly: summaryMonthly,
         totalYearly: summaryYearly,
+        totalLastMonth: summaryLastMonth,
+        totalLastYear: summaryLastYear,
         topProviders: summaryTopProviders,
         isLoading: isLoadingSummary,
     } = useSubscriptionSummaryQuery({topProviders: 5, totalMonthly: true, totalYearly: true, upcomingRenewals: 5});
@@ -48,6 +50,8 @@ const DashboardPage = () => {
             <SummaryCards
                 totalMonthly={summaryMonthly}
                 totalYearly={summaryYearly}
+                totalLastMonth={summaryLastMonth}
+                totalLastYear={summaryLastYear}
                 activeSubscriptionsCount={summaryActiveSubscriptions}
                 isLoading={isLoadingSubscriptions || isLoadingSummary}
             />

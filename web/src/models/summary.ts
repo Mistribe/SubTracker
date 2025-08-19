@@ -7,6 +7,8 @@ export default interface Summary {
     topProviders: TopProvider[];
     totalMonthly: Amount;
     totalYearly: Amount;
+    totalLastMonth?: Amount;
+    totalLastYear?: Amount;
     upcomingRenewals: UpcomingRenewal[];
 }
 

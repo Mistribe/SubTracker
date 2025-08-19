@@ -1116,6 +1116,8 @@ export function deserializeIntoSubscriptionSummaryResponse(subscriptionSummaryRe
     return {
         "active": n => { subscriptionSummaryResponse.active = n.getNumberValue(); },
         "top_providers": n => { subscriptionSummaryResponse.topProviders = n.getCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>(createSubscriptionSummaryTopProviderResponseFromDiscriminatorValue); },
+        "total_last_month": n => { subscriptionSummaryResponse.totalLastMonth = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
+        "total_last_year": n => { subscriptionSummaryResponse.totalLastYear = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
         "total_monthly": n => { subscriptionSummaryResponse.totalMonthly = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
         "total_yearly": n => { subscriptionSummaryResponse.totalYearly = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
         "upcoming_renewals": n => { subscriptionSummaryResponse.upcomingRenewals = n.getCollectionOfObjectValues<SubscriptionSummaryUpcomingRenewalResponse>(createSubscriptionSummaryUpcomingRenewalResponseFromDiscriminatorValue); },
@@ -2261,6 +2263,8 @@ export function serializeSubscriptionSummaryResponse(writer: SerializationWriter
     if (!subscriptionSummaryResponse || isSerializingDerivedType) { return; }
     writer.writeNumberValue("active", subscriptionSummaryResponse.active);
     writer.writeCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>("top_providers", subscriptionSummaryResponse.topProviders, serializeSubscriptionSummaryTopProviderResponse);
+    writer.writeObjectValue<AmountModel>("total_last_month", subscriptionSummaryResponse.totalLastMonth, serializeAmountModel);
+    writer.writeObjectValue<AmountModel>("total_last_year", subscriptionSummaryResponse.totalLastYear, serializeAmountModel);
     writer.writeObjectValue<AmountModel>("total_monthly", subscriptionSummaryResponse.totalMonthly, serializeAmountModel);
     writer.writeObjectValue<AmountModel>("total_yearly", subscriptionSummaryResponse.totalYearly, serializeAmountModel);
     writer.writeCollectionOfObjectValues<SubscriptionSummaryUpcomingRenewalResponse>("upcoming_renewals", subscriptionSummaryResponse.upcomingRenewals, serializeSubscriptionSummaryUpcomingRenewalResponse);
@@ -2570,6 +2574,14 @@ export interface SubscriptionSummaryResponse extends AdditionalDataHolder, Parsa
      * The top_providers property
      */
     topProviders?: SubscriptionSummaryTopProviderResponse[] | null;
+    /**
+     * The total_last_month property
+     */
+    totalLastMonth?: AmountModel | null;
+    /**
+     * The total_last_year property
+     */
+    totalLastYear?: AmountModel | null;
     /**
      * The total_monthly property
      */

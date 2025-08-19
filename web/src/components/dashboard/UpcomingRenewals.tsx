@@ -1,7 +1,6 @@
 import {Skeleton} from "@/components/ui/skeleton";
 import {format} from "date-fns";
 import {Money} from "@/components/ui/money";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Calendar, Clock} from "lucide-react";
 import type UpcomingRenewal from "@/models/upcomingRenewals.ts";
 
@@ -23,12 +22,12 @@ const UpcomingRenewals = ({
                           }: UpcomingRenewalsProps) => {
     return (
         <div>
-            <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg border-t-4 border-t-cyan-500">
-                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                    <CardTitle className="text-xl font-medium">Upcoming Renewals</CardTitle>
+            <div>
+                <div className="flex flex-row items-center justify-between pb-5 space-y-0">
+                    <p className="text-xl font-medium">Upcoming Renewals</p>
                     <Calendar className="h-5 w-5 text-cyan-500 animate-pulse"/>
-                </CardHeader>
-                <CardContent>
+                </div>
+                <div>
                     {isLoading ? (
                         <div className="space-y-3">
                             {Array.from({length: 3}).map((_, i) => (
@@ -43,7 +42,7 @@ const UpcomingRenewals = ({
                             {summaryUpcomingRenewals.map((item, idx) => (
                                 <div
                                     key={`${item.providerId}-${item.at?.toString() ?? ""}-${idx}`}
-                                    className="p-3 border rounded-lg bg-card transition-all duration-200 hover:bg-muted/20"
+                                    className="p-3 border rounded-lg bg-card transition-all duration-300 hover:shadow-lg"
                                 >
                                     <div className="flex justify-between items-start">
                                         <h4 className="flex items-center font-medium">
@@ -65,8 +64,8 @@ const UpcomingRenewals = ({
                     ) : (
                         <p className="text-muted-foreground">No upcoming renewals found.</p>
                     )}
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </div>
     );
 };

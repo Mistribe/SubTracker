@@ -60,6 +60,8 @@ export function useSubscriptionSummaryQuery(options: UseSubscriptionSummaryQuery
                 activeSubscriptions: response?.active ?? 0,
                 totalMonthly: response?.totalMonthly as Amount ?? zeroAmount,
                 totalYearly: response?.totalYearly as Amount ?? zeroAmount,
+                totalLastMonth: response?.totalLastMonth as Amount ?? zeroAmount,
+                totalLastYear: response?.totalLastYear as Amount ?? zeroAmount,
                 topProviders: response?.topProviders ?? [],
                 upcomingRenewals: response?.upcomingRenewals ?? [],
             } as Summary;
@@ -74,6 +76,8 @@ export function useSubscriptionSummaryQuery(options: UseSubscriptionSummaryQuery
         activeSubscriptions: query.data?.activeSubscriptions ?? 0,
         totalMonthly: query.data?.totalMonthly ?? zeroAmount,
         totalYearly: query.data?.totalYearly ?? zeroAmount,
+        totalLastMonth: query.data?.totalLastMonth ?? zeroAmount,
+        totalLastYear: query.data?.totalLastYear ?? zeroAmount,
         topProviders: query.data?.topProviders ?? [],
         upcomingRenewals: query.data?.upcomingRenewals ?? [],
 
