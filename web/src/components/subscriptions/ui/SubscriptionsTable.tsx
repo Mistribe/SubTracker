@@ -10,7 +10,6 @@ import {
     CircleCheckIcon, CircleXIcon,
     CreditCardIcon, EllipsisVerticalIcon,
     Loader2,
-    TagIcon,
     UsersIcon
 } from "lucide-react";
 import {format} from "date-fns";
@@ -48,7 +47,6 @@ export function SubscriptionsTable({
                         <TableHead>Recurrency</TableHead>
                         <TableHead>Dates</TableHead>
                         <TableHead>Users</TableHead>
-                        <TableHead>Plan</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
@@ -104,12 +102,6 @@ export function SubscriptionsTable({
                                         <span>{subscription.serviceUsers.length}</span>
                                     </div>
                                 )}
-                            </TableCell>
-                            <TableCell>
-                                <div className="flex items-center">
-                                    <TagIcon className="mr-1 h-4 w-4 text-muted-foreground"/>
-                                    <span>{subscription.planId.substring(0, 8)}</span>
-                                </div>
                             </TableCell>
                             <TableCell>
                                 {subscription.freeTrial ? "Free Trial" : ""}
