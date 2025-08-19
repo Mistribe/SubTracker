@@ -2357,6 +2357,42 @@ paths:
         name: sortOrder
         schema:
           type: string
+      - description: Filter by recurrency types
+        in: query
+        name: recurrencies
+        schema:
+          items:
+            type: string
+          type: array
+      - description: Filter by start date (RFC3339)
+        in: query
+        name: fromDate
+        schema:
+          type: string
+      - description: Filter by end date (RFC3339)
+        in: query
+        name: toDate
+        schema:
+          type: string
+      - description: Filter by user IDs
+        in: query
+        name: users
+        schema:
+          items:
+            type: string
+          type: array
+      - description: Include inactive subscriptions
+        in: query
+        name: with_inactive
+        schema:
+          type: boolean
+      - description: Filter by provider IDs
+        in: query
+        name: providers
+        schema:
+          items:
+            type: string
+          type: array
       - description: 'Number of items per page (default: 10)'
         in: query
         name: limit

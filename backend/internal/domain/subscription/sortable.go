@@ -12,8 +12,6 @@ const (
 	ProviderNameSortableField SortableField = "provider_name"
 	StartDateSortableField    SortableField = "dates"
 	RecurrencySortableField   SortableField = "recurrency"
-	StatusSortableField       SortableField = "status"
-	PriceSortableField        SortableField = "price"
 )
 
 func (s SortableField) String() string {
@@ -30,10 +28,6 @@ func ParseSortableField(s string) SortableField {
 		return StartDateSortableField
 	case "recurrency":
 		return RecurrencySortableField
-	case "status":
-		return StatusSortableField
-	case "price":
-		return PriceSortableField
 	default:
 		return UnknownSortableField
 	}

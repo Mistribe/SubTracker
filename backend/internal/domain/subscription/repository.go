@@ -3,6 +3,7 @@ package subscription
 import (
 	"context"
 	"iter"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -13,15 +14,20 @@ import (
 type QueryParameters struct {
 	entity.QueryParameters
 
-	SearchText string
-	SortBy     SortableField
-	SortOrder  types.SortOrder
+	SearchText   string
+	WithInactive bool
+	Recurrency   []RecurrencyType
+	FromDate     *time.Time
+	ToDate       *time.Time
+	SortBy       SortableField
+	SortOrder    types.SortOrder
 }
 
 func NewQueryParameters(
 	searchText string,
 	sortBy SortableField,
 	sortOrder types.SortOrder,
+	withInactive bool,
 	limit, offset int32) QueryParameters {
 	if sortBy == "" {
 		sortBy = "friendly_name"
@@ -34,9 +40,10 @@ func NewQueryParameters(
 			Limit:  limit,
 			Offset: offset,
 		},
-		SearchText: searchText,
-		SortBy:     sortBy,
-		SortOrder:  sortOrder,
+		SearchText:   searchText,
+		SortBy:       sortBy,
+		SortOrder:    sortOrder,
+		WithInactive: withInactive,
 	}
 }
 
