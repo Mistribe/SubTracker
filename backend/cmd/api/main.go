@@ -8,6 +8,7 @@ import (
 
 	"github.com/oleexo/subtracker/internal/application"
 	"github.com/oleexo/subtracker/internal/application/system"
+	"github.com/oleexo/subtracker/internal/infrastructure/cache"
 	"github.com/oleexo/subtracker/internal/infrastructure/exch"
 	"github.com/oleexo/subtracker/internal/infrastructure/kinde"
 	"github.com/oleexo/subtracker/internal/infrastructure/logfx"
@@ -41,6 +42,7 @@ func main() {
 		BuildHttpServerModule(),
 		startup.BuildStartupModule(),
 		system.NewUpdaterModule(),
+		cache.FxModule(),
 		fx.Provide(
 			kinde.NewTokenGenerator,
 			exch.NewClient,

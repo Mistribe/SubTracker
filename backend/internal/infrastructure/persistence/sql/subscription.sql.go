@@ -584,8 +584,12 @@ WITH providers AS (SELECT p.id, p.name
                                                               FROM public.family_members fm
                                                               WHERE fm.family_id = p.owner_family_id
                                                                 AND fm.user_id = $1))),
-     matches AS (SELECT s.id
+     matches AS (SELECT s.id, s.owner_type, s.owner_family_id, s.owner_user_id, s.friendly_name, s.free_trial_start_date, s.free_trial_end_date, s.provider_id, s.plan_id, s.price_id, s.family_id, s.payer_type, s.payer_member_id, s.start_date, s.end_date, s.recurrency, s.custom_recurrency, s.custom_price_currency, s.custom_price_amount, s.created_at, s.updated_at, s.etag,
+                        (CURRENT_TIMESTAMP >= s.start_date AND
+                         (s.end_date IS NULL OR CURRENT_TIMESTAMP <= s.end_date)) AS is_active,
+                        p.name                                                    AS provider_name
                  FROM public.subscriptions s
+                          LEFT JOIN public.providers p ON p.id = s.provider_id
                  WHERE (
                      s.owner_type = 'system'
                          OR (s.owner_type = 'personal' AND s.owner_user_id = $1)
@@ -595,20 +599,30 @@ WITH providers AS (SELECT p.id, p.name
                                                                    AND fm.user_id = $1))
                      )
                    AND (
-                     -- Match everything when the search term is NULL or empty
                      NULLIF(BTRIM($2), '') IS NULL
                          OR s.friendly_name ILIKE '%' || $2 || '%'
                          OR EXISTS (SELECT 1
                                     FROM providers p
-                                    WHERE p.name ILIKE '%' || $2 || '%' AND p.id = s.provider_id)
-                     )
-                 ORDER BY $5
-                 ),
-     counted AS (SELECT m.id, COUNT(*) OVER () AS total_count
-                 FROM matches m),
-     paged AS (SELECT c.id, c.total_count
+                                    WHERE p.name ILIKE '%' || $2 || '%'
+                                      AND p.id = s.provider_id)
+                     )),
+     counted AS (SELECT m.id, m.owner_type, m.owner_family_id, m.owner_user_id, m.friendly_name, m.free_trial_start_date, m.free_trial_end_date, m.provider_id, m.plan_id, m.price_id, m.family_id, m.payer_type, m.payer_member_id, m.start_date, m.end_date, m.recurrency, m.custom_recurrency, m.custom_price_currency, m.custom_price_amount, m.created_at, m.updated_at, m.etag, m.is_active, m.provider_name, COUNT(*) OVER () AS total_count
+                 FROM matches m
+                 ORDER BY CASE WHEN $5::varchar = 'provider' AND $6::varchar = 'ASC' THEN m.provider_name END,
+                          CASE WHEN $5::varchar = 'provider' AND $6::varchar = 'DESC' THEN m.provider_name END DESC,
+                          CASE WHEN $5::varchar = 'name' AND $6::varchar = 'ASC' THEN m.friendly_name END,
+                          CASE WHEN $5::varchar = 'name' AND $6::varchar = 'DESC' THEN m.friendly_name END DESC,
+                          CASE WHEN $5::varchar = 'price' AND $6::varchar = 'ASC' THEN m.custom_price_amount END,
+                          CASE WHEN $5::varchar = 'price' AND $6::varchar = 'DESC' THEN m.custom_price_amount END DESC,
+                          CASE WHEN $5::varchar = 'recurrency' AND $6::varchar = 'ASC' THEN m.recurrency END,
+                          CASE WHEN $5::varchar = 'recurrency' AND $6::varchar = 'DESC' THEN m.recurrency END DESC,
+                          CASE WHEN $5::varchar = 'dates' AND $6::varchar = 'ASC' THEN m.start_date END,
+                          CASE WHEN $5::varchar = 'dates' AND $6::varchar = 'DESC' THEN m.start_date END DESC,
+                          CASE WHEN $5::varchar = 'status' AND $6::varchar = 'ASC' THEN m.is_active END,
+                          CASE WHEN $5::varchar = 'status' AND $6::varchar = 'DESC' THEN m.is_active END DESC,
+                          m.id),
+     paged AS (SELECT c.id, c.owner_type, c.owner_family_id, c.owner_user_id, c.friendly_name, c.free_trial_start_date, c.free_trial_end_date, c.provider_id, c.plan_id, c.price_id, c.family_id, c.payer_type, c.payer_member_id, c.start_date, c.end_date, c.recurrency, c.custom_recurrency, c.custom_price_currency, c.custom_price_amount, c.created_at, c.updated_at, c.etag, c.is_active, c.provider_name, c.total_count
                FROM counted c
-               ORDER BY c.id
                LIMIT $3 OFFSET $4)
 SELECT s.id                    AS "subscriptions.id",
        s.owner_type            AS "subscriptions.owner_type",
@@ -633,9 +647,8 @@ SELECT s.id                    AS "subscriptions.id",
        s.updated_at            AS "subscriptions.updated_at",
        s.etag                  AS "subscriptions.etag",
        su.family_member_id     AS "subscription_service_users.family_member_id",
-       p.total_count           AS "total_count"
-FROM paged p
-         JOIN public.subscriptions s ON s.id = p.id
+       s.total_count           AS "total_count"
+FROM paged s
          LEFT JOIN subscription_service_users su ON su.subscription_id = s.id
 `
 
@@ -644,7 +657,8 @@ type getSubscriptionsForUserParams struct {
 	Btrim       string
 	Limit       int32
 	Offset      int32
-	Column5     interface{}
+	Column5     string
+	Column6     string
 }
 
 type getSubscriptionsForUserRow struct {
@@ -681,6 +695,7 @@ func (q *Queries) getSubscriptionsForUser(ctx context.Context, arg getSubscripti
 		arg.Limit,
 		arg.Offset,
 		arg.Column5,
+		arg.Column6,
 	)
 	if err != nil {
 		return nil, err

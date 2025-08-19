@@ -1,11 +1,15 @@
 package types
 
+import (
+	"strings"
+)
+
 type SortOrder string
 
 const (
 	SortOrderNone SortOrder = ""
-	SortOrderAsc  SortOrder = "asc"
-	SortOrderDesc SortOrder = "desc"
+	SortOrderAsc  SortOrder = "ASC"
+	SortOrderDesc SortOrder = "ASC"
 )
 
 func (s SortOrder) String() string {
@@ -13,10 +17,10 @@ func (s SortOrder) String() string {
 }
 
 func ParseSortOrder(s string) SortOrder {
-	switch s {
-	case "asc":
+	switch strings.ToUpper(s) {
+	case "ASC":
 		return SortOrderAsc
-	case "desc":
+	case "DESC":
 		return SortOrderDesc
 	default:
 		return SortOrderNone

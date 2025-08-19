@@ -45,8 +45,9 @@ func (s SubscriptionGetAllEndpoint) Handle(c *gin.Context) {
 	if err != nil {
 		offset = 1
 	}
-	sortBy := c.DefaultQuery("sortBy", "")
-	sortOrder := types.ParseSortOrder(c.DefaultQuery("sortOrder", ""))
+	sortBy := subscription.ParseSortableField(c.DefaultQuery("sortBy", "name"))
+	sortOrder := types.ParseSortOrder(c.DefaultQuery("sortOrder", "asc"))
+
 	q := query.NewFindAllQuery(searchText, sortBy, sortOrder, int32(limit), int32(offset))
 	r := s.handler.Handle(c, q)
 	handleResponse(c,

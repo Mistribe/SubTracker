@@ -72,6 +72,7 @@ func createSubscriptionFromSqlcRows[T any](rows []T,
 	}
 
 	subscriptions := make(map[uuid.UUID]sql.Subscription)
+	orderedIDs := make([]uuid.UUID, 0, len(rows))
 	serviceUserSet := slicesx.NewSet[string]()
 	subscriptionServiceUsers := make(map[uuid.UUID][]uuid.UUID)
 
@@ -79,6 +80,7 @@ func createSubscriptionFromSqlcRows[T any](rows []T,
 		sqlcSubscription := getSubscriptionFunc(row)
 		if _, ok := subscriptions[sqlcSubscription.ID]; !ok {
 			subscriptions[sqlcSubscription.ID] = sqlcSubscription
+			orderedIDs = append(orderedIDs, sqlcSubscription.ID)
 		}
 		sqlcSubscriptionServiceUser := getSubscriptionServiceUserFunc(row)
 		if sqlcSubscriptionServiceUser != nil {
@@ -91,12 +93,11 @@ func createSubscriptionFromSqlcRows[T any](rows []T,
 		}
 	}
 
-	results := make([]subscription.Subscription, len(subscriptions))
-	count := 0
-	for subscriptionId, sqlcSubscription := range subscriptions {
+	results := make([]subscription.Subscription, 0, len(orderedIDs))
+	for _, subscriptionId := range orderedIDs {
+		sqlcSubscription := subscriptions[subscriptionId]
 		sqlcSubscriptionServiceUsers, _ := subscriptionServiceUsers[subscriptionId]
-		results[count] = createSubscriptionFromSqlc(sqlcSubscription, sqlcSubscriptionServiceUsers)
-		count++
+		results = append(results, createSubscriptionFromSqlc(sqlcSubscription, sqlcSubscriptionServiceUsers))
 	}
 
 	return results

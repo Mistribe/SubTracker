@@ -14,15 +14,21 @@ type QueryParameters struct {
 	entity.QueryParameters
 
 	SearchText string
-	SortBy     string
+	SortBy     SortableField
 	SortOrder  types.SortOrder
 }
 
 func NewQueryParameters(
 	searchText string,
-	sortBy string,
+	sortBy SortableField,
 	sortOrder types.SortOrder,
 	limit, offset int32) QueryParameters {
+	if sortBy == "" {
+		sortBy = "friendly_name"
+	}
+	if sortOrder == "" {
+		sortOrder = types.SortOrderAsc
+	}
 	return QueryParameters{
 		QueryParameters: entity.QueryParameters{
 			Limit:  limit,

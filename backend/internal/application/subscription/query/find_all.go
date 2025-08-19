@@ -14,13 +14,14 @@ import (
 
 type FindAllQuery struct {
 	SearchText string
-	SortBy     string
+	SortBy     subscription.SortableField
 	SortOrder  types.SortOrder
 	Limit      int32
 	Offset     int32
 }
 
-func NewFindAllQuery(searchText, sortBy string, sortOrder types.SortOrder, size, page int32) FindAllQuery {
+func NewFindAllQuery(searchText string, sortBy subscription.SortableField, sortOrder types.SortOrder,
+	size, page int32) FindAllQuery {
 	return FindAllQuery{
 		SearchText: searchText,
 		Limit:      size,
