@@ -2347,6 +2347,16 @@ paths:
         name: search
         schema:
           type: string
+      - description: Sort by field
+        in: query
+        name: sortBy
+        schema:
+          type: string
+      - description: Sort order (asc, desc)
+        in: query
+        name: sortOrder
+        schema:
+          type: string
       - description: 'Number of items per page (default: 10)'
         in: query
         name: limit

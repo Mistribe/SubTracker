@@ -7,16 +7,21 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/entity"
+	"github.com/oleexo/subtracker/pkg/types"
 )
 
 type QueryParameters struct {
 	entity.QueryParameters
 
 	SearchText string
+	SortBy     string
+	SortOrder  types.SortOrder
 }
 
 func NewQueryParameters(
 	searchText string,
+	sortBy string,
+	sortOrder types.SortOrder,
 	limit, offset int32) QueryParameters {
 	return QueryParameters{
 		QueryParameters: entity.QueryParameters{
@@ -24,6 +29,8 @@ func NewQueryParameters(
 			Offset: offset,
 		},
 		SearchText: searchText,
+		SortBy:     sortBy,
+		SortOrder:  sortOrder,
 	}
 }
 

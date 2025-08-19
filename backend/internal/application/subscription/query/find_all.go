@@ -9,19 +9,24 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/oleexo/subtracker/pkg/types"
 )
 
 type FindAllQuery struct {
 	SearchText string
+	SortBy     string
+	SortOrder  types.SortOrder
 	Limit      int32
 	Offset     int32
 }
 
-func NewFindAllQuery(searchText string, size, page int32) FindAllQuery {
+func NewFindAllQuery(searchText, sortBy string, sortOrder types.SortOrder, size, page int32) FindAllQuery {
 	return FindAllQuery{
 		SearchText: searchText,
 		Limit:      size,
 		Offset:     page,
+		SortBy:     sortBy,
+		SortOrder:  sortOrder,
 	}
 }
 
@@ -49,7 +54,8 @@ func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[core.PaginatedResponse[subscription.Subscription]] {
 	userId := h.authService.MustGetUserId(ctx)
-	parameters := subscription.NewQueryParameters(query.SearchText, query.Limit, query.Offset)
+	parameters := subscription.NewQueryParameters(query.SearchText, query.SortBy, query.SortOrder, query.Limit,
+		query.Offset)
 	subs, count, err := h.subscriptionRepository.GetAllForUser(ctx, userId, parameters)
 	if err != nil {
 		return result.Fail[core.PaginatedResponse[subscription.Subscription]](err)

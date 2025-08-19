@@ -601,7 +601,9 @@ WITH providers AS (SELECT p.id, p.name
                          OR EXISTS (SELECT 1
                                     FROM providers p
                                     WHERE p.name ILIKE '%' || $2 || '%' AND p.id = s.provider_id)
-                     )),
+                     )
+                 ORDER BY $5
+                 ),
      counted AS (SELECT m.id, COUNT(*) OVER () AS total_count
                  FROM matches m),
      paged AS (SELECT c.id, c.total_count
@@ -642,6 +644,7 @@ type getSubscriptionsForUserParams struct {
 	Btrim       string
 	Limit       int32
 	Offset      int32
+	Column5     interface{}
 }
 
 type getSubscriptionsForUserRow struct {
@@ -677,6 +680,7 @@ func (q *Queries) getSubscriptionsForUser(ctx context.Context, arg getSubscripti
 		arg.Btrim,
 		arg.Limit,
 		arg.Offset,
+		arg.Column5,
 	)
 	if err != nil {
 		return nil, err

@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+
+	"github.com/oleexo/subtracker/pkg/types"
 )
 
 type SubscriptionRow struct {
@@ -11,11 +13,18 @@ type SubscriptionRow struct {
 	ServiceUser  *SubscriptionServiceUser
 }
 
-func (q *Queries) GetSubscriptionsForUser(ctx context.Context, userId, search string, limit, offset int32) (
+func (q *Queries) GetSubscriptionsForUser(ctx context.Context, userId, search, sortBy string, sortOrder types.SortOrder,
+	limit, offset int32) (
 	[]SubscriptionRow,
 	int64,
 	error) {
+	sorting := "p.id ASC"
+	if sortBy != "" {
+		sorting = "p." + sortBy + " " + sortOrder.String()
+	}
+
 	rows, err := q.getSubscriptionsForUser(ctx, getSubscriptionsForUserParams{
+		Column5:     sorting,
 		OwnerUserID: &userId,
 		Btrim:       search,
 		Limit:       limit,
