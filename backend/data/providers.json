@@ -232,5 +232,15 @@
       "hosting",
       "cloud"
     ]
+  },
+  {
+    "name": "Battle.net",
+    "key": "battle.net",
+    "categories": [
+      "gaming"
+    ],
+    "icon": "https://1000logos.net/wp-content/uploads/2022/11/World-of-Warcraft-Logo-2001-768x512.png",
+    "pricing_page": "https://eu.shop.battle.net/en-us/product/world-of-warcraft-subscription",
+    "website": "https://worldofwarcraft.blizzard.com/"
   }
 ]

@@ -181,7 +181,7 @@ CREATE TABLE public.subscriptions
             REFERENCES public.family_members,
     start_date            timestamp    NOT NULL,
     end_date              timestamp,
-    recurrency            varchar(10)  NOT NULL,
+    recurrency            varchar(15)  NOT NULL,
     custom_recurrency     integer,
     custom_price_currency varchar(3),
     custom_price_amount   numeric,

@@ -382,5 +382,293 @@
       "c40cf18e-1ca8-4646-866e-5252a5f7b02f",
       "16e151e4-3e17-490d-9228-f275b1d1d833"
     ]
+  },
+  {
+    "id": "bd665944-cca0-401d-9548-1e3c31496815",
+    "friendly_name": "World of Warcraft® Subscription - 1 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 12.99
+    },
+    "recurrency": "monthly",
+    "start_date": "2025-03-18T00:00:00Z",
+    "end_date": "2025-04-18T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "2c977e79-1626-4f0b-ac88-5643b4e084b4",
+    "friendly_name": "World of Warcraft® Subscription - 3 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 35.97
+    },
+    "recurrency": "quarterly",
+    "start_date": "2024-12-18T00:00:00Z",
+    "end_date": "2025-03-18T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "a9b541c4-4ffe-4c19-9d5c-ba4b4b46221f",
+    "friendly_name": "World of Warcraft®: The War Within Epic Edition",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 88.99
+    },
+    "recurrency": "one_time",
+    "start_date": "2024-11-18T00:00:00Z",
+    "end_date": "2024-12-18T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "86c2bd82-d39b-4a88-9cf1-7473ed394512",
+    "friendly_name": "World of Warcraft® Subscription - 3 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 35.97
+    },
+    "recurrency": "quarterly",
+    "start_date": "2024-08-18T00:00:00Z",
+    "end_date": "2024-11-18T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "2d65e8c1-43fd-4cfb-a778-00e34d77bb3d",
+    "friendly_name": "World of Warcraft® Subscription - 3 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 35.97
+    },
+    "recurrency": "quarterly",
+    "start_date": "2022-08-17T00:00:00Z",
+    "end_date": "2022-11-17T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "8d9b6b9f-4f65-4442-9db7-c02c60e0b071",
+    "friendly_name": "World of Warcraft® Subscription - 3 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 35.97
+    },
+    "recurrency": "quarterly",
+    "start_date": "2021-06-11T00:00:00Z",
+    "end_date": "2022-09-11T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "6018db55-64d7-4c84-ae1f-2df77e7ba517",
+    "friendly_name": "World of Warcraft® Subscription - 3 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 35.97
+    },
+    "recurrency": "quarterly",
+    "start_date": "2021-03-11T00:00:00Z",
+    "end_date": "2022-06-11T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "76f9f3ee-675b-4a0c-a1b8-5da9c695b37c",
+    "friendly_name": "World of Warcraft® Subscription - 1 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 35.97
+    },
+    "recurrency": "monthly",
+    "start_date": "2021-02-10T00:00:00Z",
+    "end_date": "2022-03-10T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "e8f86618-053d-4b83-bd8e-a1bdcc77d11d",
+    "friendly_name": "World of Warcraft® Subscription - 6 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 65.94
+    },
+    "recurrency": "half_yearly",
+    "start_date": "2020-08-10T00:00:00Z",
+    "end_date": "2021-02-10T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "b1e39a76-0bcc-47b4-8f83-ef1417ebc1b0",
+    "friendly_name": "World of Warcraft® Subscription - 1 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 12.99
+    },
+    "recurrency": "monthly",
+    "start_date": "2020-07-04T00:00:00Z",
+    "end_date": "2020-08-04T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "42667c3b-f16e-47db-9dc5-9f59343d52b2",
+    "friendly_name": "World of Warcraft® Subscription - 1 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 12.99
+    },
+    "recurrency": "monthly",
+    "start_date": "2020-04-02T00:00:00Z",
+    "end_date": "2020-05-02T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "3551c011-e7e1-4edb-9bed-934e79f51ba4",
+    "friendly_name": "World of Warcraft® Subscription - 1 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 12.99
+    },
+    "recurrency": "monthly",
+    "start_date": "2020-01-11T00:00:00Z",
+    "end_date": "2020-03-11T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "7c68b529-66ab-4459-a4a4-beddd7efd96e",
+    "friendly_name": "World of Warcraft® Subscription - 1 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 12.99
+    },
+    "recurrency": "monthly",
+    "start_date": "2019-11-07T00:00:00Z",
+    "end_date": "2019-12-07T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "8fdb00df-bfa9-4ea7-aaa9-b27871010bf4",
+    "friendly_name": "World of Warcraft® Subscription - 1 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 12.99
+    },
+    "recurrency": "monthly",
+    "start_date": "2019-08-20T00:00:00Z",
+    "end_date": "2019-10-20T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "99cc9106-cb71-42b6-bd3f-6f244782030c",
+    "friendly_name": "World of Warcraft® Subscription - 3 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 12.99
+    },
+    "recurrency": "quarterly",
+    "start_date": "2018-07-22T00:00:00Z",
+    "end_date": "2018-10-22T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "e90c2132-f9e7-42ad-a93e-a8c6bcdd763c",
+    "friendly_name": "World of Warcraft® Subscription - 1 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 12.99
+    },
+    "recurrency": "monthly",
+    "start_date": "2018-04-13T00:00:00Z",
+    "end_date": "2018-05-13T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "e90c2132-f9e7-42ad-a93e-a8c6bcdd763c",
+    "friendly_name": "World of Warcraft® Subscription - 1 Month",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 12.99
+    },
+    "recurrency": "monthly",
+    "start_date": "2017-11-28T00:00:00Z",
+    "end_date": "2018-03-28T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
+  },
+  {
+    "id": "e90c2132-f9e7-42ad-a93e-a8c6bcdd763c",
+    "friendly_name": "World of Warcraft Game Time - 30 Days",
+    "provider_key": "battle.net",
+    "custom_price": {
+      "currency": "EUR",
+      "amount": 12.99
+    },
+    "recurrency": "monthly",
+    "start_date": "2014-11-05T00:00:00Z",
+    "end_date": "2015-03-05T00:00:00Z",
+    "owner": {
+      "type": "personal",
+      "user_id": "kp_4de08ac140e54e5081b192b48c1b660e"
+    }
   }
 ]

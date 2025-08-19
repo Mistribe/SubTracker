@@ -1,6 +1,6 @@
 module github.com/oleexo/subtracker
 
-go 1.24
+go 1.25
 
 require (
 	github.com/MicahParks/keyfunc/v3 v3.6.1

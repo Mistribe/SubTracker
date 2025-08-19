@@ -53,7 +53,7 @@
       },
       "recurrency": {
         "type": "string",
-        "enum": ["monthly", "yearly", "weekly", "daily", "one_time", "custom"],
+        "enum": ["monthly", "yearly", "weekly", "daily", "one_time", "custom", "quarterly", "half_yearly"],
         "description": "Billing frequency or one-time payment"
       },
       "custom_recurrency": {
