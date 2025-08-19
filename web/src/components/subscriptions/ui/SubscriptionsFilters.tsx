@@ -1,12 +1,12 @@
 import React from "react";
-import {Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle} from "@/components/ui/sheet";
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {Checkbox} from "@/components/ui/checkbox";
-import {Label} from "@/components/ui/label";
-import {Switch} from "@/components/ui/switch";
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import Provider from "@/models/provider";
-import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency";
+import { SubscriptionRecurrency } from "@/models/subscriptionRecurrency";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 export interface SubscriptionsFiltersProps {
     open: boolean;
@@ -80,34 +80,28 @@ export const SubscriptionsFilters: React.FC<SubscriptionsFiltersProps> = ({
                     {providerMap && providerMap.size > 0 && (
                         <div className="space-y-2">
                             <div className="font-medium">Providers</div>
-                            <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-2">
-                                {Array.from(providerMap.values()).map((p) => (
-                                    <label key={p.id} className="flex items-center gap-2">
-                                        <Checkbox
-                                            checked={providersFilter.includes(p.id)}
-                                            onCheckedChange={() => onToggleProvider(p.id)}
-                                        />
-                                        <span className="text-sm">{p.name}</span>
-                                    </label>
-                                ))}
-                            </div>
+                            <MultiSelect
+                                options={Array.from(providerMap.values()).map((p) => ({ value: p.id, label: p.name }))}
+                                selectedValues={providersFilter}
+                                onToggle={onToggleProvider}
+                                placeholder="Select providers"
+                                searchPlaceholder="Search providers..."
+                                emptyMessage="No provider found."
+                            />
                         </div>
                     )}
 
                     {/* Recurrencies */}
                     <div className="space-y-2">
                         <div className="font-medium">Recurrencies</div>
-                        <div className="grid grid-cols-1 gap-2">
-                            {(Object.values(SubscriptionRecurrency) as SubscriptionRecurrency[]).map((r) => (
-                                <label key={r} className="flex items-center gap-2">
-                                    <Checkbox
-                                        checked={recurrenciesFilter.includes(r)}
-                                        onCheckedChange={() => onToggleRecurrency(r)}
-                                    />
-                                    <span className="text-sm">{r}</span>
-                                </label>
-                            ))}
-                        </div>
+                        <MultiSelect
+                            options={(Object.values(SubscriptionRecurrency) as SubscriptionRecurrency[]).map((r) => ({ value: r, label: r }))}
+                            selectedValues={recurrenciesFilter as string[]}
+                            onToggle={(v) => onToggleRecurrency(v as SubscriptionRecurrency)}
+                            placeholder="Select recurrencies"
+                            searchPlaceholder="Search recurrencies..."
+                            emptyMessage="No recurrencies found."
+                        />
                     </div>
 
                     {/* Users CSV */}
