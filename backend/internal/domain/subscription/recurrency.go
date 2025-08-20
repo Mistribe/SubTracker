@@ -1,6 +1,7 @@
 package subscription
 
 type RecurrencyType string
+type RecurrencyTypes []RecurrencyType
 
 const (
 	UnknownRecurrency    RecurrencyType = "unknown"
@@ -32,21 +33,29 @@ func (r RecurrencyType) TotalMonths() int {
 }
 
 func ParseRecurrencyType(input string) (RecurrencyType, error) {
+	result := ParseRecurrencyTypeOrDefault(input, UnknownRecurrency)
+	if result == UnknownRecurrency {
+		return UnknownRecurrency, ErrUnknownRecurrencyType
+	}
+	return result, nil
+}
+
+func ParseRecurrencyTypeOrDefault(input string, defaultValue RecurrencyType) RecurrencyType {
 	switch input {
 	case string(OneTimeRecurrency):
-		return OneTimeRecurrency, nil
+		return OneTimeRecurrency
 	case string(MonthlyRecurrency):
-		return MonthlyRecurrency, nil
+		return MonthlyRecurrency
 	case string(QuarterlyRecurrency):
-		return QuarterlyRecurrency, nil
+		return QuarterlyRecurrency
 	case string(HalfYearlyRecurrency):
-		return HalfYearlyRecurrency, nil
+		return HalfYearlyRecurrency
 	case string(YearlyRecurrency):
-		return YearlyRecurrency, nil
+		return YearlyRecurrency
 	case string(CustomRecurrency):
-		return CustomRecurrency, nil
+		return CustomRecurrency
 	default:
-		return UnknownRecurrency, ErrUnknownRecurrencyType
+		return defaultValue
 	}
 }
 
@@ -56,6 +65,26 @@ func MustParseRecurrencyType(input string) RecurrencyType {
 		panic(err)
 	}
 	return t
+}
+
+func ParseRecurrencyTypes(inputs []string) (RecurrencyTypes, error) {
+	result := make(RecurrencyTypes, 0, len(inputs))
+	for _, input := range inputs {
+		v, err := ParseRecurrencyType(input)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, v)
+	}
+	return result, nil
+}
+
+func ParseRecurrencyTypesOrDefault(inputs []string, defaultValue RecurrencyType) RecurrencyTypes {
+	result := make(RecurrencyTypes, 0, len(inputs))
+	for _, input := range inputs {
+		result = append(result, ParseRecurrencyTypeOrDefault(input, defaultValue))
+	}
+	return result
 }
 
 func toRecurrencyPrice(

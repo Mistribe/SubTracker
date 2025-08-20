@@ -90,7 +90,20 @@ WITH providers AS (SELECT p.id, p.name
                                     FROM providers p
                                     WHERE p.name ILIKE '%' || $2 || '%'
                                       AND p.id = s.provider_id)
-                     )),
+                     )
+                 AND (
+                     s.recurrency = ANY($7::varchar[])
+                     )
+                 AND (
+                     s.start_date > $8
+                     OR $8 IS NULL
+                     )
+                   AND (
+                     s.end_date > $9
+                         OR $9 IS NULL
+                     )
+
+                 ),
      counted AS (SELECT m.*, COUNT(*) OVER () AS total_count
                  FROM matches m
                  ORDER BY CASE WHEN $5::varchar = 'provider' AND $6::varchar = 'ASC' THEN m.provider_name END,

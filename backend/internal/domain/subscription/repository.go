@@ -15,19 +15,26 @@ type QueryParameters struct {
 	entity.QueryParameters
 
 	SearchText   string
-	WithInactive bool
-	Recurrency   []RecurrencyType
+	Recurrencies []RecurrencyType
 	FromDate     *time.Time
 	ToDate       *time.Time
+	Users        []uuid.UUID
+	Providers    []uuid.UUID
+	WithInactive bool
 	SortBy       SortableField
 	SortOrder    types.SortOrder
 }
 
 func NewQueryParameters(
 	searchText string,
+	recurrencies []RecurrencyType,
+	fromDate *time.Time,
+	toDate *time.Time,
+	users []uuid.UUID,
+	providers []uuid.UUID,
+	withInactive bool,
 	sortBy SortableField,
 	sortOrder types.SortOrder,
-	withInactive bool,
 	limit, offset int32) QueryParameters {
 	if sortBy == "" {
 		sortBy = "friendly_name"
@@ -44,6 +51,11 @@ func NewQueryParameters(
 		SortBy:       sortBy,
 		SortOrder:    sortOrder,
 		WithInactive: withInactive,
+		Recurrencies: recurrencies,
+		FromDate:     fromDate,
+		ToDate:       toDate,
+		Users:        users,
+		Providers:    providers,
 	}
 }
 

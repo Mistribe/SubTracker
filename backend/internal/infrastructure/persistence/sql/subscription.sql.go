@@ -605,7 +605,20 @@ WITH providers AS (SELECT p.id, p.name
                                     FROM providers p
                                     WHERE p.name ILIKE '%' || $2 || '%'
                                       AND p.id = s.provider_id)
-                     )),
+                     )
+                 AND (
+                     s.recurrency = ANY($7::varchar[])
+                     )
+                 AND (
+                     s.start_date > $8
+                     OR $8 IS NULL
+                     )
+                   AND (
+                     s.end_date > $9
+                         OR $9 IS NULL
+                     )
+
+                 ),
      counted AS (SELECT m.id, m.owner_type, m.owner_family_id, m.owner_user_id, m.friendly_name, m.free_trial_start_date, m.free_trial_end_date, m.provider_id, m.plan_id, m.price_id, m.family_id, m.payer_type, m.payer_member_id, m.start_date, m.end_date, m.recurrency, m.custom_recurrency, m.custom_price_currency, m.custom_price_amount, m.created_at, m.updated_at, m.etag, m.is_active, m.provider_name, COUNT(*) OVER () AS total_count
                  FROM matches m
                  ORDER BY CASE WHEN $5::varchar = 'provider' AND $6::varchar = 'ASC' THEN m.provider_name END,
@@ -659,6 +672,9 @@ type getSubscriptionsForUserParams struct {
 	Offset      int32
 	Column5     string
 	Column6     string
+	Column7     []string
+	StartDate   time.Time
+	EndDate     *time.Time
 }
 
 type getSubscriptionsForUserRow struct {
@@ -696,6 +712,9 @@ func (q *Queries) getSubscriptionsForUser(ctx context.Context, arg getSubscripti
 		arg.Offset,
 		arg.Column5,
 		arg.Column6,
+		arg.Column7,
+		arg.StartDate,
+		arg.EndDate,
 	)
 	if err != nil {
 		return nil, err

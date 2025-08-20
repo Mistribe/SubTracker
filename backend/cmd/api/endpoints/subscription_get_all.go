@@ -30,9 +30,9 @@ type subscriptionGetAllQueryParams struct {
 	ToDate       *time.Time  `form:"toDate"`
 	Users        []uuid.UUID `form:"users"`
 	WithInactive bool        `form:"with_inactive"`
-	Providers    []uuid.UUID
-	Limit        int32 `form:"limit"`
-	Offset       int32 `form:"offset"`
+	Providers    []uuid.UUID `form:"providers"`
+	Limit        int32       `form:"limit"`
+	Offset       int32       `form:"offset"`
 }
 
 // Handle godoc
@@ -76,10 +76,21 @@ func (s SubscriptionGetAllEndpoint) Handle(c *gin.Context) {
 		params.SortOrder = "asc"
 	}
 
-	sortBy := subscription.ParseSortableField(params.SortBy)
-	sortOrder := types.ParseSortOrder(params.SortOrder)
+	sortBy := subscription.ParseSortableFieldOrDefault(params.SortBy, subscription.FriendlyNameSortableField)
+	sortOrder := types.ParseSortOrderOrDefault(params.SortOrder, types.SortOrderAsc)
+	recurrencies := subscription.ParseRecurrencyTypesOrDefault(params.Recurrencies, subscription.UnknownRecurrency)
 
-	q := query.NewFindAllQuery(params.Search, sortBy, sortOrder, params.Limit, params.Offset)
+	q := query.NewFindAllQuery(params.Search,
+		recurrencies,
+		params.FromDate,
+		params.ToDate,
+		params.Users,
+		params.Providers,
+		params.WithInactive,
+		sortBy,
+		sortOrder,
+		params.Limit,
+		params.Offset)
 	r := s.handler.Handle(c, q)
 	handleResponse(c,
 		r,

@@ -1,6 +1,7 @@
 package subscription
 
 import (
+	"errors"
 	"strings"
 )
 
@@ -14,11 +15,23 @@ const (
 	RecurrencySortableField   SortableField = "recurrency"
 )
 
+var (
+	ErrSortableFieldInvalid = errors.New("invalid sortable field")
+)
+
 func (s SortableField) String() string {
 	return string(s)
 }
 
-func ParseSortableField(s string) SortableField {
+func ParseSortableField(s string) (SortableField, error) {
+	result := ParseSortableFieldOrDefault(s, UnknownSortableField)
+	if result == UnknownSortableField {
+		return UnknownSortableField, ErrSortableFieldInvalid
+	}
+	return result, nil
+}
+
+func ParseSortableFieldOrDefault(s string, defaultValue SortableField) SortableField {
 	switch strings.ToLower(s) {
 	case "name":
 		return FriendlyNameSortableField
@@ -29,6 +42,6 @@ func ParseSortableField(s string) SortableField {
 	case "recurrency":
 		return RecurrencySortableField
 	default:
-		return UnknownSortableField
+		return defaultValue
 	}
 }
