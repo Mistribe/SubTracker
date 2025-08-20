@@ -12,7 +12,10 @@ import {SubscriptionsTable} from "@/components/subscriptions/ui/SubscriptionsTab
 import {SubscriptionsTableSkeleton} from "@/components/subscriptions/ui/SubscriptionsTableSkeleton";
 import {SubscriptionsErrorState} from "@/components/subscriptions/ui/SubscriptionsErrorState";
 import {SubscriptionsEmptyState} from "@/components/subscriptions/ui/SubscriptionsEmptyState";
-import {SubscriptionsFilters} from "@/components/subscriptions/ui/SubscriptionsFilters";
+import {
+    SubscriptionsFilters,
+    type SubscriptionsFiltersValues
+} from "@/components/subscriptions/ui/SubscriptionsFilters";
 import type {SortingState} from "@tanstack/react-table";
 import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
 import {useFamiliesQuery} from "@/hooks/families/useFamiliesQuery";
@@ -27,20 +30,12 @@ const SubscriptionsPage = () => {
 
     // Filters state for drawer (draft values)
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [fromDateStr, setFromDateStr] = useState<string>("");
-    const [toDateStr, setToDateStr] = useState<string>("");
+    const [fromDate, setFromDate] = useState<Date|undefined>(undefined);
+    const [toDate, setToDate] = useState<Date|undefined>(undefined);
     const [providersFilter, setProvidersFilter] = useState<string[]>([]);
     const [recurrenciesFilter, setRecurrenciesFilter] = useState<SubscriptionRecurrency[]>([]);
-    const [usersCsv, setUsersCsv] = useState<string>("");
+    const [users, setUsers] = useState<string[]>([]);
     const [withInactive, setWithInactive] = useState<boolean>(false);
-
-    // Applied filter state (used by the query)
-    const [appliedFromDateStr, setAppliedFromDateStr] = useState<string>("");
-    const [appliedToDateStr, setAppliedToDateStr] = useState<string>("");
-    const [appliedProvidersFilter, setAppliedProvidersFilter] = useState<string[]>([]);
-    const [appliedRecurrenciesFilter, setAppliedRecurrenciesFilter] = useState<SubscriptionRecurrency[]>([]);
-    const [appliedUsersCsv, setAppliedUsersCsv] = useState<string>("");
-    const [appliedWithInactive, setAppliedWithInactive] = useState<boolean>(false);
 
     // Families and family members for users multi-select
     const { data: familiesData } = useFamiliesQuery({ limit: 100 });
@@ -59,21 +54,15 @@ const SubscriptionsPage = () => {
         return Array.from(labelByName.entries()).map(([value, label]) => ({ value, label }));
     }, [familiesData]);
 
-    const toggleProvider = (id: string) => {
-        setProvidersFilter(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-    };
-
-    const toggleRecurrency = (r: SubscriptionRecurrency) => {
-        setRecurrenciesFilter(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r]);
-    };
 
     const handleClearFilters = () => {
-        setFromDateStr("");
-        setToDateStr("");
+        setFromDate(undefined);
+        setToDate(undefined);
         setProvidersFilter([]);
         setRecurrenciesFilter([]);
-        setUsersCsv("");
+        setUsers([]);
         setWithInactive(false);
+        setIsFilterOpen(false);
     };
 
 
@@ -108,11 +97,6 @@ const SubscriptionsPage = () => {
         }
     };
 
-    // Derived filter values (from applied state)
-    const fromDate = appliedFromDateStr ? new Date(appliedFromDateStr) : undefined;
-    const toDate = appliedToDateStr ? new Date(appliedToDateStr) : undefined;
-    const users = appliedUsersCsv ? appliedUsersCsv.split(",").map(s => s.trim()).filter(Boolean) : [];
-
     // Query all subscriptions using the dedicated hook
     const {
         data,
@@ -128,10 +112,10 @@ const SubscriptionsPage = () => {
         sortOrder: sorting.length > 0 ? (sorting[0].desc ? 'desc' : 'asc') : undefined,
         fromDate,
         toDate,
-        providers: appliedProvidersFilter.length ? appliedProvidersFilter : undefined,
-        recurrencies: appliedRecurrenciesFilter.length ? appliedRecurrenciesFilter : undefined,
+        providers: providersFilter.length ? providersFilter : undefined,
+        recurrencies: recurrenciesFilter.length ? recurrenciesFilter : undefined,
         users: users.length ? users : undefined,
-        withInactive: appliedWithInactive,
+        withInactive: withInactive,
     });
 
     // Flatten all subscriptions from all pages
@@ -172,36 +156,18 @@ const SubscriptionsPage = () => {
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    // Use Money component for currency display (conversion handled in UI).
 
-    const seedDraftFromApplied = () => {
-        setFromDateStr(appliedFromDateStr);
-        setToDateStr(appliedToDateStr);
-        setProvidersFilter(appliedProvidersFilter);
-        setRecurrenciesFilter(appliedRecurrenciesFilter);
-        setUsersCsv(appliedUsersCsv);
-        setWithInactive(appliedWithInactive);
-    };
-
-    const handleFilterOpenChange = (open: boolean) => {
-        if (open) {
-            seedDraftFromApplied();
-        }
-        setIsFilterOpen(open);
-    };
-
-    const handleApplyFilters = () => {
-        setAppliedFromDateStr(fromDateStr);
-        setAppliedToDateStr(toDateStr);
-        setAppliedProvidersFilter(providersFilter);
-        setAppliedRecurrenciesFilter(recurrenciesFilter);
-        setAppliedUsersCsv(usersCsv);
-        setAppliedWithInactive(withInactive);
+    const handleApplyFilters = (values: SubscriptionsFiltersValues) => {
+        setFromDate(values.fromDate);
+        setToDate(values.toDate);
+        setProvidersFilter(values.providers ?? []);
+        setRecurrenciesFilter(values.recurrenciesFilter ?? []);
+        setUsers(values.users ?? []);
+        setWithInactive(values.withInactive ?? false);
         setIsFilterOpen(false);
     };
 
     const openFilter = () => {
-        seedDraftFromApplied();
         setIsFilterOpen(true);
     };
 
@@ -253,21 +219,15 @@ const SubscriptionsPage = () => {
 
             <SubscriptionsFilters
                 open={isFilterOpen}
-                onOpenChange={handleFilterOpenChange}
-                fromDateStr={fromDateStr}
-                onFromDateChange={setFromDateStr}
-                toDateStr={toDateStr}
-                onToDateChange={setToDateStr}
+                onOpenChange={setIsFilterOpen}
+                fromDate={fromDate}
+                toDate={toDate}
                 providerMap={providerMap}
                 providersFilter={providersFilter}
-                onToggleProvider={toggleProvider}
                 recurrenciesFilter={recurrenciesFilter}
-                onToggleRecurrency={toggleRecurrency}
-                usersCsv={usersCsv}
-                onUsersCsvChange={setUsersCsv}
+                users={users}
                 usersOptions={usersOptions}
                 withInactive={withInactive}
-                onWithInactiveChange={setWithInactive}
                 onClear={handleClearFilters}
                 onApply={handleApplyFilters}
             />
