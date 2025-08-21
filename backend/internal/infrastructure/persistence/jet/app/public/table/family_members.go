@@ -22,8 +22,8 @@ type familyMembersTable struct {
 	FamilyID  postgres.ColumnString
 	UserID    postgres.ColumnString
 	Type      postgres.ColumnString
-	CreatedAt postgres.ColumnTimestamp
-	UpdatedAt postgres.ColumnTimestamp
+	CreatedAt postgres.ColumnTimestampz
+	UpdatedAt postgres.ColumnTimestampz
 	Etag      postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
@@ -71,8 +71,8 @@ func newFamilyMembersTableImpl(schemaName, tableName, alias string) familyMember
 		FamilyIDColumn  = postgres.StringColumn("family_id")
 		UserIDColumn    = postgres.StringColumn("user_id")
 		TypeColumn      = postgres.StringColumn("type")
-		CreatedAtColumn = postgres.TimestampColumn("created_at")
-		UpdatedAtColumn = postgres.TimestampColumn("updated_at")
+		CreatedAtColumn = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn = postgres.TimestampzColumn("updated_at")
 		EtagColumn      = postgres.StringColumn("etag")
 		allColumns      = postgres.ColumnList{IDColumn, NameColumn, FamilyIDColumn, UserIDColumn, TypeColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
 		mutableColumns  = postgres.ColumnList{NameColumn, FamilyIDColumn, UserIDColumn, TypeColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}

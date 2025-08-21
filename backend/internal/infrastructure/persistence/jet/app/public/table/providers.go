@@ -27,8 +27,8 @@ type providersTable struct {
 	IconURL        postgres.ColumnString
 	URL            postgres.ColumnString
 	PricingPageURL postgres.ColumnString
-	CreatedAt      postgres.ColumnTimestamp
-	UpdatedAt      postgres.ColumnTimestamp
+	CreatedAt      postgres.ColumnTimestampz
+	UpdatedAt      postgres.ColumnTimestampz
 	Etag           postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
@@ -81,8 +81,8 @@ func newProvidersTableImpl(schemaName, tableName, alias string) providersTable {
 		IconURLColumn        = postgres.StringColumn("icon_url")
 		URLColumn            = postgres.StringColumn("url")
 		PricingPageURLColumn = postgres.StringColumn("pricing_page_url")
-		CreatedAtColumn      = postgres.TimestampColumn("created_at")
-		UpdatedAtColumn      = postgres.TimestampColumn("updated_at")
+		CreatedAtColumn      = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn      = postgres.TimestampzColumn("updated_at")
 		EtagColumn           = postgres.StringColumn("etag")
 		allColumns           = postgres.ColumnList{IDColumn, OwnerTypeColumn, OwnerFamilyIDColumn, OwnerUserIDColumn, NameColumn, KeyColumn, DescriptionColumn, IconURLColumn, URLColumn, PricingPageURLColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
 		mutableColumns       = postgres.ColumnList{OwnerTypeColumn, OwnerFamilyIDColumn, OwnerUserIDColumn, NameColumn, KeyColumn, DescriptionColumn, IconURLColumn, URLColumn, PricingPageURLColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}

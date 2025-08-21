@@ -269,7 +269,7 @@ func (r LabelRepository) update(ctx context.Context, lbl label.Label) error {
 			Labels.Name.SET(String(lbl.Name())),
 			Labels.Key.SET(keyVal),
 			Labels.Color.SET(String(lbl.Color())),
-			Labels.UpdatedAt.SET(TimestampT(lbl.UpdatedAt())),
+			Labels.UpdatedAt.SET(TimestampzT(lbl.UpdatedAt())),
 			Labels.Etag.SET(String(lbl.ETag())),
 		).
 		WHERE(Labels.ID.EQ(UUID(lbl.Id())))

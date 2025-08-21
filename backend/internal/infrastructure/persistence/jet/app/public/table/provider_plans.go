@@ -21,8 +21,8 @@ type providerPlansTable struct {
 	Name        postgres.ColumnString
 	Description postgres.ColumnString
 	ProviderID  postgres.ColumnString
-	CreatedAt   postgres.ColumnTimestamp
-	UpdatedAt   postgres.ColumnTimestamp
+	CreatedAt   postgres.ColumnTimestampz
+	UpdatedAt   postgres.ColumnTimestampz
 	Etag        postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
@@ -69,8 +69,8 @@ func newProviderPlansTableImpl(schemaName, tableName, alias string) providerPlan
 		NameColumn        = postgres.StringColumn("name")
 		DescriptionColumn = postgres.StringColumn("description")
 		ProviderIDColumn  = postgres.StringColumn("provider_id")
-		CreatedAtColumn   = postgres.TimestampColumn("created_at")
-		UpdatedAtColumn   = postgres.TimestampColumn("updated_at")
+		CreatedAtColumn   = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn   = postgres.TimestampzColumn("updated_at")
 		EtagColumn        = postgres.StringColumn("etag")
 		allColumns        = postgres.ColumnList{IDColumn, NameColumn, DescriptionColumn, ProviderIDColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
 		mutableColumns    = postgres.ColumnList{NameColumn, DescriptionColumn, ProviderIDColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}

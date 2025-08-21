@@ -588,7 +588,7 @@ func (r ProviderRepository) update(ctx context.Context, dirtyProvider provider.P
 			Providers.IconURL.SET(iconVal),
 			Providers.URL.SET(urlVal),
 			Providers.PricingPageURL.SET(pricingVal),
-			Providers.UpdatedAt.SET(TimestampT(dirtyProvider.UpdatedAt())),
+			Providers.UpdatedAt.SET(TimestampzT(dirtyProvider.UpdatedAt())),
 		).
 		WHERE(Providers.ID.EQ(UUID(dirtyProvider.Id())))
 
@@ -687,7 +687,7 @@ func (r ProviderRepository) saveTrackedPlansWithJet(ctx context.Context, provide
 				SET(
 					ProviderPlans.Name.SET(String(plan.Name())),
 					ProviderPlans.Description.SET(descVal),
-					ProviderPlans.UpdatedAt.SET(TimestampT(plan.UpdatedAt())),
+					ProviderPlans.UpdatedAt.SET(TimestampzT(plan.UpdatedAt())),
 					ProviderPlans.Etag.SET(String(plan.ETag())),
 				).
 				WHERE(ProviderPlans.ID.EQ(UUID(plan.Id())))
@@ -771,20 +771,20 @@ func (r ProviderRepository) saveTrackedPricesWithJet(ctx context.Context, planId
 	updatedPrices := prices.Updated()
 	for _, price := range updatedPrices {
 		if price.IsDirty() {
-			var endDateVal TimestampExpression
+			var endDateVal TimestampzExpression
 			if price.EndDate() != nil {
-				endDateVal = TimestampT(*price.EndDate())
+				endDateVal = TimestampzT(*price.EndDate())
 			} else {
-				endDateVal = TimestampExp(NULL)
+				endDateVal = TimestampzExp(NULL)
 			}
 
 			stmt := ProviderPrices.UPDATE().
 				SET(
 					ProviderPrices.Currency.SET(String(price.Currency().String())),
 					ProviderPrices.Amount.SET(Float(price.Amount())),
-					ProviderPrices.StartDate.SET(TimestampT(price.StartDate())),
+					ProviderPrices.StartDate.SET(TimestampzT(price.StartDate())),
 					ProviderPrices.EndDate.SET(endDateVal),
-					ProviderPrices.UpdatedAt.SET(TimestampT(price.UpdatedAt())),
+					ProviderPrices.UpdatedAt.SET(TimestampzT(price.UpdatedAt())),
 					ProviderPrices.Etag.SET(String(price.ETag())),
 				).
 				WHERE(ProviderPrices.ID.EQ(UUID(price.Id())))

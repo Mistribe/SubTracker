@@ -20,8 +20,8 @@ type familiesTable struct {
 	ID        postgres.ColumnString
 	Name      postgres.ColumnString
 	OwnerID   postgres.ColumnString
-	CreatedAt postgres.ColumnTimestamp
-	UpdatedAt postgres.ColumnTimestamp
+	CreatedAt postgres.ColumnTimestampz
+	UpdatedAt postgres.ColumnTimestampz
 	Etag      postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
@@ -67,8 +67,8 @@ func newFamiliesTableImpl(schemaName, tableName, alias string) familiesTable {
 		IDColumn        = postgres.StringColumn("id")
 		NameColumn      = postgres.StringColumn("name")
 		OwnerIDColumn   = postgres.StringColumn("owner_id")
-		CreatedAtColumn = postgres.TimestampColumn("created_at")
-		UpdatedAtColumn = postgres.TimestampColumn("updated_at")
+		CreatedAtColumn = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn = postgres.TimestampzColumn("updated_at")
 		EtagColumn      = postgres.StringColumn("etag")
 		allColumns      = postgres.ColumnList{IDColumn, NameColumn, OwnerIDColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
 		mutableColumns  = postgres.ColumnList{NameColumn, OwnerIDColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}

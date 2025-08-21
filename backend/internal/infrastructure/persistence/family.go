@@ -259,7 +259,7 @@ func (r FamilyRepository) update(ctx context.Context, fam family.Family) error {
 		SET(
 			Families.Name.SET(String(fam.Name())),
 			Families.OwnerID.SET(String(fam.OwnerId())),
-			Families.UpdatedAt.SET(TimestampT(fam.UpdatedAt())),
+			Families.UpdatedAt.SET(TimestampzT(fam.UpdatedAt())),
 			Families.Etag.SET(String(fam.ETag())),
 		).
 		WHERE(Families.ID.EQ(UUID(fam.Id())))
@@ -342,7 +342,7 @@ func (r FamilyRepository) saveTrackedSliceWithJet(ctx context.Context, members *
 					FamilyMembers.UserID.SET(userID),
 					FamilyMembers.Name.SET(String(member.Name())),
 					FamilyMembers.Type.SET(String(member.Type().String())),
-					FamilyMembers.UpdatedAt.SET(TimestampT(member.UpdatedAt())),
+					FamilyMembers.UpdatedAt.SET(TimestampzT(member.UpdatedAt())),
 					FamilyMembers.Etag.SET(String(member.ETag())),
 				).
 				WHERE(FamilyMembers.ID.EQ(UUID(member.Id())))

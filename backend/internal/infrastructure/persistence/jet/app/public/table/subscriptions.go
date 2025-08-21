@@ -22,22 +22,22 @@ type subscriptionsTable struct {
 	OwnerFamilyID       postgres.ColumnString
 	OwnerUserID         postgres.ColumnString
 	FriendlyName        postgres.ColumnString
-	FreeTrialStartDate  postgres.ColumnTimestamp
-	FreeTrialEndDate    postgres.ColumnTimestamp
+	FreeTrialStartDate  postgres.ColumnTimestampz
+	FreeTrialEndDate    postgres.ColumnTimestampz
 	ProviderID          postgres.ColumnString
 	PlanID              postgres.ColumnString
 	PriceID             postgres.ColumnString
 	FamilyID            postgres.ColumnString
 	PayerType           postgres.ColumnString
 	PayerMemberID       postgres.ColumnString
-	StartDate           postgres.ColumnTimestamp
-	EndDate             postgres.ColumnTimestamp
+	StartDate           postgres.ColumnTimestampz
+	EndDate             postgres.ColumnTimestampz
 	Recurrency          postgres.ColumnString
 	CustomRecurrency    postgres.ColumnInteger
 	CustomPriceCurrency postgres.ColumnString
 	CustomPriceAmount   postgres.ColumnFloat
-	CreatedAt           postgres.ColumnTimestamp
-	UpdatedAt           postgres.ColumnTimestamp
+	CreatedAt           postgres.ColumnTimestampz
+	UpdatedAt           postgres.ColumnTimestampz
 	Etag                postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
@@ -85,22 +85,22 @@ func newSubscriptionsTableImpl(schemaName, tableName, alias string) subscription
 		OwnerFamilyIDColumn       = postgres.StringColumn("owner_family_id")
 		OwnerUserIDColumn         = postgres.StringColumn("owner_user_id")
 		FriendlyNameColumn        = postgres.StringColumn("friendly_name")
-		FreeTrialStartDateColumn  = postgres.TimestampColumn("free_trial_start_date")
-		FreeTrialEndDateColumn    = postgres.TimestampColumn("free_trial_end_date")
+		FreeTrialStartDateColumn  = postgres.TimestampzColumn("free_trial_start_date")
+		FreeTrialEndDateColumn    = postgres.TimestampzColumn("free_trial_end_date")
 		ProviderIDColumn          = postgres.StringColumn("provider_id")
 		PlanIDColumn              = postgres.StringColumn("plan_id")
 		PriceIDColumn             = postgres.StringColumn("price_id")
 		FamilyIDColumn            = postgres.StringColumn("family_id")
 		PayerTypeColumn           = postgres.StringColumn("payer_type")
 		PayerMemberIDColumn       = postgres.StringColumn("payer_member_id")
-		StartDateColumn           = postgres.TimestampColumn("start_date")
-		EndDateColumn             = postgres.TimestampColumn("end_date")
+		StartDateColumn           = postgres.TimestampzColumn("start_date")
+		EndDateColumn             = postgres.TimestampzColumn("end_date")
 		RecurrencyColumn          = postgres.StringColumn("recurrency")
 		CustomRecurrencyColumn    = postgres.IntegerColumn("custom_recurrency")
 		CustomPriceCurrencyColumn = postgres.StringColumn("custom_price_currency")
 		CustomPriceAmountColumn   = postgres.FloatColumn("custom_price_amount")
-		CreatedAtColumn           = postgres.TimestampColumn("created_at")
-		UpdatedAtColumn           = postgres.TimestampColumn("updated_at")
+		CreatedAtColumn           = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn           = postgres.TimestampzColumn("updated_at")
 		EtagColumn                = postgres.StringColumn("etag")
 		allColumns                = postgres.ColumnList{IDColumn, OwnerTypeColumn, OwnerFamilyIDColumn, OwnerUserIDColumn, FriendlyNameColumn, FreeTrialStartDateColumn, FreeTrialEndDateColumn, ProviderIDColumn, PlanIDColumn, PriceIDColumn, FamilyIDColumn, PayerTypeColumn, PayerMemberIDColumn, StartDateColumn, EndDateColumn, RecurrencyColumn, CustomRecurrencyColumn, CustomPriceCurrencyColumn, CustomPriceAmountColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
 		mutableColumns            = postgres.ColumnList{OwnerTypeColumn, OwnerFamilyIDColumn, OwnerUserIDColumn, FriendlyNameColumn, FreeTrialStartDateColumn, FreeTrialEndDateColumn, ProviderIDColumn, PlanIDColumn, PriceIDColumn, FamilyIDColumn, PayerTypeColumn, PayerMemberIDColumn, StartDateColumn, EndDateColumn, RecurrencyColumn, CustomRecurrencyColumn, CustomPriceCurrencyColumn, CustomPriceAmountColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}

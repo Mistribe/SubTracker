@@ -24,8 +24,8 @@ type labelsTable struct {
 	Name          postgres.ColumnString
 	Key           postgres.ColumnString
 	Color         postgres.ColumnString
-	CreatedAt     postgres.ColumnTimestamp
-	UpdatedAt     postgres.ColumnTimestamp
+	CreatedAt     postgres.ColumnTimestampz
+	UpdatedAt     postgres.ColumnTimestampz
 	Etag          postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
@@ -75,8 +75,8 @@ func newLabelsTableImpl(schemaName, tableName, alias string) labelsTable {
 		NameColumn          = postgres.StringColumn("name")
 		KeyColumn           = postgres.StringColumn("key")
 		ColorColumn         = postgres.StringColumn("color")
-		CreatedAtColumn     = postgres.TimestampColumn("created_at")
-		UpdatedAtColumn     = postgres.TimestampColumn("updated_at")
+		CreatedAtColumn     = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn     = postgres.TimestampzColumn("updated_at")
 		EtagColumn          = postgres.StringColumn("etag")
 		allColumns          = postgres.ColumnList{IDColumn, OwnerTypeColumn, OwnerFamilyIDColumn, OwnerUserIDColumn, NameColumn, KeyColumn, ColorColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
 		mutableColumns      = postgres.ColumnList{OwnerTypeColumn, OwnerFamilyIDColumn, OwnerUserIDColumn, NameColumn, KeyColumn, ColorColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}

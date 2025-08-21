@@ -18,13 +18,13 @@ type providerPricesTable struct {
 
 	// Columns
 	ID        postgres.ColumnString
-	StartDate postgres.ColumnTimestamp
-	EndDate   postgres.ColumnTimestamp
+	StartDate postgres.ColumnTimestampz
+	EndDate   postgres.ColumnTimestampz
 	Currency  postgres.ColumnString
 	Amount    postgres.ColumnFloat
 	PlanID    postgres.ColumnString
-	CreatedAt postgres.ColumnTimestamp
-	UpdatedAt postgres.ColumnTimestamp
+	CreatedAt postgres.ColumnTimestampz
+	UpdatedAt postgres.ColumnTimestampz
 	Etag      postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
@@ -68,13 +68,13 @@ func newProviderPricesTable(schemaName, tableName, alias string) *ProviderPrices
 func newProviderPricesTableImpl(schemaName, tableName, alias string) providerPricesTable {
 	var (
 		IDColumn        = postgres.StringColumn("id")
-		StartDateColumn = postgres.TimestampColumn("start_date")
-		EndDateColumn   = postgres.TimestampColumn("end_date")
+		StartDateColumn = postgres.TimestampzColumn("start_date")
+		EndDateColumn   = postgres.TimestampzColumn("end_date")
 		CurrencyColumn  = postgres.StringColumn("currency")
 		AmountColumn    = postgres.FloatColumn("amount")
 		PlanIDColumn    = postgres.StringColumn("plan_id")
-		CreatedAtColumn = postgres.TimestampColumn("created_at")
-		UpdatedAtColumn = postgres.TimestampColumn("updated_at")
+		CreatedAtColumn = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn = postgres.TimestampzColumn("updated_at")
 		EtagColumn      = postgres.StringColumn("etag")
 		allColumns      = postgres.ColumnList{IDColumn, StartDateColumn, EndDateColumn, CurrencyColumn, AmountColumn, PlanIDColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
 		mutableColumns  = postgres.ColumnList{StartDateColumn, EndDateColumn, CurrencyColumn, AmountColumn, PlanIDColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}

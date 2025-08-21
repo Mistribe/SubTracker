@@ -215,8 +215,8 @@ func (r SubscriptionRepository) GetAllForUser(
 	matches := SELECT(
 		Subscriptions.AllColumns,
 		CAST(
-			NOW().GT_EQ(TimestampzExp(Subscriptions.StartDate)).
-				AND(Subscriptions.EndDate.IS_NULL().OR(NOW().LT_EQ(TimestampzExp(Subscriptions.EndDate)))),
+			NOW().GT_EQ(Subscriptions.StartDate).
+				AND(Subscriptions.EndDate.IS_NULL().OR(NOW().LT_EQ(Subscriptions.EndDate))),
 		).AS_BOOL().AS("is_active"),
 		providers.AllColumns(),
 	).FROM(
@@ -601,13 +601,13 @@ func (r SubscriptionRepository) update(ctx context.Context, sub subscription.Sub
 			friendlyNameVal = StringExp(NULL)
 		}
 
-		var freeTrialStartVal, freeTrialEndVal TimestampExpression
+		var freeTrialStartVal, freeTrialEndVal TimestampzExpression
 		if sub.FreeTrial() != nil {
-			freeTrialStartVal = TimestampT(sub.FreeTrial().StartDate())
-			freeTrialEndVal = TimestampT(sub.FreeTrial().EndDate())
+			freeTrialStartVal = TimestampzT(sub.FreeTrial().StartDate())
+			freeTrialEndVal = TimestampzT(sub.FreeTrial().EndDate())
 		} else {
-			freeTrialStartVal = TimestampExp(NULL)
-			freeTrialEndVal = TimestampExp(NULL)
+			freeTrialStartVal = TimestampzExp(NULL)
+			freeTrialEndVal = TimestampzExp(NULL)
 		}
 
 		var planIdVal, priceIdVal StringExpression
@@ -660,11 +660,11 @@ func (r SubscriptionRepository) update(ctx context.Context, sub subscription.Sub
 			payerMemberIdVal = StringExp(NULL)
 		}
 
-		var endDateVal TimestampExpression
+		var endDateVal TimestampzExpression
 		if sub.EndDate() != nil {
-			endDateVal = TimestampT(*sub.EndDate())
+			endDateVal = TimestampzT(*sub.EndDate())
 		} else {
-			endDateVal = TimestampExp(NULL)
+			endDateVal = TimestampzExp(NULL)
 		}
 
 		var customRecurrencyVal IntegerExpression
@@ -690,11 +690,11 @@ func (r SubscriptionRepository) update(ctx context.Context, sub subscription.Sub
 				Subscriptions.PayerType.SET(payerTypeVal),
 				Subscriptions.FamilyID.SET(familyIdVal),
 				Subscriptions.PayerMemberID.SET(payerMemberIdVal),
-				Subscriptions.StartDate.SET(TimestampT(sub.StartDate())),
+				Subscriptions.StartDate.SET(TimestampzT(sub.StartDate())),
 				Subscriptions.EndDate.SET(endDateVal),
 				Subscriptions.Recurrency.SET(String(sub.Recurrency().String())),
 				Subscriptions.CustomRecurrency.SET(customRecurrencyVal),
-				Subscriptions.UpdatedAt.SET(TimestampT(sub.UpdatedAt())),
+				Subscriptions.UpdatedAt.SET(TimestampzT(sub.UpdatedAt())),
 				Subscriptions.Etag.SET(String(sub.ETag())),
 			).
 			WHERE(Subscriptions.ID.EQ(UUID(sub.Id())))
