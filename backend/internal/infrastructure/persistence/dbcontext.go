@@ -2,15 +2,14 @@ package persistence
 
 import (
 	"context"
-	"errors"
+	"database/sql"
 	"log/slog"
-	"time"
 
 	"github.com/Oleexo/config-go"
+	"github.com/go-jet/jet/v2/postgres"
+	"github.com/go-jet/jet/v2/qrm"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
-
-	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
+	"github.com/jackc/pgx/v5/stdlib"
 )
 
 const (
@@ -18,8 +17,8 @@ const (
 )
 
 type DatabaseContext struct {
-	pool    *pgxpool.Pool
-	queries *sql.Queries
+	pgxConfig *pgx.ConnConfig
+	logger    *slog.Logger
 }
 
 func NewDatabaseContext(
@@ -27,57 +26,53 @@ func NewDatabaseContext(
 	logger *slog.Logger) *DatabaseContext {
 	dsn := cfg.GetString("DATABASE_DSN")
 
-	// Parse pgxConfig and set pool settings
-	pgxConfig, err := pgxpool.ParseConfig(dsn)
+	pgxConfig, err := pgx.ParseConfig(dsn)
 	if err != nil {
 		panic(err)
 	}
-
-	// Configure connection pool settings
-	pgxConfig.MaxConns = 25                      // Maximum number of connections
-	pgxConfig.MinConns = 5                       // Minimum number of connections to maintain
-	pgxConfig.MaxConnLifetime = time.Hour        // Maximum connection lifetime
-	pgxConfig.MaxConnIdleTime = 30 * time.Minute // Maximum connection idle time
-
-	// logger
-	overridePgxLogger(pgxConfig, logger)
-
-	// Create connection pool
-	pool, err := pgxpool.NewWithConfig(context.Background(), pgxConfig)
-	if err != nil {
-		panic(err)
-	}
-
-	// Create sqlc queries instance with the pool
-	queries := sql.New(pool)
 
 	return &DatabaseContext{
-		pool:    pool,
-		queries: queries,
+		pgxConfig: pgxConfig,
+		logger:    logger,
 	}
 }
 
-func (r *DatabaseContext) GetPool() *pgxpool.Pool {
-	return r.pool
-}
-
-func (r *DatabaseContext) GetQueries(ctx context.Context) *sql.Queries {
-	tx, ok := ctx.Value(TransactionKey).(pgx.Tx)
+func (r *DatabaseContext) Query(ctx context.Context, stmt postgres.SelectStatement, s interface{}) error {
+	var queryable qrm.Queryable
+	tx, ok := ctx.Value(TransactionKey).(*sql.Tx)
 	if ok {
-		return r.queries.WithTx(tx)
+		queryable = tx
+	} else {
+		sqlDB := stdlib.OpenDB(*r.pgxConfig) // returns *sql.DB
+		defer sqlDB.Close()
+		queryable = sqlDB
 	}
-	return r.queries
+
+	if r.logger.Enabled(ctx, slog.LevelDebug) {
+		r.logger.Log(ctx, slog.LevelDebug, stmt.DebugSql())
+	}
+
+	return stmt.QueryContext(ctx, queryable, s)
 }
 
-func (r *DatabaseContext) Close() {
-	if r.pool != nil {
-		r.pool.Close()
+func (r *DatabaseContext) Execute(ctx context.Context, stmt postgres.Statement) (int64, error) {
+	var queryable qrm.Executable
+	tx, ok := ctx.Value(TransactionKey).(*sql.Tx)
+	if ok {
+		queryable = tx
+	} else {
+		sqlDB := stdlib.OpenDB(*r.pgxConfig) // returns *sql.DB
+		defer sqlDB.Close()
+		queryable = sqlDB
 	}
-}
 
-func (r *DatabaseContext) Ping(ctx context.Context) error {
-	if r.pool != nil {
-		return r.pool.Ping(ctx)
+	if r.logger.Enabled(ctx, slog.LevelDebug) {
+		r.logger.Log(ctx, slog.LevelDebug, stmt.DebugSql())
 	}
-	return errors.New("database pool is nil")
+
+	result, err := stmt.ExecContext(ctx, queryable)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

@@ -34,15 +34,15 @@ func NewProviderGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, cor
 //	@Router			/providers [get]
 func (e ProviderGetAllEndpoint) Handle(c *gin.Context) {
 	search := c.DefaultQuery("search", "")
-	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 32)
+	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 64)
 	if err != nil {
 		limit = 10
 	}
-	offset, err := strconv.ParseInt(c.DefaultQuery("offset", "0"), 10, 32)
+	offset, err := strconv.ParseInt(c.DefaultQuery("offset", "0"), 10, 64)
 	if err != nil {
-		offset = 1
+		offset = 0
 	}
-	q := query.NewFindAllQuery(search, int32(limit), int32(offset))
+	q := query.NewFindAllQuery(search, limit, offset)
 	r := e.handler.Handle(c, q)
 	handleResponse(c,
 		r,

@@ -30,15 +30,15 @@ type FamilyGetAllEndpoint struct {
 //	@Failure		500		{object}	HttpErrorResponse					"Internal Server Error"
 //	@Router			/families [get]
 func (f FamilyGetAllEndpoint) Handle(c *gin.Context) {
-	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 32)
+	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 64)
 	if err != nil {
 		limit = 10
 	}
-	offset, err := strconv.ParseInt(c.DefaultQuery("offset", "0"), 10, 32)
+	offset, err := strconv.ParseInt(c.DefaultQuery("offset", "0"), 10, 64)
 	if err != nil {
 		offset = 0
 	}
-	q := query.NewFindAllQuery(int32(limit), int32(offset))
+	q := query.NewFindAllQuery(limit, offset)
 	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, HttpErrorResponse{

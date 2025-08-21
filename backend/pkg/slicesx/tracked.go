@@ -48,7 +48,7 @@ func (d *Tracked[T]) It() iter.Seq[T] {
 
 }
 
-func (d *Tracked[T]) Added() iter.Seq[T] {
+func (d *Tracked[T]) AddedIt() iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for _, v := range d._added {
 			if !yield(v) {
@@ -58,7 +58,11 @@ func (d *Tracked[T]) Added() iter.Seq[T] {
 	}
 }
 
-func (d *Tracked[T]) Removed() iter.Seq[T] {
+func (d *Tracked[T]) Added() []T {
+	return d._added
+}
+
+func (d *Tracked[T]) RemovedIt() iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for _, v := range d._removed {
 			if !yield(v) {
@@ -68,7 +72,11 @@ func (d *Tracked[T]) Removed() iter.Seq[T] {
 	}
 }
 
-func (d *Tracked[T]) Updated() iter.Seq[T] {
+func (d *Tracked[T]) Removed() []T {
+	return d._removed
+}
+
+func (d *Tracked[T]) UpdatedIt() iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for _, v := range d._updated {
 			if !yield(v) {
@@ -76,6 +84,10 @@ func (d *Tracked[T]) Updated() iter.Seq[T] {
 			}
 		}
 	}
+}
+
+func (d *Tracked[T]) Updated() []T {
+	return d._updated
 }
 
 func (d *Tracked[T]) Clear() {

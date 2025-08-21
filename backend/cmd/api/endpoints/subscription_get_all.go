@@ -31,8 +31,8 @@ type subscriptionGetAllQueryParams struct {
 	Users        []uuid.UUID `form:"users"`
 	WithInactive bool        `form:"with_inactive"`
 	Providers    []uuid.UUID `form:"providers"`
-	Limit        int32       `form:"limit"`
-	Offset       int32       `form:"offset"`
+	Limit        int64       `form:"limit"`
+	Offset       int64       `form:"offset"`
 }
 
 // Handle godoc

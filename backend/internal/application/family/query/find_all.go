@@ -10,11 +10,11 @@ import (
 )
 
 type FindAllQuery struct {
-	Limit  int32
-	Offset int32
+	Limit  int64
+	Offset int64
 }
 
-func NewFindAllQuery(size, page int32) FindAllQuery {
+func NewFindAllQuery(size, page int64) FindAllQuery {
 	return FindAllQuery{Limit: size, Offset: page}
 }
 

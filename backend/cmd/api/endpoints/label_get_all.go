@@ -35,16 +35,16 @@ func NewLabelGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery, core.P
 func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
 	searchText := c.DefaultQuery("search", "")
 
-	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 32)
+	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 64)
 	if err != nil {
 		limit = 10
 	}
-	offset, err := strconv.ParseInt(c.DefaultQuery("offset", "0"), 10, 32)
+	offset, err := strconv.ParseInt(c.DefaultQuery("offset", "0"), 10, 64)
 	if err != nil {
 		offset = 0
 	}
 
-	q := query.NewFindAllQuery(searchText, int32(limit), int32(offset))
+	q := query.NewFindAllQuery(searchText, limit, offset)
 	r := e.handler.Handle(c, q)
 	handleResponse(c,
 		r,

@@ -27,6 +27,8 @@ services:
       - POSTGRES_DB=app
     ports:
       - "5432:5432"
+    volumes:
+      - ./database/init:/docker-entrypoint-initdb.d
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d app" ]
       interval: 10s
@@ -41,6 +43,7 @@ services:
       - GOOSE_DRIVER=postgres
       - GOOSE_MIGRATION_DIR=.
       - GOOSE_DBSTRING=postgres://postgres:postgres@database:5432/app
+      - GOOSE_TABLE=goose.migrations
     depends_on:
       database:
         condition: service_healthy

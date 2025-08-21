@@ -2,13 +2,18 @@ package persistence
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/provider"
-	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
+	"github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/model"
 	"github.com/oleexo/subtracker/pkg/slicesx"
+
+	. "github.com/go-jet/jet/v2/postgres"
+
+	. "github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/table"
 )
 
 type ProviderRepository struct {
@@ -20,28 +25,36 @@ func NewProviderRepository(repository *DatabaseContext) provider.Repository {
 }
 
 func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (provider.Provider, error) {
-	response, err := r.dbContext.GetQueries(ctx).GetProviderById(ctx, providerId)
-	if err != nil {
+	stmt := SELECT(
+		Providers.AllColumns,
+		ProviderPlans.AllColumns,
+		ProviderPrices.AllColumns,
+		ProviderLabels.LabelID,
+		ProviderLabels.ProviderID,
+	).
+		FROM(
+			Providers.
+				LEFT_JOIN(ProviderPlans, ProviderPlans.ProviderID.EQ(Providers.ID)).
+				LEFT_JOIN(ProviderPrices, ProviderPrices.PlanID.EQ(ProviderPlans.ID)).
+				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)),
+		).
+		WHERE(Providers.ID.EQ(UUID(providerId)))
+
+	var rows []struct {
+		Providers      model.Providers       `json:"providers"`
+		ProviderPlans  *model.ProviderPlans  `json:"provider_plans"`
+		ProviderPrices *model.ProviderPrices `json:"provider_prices"`
+		ProviderLabels *model.ProviderLabels `json:"provider_labels"`
+	}
+
+	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
 		return nil, err
 	}
-	if len(response) == 0 {
+	if len(rows) == 0 {
 		return nil, nil
 	}
-	providers := createProviderFromSqlcRows(response,
-		func(row sql.ProviderRow) sql.Provider {
-			return row.Provider
-		},
-		func(row sql.ProviderRow) *sql.ProviderPlan {
-			return row.ProviderPlan
-		},
-		func(row sql.ProviderRow) *sql.ProviderPrice {
-			return row.ProviderPrice
-		},
-		func(row sql.ProviderRow) *uuid.UUID {
-			return row.ProviderLabel
-		},
-	)
 
+	providers := createProviderFromJetRows(rows)
 	if len(providers) == 0 {
 		return nil, nil
 	}
@@ -52,28 +65,45 @@ func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (
 func (r ProviderRepository) GetByIdForUser(ctx context.Context, userId string, providerId uuid.UUID) (
 	provider.Provider,
 	error) {
-	response, err := r.dbContext.GetQueries(ctx).GetProviderByIdForUser(ctx, userId, providerId)
-	if err != nil {
+	stmt := SELECT(
+		Providers.AllColumns,
+		ProviderPlans.AllColumns,
+		ProviderPrices.AllColumns,
+		ProviderLabels.LabelID,
+		ProviderLabels.ProviderID,
+	).
+		FROM(
+			Providers.
+				LEFT_JOIN(ProviderPlans, ProviderPlans.ProviderID.EQ(Providers.ID)).
+				LEFT_JOIN(ProviderPrices, ProviderPrices.PlanID.EQ(ProviderPlans.ID)).
+				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)).
+				LEFT_JOIN(Families, Families.ID.EQ(Providers.OwnerFamilyID)).
+				LEFT_JOIN(FamilyMembers, FamilyMembers.FamilyID.EQ(Families.ID)),
+		).
+		WHERE(
+			Providers.ID.EQ(UUID(providerId)).
+				AND(
+					Providers.OwnerType.EQ(String("system")).
+						OR(Providers.OwnerType.EQ(String("personal")).AND(Providers.OwnerUserID.EQ(String(userId)))).
+						OR(Providers.OwnerType.EQ(String("family")).AND(FamilyMembers.UserID.EQ(String(userId)))),
+				),
+		)
+
+	var rows []struct {
+		Providers      model.Providers       `json:"providers"`
+		ProviderPlans  *model.ProviderPlans  `json:"provider_plans"`
+		ProviderPrices *model.ProviderPrices `json:"provider_prices"`
+		ProviderLabels *model.ProviderLabels `json:"provider_labels"`
+	}
+
+	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
 		return nil, err
 	}
-	if len(response) == 0 {
+	if len(rows) == 0 {
 		return nil, nil
 	}
-	providers := createProviderFromSqlcRows(response,
-		func(row sql.ProviderRow) sql.Provider {
-			return row.Provider
-		},
-		func(row sql.ProviderRow) *sql.ProviderPlan {
-			return row.ProviderPlan
-		},
-		func(row sql.ProviderRow) *sql.ProviderPrice {
-			return row.ProviderPrice
-		},
-		func(row sql.ProviderRow) *uuid.UUID {
-			return row.ProviderLabel
-		},
-	)
 
+	providers := createProviderFromJetRows(rows)
 	if len(providers) == 0 {
 		return nil, nil
 	}
@@ -82,103 +112,185 @@ func (r ProviderRepository) GetByIdForUser(ctx context.Context, userId string, p
 }
 
 func (r ProviderRepository) GetSystemProviders(ctx context.Context) ([]provider.Provider, int64, error) {
-	response, count, err := r.dbContext.GetQueries(ctx).GetSystemProviders(ctx)
-	if err != nil {
+	stmt := SELECT(
+		Providers.AllColumns,
+		ProviderPlans.AllColumns,
+		ProviderPrices.AllColumns,
+		ProviderLabels.LabelID,
+		ProviderLabels.ProviderID,
+		COUNT(STAR).OVER().AS("total_count"),
+	).
+		FROM(
+			Providers.
+				LEFT_JOIN(ProviderPlans, ProviderPlans.ProviderID.EQ(Providers.ID)).
+				LEFT_JOIN(ProviderPrices, ProviderPrices.PlanID.EQ(ProviderPlans.ID)).
+				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)),
+		).
+		WHERE(
+			Providers.OwnerType.EQ(String("system")).
+				AND(Providers.OwnerUserID.IS_NULL()).
+				AND(Providers.OwnerFamilyID.IS_NULL()),
+		)
+
+	var rows []struct {
+		Providers      model.Providers       `json:"providers"`
+		ProviderPlans  *model.ProviderPlans  `json:"provider_plans"`
+		ProviderPrices *model.ProviderPrices `json:"provider_prices"`
+		ProviderLabels *model.ProviderLabels `json:"provider_labels"`
+		TotalCount     int64                 `json:"total_count"`
+	}
+
+	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
 		return nil, 0, err
 	}
-	if len(response) == 0 {
+	if len(rows) == 0 {
 		return nil, 0, nil
 	}
-	providers := createProviderFromSqlcRows(response,
-		func(row sql.ProviderRow) sql.Provider {
-			return row.Provider
-		},
-		func(row sql.ProviderRow) *sql.ProviderPlan {
-			return row.ProviderPlan
-		},
-		func(row sql.ProviderRow) *sql.ProviderPrice {
-			return row.ProviderPrice
-		},
-		func(row sql.ProviderRow) *uuid.UUID {
-			return row.ProviderLabel
-		},
-	)
+
+	totalCount := rows[0].TotalCount
+	providers := createProviderFromJetRowsWithCount(rows)
 
 	if len(providers) == 0 {
 		return nil, 0, nil
 	}
 
-	return providers, count, nil
+	return providers, totalCount, nil
 }
 
 func (r ProviderRepository) GetAll(ctx context.Context, parameters provider.QueryParameters) (
 	[]provider.Provider,
 	int64,
 	error) {
-	var response []sql.ProviderRow
-	var count int64
-	var err error
-	response, count, err = r.dbContext.GetQueries(ctx).GetProviders(ctx, parameters.Limit, parameters.Offset)
-	if err != nil {
+
+	pagedProviders := SELECT(
+		Providers.AllColumns,
+		COUNT(STAR).OVER().AS("total_count"),
+	).
+		FROM(Providers).
+		ORDER_BY(Providers.ID).
+		LIMIT(parameters.Limit).
+		OFFSET(parameters.Offset).
+		AsTable("p")
+
+	stmt := SELECT(
+		pagedProviders.AllColumns(),
+		ProviderPlans.AllColumns,
+		ProviderPrices.AllColumns,
+		ProviderLabels.LabelID,
+		ProviderLabels.ProviderID,
+	).
+		FROM(
+			pagedProviders.
+				LEFT_JOIN(ProviderPlans, ProviderPlans.ProviderID.EQ(Providers.ID.From(pagedProviders))).
+				LEFT_JOIN(ProviderPrices, ProviderPrices.PlanID.EQ(ProviderPlans.ID)).
+				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID.From(pagedProviders))),
+		)
+
+	var rows []struct {
+		Providers      model.Providers       `json:"providers"`
+		ProviderPlans  *model.ProviderPlans  `json:"provider_plans"`
+		ProviderPrices *model.ProviderPrices `json:"provider_prices"`
+		ProviderLabels *model.ProviderLabels `json:"provider_labels"`
+		TotalCount     int64                 `json:"total_count"`
+	}
+
+	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
 		return nil, 0, err
 	}
-	if len(response) == 0 {
+	if len(rows) == 0 {
 		return nil, 0, nil
 	}
-	providers := createProviderFromSqlcRows(response,
-		func(row sql.ProviderRow) sql.Provider {
-			return row.Provider
-		},
-		func(row sql.ProviderRow) *sql.ProviderPlan {
-			return row.ProviderPlan
-		},
-		func(row sql.ProviderRow) *sql.ProviderPrice {
-			return row.ProviderPrice
-		},
-		func(row sql.ProviderRow) *uuid.UUID {
-			return row.ProviderLabel
-		},
-	)
+
+	totalCount := rows[0].TotalCount
+	providers := createProviderFromJetRowsWithCount(rows)
 
 	if len(providers) == 0 {
 		return nil, 0, nil
 	}
 
-	return providers, count, nil
+	return providers, totalCount, nil
 }
 
 func (r ProviderRepository) GetAllForUser(
 	ctx context.Context,
 	userId string,
 	parameters provider.QueryParameters) ([]provider.Provider, int64, error) {
-	response, count, err := r.dbContext.GetQueries(ctx).
-		GetProvidersForUser(ctx, userId, parameters.SearchText, parameters.Limit, parameters.Offset)
-	if err != nil {
+
+	// Build base access filter
+	accessFilter := Providers.OwnerType.EQ(String("system")).
+		OR(Providers.OwnerType.EQ(String("personal")).AND(Providers.OwnerUserID.EQ(String(userId)))).
+		OR(Providers.OwnerType.EQ(String("family")).AND(EXISTS(
+			SELECT(FamilyMembers.ID).
+				FROM(FamilyMembers).
+				WHERE(FamilyMembers.FamilyID.EQ(Providers.OwnerFamilyID).AND(FamilyMembers.UserID.EQ(String(userId))))),
+		))
+
+	// Add search filter if provided
+	searchFilter := accessFilter
+	if parameters.SearchText != "" {
+		searchTerm := fmt.Sprintf("%%%s%%", parameters.SearchText)
+		searchFilter = accessFilter.AND(
+			Providers.Name.LIKE(String(searchTerm)).
+				OR(EXISTS(
+					SELECT(ProviderLabels.ProviderID).
+						FROM(ProviderLabels.INNER_JOIN(Labels, Labels.ID.EQ(ProviderLabels.LabelID))).
+						WHERE(ProviderLabels.ProviderID.EQ(Providers.ID).AND(Labels.Name.LIKE(String(searchTerm)))),
+				)),
+		)
+	}
+
+	// Get matching provider IDs with pagination
+	pagedProviders := SELECT(
+		Providers.ID,
+		COUNT(STAR).OVER().AS("total_count"),
+	).
+		FROM(Providers).
+		WHERE(searchFilter).
+		ORDER_BY(Providers.ID).
+		LIMIT(parameters.Limit).
+		OFFSET(parameters.Offset).
+		AsTable("paged")
+
+	// Get full provider data with joins
+	stmt := SELECT(
+		Providers.AllColumns,
+		ProviderPlans.AllColumns,
+		ProviderPrices.AllColumns,
+		ProviderLabels.LabelID,
+		ProviderLabels.ProviderID,
+		pagedProviders.AllColumns(),
+	).
+		FROM(
+			pagedProviders.
+				INNER_JOIN(Providers, Providers.ID.EQ(Providers.ID.From(pagedProviders))).
+				LEFT_JOIN(ProviderPlans, ProviderPlans.ProviderID.EQ(Providers.ID)).
+				LEFT_JOIN(ProviderPrices, ProviderPrices.PlanID.EQ(ProviderPlans.ID)).
+				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)),
+		)
+
+	var rows []struct {
+		Providers      model.Providers       `json:"providers"`
+		ProviderPlans  *model.ProviderPlans  `json:"provider_plans"`
+		ProviderPrices *model.ProviderPrices `json:"provider_prices"`
+		ProviderLabels *model.ProviderLabels `json:"provider_labels"`
+		TotalCount     int64                 `json:"total_count"`
+	}
+
+	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
 		return nil, 0, err
 	}
-	if len(response) == 0 {
+	if len(rows) == 0 {
 		return nil, 0, nil
 	}
-	providers := createProviderFromSqlcRows(response,
-		func(row sql.ProviderRow) sql.Provider {
-			return row.Provider
-		},
-		func(row sql.ProviderRow) *sql.ProviderPlan {
-			return row.ProviderPlan
-		},
-		func(row sql.ProviderRow) *sql.ProviderPrice {
-			return row.ProviderPrice
-		},
-		func(row sql.ProviderRow) *uuid.UUID {
-			return row.ProviderLabel
-		},
-	)
+
+	totalCount := rows[0].TotalCount
+	providers := createProviderFromJetRowsWithCount(rows)
 
 	if len(providers) == 0 {
 		return nil, 0, nil
 	}
 
-	return providers, count, nil
+	return providers, totalCount, nil
 }
 
 func (r ProviderRepository) Save(ctx context.Context, providers ...provider.Provider) error {
@@ -207,30 +319,39 @@ func (r ProviderRepository) Save(ctx context.Context, providers ...provider.Prov
 }
 
 func (r ProviderRepository) Delete(ctx context.Context, providerId uuid.UUID) (bool, error) {
-	err := r.dbContext.GetQueries(ctx).DeleteProvider(ctx, providerId)
+	stmt := Providers.DELETE().
+		WHERE(Providers.ID.EQ(UUID(providerId)))
+
+	count, err := r.dbContext.Execute(ctx, stmt)
 	if err != nil {
 		return false, err
 	}
 
-	return true, nil
+	return count > 0, nil
 }
 
 func (r ProviderRepository) DeletePlan(ctx context.Context, planId uuid.UUID) (bool, error) {
-	err := r.dbContext.GetQueries(ctx).DeleteProviderPlan(ctx, planId)
+	stmt := ProviderPlans.DELETE().
+		WHERE(ProviderPlans.ID.EQ(UUID(planId)))
+
+	count, err := r.dbContext.Execute(ctx, stmt)
 	if err != nil {
 		return false, err
 	}
 
-	return true, nil
+	return count > 0, nil
 }
 
 func (r ProviderRepository) DeletePrice(ctx context.Context, priceId uuid.UUID) (bool, error) {
-	err := r.dbContext.GetQueries(ctx).DeleteProviderPrice(ctx, priceId)
+	stmt := ProviderPrices.DELETE().
+		WHERE(ProviderPrices.ID.EQ(UUID(priceId)))
+
+	count, err := r.dbContext.Execute(ctx, stmt)
 	if err != nil {
 		return false, err
 	}
 
-	return true, nil
+	return count > 0, nil
 }
 
 func (r ProviderRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
@@ -238,100 +359,161 @@ func (r ProviderRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool,
 		return true, nil
 	}
 
-	count, err := r.dbContext.GetQueries(ctx).IsProviderExists(ctx, ids)
-	if err != nil {
+	vals := make([]Expression, len(ids))
+	for i, id := range ids {
+		vals[i] = UUID(id)
+	}
+
+	stmt := SELECT(COUNT(Providers.ID).AS("count")).
+		FROM(Providers).
+		WHERE(Providers.ID.IN(vals...))
+
+	var row struct {
+		Count int
+	}
+
+	if err := r.dbContext.Query(ctx, stmt, &row); err != nil {
 		return false, err
 	}
-	return count > int64(len(ids)), nil
+
+	return row.Count == len(ids), nil
 }
 
 func (r ProviderRepository) create(ctx context.Context, providers []provider.Provider) error {
-	args := slicesx.Select(providers, func(prov provider.Provider) sql.CreateProvidersParams {
-		model := sql.CreateProvidersParams{
-			ID:             prov.Id(),
-			OwnerType:      prov.Owner().Type().String(),
-			Name:           prov.Name(),
-			Key:            prov.Key(),
-			Description:    prov.Description(),
-			IconUrl:        prov.IconUrl(),
-			Url:            prov.Url(),
-			PricingPageUrl: prov.PricingPageUrl(),
-			CreatedAt:      prov.CreatedAt(),
-			UpdatedAt:      prov.UpdatedAt(),
-			Etag:           prov.ETag(),
-		}
+	if len(providers) == 0 {
+		return nil
+	}
+
+	// Insert providers
+	stmt := Providers.INSERT(
+		Providers.ID,
+		Providers.OwnerType,
+		Providers.OwnerFamilyID,
+		Providers.OwnerUserID,
+		Providers.Name,
+		Providers.Key,
+		Providers.Description,
+		Providers.IconURL,
+		Providers.URL,
+		Providers.PricingPageURL,
+		Providers.CreatedAt,
+		Providers.UpdatedAt,
+		Providers.Etag,
+	)
+
+	for _, prov := range providers {
+		var ownerFamilyID Expression
+		var ownerUserID Expression
 
 		switch prov.Owner().Type() {
 		case auth.PersonalOwnerType:
-			userId := prov.Owner().UserId()
-			model.OwnerUserID = &userId
+			ownerFamilyID = NULL
+			ownerUserID = String(prov.Owner().UserId())
 		case auth.FamilyOwnerType:
-			familyId := prov.Owner().FamilyId()
-			model.OwnerFamilyID = &familyId
+			ownerFamilyID = UUID(prov.Owner().FamilyId())
+			ownerUserID = NULL
+		default:
+			ownerFamilyID = NULL
+			ownerUserID = NULL
 		}
 
-		return model
-	})
+		var keyVal Expression
+		if prov.Key() != nil {
+			keyVal = String(*prov.Key())
+		} else {
+			keyVal = NULL
+		}
 
-	if _, err := r.dbContext.GetQueries(ctx).CreateProviders(ctx, args); err != nil {
+		var descVal Expression
+		if prov.Description() != nil {
+			descVal = String(*prov.Description())
+		} else {
+			descVal = NULL
+		}
+
+		var iconVal Expression
+		if prov.IconUrl() != nil {
+			iconVal = String(*prov.IconUrl())
+		} else {
+			iconVal = NULL
+		}
+
+		var urlVal Expression
+		if prov.Url() != nil {
+			urlVal = String(*prov.Url())
+		} else {
+			urlVal = NULL
+		}
+
+		var pricingVal Expression
+		if prov.PricingPageUrl() != nil {
+			pricingVal = String(*prov.PricingPageUrl())
+		} else {
+			pricingVal = NULL
+		}
+
+		stmt = stmt.VALUES(
+			UUID(prov.Id()),
+			String(prov.Owner().Type().String()),
+			ownerFamilyID,
+			ownerUserID,
+			String(prov.Name()),
+			keyVal,
+			descVal,
+			iconVal,
+			urlVal,
+			pricingVal,
+			TimestampzT(prov.CreatedAt()),
+			TimestampzT(prov.UpdatedAt()),
+			String(prov.ETag()),
+		)
+	}
+
+	count, err := r.dbContext.Execute(ctx, stmt)
+	if err != nil {
 		return err
 	}
+	if count != int64(len(providers)) {
+		return ErrMissMatchAffectRow
+	}
 
-	labelArgs := slicesx.SelectMany(providers, func(prov provider.Provider) []sql.CreateProviderLabelsParams {
-		return slicesx.Select(prov.Labels().Values(), func(labelId uuid.UUID) sql.CreateProviderLabelsParams {
-			return sql.CreateProviderLabelsParams{
-				ProviderID: prov.Id(),
-				LabelID:    labelId,
-			}
+	// Insert provider labels
+	allLabels := slicesx.SelectMany(providers, func(prov provider.Provider) []struct {
+		ProviderID uuid.UUID
+		LabelID    uuid.UUID
+	} {
+		return slicesx.Select(prov.Labels().Values(), func(labelId uuid.UUID) struct {
+			ProviderID uuid.UUID
+			LabelID    uuid.UUID
+		} {
+			return struct {
+				ProviderID uuid.UUID
+				LabelID    uuid.UUID
+			}{ProviderID: prov.Id(), LabelID: labelId}
 		})
 	})
 
-	if len(labelArgs) > 0 {
-		if _, err := r.dbContext.GetQueries(ctx).CreateProviderLabels(ctx, labelArgs); err != nil {
+	if len(allLabels) > 0 {
+		labelStmt := ProviderLabels.INSERT(
+			ProviderLabels.ProviderID,
+			ProviderLabels.LabelID,
+		)
+
+		for _, label := range allLabels {
+			labelStmt = labelStmt.VALUES(
+				UUID(label.ProviderID),
+				UUID(label.LabelID),
+			)
+		}
+
+		if _, err := r.dbContext.Execute(ctx, labelStmt); err != nil {
 			return err
 		}
 	}
 
-	planArgs := slicesx.SelectMany(providers, func(prov provider.Provider) []sql.CreateProviderPlansParams {
-		return slicesx.Select(prov.Plans().Values(), func(plan provider.Plan) sql.CreateProviderPlansParams {
-			return sql.CreateProviderPlansParams{
-				ID:          plan.Id(),
-				ProviderID:  prov.Id(),
-				Name:        plan.Name(),
-				Description: plan.Description(),
-				CreatedAt:   plan.CreatedAt(),
-				UpdatedAt:   plan.UpdatedAt(),
-				Etag:        plan.ETag(),
-			}
-		})
-	})
-
-	if len(planArgs) > 0 {
-		if _, err := r.dbContext.GetQueries(ctx).CreateProviderPlans(ctx, planArgs); err != nil {
-			return err
-		}
-	}
-
-	priceArgs := slicesx.SelectMany(providers, func(prov provider.Provider) []sql.CreateProviderPricesParams {
-		return slicesx.SelectMany(prov.Plans().Values(), func(plan provider.Plan) []sql.CreateProviderPricesParams {
-			return slicesx.Select(plan.Prices().Values(), func(price provider.Price) sql.CreateProviderPricesParams {
-				return sql.CreateProviderPricesParams{
-					ID:        price.Id(),
-					PlanID:    plan.Id(),
-					Currency:  price.Currency().String(),
-					Amount:    price.Amount(),
-					StartDate: price.StartDate(),
-					EndDate:   price.EndDate(),
-					CreatedAt: price.CreatedAt(),
-					UpdatedAt: price.UpdatedAt(),
-					Etag:      price.ETag(),
-				}
-			})
-		})
-	})
-
-	if len(priceArgs) > 0 {
-		if _, err := r.dbContext.GetQueries(ctx).CreateProviderPrices(ctx, priceArgs); err != nil {
+	// Insert plans and prices
+	for _, prov := range providers {
+		if err := r.createPlansAndPrices(ctx, prov.Id(), prov.Plans().Values()); err != nil {
 			return err
 		}
 	}
@@ -340,160 +522,402 @@ func (r ProviderRepository) create(ctx context.Context, providers []provider.Pro
 }
 
 func (r ProviderRepository) update(ctx context.Context, dirtyProvider provider.Provider) error {
-	model := sql.UpdateProviderParams{
-		ID:             dirtyProvider.Id(),
-		OwnerType:      dirtyProvider.Owner().Type().String(),
-		Name:           dirtyProvider.Name(),
-		Key:            dirtyProvider.Key(),
-		Description:    dirtyProvider.Description(),
-		IconUrl:        dirtyProvider.IconUrl(),
-		Url:            dirtyProvider.Url(),
-		PricingPageUrl: dirtyProvider.PricingPageUrl(),
-		UpdatedAt:      dirtyProvider.UpdatedAt(),
+	if !dirtyProvider.IsDirty() {
+		return nil
 	}
+
+	// Update provider
+	var ownerFamilyID StringExpression
+	var ownerUserID StringExpression
 
 	switch dirtyProvider.Owner().Type() {
 	case auth.PersonalOwnerType:
-		userId := dirtyProvider.Owner().UserId()
-		model.OwnerUserID = &userId
+		ownerFamilyID = StringExp(NULL)
+		ownerUserID = String(dirtyProvider.Owner().UserId())
 	case auth.FamilyOwnerType:
-		familyId := dirtyProvider.Owner().FamilyId()
-		model.OwnerFamilyID = &familyId
+		ownerFamilyID = StringExp(UUID(dirtyProvider.Owner().FamilyId()))
+		ownerUserID = StringExp(NULL)
+	default:
+		ownerFamilyID = StringExp(NULL)
+		ownerUserID = StringExp(NULL)
 	}
 
-	if err := r.dbContext.GetQueries(ctx).UpdateProvider(ctx, model); err != nil {
+	var keyVal StringExpression
+	if dirtyProvider.Key() != nil {
+		keyVal = String(*dirtyProvider.Key())
+	} else {
+		keyVal = StringExp(NULL)
+	}
+
+	var descVal StringExpression
+	if dirtyProvider.Description() != nil {
+		descVal = String(*dirtyProvider.Description())
+	} else {
+		descVal = StringExp(NULL)
+	}
+
+	var iconVal StringExpression
+	if dirtyProvider.IconUrl() != nil {
+		iconVal = String(*dirtyProvider.IconUrl())
+	} else {
+		iconVal = StringExp(NULL)
+	}
+
+	var urlVal StringExpression
+	if dirtyProvider.Url() != nil {
+		urlVal = String(*dirtyProvider.Url())
+	} else {
+		urlVal = StringExp(NULL)
+	}
+
+	var pricingVal StringExpression
+	if dirtyProvider.PricingPageUrl() != nil {
+		pricingVal = String(*dirtyProvider.PricingPageUrl())
+	} else {
+		pricingVal = StringExp(NULL)
+	}
+
+	stmt := Providers.UPDATE().
+		SET(
+			Providers.OwnerType.SET(String(dirtyProvider.Owner().Type().String())),
+			Providers.OwnerFamilyID.SET(ownerFamilyID),
+			Providers.OwnerUserID.SET(ownerUserID),
+			Providers.Name.SET(String(dirtyProvider.Name())),
+			Providers.Key.SET(keyVal),
+			Providers.Description.SET(descVal),
+			Providers.IconURL.SET(iconVal),
+			Providers.URL.SET(urlVal),
+			Providers.PricingPageURL.SET(pricingVal),
+			Providers.UpdatedAt.SET(TimestampT(dirtyProvider.UpdatedAt())),
+		).
+		WHERE(Providers.ID.EQ(UUID(dirtyProvider.Id())))
+
+	count, err := r.dbContext.Execute(ctx, stmt)
+	if err != nil {
 		return err
 	}
+	if count == 0 {
+		return ErrMissMatchAffectRow
+	}
 
+	// Handle label changes
 	if dirtyProvider.Labels().HasChanges() {
-		if err := saveTrackedSlice(ctx, r.dbContext, dirtyProvider.Labels(),
-			func(ctx context.Context, queries *sql.Queries, entities []uuid.UUID) error {
-				args := slicesx.Select(entities, func(labelId uuid.UUID) sql.CreateProviderLabelsParams {
-					return sql.CreateProviderLabelsParams{
-						LabelID:    labelId,
-						ProviderID: dirtyProvider.Id(),
-					}
-				})
-				_, qErr := queries.CreateProviderLabels(ctx, args)
-				return qErr
-			},
-			func(ctx context.Context, queries *sql.Queries, entity uuid.UUID) error {
-				panic("can't update provider_labels relation")
-			},
-			func(ctx context.Context, queries *sql.Queries, entity uuid.UUID) error {
-				return queries.DeleteProviderLabel(ctx, sql.DeleteProviderLabelParams{
-					ProviderID: dirtyProvider.Id(),
-					LabelID:    entity,
-				})
-			}); err != nil {
+		if err := r.saveTrackedLabelsWithJet(ctx, dirtyProvider.Id(), dirtyProvider.Labels()); err != nil {
 			return err
 		}
-
 		dirtyProvider.Labels().ClearChanges()
 	}
 
+	// Handle plan changes
 	if dirtyProvider.Plans().HasChanges() {
-		if err := saveTrackedSlice(ctx,
-			r.dbContext,
-			dirtyProvider.Plans(),
-			func(ctx context.Context, queries *sql.Queries, plans []provider.Plan) error {
-				args := slicesx.Select(plans, func(plan provider.Plan) sql.CreateProviderPlansParams {
-					return sql.CreateProviderPlansParams{
-						ID:          plan.Id(),
-						ProviderID:  dirtyProvider.Id(),
-						Name:        plan.Name(),
-						Description: plan.Description(),
-						CreatedAt:   plan.CreatedAt(),
-						UpdatedAt:   plan.UpdatedAt(),
-						Etag:        plan.ETag(),
-					}
-				})
-				_, qErr := queries.CreateProviderPlans(ctx, args)
-				return qErr
-			},
-			func(ctx context.Context, queries *sql.Queries, entity provider.Plan) error {
-				return queries.UpdateProviderPlan(ctx, sql.UpdateProviderPlanParams{
-					ID:          entity.Id(),
-					Name:        entity.Name(),
-					Description: entity.Description(),
-					UpdatedAt:   entity.UpdatedAt(),
-					Etag:        entity.ETag(),
-					ProviderID:  dirtyProvider.Id(),
-				})
-			},
-			func(ctx context.Context, queries *sql.Queries, entity provider.Plan) error {
-				return queries.DeleteProviderPlan(ctx, entity.Id())
-			},
-		); err != nil {
+		if err := r.saveTrackedPlansWithJet(ctx, dirtyProvider.Id(), dirtyProvider.Plans()); err != nil {
 			return err
 		}
-
-		for updatedPlan := range dirtyProvider.Plans().Updated() {
-			if updatedPlan.Prices().HasChanges() {
-				if err := r.savePrices(ctx, updatedPlan.Id(), updatedPlan.Prices()); err != nil {
-					return err
-				}
-			}
-		}
-
-		for updatePlan := range dirtyProvider.Plans().Added() {
-			if err := r.savePrices(ctx, updatePlan.Id(), updatePlan.Prices()); err != nil {
-				return err
-			}
-		}
-
 		dirtyProvider.Plans().ClearChanges()
 	}
 
 	return nil
 }
 
-func (r ProviderRepository) savePrices(
-	ctx context.Context,
-	planId uuid.UUID,
-	trackedPrices *slicesx.Tracked[provider.Price]) error {
-	err := saveTrackedSlice(ctx,
-		r.dbContext,
-		trackedPrices,
-		func(ctx context.Context, queries *sql.Queries, entities []provider.Price) error {
-			args := slicesx.Select(entities, func(price provider.Price) sql.CreateProviderPricesParams {
-				return sql.CreateProviderPricesParams{
-					ID:        price.Id(),
-					PlanID:    planId,
-					Currency:  price.Currency().String(),
-					Amount:    price.Amount(),
-					StartDate: price.StartDate(),
-					EndDate:   price.EndDate(),
-					CreatedAt: price.CreatedAt(),
-					UpdatedAt: price.UpdatedAt(),
-					Etag:      price.ETag(),
-				}
+// Helper methods for handling tracked collections with go-jet
 
-			})
-			_, qErr := queries.CreateProviderPrices(ctx, args)
-			return qErr
-		},
-		func(ctx context.Context, queries *sql.Queries, entity provider.Price) error {
-			return queries.UpdateProviderPrice(ctx, sql.UpdateProviderPriceParams{
-				ID:        entity.Id(),
-				Currency:  entity.Currency().String(),
-				Amount:    entity.Amount(),
-				StartDate: entity.StartDate(),
-				EndDate:   entity.EndDate(),
-				UpdatedAt: entity.UpdatedAt(),
-				Etag:      entity.ETag(),
-				PlanID:    planId,
-			})
-		},
-		func(ctx context.Context, queries *sql.Queries, entity provider.Price) error {
-			return queries.DeleteProviderPrice(ctx, entity.Id())
-		},
+func (r ProviderRepository) saveTrackedLabelsWithJet(ctx context.Context, providerId uuid.UUID,
+	labels *slicesx.Tracked[uuid.UUID]) error {
+	// Handle new labels
+	newLabels := labels.Added()
+	if len(newLabels) > 0 {
+		stmt := ProviderLabels.INSERT(
+			ProviderLabels.ProviderID,
+			ProviderLabels.LabelID,
+		)
+
+		for _, labelId := range newLabels {
+			stmt = stmt.VALUES(
+				UUID(providerId),
+				UUID(labelId),
+			)
+		}
+
+		_, err := r.dbContext.Execute(ctx, stmt)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Handle deleted labels
+	deletedLabels := labels.Removed()
+	for _, labelId := range deletedLabels {
+		stmt := ProviderLabels.DELETE().
+			WHERE(
+				ProviderLabels.ProviderID.EQ(UUID(providerId)).
+					AND(ProviderLabels.LabelID.EQ(UUID(labelId))),
+			)
+
+		_, err := r.dbContext.Execute(ctx, stmt)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r ProviderRepository) saveTrackedPlansWithJet(ctx context.Context, providerId uuid.UUID,
+	plans *slicesx.Tracked[provider.Plan]) error {
+	// Handle new plans
+	newPlans := plans.Added()
+	if len(newPlans) > 0 {
+		if err := r.createPlansAndPrices(ctx, providerId, newPlans); err != nil {
+			return err
+		}
+	}
+
+	// Handle updated plans
+	updatedPlans := plans.Updated()
+	for _, plan := range updatedPlans {
+		if plan.IsDirty() {
+			var descVal StringExpression
+			if plan.Description() != nil {
+				descVal = String(*plan.Description())
+			} else {
+				descVal = StringExp(NULL)
+			}
+
+			stmt := ProviderPlans.UPDATE().
+				SET(
+					ProviderPlans.Name.SET(String(plan.Name())),
+					ProviderPlans.Description.SET(descVal),
+					ProviderPlans.UpdatedAt.SET(TimestampT(plan.UpdatedAt())),
+					ProviderPlans.Etag.SET(String(plan.ETag())),
+				).
+				WHERE(ProviderPlans.ID.EQ(UUID(plan.Id())))
+
+			count, err := r.dbContext.Execute(ctx, stmt)
+			if err != nil {
+				return err
+			}
+			if count == 0 {
+				return ErrMissMatchAffectRow
+			}
+		}
+
+		if plan.Prices().HasChanges() {
+			if err := r.saveTrackedPricesWithJet(ctx, plan.Id(), plan.Prices()); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Handle deleted plans
+	deletedPlans := plans.Removed()
+	for _, plan := range deletedPlans {
+		stmt := ProviderPlans.DELETE().
+			WHERE(ProviderPlans.ID.EQ(UUID(plan.Id())))
+
+		_, err := r.dbContext.Execute(ctx, stmt)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r ProviderRepository) saveTrackedPricesWithJet(ctx context.Context, planId uuid.UUID,
+	prices *slicesx.Tracked[provider.Price]) error {
+	// Handle new prices
+	newPrices := prices.Added()
+	if len(newPrices) > 0 {
+		stmt := ProviderPrices.INSERT(
+			ProviderPrices.ID,
+			ProviderPrices.PlanID,
+			ProviderPrices.Currency,
+			ProviderPrices.Amount,
+			ProviderPrices.StartDate,
+			ProviderPrices.EndDate,
+			ProviderPrices.CreatedAt,
+			ProviderPrices.UpdatedAt,
+			ProviderPrices.Etag,
+		)
+
+		for _, price := range newPrices {
+			var endDateVal Expression
+			if price.EndDate() != nil {
+				endDateVal = TimestampzT(*price.EndDate())
+			} else {
+				endDateVal = NULL
+			}
+
+			stmt = stmt.VALUES(
+				UUID(price.Id()),
+				UUID(planId),
+				String(price.Currency().String()),
+				Float(price.Amount()),
+				TimestampzT(price.StartDate()),
+				endDateVal,
+				TimestampzT(price.CreatedAt()),
+				TimestampzT(price.UpdatedAt()),
+				String(price.ETag()),
+			)
+		}
+
+		_, err := r.dbContext.Execute(ctx, stmt)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Handle updated prices
+	updatedPrices := prices.Updated()
+	for _, price := range updatedPrices {
+		if price.IsDirty() {
+			var endDateVal TimestampExpression
+			if price.EndDate() != nil {
+				endDateVal = TimestampT(*price.EndDate())
+			} else {
+				endDateVal = TimestampExp(NULL)
+			}
+
+			stmt := ProviderPrices.UPDATE().
+				SET(
+					ProviderPrices.Currency.SET(String(price.Currency().String())),
+					ProviderPrices.Amount.SET(Float(price.Amount())),
+					ProviderPrices.StartDate.SET(TimestampT(price.StartDate())),
+					ProviderPrices.EndDate.SET(endDateVal),
+					ProviderPrices.UpdatedAt.SET(TimestampT(price.UpdatedAt())),
+					ProviderPrices.Etag.SET(String(price.ETag())),
+				).
+				WHERE(ProviderPrices.ID.EQ(UUID(price.Id())))
+
+			count, err := r.dbContext.Execute(ctx, stmt)
+			if err != nil {
+				return err
+			}
+			if count == 0 {
+				return ErrMissMatchAffectRow
+			}
+		}
+	}
+
+	// Handle deleted prices
+	deletedPrices := prices.Removed()
+	for _, price := range deletedPrices {
+		stmt := ProviderPrices.DELETE().
+			WHERE(ProviderPrices.ID.EQ(UUID(price.Id())))
+
+		_, err := r.dbContext.Execute(ctx, stmt)
+		if err != nil {
+			return err
+		}
+	}
+
+	prices.ClearChanges()
+	return nil
+}
+
+func (r ProviderRepository) createPlansAndPrices(ctx context.Context, providerId uuid.UUID,
+	plans []provider.Plan) error {
+	if len(plans) == 0 {
+		return nil
+	}
+
+	// Insert plans
+	planStmt := ProviderPlans.INSERT(
+		ProviderPlans.ID,
+		ProviderPlans.ProviderID,
+		ProviderPlans.Name,
+		ProviderPlans.Description,
+		ProviderPlans.CreatedAt,
+		ProviderPlans.UpdatedAt,
+		ProviderPlans.Etag,
 	)
 
+	for _, plan := range plans {
+		var descVal Expression
+		if plan.Description() != nil {
+			descVal = String(*plan.Description())
+		} else {
+			descVal = NULL
+		}
+
+		planStmt = planStmt.VALUES(
+			UUID(plan.Id()),
+			UUID(providerId),
+			String(plan.Name()),
+			descVal,
+			TimestampzT(plan.CreatedAt()),
+			TimestampzT(plan.UpdatedAt()),
+			String(plan.ETag()),
+		)
+	}
+
+	planCount, err := r.dbContext.Execute(ctx, planStmt)
 	if err != nil {
 		return err
 	}
+	if planCount != int64(len(plans)) {
+		return ErrMissMatchAffectRow
+	}
 
-	trackedPrices.ClearChanges()
+	// Insert prices for all plans
+	allPrices := slicesx.SelectMany(plans, func(plan provider.Plan) []struct {
+		PlanID uuid.UUID
+		Price  provider.Price
+	} {
+		return slicesx.Select(plan.Prices().Values(), func(price provider.Price) struct {
+			PlanID uuid.UUID
+			Price  provider.Price
+		} {
+			return struct {
+				PlanID uuid.UUID
+				Price  provider.Price
+			}{PlanID: plan.Id(), Price: price}
+		})
+	})
+
+	if len(allPrices) > 0 {
+		priceStmt := ProviderPrices.INSERT(
+			ProviderPrices.ID,
+			ProviderPrices.PlanID,
+			ProviderPrices.Currency,
+			ProviderPrices.Amount,
+			ProviderPrices.StartDate,
+			ProviderPrices.EndDate,
+			ProviderPrices.CreatedAt,
+			ProviderPrices.UpdatedAt,
+			ProviderPrices.Etag,
+		)
+
+		for _, priceData := range allPrices {
+			price := priceData.Price
+			var endDateVal Expression
+			if price.EndDate() != nil {
+				endDateVal = TimestampzT(*price.EndDate())
+			} else {
+				endDateVal = NULL
+			}
+
+			priceStmt = priceStmt.VALUES(
+				UUID(price.Id()),
+				UUID(priceData.PlanID),
+				String(price.Currency().String()),
+				Float(price.Amount()),
+				TimestampzT(price.StartDate()),
+				endDateVal,
+				TimestampzT(price.CreatedAt()),
+				TimestampzT(price.UpdatedAt()),
+				String(price.ETag()),
+			)
+		}
+
+		priceCount, err := r.dbContext.Execute(ctx, priceStmt)
+		if err != nil {
+			return err
+		}
+		if priceCount != int64(len(allPrices)) {
+			return ErrMissMatchAffectRow
+		}
+	}
+
 	return nil
 }

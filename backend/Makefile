@@ -5,6 +5,7 @@ install-deps:
 	go install github.com/vektra/mockery/v3@v3.5.0
 	go install github.com/pressly/goose/v3/cmd/goose@latest
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+	go install github.com/go-jet/jet/v2/cmd/jet@latest
 
 openapi:
 	@swag fmt -d ./cmd/api/ &&\
@@ -43,6 +44,8 @@ kinde:
     --global-property=modelTests=false \
     -o /local/internal/infrastructure/kinde/gen
 
+sql-jet:
+	@jet -dsn=postgresql://postgres:postgres@localhost:5432/app?sslmode=disable -schema=public -path=./internal/infrastructure/persistence/jet
 
 sqlcg:
 	@sqlc generate

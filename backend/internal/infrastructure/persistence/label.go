@@ -2,16 +2,18 @@ package persistence
 
 import (
 	"context"
-	dsql "database/sql"
-	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/label"
-	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
+	"github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/model"
 	"github.com/oleexo/subtracker/pkg/slicesx"
+
+	. "github.com/go-jet/jet/v2/postgres"
+
+	. "github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/table"
 )
 
 type LabelRepository struct {
@@ -25,34 +27,50 @@ func NewLabelRepository(dbContext *DatabaseContext) label.Repository {
 }
 
 func (r LabelRepository) GetById(ctx context.Context, labelId uuid.UUID) (label.Label, error) {
-	response, err := r.dbContext.GetQueries(ctx).GetLabelById(ctx, labelId)
-	if err != nil {
-		if errors.Is(err, dsql.ErrNoRows) {
-			return nil, nil
-		}
+	stmt := SELECT(Labels.AllColumns).
+		FROM(Labels).
+		WHERE(Labels.ID.EQ(UUID(labelId)))
 
+	var row model.Labels
+	if err := r.dbContext.Query(ctx, stmt, &row); err != nil {
 		return nil, err
 	}
 
-	lbl := createLabelFromSqlc(response)
+	if row.ID == uuid.Nil {
+		return nil, nil
+	}
+
+	lbl := createLabelFromJet(row)
 	lbl.Clean()
 	return lbl, nil
 }
 
 func (r LabelRepository) GetByIdForUser(ctx context.Context, userId string, labelId uuid.UUID) (label.Label, error) {
-	response, err := r.dbContext.GetQueries(ctx).GetLabelByIdForUser(ctx, sql.GetLabelByIdForUserParams{
-		ID:          labelId,
-		OwnerUserID: &userId,
-	})
-	if err != nil {
-		if errors.Is(err, dsql.ErrNoRows) {
-			return nil, nil
-		}
+	stmt := SELECT(Labels.AllColumns).
+		FROM(
+			Labels.
+				LEFT_JOIN(Families, Families.ID.EQ(Labels.OwnerFamilyID)).
+				LEFT_JOIN(FamilyMembers, FamilyMembers.FamilyID.EQ(Families.ID)),
+		).
+		WHERE(
+			Labels.ID.EQ(UUID(labelId)).
+				AND(
+					Labels.OwnerType.EQ(String("system")).
+						OR(Labels.OwnerType.EQ(String("personal")).AND(Labels.OwnerUserID.EQ(String(userId)))).
+						OR(Labels.OwnerType.EQ(String("family")).AND(FamilyMembers.UserID.EQ(String(userId)))),
+				),
+		)
 
+	var row model.Labels
+	if err := r.dbContext.Query(ctx, stmt, &row); err != nil {
 		return nil, err
 	}
 
-	lbl := createLabelFromSqlc(response.Label)
+	if row.ID == uuid.Nil {
+		return nil, nil
+	}
+
+	lbl := createLabelFromJet(row)
 	lbl.Clean()
 	return lbl, nil
 }
@@ -61,53 +79,69 @@ func (r LabelRepository) GetAll(ctx context.Context, userId string, parameters l
 	[]label.Label,
 	int64,
 	error) {
-	var labels []label.Label
-	var totalCount int64
+
+	baseStmt := SELECT(
+		Labels.AllColumns,
+		COUNT(STAR).OVER().AS("total_count"),
+	).
+		FROM(
+			Labels.
+				LEFT_JOIN(Families, Families.ID.EQ(Labels.OwnerFamilyID)).
+				LEFT_JOIN(FamilyMembers, FamilyMembers.FamilyID.EQ(Families.ID)),
+		).
+		WHERE(
+			Labels.OwnerType.EQ(String("system")).
+				OR(Labels.OwnerType.EQ(String("personal")).AND(Labels.OwnerUserID.EQ(String(userId)))).
+				OR(Labels.OwnerType.EQ(String("family")).AND(FamilyMembers.UserID.EQ(String(userId)))),
+		)
+
 	if parameters.SearchText != "" {
-		response, err := r.dbContext.GetQueries(ctx).GetLabelsWithSearchText(ctx, sql.GetLabelsWithSearchTextParams{
-			OwnerUserID: &userId,
-			Name:        fmt.Sprintf("%%%s%%", parameters.SearchText),
-			Limit:       parameters.Limit,
-			Offset:      parameters.Offset,
-		})
-		if err != nil {
-			return nil, 0, err
-		}
-		if len(response) == 0 {
-			return nil, 0, nil
-		}
-		totalCount = response[0].TotalCount
-		labels = slicesx.Select(response, func(model sql.GetLabelsWithSearchTextRow) label.Label {
-			return createLabelFromSqlc(model.Label)
-		})
-	} else {
-		response, err := r.dbContext.GetQueries(ctx).GetLabels(ctx, sql.GetLabelsParams{
-			OwnerUserID: &userId,
-			Limit:       parameters.Limit,
-			Offset:      parameters.Offset,
-		})
-		if err != nil {
-			return nil, 0, err
-		}
-		if len(response) == 0 {
-			return nil, 0, nil
-		}
-		totalCount = response[0].TotalCount
-		labels = slicesx.Select(response, func(model sql.GetLabelsRow) label.Label {
-			return createLabelFromSqlc(model.Label)
-		})
+		baseStmt = baseStmt.WHERE(Labels.Name.LIKE(String(fmt.Sprintf("%%%s%%", parameters.SearchText))))
 	}
+
+	stmt := baseStmt.
+		LIMIT(parameters.Limit).
+		OFFSET(parameters.Offset)
+
+	var rows []struct {
+		Labels     model.Labels `json:"labels"`
+		TotalCount int64        `json:"total_count"`
+	}
+
+	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
+		return nil, 0, err
+	}
+	if len(rows) == 0 {
+		return nil, 0, nil
+	}
+
+	totalCount := rows[0].TotalCount
+	labels := slicesx.Select(rows, func(row struct {
+		Labels     model.Labels `json:"labels"`
+		TotalCount int64        `json:"total_count"`
+	}) label.Label {
+		return createLabelFromJet(row.Labels)
+	})
 
 	return labels, totalCount, nil
 }
 
 func (r LabelRepository) GetSystemLabels(ctx context.Context) ([]label.Label, error) {
-	response, err := r.dbContext.GetQueries(ctx).GetSystemLabels(ctx)
-	if err != nil {
+	stmt := SELECT(Labels.AllColumns).
+		FROM(Labels).
+		WHERE(
+			Labels.OwnerFamilyID.IS_NULL().
+				AND(Labels.OwnerUserID.IS_NULL()).
+				AND(Labels.OwnerType.EQ(String("system"))),
+		)
+
+	var rows []model.Labels
+	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
 		return nil, err
 	}
-	labels := slicesx.Select(response, func(model sql.Label) label.Label {
-		return createLabelFromSqlc(model)
+
+	labels := slicesx.Select(rows, func(row model.Labels) label.Label {
+		return createLabelFromJet(row)
 	})
 	return labels, nil
 }
@@ -137,71 +171,152 @@ func (r LabelRepository) Save(ctx context.Context, labels ...label.Label) error 
 }
 
 func (r LabelRepository) create(ctx context.Context, labels []label.Label) error {
-	args := slicesx.Select(labels, func(lbl label.Label) sql.CreateLabelsParams {
-		params := sql.CreateLabelsParams{
-			ID:            lbl.Id(),
-			OwnerType:     lbl.Owner().Type().String(),
-			OwnerFamilyID: nil,
-			OwnerUserID:   nil,
-			Name:          lbl.Name(),
-			Key:           lbl.Key(),
-			Color:         lbl.Color(),
-			CreatedAt:     lbl.CreatedAt(),
-			UpdatedAt:     lbl.UpdatedAt(),
-			Etag:          lbl.ETag(),
-		}
+	if len(labels) == 0 {
+		return nil
+	}
+
+	stmt := Labels.INSERT(
+		Labels.ID,
+		Labels.OwnerType,
+		Labels.OwnerFamilyID,
+		Labels.OwnerUserID,
+		Labels.Name,
+		Labels.Key,
+		Labels.Color,
+		Labels.CreatedAt,
+		Labels.UpdatedAt,
+		Labels.Etag,
+	)
+
+	for _, lbl := range labels {
+		var ownerFamilyID Expression
+		var ownerUserID Expression
+
 		switch lbl.Owner().Type() {
 		case auth.PersonalOwnerType:
-			userId := lbl.Owner().UserId()
-			params.OwnerUserID = &userId
+			ownerFamilyID = NULL
+			ownerUserID = String(lbl.Owner().UserId())
 		case auth.FamilyOwnerType:
-			familyId := lbl.Owner().FamilyId()
-			params.OwnerFamilyID = &familyId
+			ownerFamilyID = UUID(lbl.Owner().FamilyId())
+			ownerUserID = NULL
+		default:
+			ownerFamilyID = NULL
+			ownerUserID = NULL
 		}
-		return params
-	})
-	_, err := r.dbContext.GetQueries(ctx).CreateLabels(ctx, args)
+
+		var keyVal Expression
+		if lbl.Key() != nil {
+			keyVal = String(*lbl.Key())
+		} else {
+			keyVal = NULL
+		}
+
+		stmt = stmt.VALUES(
+			UUID(lbl.Id()),
+			String(lbl.Owner().Type().String()),
+			ownerFamilyID,
+			ownerUserID,
+			String(lbl.Name()),
+			keyVal,
+			String(lbl.Color()),
+			TimestampzT(lbl.CreatedAt()),
+			TimestampzT(lbl.UpdatedAt()),
+			String(lbl.ETag()),
+		)
+	}
+
+	count, err := r.dbContext.Execute(ctx, stmt)
 	if err != nil {
 		return err
+	}
+	if count != int64(len(labels)) {
+		return ErrMissMatchAffectRow
 	}
 	return nil
 }
 func (r LabelRepository) update(ctx context.Context, lbl label.Label) error {
-	params := sql.UpdateLabelParams{
-		ID:        lbl.Id(),
-		OwnerType: lbl.Owner().Type().String(),
-		Name:      lbl.Name(),
-		Key:       lbl.Key(),
-		Color:     lbl.Color(),
-		UpdatedAt: lbl.UpdatedAt(),
-		Etag:      lbl.ETag(),
+	if !lbl.IsDirty() {
+		return nil
 	}
+
+	var ownerFamilyID StringExpression
+	var ownerUserID StringExpression
 
 	switch lbl.Owner().Type() {
 	case auth.PersonalOwnerType:
-		userId := lbl.Owner().UserId()
-		params.OwnerUserID = &userId
+		ownerFamilyID = StringExp(NULL)
+		ownerUserID = String(lbl.Owner().UserId())
 	case auth.FamilyOwnerType:
-		familyId := lbl.Owner().FamilyId()
-		params.OwnerFamilyID = &familyId
+		ownerFamilyID = StringExp(UUID(lbl.Owner().FamilyId()))
+		ownerUserID = StringExp(NULL)
+	default:
+		ownerFamilyID = StringExp(NULL)
+		ownerUserID = StringExp(NULL)
 	}
 
-	return r.dbContext.GetQueries(ctx).UpdateLabel(ctx, params)
+	var keyVal StringExpression
+	if lbl.Key() != nil {
+		keyVal = String(*lbl.Key())
+	} else {
+		keyVal = StringExp(NULL)
+	}
+
+	stmt := Labels.UPDATE().
+		SET(
+			Labels.OwnerType.SET(String(lbl.Owner().Type().String())),
+			Labels.OwnerFamilyID.SET(ownerFamilyID),
+			Labels.OwnerUserID.SET(ownerUserID),
+			Labels.Name.SET(String(lbl.Name())),
+			Labels.Key.SET(keyVal),
+			Labels.Color.SET(String(lbl.Color())),
+			Labels.UpdatedAt.SET(TimestampT(lbl.UpdatedAt())),
+			Labels.Etag.SET(String(lbl.ETag())),
+		).
+		WHERE(Labels.ID.EQ(UUID(lbl.Id())))
+
+	count, err := r.dbContext.Execute(ctx, stmt)
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return ErrMissMatchAffectRow
+	}
+	return nil
 }
 
 func (r LabelRepository) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
-	err := r.dbContext.GetQueries(ctx).DeleteLabel(ctx, id)
+	stmt := Labels.DELETE().
+		WHERE(Labels.ID.EQ(UUID(id)))
+
+	count, err := r.dbContext.Execute(ctx, stmt)
 	if err != nil {
 		return false, err
 	}
 
-	return true, nil
+	return count > 0, nil
 }
 
 func (r LabelRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
-	count, err := r.dbContext.GetQueries(ctx).IsLabelExists(ctx, ids)
-	if err != nil {
+	if len(ids) == 0 {
+		return true, nil
+	}
+
+	vals := make([]Expression, len(ids))
+	for i, id := range ids {
+		vals[i] = UUID(id)
+	}
+
+	stmt := SELECT(COUNT(Labels.ID).AS("count")).
+		FROM(Labels).
+		WHERE(Labels.ID.IN(vals...))
+
+	var row struct {
+		Count int
+	}
+
+	if err := r.dbContext.Query(ctx, stmt, &row); err != nil {
 		return false, err
 	}
-	return count == int64(len(ids)), nil
+
+	return row.Count == len(ids), nil
 }

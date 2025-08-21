@@ -10,15 +10,14 @@ import (
 )
 
 type FindAllQuery struct {
-	Limit      int32
-	Offset     int32
+	Limit      int64
+	Offset     int64
 	SearchText string
 }
 
 func NewFindAllQuery(
 	searchText string,
-	limit int32,
-	offset int32) FindAllQuery {
+	limit, offset int64) FindAllQuery {
 	return FindAllQuery{
 		SearchText: searchText,
 		Limit:      limit,

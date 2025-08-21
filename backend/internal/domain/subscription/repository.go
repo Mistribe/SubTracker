@@ -35,7 +35,7 @@ func NewQueryParameters(
 	withInactive bool,
 	sortBy SortableField,
 	sortOrder types.SortOrder,
-	limit, offset int32) QueryParameters {
+	limit, offset int64) QueryParameters {
 	if sortBy == "" {
 		sortBy = "friendly_name"
 	}

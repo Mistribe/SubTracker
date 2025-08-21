@@ -2,14 +2,16 @@ package persistence
 
 import (
 	"context"
-	dsql "database/sql"
-	"errors"
 
 	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 
 	"github.com/oleexo/subtracker/internal/domain/user"
-	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
+	"github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/model"
+
+	. "github.com/go-jet/jet/v2/postgres"
+
+	. "github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/table"
 )
 
 type UserRepository struct {
@@ -21,16 +23,38 @@ func NewUserRepository(repository *DatabaseContext) user.Repository {
 }
 
 func (r UserRepository) GetUserFamilies(ctx context.Context, userId string) ([]uuid.UUID, error) {
-	return r.dbContext.GetQueries(ctx).GetUserFamilyIds(ctx, &userId)
+	stmt := SELECT(FamilyMembers.FamilyID).
+		FROM(FamilyMembers).
+		WHERE(FamilyMembers.UserID.EQ(String(userId)))
+
+	var rows []struct {
+		FamilyID uuid.UUID `json:"family_id"`
+	}
+
+	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
+		return nil, err
+	}
+
+	familyIds := make([]uuid.UUID, len(rows))
+	for i, row := range rows {
+		familyIds[i] = row.FamilyID
+	}
+
+	return familyIds, nil
 }
 
 func (r UserRepository) GetUserProfile(ctx context.Context, userId string) (user.Profile, error) {
-	profile, err := r.dbContext.GetQueries(ctx).GetUserProfile(ctx, userId)
-	if err != nil {
-		if errors.Is(err, dsql.ErrNoRows) {
-			return nil, nil
-		}
+	stmt := SELECT(Users.AllColumns).
+		FROM(Users).
+		WHERE(Users.ID.EQ(String(userId)))
+
+	var profile model.Users
+	if err := r.dbContext.Query(ctx, stmt, &profile); err != nil {
 		return nil, err
+	}
+
+	if profile.ID == "" {
+		return nil, nil
 	}
 
 	userCurrency, err := currency.ParseISO(profile.Currency)
@@ -42,10 +66,14 @@ func (r UserRepository) GetUserProfile(ctx context.Context, userId string) (user
 }
 
 func (r UserRepository) SaveProfile(ctx context.Context, profile user.Profile) error {
-	err := r.dbContext.GetQueries(ctx).CreateUserProfile(ctx, sql.CreateUserProfileParams{
-		ID:       profile.Id(),
-		Currency: profile.Currency().String(),
-	})
+	stmt := Users.
+		INSERT(Users.ID, Users.Currency).
+		VALUES(String(profile.Id()), String(profile.Currency().String())).
+		ON_CONFLICT(Users.ID).
+		DO_UPDATE(
+			SET(Users.Currency.SET(Users.EXCLUDED.Currency)),
+		)
 
+	_, err := r.dbContext.Execute(ctx, stmt)
 	return err
 }

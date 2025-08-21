@@ -2,16 +2,17 @@ package persistence
 
 import (
 	"context"
-	dsql "database/sql"
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/oleexo/subtracker/internal/domain/currency"
-	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
+	"github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/model"
 	"github.com/oleexo/subtracker/pkg/slicesx"
+
+	. "github.com/go-jet/jet/v2/postgres"
+
+	. "github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/table"
 )
 
 // CurrencyRateRepository implements the currency.Repository interface
@@ -27,30 +28,40 @@ func NewCurrencyRateRepository(dbContext *DatabaseContext) currency.Repository {
 }
 
 func (r CurrencyRateRepository) GetLatestUpdateDate(ctx context.Context) (time.Time, error) {
-	row, err := r.dbContext.GetQueries(ctx).GetLatestUpdateDate(ctx)
-	if err != nil {
+	stmt := SELECT(
+		MAX(CurrencyRates.UpdatedAt).AS("latest_update_date"),
+	).FROM(CurrencyRates)
+	var row struct {
+		LatestUpdateDate *time.Time `json:"latest_update_date"`
+	}
+	if err := r.dbContext.Query(ctx, stmt, &row); err != nil {
 		return time.Time{}, err
 	}
-	return row, nil
+	if row.LatestUpdateDate == nil {
+		return time.Time{}, nil
+	}
+	return *row.LatestUpdateDate, nil
 }
 
 func (r CurrencyRateRepository) GetById(ctx context.Context, entityId uuid.UUID) (currency.Rate, error) {
-	row, err := r.dbContext.GetQueries(ctx).GetCurrencyRateById(ctx, entityId)
-	if err != nil {
-		if errors.Is(err, dsql.ErrNoRows) {
-			return nil, nil
-		}
+	stmt := SELECT(CurrencyRates.AllColumns).
+		FROM(CurrencyRates).
+		WHERE(CurrencyRates.ID.EQ(UUID(entityId)))
+	var row model.CurrencyRates
+	if err := r.dbContext.Query(ctx, stmt, &row); err != nil {
 		return nil, err
 	}
-	return createCurrencyRateFromSqlc(row.CurrencyRate), nil
+	return createCurrencyRateFromJet(row)
 }
 
 func (r CurrencyRateRepository) GetRatesByDate(ctx context.Context, date time.Time) (currency.Rates, error) {
-	rows, err := r.dbContext.GetQueries(ctx).GetCurrencyRatesByDate(ctx, pgtype.Date{
-		Time:  date,
-		Valid: true,
-	})
-	if err != nil {
+	stmt := SELECT(CurrencyRates.AllColumns).
+		FROM(CurrencyRates).
+		WHERE(CurrencyRates.RateDate.EQ(DateT(date))).
+		ORDER_BY(CurrencyRates.FromCurrency.ASC(), CurrencyRates.ToCurrency.ASC())
+
+	var rows []model.CurrencyRates
+	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
 		return nil, err
 	}
 
@@ -58,9 +69,9 @@ func (r CurrencyRateRepository) GetRatesByDate(ctx context.Context, date time.Ti
 		return nil, nil
 	}
 
-	return slicesx.Select(rows, func(in sql.GetCurrencyRatesByDateRow) currency.Rate {
-		return createCurrencyRateFromSqlc(in.CurrencyRate)
-	}), nil
+	return slicesx.SelectErr(rows, func(in model.CurrencyRates) (currency.Rate, error) {
+		return createCurrencyRateFromJet(in)
+	})
 }
 
 // Save saves one or more currency rates
@@ -95,22 +106,36 @@ func (r CurrencyRateRepository) create(ctx context.Context, rates []currency.Rat
 		return nil
 	}
 
-	rateParams := slicesx.Select(rates, func(rate currency.Rate) sql.CreateCurrencyRatesParams {
-		return sql.CreateCurrencyRatesParams{
-			ID:           rate.Id(),
-			FromCurrency: rate.FromCurrency().String(),
-			ToCurrency:   rate.ToCurrency().String(),
-			RateDate:     pgtype.Date{Time: rate.RateDate(), Valid: true},
-			ExchangeRate: rate.ExchangeRate(),
-			CreatedAt:    rate.CreatedAt(),
-			UpdatedAt:    rate.UpdatedAt(),
-			Etag:         rate.ETag(),
-		}
-	})
+	stmt := CurrencyRates.
+		INSERT(
+			CurrencyRates.ID,
+			CurrencyRates.FromCurrency,
+			CurrencyRates.ToCurrency,
+			CurrencyRates.RateDate,
+			CurrencyRates.ExchangeRate,
+			CurrencyRates.CreatedAt,
+			CurrencyRates.UpdatedAt,
+			CurrencyRates.Etag,
+		)
 
-	_, err := r.dbContext.GetQueries(ctx).CreateCurrencyRates(ctx, rateParams)
+	for _, rate := range rates {
+		stmt = stmt.VALUES(UUID(rate.Id()),
+			String(rate.FromCurrency().String()),
+			String(rate.ToCurrency().String()),
+			DateT(rate.RateDate()),
+			Float(rate.ExchangeRate()),
+			TimestampzT(rate.CreatedAt()),
+			TimestampzT(rate.UpdatedAt()),
+			String(rate.ETag()),
+		)
+	}
+
+	count, err := r.dbContext.Execute(ctx, stmt)
 	if err != nil {
 		return err
+	}
+	if count != int64(len(rates)) {
+		return ErrMissMatchAffectRow
 	}
 	return nil
 }
@@ -121,33 +146,68 @@ func (r CurrencyRateRepository) update(ctx context.Context, rate currency.Rate) 
 		return nil
 	}
 
-	err := r.dbContext.GetQueries(ctx).UpdateCurrencyRate(ctx, sql.UpdateCurrencyRateParams{
-		ID:           rate.Id(),
-		FromCurrency: rate.FromCurrency().String(),
-		ToCurrency:   rate.ToCurrency().String(),
-		RateDate:     pgtype.Date{Time: rate.RateDate(), Valid: true},
-		ExchangeRate: rate.ExchangeRate(),
-		UpdatedAt:    rate.UpdatedAt(),
-		Etag:         rate.ETag(),
-	})
+	stmt := CurrencyRates.
+		UPDATE().
+		SET(
+			CurrencyRates.FromCurrency.SET(String(rate.FromCurrency().String())),
+			CurrencyRates.ToCurrency.SET(String(rate.ToCurrency().String())),
+			CurrencyRates.RateDate.SET(DateT(rate.RateDate())),
+			CurrencyRates.ExchangeRate.SET(Float(rate.ExchangeRate())),
+			CurrencyRates.UpdatedAt.SET(TimestampT(rate.UpdatedAt())),
+			CurrencyRates.Etag.SET(String(rate.ETag())),
+		).
+		WHERE(CurrencyRates.ID.EQ(UUID(rate.Id())))
 
-	return err
+	count, err := r.dbContext.Execute(ctx, stmt)
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return ErrMissMatchAffectRow
+	}
+	return nil
 }
 
 // Delete deletes a currency rate by its ID
 func (r CurrencyRateRepository) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
-	err := r.dbContext.GetQueries(ctx).DeleteCurrencyRate(ctx, id)
+	stmt := CurrencyRates.
+		DELETE().
+		WHERE(CurrencyRates.ID.EQ(UUID(id)))
+
+	count, err := r.dbContext.Execute(ctx, stmt)
 	if err != nil {
 		return false, err
 	}
+
+	if count == 0 {
+		return false, nil
+	}
+
 	return true, nil
 }
 
 // Exists checks if currency rates with the given IDs exist
 func (r CurrencyRateRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
-	count, err := r.dbContext.GetQueries(ctx).IsCurrencyRateExists(ctx, ids)
-	if err != nil {
+	if len(ids) == 0 {
+		return true, nil
+	}
+
+	vals := make([]Expression, len(ids))
+	for i, id := range ids {
+		vals[i] = UUID(id)
+	}
+
+	stmt := SELECT(COUNT(CurrencyRates.ID).AS("count")).
+		FROM(CurrencyRates).
+		WHERE(CurrencyRates.ID.IN(vals...))
+
+	var row struct {
+		Count int
+	}
+
+	if err := r.dbContext.Query(ctx, stmt, &row); err != nil {
 		return false, err
 	}
-	return count > 0, nil
+
+	return row.Count == len(ids), nil
 }

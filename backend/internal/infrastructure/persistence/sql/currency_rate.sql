@@ -1,18 +1,3 @@
--- name: GetCurrencyRateById :one
-SELECT sqlc.embed(cr)
-FROM public.currency_rates cr
-WHERE cr.id = $1;
-
--- name: GetCurrencyRatesByDate :many
-SELECT sqlc.embed(cr)
-FROM public.currency_rates cr
-WHERE cr.rate_date = $1
-ORDER BY cr.from_currency, cr.to_currency;
-
--- name: GetLatestUpdateDate :one
-SELECT COALESCE(MAX(cr.updated_at), 'epoch'::timestamp)::timestamp AS latest_update_date
-FROM public.currency_rates cr;
-
 -- name: CreateCurrencyRate :exec
 INSERT INTO public.currency_rates (id, from_currency, to_currency, rate_date, exchange_rate,
                                    created_at, updated_at, etag)
@@ -37,8 +22,3 @@ WHERE id = $1;
 DELETE
 FROM public.currency_rates
 WHERE id = $1;
-
--- name: IsCurrencyRateExists :one
-SELECT COUNT(*)
-FROM public.currency_rates
-WHERE id = ANY ($1::uuid[]);

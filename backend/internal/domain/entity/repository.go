@@ -7,11 +7,11 @@ import (
 )
 
 type QueryParameters struct {
-	Limit  int32
-	Offset int32
+	Limit  int64
+	Offset int64
 }
 
-func NewQueryParameters(limit, offset int32) QueryParameters {
+func NewQueryParameters(limit, offset int64) QueryParameters {
 	return QueryParameters{
 		Limit:  limit,
 		Offset: offset,

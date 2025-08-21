@@ -25,8 +25,8 @@ type FindAllQuery struct {
 	WithInactive bool
 	SortBy       subscription.SortableField
 	SortOrder    types.SortOrder
-	Limit        int32
-	Offset       int32
+	Limit        int64
+	Offset       int64
 }
 
 func NewFindAllQuery(searchText string,
@@ -38,7 +38,7 @@ func NewFindAllQuery(searchText string,
 	withInactive bool,
 	sortBy subscription.SortableField,
 	sortOrder types.SortOrder,
-	size, page int32) FindAllQuery {
+	size, page int64) FindAllQuery {
 	return FindAllQuery{
 		SearchText:   searchText,
 		Limit:        size,

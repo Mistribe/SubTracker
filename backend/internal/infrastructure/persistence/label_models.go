@@ -3,19 +3,19 @@ package persistence
 import (
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/label"
-	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
+	"github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/model"
 )
 
-func createLabelFromSqlc(sqlcLabel sql.Label) label.Label {
-	ownerType := auth.MustParseOwnerType(sqlcLabel.OwnerType)
-	owner := auth.NewOwner(ownerType, sqlcLabel.OwnerFamilyID, sqlcLabel.OwnerUserID)
-	lbl := label.NewLabel(sqlcLabel.ID,
+func createLabelFromJet(jetLabel model.Labels) label.Label {
+	ownerType := auth.MustParseOwnerType(jetLabel.OwnerType)
+	owner := auth.NewOwner(ownerType, jetLabel.OwnerFamilyID, jetLabel.OwnerUserID)
+	lbl := label.NewLabel(jetLabel.ID,
 		owner,
-		sqlcLabel.Name,
-		sqlcLabel.Key,
-		sqlcLabel.Color,
-		sqlcLabel.CreatedAt,
-		sqlcLabel.UpdatedAt)
+		jetLabel.Name,
+		jetLabel.Key,
+		jetLabel.Color,
+		jetLabel.CreatedAt,
+		jetLabel.UpdatedAt)
 	lbl.Clean()
 	return lbl
 }

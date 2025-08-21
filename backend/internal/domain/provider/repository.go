@@ -16,7 +16,7 @@ type QueryParameters struct {
 
 func NewQueryParameters(
 	searchText string,
-	limit, offset int32) QueryParameters {
+	limit, offset int64) QueryParameters {
 	return QueryParameters{
 		QueryParameters: entity.QueryParameters{
 			Limit:  limit,

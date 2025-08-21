@@ -8,135 +8,170 @@ import (
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/provider"
-	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
+	"github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/model"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
-func createProviderPriceFromSqlc(sqlcModel sql.ProviderPrice) provider.Price {
+func createProviderPriceFromJet(jetModel model.ProviderPrices) provider.Price {
 	p := provider.NewPrice(
-		sqlcModel.ID,
-		sqlcModel.StartDate,
-		sqlcModel.EndDate,
-		currency.MustParseISO(sqlcModel.Currency),
-		sqlcModel.Amount,
-		sqlcModel.CreatedAt,
-		sqlcModel.UpdatedAt,
+		jetModel.ID,
+		jetModel.StartDate,
+		jetModel.EndDate,
+		currency.MustParseISO(jetModel.Currency),
+		jetModel.Amount,
+		jetModel.CreatedAt,
+		jetModel.UpdatedAt,
 	)
 
 	p.Clean()
 	return p
 }
 
-func createProviderPlanFromSqlc(sqlcPlan sql.ProviderPlan, prices []provider.Price) provider.Plan {
+func createProviderPlanFromJet(jetPlan model.ProviderPlans, prices []provider.Price) provider.Plan {
 	p := provider.NewPlan(
-		sqlcPlan.ID,
-		sqlcPlan.Name,
-		sqlcPlan.Description,
+		jetPlan.ID,
+		jetPlan.Name,
+		jetPlan.Description,
 		prices,
-		sqlcPlan.CreatedAt,
-		sqlcPlan.UpdatedAt,
+		jetPlan.CreatedAt,
+		jetPlan.UpdatedAt,
 	)
 
 	p.Clean()
 	return p
 }
 
-func createProviderFromSqlc(sqlcModel sql.Provider, plans []provider.Plan, labels []uuid.UUID) provider.Provider {
-	ownerType := auth.MustParseOwnerType(sqlcModel.OwnerType)
-	owner := auth.NewOwner(ownerType, sqlcModel.OwnerFamilyID, sqlcModel.OwnerUserID)
+func createProviderFromJet(jetModel model.Providers, plans []provider.Plan, labels []uuid.UUID) provider.Provider {
+	ownerType := auth.MustParseOwnerType(jetModel.OwnerType)
+	owner := auth.NewOwner(ownerType, jetModel.OwnerFamilyID, jetModel.OwnerUserID)
 
 	p := provider.NewProvider(
-		sqlcModel.ID,
-		sqlcModel.Name,
-		sqlcModel.Key,
-		sqlcModel.Description,
-		sqlcModel.IconUrl,
-		sqlcModel.Url,
-		sqlcModel.PricingPageUrl,
+		jetModel.ID,
+		jetModel.Name,
+		jetModel.Key,
+		jetModel.Description,
+		jetModel.IconURL,
+		jetModel.URL,
+		jetModel.PricingPageURL,
 		labels,
 		plans,
 		owner,
-		sqlcModel.CreatedAt,
-		sqlcModel.UpdatedAt,
+		jetModel.CreatedAt,
+		jetModel.UpdatedAt,
 	)
 
 	p.Clean()
 	return p
 }
 
-// createProviderFromSqlcRows converts SQLC rows to domain providers with plans and prices
-func createProviderFromSqlcRows[T any](
-	rows []T,
-	getProviderFunc func(T) sql.Provider,
-	getPlanFunc func(T) *sql.ProviderPlan,
-	getPriceFunc func(T) *sql.ProviderPrice,
-	getLabelFunc func(T) *uuid.UUID) []provider.Provider {
-
+// createProviderFromJetRows converts jet rows to domain providers with plans and prices
+func createProviderFromJetRows(rows []struct {
+	Providers      model.Providers       `json:"providers"`
+	ProviderPlans  *model.ProviderPlans  `json:"provider_plans"`
+	ProviderPrices *model.ProviderPrices `json:"provider_prices"`
+	ProviderLabels *model.ProviderLabels `json:"provider_labels"`
+}) []provider.Provider {
 	if len(rows) == 0 {
 		return nil
 	}
 
-	providers := make(map[uuid.UUID]sql.Provider)
+	providers := make(map[uuid.UUID]model.Providers)
 	planSet := make(map[uuid.UUID]struct{})
-	providerPlans := make(map[uuid.UUID][]sql.ProviderPlan)
+	providerPlans := make(map[uuid.UUID][]model.ProviderPlans)
 	priceSet := make(map[uuid.UUID]struct{})
-	planPrices := make(map[uuid.UUID][]sql.ProviderPrice)
+	planPrices := make(map[uuid.UUID][]model.ProviderPrices)
 	labelSet := make(map[string]struct{})
 	providerLabels := make(map[uuid.UUID][]uuid.UUID)
 
 	for _, row := range rows {
-		sqlcProvider := getProviderFunc(row)
-		if _, ok := providers[sqlcProvider.ID]; !ok {
-			providers[sqlcProvider.ID] = sqlcProvider
+		jetProvider := row.Providers
+		if _, ok := providers[jetProvider.ID]; !ok {
+			providers[jetProvider.ID] = jetProvider
 		}
-		sqlcPlan := getPlanFunc(row)
-		if sqlcPlan != nil {
-			if _, ok := planSet[sqlcPlan.ID]; !ok {
-				planSet[sqlcPlan.ID] = struct{}{}
-				providerPlans[sqlcPlan.ProviderID] = append(providerPlans[sqlcPlan.ProviderID], *sqlcPlan)
-			}
-		}
-		sqlcPrice := getPriceFunc(row)
-		if sqlcPrice != nil {
-			if _, ok := priceSet[sqlcPrice.ID]; !ok {
-				priceSet[sqlcPrice.ID] = struct{}{}
-				planPrices[sqlcPrice.PlanID] = append(planPrices[sqlcPrice.PlanID], *sqlcPrice)
+
+		if row.ProviderPlans != nil && row.ProviderPlans.ID != uuid.Nil {
+			if _, ok := planSet[row.ProviderPlans.ID]; !ok {
+				planSet[row.ProviderPlans.ID] = struct{}{}
+				providerPlans[row.ProviderPlans.ProviderID] = append(providerPlans[row.ProviderPlans.ProviderID], *row.ProviderPlans)
 			}
 		}
 
-		sqlcLabelId := getLabelFunc(row)
-		if sqlcLabelId != nil {
-			key := fmt.Sprintf("%s:%s", sqlcProvider.ID, *sqlcLabelId)
+		if row.ProviderPrices != nil && row.ProviderPrices.ID != uuid.Nil {
+			if _, ok := priceSet[row.ProviderPrices.ID]; !ok {
+				priceSet[row.ProviderPrices.ID] = struct{}{}
+				planPrices[row.ProviderPrices.PlanID] = append(planPrices[row.ProviderPrices.PlanID], *row.ProviderPrices)
+			}
+		}
+
+		if row.ProviderLabels != nil && row.ProviderLabels.LabelID != uuid.Nil {
+			key := fmt.Sprintf("%s:%s", jetProvider.ID, row.ProviderLabels.LabelID)
 			if _, ok := labelSet[key]; !ok {
 				labelSet[key] = struct{}{}
-				providerLabels[sqlcProvider.ID] = append(providerLabels[sqlcProvider.ID], *sqlcLabelId)
+				providerLabels[jetProvider.ID] = append(providerLabels[jetProvider.ID], row.ProviderLabels.LabelID)
 			}
 		}
 	}
 
 	results := make([]provider.Provider, len(providers))
 	count := 0
-	for providerId, sqlcProvider := range providers {
+	for providerId, jetProvider := range providers {
 		var plans []provider.Plan
-		sqlcPlans, planExists := providerPlans[providerId]
+		jetPlans, planExists := providerPlans[providerId]
 		if planExists {
-			plans = slicesx.Select(sqlcPlans, func(sqlcPlan sql.ProviderPlan) provider.Plan {
+			plans = slicesx.Select(jetPlans, func(jetPlan model.ProviderPlans) provider.Plan {
 				var prices []provider.Price
-				sqlcPrices, priceExists := planPrices[sqlcPlan.ID]
+				jetPrices, priceExists := planPrices[jetPlan.ID]
 				if priceExists {
-					prices = slicesx.Select(sqlcPrices, func(sqlcPrice sql.ProviderPrice) provider.Price {
-						return createProviderPriceFromSqlc(sqlcPrice)
+					prices = slicesx.Select(jetPrices, func(jetPrice model.ProviderPrices) provider.Price {
+						return createProviderPriceFromJet(jetPrice)
 					})
 				}
 
-				return createProviderPlanFromSqlc(sqlcPlan, prices)
+				return createProviderPlanFromJet(jetPlan, prices)
 			})
 		}
 
-		sqlcLabels, _ := providerLabels[providerId]
-		results[count] = createProviderFromSqlc(sqlcProvider, plans, sqlcLabels)
+		jetLabels, _ := providerLabels[providerId]
+		results[count] = createProviderFromJet(jetProvider, plans, jetLabels)
 		count++
 	}
 
 	return results
+}
+
+// createProviderFromJetRowsWithCount converts jet rows with count to domain providers
+func createProviderFromJetRowsWithCount(rows []struct {
+	Providers      model.Providers       `json:"providers"`
+	ProviderPlans  *model.ProviderPlans  `json:"provider_plans"`
+	ProviderPrices *model.ProviderPrices `json:"provider_prices"`
+	ProviderLabels *model.ProviderLabels `json:"provider_labels"`
+	TotalCount     int64                 `json:"total_count"`
+}) []provider.Provider {
+	// Convert to the simpler row structure
+	simpleRows := slicesx.Select(rows, func(row struct {
+		Providers      model.Providers       `json:"providers"`
+		ProviderPlans  *model.ProviderPlans  `json:"provider_plans"`
+		ProviderPrices *model.ProviderPrices `json:"provider_prices"`
+		ProviderLabels *model.ProviderLabels `json:"provider_labels"`
+		TotalCount     int64                 `json:"total_count"`
+	}) struct {
+		Providers      model.Providers       `json:"providers"`
+		ProviderPlans  *model.ProviderPlans  `json:"provider_plans"`
+		ProviderPrices *model.ProviderPrices `json:"provider_prices"`
+		ProviderLabels *model.ProviderLabels `json:"provider_labels"`
+	} {
+		return struct {
+			Providers      model.Providers       `json:"providers"`
+			ProviderPlans  *model.ProviderPlans  `json:"provider_plans"`
+			ProviderPrices *model.ProviderPrices `json:"provider_prices"`
+			ProviderLabels *model.ProviderLabels `json:"provider_labels"`
+		}{
+			Providers:      row.Providers,
+			ProviderPlans:  row.ProviderPlans,
+			ProviderPrices: row.ProviderPrices,
+			ProviderLabels: row.ProviderLabels,
+		}
+	})
+
+	return createProviderFromJetRows(simpleRows)
 }

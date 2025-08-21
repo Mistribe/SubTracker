@@ -94,14 +94,6 @@ WITH providers AS (SELECT p.id, p.name
                  AND (
                      s.recurrency = ANY($7::varchar[])
                      )
-                 AND (
-                     s.start_date > $8
-                     OR $8 IS NULL
-                     )
-                   AND (
-                     s.end_date > $9
-                         OR $9 IS NULL
-                     )
 
                  ),
      counted AS (SELECT m.*, COUNT(*) OVER () AS total_count

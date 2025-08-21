@@ -7,98 +7,198 @@ import (
 	"golang.org/x/text/currency"
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
-	"github.com/oleexo/subtracker/pkg/slicesx"
-
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/internal/infrastructure/persistence/sql"
+	"github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/model"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
-func createSubscriptionFromSqlc(sqlcModel sql.Subscription, serviceUsers []uuid.UUID) subscription.Subscription {
+func createSubscriptionFromJet(jetModel model.Subscriptions, serviceUsers []uuid.UUID) subscription.Subscription {
 	var freeTrial subscription.FreeTrial
-	if sqlcModel.FreeTrialEndDate != nil && sqlcModel.FreeTrialStartDate != nil {
+	if jetModel.FreeTrialEndDate != nil && jetModel.FreeTrialStartDate != nil {
 		freeTrial = subscription.NewFreeTrial(
-			*sqlcModel.FreeTrialStartDate,
-			*sqlcModel.FreeTrialEndDate,
+			*jetModel.FreeTrialStartDate,
+			*jetModel.FreeTrialEndDate,
 		)
 	}
 
 	var customPrice subscription.CustomPrice
-	if sqlcModel.CustomPriceCurrency != nil && sqlcModel.CustomPriceAmount != nil {
-		cry := currency.MustParseISO(*sqlcModel.CustomPriceCurrency)
+	if jetModel.CustomPriceCurrency != nil && jetModel.CustomPriceAmount != nil {
+		cry := currency.MustParseISO(*jetModel.CustomPriceCurrency)
 		customPrice = subscription.NewCustomPrice(
-			*sqlcModel.CustomPriceAmount,
+			*jetModel.CustomPriceAmount,
 			cry,
 		)
 	}
 
 	var payer subscription.Payer
-	if sqlcModel.PayerType != nil && sqlcModel.FamilyID != nil {
-		payerType := subscription.MustParsePayerType(*sqlcModel.PayerType)
-		payer = subscription.NewPayer(payerType, *sqlcModel.FamilyID, sqlcModel.PayerMemberID)
+	if jetModel.PayerType != nil && jetModel.FamilyID != nil {
+		payerType := subscription.MustParsePayerType(*jetModel.PayerType)
+		payer = subscription.NewPayer(payerType, *jetModel.FamilyID, jetModel.PayerMemberID)
 	}
 
-	ownerType := auth.MustParseOwnerType(sqlcModel.OwnerType)
-	owner := auth.NewOwner(ownerType, sqlcModel.OwnerFamilyID, sqlcModel.OwnerUserID)
+	ownerType := auth.MustParseOwnerType(jetModel.OwnerType)
+	owner := auth.NewOwner(ownerType, jetModel.OwnerFamilyID, jetModel.OwnerUserID)
 
-	recurrency := subscription.MustParseRecurrencyType(sqlcModel.Recurrency)
+	recurrency := subscription.MustParseRecurrencyType(jetModel.Recurrency)
 
 	sub := subscription.NewSubscription(
-		sqlcModel.ID,
-		sqlcModel.FriendlyName,
+		jetModel.ID,
+		jetModel.FriendlyName,
 		freeTrial,
-		sqlcModel.ProviderID,
-		sqlcModel.PlanID,
-		sqlcModel.PriceID,
+		jetModel.ProviderID,
+		jetModel.PlanID,
+		jetModel.PriceID,
 		customPrice,
 		owner,
 		payer,
 		serviceUsers,
-		sqlcModel.StartDate,
-		sqlcModel.EndDate,
+		jetModel.StartDate,
+		jetModel.EndDate,
 		recurrency,
-		sqlcModel.CustomRecurrency,
-		sqlcModel.CreatedAt,
-		sqlcModel.UpdatedAt,
+		jetModel.CustomRecurrency,
+		jetModel.CreatedAt,
+		jetModel.UpdatedAt,
 	)
 	sub.Clean()
 	return sub
 }
 
-func createSubscriptionFromSqlcRows[T any](rows []T,
-	getSubscriptionFunc func(T) sql.Subscription,
-	getSubscriptionServiceUserFunc func(T) *sql.SubscriptionServiceUser) []subscription.Subscription {
+func createSubscriptionFromJetRows(rows []struct {
+	Subscriptions            model.Subscriptions             `json:"subscriptions"`
+	SubscriptionServiceUsers *model.SubscriptionServiceUsers `json:"subscription_service_users"`
+}) []subscription.Subscription {
 	if len(rows) == 0 {
 		return nil
 	}
 
-	subscriptions := make(map[uuid.UUID]sql.Subscription)
+	subscriptions := make(map[uuid.UUID]model.Subscriptions)
 	orderedIDs := make([]uuid.UUID, 0, len(rows))
 	serviceUserSet := slicesx.NewSet[string]()
 	subscriptionServiceUsers := make(map[uuid.UUID][]uuid.UUID)
 
 	for _, row := range rows {
-		sqlcSubscription := getSubscriptionFunc(row)
-		if _, ok := subscriptions[sqlcSubscription.ID]; !ok {
-			subscriptions[sqlcSubscription.ID] = sqlcSubscription
-			orderedIDs = append(orderedIDs, sqlcSubscription.ID)
+		jetSubscription := row.Subscriptions
+		if _, ok := subscriptions[jetSubscription.ID]; !ok {
+			subscriptions[jetSubscription.ID] = jetSubscription
+			orderedIDs = append(orderedIDs, jetSubscription.ID)
 		}
-		sqlcSubscriptionServiceUser := getSubscriptionServiceUserFunc(row)
-		if sqlcSubscriptionServiceUser != nil {
-			key := fmt.Sprintf("%s:%s", sqlcSubscription.ID, sqlcSubscriptionServiceUser.FamilyMemberID)
+		if row.SubscriptionServiceUsers != nil && row.SubscriptionServiceUsers.FamilyMemberID != uuid.Nil {
+			key := fmt.Sprintf("%s:%s", jetSubscription.ID, row.SubscriptionServiceUsers.FamilyMemberID)
 			if !serviceUserSet.Contains(key) {
 				serviceUserSet.Add(key)
-				subscriptionServiceUsers[sqlcSubscription.ID] = append(subscriptionServiceUsers[sqlcSubscription.ID],
-					sqlcSubscriptionServiceUser.FamilyMemberID)
+				subscriptionServiceUsers[jetSubscription.ID] = append(subscriptionServiceUsers[jetSubscription.ID],
+					row.SubscriptionServiceUsers.FamilyMemberID)
 			}
 		}
 	}
 
 	results := make([]subscription.Subscription, 0, len(orderedIDs))
 	for _, subscriptionId := range orderedIDs {
-		sqlcSubscription := subscriptions[subscriptionId]
-		sqlcSubscriptionServiceUsers, _ := subscriptionServiceUsers[subscriptionId]
-		results = append(results, createSubscriptionFromSqlc(sqlcSubscription, sqlcSubscriptionServiceUsers))
+		jetSubscription := subscriptions[subscriptionId]
+		jetSubscriptionServiceUsers, _ := subscriptionServiceUsers[subscriptionId]
+		results = append(results, createSubscriptionFromJet(jetSubscription, jetSubscriptionServiceUsers))
 	}
 
 	return results
+}
+
+func createSubscriptionFromJetRowsWithCount(rows []struct {
+	Subscriptions            model.Subscriptions             `json:"subscriptions"`
+	SubscriptionServiceUsers *model.SubscriptionServiceUsers `json:"subscription_service_users"`
+	TotalCount               int64                           `json:"total_count"`
+}) []subscription.Subscription {
+	// Convert to the simpler row structure
+	simpleRows := slicesx.Select(rows, func(row struct {
+		Subscriptions            model.Subscriptions             `json:"subscriptions"`
+		SubscriptionServiceUsers *model.SubscriptionServiceUsers `json:"subscription_service_users"`
+		TotalCount               int64                           `json:"total_count"`
+	}) struct {
+		Subscriptions            model.Subscriptions             `json:"subscriptions"`
+		SubscriptionServiceUsers *model.SubscriptionServiceUsers `json:"subscription_service_users"`
+	} {
+		return struct {
+			Subscriptions            model.Subscriptions             `json:"subscriptions"`
+			SubscriptionServiceUsers *model.SubscriptionServiceUsers `json:"subscription_service_users"`
+		}{
+			Subscriptions:            row.Subscriptions,
+			SubscriptionServiceUsers: row.SubscriptionServiceUsers,
+		}
+	})
+
+	return createSubscriptionFromJetRows(simpleRows)
+}
+
+// createSubscriptionFromJetRowsFlat converts flattened jet rows to domain subscriptions
+func createSubscriptionFromJetRowsFlat(rows []struct {
+	model.Subscriptions
+	FamilyMemberID *uuid.UUID `alias:"subscription_service_users.family_member_id"`
+	SubscriptionID *uuid.UUID `alias:"subscription_service_users.subscription_id"`
+}) []subscription.Subscription {
+	if len(rows) == 0 {
+		return nil
+	}
+
+	subscriptions := make(map[uuid.UUID]model.Subscriptions)
+	orderedIDs := make([]uuid.UUID, 0, len(rows))
+	serviceUserSet := slicesx.NewSet[string]()
+	subscriptionServiceUsers := make(map[uuid.UUID][]uuid.UUID)
+
+	for _, row := range rows {
+		jetSubscription := row.Subscriptions
+		if _, ok := subscriptions[jetSubscription.ID]; !ok {
+			subscriptions[jetSubscription.ID] = jetSubscription
+			orderedIDs = append(orderedIDs, jetSubscription.ID)
+		}
+		if row.FamilyMemberID != nil && *row.FamilyMemberID != uuid.Nil {
+			key := fmt.Sprintf("%s:%s", jetSubscription.ID, *row.FamilyMemberID)
+			if !serviceUserSet.Contains(key) {
+				serviceUserSet.Add(key)
+				subscriptionServiceUsers[jetSubscription.ID] = append(subscriptionServiceUsers[jetSubscription.ID],
+					*row.FamilyMemberID)
+			}
+		}
+	}
+
+	results := make([]subscription.Subscription, 0, len(orderedIDs))
+	for _, subscriptionId := range orderedIDs {
+		jetSubscription := subscriptions[subscriptionId]
+		jetSubscriptionServiceUsers, _ := subscriptionServiceUsers[subscriptionId]
+		results = append(results, createSubscriptionFromJet(jetSubscription, jetSubscriptionServiceUsers))
+	}
+
+	return results
+}
+
+// createSubscriptionFromJetRowsFlatWithCount converts flattened jet rows with count to domain subscriptions
+func createSubscriptionFromJetRowsFlatWithCount(rows []struct {
+	model.Subscriptions
+	FamilyMemberID *uuid.UUID `alias:"subscription_service_users.family_member_id"`
+	SubscriptionID *uuid.UUID `alias:"subscription_service_users.subscription_id"`
+	TotalCount     int64      `alias:"total_count"`
+	IsActive       bool       `alias:"is_active"`
+}) []subscription.Subscription {
+	// Convert to the simpler row structure
+	simpleRows := slicesx.Select(rows, func(row struct {
+		model.Subscriptions
+		FamilyMemberID *uuid.UUID `alias:"subscription_service_users.family_member_id"`
+		SubscriptionID *uuid.UUID `alias:"subscription_service_users.subscription_id"`
+		TotalCount     int64      `alias:"total_count"`
+		IsActive       bool       `alias:"is_active"`
+	}) struct {
+		model.Subscriptions
+		FamilyMemberID *uuid.UUID `alias:"subscription_service_users.family_member_id"`
+		SubscriptionID *uuid.UUID `alias:"subscription_service_users.subscription_id"`
+	} {
+		return struct {
+			model.Subscriptions
+			FamilyMemberID *uuid.UUID `alias:"subscription_service_users.family_member_id"`
+			SubscriptionID *uuid.UUID `alias:"subscription_service_users.subscription_id"`
+		}{
+			Subscriptions:  row.Subscriptions,
+			FamilyMemberID: row.FamilyMemberID,
+			SubscriptionID: row.SubscriptionID,
+		}
+	})
+
+	return createSubscriptionFromJetRowsFlat(simpleRows)
 }
