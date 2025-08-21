@@ -4,7 +4,6 @@ install-deps:
 	go install github.com/swaggo/swag/v2/cmd/swag@latest
 	go install github.com/vektra/mockery/v3@v3.5.0
 	go install github.com/pressly/goose/v3/cmd/goose@latest
-	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 	go install github.com/go-jet/jet/v2/cmd/jet@latest
 
 openapi:
@@ -47,10 +46,7 @@ kinde:
 sql-jet:
 	@jet -dsn=postgresql://postgres:postgres@localhost:5432/app?sslmode=disable -schema=public -path=./internal/infrastructure/persistence/jet
 
-sqlcg:
-	@sqlc generate
-
-prepare: install-deps openapi sqlcg
+prepare: install-deps openapi sql-jet
 
 build:
 	go build -v -o ./tmp/api ./cmd/api/
