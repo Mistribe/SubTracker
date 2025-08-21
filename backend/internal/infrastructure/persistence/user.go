@@ -2,7 +2,9 @@ package persistence
 
 import (
 	"context"
+	"errors"
 
+	"github.com/go-jet/jet/v2/qrm"
 	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 
@@ -50,6 +52,9 @@ func (r UserRepository) GetUserProfile(ctx context.Context, userId string) (user
 
 	var profile model.Users
 	if err := r.dbContext.Query(ctx, stmt, &profile); err != nil {
+		if errors.Is(err, qrm.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, err
 	}
 

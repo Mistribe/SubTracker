@@ -81,7 +81,7 @@ func (r FamilyRepository) GetAll(ctx context.Context, parameters entity.QueryPar
 		OFFSET(parameters.Offset).
 		AsTable("uf")
 
-	rFamilyId := FamilyMembers.FamilyID.From(userFamilies)
+	rFamilyId := Families.ID.From(userFamilies)
 
 	stmt := SELECT(
 		userFamilies.AllColumns(),
