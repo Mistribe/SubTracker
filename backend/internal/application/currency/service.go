@@ -56,7 +56,7 @@ func (s service) getRatesFromCache(at time.Time) (currency.Rates, string, error)
 		return cacheRates, cacheKey, nil
 	}
 
-	return nil, "", nil
+	return nil, cacheKey, nil
 }
 
 func (s service) getRatesFromDatabase(ctx context.Context, at time.Time) (currency.Rates, error) {
