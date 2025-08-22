@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"log/slog"
+	"strings"
 
 	"github.com/Oleexo/config-go"
 	"github.com/go-jet/jet/v2/postgres"
@@ -48,11 +49,17 @@ func (r *DatabaseContext) Query(ctx context.Context, stmt postgres.SelectStateme
 		queryable = sqlDB
 	}
 
-	if r.logger.Enabled(ctx, slog.LevelDebug) {
-		r.logger.Log(ctx, slog.LevelDebug, stmt.DebugSql())
-	}
+	r.logDebugSql(ctx, stmt)
 
 	return stmt.QueryContext(ctx, queryable, s)
+}
+
+func (r *DatabaseContext) logDebugSql(ctx context.Context, stmt postgres.Statement) {
+	if r.logger.Enabled(ctx, slog.LevelDebug) {
+		debugSql := stmt.DebugSql()
+		debugSql = strings.ReplaceAll(debugSql, "\n", "")
+		r.logger.Log(ctx, slog.LevelDebug, debugSql)
+	}
 }
 
 func (r *DatabaseContext) Execute(ctx context.Context, stmt postgres.Statement) (int64, error) {
@@ -66,9 +73,7 @@ func (r *DatabaseContext) Execute(ctx context.Context, stmt postgres.Statement) 
 		queryable = sqlDB
 	}
 
-	if r.logger.Enabled(ctx, slog.LevelDebug) {
-		r.logger.Log(ctx, slog.LevelDebug, stmt.DebugSql())
-	}
+	r.logDebugSql(ctx, stmt)
 
 	result, err := stmt.ExecContext(ctx, queryable)
 	if err != nil {

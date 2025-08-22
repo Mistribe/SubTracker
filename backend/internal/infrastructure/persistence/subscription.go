@@ -10,7 +10,6 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/model"
 	"github.com/oleexo/subtracker/pkg/slicesx"
 
 	. "github.com/go-jet/jet/v2/postgres"
@@ -42,11 +41,7 @@ func (r SubscriptionRepository) GetById(ctx context.Context, id uuid.UUID) (subs
 		).
 		WHERE(Subscriptions.ID.EQ(UUID(id)))
 
-	var rows []struct {
-		model.Subscriptions
-		FamilyMemberID *uuid.UUID `alias:"subscription_service_users.family_member_id"`
-		SubscriptionID *uuid.UUID `alias:"subscription_service_users.subscription_id"`
-	}
+	var rows []SubscriptionRow
 
 	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
 		return nil, err
@@ -86,11 +81,7 @@ func (r SubscriptionRepository) GetByIdForUser(ctx context.Context, userId strin
 				),
 		)
 
-	var rows []struct {
-		model.Subscriptions
-		FamilyMemberID *uuid.UUID `alias:"subscription_service_users.family_member_id"`
-		SubscriptionID *uuid.UUID `alias:"subscription_service_users.subscription_id"`
-	}
+	var rows []SubscriptionRow
 
 	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
 		return nil, err
@@ -108,8 +99,7 @@ func (r SubscriptionRepository) GetByIdForUser(ctx context.Context, userId strin
 	return subscriptions[0], nil
 }
 
-func (r SubscriptionRepository) GetAll(
-	ctx context.Context,
+func (r SubscriptionRepository) GetAll(ctx context.Context,
 	parameters subscription.QueryParameters) ([]subscription.Subscription, int64, error) {
 
 	pagedSubs := SELECT(
@@ -133,13 +123,7 @@ func (r SubscriptionRepository) GetAll(
 					SubscriptionServiceUsers.SubscriptionID.EQ(Subscriptions.ID.From(pagedSubs))),
 		)
 
-	var rows []struct {
-		model.Subscriptions
-		FamilyMemberID *uuid.UUID `alias:"subscription_service_users.family_member_id"`
-		SubscriptionID *uuid.UUID `alias:"subscription_service_users.subscription_id"`
-		TotalCount     int64      `alias:"total_count"`
-		IsActive       bool       `alias:"is_active"`
-	}
+	var rows []SubscriptionRowWithCount
 
 	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
 		return nil, 0, err
@@ -201,14 +185,36 @@ func (r SubscriptionRepository) GetAllForUser(
 		)
 	}
 
+	// Add from date filter if provided
+	if parameters.FromDate != nil {
+		searchFilter = searchFilter.AND(
+			Subscriptions.StartDate.GT_EQ(TimestampzT(*parameters.FromDate)),
+		)
+	}
+
+	// Add to date filter if provided
+	if parameters.ToDate != nil {
+		searchFilter = searchFilter.AND(
+			Subscriptions.StartDate.LT_EQ(TimestampzT(*parameters.ToDate)),
+		)
+	}
+
 	// Add recurrency filter if provided
-	finalFilter := searchFilter
 	if len(parameters.Recurrencies) > 0 {
 		recurrencyVals := make([]Expression, len(parameters.Recurrencies))
 		for i, rec := range parameters.Recurrencies {
 			recurrencyVals[i] = String(rec.String())
 		}
-		finalFilter = searchFilter.AND(Subscriptions.Recurrency.IN(recurrencyVals...))
+		searchFilter = searchFilter.AND(Subscriptions.Recurrency.IN(recurrencyVals...))
+	}
+
+	// Add filter on active only
+	if !parameters.WithInactive {
+		searchFilter = searchFilter.AND(
+			NOW().GT_EQ(Subscriptions.StartDate).
+				AND(Subscriptions.EndDate.IS_NULL().
+					OR(NOW().LT_EQ(Subscriptions.EndDate))),
+		)
 	}
 
 	// Build matches CTE with is_active calculation
@@ -221,8 +227,7 @@ func (r SubscriptionRepository) GetAllForUser(
 		providers.AllColumns(),
 	).FROM(
 		Subscriptions.LEFT_JOIN(providers, Providers.ID.From(providers).EQ(Subscriptions.ProviderID)),
-	).WHERE(finalFilter).
-		AsTable("matches")
+	).WHERE(searchFilter).AsTable("matches")
 
 	// Build sorting
 	var orderBy []OrderByClause
@@ -281,21 +286,14 @@ func (r SubscriptionRepository) GetAllForUser(
 	// Final query with service users
 	stmt := SELECT(
 		counted.AllColumns(),
-		SubscriptionServiceUsers.FamilyMemberID,
-		SubscriptionServiceUsers.SubscriptionID,
+		SubscriptionServiceUsers.AllColumns,
 	).FROM(
 		counted.
 			LEFT_JOIN(SubscriptionServiceUsers,
 				SubscriptionServiceUsers.SubscriptionID.EQ(Subscriptions.ID.From(counted))),
-	)
+	).ORDER_BY(Subscriptions.ID.From(counted))
 
-	var rows []struct {
-		model.Subscriptions
-		FamilyMemberID *uuid.UUID `alias:"subscription_service_users.family_member_id"`
-		SubscriptionID *uuid.UUID `alias:"subscription_service_users.subscription_id"`
-		TotalCount     int64      `alias:"total_count"`
-		IsActive       bool       `alias:"is_active"`
-	}
+	var rows []SubscriptionRowWithCount
 
 	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
 		return nil, 0, err
@@ -312,6 +310,7 @@ func (r SubscriptionRepository) GetAllForUser(
 	}
 
 	return subscriptions, totalCount, nil
+
 }
 
 func (r SubscriptionRepository) GetAllIt(

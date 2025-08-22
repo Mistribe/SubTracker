@@ -129,11 +129,7 @@ func createSubscriptionFromJetRowsWithCount(rows []struct {
 }
 
 // createSubscriptionFromJetRowsFlat converts flattened jet rows to domain subscriptions
-func createSubscriptionFromJetRowsFlat(rows []struct {
-	model.Subscriptions
-	FamilyMemberID *uuid.UUID `alias:"subscription_service_users.family_member_id"`
-	SubscriptionID *uuid.UUID `alias:"subscription_service_users.subscription_id"`
-}) []subscription.Subscription {
+func createSubscriptionFromJetRowsFlat(rows []SubscriptionRow) []subscription.Subscription {
 	if len(rows) == 0 {
 		return nil
 	}
@@ -149,12 +145,12 @@ func createSubscriptionFromJetRowsFlat(rows []struct {
 			subscriptions[jetSubscription.ID] = jetSubscription
 			orderedIDs = append(orderedIDs, jetSubscription.ID)
 		}
-		if row.FamilyMemberID != nil && *row.FamilyMemberID != uuid.Nil {
-			key := fmt.Sprintf("%s:%s", jetSubscription.ID, *row.FamilyMemberID)
+		if row.SubscriptionServiceUsers != nil {
+			key := fmt.Sprintf("%s:%s", jetSubscription.ID, *row.SubscriptionServiceUsers)
 			if !serviceUserSet.Contains(key) {
 				serviceUserSet.Add(key)
 				subscriptionServiceUsers[jetSubscription.ID] = append(subscriptionServiceUsers[jetSubscription.ID],
-					*row.FamilyMemberID)
+					row.SubscriptionServiceUsers.FamilyMemberID)
 			}
 		}
 	}
@@ -169,35 +165,20 @@ func createSubscriptionFromJetRowsFlat(rows []struct {
 	return results
 }
 
-// createSubscriptionFromJetRowsFlatWithCount converts flattened jet rows with count to domain subscriptions
-func createSubscriptionFromJetRowsFlatWithCount(rows []struct {
+type SubscriptionRow struct {
 	model.Subscriptions
-	FamilyMemberID *uuid.UUID `alias:"subscription_service_users.family_member_id"`
-	SubscriptionID *uuid.UUID `alias:"subscription_service_users.subscription_id"`
-	TotalCount     int64      `alias:"total_count"`
-	IsActive       bool       `alias:"is_active"`
-}) []subscription.Subscription {
-	// Convert to the simpler row structure
-	simpleRows := slicesx.Select(rows, func(row struct {
-		model.Subscriptions
-		FamilyMemberID *uuid.UUID `alias:"subscription_service_users.family_member_id"`
-		SubscriptionID *uuid.UUID `alias:"subscription_service_users.subscription_id"`
-		TotalCount     int64      `alias:"total_count"`
-		IsActive       bool       `alias:"is_active"`
-	}) struct {
-		model.Subscriptions
-		FamilyMemberID *uuid.UUID `alias:"subscription_service_users.family_member_id"`
-		SubscriptionID *uuid.UUID `alias:"subscription_service_users.subscription_id"`
-	} {
-		return struct {
-			model.Subscriptions
-			FamilyMemberID *uuid.UUID `alias:"subscription_service_users.family_member_id"`
-			SubscriptionID *uuid.UUID `alias:"subscription_service_users.subscription_id"`
-		}{
-			Subscriptions:  row.Subscriptions,
-			FamilyMemberID: row.FamilyMemberID,
-			SubscriptionID: row.SubscriptionID,
-		}
+	SubscriptionServiceUsers *model.SubscriptionServiceUsers `json:"subscription_service_users"`
+}
+
+type SubscriptionRowWithCount struct {
+	SubscriptionRow
+	TotalCount int64 `alias:"total_count"`
+}
+
+// createSubscriptionFromJetRowsFlatWithCount converts flattened jet rows with count to domain subscriptions
+func createSubscriptionFromJetRowsFlatWithCount(rows []SubscriptionRowWithCount) []subscription.Subscription {
+	simpleRows := slicesx.Select(rows, func(row SubscriptionRowWithCount) SubscriptionRow {
+		return row.SubscriptionRow
 	})
 
 	return createSubscriptionFromJetRowsFlat(simpleRows)

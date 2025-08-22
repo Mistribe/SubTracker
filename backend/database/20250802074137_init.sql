@@ -79,10 +79,8 @@ CREATE TABLE public.providers
     etag             varchar(100) NOT NULL
 );
 
--- Personal providers branch
-CREATE INDEX IF NOT EXISTS idx_providers_personal_user
-    ON public.providers (owner_user_id)
-    WHERE owner_type = 'personal';
+CREATE INDEX idx_providers_owner_type
+    ON public.providers (owner_type);
 
 -- Family providers branch
 CREATE INDEX IF NOT EXISTS idx_providers_owner_family_id
@@ -190,19 +188,8 @@ CREATE TABLE public.subscriptions
     etag                  varchar(100) NOT NULL
 );
 
--- FK support and common lookups on subscriptions
-CREATE INDEX IF NOT EXISTS idx_subscriptions_provider_id
-    ON public.subscriptions (provider_id);
-CREATE INDEX IF NOT EXISTS idx_subscriptions_plan_id
-    ON public.subscriptions (plan_id);
-CREATE INDEX IF NOT EXISTS idx_subscriptions_price_id
-    ON public.subscriptions (price_id);
-CREATE INDEX IF NOT EXISTS idx_subscriptions_family_id
-    ON public.subscriptions (family_id);
-CREATE INDEX IF NOT EXISTS idx_subscriptions_owner_family_id
-    ON public.subscriptions (owner_family_id);
-CREATE INDEX IF NOT EXISTS idx_subscriptions_payer_member_id
-    ON public.subscriptions (payer_member_id);
+CREATE INDEX idx_subscriptions_owner_type
+    ON public.subscriptions (owner_type);
 
 CREATE TABLE public.subscription_service_users
 (
