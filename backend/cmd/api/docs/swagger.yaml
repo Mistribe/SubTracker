@@ -2617,6 +2617,12 @@ paths:
         required: true
         schema:
           type: integer
+      - description: Number of top labels to return
+        in: query
+        name: top_labels
+        required: true
+        schema:
+          type: integer
       - description: Number of upcoming renewals to return
         in: query
         name: upcoming_renewals

@@ -64,6 +64,7 @@ type SubscriptionSummaryResponse struct {
 //	@Tags			Subscriptions
 //	@Produce		json
 //	@Param			top_providers		query		integer	true	"Number of top providers to return"
+//	@Param			top_labels			query		integer	true	"Number of top labels to return"
 //	@Param			upcoming_renewals	query		integer	true	"Number of upcoming renewals to return"
 //	@Param			total_monthly		query		boolean	true	"Include monthly total costs"
 //	@Param			total_yearly		query		boolean	true	"Include yearly total costs"
