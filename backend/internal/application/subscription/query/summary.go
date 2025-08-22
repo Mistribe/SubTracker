@@ -17,6 +17,7 @@ import (
 
 type SummaryQuery struct {
 	TopProviders     uint8
+	TopLabels        uint8
 	UpcomingRenewals uint8
 	TotalMonthly     bool
 	TotalYearly      bool
@@ -35,7 +36,7 @@ type SummaryQueryTopProvidersResponse struct {
 	Duration   time.Duration
 }
 
-type SummaryQueryTagResponse struct {
+type SummaryQueryLabelResponse struct {
 	TagId uuid.UUID
 	Total currency.Amount
 }
@@ -48,7 +49,7 @@ type SummaryQueryResponse struct {
 	TotalLastYear    currency.Amount
 	UpcomingRenewals []SummaryQueryUpcomingRenewalsResponse
 	TopProviders     []SummaryQueryTopProvidersResponse
-	Tags             []SummaryQueryTagResponse
+	TopLabels        []SummaryQueryLabelResponse
 }
 
 type SummaryQueryHandler struct {
@@ -89,6 +90,7 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 	currencyRates = currencyRates.WithReverse()
 
 	topProviders := make(map[uuid.UUID]SummaryQueryTopProvidersResponse)
+	topLabels := make(map[uuid.UUID]currency.Amount)
 	var upcomingRenewals []SummaryQueryUpcomingRenewalsResponse
 	totalMonthly := 0.0
 	totalYearly := 0.0
@@ -145,25 +147,39 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 			}
 		}
 
-		if query.TopProviders > 0 {
+		if query.TopProviders > 0 || query.TopLabels > 0 {
 			if sub.IsStarted() {
 				totalSpent := sub.GetTotalSpent().ToCurrency(preferredCurrency, currencyRates)
 				if totalSpent.IsValid() && !totalSpent.IsZero() {
-					existingValue, ok := topProviders[sub.ProviderId()]
-					if ok {
-						existingValue.Total = existingValue.Total.Add(totalSpent)
-						existingValue.Duration += sub.GetTotalDuration()
-						topProviders[sub.ProviderId()] = existingValue
-					} else {
-						topProviders[sub.ProviderId()] = SummaryQueryTopProvidersResponse{
-							ProviderId: sub.ProviderId(),
-							Total:      totalSpent,
-							Duration:   sub.GetTotalDuration(),
+					if query.TopProviders > 0 {
+						existingTopProvider, ok := topProviders[sub.ProviderId()]
+						if ok {
+							existingTopProvider.Total = existingTopProvider.Total.Add(totalSpent)
+							existingTopProvider.Duration += sub.GetTotalDuration()
+							topProviders[sub.ProviderId()] = existingTopProvider
+						} else {
+							topProviders[sub.ProviderId()] = SummaryQueryTopProvidersResponse{
+								ProviderId: sub.ProviderId(),
+								Total:      totalSpent,
+								Duration:   sub.GetTotalDuration(),
+							}
+						}
+					}
+					if query.TopLabels > 0 {
+						for l := range sub.Labels().It() {
+							existingTopLabel, ok := topLabels[l.LabelId]
+							if ok {
+								existingTopLabel = existingTopLabel.Add(totalSpent)
+								topLabels[l.LabelId] = existingTopLabel
+							} else {
+								topLabels[l.LabelId] = totalSpent
+							}
 						}
 					}
 				}
 			}
 		}
+
 	}
 
 	response := SummaryQueryResponse{
@@ -176,6 +192,13 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 		TopProviders: slicesx.MapToArr(topProviders,
 			func(providerId uuid.UUID, res SummaryQueryTopProvidersResponse) SummaryQueryTopProvidersResponse {
 				return res
+			}),
+		TopLabels: slicesx.MapToArr(topLabels,
+			func(labelId uuid.UUID, res currency.Amount) SummaryQueryLabelResponse {
+				return SummaryQueryLabelResponse{
+					TagId: labelId,
+					Total: res,
+				}
 			}),
 	}
 	sort.Slice(response.UpcomingRenewals, func(i, j int) bool {

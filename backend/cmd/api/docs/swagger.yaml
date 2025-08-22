@@ -133,6 +133,21 @@ components:
       required:
       - message
       type: object
+    endpoints.LabelRefModel:
+      properties:
+        label_id:
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        source:
+          enum:
+          - subscription
+          - provider
+          example: subscription
+          type: string
+      required:
+      - label_id
+      - source
+      type: object
     endpoints.OwnerModel:
       description: '@Description Ownership information specifying whether this subscription
         belongs to a user or family'
@@ -514,6 +529,12 @@ components:
             active or not'
           example: true
           type: boolean
+        label_refs:
+          description: '@Description List of labels associated with this subscription'
+          items:
+            $ref: '#/components/schemas/endpoints.LabelRefModel'
+          type: array
+          uniqueItems: false
         owner:
           $ref: '#/components/schemas/endpoints.OwnerModel'
         payer:
@@ -612,6 +633,11 @@ components:
         active:
           example: 10
           type: integer
+        top_labels:
+          items:
+            $ref: '#/components/schemas/endpoints.SubscriptionSummaryTopLabelResponse'
+          type: array
+          uniqueItems: false
         top_providers:
           items:
             $ref: '#/components/schemas/endpoints.SubscriptionSummaryTopProviderResponse'
@@ -630,6 +656,15 @@ components:
             $ref: '#/components/schemas/endpoints.SubscriptionSummaryUpcomingRenewalResponse'
           type: array
           uniqueItems: false
+      type: object
+    endpoints.SubscriptionSummaryTopLabelResponse:
+      properties:
+        label_id:
+          type: string
+        total:
+          $ref: '#/components/schemas/endpoints.AmountModel'
+      required:
+      - label_id
       type: object
     endpoints.SubscriptionSummaryTopProviderResponse:
       properties:

@@ -19,18 +19,23 @@ func NewSubscriptionSummaryEndpoint(handler core.QueryHandler[query.SummaryQuery
 	return &SubscriptionSummaryEndpoint{handler: handler}
 }
 
-// @Description	Request parameters for subscription summary
 type SubscriptionSummaryRequest struct {
-	TopProviders     uint8 `json:"top_providers" form:"top_providers" binding:"required" example:"5" description:"Number of top providers to return"`
-	UpcomingRenewals uint8 `json:"upcoming_renewals" form:"upcoming_renewals" binding:"required" example:"3" description:"Number of upcoming renewals to return"`
-	TotalMonthly     bool  `json:"total_monthly" form:"total_monthly" binding:"required" example:"true" description:"Include monthly total costs"`
-	TotalYearly      bool  `json:"total_yearly" form:"total_yearly" binding:"required" example:"true" description:"Include yearly total costs"`
+	TopProviders     uint8 `json:"top_providers,omitempty" form:"top_providers" example:"5" description:"Number of top providers to return"`
+	UpcomingRenewals uint8 `json:"upcoming_renewals,omitempty" form:"upcoming_renewals" example:"3" description:"Number of upcoming renewals to return"`
+	TopLabels        uint8 `json:"top_labels,omitempty" form:"top_labels"  example:"5" description:"Number of top labels to return"`
+	TotalMonthly     bool  `json:"total_monthly,omitempty" form:"total_monthly"  example:"true" description:"Include monthly total costs"`
+	TotalYearly      bool  `json:"total_yearly,omitempty" form:"total_yearly"  example:"true" description:"Include yearly total costs"`
 }
 
 type SubscriptionSummaryTopProviderResponse struct {
 	ProviderId string      `json:"provider_id" binding:"required"`
 	Total      AmountModel `json:"total"`
 	Duration   string      `json:"duration"`
+}
+
+type SubscriptionSummaryTopLabelResponse struct {
+	LabelId string      `json:"label_id" binding:"required"`
+	Total   AmountModel `json:"total"`
 }
 
 type SubscriptionSummaryUpcomingRenewalResponse struct {
@@ -49,6 +54,7 @@ type SubscriptionSummaryResponse struct {
 	TotalLastYear    AmountModel                                  `json:"total_last_year" description:"Total yearly subscription costs for last year"`
 	TopProviders     []SubscriptionSummaryTopProviderResponse     `json:"top_providers" description:"List of top providers by cost"`
 	UpcomingRenewals []SubscriptionSummaryUpcomingRenewalResponse `json:"upcoming_renewals" description:"List of upcoming subscription renewals"`
+	TopLabels        []SubscriptionSummaryTopLabelResponse        `json:"top_labels" description:"List of top labels by cost"`
 }
 
 // Handle godoc
@@ -75,6 +81,7 @@ func (e SubscriptionSummaryEndpoint) Handle(c *gin.Context) {
 
 	q := query.SummaryQuery{
 		TopProviders:     model.TopProviders,
+		TopLabels:        model.TopLabels,
 		UpcomingRenewals: model.UpcomingRenewals,
 		TotalMonthly:     model.TotalMonthly,
 		TotalYearly:      model.TotalYearly,
@@ -96,6 +103,13 @@ func (e SubscriptionSummaryEndpoint) Handle(c *gin.Context) {
 							ProviderId: topProvider.ProviderId.String(),
 							Total:      newAmount(topProvider.Total),
 							Duration:   topProvider.Duration.String(),
+						}
+					}),
+				TopLabels: slicesx.Select(res.TopLabels,
+					func(topLabel query.SummaryQueryLabelResponse) SubscriptionSummaryTopLabelResponse {
+						return SubscriptionSummaryTopLabelResponse{
+							LabelId: topLabel.TagId.String(),
+							Total:   newAmount(topLabel.Total),
 						}
 					}),
 				UpcomingRenewals: slicesx.Select(res.UpcomingRenewals,
