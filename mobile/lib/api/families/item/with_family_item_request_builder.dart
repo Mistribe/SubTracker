@@ -36,18 +36,6 @@ class WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFamilyItemRequ
         };
         return await requestAdapter.sendNoContent(requestInfo, errorMapping);
     }
-    /// Retrieve a family and its members by family ID
-    ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
-    Future<FamilyModel?> getAsync([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) async {
-        var requestInfo = toGetRequestInformation(requestConfiguration);
-        final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
-            '401' :  HttpErrorResponse.createFromDiscriminatorValue,
-            '404' :  HttpErrorResponse.createFromDiscriminatorValue,
-            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
-        };
-        return await requestAdapter.send<FamilyModel>(requestInfo, FamilyModel.createFromDiscriminatorValue, errorMapping);
-    }
     /// Update family information such as name and other details
     ///  [body] The request body
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
@@ -65,14 +53,6 @@ class WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFamilyItemRequ
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     RequestInformation toDeleteRequestInformation([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
         var requestInfo = RequestInformation(httpMethod : HttpMethod.delete, urlTemplate : urlTemplate, pathParameters :  pathParameters);
-        requestInfo.configure<DefaultQueryParameters>(requestConfiguration, () => DefaultQueryParameters());
-        requestInfo.headers.put('Accept', 'application/json');
-        return requestInfo;
-    }
-    /// Retrieve a family and its members by family ID
-    ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
-    RequestInformation toGetRequestInformation([void Function(RequestConfiguration<DefaultQueryParameters>)? requestConfiguration]) {
-        var requestInfo = RequestInformation(httpMethod : HttpMethod.get, urlTemplate : urlTemplate, pathParameters :  pathParameters);
         requestInfo.configure<DefaultQueryParameters>(requestConfiguration, () => DefaultQueryParameters());
         requestInfo.headers.put('Accept', 'application/json');
         return requestInfo;

@@ -14,6 +14,10 @@ class SubscriptionSummaryResponse implements AdditionalDataHolder, Parsable {
     Map<String, Object?> additionalData;
     ///  The top_providers property
     Iterable<SubscriptionSummaryTopProviderResponse>? topProviders;
+    ///  The total_last_month property
+    AmountModel? totalLastMonth;
+    ///  The total_last_year property
+    AmountModel? totalLastYear;
     ///  The total_monthly property
     AmountModel? totalMonthly;
     ///  The total_yearly property
@@ -34,6 +38,8 @@ class SubscriptionSummaryResponse implements AdditionalDataHolder, Parsable {
         var deserializerMap = <String, void Function(ParseNode)>{};
         deserializerMap['active'] = (node) => active = node.getIntValue();
         deserializerMap['top_providers'] = (node) => topProviders = node.getCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>(SubscriptionSummaryTopProviderResponse.createFromDiscriminatorValue);
+        deserializerMap['total_last_month'] = (node) => totalLastMonth = node.getObjectValue<AmountModel>(AmountModel.createFromDiscriminatorValue);
+        deserializerMap['total_last_year'] = (node) => totalLastYear = node.getObjectValue<AmountModel>(AmountModel.createFromDiscriminatorValue);
         deserializerMap['total_monthly'] = (node) => totalMonthly = node.getObjectValue<AmountModel>(AmountModel.createFromDiscriminatorValue);
         deserializerMap['total_yearly'] = (node) => totalYearly = node.getObjectValue<AmountModel>(AmountModel.createFromDiscriminatorValue);
         deserializerMap['upcoming_renewals'] = (node) => upcomingRenewals = node.getCollectionOfObjectValues<SubscriptionSummaryUpcomingRenewalResponse>(SubscriptionSummaryUpcomingRenewalResponse.createFromDiscriminatorValue);
@@ -45,6 +51,8 @@ class SubscriptionSummaryResponse implements AdditionalDataHolder, Parsable {
     void serialize(SerializationWriter writer) {
         writer.writeIntValue('active', active);
         writer.writeCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>('top_providers', topProviders);
+        writer.writeObjectValue<AmountModel>('total_last_month', totalLastMonth);
+        writer.writeObjectValue<AmountModel>('total_last_year', totalLastYear);
         writer.writeObjectValue<AmountModel>('total_monthly', totalMonthly);
         writer.writeObjectValue<AmountModel>('total_yearly', totalYearly);
         writer.writeCollectionOfObjectValues<SubscriptionSummaryUpcomingRenewalResponse>('upcoming_renewals', upcomingRenewals);

@@ -3,14 +3,17 @@ import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import '../models/create_family_model.dart';
 import '../models/family_model.dart';
 import '../models/http_error_response.dart';
-import '../models/paginated_response_model_endpoints_family_model.dart';
 import '../models/patch_family_model.dart';
-import './families_request_builder_get_query_parameters.dart';
 import './item/with_family_item_request_builder.dart';
+import './me/me_request_builder.dart';
 
 /// auto generated
 /// Builds and executes requests for operations under \families
 class FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesRequestBuilder> {
+    ///  The me property
+    MeRequestBuilder get me {
+        return MeRequestBuilder(pathParameters, requestAdapter);
+    }
     /// Gets an item from the ApiSdk.families.item collection
     ///  [familyId] Family ID (UUID format)
     WithFamilyItemRequestBuilder byFamilyId(String familyId) {
@@ -26,22 +29,11 @@ class FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesRequestBuilder> 
     /// Instantiates a new [FamiliesRequestBuilder] and sets the default values.
     ///  [pathParameters] Path parameters for the request
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    FamiliesRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/families{?limit*,offset*}", pathParameters) ;
+    FamiliesRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/families", pathParameters) ;
     /// Instantiates a new [FamiliesRequestBuilder] and sets the default values.
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    FamiliesRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/families{?limit*,offset*}", {RequestInformation.rawUrlKey : rawUrl}) ;
-    /// Retrieve a paginated list of families for the authenticated user
-    ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
-    Future<PaginatedResponseModelEndpointsFamilyModel?> getAsync([void Function(RequestConfiguration<FamiliesRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
-        var requestInfo = toGetRequestInformation(requestConfiguration);
-        final errorMapping = <String, ParsableFactory<Parsable>>{
-            '400' :  HttpErrorResponse.createFromDiscriminatorValue,
-            '401' :  HttpErrorResponse.createFromDiscriminatorValue,
-            '500' :  HttpErrorResponse.createFromDiscriminatorValue,
-        };
-        return await requestAdapter.send<PaginatedResponseModelEndpointsFamilyModel>(requestInfo, PaginatedResponseModelEndpointsFamilyModel.createFromDiscriminatorValue, errorMapping);
-    }
+    FamiliesRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/families", {RequestInformation.rawUrlKey : rawUrl}) ;
     /// Update or create a family with specified members. If family doesn't exist, it will be created.
     ///  [body] Model for updating family details
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
@@ -66,14 +58,6 @@ class FamiliesRequestBuilder extends BaseRequestBuilder<FamiliesRequestBuilder> 
             '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
         return await requestAdapter.send<FamilyModel>(requestInfo, FamilyModel.createFromDiscriminatorValue, errorMapping);
-    }
-    /// Retrieve a paginated list of families for the authenticated user
-    ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
-    RequestInformation toGetRequestInformation([void Function(RequestConfiguration<FamiliesRequestBuilderGetQueryParameters>)? requestConfiguration]) {
-        var requestInfo = RequestInformation(httpMethod : HttpMethod.get, urlTemplate : urlTemplate, pathParameters :  pathParameters);
-        requestInfo.configure<FamiliesRequestBuilderGetQueryParameters>(requestConfiguration, () => FamiliesRequestBuilderGetQueryParameters());
-        requestInfo.headers.put('Accept', 'application/json');
-        return requestInfo;
     }
     /// Update or create a family with specified members. If family doesn't exist, it will be created.
     ///  [body] Model for updating family details

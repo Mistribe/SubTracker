@@ -20,6 +20,8 @@ class UpdateSubscriptionModel implements AdditionalDataHolder, Parsable {
     SubscriptionFreeTrialModel? freeTrial;
     ///  The friendly_name property
     String? friendlyName;
+    ///  The labels property
+    Iterable<String>? labels;
     ///  The owner property
     EditableOwnerModel? owner;
     ///  Subscription payer object used for updating who pays for a subscription
@@ -55,6 +57,7 @@ class UpdateSubscriptionModel implements AdditionalDataHolder, Parsable {
         deserializerMap['end_date'] = (node) => endDate = node.getDateTimeValue();
         deserializerMap['free_trial'] = (node) => freeTrial = node.getObjectValue<SubscriptionFreeTrialModel>(SubscriptionFreeTrialModel.createFromDiscriminatorValue);
         deserializerMap['friendly_name'] = (node) => friendlyName = node.getStringValue();
+        deserializerMap['labels'] = (node) => labels = node.getCollectionOfPrimitiveValues<String>();
         deserializerMap['owner'] = (node) => owner = node.getObjectValue<EditableOwnerModel>(EditableOwnerModel.createFromDiscriminatorValue);
         deserializerMap['payer'] = (node) => payer = node.getObjectValue<EditableSubscriptionPayerModel>(EditableSubscriptionPayerModel.createFromDiscriminatorValue);
         deserializerMap['plan_id'] = (node) => planId = node.getStringValue();
@@ -75,6 +78,7 @@ class UpdateSubscriptionModel implements AdditionalDataHolder, Parsable {
         writer.writeDateTimeValue('end_date', endDate);
         writer.writeObjectValue<SubscriptionFreeTrialModel>('free_trial', freeTrial);
         writer.writeStringValue('friendly_name', friendlyName);
+        writer.writeCollectionOfPrimitiveValues<String?>('labels', labels);
         writer.writeObjectValue<EditableOwnerModel>('owner', owner);
         writer.writeObjectValue<EditableSubscriptionPayerModel>('payer', payer);
         writer.writeStringValue('plan_id', planId);

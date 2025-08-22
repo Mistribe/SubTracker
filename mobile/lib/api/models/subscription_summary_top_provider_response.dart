@@ -7,6 +7,8 @@ class SubscriptionSummaryTopProviderResponse implements AdditionalDataHolder, Pa
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
+    ///  The duration property
+    String? duration;
     ///  The provider_id property
     String? providerId;
     ///  The total property
@@ -23,6 +25,7 @@ class SubscriptionSummaryTopProviderResponse implements AdditionalDataHolder, Pa
     @override
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
+        deserializerMap['duration'] = (node) => duration = node.getStringValue();
         deserializerMap['provider_id'] = (node) => providerId = node.getStringValue();
         deserializerMap['total'] = (node) => total = node.getObjectValue<AmountModel>(AmountModel.createFromDiscriminatorValue);
         return deserializerMap;
@@ -31,6 +34,7 @@ class SubscriptionSummaryTopProviderResponse implements AdditionalDataHolder, Pa
     ///  [writer] Serialization writer to use to serialize this model
     @override
     void serialize(SerializationWriter writer) {
+        writer.writeStringValue('duration', duration);
         writer.writeStringValue('provider_id', providerId);
         writer.writeObjectValue<AmountModel>('total', total);
         writer.writeAdditionalData(additionalData);
