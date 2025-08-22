@@ -8,9 +8,7 @@ install-deps:
 
 openapi:
 	@swag fmt -d ./cmd/api/ &&\
-	swag init -d ./cmd/api/ -o ./cmd/api/docs --v3.1 &&\
-	cd ../scripts &&\
-	./http-client-gen.sh
+	swag init -d ./cmd/api/ -o ./cmd/api/docs --v3.1
 
 clients: typescript-client dart-client
 
@@ -19,14 +17,14 @@ typescript-client:
     docker run --rm -v ../web/src/api:/app/output \
     -v ./cmd/api/docs/swagger.yaml:/app/openapi.yaml \
     --user $(id -u):$(id -g) \
-    mcr.microsoft.com/openapi/kiota generate --language typescript
+    mcr.microsoft.com/openapi/kiota generate --language typescript --clean-output
 
 dart-client:
 	docker pull mcr.microsoft.com/openapi/kiota && \
     docker run --rm -v ../mobile/lib/api:/app/output \
     -v ./cmd/api/docs/swagger.yaml:/app/openapi.yaml \
     --user $(id -u):$(id -g) \
-    mcr.microsoft.com/openapi/kiota generate --language dart
+    mcr.microsoft.com/openapi/kiota generate --language dart --clean-output
 run-deps:
 	@docker compose down -v && docker compose up --build database database.migration
 

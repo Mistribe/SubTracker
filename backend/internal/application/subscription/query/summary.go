@@ -35,6 +35,11 @@ type SummaryQueryTopProvidersResponse struct {
 	Duration   time.Duration
 }
 
+type SummaryQueryTagResponse struct {
+	TagId uuid.UUID
+	Total currency.Amount
+}
+
 type SummaryQueryResponse struct {
 	Active           uint16
 	TotalMonthly     currency.Amount
@@ -43,6 +48,7 @@ type SummaryQueryResponse struct {
 	TotalLastYear    currency.Amount
 	UpcomingRenewals []SummaryQueryUpcomingRenewalsResponse
 	TopProviders     []SummaryQueryTopProvidersResponse
+	Tags             []SummaryQueryTagResponse
 }
 
 type SummaryQueryHandler struct {

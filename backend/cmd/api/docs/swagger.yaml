@@ -31,6 +31,11 @@ components:
           type: string
         id:
           type: string
+        labels:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
         owner:
           $ref: '#/components/schemas/endpoints.EditableOwnerModel'
         payer:
@@ -230,6 +235,11 @@ components:
           type: string
         id:
           type: string
+        labels:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
         owner:
           $ref: '#/components/schemas/endpoints.EditableOwnerModel'
         payer:
@@ -670,6 +680,11 @@ components:
           $ref: '#/components/schemas/endpoints.SubscriptionFreeTrialModel'
         friendly_name:
           type: string
+        labels:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
         owner:
           $ref: '#/components/schemas/endpoints.EditableOwnerModel'
         payer:
@@ -1325,42 +1340,6 @@ paths:
       summary: Delete family by ID
       tags:
       - family
-    get:
-      description: Retrieve the user's family
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.familyModel'
-          description: Successfully retrieved family
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
-          description: Bad Request - Invalid ID format
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
-          description: Unauthorized - Invalid user authentication
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
-          description: Family not found
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
-          description: Internal Server Error
-      summary: Get user's family
-      tags:
-      - family
     put:
       description: Update family information such as name and other details
       parameters:
@@ -1557,6 +1536,43 @@ paths:
                 $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Update family member by ID
+      tags:
+      - family
+  /families/me:
+    get:
+      description: Retrieve the user's family
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.familyModel'
+          description: Successfully retrieved family
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Bad Request - Invalid ID format
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Unauthorized - Invalid user authentication
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Family not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Get user's family
       tags:
       - family
   /healthz/live:

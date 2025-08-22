@@ -48,6 +48,7 @@ type Subscription interface {
 	Recurrency() RecurrencyType
 	// CustomRecurrency When the recurrency is custom, this is the number of month between each recurrence
 	CustomRecurrency() *int32
+	Labels() *slicesx.Tracked[LabelRef]
 
 	// GetRecurrencyAmount returns the amount of the subscription for the given recurrency type
 	GetRecurrencyAmount(to RecurrencyType) currency.Amount
@@ -93,6 +94,7 @@ type subscription struct {
 	owner            auth.Owner
 	payer            Payer
 	serviceUsers     *slicesx.Tracked[uuid.UUID]
+	labels           *slicesx.Tracked[LabelRef]
 	startDate        time.Time
 	endDate          *time.Time
 	recurrency       RecurrencyType
@@ -110,6 +112,7 @@ func NewSubscription(
 	owner auth.Owner,
 	payer Payer,
 	serviceUsers []uuid.UUID,
+	labels []LabelRef,
 	startDate time.Time,
 	endDate *time.Time,
 	recurrency RecurrencyType,
@@ -128,11 +131,16 @@ func NewSubscription(
 		owner:            owner,
 		payer:            payer,
 		serviceUsers:     slicesx.NewTracked(serviceUsers, x.UuidUniqueComparer, x.UuidComparer),
+		labels:           slicesx.NewTracked(labels, LabelRefUniqueComparer, LabelRefComparer),
 		startDate:        startDate,
 		endDate:          endDate,
 		recurrency:       recurrency,
 		customRecurrency: customRecurrency,
 	}
+}
+
+func (s *subscription) Labels() *slicesx.Tracked[LabelRef] {
+	return s.labels
 }
 
 func (s *subscription) IsStarted() bool {

@@ -99,7 +99,8 @@ func (r SubscriptionRepository) GetByIdForUser(ctx context.Context, userId strin
 	return subscriptions[0], nil
 }
 
-func (r SubscriptionRepository) GetAll(ctx context.Context,
+func (r SubscriptionRepository) GetAll(
+	ctx context.Context,
 	parameters subscription.QueryParameters) ([]subscription.Subscription, int64, error) {
 
 	pagedSubs := SELECT(
@@ -114,13 +115,17 @@ func (r SubscriptionRepository) GetAll(ctx context.Context,
 
 	stmt := SELECT(
 		pagedSubs.AllColumns(),
-		SubscriptionServiceUsers.FamilyMemberID,
-		SubscriptionServiceUsers.SubscriptionID,
+		SubscriptionServiceUsers.AllColumns,
+		SubscriptionLabels.AllColumns,
+		ProviderLabels.AllColumns,
 	).
 		FROM(
 			pagedSubs.
 				LEFT_JOIN(SubscriptionServiceUsers,
-					SubscriptionServiceUsers.SubscriptionID.EQ(Subscriptions.ID.From(pagedSubs))),
+					SubscriptionServiceUsers.SubscriptionID.EQ(Subscriptions.ID.From(pagedSubs))).
+				LEFT_JOIN(SubscriptionLabels, SubscriptionLabels.SubscriptionID.EQ(Subscriptions.ID.From(pagedSubs))).
+				LEFT_JOIN(Providers, Providers.ID.From(pagedSubs).EQ(Subscriptions.ProviderID)).
+				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.From(pagedSubs).EQ(Providers.ID)),
 		)
 
 	var rows []SubscriptionRowWithCount
@@ -245,10 +250,15 @@ func (r SubscriptionRepository) GetAllForUser(
 	stmt := SELECT(
 		counted.AllColumns(),
 		SubscriptionServiceUsers.AllColumns,
+		SubscriptionLabels.AllColumns,
+		ProviderLabels.AllColumns,
 	).FROM(
 		counted.
 			LEFT_JOIN(SubscriptionServiceUsers,
-				SubscriptionServiceUsers.SubscriptionID.EQ(Subscriptions.ID.From(counted))),
+				SubscriptionServiceUsers.SubscriptionID.EQ(Subscriptions.ID.From(counted))).
+			LEFT_JOIN(SubscriptionLabels, SubscriptionLabels.SubscriptionID.EQ(Subscriptions.ID.From(counted))).
+			LEFT_JOIN(Providers, Providers.ID.EQ(Subscriptions.ProviderID.From(counted))).
+			LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)),
 	)
 
 	var rows []SubscriptionRowWithCount
@@ -676,7 +686,8 @@ func (r SubscriptionRepository) update(ctx context.Context, sub subscription.Sub
 	return nil
 }
 
-func (r SubscriptionRepository) saveTrackedServiceUsersWithJet(ctx context.Context, subscriptionId uuid.UUID,
+func (r SubscriptionRepository) saveTrackedServiceUsersWithJet(
+	ctx context.Context, subscriptionId uuid.UUID,
 	serviceUsers *slicesx.Tracked[uuid.UUID]) error {
 	// Handle new service users
 	newUsers := serviceUsers.Added()

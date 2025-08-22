@@ -26,7 +26,7 @@ type FamilyGetEndpoint struct {
 //	@Failure		401	{object}	HttpErrorResponse	"Unauthorized - Invalid user authentication"
 //	@Failure		404	{object}	HttpErrorResponse	"Family not found"
 //	@Failure		500	{object}	HttpErrorResponse	"Internal Server Error"
-//	@Router			/families/{familyId} [get]
+//	@Router			/families/me [get]
 func (f FamilyGetEndpoint) Handle(c *gin.Context) {
 	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
@@ -50,7 +50,7 @@ func (f FamilyGetEndpoint) Handle(c *gin.Context) {
 
 func (f FamilyGetEndpoint) Pattern() []string {
 	return []string{
-		"",
+		"/me",
 	}
 }
 

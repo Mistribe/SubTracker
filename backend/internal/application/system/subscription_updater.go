@@ -163,6 +163,7 @@ func (l subscriptionUpdater) updateDatabase(ctx context.Context, subscriptions [
 				owner,
 				payer,
 				serviceUsers,
+				nil,
 				model.StartDate,
 				model.EndDate,
 				recurrency,

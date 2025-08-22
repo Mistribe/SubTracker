@@ -34,6 +34,7 @@ type CreateSubscriptionModel struct {
 	PriceId          *string                         `json:"price_id,omitempty"`
 	CustomPrice      *AmountModel                    `json:"custom_price,omitempty"`
 	ServiceUsers     []string                        `json:"service_users,omitempty"`
+	Labels           []string                        `json:"labels,omitempty"`
 	StartDate        time.Time                       `json:"start_date" binding:"required" format:"date-time"`
 	EndDate          *time.Time                      `json:"end_date,omitempty" format:"date-time"`
 	Recurrency       string                          `json:"recurrency" binding:"required"`
@@ -97,8 +98,19 @@ func (m CreateSubscriptionModel) Subscription(userId string) (subscription.Subsc
 	if err != nil {
 		return nil, err
 	}
-	serviceUsers, err := slicesx.SelectErr(m.ServiceUsers, func(in string) (uuid.UUID, error) {
-		return uuid.Parse(in)
+	serviceUsers, err := slicesx.SelectErr(m.ServiceUsers, uuid.Parse)
+	if err != nil {
+		return nil, err
+	}
+	labels, err := slicesx.SelectErr(m.Labels, func(in string) (subscription.LabelRef, error) {
+		labelId, err := uuid.Parse(in)
+		if err != nil {
+			return subscription.LabelRef{}, err
+		}
+		return subscription.LabelRef{
+			LabelId: labelId,
+			Source:  subscription.LabelSourceSubscription,
+		}, nil
 	})
 	if err != nil {
 		return nil, err
@@ -118,6 +130,7 @@ func (m CreateSubscriptionModel) Subscription(userId string) (subscription.Subsc
 		owner,
 		payer,
 		serviceUsers,
+		labels,
 		m.StartDate,
 		m.EndDate,
 		recurrency,

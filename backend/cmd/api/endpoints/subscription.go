@@ -158,6 +158,8 @@ type SubscriptionModel struct {
 	Etag string `json:"etag" binding:"required" example:"W/\"123456789\""`
 	// @Description Indicates whether the subscription is currently active or not
 	IsActive bool `json:"is_active" binding:"required" example:"true"`
+	// @Description List of labels associated with this subscription
+	LabelRefs []LabelRefModel `json:"label_refs,omitempty"`
 }
 
 func newSubscriptionPayerModel(source subscription.Payer) SubscriptionPayerModel {
@@ -174,6 +176,18 @@ func newSubscriptionPayerModel(source subscription.Payer) SubscriptionPayerModel
 	return model
 }
 
+type LabelRefModel struct {
+	LabelId string `json:"label_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
+	Source  string `json:"source" binding:"required" example:"subscription" enums:"subscription,provider"`
+}
+
+func newSubscriptionLabelRef(ref subscription.LabelRef) LabelRefModel {
+	return LabelRefModel{
+		LabelId: ref.LabelId.String(),
+		Source:  ref.Source.String(),
+	}
+}
+
 func newSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 	var payerModel SubscriptionPayerModel
 	if source.Payer() != nil {
@@ -182,12 +196,14 @@ func newSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 	serviceUsers := slicesx.Select(source.ServiceUsers().Values(), func(in uuid.UUID) string {
 		return in.String()
 	})
+	labelRefs := slicesx.Select(source.Labels().Values(), newSubscriptionLabelRef)
 	model := SubscriptionModel{
 		Id:               source.Id().String(),
 		FriendlyName:     source.FriendlyName(),
 		FreeTrial:        newSubscriptionFreeTrialModel(source.FreeTrial()),
 		ProviderId:       source.ProviderId().String(),
 		ServiceUsers:     serviceUsers,
+		LabelRefs:        labelRefs,
 		Owner:            newOwnerModel(source.Owner()),
 		StartDate:        source.StartDate(),
 		EndDate:          source.EndDate(),

@@ -205,6 +205,17 @@ CREATE TABLE public.subscription_service_users
 CREATE INDEX IF NOT EXISTS idx_subscription_service_users_subscription
     ON public.subscription_service_users (subscription_id);
 
+CREATE TABLE public.subscription_labels
+(
+    subscription_id uuid NOT NULL
+        CONSTRAINT fk_subscription_tags_subscription
+            REFERENCES public.subscriptions ON DELETE CASCADE,
+    label_id        uuid NOT NULL
+        CONSTRAINT fk_subscription_tags_label
+            REFERENCES public.labels ON DELETE CASCADE,
+    PRIMARY KEY (subscription_id, label_id)
+);
+
 CREATE TABLE users
 (
     id       varchar(100) NOT NULL
