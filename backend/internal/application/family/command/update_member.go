@@ -37,7 +37,6 @@ func (h UpdateFamilyMemberCommandHandler) Handle(
 
 	if fam == nil {
 		return result.Fail[family.Family](family.ErrFamilyNotFound)
-
 	}
 
 	mbr := fam.GetMember(command.Id)

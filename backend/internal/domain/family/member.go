@@ -65,15 +65,17 @@ type Member interface {
 
 	Equal(member Member) bool
 	GetValidationErrors() validationx.Errors
+	SetInvitationCode(code string) bool
 }
 
 type member struct {
 	*entity.Base
 
-	familyId uuid.UUID
-	name     string
-	userId   *string
-	userType MemberType
+	familyId       uuid.UUID
+	name           string
+	userId         *string
+	userType       MemberType
+	invitationCode *string
 }
 
 func NewMember(
@@ -81,15 +83,23 @@ func NewMember(
 	familyId uuid.UUID,
 	name string,
 	userType MemberType,
+	invitationCode *string,
 	createdAt time.Time,
 	updatedAt time.Time) Member {
 	return &member{
-		Base:     entity.NewBase(id, createdAt, updatedAt, true, false),
-		familyId: familyId,
-		name:     strings.TrimSpace(name),
-		userId:   nil,
-		userType: userType,
+		Base:           entity.NewBase(id, createdAt, updatedAt, true, false),
+		familyId:       familyId,
+		name:           strings.TrimSpace(name),
+		userId:         nil,
+		userType:       userType,
+		invitationCode: invitationCode,
 	}
+}
+
+func (m *member) SetInvitationCode(code string) bool {
+	m.invitationCode = &code
+	m.SetAsDirty()
+	return true
 }
 
 func (m *member) Name() string {

@@ -126,6 +126,43 @@ components:
       - family_id
       - type
       type: object
+    endpoints.FamilyInviteRequest:
+      properties:
+        email:
+          description: Email of the invited member
+          type: string
+        family_member_id:
+          description: ID of the family member to be invited
+          type: string
+        name:
+          description: Name of the invited member
+          type: string
+        type:
+          description: Type of the member (adult or kid)
+          enum:
+          - adult
+          - kid
+          type: string
+      required:
+      - family_member_id
+      - type
+      type: object
+    endpoints.FamilyInviteResponse:
+      properties:
+        code:
+          example: "123456"
+          type: string
+        family_id:
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        family_member_id:
+          example: 123e4567-e89b-12d3-a456-426614174001
+          type: string
+      required:
+      - code
+      - family_id
+      - family_member_id
+      type: object
     endpoints.HttpErrorResponse:
       properties:
         message:
@@ -1423,6 +1460,58 @@ paths:
                 $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Update a family
+      tags:
+      - family
+  /families/{familyId}/invite:
+    post:
+      description: Creates an invitation for a new member to join the family
+      parameters:
+      - description: Family ID (UUID format)
+        in: path
+        name: familyId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.FamilyInviteRequest'
+        description: Invitation details including email, name, member ID and type
+          (adult/kid)
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.FamilyInviteResponse'
+          description: Successfully created invitation with code and IDs
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Bad Request - Invalid input data
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Unauthorized - Invalid or missing authentication
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Family not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Invite a new member to the family
       tags:
       - family
   /families/{familyId}/members:

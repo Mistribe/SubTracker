@@ -204,6 +204,14 @@ func (r SubscriptionRepository) GetAllForUser(
 		)
 	}
 
+	if len(parameters.Providers) > 0 {
+		providerVals := make([]Expression, len(parameters.Providers))
+		for i, provider := range parameters.Providers {
+			providerVals[i] = UUID(provider)
+		}
+		searchFilter = searchFilter.AND(Subscriptions.ProviderID.IN(providerVals...))
+	}
+
 	// Add recurrency filter if provided
 	if len(parameters.Recurrencies) > 0 {
 		recurrencyVals := make([]Expression, len(parameters.Recurrencies))

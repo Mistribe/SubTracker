@@ -18,6 +18,7 @@ func Module() fx.Option {
 			core.AsCommandHandler[command.UpdateFamilyCommand, family.Family](command.NewUpdateFamilyCommandHandler),
 			core.AsCommandHandler[command.PatchFamilyCommand, family.Family](command.NewPatchFamilyCommandHandler),
 			core.AsCommandHandler[command.DeleteFamilyCommand, bool](command.NewDeleteFamilyCommandHandler),
+			core.AsCommandHandler[command.InviteMemberCommand, command.InviteMemberResponse](command.NewInviteMemberCommandHandler),
 			core.AsCommandHandler[command.CreateFamilyMemberCommand, family.Family](command.NewCreateFamilyMemberCommandHandler),
 			core.AsCommandHandler[command.UpdateFamilyMemberCommand, family.Family](command.NewUpdateFamilyMemberCommandHandler),
 			core.AsCommandHandler[command.DeleteFamilyMemberCommand, bool](command.NewDeleteFamilyMemberCommandHandler),

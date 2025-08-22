@@ -17,16 +17,17 @@ CREATE INDEX IF NOT EXISTS idx_families_owner
 
 CREATE TABLE public.family_members
 (
-    id         uuid         NOT NULL PRIMARY KEY,
-    name       varchar(100) NOT NULL,
-    family_id  uuid         NOT NULL
+    id              uuid         NOT NULL PRIMARY KEY,
+    name            varchar(100) NOT NULL,
+    family_id       uuid         NOT NULL
         CONSTRAINT fk_families_members
             REFERENCES public.families,
-    user_id    varchar(100),
-    type       varchar(10)  NOT NULL,
-    created_at timestamptz  NOT NULL,
-    updated_at timestamptz  NOT NULL,
-    etag       varchar(100) NOT NULL
+    user_id         varchar(100),
+    type            varchar(10)  NOT NULL,
+    invitation_code varchar(100),
+    created_at      timestamptz  NOT NULL,
+    updated_at      timestamptz  NOT NULL,
+    etag            varchar(100) NOT NULL
 );
 
 CREATE UNIQUE INDEX family_members_user_id_family_id_uidx

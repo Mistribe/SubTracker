@@ -10,6 +10,7 @@ import (
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/subscription/query"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
+	"github.com/oleexo/subtracker/pkg/slicesx"
 )
 
 type SubscriptionGetAllEndpoint struct {
@@ -21,15 +22,15 @@ func NewSubscriptionGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery,
 }
 
 type subscriptionGetAllQueryParams struct {
-	Search       string      `form:"search"`
-	Recurrencies []string    `form:"recurrencies"`
-	FromDate     *time.Time  `form:"from_date"`
-	ToDate       *time.Time  `form:"to_date"`
-	Users        []uuid.UUID `form:"users"`
-	WithInactive bool        `form:"with_inactive"`
-	Providers    []uuid.UUID `form:"providers"`
-	Limit        int64       `form:"limit"`
-	Offset       int64       `form:"offset"`
+	Search       string     `form:"search"`
+	Recurrencies []string   `form:"recurrencies"`
+	FromDate     *time.Time `form:"from_date"`
+	ToDate       *time.Time `form:"to_date"`
+	Users        []string   `form:"users"`
+	WithInactive bool       `form:"with_inactive"`
+	Providers    []string   `form:"providers"`
+	Limit        int64      `form:"limit"`
+	Offset       int64      `form:"offset"`
 }
 
 // Handle godoc
@@ -67,12 +68,22 @@ func (s SubscriptionGetAllEndpoint) Handle(c *gin.Context) {
 
 	recurrencies := subscription.ParseRecurrencyTypesOrDefault(params.Recurrencies, subscription.UnknownRecurrency)
 
+	users, err := slicesx.SelectErr(params.Users, uuid.Parse)
+	if err != nil {
+		handleErrorResponse(c, err)
+		return
+	}
+	providers, err := slicesx.SelectErr(params.Providers, uuid.Parse)
+	if err != nil {
+		handleErrorResponse(c, err)
+		return
+	}
 	q := query.NewFindAllQuery(params.Search,
 		recurrencies,
 		params.FromDate,
 		params.ToDate,
-		params.Users,
-		params.Providers,
+		users,
+		providers,
 		params.WithInactive,
 		params.Limit,
 		params.Offset)
