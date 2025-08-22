@@ -23,6 +23,7 @@ func createFamilyMemberFromJet(jetMember model.FamilyMembers) (family.Member, er
 		jetMember.FamilyID,
 		jetMember.Name,
 		memberType,
+		jetMember.InvitationCode,
 		jetMember.CreatedAt,
 		jetMember.UpdatedAt,
 	)

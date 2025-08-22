@@ -13,12 +13,13 @@ import (
 )
 
 type FamilyMembers struct {
-	ID        uuid.UUID `sql:"primary_key"`
-	Name      string
-	FamilyID  uuid.UUID
-	UserID    *string
-	Type      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Etag      string
+	ID             uuid.UUID `sql:"primary_key"`
+	Name           string
+	FamilyID       uuid.UUID
+	UserID         *string
+	Type           string
+	InvitationCode *string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	Etag           string
 }

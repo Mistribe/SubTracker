@@ -19,7 +19,8 @@ type PatchFamilyCommandHandler struct {
 	authService      auth.Service
 }
 
-func NewPatchFamilyCommandHandler(familyRepository family.Repository,
+func NewPatchFamilyCommandHandler(
+	familyRepository family.Repository,
 	authService auth.Service) *PatchFamilyCommandHandler {
 	return &PatchFamilyCommandHandler{
 		familyRepository: familyRepository,
@@ -52,6 +53,7 @@ func (h PatchFamilyCommandHandler) createFamily(
 		cmd.Family.Id(),
 		"You",
 		family.OwnerMemberType,
+		nil,
 		cmd.Family.CreatedAt(),
 		cmd.Family.UpdatedAt(),
 	)

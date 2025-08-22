@@ -45,6 +45,7 @@ func (m createFamilyMemberModel) ToFamilyMember(familyId uuid.UUID) (family.Memb
 		familyId,
 		m.Name,
 		memberType,
+		nil,
 		createdAt,
 		createdAt,
 	), nil

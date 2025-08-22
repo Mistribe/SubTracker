@@ -32,7 +32,8 @@ type familyUpdater struct {
 	familyRepository family.Repository
 }
 
-func newFamilyUpdater(cfg config.Configuration,
+func newFamilyUpdater(
+	cfg config.Configuration,
 	familyRepository family.Repository) *familyUpdater {
 	providerPath := cfg.GetStringOrDefault("DATA_FAMILY", "")
 	var downloader DataDownloader
@@ -79,6 +80,7 @@ func (l familyUpdater) updateDatabase(ctx context.Context, families []systemFami
 					id,
 					memberModel.Name,
 					family.MustParseMemberType(memberModel.Type),
+					nil,
 					time.Now(),
 					time.Now(),
 				)

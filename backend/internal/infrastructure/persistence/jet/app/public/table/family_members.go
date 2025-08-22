@@ -17,14 +17,15 @@ type familyMembersTable struct {
 	postgres.Table
 
 	// Columns
-	ID        postgres.ColumnString
-	Name      postgres.ColumnString
-	FamilyID  postgres.ColumnString
-	UserID    postgres.ColumnString
-	Type      postgres.ColumnString
-	CreatedAt postgres.ColumnTimestampz
-	UpdatedAt postgres.ColumnTimestampz
-	Etag      postgres.ColumnString
+	ID             postgres.ColumnString
+	Name           postgres.ColumnString
+	FamilyID       postgres.ColumnString
+	UserID         postgres.ColumnString
+	Type           postgres.ColumnString
+	InvitationCode postgres.ColumnString
+	CreatedAt      postgres.ColumnTimestampz
+	UpdatedAt      postgres.ColumnTimestampz
+	Etag           postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -66,31 +67,33 @@ func newFamilyMembersTable(schemaName, tableName, alias string) *FamilyMembersTa
 
 func newFamilyMembersTableImpl(schemaName, tableName, alias string) familyMembersTable {
 	var (
-		IDColumn        = postgres.StringColumn("id")
-		NameColumn      = postgres.StringColumn("name")
-		FamilyIDColumn  = postgres.StringColumn("family_id")
-		UserIDColumn    = postgres.StringColumn("user_id")
-		TypeColumn      = postgres.StringColumn("type")
-		CreatedAtColumn = postgres.TimestampzColumn("created_at")
-		UpdatedAtColumn = postgres.TimestampzColumn("updated_at")
-		EtagColumn      = postgres.StringColumn("etag")
-		allColumns      = postgres.ColumnList{IDColumn, NameColumn, FamilyIDColumn, UserIDColumn, TypeColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
-		mutableColumns  = postgres.ColumnList{NameColumn, FamilyIDColumn, UserIDColumn, TypeColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
-		defaultColumns  = postgres.ColumnList{}
+		IDColumn             = postgres.StringColumn("id")
+		NameColumn           = postgres.StringColumn("name")
+		FamilyIDColumn       = postgres.StringColumn("family_id")
+		UserIDColumn         = postgres.StringColumn("user_id")
+		TypeColumn           = postgres.StringColumn("type")
+		InvitationCodeColumn = postgres.StringColumn("invitation_code")
+		CreatedAtColumn      = postgres.TimestampzColumn("created_at")
+		UpdatedAtColumn      = postgres.TimestampzColumn("updated_at")
+		EtagColumn           = postgres.StringColumn("etag")
+		allColumns           = postgres.ColumnList{IDColumn, NameColumn, FamilyIDColumn, UserIDColumn, TypeColumn, InvitationCodeColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
+		mutableColumns       = postgres.ColumnList{NameColumn, FamilyIDColumn, UserIDColumn, TypeColumn, InvitationCodeColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
+		defaultColumns       = postgres.ColumnList{}
 	)
 
 	return familyMembersTable{
 		Table: postgres.NewTable(schemaName, tableName, alias, allColumns...),
 
 		//Columns
-		ID:        IDColumn,
-		Name:      NameColumn,
-		FamilyID:  FamilyIDColumn,
-		UserID:    UserIDColumn,
-		Type:      TypeColumn,
-		CreatedAt: CreatedAtColumn,
-		UpdatedAt: UpdatedAtColumn,
-		Etag:      EtagColumn,
+		ID:             IDColumn,
+		Name:           NameColumn,
+		FamilyID:       FamilyIDColumn,
+		UserID:         UserIDColumn,
+		Type:           TypeColumn,
+		InvitationCode: InvitationCodeColumn,
+		CreatedAt:      CreatedAtColumn,
+		UpdatedAt:      UpdatedAtColumn,
+		Etag:           EtagColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

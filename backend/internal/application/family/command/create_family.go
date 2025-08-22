@@ -24,7 +24,8 @@ type CreateFamilyCommandHandler struct {
 	authService      auth.Service
 }
 
-func NewCreateFamilyCommandHandler(familyRepository family.Repository,
+func NewCreateFamilyCommandHandler(
+	familyRepository family.Repository,
 	authService auth.Service) *CreateFamilyCommandHandler {
 	return &CreateFamilyCommandHandler{
 		familyRepository: familyRepository,
@@ -78,6 +79,7 @@ func (h CreateFamilyCommandHandler) createFamily(
 		*cmd.FamilyId,
 		cmd.CreatorName,
 		family.OwnerMemberType,
+		nil,
 		createdAt,
 		createdAt,
 	)

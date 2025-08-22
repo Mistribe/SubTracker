@@ -55,6 +55,7 @@ func (m patchFamilyMemberModel) Command(familyId uuid.UUID) (family.Member, erro
 		familyId,
 		m.Name,
 		memberType,
+		nil,
 		updatedAt,
 		updatedAt,
 	), nil
