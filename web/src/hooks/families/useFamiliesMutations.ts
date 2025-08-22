@@ -51,7 +51,7 @@ export const useFamiliesMutations = () => {
     // Remove family member mutation
     const removeFamilyMemberMutation = useMutation({
         mutationFn: async ({familyId, memberId}: { familyId: string, memberId: string }) => {
-            return apiClient?.families.byFamilyId(familyId).members.byId(memberId).delete();
+            return apiClient?.families.byFamilyId(familyId).members.byFamilyMemberId(memberId).delete();
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({queryKey: ['families']});
@@ -97,12 +97,43 @@ export const useFamiliesMutations = () => {
         }
     });
 
+    // Invite family member mutation (email or link generation)
+    const inviteFamilyMemberMutation = useMutation({
+        mutationFn: async ({ familyId, familyMemberId, email }: { familyId: string, familyMemberId: string, email?: string }) => {
+            return apiClient?.families.byFamilyId(familyId).invite.post({
+                familyMemberId,
+                email: email || undefined,
+            });
+        },
+        onSuccess: async () => {
+            // Invitation does not change members list immediately; optional invalidate
+            await queryClient.invalidateQueries({ queryKey: ['families'] });
+        }
+    });
+
+    // Revoke (unlink) linked account for a family member
+    const revokeFamilyMemberMutation = useMutation({
+        mutationFn: async ({ familyId, memberId }: { familyId: string, memberId: string }) => {
+            return apiClient?.families
+                .byFamilyId(familyId)
+                .members
+                .byFamilyMemberId(memberId)
+                .revoke
+                .post({});
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['families'] });
+        }
+    });
+
     return {
         createFamilyMutation,
         addFamilyMemberMutation,
         deleteFamilyMutation,
         removeFamilyMemberMutation,
         createFamilyLabelMutation,
-        updateFamilyMemberMutation
+        updateFamilyMemberMutation,
+        inviteFamilyMemberMutation,
+        revokeFamilyMemberMutation
     };
 };

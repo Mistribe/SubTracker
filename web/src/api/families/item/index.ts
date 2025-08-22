@@ -4,6 +4,8 @@
 // @ts-ignore
 import { createFamilyModelFromDiscriminatorValue, createHttpErrorResponseFromDiscriminatorValue, serializeFamilyModel, serializeUpdateFamilyModel, type FamilyModel, type HttpErrorResponse, type UpdateFamilyModel } from '../../models/index.js';
 // @ts-ignore
+import { AcceptRequestBuilderRequestsMetadata, type AcceptRequestBuilder } from './accept/index.js';
+// @ts-ignore
 import { InviteRequestBuilderRequestsMetadata, type InviteRequestBuilder } from './invite/index.js';
 // @ts-ignore
 import { MembersRequestBuilderNavigationMetadata, MembersRequestBuilderRequestsMetadata, type MembersRequestBuilder } from './members/index.js';
@@ -14,6 +16,10 @@ import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type 
  * Builds and executes requests for operations under /families/{familyId}
  */
 export interface WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFamilyItemRequestBuilder> {
+    /**
+     * The accept property
+     */
+    get accept(): AcceptRequestBuilder;
     /**
      * The invite property
      */
@@ -63,6 +69,9 @@ export const WithFamilyItemRequestBuilderUriTemplate = "{+baseurl}/families/{fam
  * Metadata for all the navigation properties in the request builder.
  */
 export const WithFamilyItemRequestBuilderNavigationMetadata: Record<Exclude<keyof WithFamilyItemRequestBuilder, KeysToExcludeForNavigationMetadata>, NavigationMetadata> = {
+    accept: {
+        requestsMetadata: AcceptRequestBuilderRequestsMetadata,
+    },
     invite: {
         requestsMetadata: InviteRequestBuilderRequestsMetadata,
     },

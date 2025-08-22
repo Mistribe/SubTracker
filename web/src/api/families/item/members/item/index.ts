@@ -4,12 +4,18 @@
 // @ts-ignore
 import { createFamilyModelFromDiscriminatorValue, createHttpErrorResponseFromDiscriminatorValue, serializeFamilyModel, serializeUpdateFamilyMemberModel, type FamilyModel, type HttpErrorResponse, type UpdateFamilyMemberModel } from '../../../../models/index.js';
 // @ts-ignore
-import { type BaseRequestBuilder, type Parsable, type ParsableFactory, type RequestConfiguration, type RequestInformation, type RequestsMetadata } from '@microsoft/kiota-abstractions';
+import { RevokeRequestBuilderRequestsMetadata, type RevokeRequestBuilder } from './revoke/index.js';
+// @ts-ignore
+import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type NavigationMetadata, type Parsable, type ParsableFactory, type RequestConfiguration, type RequestInformation, type RequestsMetadata } from '@microsoft/kiota-abstractions';
 
 /**
- * Builds and executes requests for operations under /families/{familyId}/members/{id}
+ * Builds and executes requests for operations under /families/{familyId}/members/{familyMember-id}
  */
-export interface MembersItemRequestBuilder extends BaseRequestBuilder<MembersItemRequestBuilder> {
+export interface FamilyMemberItemRequestBuilder extends BaseRequestBuilder<FamilyMemberItemRequestBuilder> {
+    /**
+     * The revoke property
+     */
+    get revoke(): RevokeRequestBuilder;
     /**
      * Permanently delete a family member from a family
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
@@ -46,13 +52,21 @@ export interface MembersItemRequestBuilder extends BaseRequestBuilder<MembersIte
 /**
  * Uri template for the request builder.
  */
-export const MembersItemRequestBuilderUriTemplate = "{+baseurl}/families/{familyId}/members/{id}";
+export const FamilyMemberItemRequestBuilderUriTemplate = "{+baseurl}/families/{familyId}/members/{familyMember%2Did}";
+/**
+ * Metadata for all the navigation properties in the request builder.
+ */
+export const FamilyMemberItemRequestBuilderNavigationMetadata: Record<Exclude<keyof FamilyMemberItemRequestBuilder, KeysToExcludeForNavigationMetadata>, NavigationMetadata> = {
+    revoke: {
+        requestsMetadata: RevokeRequestBuilderRequestsMetadata,
+    },
+};
 /**
  * Metadata for all the requests in the request builder.
  */
-export const MembersItemRequestBuilderRequestsMetadata: RequestsMetadata = {
+export const FamilyMemberItemRequestBuilderRequestsMetadata: RequestsMetadata = {
     delete: {
-        uriTemplate: MembersItemRequestBuilderUriTemplate,
+        uriTemplate: FamilyMemberItemRequestBuilderUriTemplate,
         responseBodyContentType: "application/json",
         errorMappings: {
             400: createHttpErrorResponseFromDiscriminatorValue as ParsableFactory<Parsable>,
@@ -62,7 +76,7 @@ export const MembersItemRequestBuilderRequestsMetadata: RequestsMetadata = {
         adapterMethodName: "sendNoResponseContent",
     },
     put: {
-        uriTemplate: MembersItemRequestBuilderUriTemplate,
+        uriTemplate: FamilyMemberItemRequestBuilderUriTemplate,
         responseBodyContentType: "application/json",
         errorMappings: {
             400: createHttpErrorResponseFromDiscriminatorValue as ParsableFactory<Parsable>,

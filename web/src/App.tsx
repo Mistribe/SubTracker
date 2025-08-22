@@ -11,6 +11,7 @@ import ProvidersPage from "@/pages/ProvidersPage"
 import SubscriptionsPage from "@/pages/SubscriptionsPage"
 import SubscriptionFormPage from "@/pages/SubscriptionFormPage"
 import ProviderDetailPage from "@/pages/ProviderDetailPage";
+import AcceptInvitationPage from "@/pages/AcceptInvitationPage";
 import {ApiClientProvider} from "@/contexts/ApiClientContext.tsx";
 import {QueryClientProvider, QueryClient} from "@tanstack/react-query";
 
@@ -113,6 +114,16 @@ function App() {
                                     <ProtectedRoute>
                                         <AppLayout>
                                             <SubscriptionFormPage/>
+                                        </AppLayout>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/invite/accept"
+                                element={
+                                    <ProtectedRoute>
+                                        <AppLayout>
+                                            <AcceptInvitationPage/>
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }

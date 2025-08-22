@@ -4,7 +4,7 @@
 // @ts-ignore
 import { createFamilyModelFromDiscriminatorValue, createHttpErrorResponseFromDiscriminatorValue, serializeCreateFamilyMemberModel, serializeFamilyModel, type CreateFamilyMemberModel, type FamilyModel, type HttpErrorResponse } from '../../../models/index.js';
 // @ts-ignore
-import { MembersItemRequestBuilderRequestsMetadata, type MembersItemRequestBuilder } from './item/index.js';
+import { FamilyMemberItemRequestBuilderNavigationMetadata, FamilyMemberItemRequestBuilderRequestsMetadata, type FamilyMemberItemRequestBuilder } from './item/index.js';
 // @ts-ignore
 import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type NavigationMetadata, type Parsable, type ParsableFactory, type RequestConfiguration, type RequestInformation, type RequestsMetadata } from '@microsoft/kiota-abstractions';
 
@@ -14,10 +14,10 @@ import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type 
 export interface MembersRequestBuilder extends BaseRequestBuilder<MembersRequestBuilder> {
     /**
      * Gets an item from the ApiSdk.families.item.members.item collection
-     * @param id Family member ID (UUID format)
-     * @returns {MembersItemRequestBuilder}
+     * @param familyMemberId Family member ID (UUID format)
+     * @returns {FamilyMemberItemRequestBuilder}
      */
-     byId(id: string) : MembersItemRequestBuilder;
+     byFamilyMemberId(familyMemberId: string) : FamilyMemberItemRequestBuilder;
     /**
      * Add a new member to an existing family
      * @param body The request body
@@ -45,9 +45,10 @@ export const MembersRequestBuilderUriTemplate = "{+baseurl}/families/{familyId}/
  * Metadata for all the navigation properties in the request builder.
  */
 export const MembersRequestBuilderNavigationMetadata: Record<Exclude<keyof MembersRequestBuilder, KeysToExcludeForNavigationMetadata>, NavigationMetadata> = {
-    byId: {
-        requestsMetadata: MembersItemRequestBuilderRequestsMetadata,
-        pathParametersMappings: ["id"],
+    byFamilyMemberId: {
+        requestsMetadata: FamilyMemberItemRequestBuilderRequestsMetadata,
+        navigationMetadata: FamilyMemberItemRequestBuilderNavigationMetadata,
+        pathParametersMappings: ["familyMember%2Did"],
     },
 };
 /**
