@@ -16,7 +16,6 @@ import {
     SubscriptionsFilters,
     type SubscriptionsFiltersValues
 } from "@/components/subscriptions/ui/SubscriptionsFilters";
-import type {SortingState} from "@tanstack/react-table";
 import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
 import {useFamiliesQuery} from "@/hooks/families/useFamiliesQuery";
 
@@ -26,7 +25,6 @@ const SubscriptionsPage = () => {
     const [subscriptionToDelete, setSubscriptionToDelete] = useState<Subscription | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [sorting, setSorting] = useState<SortingState>([]);
 
     // Filters state for drawer (draft values)
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -108,8 +106,6 @@ const SubscriptionsPage = () => {
     } = useSubscriptionsQuery({
         limit: 10,
         search: searchText || undefined,
-        sortBy: sorting.length > 0 ? (sorting[0].id as 'provider' | 'name' | 'recurrency' | 'dates') : undefined,
-        sortOrder: sorting.length > 0 ? (sorting[0].desc ? 'desc' : 'asc') : undefined,
         fromDate,
         toDate,
         providers: providersFilter.length ? providersFilter : undefined,
@@ -200,8 +196,6 @@ const SubscriptionsPage = () => {
                             onEdit={(s) => navigate(`/subscriptions/edit/${s.id}`)}
                             onDelete={handleDeleteClick}
                             isFetchingNextPage={isFetchingNextPage}
-                            sorting={sorting}
-                            onSortingChange={setSorting}
                         />
                     ) : searchText !== "" ? (
                         <div className="text-center mt-8">

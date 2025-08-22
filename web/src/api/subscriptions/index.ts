@@ -126,11 +126,15 @@ export interface SubscriptionsRequestBuilderGetQueryParameters {
 /**
  * Uri template for the request builder.
  */
-export const SubscriptionsRequestBuilderUriTemplate = "{+baseurl}/subscriptions{?fromDate*,limit*,offset*,providers*,recurrencies*,search*,sortBy*,sortOrder*,toDate*,users*,with_inactive*}";
+export const SubscriptionsRequestBuilderUriTemplate = "{+baseurl}/subscriptions{?from_date*,limit*,offset*,providers*,recurrencies*,search*,sort_by*,sort_order*,to_date*,users*,with_inactive*}";
 /**
  * Mapper for query parameters from symbol name to serialization name represented as a constant.
  */
 const SubscriptionsRequestBuilderGetQueryParametersMapper: Record<string, string> = {
+    "fromDate": "from_date",
+    "sortBy": "sort_by",
+    "sortOrder": "sort_order",
+    "toDate": "to_date",
     "withInactive": "with_inactive",
 };
 /**
