@@ -12,6 +12,7 @@ import {
     CreditCardIcon,
     EllipsisVerticalIcon,
     Loader2,
+    UserIcon,
     UsersIcon,
 } from "lucide-react";
 import {format} from "date-fns";
@@ -22,6 +23,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
+import {OwnerType} from "@/models/ownerType.ts";
 
 export type SubscriptionsTableProps = {
     subscriptions: Subscription[];
@@ -29,6 +32,7 @@ export type SubscriptionsTableProps = {
     onEdit: (subscription: Subscription) => void;
     onDelete: (subscription: Subscription) => void;
     isFetchingNextPage?: boolean;
+    userNameMap?: Map<string, string>;
 };
 
 
@@ -38,6 +42,7 @@ export function SubscriptionsTable({
                                        onEdit,
                                        onDelete,
                                        isFetchingNextPage,
+                                       userNameMap,
                                    }: SubscriptionsTableProps) {
     return (
         <div className="overflow-hidden rounded-lg border">
@@ -104,9 +109,26 @@ export function SubscriptionsTable({
                             </TableCell>
                             <TableCell>
                                 {subscription.serviceUsers.length > 0 && (
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="flex items-center cursor-help">
+                                                <UsersIcon className="mr-2 h-4 w-4 text-muted-foreground"/>
+                                                <span>{subscription.serviceUsers.length}</span>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top">
+                                            <div className="max-w-64 text-sm">
+                                                {subscription.serviceUsers
+                                                    .map((id) => userNameMap?.get(id) ?? id)
+                                                    .join(", ")}
+                                            </div>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                )}
+                                {subscription.owner.type == OwnerType.Personal && (
                                     <div className="flex items-center">
-                                        <UsersIcon className="mr-2 h-4 w-4 text-muted-foreground"/>
-                                        <span>{subscription.serviceUsers.length}</span>
+                                        <UserIcon className="mr-2 h-4 w-4 text-muted-foreground"/>
+                                        <span>You</span>
                                     </div>
                                 )}
                             </TableCell>

@@ -4,6 +4,7 @@ import {useProvidersByIds} from "@/hooks/providers/useProvidersByIds";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import UpcomingRenewals from "@/components/dashboard/UpcomingRenewals";
 import TopProviders from "@/components/dashboard/TopProviders";
+import TopLabels from "@/components/dashboard/TopLabels";
 import PriceEvolutionGraph from "@/components/dashboard/PriceEvolutionGraph";
 import {PageHeader} from "@/components/ui/page-header";
 import {useSubscriptionSummaryQuery} from "@/hooks/subscriptions/useSubscriptionSummaryQuery";
@@ -24,8 +25,9 @@ const DashboardPage = () => {
         totalLastMonth: summaryLastMonth,
         totalLastYear: summaryLastYear,
         topProviders: summaryTopProviders,
+        topLabels: summaryTopLabels,
         isLoading: isLoadingSummary,
-    } = useSubscriptionSummaryQuery({topProviders: 5, totalMonthly: true, totalYearly: true, upcomingRenewals: 5});
+    } = useSubscriptionSummaryQuery({topProviders: 5, topLabels: 5, totalMonthly: true, totalYearly: true, upcomingRenewals: 5});
 
     const providerIds = useMemo(() => {
         const ids = new Set<string>();
@@ -56,8 +58,8 @@ const DashboardPage = () => {
                 isLoading={isLoadingSubscriptions || isLoadingSummary}
             />
 
-            {/* Side by side: Upcoming Renewals and Top Providers */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Side by side: Upcoming Renewals, Top Providers and Top Labels */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                 <UpcomingRenewals
                     summaryUpcomingRenewals={summaryUpcomingRenewals}
                     providerMap={providerMap}
@@ -68,6 +70,11 @@ const DashboardPage = () => {
                     providers={summaryTopProviders}
                     providerMap={providerMap}
                     isLoading={isLoadingSubscriptions || isLoadingProvidersByIds || isLoadingSummary}
+                />
+
+                <TopLabels
+                    labels={summaryTopLabels ?? []}
+                    isLoading={isLoadingSummary}
                 />
             </div>
 

@@ -224,6 +224,15 @@ export function createLabelModelFromDiscriminatorValue(parseNode: ParseNode | un
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {LabelRefModel}
+ */
+// @ts-ignore
+export function createLabelRefModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoLabelRefModel;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
  * @returns {OwnerModel}
  */
 // @ts-ignore
@@ -497,6 +506,15 @@ export function createSubscriptionPayerModelFromDiscriminatorValue(parseNode: Pa
 // @ts-ignore
 export function createSubscriptionSummaryResponseFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
     return deserializeIntoSubscriptionSummaryResponse;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {SubscriptionSummaryTopLabelResponse}
+ */
+// @ts-ignore
+export function createSubscriptionSummaryTopLabelResponseFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoSubscriptionSummaryTopLabelResponse;
 }
 /**
  * Creates a new instance of the appropriate class based on discriminator value
@@ -873,6 +891,18 @@ export function deserializeIntoLabelModel(labelModel: Partial<LabelModel> | unde
 }
 /**
  * The deserialization information for the current model
+ * @param LabelRefModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoLabelRefModel(labelRefModel: Partial<LabelRefModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "label_id": n => { labelRefModel.labelId = n.getStringValue(); },
+        "source": n => { labelRefModel.source = n.getEnumValue<LabelRefModel_source>(LabelRefModel_sourceObject); },
+    }
+}
+/**
+ * The deserialization information for the current model
  * @param OwnerModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
@@ -1065,6 +1095,7 @@ export function deserializeIntoSubscriptionModel(subscriptionModel: Partial<Subs
         "friendly_name": n => { subscriptionModel.friendlyName = n.getStringValue(); },
         "id": n => { subscriptionModel.id = n.getStringValue(); },
         "is_active": n => { subscriptionModel.isActive = n.getBooleanValue(); },
+        "label_refs": n => { subscriptionModel.labelRefs = n.getCollectionOfObjectValues<LabelRefModel>(createLabelRefModelFromDiscriminatorValue); },
         "owner": n => { subscriptionModel.owner = n.getObjectValue<OwnerModel>(createOwnerModelFromDiscriminatorValue); },
         "payer": n => { subscriptionModel.payer = n.getObjectValue<SubscriptionPayerModel>(createSubscriptionPayerModelFromDiscriminatorValue); },
         "plan_id": n => { subscriptionModel.planId = n.getStringValue(); },
@@ -1099,12 +1130,25 @@ export function deserializeIntoSubscriptionPayerModel(subscriptionPayerModel: Pa
 export function deserializeIntoSubscriptionSummaryResponse(subscriptionSummaryResponse: Partial<SubscriptionSummaryResponse> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "active": n => { subscriptionSummaryResponse.active = n.getNumberValue(); },
+        "top_labels": n => { subscriptionSummaryResponse.topLabels = n.getCollectionOfObjectValues<SubscriptionSummaryTopLabelResponse>(createSubscriptionSummaryTopLabelResponseFromDiscriminatorValue); },
         "top_providers": n => { subscriptionSummaryResponse.topProviders = n.getCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>(createSubscriptionSummaryTopProviderResponseFromDiscriminatorValue); },
         "total_last_month": n => { subscriptionSummaryResponse.totalLastMonth = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
         "total_last_year": n => { subscriptionSummaryResponse.totalLastYear = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
         "total_monthly": n => { subscriptionSummaryResponse.totalMonthly = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
         "total_yearly": n => { subscriptionSummaryResponse.totalYearly = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
         "upcoming_renewals": n => { subscriptionSummaryResponse.upcomingRenewals = n.getCollectionOfObjectValues<SubscriptionSummaryUpcomingRenewalResponse>(createSubscriptionSummaryUpcomingRenewalResponseFromDiscriminatorValue); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param SubscriptionSummaryTopLabelResponse The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoSubscriptionSummaryTopLabelResponse(subscriptionSummaryTopLabelResponse: Partial<SubscriptionSummaryTopLabelResponse> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "label_id": n => { subscriptionSummaryTopLabelResponse.labelId = n.getStringValue(); },
+        "total": n => { subscriptionSummaryTopLabelResponse.total = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
     }
 }
 /**
@@ -1423,6 +1467,17 @@ export interface LabelModel extends AdditionalDataHolder, Parsable {
      */
     updatedAt?: Date | null;
 }
+export interface LabelRefModel extends AdditionalDataHolder, Parsable {
+    /**
+     * The label_id property
+     */
+    labelId?: string | null;
+    /**
+     * The source property
+     */
+    source?: LabelRefModel_source | null;
+}
+export type LabelRefModel_source = (typeof LabelRefModel_sourceObject)[keyof typeof LabelRefModel_sourceObject];
 /**
  * @Description Ownership information specifying whether this subscription belongs to a user or family
  */
@@ -1987,6 +2042,19 @@ export function serializeLabelModel(writer: SerializationWriter, labelModel: Par
 /**
  * Serializes information the current object
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param LabelRefModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeLabelRefModel(writer: SerializationWriter, labelRefModel: Partial<LabelRefModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!labelRefModel || isSerializingDerivedType) { return; }
+    writer.writeStringValue("label_id", labelRefModel.labelId);
+    writer.writeEnumValue<LabelRefModel_source>("source", labelRefModel.source);
+    writer.writeAdditionalData(labelRefModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param OwnerModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
@@ -2190,6 +2258,7 @@ export function serializeSubscriptionModel(writer: SerializationWriter, subscrip
     writer.writeStringValue("friendly_name", subscriptionModel.friendlyName);
     writer.writeStringValue("id", subscriptionModel.id);
     writer.writeBooleanValue("is_active", subscriptionModel.isActive);
+    writer.writeCollectionOfObjectValues<LabelRefModel>("label_refs", subscriptionModel.labelRefs, serializeLabelRefModel);
     writer.writeObjectValue<OwnerModel>("owner", subscriptionModel.owner, serializeOwnerModel);
     writer.writeObjectValue<SubscriptionPayerModel>("payer", subscriptionModel.payer, serializeSubscriptionPayerModel);
     writer.writeStringValue("plan_id", subscriptionModel.planId);
@@ -2226,6 +2295,7 @@ export function serializeSubscriptionPayerModel(writer: SerializationWriter, sub
 export function serializeSubscriptionSummaryResponse(writer: SerializationWriter, subscriptionSummaryResponse: Partial<SubscriptionSummaryResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!subscriptionSummaryResponse || isSerializingDerivedType) { return; }
     writer.writeNumberValue("active", subscriptionSummaryResponse.active);
+    writer.writeCollectionOfObjectValues<SubscriptionSummaryTopLabelResponse>("top_labels", subscriptionSummaryResponse.topLabels, serializeSubscriptionSummaryTopLabelResponse);
     writer.writeCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>("top_providers", subscriptionSummaryResponse.topProviders, serializeSubscriptionSummaryTopProviderResponse);
     writer.writeObjectValue<AmountModel>("total_last_month", subscriptionSummaryResponse.totalLastMonth, serializeAmountModel);
     writer.writeObjectValue<AmountModel>("total_last_year", subscriptionSummaryResponse.totalLastYear, serializeAmountModel);
@@ -2233,6 +2303,19 @@ export function serializeSubscriptionSummaryResponse(writer: SerializationWriter
     writer.writeObjectValue<AmountModel>("total_yearly", subscriptionSummaryResponse.totalYearly, serializeAmountModel);
     writer.writeCollectionOfObjectValues<SubscriptionSummaryUpcomingRenewalResponse>("upcoming_renewals", subscriptionSummaryResponse.upcomingRenewals, serializeSubscriptionSummaryUpcomingRenewalResponse);
     writer.writeAdditionalData(subscriptionSummaryResponse.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param SubscriptionSummaryTopLabelResponse The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeSubscriptionSummaryTopLabelResponse(writer: SerializationWriter, subscriptionSummaryTopLabelResponse: Partial<SubscriptionSummaryTopLabelResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!subscriptionSummaryTopLabelResponse || isSerializingDerivedType) { return; }
+    writer.writeStringValue("label_id", subscriptionSummaryTopLabelResponse.labelId);
+    writer.writeObjectValue<AmountModel>("total", subscriptionSummaryTopLabelResponse.total, serializeAmountModel);
+    writer.writeAdditionalData(subscriptionSummaryTopLabelResponse.additionalData);
 }
 /**
  * Serializes information the current object
@@ -2469,6 +2552,10 @@ export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
      */
     isActive?: boolean | null;
     /**
+     * @Description List of labels associated with this subscription
+     */
+    labelRefs?: LabelRefModel[] | null;
+    /**
      * @Description Ownership information specifying whether this subscription belongs to a user or family
      */
     owner?: OwnerModel | null;
@@ -2537,6 +2624,10 @@ export interface SubscriptionSummaryResponse extends AdditionalDataHolder, Parsa
      */
     active?: number | null;
     /**
+     * The top_labels property
+     */
+    topLabels?: SubscriptionSummaryTopLabelResponse[] | null;
+    /**
      * The top_providers property
      */
     topProviders?: SubscriptionSummaryTopProviderResponse[] | null;
@@ -2560,6 +2651,16 @@ export interface SubscriptionSummaryResponse extends AdditionalDataHolder, Parsa
      * The upcoming_renewals property
      */
     upcomingRenewals?: SubscriptionSummaryUpcomingRenewalResponse[] | null;
+}
+export interface SubscriptionSummaryTopLabelResponse extends AdditionalDataHolder, Parsable {
+    /**
+     * The label_id property
+     */
+    labelId?: string | null;
+    /**
+     * The total property
+     */
+    total?: AmountModel | null;
 }
 export interface SubscriptionSummaryTopProviderResponse extends AdditionalDataHolder, Parsable {
     /**
@@ -2809,6 +2910,10 @@ export const FamilyMemberModel_typeObject = {
     Owner: "owner",
     Adult: "adult",
     Kid: "kid",
+} as const;
+export const LabelRefModel_sourceObject = {
+    Subscription: "subscription",
+    Provider: "provider",
 } as const;
 /**
  * @Description Type of ownership (personal, family or system)

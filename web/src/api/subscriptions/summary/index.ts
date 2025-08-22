@@ -29,6 +29,10 @@ export interface SummaryRequestBuilder extends BaseRequestBuilder<SummaryRequest
  */
 export interface SummaryRequestBuilderGetQueryParameters {
     /**
+     * Number of top labels to return
+     */
+    topLabels?: number;
+    /**
      * Number of top providers to return
      */
     topProviders?: number;
@@ -48,11 +52,12 @@ export interface SummaryRequestBuilderGetQueryParameters {
 /**
  * Uri template for the request builder.
  */
-export const SummaryRequestBuilderUriTemplate = "{+baseurl}/subscriptions/summary?top_providers={top_providers}&total_monthly={total_monthly}&total_yearly={total_yearly}&upcoming_renewals={upcoming_renewals}";
+export const SummaryRequestBuilderUriTemplate = "{+baseurl}/subscriptions/summary?top_labels={top_labels}&top_providers={top_providers}&total_monthly={total_monthly}&total_yearly={total_yearly}&upcoming_renewals={upcoming_renewals}";
 /**
  * Mapper for query parameters from symbol name to serialization name represented as a constant.
  */
 const SummaryRequestBuilderGetQueryParametersMapper: Record<string, string> = {
+    "topLabels": "top_labels",
     "topProviders": "top_providers",
     "totalMonthly": "total_monthly",
     "totalYearly": "total_yearly",

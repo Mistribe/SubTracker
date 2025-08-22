@@ -1,12 +1,13 @@
 import {useQuery} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
-import type {SummaryRequestBuilderGetQueryParameters} from "@/api/summary";
-import type Summary from "@/models/summary.ts";
 import {type Amount, zeroAmount} from "@/models/amount.ts";
+import type {SummaryRequestBuilderGetQueryParameters} from "@/api/subscriptions/summary";
+import type Summary from "@/models/summary.ts";
 
 export interface UseSubscriptionSummaryQueryOptions {
     /** Number of top providers to return */
     topProviders?: number;
+    topLabels?: number;
     /** Whether to include monthly total costs */
     totalMonthly?: boolean;
     /** Whether to include yearly total costs */
@@ -27,6 +28,7 @@ export function useSubscriptionSummaryQuery(options: UseSubscriptionSummaryQuery
         totalMonthly = true,
         totalYearly = true,
         upcomingRenewals = 5,
+        topLabels = 5,
         enabled = true,
     } = options;
 
@@ -41,6 +43,7 @@ export function useSubscriptionSummaryQuery(options: UseSubscriptionSummaryQuery
             totalMonthly,
             totalYearly,
             upcomingRenewals,
+            topLabels,
         ],
         enabled: !!apiClient && enabled,
         staleTime: 5 * 60 * 1000, // 5 minutes
@@ -53,6 +56,7 @@ export function useSubscriptionSummaryQuery(options: UseSubscriptionSummaryQuery
                 totalMonthly,
                 totalYearly,
                 upcomingRenewals,
+                topLabels
             };
             const response = await apiClient.subscriptions.summary.get({queryParameters});
 
@@ -63,6 +67,7 @@ export function useSubscriptionSummaryQuery(options: UseSubscriptionSummaryQuery
                 totalLastMonth: response?.totalLastMonth as Amount ?? zeroAmount,
                 totalLastYear: response?.totalLastYear as Amount ?? zeroAmount,
                 topProviders: response?.topProviders ?? [],
+                topLabels: response?.topLabels ?? [],
                 upcomingRenewals: response?.upcomingRenewals ?? [],
             } as Summary;
         },
@@ -79,6 +84,7 @@ export function useSubscriptionSummaryQuery(options: UseSubscriptionSummaryQuery
         totalLastMonth: query.data?.totalLastMonth ?? zeroAmount,
         totalLastYear: query.data?.totalLastYear ?? zeroAmount,
         topProviders: query.data?.topProviders ?? [],
+        topLabels: query.data?.topLabels ?? [],
         upcomingRenewals: query.data?.upcomingRenewals ?? [],
 
         // states

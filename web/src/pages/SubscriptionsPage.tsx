@@ -53,6 +53,19 @@ const SubscriptionsPage = () => {
     }, [familiesData]);
 
 
+    const userNameMap = useMemo(() => {
+        const families = familiesData?.families ?? [];
+        const hasMultipleFamilies = families.length > 1;
+        const map = new Map<string, string>();
+        for (const f of families) {
+            for (const m of f.members) {
+                const display = hasMultipleFamilies ? `${m.name} - ${f.name}` : m.name;
+                map.set(m.id, display);
+            }
+        }
+        return map;
+    }, [familiesData]);
+
     const handleClearFilters = () => {
         setFromDate(undefined);
         setToDate(undefined);
@@ -196,6 +209,7 @@ const SubscriptionsPage = () => {
                             onEdit={(s) => navigate(`/subscriptions/edit/${s.id}`)}
                             onDelete={handleDeleteClick}
                             isFetchingNextPage={isFetchingNextPage}
+                            userNameMap={userNameMap}
                         />
                     ) : searchText !== "" ? (
                         <div className="text-center mt-8">
