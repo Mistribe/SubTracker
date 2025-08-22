@@ -15,11 +15,11 @@ class SummaryRequestBuilder extends BaseRequestBuilder<SummaryRequestBuilder> {
     /// Instantiates a new [SummaryRequestBuilder] and sets the default values.
     ///  [pathParameters] Path parameters for the request
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    SummaryRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/subscriptions/summary?top_providers={top_providers}&total_monthly={total_monthly}&total_yearly={total_yearly}&upcoming_renewals={upcoming_renewals}", pathParameters) ;
+    SummaryRequestBuilder(Map<String, dynamic> pathParameters, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/subscriptions/summary?top_labels={top_labels}&top_providers={top_providers}&total_monthly={total_monthly}&total_yearly={total_yearly}&upcoming_renewals={upcoming_renewals}", pathParameters) ;
     /// Instantiates a new [SummaryRequestBuilder] and sets the default values.
     ///  [rawUrl] The raw URL to use for the request builder.
     ///  [requestAdapter] The request adapter to use to execute the requests.
-    SummaryRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/subscriptions/summary?top_providers={top_providers}&total_monthly={total_monthly}&total_yearly={total_yearly}&upcoming_renewals={upcoming_renewals}", {RequestInformation.rawUrlKey : rawUrl}) ;
+    SummaryRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/subscriptions/summary?top_labels={top_labels}&top_providers={top_providers}&total_monthly={total_monthly}&total_yearly={total_yearly}&upcoming_renewals={upcoming_renewals}", {RequestInformation.rawUrlKey : rawUrl}) ;
     /// Returns summary information about subscriptions including total costs and upcoming renewals
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
     Future<SubscriptionSummaryResponse?> getAsync([void Function(RequestConfiguration<SummaryRequestBuilderGetQueryParameters>)? requestConfiguration]) async {

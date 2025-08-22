@@ -4,6 +4,9 @@ import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 /// auto generated
 /// Returns summary information about subscriptions including total costs and upcoming renewals
 class SummaryRequestBuilderGetQueryParameters implements AbstractQueryParameters {
+    ///  Number of top labels to return
+    /// @QueryParameter('top_labels')
+    int? topLabels;
     ///  Number of top providers to return
     /// @QueryParameter('top_providers')
     int? topProviders;
@@ -20,6 +23,7 @@ class SummaryRequestBuilderGetQueryParameters implements AbstractQueryParameters
     @override
     Map<String, dynamic> toMap() {
         return {
+            'top_labels' : topLabels,
             'top_providers' : topProviders,
             'total_monthly' : totalMonthly,
             'total_yearly' : totalYearly,

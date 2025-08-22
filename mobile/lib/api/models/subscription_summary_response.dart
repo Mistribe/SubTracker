@@ -1,6 +1,7 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import './amount_model.dart';
+import './subscription_summary_top_label_response.dart';
 import './subscription_summary_top_provider_response.dart';
 import './subscription_summary_upcoming_renewal_response.dart';
 
@@ -12,6 +13,8 @@ class SubscriptionSummaryResponse implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
+    ///  The top_labels property
+    Iterable<SubscriptionSummaryTopLabelResponse>? topLabels;
     ///  The top_providers property
     Iterable<SubscriptionSummaryTopProviderResponse>? topProviders;
     ///  The total_last_month property
@@ -37,6 +40,7 @@ class SubscriptionSummaryResponse implements AdditionalDataHolder, Parsable {
     Map<String, void Function(ParseNode)> getFieldDeserializers() {
         var deserializerMap = <String, void Function(ParseNode)>{};
         deserializerMap['active'] = (node) => active = node.getIntValue();
+        deserializerMap['top_labels'] = (node) => topLabels = node.getCollectionOfObjectValues<SubscriptionSummaryTopLabelResponse>(SubscriptionSummaryTopLabelResponse.createFromDiscriminatorValue);
         deserializerMap['top_providers'] = (node) => topProviders = node.getCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>(SubscriptionSummaryTopProviderResponse.createFromDiscriminatorValue);
         deserializerMap['total_last_month'] = (node) => totalLastMonth = node.getObjectValue<AmountModel>(AmountModel.createFromDiscriminatorValue);
         deserializerMap['total_last_year'] = (node) => totalLastYear = node.getObjectValue<AmountModel>(AmountModel.createFromDiscriminatorValue);
@@ -50,6 +54,7 @@ class SubscriptionSummaryResponse implements AdditionalDataHolder, Parsable {
     @override
     void serialize(SerializationWriter writer) {
         writer.writeIntValue('active', active);
+        writer.writeCollectionOfObjectValues<SubscriptionSummaryTopLabelResponse>('top_labels', topLabels);
         writer.writeCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>('top_providers', topProviders);
         writer.writeObjectValue<AmountModel>('total_last_month', totalLastMonth);
         writer.writeObjectValue<AmountModel>('total_last_year', totalLastYear);

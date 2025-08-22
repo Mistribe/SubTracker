@@ -1,6 +1,7 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import './amount_model.dart';
+import './label_ref_model.dart';
 import './owner_model.dart';
 import './subscription_free_trial_model.dart';
 import './subscription_model_recurrency.dart';
@@ -30,6 +31,8 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
     String? id;
     ///  @Description Indicates whether the subscription is currently active or not
     bool? isActive;
+    ///  @Description List of labels associated with this subscription
+    Iterable<LabelRefModel>? labelRefs;
     ///  @Description Ownership information specifying whether this subscription belongs to a user or family
     OwnerModel? owner;
     ///  @Description Information about who pays for this subscription within the family
@@ -69,6 +72,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
         deserializerMap['friendly_name'] = (node) => friendlyName = node.getStringValue();
         deserializerMap['id'] = (node) => id = node.getStringValue();
         deserializerMap['is_active'] = (node) => isActive = node.getBoolValue();
+        deserializerMap['label_refs'] = (node) => labelRefs = node.getCollectionOfObjectValues<LabelRefModel>(LabelRefModel.createFromDiscriminatorValue);
         deserializerMap['owner'] = (node) => owner = node.getObjectValue<OwnerModel>(OwnerModel.createFromDiscriminatorValue);
         deserializerMap['payer'] = (node) => payer = node.getObjectValue<SubscriptionPayerModel>(SubscriptionPayerModel.createFromDiscriminatorValue);
         deserializerMap['plan_id'] = (node) => planId = node.getStringValue();
@@ -93,6 +97,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
         writer.writeStringValue('friendly_name', friendlyName);
         writer.writeStringValue('id', id);
         writer.writeBoolValue('is_active', value:isActive);
+        writer.writeCollectionOfObjectValues<LabelRefModel>('label_refs', labelRefs);
         writer.writeObjectValue<OwnerModel>('owner', owner);
         writer.writeObjectValue<SubscriptionPayerModel>('payer', payer);
         writer.writeStringValue('plan_id', planId);
