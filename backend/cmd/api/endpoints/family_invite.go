@@ -15,6 +15,10 @@ type FamilyInviteEndpoint struct {
 	handler core.CommandHandler[command.InviteMemberCommand, command.InviteMemberResponse]
 }
 
+func NewFamilyInviteEndpoint(handler core.CommandHandler[command.InviteMemberCommand, command.InviteMemberResponse]) *FamilyInviteEndpoint {
+	return &FamilyInviteEndpoint{handler: handler}
+}
+
 // FamilyInviteRequest represents the request body for inviting a family member
 type FamilyInviteRequest struct {
 	// Email of the invited member

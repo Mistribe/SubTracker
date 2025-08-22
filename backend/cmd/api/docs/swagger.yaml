@@ -126,6 +126,20 @@ components:
       - family_id
       - type
       type: object
+    endpoints.FamilyAcceptInvitationRequest:
+      properties:
+        family_member_id:
+          description: ID of the family member accepting the invitation
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        invitation_code:
+          description: Code received in the invitation
+          example: "123456"
+          type: string
+      required:
+      - family_member_id
+      - invitation_code
+      type: object
     endpoints.FamilyInviteRequest:
       properties:
         email:
@@ -1462,6 +1476,56 @@ paths:
       summary: Update a family
       tags:
       - family
+  /families/{familyId}/accept:
+    post:
+      description: Accepts an invitation to join a family using the provided invitation
+        code
+      parameters:
+      - description: Family ID (UUID format)
+        in: path
+        name: familyId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.FamilyAcceptInvitationRequest'
+        description: Invitation acceptance details
+        required: true
+      responses:
+        "204":
+          content:
+            application/json: {}
+          description: Successfully accepted invitation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Bad Request - Invalid input data
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Unauthorized - Invalid or missing authentication
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Family not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Accept a family invitation
+      tags:
+      - family
   /families/{familyId}/invite:
     post:
       description: Creates an invitation for a new member to join the family
@@ -1563,6 +1627,59 @@ paths:
                 $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
       summary: Add a new family member
+      tags:
+      - family
+  /families/{familyId}/members/{familyMemberId}/revoke:
+    post:
+      description: Revokes a member from the family
+      parameters:
+      - description: Family ID (UUID format)
+        in: path
+        name: familyId
+        required: true
+        schema:
+          type: string
+      - description: Family Member ID (UUID format)
+        in: path
+        name: familyMemberId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "204":
+          content:
+            application/json: {}
+          description: Successfully revoked member
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Bad Request - Invalid input data
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Unauthorized - Invalid or missing authentication
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Family or member not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Revoke family member
       tags:
       - family
   /families/{familyId}/members/{id}:

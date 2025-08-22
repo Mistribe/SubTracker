@@ -14,4 +14,5 @@ var (
 	ErrOnlyOwnerCanEditFamily = errors.New("only the owner can edit the family")
 	ErrDuplicateMember        = errors.New("member with the same ID or email already exists")
 	ErrCannotInviteUser       = errors.New("cannot invite user to family")
+	ErrBadInvitationCode      = errors.New("bad invitation code")
 )

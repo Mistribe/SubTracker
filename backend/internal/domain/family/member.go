@@ -66,6 +66,7 @@ type Member interface {
 	Equal(member Member) bool
 	GetValidationErrors() validationx.Errors
 	SetInvitationCode(code string) bool
+	InvitationCode() *string
 }
 
 type member struct {
@@ -100,6 +101,10 @@ func (m *member) SetInvitationCode(code string) bool {
 	m.invitationCode = &code
 	m.SetAsDirty()
 	return true
+}
+
+func (m *member) InvitationCode() *string {
+	return m.invitationCode
 }
 
 func (m *member) Name() string {
