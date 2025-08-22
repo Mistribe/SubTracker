@@ -1131,6 +1131,7 @@ export function deserializeIntoSubscriptionSummaryResponse(subscriptionSummaryRe
 // @ts-ignore
 export function deserializeIntoSubscriptionSummaryTopProviderResponse(subscriptionSummaryTopProviderResponse: Partial<SubscriptionSummaryTopProviderResponse> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
+        "duration": n => { subscriptionSummaryTopProviderResponse.duration = n.getStringValue(); },
         "provider_id": n => { subscriptionSummaryTopProviderResponse.providerId = n.getStringValue(); },
         "total": n => { subscriptionSummaryTopProviderResponse.total = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
     }
@@ -2279,6 +2280,7 @@ export function serializeSubscriptionSummaryResponse(writer: SerializationWriter
 // @ts-ignore
 export function serializeSubscriptionSummaryTopProviderResponse(writer: SerializationWriter, subscriptionSummaryTopProviderResponse: Partial<SubscriptionSummaryTopProviderResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
     if (!subscriptionSummaryTopProviderResponse || isSerializingDerivedType) { return; }
+    writer.writeStringValue("duration", subscriptionSummaryTopProviderResponse.duration);
     writer.writeStringValue("provider_id", subscriptionSummaryTopProviderResponse.providerId);
     writer.writeObjectValue<AmountModel>("total", subscriptionSummaryTopProviderResponse.total, serializeAmountModel);
     writer.writeAdditionalData(subscriptionSummaryTopProviderResponse.additionalData);
@@ -2596,6 +2598,10 @@ export interface SubscriptionSummaryResponse extends AdditionalDataHolder, Parsa
     upcomingRenewals?: SubscriptionSummaryUpcomingRenewalResponse[] | null;
 }
 export interface SubscriptionSummaryTopProviderResponse extends AdditionalDataHolder, Parsable {
+    /**
+     * The duration property
+     */
+    duration?: string | null;
     /**
      * The provider_id property
      */

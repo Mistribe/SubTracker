@@ -43,7 +43,7 @@ const TopProviders = ({providers, providerMap, isLoading}: TopProvidersProps) =>
                                 </div>
                                 <p className="text-sm text-muted-foreground mt-1 flex items-center">
                                     <DollarSign className="h-3 w-3 mr-1 text-purple-500"/>
-                                    Annual cost
+                                    {provider.duration}
                                 </p>
                             </div>
                         ))}
