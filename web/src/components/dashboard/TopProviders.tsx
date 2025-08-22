@@ -3,6 +3,7 @@ import {Building2, DollarSign} from "lucide-react";
 import Money from "@/components/ui/money.tsx";
 import type TopProvider from "@/models/topProvider.ts";
 import type Provider from "@/models/provider.ts";
+import {formatProviderDuration} from "@/components/dashboard/utils";
 
 interface TopProvidersProps {
     providers: TopProvider[];
@@ -43,7 +44,7 @@ const TopProviders = ({providers, providerMap, isLoading}: TopProvidersProps) =>
                                 </div>
                                 <p className="text-sm text-muted-foreground mt-1 flex items-center">
                                     <DollarSign className="h-3 w-3 mr-1 text-purple-500"/>
-                                    {provider.duration}
+                                    {formatProviderDuration(provider.duration)}
                                 </p>
                             </div>
                         ))}

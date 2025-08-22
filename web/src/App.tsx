@@ -5,7 +5,7 @@ import {AppLayout} from "@/layouts/AppLayout"
 import HomePage from "@/pages/HomePage"
 import DashboardPage from "@/pages/DashboardPage"
 import ProfilePage from "@/pages/ProfilePage"
-import FamiliesPage from "@/pages/FamiliesPage"
+import FamilyPage from "@/pages/FamilyPage"
 import LabelsPage from "@/pages/LabelsPage"
 import ProvidersPage from "@/pages/ProvidersPage"
 import SubscriptionsPage from "@/pages/SubscriptionsPage"
@@ -37,11 +37,11 @@ function App() {
                                 }
                             />
                             <Route
-                                path="/families"
+                                path="/family"
                                 element={
                                     <ProtectedRoute>
                                         <AppLayout>
-                                            <FamiliesPage/>
+                                            <FamilyPage/>
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }

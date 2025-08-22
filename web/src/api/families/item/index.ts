@@ -25,16 +25,6 @@ export interface WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFam
      */
      delete(requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<void>;
     /**
-     * Retrieve a family and its members by family ID
-     * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
-     * @returns {Promise<FamilyModel>}
-     * @throws {HttpErrorResponse} error when the service returns a 400 status code
-     * @throws {HttpErrorResponse} error when the service returns a 401 status code
-     * @throws {HttpErrorResponse} error when the service returns a 404 status code
-     * @throws {HttpErrorResponse} error when the service returns a 500 status code
-     */
-     get(requestConfiguration?: RequestConfiguration<object> | undefined) : Promise<FamilyModel | undefined>;
-    /**
      * Update family information such as name and other details
      * @param body The request body
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
@@ -51,12 +41,6 @@ export interface WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFam
      * @returns {RequestInformation}
      */
      toDeleteRequestInformation(requestConfiguration?: RequestConfiguration<object> | undefined) : RequestInformation;
-    /**
-     * Retrieve a family and its members by family ID
-     * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
-     * @returns {RequestInformation}
-     */
-     toGetRequestInformation(requestConfiguration?: RequestConfiguration<object> | undefined) : RequestInformation;
     /**
      * Update family information such as name and other details
      * @param body The request body
@@ -91,18 +75,6 @@ export const WithFamilyItemRequestBuilderRequestsMetadata: RequestsMetadata = {
             500: createHttpErrorResponseFromDiscriminatorValue as ParsableFactory<Parsable>,
         },
         adapterMethodName: "sendNoResponseContent",
-    },
-    get: {
-        uriTemplate: WithFamilyItemRequestBuilderUriTemplate,
-        responseBodyContentType: "application/json",
-        errorMappings: {
-            400: createHttpErrorResponseFromDiscriminatorValue as ParsableFactory<Parsable>,
-            401: createHttpErrorResponseFromDiscriminatorValue as ParsableFactory<Parsable>,
-            404: createHttpErrorResponseFromDiscriminatorValue as ParsableFactory<Parsable>,
-            500: createHttpErrorResponseFromDiscriminatorValue as ParsableFactory<Parsable>,
-        },
-        adapterMethodName: "send",
-        responseBodyFactory:  createFamilyModelFromDiscriminatorValue,
     },
     put: {
         uriTemplate: WithFamilyItemRequestBuilderUriTemplate,

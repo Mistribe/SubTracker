@@ -233,15 +233,6 @@ export function createOwnerModelFromDiscriminatorValue(parseNode: ParseNode | un
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
- * @returns {PaginatedResponseModelEndpoints_familyModel}
- */
-// @ts-ignore
-export function createPaginatedResponseModelEndpoints_familyModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
-    return deserializeIntoPaginatedResponseModelEndpoints_familyModel;
-}
-/**
- * Creates a new instance of the appropriate class based on discriminator value
- * @param parseNode The parse node to use to read the discriminator value and create the object
  * @returns {PaginatedResponseModelEndpoints_labelModel}
  */
 // @ts-ignore
@@ -443,6 +434,10 @@ export interface CreateSubscriptionModel extends AdditionalDataHolder, Parsable 
      * The id property
      */
     id?: string | null;
+    /**
+     * The labels property
+     */
+    labels?: string[] | null;
     /**
      * The owner property
      */
@@ -751,6 +746,7 @@ export function deserializeIntoCreateSubscriptionModel(createSubscriptionModel: 
         "free_trial": n => { createSubscriptionModel.freeTrial = n.getObjectValue<SubscriptionFreeTrialModel>(createSubscriptionFreeTrialModelFromDiscriminatorValue); },
         "friendly_name": n => { createSubscriptionModel.friendlyName = n.getStringValue(); },
         "id": n => { createSubscriptionModel.id = n.getStringValue(); },
+        "labels": n => { createSubscriptionModel.labels = n.getCollectionOfPrimitiveValues<string>(); },
         "owner": n => { createSubscriptionModel.owner = n.getObjectValue<EditableOwnerModel>(createEditableOwnerModelFromDiscriminatorValue); },
         "payer": n => { createSubscriptionModel.payer = n.getObjectValue<EditableSubscriptionPayerModel>(createEditableSubscriptionPayerModelFromDiscriminatorValue); },
         "plan_id": n => { createSubscriptionModel.planId = n.getStringValue(); },
@@ -891,19 +887,6 @@ export function deserializeIntoOwnerModel(ownerModel: Partial<OwnerModel> | unde
 }
 /**
  * The deserialization information for the current model
- * @param PaginatedResponseModelEndpoints_familyModel The instance to deserialize into.
- * @returns {Record<string, (node: ParseNode) => void>}
- */
-// @ts-ignore
-export function deserializeIntoPaginatedResponseModelEndpoints_familyModel(paginatedResponseModelEndpoints_familyModel: Partial<PaginatedResponseModelEndpoints_familyModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
-    return {
-        "data": n => { paginatedResponseModelEndpoints_familyModel.data = n.getCollectionOfObjectValues<FamilyModel>(createFamilyModelFromDiscriminatorValue); },
-        "length": n => { paginatedResponseModelEndpoints_familyModel.length = n.getNumberValue(); },
-        "total": n => { paginatedResponseModelEndpoints_familyModel.total = n.getNumberValue(); },
-    }
-}
-/**
- * The deserialization information for the current model
  * @param PaginatedResponseModelEndpoints_labelModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
@@ -983,6 +966,7 @@ export function deserializeIntoPatchSubscriptionModel(patchSubscriptionModel: Pa
         "free_trial": n => { patchSubscriptionModel.freeTrial = n.getObjectValue<SubscriptionFreeTrialModel>(createSubscriptionFreeTrialModelFromDiscriminatorValue); },
         "friendly_name": n => { patchSubscriptionModel.friendlyName = n.getStringValue(); },
         "id": n => { patchSubscriptionModel.id = n.getStringValue(); },
+        "labels": n => { patchSubscriptionModel.labels = n.getCollectionOfPrimitiveValues<string>(); },
         "owner": n => { patchSubscriptionModel.owner = n.getObjectValue<EditableOwnerModel>(createEditableOwnerModelFromDiscriminatorValue); },
         "payer": n => { patchSubscriptionModel.payer = n.getObjectValue<EditableSubscriptionPayerModel>(createEditableSubscriptionPayerModelFromDiscriminatorValue); },
         "plan_id": n => { patchSubscriptionModel.planId = n.getStringValue(); },
@@ -1269,6 +1253,7 @@ export function deserializeIntoUpdateSubscriptionModel(updateSubscriptionModel: 
         "end_date": n => { updateSubscriptionModel.endDate = n.getDateValue(); },
         "free_trial": n => { updateSubscriptionModel.freeTrial = n.getObjectValue<SubscriptionFreeTrialModel>(createSubscriptionFreeTrialModelFromDiscriminatorValue); },
         "friendly_name": n => { updateSubscriptionModel.friendlyName = n.getStringValue(); },
+        "labels": n => { updateSubscriptionModel.labels = n.getCollectionOfPrimitiveValues<string>(); },
         "owner": n => { updateSubscriptionModel.owner = n.getObjectValue<EditableOwnerModel>(createEditableOwnerModelFromDiscriminatorValue); },
         "payer": n => { updateSubscriptionModel.payer = n.getObjectValue<EditableSubscriptionPayerModel>(createEditableSubscriptionPayerModelFromDiscriminatorValue); },
         "plan_id": n => { updateSubscriptionModel.planId = n.getStringValue(); },
@@ -1460,20 +1445,6 @@ export interface OwnerModel extends AdditionalDataHolder, Parsable {
     userId?: string | null;
 }
 export type OwnerModel_type = (typeof OwnerModel_typeObject)[keyof typeof OwnerModel_typeObject];
-export interface PaginatedResponseModelEndpoints_familyModel extends AdditionalDataHolder, Parsable {
-    /**
-     * Data contains the list of items for the current page
-     */
-    data?: FamilyModel[] | null;
-    /**
-     * Length represents the number of items in the current page
-     */
-    length?: number | null;
-    /**
-     * Total represents the total number of items available
-     */
-    total?: number | null;
-}
 export interface PaginatedResponseModelEndpoints_labelModel extends AdditionalDataHolder, Parsable {
     /**
      * Data contains the list of items for the current page
@@ -1584,6 +1555,10 @@ export interface PatchSubscriptionModel extends AdditionalDataHolder, Parsable {
      * The id property
      */
     id?: string | null;
+    /**
+     * The labels property
+     */
+    labels?: string[] | null;
     /**
      * The owner property
      */
@@ -1876,6 +1851,7 @@ export function serializeCreateSubscriptionModel(writer: SerializationWriter, cr
     writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", createSubscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
     writer.writeStringValue("friendly_name", createSubscriptionModel.friendlyName);
     writer.writeStringValue("id", createSubscriptionModel.id);
+    writer.writeCollectionOfPrimitiveValues<string>("labels", createSubscriptionModel.labels);
     writer.writeObjectValue<EditableOwnerModel>("owner", createSubscriptionModel.owner, serializeEditableOwnerModel);
     writer.writeObjectValue<EditableSubscriptionPayerModel>("payer", createSubscriptionModel.payer, serializeEditableSubscriptionPayerModel);
     writer.writeStringValue("plan_id", createSubscriptionModel.planId);
@@ -2026,20 +2002,6 @@ export function serializeOwnerModel(writer: SerializationWriter, ownerModel: Par
 /**
  * Serializes information the current object
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param PaginatedResponseModelEndpoints_familyModel The instance to serialize from.
- * @param writer Serialization writer to use to serialize this model
- */
-// @ts-ignore
-export function serializePaginatedResponseModelEndpoints_familyModel(writer: SerializationWriter, paginatedResponseModelEndpoints_familyModel: Partial<PaginatedResponseModelEndpoints_familyModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!paginatedResponseModelEndpoints_familyModel || isSerializingDerivedType) { return; }
-    writer.writeCollectionOfObjectValues<FamilyModel>("data", paginatedResponseModelEndpoints_familyModel.data, serializeFamilyModel);
-    writer.writeNumberValue("length", paginatedResponseModelEndpoints_familyModel.length);
-    writer.writeNumberValue("total", paginatedResponseModelEndpoints_familyModel.total);
-    writer.writeAdditionalData(paginatedResponseModelEndpoints_familyModel.additionalData);
-}
-/**
- * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param PaginatedResponseModelEndpoints_labelModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
@@ -2124,6 +2086,7 @@ export function serializePatchSubscriptionModel(writer: SerializationWriter, pat
     writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", patchSubscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
     writer.writeStringValue("friendly_name", patchSubscriptionModel.friendlyName);
     writer.writeStringValue("id", patchSubscriptionModel.id);
+    writer.writeCollectionOfPrimitiveValues<string>("labels", patchSubscriptionModel.labels);
     writer.writeObjectValue<EditableOwnerModel>("owner", patchSubscriptionModel.owner, serializeEditableOwnerModel);
     writer.writeObjectValue<EditableSubscriptionPayerModel>("payer", patchSubscriptionModel.payer, serializeEditableSubscriptionPayerModel);
     writer.writeStringValue("plan_id", patchSubscriptionModel.planId);
@@ -2428,6 +2391,7 @@ export function serializeUpdateSubscriptionModel(writer: SerializationWriter, up
     writer.writeDateValue("end_date", updateSubscriptionModel.endDate);
     writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", updateSubscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
     writer.writeStringValue("friendly_name", updateSubscriptionModel.friendlyName);
+    writer.writeCollectionOfPrimitiveValues<string>("labels", updateSubscriptionModel.labels);
     writer.writeObjectValue<EditableOwnerModel>("owner", updateSubscriptionModel.owner, serializeEditableOwnerModel);
     writer.writeObjectValue<EditableSubscriptionPayerModel>("payer", updateSubscriptionModel.payer, serializeEditableSubscriptionPayerModel);
     writer.writeStringValue("plan_id", updateSubscriptionModel.planId);
@@ -2771,6 +2735,10 @@ export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable 
      * The friendly_name property
      */
     friendlyName?: string | null;
+    /**
+     * The labels property
+     */
+    labels?: string[] | null;
     /**
      * The owner property
      */

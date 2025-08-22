@@ -9,35 +9,27 @@ interface FamiliesQueryOptions {
 }
 
 export const useFamiliesQuery = (options: FamiliesQueryOptions = {}) => {
-    const {
-        offset = 0,
-        limit = 10
-    } = options;
-    
+    // Keep options to maintain backward compatibility with callers, but they are unused now.
+    void options; // mark as used to satisfy lint rules
     const {apiClient} = useApiClient();
 
     return useQuery({
-        queryKey: ['families', offset, limit],
+        queryKey: ['families'],
         queryFn: async () => {
             if (!apiClient) {
                 throw new Error('API client not initialized');
             }
-            
-            const result = await apiClient.families.get({
-                queryParameters: {
-                    offset,
-                    limit
-                }
-            });
-            
-            if (result && result.data) {
+
+            // Fetch the current user's single family; backend now supports only one family
+            const result: FamilyModel | undefined = await apiClient.families.me.get()
+
+            if (result) {
+                const family = Family.fromModel(result);
                 return {
-                    families: result.data.map((model: FamilyModel) => {
-                        return Family.fromModel(model);
-                    }),
-                    length: result.data.length,
-                    total: result.total ?? 0
-                }
+                    families: [family],
+                    length: 1,
+                    total: 1
+                };
             }
             return {families: [], length: 0, total: 0};
         },

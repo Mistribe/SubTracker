@@ -94,7 +94,7 @@ export function AppSidebar() {
         {path: "/dashboard", icon: <HomeIcon className="h-4 w-4"/>, label: "Dashboard"},
         {path: "/subscriptions", icon: <CreditCardIcon className="h-4 w-4"/>, label: "Subscriptions"},
         {path: "/providers", icon: <PackageIcon className="h-4 w-4"/>, label: "Providers"},
-        {path: "/families", icon: <UsersIcon className="h-4 w-4"/>, label: "Families"},
+        {path: "/family", icon: <UsersIcon className="h-4 w-4"/>, label: "Family"},
         {path: "/labels", icon: <TagIcon className="h-4 w-4"/>, label: "Labels"},
     ];
 
