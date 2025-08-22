@@ -209,5 +209,9 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 		return response.TopProviders[i].Total.IsGreaterThan(response.TopProviders[j].Total)
 	})
 	response.TopProviders = slicesx.Take(response.TopProviders, int(query.TopProviders))
+	sort.Slice(response.TopLabels, func(i, j int) bool {
+		return response.TopLabels[i].Total.IsGreaterThan(response.TopLabels[j].Total)
+	})
+	response.TopLabels = slicesx.Take(response.TopLabels, int(query.TopLabels))
 	return result.Success(response)
 }
