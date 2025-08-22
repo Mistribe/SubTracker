@@ -11,8 +11,7 @@ import (
 type Repository interface {
 	entity.Repository[Family]
 
-	GetAll(ctx context.Context, parameters entity.QueryParameters) ([]Family, int64, error)
-
+	GetUserFamily(ctx context.Context, userId string) (Family, error)
 	// MemberExists checks if all provided member UUIDs exist within a specified family UUID context. Returns true if they exist.
 	MemberExists(ctx context.Context, familyId uuid.UUID, members ...uuid.UUID) (bool, error)
 	IsUserMemberOfFamily(ctx context.Context, familyId uuid.UUID, userId string) (bool, error)

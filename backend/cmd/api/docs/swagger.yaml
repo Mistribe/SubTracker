@@ -196,25 +196,6 @@ components:
       - length
       - total
       type: object
-    endpoints.PaginatedResponseModel-endpoints_familyModel:
-      properties:
-        data:
-          description: Data contains the list of items for the current page
-          items:
-            $ref: '#/components/schemas/endpoints.familyModel'
-          type: array
-          uniqueItems: false
-        length:
-          description: Length represents the number of items in the current page
-          type: integer
-        total:
-          description: Total represents the total number of items available
-          type: integer
-      required:
-      - data
-      - length
-      - total
-      type: object
     endpoints.PaginatedResponseModel-endpoints_labelModel:
       properties:
         data:
@@ -1228,47 +1209,6 @@ paths:
           description: currencies
       summary: Get Supported Currencies
   /families:
-    get:
-      description: Retrieve a paginated list of families for the authenticated user
-      parameters:
-      - description: 'Number of items per page (default: 10)'
-        in: query
-        name: limit
-        schema:
-          type: integer
-      - description: 'Page number (default: 1)'
-        in: query
-        name: offset
-        schema:
-          type: integer
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.PaginatedResponseModel-endpoints_familyModel'
-          description: Paginated list of families
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
-          description: Bad Request - Invalid query parameters
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
-          description: Unauthorized - Invalid user authentication
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
-          description: Internal Server Error
-      summary: Get all families
-      tags:
-      - family
     patch:
       description: Update or create a family with specified members. If family doesn't
         exist, it will be created.
@@ -1386,14 +1326,7 @@ paths:
       tags:
       - family
     get:
-      description: Retrieve a family and its members by family ID
-      parameters:
-      - description: Family ID (UUID format)
-        in: path
-        name: familyId
-        required: true
-        schema:
-          type: string
+      description: Retrieve the user's family
       responses:
         "200":
           content:
@@ -1425,7 +1358,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/endpoints.HttpErrorResponse'
           description: Internal Server Error
-      summary: Get family by ID
+      summary: Get user's family
       tags:
       - family
     put:

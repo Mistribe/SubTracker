@@ -26,6 +26,60 @@ func NewFamilyRepository(repository *DatabaseContext) family.Repository {
 	}
 }
 
+func (r FamilyRepository) GetUserFamily(ctx context.Context, userId string) (family.Family, error) {
+	userFamilies := SELECT(
+		Families.AllColumns,
+	).
+		FROM(
+			Families.
+				INNER_JOIN(FamilyMembers, FamilyMembers.FamilyID.EQ(Families.ID)),
+		).
+		WHERE(
+			FamilyMembers.UserID.EQ(String(userId)),
+		).
+		ORDER_BY(Families.ID).
+		LIMIT(1).
+		AsTable("uf")
+
+	rFamilyId := Families.ID.From(userFamilies)
+
+	stmt := SELECT(
+		userFamilies.AllColumns(),
+		FamilyMembers.AllColumns,
+	).
+		FROM(
+			userFamilies.
+				LEFT_JOIN(FamilyMembers, FamilyMembers.FamilyID.EQ(rFamilyId)),
+		)
+
+	var rows []struct {
+		Family        model.Families       `json:"families"`
+		FamilyMembers *model.FamilyMembers `json:"family_members"`
+	}
+
+	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return nil, nil
+	}
+
+	// Convert rows to FamilyWithMembers format
+	familyData := FamilyWithMembers{
+		Families:      rows[0].Family,
+		FamilyMembers: make([]model.FamilyMembers, 0),
+	}
+
+	for _, row := range rows {
+		if row.FamilyMembers != nil && row.FamilyMembers.ID != uuid.Nil {
+			familyData.FamilyMembers = append(familyData.FamilyMembers, *row.FamilyMembers)
+		}
+	}
+
+	return createFamilyWithMembersFromJet(familyData)
+
+}
+
 func (r FamilyRepository) GetById(ctx context.Context, id uuid.UUID) (family.Family, error) {
 	stmt := SELECT(Families.AllColumns, FamilyMembers.AllColumns).
 		FROM(Families.LEFT_JOIN(FamilyMembers, FamilyMembers.FamilyID.EQ(Families.ID))).
@@ -58,7 +112,8 @@ func (r FamilyRepository) GetById(ctx context.Context, id uuid.UUID) (family.Fam
 	return createFamilyWithMembersFromJet(familyData)
 }
 
-func (r FamilyRepository) GetAll(ctx context.Context, parameters entity.QueryParameters) ([]family.Family, int64,
+func (r FamilyRepository) GetAll(ctx context.Context, parameters entity.QueryParameters) (
+	[]family.Family, int64,
 	error) {
 	userId, ok := auth.GetUserIdFromContext(ctx)
 	if !ok {
@@ -283,7 +338,8 @@ func (r FamilyRepository) update(ctx context.Context, fam family.Family) error {
 }
 
 // saveTrackedSliceWithJet handles member operations using go-jet
-func (r FamilyRepository) saveTrackedSliceWithJet(ctx context.Context, members *slicesx.Tracked[family.Member],
+func (r FamilyRepository) saveTrackedSliceWithJet(
+	ctx context.Context, members *slicesx.Tracked[family.Member],
 	familyId uuid.UUID) error {
 	// Handle new members
 	newMembers := members.Added()

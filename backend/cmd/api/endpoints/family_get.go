@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/family/query"
@@ -13,39 +12,22 @@ import (
 )
 
 type FamilyGetEndpoint struct {
-	handler core.QueryHandler[query.FindOneQuery, family.Family]
+	handler core.QueryHandler[query.FindUserFamilyQuery, family.Family]
 }
 
 // Handle godoc
 //
-//	@Summary		Get family by ID
-//	@Description	Retrieve a family and its members by family ID
+//	@Summary		Get user's family
+//	@Description	Retrieve the user's family
 //	@Tags			family
 //	@Produce		json
-//	@Param			familyId	path		string				true	"Family ID (UUID format)"
-//	@Success		200			{object}	familyModel			"Successfully retrieved family"
-//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid ID format"
-//	@Failure		401			{object}	HttpErrorResponse	"Unauthorized - Invalid user authentication"
-//	@Failure		404			{object}	HttpErrorResponse	"Family not found"
-//	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
+//	@Success		200	{object}	familyModel			"Successfully retrieved family"
+//	@Failure		400	{object}	HttpErrorResponse	"Bad Request - Invalid ID format"
+//	@Failure		401	{object}	HttpErrorResponse	"Unauthorized - Invalid user authentication"
+//	@Failure		404	{object}	HttpErrorResponse	"Family not found"
+//	@Failure		500	{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/families/{familyId} [get]
 func (f FamilyGetEndpoint) Handle(c *gin.Context) {
-	idParam := c.Param("familyId")
-	if idParam == "" {
-		c.JSON(http.StatusBadRequest, HttpErrorResponse{
-			Message: "id parameter is required",
-		})
-		return
-	}
-
-	id, err := uuid.Parse(idParam)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, HttpErrorResponse{
-			Message: "invalid id format",
-		})
-		return
-	}
-
 	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, HttpErrorResponse{
@@ -54,8 +36,8 @@ func (f FamilyGetEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	q := query.FindOneQuery{
-		Id: id,
+	q := query.FindUserFamilyQuery{
+		UserId: userId,
 	}
 
 	r := f.handler.Handle(c, q)
@@ -68,7 +50,7 @@ func (f FamilyGetEndpoint) Handle(c *gin.Context) {
 
 func (f FamilyGetEndpoint) Pattern() []string {
 	return []string{
-		"/:familyId",
+		"",
 	}
 }
 
@@ -80,7 +62,7 @@ func (f FamilyGetEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewFamilyMemberGetEndpoint(handler core.QueryHandler[query.FindOneQuery, family.Family]) *FamilyGetEndpoint {
+func NewFamilyMemberGetEndpoint(handler core.QueryHandler[query.FindUserFamilyQuery, family.Family]) *FamilyGetEndpoint {
 	return &FamilyGetEndpoint{
 		handler: handler,
 	}

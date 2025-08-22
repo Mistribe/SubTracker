@@ -12,8 +12,7 @@ import (
 func Module() fx.Option {
 	return fx.Module("app_family",
 		fx.Provide(
-			core.AsQueryHandler[query.FindAllQuery, core.PaginatedResponse[family.Family]](query.NewFindAllQueryHandler),
-			core.AsQueryHandler[query.FindOneQuery, family.Family](query.NewFindOneQueryHandler),
+			core.AsQueryHandler[query.FindUserFamilyQuery, family.Family](query.NewFindOneQueryHandler),
 
 			core.AsCommandHandler[command.CreateFamilyCommand, family.Family](command.NewCreateFamilyCommandHandler),
 			core.AsCommandHandler[command.UpdateFamilyCommand, family.Family](command.NewUpdateFamilyCommandHandler),
