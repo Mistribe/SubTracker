@@ -3,12 +3,17 @@ import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import '../../models/family_model.dart';
 import '../../models/http_error_response.dart';
 import '../../models/update_family_model.dart';
+import './accept/accept_request_builder.dart';
 import './invite/invite_request_builder.dart';
 import './members/members_request_builder.dart';
 
 /// auto generated
 /// Builds and executes requests for operations under \families\{familyId}
 class WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFamilyItemRequestBuilder> {
+    ///  The accept property
+    AcceptRequestBuilder get accept {
+        return AcceptRequestBuilder(pathParameters, requestAdapter);
+    }
     ///  The invite property
     InviteRequestBuilder get invite {
         return InviteRequestBuilder(pathParameters, requestAdapter);

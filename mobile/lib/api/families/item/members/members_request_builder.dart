@@ -3,17 +3,17 @@ import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import '../../../models/create_family_member_model.dart';
 import '../../../models/family_model.dart';
 import '../../../models/http_error_response.dart';
-import './item/members_item_request_builder.dart';
+import './item/family_member_item_request_builder.dart';
 
 /// auto generated
 /// Builds and executes requests for operations under \families\{familyId}\members
 class MembersRequestBuilder extends BaseRequestBuilder<MembersRequestBuilder> {
     /// Gets an item from the ApiSdk.families.item.members.item collection
-    ///  [id] Family member ID (UUID format)
-    MembersItemRequestBuilder byId(String id) {
+    ///  [familyMemberId] Family member ID (UUID format)
+    FamilyMemberItemRequestBuilder byFamilyMemberId(String familyMemberId) {
         var urlTplParams = Map.of(pathParameters);
-        urlTplParams.putIfAbsent('id', () => id);
-        return MembersItemRequestBuilder(urlTplParams, requestAdapter);
+        urlTplParams.putIfAbsent('familyMember%2Did', () => familyMemberId);
+        return FamilyMemberItemRequestBuilder(urlTplParams, requestAdapter);
     }
     /// Clones the requestbuilder.
     @override
