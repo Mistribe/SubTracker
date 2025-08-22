@@ -34,11 +34,17 @@ export const formatRecurrency = (recurrency: SubscriptionRecurrency, customRecur
  * Converts a Go-style duration string (e.g., "46019h48m14.932715s")
  * into a human-friendly format.
  *
+ * Assumptions:
+ * - 1 year = 365 days
+ * - 1 month = 30 days
+ *
  * Rules:
- * - >= 1 day: "Xd Yh Zm"
- * - >= 1 hour: "Xh Ym Zs"
- * - >= 1 minute: "Xm Ys"
- * - < 1 minute: "Xs" (with up to 3 decimal places if needed)
+ * - >= 1 year: "Yy Mmo Dd"
+ * - >= 1 month: "Mmo Dd Hh"
+ * - >= 1 day: "Dd Hh Mm"
+ * - >= 1 hour: "Hh Mm Ss"
+ * - >= 1 minute: "Mm Ss"
+ * - < 1 minute: "Ss" (with up to 3 decimal places if needed)
  * - Returns "-" for invalid/empty input.
  */
 export const formatProviderDuration = (input: string | undefined | null): string => {
@@ -85,9 +91,18 @@ export const formatProviderDuration = (input: string | undefined | null): string
     const daySec = 86_400;
     const hourSec = 3_600;
     const minSec = 60;
+    const yearSec = 365 * daySec;
+    const monthSec = 30 * daySec;
 
-    const days = Math.floor(abs / daySec);
-    let remaining = abs % daySec;
+    // Break down into y/mo/d/h/m/s
+    const years = Math.floor(abs / yearSec);
+    let remaining = abs % yearSec;
+
+    const months = Math.floor(remaining / monthSec);
+    remaining = remaining % monthSec;
+
+    const days = Math.floor(remaining / daySec);
+    remaining = remaining % daySec;
 
     const hours = Math.floor(remaining / hourSec);
     remaining = remaining % hourSec;
@@ -96,8 +111,18 @@ export const formatProviderDuration = (input: string | undefined | null): string
     const secondsFloat = remaining % minSec;
 
     // Decide formatting based on magnitude
+    if (years >= 1) {
+        // e.g., "1y 2mo 5d"
+        return `${sign}${years}y ${months}mo ${days}d`;
+    }
+
+    if (months >= 1) {
+        // e.g., "3mo 12d 4h"
+        return `${sign}${months}mo ${days}d ${hours}h`;
+    }
+
     if (days >= 1) {
-        // e.g., "1917d 11h 48m"
+        // e.g., "5d 11h 48m"
         return `${sign}${days}d ${hours}h ${minutes}m`;
     }
 
@@ -116,7 +141,7 @@ export const formatProviderDuration = (input: string | undefined | null): string
     // Less than a minute: keep some precision
     if (secondsFloat === 0) return `${sign}0s`;
     const secondsRounded = secondsFloat < 10 ? Math.round(secondsFloat * 1000) / 1000
-                        : secondsFloat < 30 ? Math.round(secondsFloat * 10) / 10
-                        : Math.round(secondsFloat);
+        : secondsFloat < 30 ? Math.round(secondsFloat * 10) / 10
+            : Math.round(secondsFloat);
     return `${sign}${secondsRounded}s`;
 };
