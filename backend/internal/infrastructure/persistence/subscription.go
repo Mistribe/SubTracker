@@ -220,65 +220,23 @@ func (r SubscriptionRepository) GetAllForUser(
 	// Build matches CTE with is_active calculation
 	matches := SELECT(
 		Subscriptions.AllColumns,
+		providers.AllColumns(),
 		CAST(
 			NOW().GT_EQ(Subscriptions.StartDate).
 				AND(Subscriptions.EndDate.IS_NULL().OR(NOW().LT_EQ(Subscriptions.EndDate))),
 		).AS_BOOL().AS("is_active"),
-		providers.AllColumns(),
 	).FROM(
 		Subscriptions.LEFT_JOIN(providers, Providers.ID.From(providers).EQ(Subscriptions.ProviderID)),
 	).WHERE(searchFilter).AsTable("matches")
-
-	// Build sorting
-	var orderBy []OrderByClause
-	if parameters.SortBy != "" && parameters.SortOrder != "" {
-		switch parameters.SortBy {
-		case "provider":
-			if parameters.SortOrder == "ASC" {
-				orderBy = append(orderBy, Providers.Name.From(matches).ASC())
-			} else {
-				orderBy = append(orderBy, Providers.Name.From(matches).DESC())
-			}
-		case "name":
-			if parameters.SortOrder == "ASC" {
-				orderBy = append(orderBy, Subscriptions.FriendlyName.From(matches).ASC())
-			} else {
-				orderBy = append(orderBy, Subscriptions.FriendlyName.From(matches).DESC())
-			}
-		case "price":
-			if parameters.SortOrder == "ASC" {
-				orderBy = append(orderBy, Subscriptions.CustomPriceAmount.From(matches).ASC())
-			} else {
-				orderBy = append(orderBy, Subscriptions.CustomPriceAmount.From(matches).DESC())
-			}
-		case "recurrency":
-			if parameters.SortOrder == "ASC" {
-				orderBy = append(orderBy, Subscriptions.Recurrency.From(matches).ASC())
-			} else {
-				orderBy = append(orderBy, Subscriptions.Recurrency.From(matches).DESC())
-			}
-		case "dates":
-			if parameters.SortOrder == "ASC" {
-				orderBy = append(orderBy, Subscriptions.StartDate.From(matches).ASC())
-			} else {
-				orderBy = append(orderBy, Subscriptions.StartDate.From(matches).DESC())
-			}
-		case "status":
-			if parameters.SortOrder == "ASC" {
-				orderBy = append(orderBy, BoolColumn("is_active").From(matches).ASC())
-			} else {
-				orderBy = append(orderBy, BoolColumn("is_active").From(matches).DESC())
-			}
-		}
-	}
-	orderBy = append(orderBy, Subscriptions.ID.From(matches).ASC())
 
 	// Build counted CTE with pagination
 	counted := SELECT(
 		matches.AllColumns(),
 		COUNT(STAR).OVER().AS("total_count"),
 	).FROM(matches).
-		ORDER_BY(orderBy...).
+		ORDER_BY(LOWER(Subscriptions.FriendlyName.From(matches)).ASC(),
+			LOWER(Providers.Name.From(matches)).ASC(),
+			Subscriptions.ID.From(matches).ASC()).
 		LIMIT(parameters.Limit).
 		OFFSET(parameters.Offset).
 		AsTable("paged")
@@ -291,7 +249,7 @@ func (r SubscriptionRepository) GetAllForUser(
 		counted.
 			LEFT_JOIN(SubscriptionServiceUsers,
 				SubscriptionServiceUsers.SubscriptionID.EQ(Subscriptions.ID.From(counted))),
-	).ORDER_BY(Subscriptions.ID.From(counted))
+	)
 
 	var rows []SubscriptionRowWithCount
 
@@ -324,7 +282,8 @@ func (r SubscriptionRepository) GetAllIt(
 					Limit:  batchSize,
 					Offset: offset,
 				},
-				SearchText: searchText,
+				SearchText:   searchText,
+				WithInactive: true,
 			})
 			if err != nil || len(subs) == 0 {
 				return

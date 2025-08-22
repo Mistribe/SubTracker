@@ -2349,12 +2349,12 @@ paths:
           type: string
       - description: Sort by field
         in: query
-        name: sortBy
+        name: sort_by
         schema:
           type: string
       - description: Sort order (asc, desc)
         in: query
-        name: sortOrder
+        name: sort_order
         schema:
           type: string
       - description: Filter by recurrency types
@@ -2366,12 +2366,12 @@ paths:
           type: array
       - description: Filter by start date (RFC3339)
         in: query
-        name: fromDate
+        name: from_date
         schema:
           type: string
       - description: Filter by end date (RFC3339)
         in: query
-        name: toDate
+        name: to_date
         schema:
           type: string
       - description: Filter by user IDs

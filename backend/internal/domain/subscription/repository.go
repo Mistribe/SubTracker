@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/pkg/types"
 )
 
 type QueryParameters struct {
@@ -21,8 +20,6 @@ type QueryParameters struct {
 	Users        []uuid.UUID
 	Providers    []uuid.UUID
 	WithInactive bool
-	SortBy       SortableField
-	SortOrder    types.SortOrder
 }
 
 func NewQueryParameters(
@@ -33,23 +30,13 @@ func NewQueryParameters(
 	users []uuid.UUID,
 	providers []uuid.UUID,
 	withInactive bool,
-	sortBy SortableField,
-	sortOrder types.SortOrder,
 	limit, offset int64) QueryParameters {
-	if sortBy == "" {
-		sortBy = "friendly_name"
-	}
-	if sortOrder == "" {
-		sortOrder = types.SortOrderAsc
-	}
 	return QueryParameters{
 		QueryParameters: entity.QueryParameters{
 			Limit:  limit,
 			Offset: offset,
 		},
 		SearchText:   searchText,
-		SortBy:       sortBy,
-		SortOrder:    sortOrder,
 		WithInactive: withInactive,
 		Recurrencies: recurrencies,
 		FromDate:     fromDate,

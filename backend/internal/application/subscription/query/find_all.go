@@ -12,7 +12,6 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/subscription"
 	"github.com/oleexo/subtracker/internal/domain/user"
 	"github.com/oleexo/subtracker/pkg/langext/result"
-	"github.com/oleexo/subtracker/pkg/types"
 )
 
 type FindAllQuery struct {
@@ -23,8 +22,6 @@ type FindAllQuery struct {
 	Users        []uuid.UUID
 	Providers    []uuid.UUID
 	WithInactive bool
-	SortBy       subscription.SortableField
-	SortOrder    types.SortOrder
 	Limit        int64
 	Offset       int64
 }
@@ -36,15 +33,11 @@ func NewFindAllQuery(searchText string,
 	users []uuid.UUID,
 	providers []uuid.UUID,
 	withInactive bool,
-	sortBy subscription.SortableField,
-	sortOrder types.SortOrder,
 	size, page int64) FindAllQuery {
 	return FindAllQuery{
 		SearchText:   searchText,
 		Limit:        size,
 		Offset:       page,
-		SortBy:       sortBy,
-		SortOrder:    sortOrder,
 		WithInactive: withInactive,
 		Recurrencies: recurrencies,
 		FromDate:     fromDate,
@@ -85,8 +78,6 @@ func (h FindAllQueryHandler) Handle(
 		query.Users,
 		query.Providers,
 		query.WithInactive,
-		query.SortBy,
-		query.SortOrder,
 		query.Limit,
 		query.Offset)
 	subs, count, err := h.subscriptionRepository.GetAllForUser(ctx, userId, parameters)

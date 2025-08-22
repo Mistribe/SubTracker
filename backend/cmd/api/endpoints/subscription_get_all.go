@@ -10,7 +10,6 @@ import (
 	"github.com/oleexo/subtracker/internal/application/core"
 	"github.com/oleexo/subtracker/internal/application/subscription/query"
 	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/pkg/types"
 )
 
 type SubscriptionGetAllEndpoint struct {
@@ -23,11 +22,9 @@ func NewSubscriptionGetAllEndpoint(handler core.QueryHandler[query.FindAllQuery,
 
 type subscriptionGetAllQueryParams struct {
 	Search       string      `form:"search"`
-	SortBy       string      `form:"sort_by"`
-	SortOrder    string      `form:"sort_order"`
 	Recurrencies []string    `form:"recurrencies"`
-	FromDate     *time.Time  `form:"fromDate"`
-	ToDate       *time.Time  `form:"toDate"`
+	FromDate     *time.Time  `form:"from_date"`
+	ToDate       *time.Time  `form:"to_date"`
 	Users        []uuid.UUID `form:"users"`
 	WithInactive bool        `form:"with_inactive"`
 	Providers    []uuid.UUID `form:"providers"`
@@ -42,11 +39,9 @@ type subscriptionGetAllQueryParams struct {
 //	@Tags			subscription
 //	@Produce		json
 //	@Param			search			query		string										false	"Search text"
-//	@Param			sortBy			query		string										false	"Sort by field"
-//	@Param			sortOrder		query		string										false	"Sort order (asc, desc)"
 //	@Param			recurrencies	query		[]string									false	"Filter by recurrency types"
-//	@Param			fromDate		query		string										false	"Filter by start date (RFC3339)"
-//	@Param			toDate			query		string										false	"Filter by end date (RFC3339)"
+//	@Param			from_date		query		string										false	"Filter by start date (RFC3339)"
+//	@Param			to_date			query		string										false	"Filter by end date (RFC3339)"
 //	@Param			users			query		[]string									false	"Filter by user IDs"
 //	@Param			with_inactive	query		boolean										false	"Include inactive subscriptions"
 //	@Param			providers		query		[]string									false	"Filter by provider IDs"
@@ -69,15 +64,7 @@ func (s SubscriptionGetAllEndpoint) Handle(c *gin.Context) {
 	if params.Offset < 0 {
 		params.Offset = 0
 	}
-	if params.SortBy == "" {
-		params.SortBy = "name"
-	}
-	if params.SortOrder == "" {
-		params.SortOrder = "asc"
-	}
 
-	sortBy := subscription.ParseSortableFieldOrDefault(params.SortBy, subscription.FriendlyNameSortableField)
-	sortOrder := types.ParseSortOrderOrDefault(params.SortOrder, types.SortOrderAsc)
 	recurrencies := subscription.ParseRecurrencyTypesOrDefault(params.Recurrencies, subscription.UnknownRecurrency)
 
 	q := query.NewFindAllQuery(params.Search,
@@ -87,8 +74,6 @@ func (s SubscriptionGetAllEndpoint) Handle(c *gin.Context) {
 		params.Users,
 		params.Providers,
 		params.WithInactive,
-		sortBy,
-		sortOrder,
 		params.Limit,
 		params.Offset)
 	r := s.handler.Handle(c, q)
