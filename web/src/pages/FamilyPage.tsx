@@ -1,9 +1,10 @@
-import { CreateFamilyDialog } from "@/components/families/CreateFamilyDialog.tsx";
-import { FamilyCard } from "@/components/families/FamilyCard";
+import { CreateFamilyDialog } from "@/components/families/CreateFamilyDialog";
+import { FamilyHeader } from "@/components/families/FamilyHeader";
+import { FamilyMembersTable } from "@/components/families/FamilyMembersTable";
 import { EmptyFamiliesState } from "@/components/families/EmptyFamiliesState";
 import { FamiliesLoadingError } from "@/components/families/FamiliesLoadingError";
 import { useFamiliesQuery } from "@/hooks/families/useFamiliesQuery";
-import { PageHeader } from "@/components/ui/page-header.tsx";
+import { PageHeader } from "@/components/ui/page-header";
 
 const FamilyPage = () => {
   const {
@@ -11,10 +12,6 @@ const FamilyPage = () => {
     isLoading,
     error,
   } = useFamiliesQuery();
-
-  if (isLoading || error) {
-    return <FamiliesLoadingError isLoading={isLoading} error={error} />;
-  }
 
   const families = queryResponse?.families || [];
   const hasFamily = families.length > 0;
@@ -25,14 +22,17 @@ const FamilyPage = () => {
       <PageHeader
         title="Family"
         description="Manage your family"
-        actionButton={!hasFamily ? <CreateFamilyDialog /> : undefined}
+        actionButton={!isLoading && !error && !hasFamily ? <CreateFamilyDialog /> : undefined}
       />
 
-      {!hasFamily ? (
+      {isLoading || error ? (
+        <FamiliesLoadingError isLoading={isLoading} error={error} />
+      ) : !hasFamily ? (
         <EmptyFamiliesState />
       ) : (
-        <div className="grid gap-6">
-          {family && <FamilyCard key={family.id} family={family} />}
+        <div className="space-y-6">
+          <FamilyHeader family={family!} />
+          <FamilyMembersTable family={family!} />
         </div>
       )}
     </div>
