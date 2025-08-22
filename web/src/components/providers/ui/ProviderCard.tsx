@@ -8,6 +8,7 @@ import {getBadgeText, getBadgeVariant} from "../utils/badgeUtils";
 import {Edit, MoreVertical, Plus, Trash2} from "lucide-react";
 import {useProvidersMutations} from "@/hooks/providers/useProvidersMutations";
 import {AddPlanDialog} from "../AddPlanDialog";
+import { useNavigate } from "react-router-dom";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -55,6 +56,7 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
     const {canModifyProvider, canDeleteProvider, deleteProviderMutation} = useProvidersMutations();
     const isEditable = canModifyProvider(provider);
     const isDeletable = canDeleteProvider(provider);
+    const navigate = useNavigate();
 
     const handleDeleteProvider = async () => {
         try {
@@ -66,7 +68,7 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
     };
 
     return (
-        <Card key={provider.id} className="overflow-hidden">
+        <Card key={provider.id} className="overflow-hidden cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate(`/providers/${provider.id}`)}>
             {provider.iconUrl && (
                 <div className="w-full h-20 overflow-hidden -mt-0.5 -mx-0.5">
                     <img
@@ -90,6 +92,7 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
                                         variant="ghost"
                                         size="sm"
                                         className="h-8 w-8 p-0"
+                                        onClick={(e) => e.stopPropagation()}
                                     >
                                         <MoreVertical className="h-4 w-4"/>
                                     </Button>
@@ -123,7 +126,8 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
                 {provider.url && (
                     <CardDescription>
                         <a href={provider.url} target="_blank" rel="noopener noreferrer"
-                           className="text-blue-500 hover:underline">
+                           className="text-blue-500 hover:underline"
+                           onClick={(e) => e.stopPropagation()}>
                             {provider.url}
                         </a>
                     </CardDescription>

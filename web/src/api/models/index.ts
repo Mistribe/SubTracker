@@ -126,6 +126,24 @@ export function createEditableOwnerModelFromDiscriminatorValue(parseNode: ParseN
 export function createEditableSubscriptionPayerModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
     return deserializeIntoEditableSubscriptionPayerModel;
 }
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {FamilyInviteRequest}
+ */
+// @ts-ignore
+export function createFamilyInviteRequestFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoFamilyInviteRequest;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {FamilyInviteResponse}
+ */
+// @ts-ignore
+export function createFamilyInviteResponseFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoFamilyInviteResponse;
+}
 export interface CreateFamilyMemberModel extends AdditionalDataHolder, Parsable {
     /**
      * The created_at property
@@ -826,6 +844,33 @@ export function deserializeIntoEditableSubscriptionPayerModel(editableSubscripti
 }
 /**
  * The deserialization information for the current model
+ * @param FamilyInviteRequest The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoFamilyInviteRequest(familyInviteRequest: Partial<FamilyInviteRequest> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "email": n => { familyInviteRequest.email = n.getStringValue(); },
+        "family_member_id": n => { familyInviteRequest.familyMemberId = n.getStringValue(); },
+        "name": n => { familyInviteRequest.name = n.getStringValue(); },
+        "type": n => { familyInviteRequest.type = n.getEnumValue<FamilyInviteRequest_type>(FamilyInviteRequest_typeObject); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param FamilyInviteResponse The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoFamilyInviteResponse(familyInviteResponse: Partial<FamilyInviteResponse> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "code": n => { familyInviteResponse.code = n.getStringValue(); },
+        "family_id": n => { familyInviteResponse.familyId = n.getStringValue(); },
+        "family_member_id": n => { familyInviteResponse.familyMemberId = n.getStringValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
  * @param FamilyMemberModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
@@ -1349,6 +1394,39 @@ export interface EditableSubscriptionPayerModel extends AdditionalDataHolder, Pa
     type?: EditableSubscriptionPayerModel_type | null;
 }
 export type EditableSubscriptionPayerModel_type = (typeof EditableSubscriptionPayerModel_typeObject)[keyof typeof EditableSubscriptionPayerModel_typeObject];
+export interface FamilyInviteRequest extends AdditionalDataHolder, Parsable {
+    /**
+     * Email of the invited member
+     */
+    email?: string | null;
+    /**
+     * ID of the family member to be invited
+     */
+    familyMemberId?: string | null;
+    /**
+     * Name of the invited member
+     */
+    name?: string | null;
+    /**
+     * Type of the member (adult or kid)
+     */
+    type?: FamilyInviteRequest_type | null;
+}
+export type FamilyInviteRequest_type = (typeof FamilyInviteRequest_typeObject)[keyof typeof FamilyInviteRequest_typeObject];
+export interface FamilyInviteResponse extends AdditionalDataHolder, Parsable {
+    /**
+     * The code property
+     */
+    code?: string | null;
+    /**
+     * The family_id property
+     */
+    familyId?: string | null;
+    /**
+     * The family_member_id property
+     */
+    familyMemberId?: string | null;
+}
 /**
  * Family member object containing member information
  */
@@ -1969,6 +2047,35 @@ export function serializeEditableSubscriptionPayerModel(writer: SerializationWri
     writer.writeStringValue("memberId", editableSubscriptionPayerModel.memberId);
     writer.writeEnumValue<EditableSubscriptionPayerModel_type>("type", editableSubscriptionPayerModel.type);
     writer.writeAdditionalData(editableSubscriptionPayerModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param FamilyInviteRequest The instance to serialize from.
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeFamilyInviteRequest(writer: SerializationWriter, familyInviteRequest: Partial<FamilyInviteRequest> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!familyInviteRequest || isSerializingDerivedType) { return; }
+    writer.writeStringValue("email", familyInviteRequest.email);
+    writer.writeStringValue("family_member_id", familyInviteRequest.familyMemberId);
+    writer.writeStringValue("name", familyInviteRequest.name);
+    writer.writeEnumValue<FamilyInviteRequest_type>("type", familyInviteRequest.type);
+    writer.writeAdditionalData(familyInviteRequest.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param FamilyInviteResponse The instance to serialize from.
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeFamilyInviteResponse(writer: SerializationWriter, familyInviteResponse: Partial<FamilyInviteResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!familyInviteResponse || isSerializingDerivedType) { return; }
+    writer.writeStringValue("code", familyInviteResponse.code);
+    writer.writeStringValue("family_id", familyInviteResponse.familyId);
+    writer.writeStringValue("family_member_id", familyInviteResponse.familyMemberId);
+    writer.writeAdditionalData(familyInviteResponse.additionalData);
 }
 /**
  * Serializes information the current object
@@ -2902,6 +3009,13 @@ export const EditableOwnerModel_typeObject = {
 export const EditableSubscriptionPayerModel_typeObject = {
     Family: "family",
     Family_member: "family_member",
+} as const;
+/**
+ * Type of the member (adult or kid)
+ */
+export const FamilyInviteRequest_typeObject = {
+    Adult: "adult",
+    Kid: "kid",
 } as const;
 /**
  * @Description Whether this member is a child (affects permissions and features)

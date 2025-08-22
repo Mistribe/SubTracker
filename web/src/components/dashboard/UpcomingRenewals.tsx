@@ -3,6 +3,7 @@ import {format} from "date-fns";
 import {Money} from "@/components/ui/money";
 import {Calendar, Clock} from "lucide-react";
 import type UpcomingRenewal from "@/models/upcomingRenewals.ts";
+import { useNavigate } from "react-router-dom";
 
 interface Provider {
     id: string;
@@ -16,10 +17,11 @@ interface UpcomingRenewalsProps {
 }
 
 const UpcomingRenewals = ({
-                              summaryUpcomingRenewals = [],
-                              providerMap,
-                              isLoading
-                          }: UpcomingRenewalsProps) => {
+                               summaryUpcomingRenewals = [],
+                               providerMap,
+                               isLoading
+                           }: UpcomingRenewalsProps) => {
+    const navigate = useNavigate();
     return (
         <div>
             <div>
@@ -42,7 +44,8 @@ const UpcomingRenewals = ({
                             {summaryUpcomingRenewals.map((item, idx) => (
                                 <div
                                     key={`${item.providerId}-${item.at?.toString() ?? ""}-${idx}`}
-                                    className="p-3 border rounded-lg bg-card transition-all duration-300 hover:shadow-lg"
+                                    className="p-3 border rounded-lg bg-card transition-all duration-300 hover:shadow-lg hover:bg-accent/50 cursor-pointer"
+                                    onClick={() => item.providerId && navigate(`/providers/${item.providerId}`)}
                                 >
                                     <div className="flex justify-between items-start">
                                         <h4 className="flex items-center font-medium">

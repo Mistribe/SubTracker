@@ -4,6 +4,8 @@
 // @ts-ignore
 import { createFamilyModelFromDiscriminatorValue, createHttpErrorResponseFromDiscriminatorValue, serializeFamilyModel, serializeUpdateFamilyModel, type FamilyModel, type HttpErrorResponse, type UpdateFamilyModel } from '../../models/index.js';
 // @ts-ignore
+import { InviteRequestBuilderRequestsMetadata, type InviteRequestBuilder } from './invite/index.js';
+// @ts-ignore
 import { MembersRequestBuilderNavigationMetadata, MembersRequestBuilderRequestsMetadata, type MembersRequestBuilder } from './members/index.js';
 // @ts-ignore
 import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type NavigationMetadata, type Parsable, type ParsableFactory, type RequestConfiguration, type RequestInformation, type RequestsMetadata } from '@microsoft/kiota-abstractions';
@@ -12,6 +14,10 @@ import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type 
  * Builds and executes requests for operations under /families/{familyId}
  */
 export interface WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFamilyItemRequestBuilder> {
+    /**
+     * The invite property
+     */
+    get invite(): InviteRequestBuilder;
     /**
      * The members property
      */
@@ -57,6 +63,9 @@ export const WithFamilyItemRequestBuilderUriTemplate = "{+baseurl}/families/{fam
  * Metadata for all the navigation properties in the request builder.
  */
 export const WithFamilyItemRequestBuilderNavigationMetadata: Record<Exclude<keyof WithFamilyItemRequestBuilder, KeysToExcludeForNavigationMetadata>, NavigationMetadata> = {
+    invite: {
+        requestsMetadata: InviteRequestBuilderRequestsMetadata,
+    },
     members: {
         requestsMetadata: MembersRequestBuilderRequestsMetadata,
         navigationMetadata: MembersRequestBuilderNavigationMetadata,

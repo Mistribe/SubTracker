@@ -4,6 +4,7 @@ import Money from "@/components/ui/money.tsx";
 import type TopProvider from "@/models/topProvider.ts";
 import type Provider from "@/models/provider.ts";
 import {formatProviderDuration} from "@/components/dashboard/utils";
+import { useNavigate } from "react-router-dom";
 
 interface TopProvidersProps {
     providers: TopProvider[];
@@ -12,6 +13,7 @@ interface TopProvidersProps {
 }
 
 const TopProviders = ({providers, providerMap, isLoading}: TopProvidersProps) => {
+    const navigate = useNavigate();
     return (
         <div>
             <div className="flex flex-row items-center justify-between pb-5 space-y-0">
@@ -32,7 +34,8 @@ const TopProviders = ({providers, providerMap, isLoading}: TopProvidersProps) =>
                     <div className="space-y-3">
                         {providers.map((provider) => (
                             <div key={provider.providerId}
-                                 className="p-3 border rounded-lg bg-card transition-all duration-300 hover:shadow-lg ">
+                                 className="p-3 border rounded-lg bg-card transition-all duration-300 hover:shadow-lg hover:bg-accent/50 cursor-pointer"
+                                 onClick={() => provider.providerId && navigate(`/providers/${provider.providerId}`)}>
                                 <div className="flex justify-between items-start">
                                     <div className="flex items-center">
                                         <h4 className="font-medium">{providerMap.get(provider.providerId ?? "")?.name || provider.providerId}</h4>

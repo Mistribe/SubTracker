@@ -10,6 +10,7 @@ import LabelsPage from "@/pages/LabelsPage"
 import ProvidersPage from "@/pages/ProvidersPage"
 import SubscriptionsPage from "@/pages/SubscriptionsPage"
 import SubscriptionFormPage from "@/pages/SubscriptionFormPage"
+import ProviderDetailPage from "@/pages/ProviderDetailPage";
 import {ApiClientProvider} from "@/contexts/ApiClientContext.tsx";
 import {QueryClientProvider, QueryClient} from "@tanstack/react-query";
 
@@ -72,6 +73,16 @@ function App() {
                                     <ProtectedRoute>
                                         <AppLayout>
                                             <ProvidersPage/>
+                                        </AppLayout>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/providers/:providerId"
+                                element={
+                                    <ProtectedRoute>
+                                        <AppLayout>
+                                            <ProviderDetailPage/>
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
