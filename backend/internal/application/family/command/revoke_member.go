@@ -46,20 +46,27 @@ func (h RevokeMemberCommandHandler) Handle(ctx context.Context, cmd RevokeMember
 		return result.Fail[bool](family.ErrFamilyMemberNotFound)
 	}
 
+	return h.revokeMember(ctx, member, fam)
+}
+
+func (h RevokeMemberCommandHandler) revokeMember(
+	ctx context.Context,
+	member family.Member,
+	fam family.Family) result.Result[bool] {
 	if member.UserId() == nil {
 		return result.Success(true)
 	}
 
 	member.SetUserId(nil)
-	if err = fam.UpdateMember(member); err != nil {
+	if err := fam.UpdateMember(member); err != nil {
 		return result.Fail[bool](err)
 	}
 
-	if err = fam.GetValidationErrors(); err != nil {
+	if err := fam.GetValidationErrors(); err != nil {
 		return result.Fail[bool](err)
 	}
 
-	if err = h.familyRepository.Save(ctx, fam); err != nil {
+	if err := h.familyRepository.Save(ctx, fam); err != nil {
 		return result.Fail[bool](err)
 	}
 
