@@ -59,8 +59,12 @@ type Subscription interface {
 	GetTotalSpent() currency.Amount
 	// IsActive returns true if the subscription is active
 	IsActive() bool
+	// IsStarted returns true if the subscription is started
+	IsStarted() bool
 	// IsActiveAt determines whether the subscription is active at the given time t.
 	IsActiveAt(t time.Time) bool
+	// GetTotalDuration returns the total duration of the subscription
+	GetTotalDuration() time.Duration
 
 	SetFriendlyName(name *string)
 	SetFreeTrial(trial FreeTrial)
@@ -129,6 +133,24 @@ func NewSubscription(
 		recurrency:       recurrency,
 		customRecurrency: customRecurrency,
 	}
+}
+
+func (s *subscription) IsStarted() bool {
+	if s.startDate.After(time.Now()) {
+		return false
+	}
+	return true
+}
+
+func (s *subscription) GetTotalDuration() time.Duration {
+	if s.startDate.After(time.Now()) {
+		return time.Duration(0)
+	}
+	if s.endDate != nil {
+		return s.endDate.Sub(s.startDate)
+	}
+
+	return time.Now().Sub(s.startDate)
 }
 
 func (s *subscription) IsActiveAt(t time.Time) bool {

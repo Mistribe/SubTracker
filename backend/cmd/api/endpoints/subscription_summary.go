@@ -30,6 +30,7 @@ type SubscriptionSummaryRequest struct {
 type SubscriptionSummaryTopProviderResponse struct {
 	ProviderId string      `json:"provider_id" binding:"required"`
 	Total      AmountModel `json:"total"`
+	Duration   string      `json:"duration"`
 }
 
 type SubscriptionSummaryUpcomingRenewalResponse struct {
@@ -94,6 +95,7 @@ func (e SubscriptionSummaryEndpoint) Handle(c *gin.Context) {
 						return SubscriptionSummaryTopProviderResponse{
 							ProviderId: topProvider.ProviderId.String(),
 							Total:      newAmount(topProvider.Total),
+							Duration:   topProvider.Duration.String(),
 						}
 					}),
 				UpcomingRenewals: slicesx.Select(res.UpcomingRenewals,

@@ -16,12 +16,29 @@ type Amount interface {
 	Currency() Unit
 	IsValid() bool
 	ToCurrency(to currency.Unit, rates Rates) Amount
+	Add(otherAmount Amount) Amount
 }
 type amount struct {
 	value    float64
 	currency Unit
 	source   Amount
 	isValid  bool
+}
+
+func (a amount) Add(otherAmount Amount) Amount {
+	if !a.isValid || !otherAmount.IsValid() {
+		return NewInvalidAmount()
+	}
+
+	if a.currency != otherAmount.Currency() {
+		return NewInvalidAmount()
+	}
+	return amount{
+		value:    a.value + otherAmount.Value(),
+		currency: a.currency,
+		source:   nil,
+		isValid:  true,
+	}
 }
 
 func (a amount) Source() Amount {

@@ -32,6 +32,7 @@ type SummaryQueryUpcomingRenewalsResponse struct {
 type SummaryQueryTopProvidersResponse struct {
 	ProviderId uuid.UUID
 	Total      currency.Amount
+	Duration   time.Duration
 }
 
 type SummaryQueryResponse struct {
@@ -81,7 +82,7 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 
 	currencyRates = currencyRates.WithReverse()
 
-	topProviders := make(map[uuid.UUID]float64)
+	topProviders := make(map[uuid.UUID]SummaryQueryTopProvidersResponse)
 	var upcomingRenewals []SummaryQueryUpcomingRenewalsResponse
 	totalMonthly := 0.0
 	totalYearly := 0.0
@@ -139,13 +140,21 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 		}
 
 		if query.TopProviders > 0 {
-			totalSpent := sub.GetTotalSpent()
-			if totalSpent.IsValid() {
-				existingValue, ok := topProviders[sub.ProviderId()]
-				if ok {
-					topProviders[sub.ProviderId()] = existingValue + totalSpent.Value()
-				} else {
-					topProviders[sub.ProviderId()] = totalSpent.Value()
+			if sub.IsStarted() {
+				totalSpent := sub.GetTotalSpent().ToCurrency(preferredCurrency, currencyRates)
+				if totalSpent.IsValid() && !totalSpent.IsZero() {
+					existingValue, ok := topProviders[sub.ProviderId()]
+					if ok {
+						existingValue.Total = existingValue.Total.Add(totalSpent)
+						existingValue.Duration += sub.GetTotalDuration()
+						topProviders[sub.ProviderId()] = existingValue
+					} else {
+						topProviders[sub.ProviderId()] = SummaryQueryTopProvidersResponse{
+							ProviderId: sub.ProviderId(),
+							Total:      totalSpent,
+							Duration:   sub.GetTotalDuration(),
+						}
+					}
 				}
 			}
 		}
@@ -159,11 +168,8 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 		TotalLastYear:    currency.NewAmount(totalLastYear, preferredCurrency),
 		UpcomingRenewals: upcomingRenewals,
 		TopProviders: slicesx.MapToArr(topProviders,
-			func(providerId uuid.UUID, total float64) SummaryQueryTopProvidersResponse {
-				return SummaryQueryTopProvidersResponse{
-					ProviderId: providerId,
-					Total:      currency.NewAmount(total, preferredCurrency),
-				}
+			func(providerId uuid.UUID, res SummaryQueryTopProvidersResponse) SummaryQueryTopProvidersResponse {
+				return res
 			}),
 	}
 	sort.Slice(response.UpcomingRenewals, func(i, j int) bool {

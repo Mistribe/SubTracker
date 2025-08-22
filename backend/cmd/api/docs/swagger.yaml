@@ -642,6 +642,8 @@ components:
       type: object
     endpoints.SubscriptionSummaryTopProviderResponse:
       properties:
+        duration:
+          type: string
         provider_id:
           type: string
         total:
@@ -2345,16 +2347,6 @@ paths:
       - description: Search text
         in: query
         name: search
-        schema:
-          type: string
-      - description: Sort by field
-        in: query
-        name: sort_by
-        schema:
-          type: string
-      - description: Sort order (asc, desc)
-        in: query
-        name: sort_order
         schema:
           type: string
       - description: Filter by recurrency types
