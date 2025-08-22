@@ -350,6 +350,7 @@ func (r FamilyRepository) saveTrackedSliceWithJet(
 			FamilyMembers.UserID,
 			FamilyMembers.Name,
 			FamilyMembers.Type,
+			FamilyMembers.InvitationCode,
 			FamilyMembers.CreatedAt,
 			FamilyMembers.UpdatedAt,
 			FamilyMembers.Etag,
@@ -362,6 +363,12 @@ func (r FamilyRepository) saveTrackedSliceWithJet(
 			} else {
 				userID = NULL
 			}
+			var invitationCode Expression
+			if member.InvitationCode() != nil {
+				invitationCode = String(*member.InvitationCode())
+			} else {
+				invitationCode = NULL
+			}
 
 			stmt = stmt.VALUES(
 				UUID(member.Id()),
@@ -369,6 +376,7 @@ func (r FamilyRepository) saveTrackedSliceWithJet(
 				userID,
 				String(member.Name()),
 				String(member.Type().String()),
+				invitationCode,
 				TimestampzT(member.CreatedAt()),
 				TimestampzT(member.UpdatedAt()),
 				String(member.ETag()),
@@ -391,6 +399,12 @@ func (r FamilyRepository) saveTrackedSliceWithJet(
 			} else {
 				userID = StringExp(NULL)
 			}
+			var invitationCode StringExpression
+			if member.InvitationCode() != nil {
+				invitationCode = String(*member.InvitationCode())
+			} else {
+				invitationCode = StringExp(NULL)
+			}
 
 			stmt := FamilyMembers.UPDATE().
 				SET(
@@ -398,6 +412,7 @@ func (r FamilyRepository) saveTrackedSliceWithJet(
 					FamilyMembers.UserID.SET(userID),
 					FamilyMembers.Name.SET(String(member.Name())),
 					FamilyMembers.Type.SET(String(member.Type().String())),
+					FamilyMembers.InvitationCode.SET(invitationCode),
 					FamilyMembers.UpdatedAt.SET(TimestampzT(member.UpdatedAt())),
 					FamilyMembers.Etag.SET(String(member.ETag())),
 				).

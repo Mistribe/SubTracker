@@ -28,7 +28,7 @@ type FamilyInviteRequest struct {
 	// Name of the invited member
 	Name *string `json:"name,omitempty"`
 	// Type of the member (adult or kid)
-	Type *string `json:"type,omitempty" binding:"required" enums:"adult,kid"`
+	Type *string `json:"type,omitempty" enums:"adult,kid"`
 }
 
 type FamilyInviteResponse struct {
