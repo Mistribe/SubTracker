@@ -19,7 +19,7 @@ const AcceptInvitationPage = () => {
 
   const acceptMutation = useMutation({
     mutationFn: async () => {
-      if (!apiClient) return;
+      if (!apiClient) throw new Error("API client not initialized");
       // memberId is optional from the API model, but we pass it if present
       return apiClient.families
         .byFamilyId(familyId)
@@ -33,10 +33,10 @@ const AcceptInvitationPage = () => {
   });
 
   useEffect(() => {
-    if (isParamsValid && !acceptMutation.isPending && !acceptMutation.isSuccess) {
+    if (apiClient && isParamsValid && !acceptMutation.isPending && !acceptMutation.isSuccess) {
       acceptMutation.mutate();
     }
-  }, [isParamsValid, acceptMutation]);
+  }, [apiClient, isParamsValid, acceptMutation]);
 
   return (
     <div className="container mx-auto py-10">
