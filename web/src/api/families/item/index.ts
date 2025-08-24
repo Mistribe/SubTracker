@@ -6,6 +6,10 @@ import { createFamilyModelFromDiscriminatorValue, createHttpErrorResponseFromDis
 // @ts-ignore
 import { AcceptRequestBuilderRequestsMetadata, type AcceptRequestBuilder } from './accept/index.js';
 // @ts-ignore
+import { DeclineRequestBuilderRequestsMetadata, type DeclineRequestBuilder } from './decline/index.js';
+// @ts-ignore
+import { InvitationRequestBuilderRequestsMetadata, type InvitationRequestBuilder } from './invitation/index.js';
+// @ts-ignore
 import { InviteRequestBuilderRequestsMetadata, type InviteRequestBuilder } from './invite/index.js';
 // @ts-ignore
 import { MembersRequestBuilderNavigationMetadata, MembersRequestBuilderRequestsMetadata, type MembersRequestBuilder } from './members/index.js';
@@ -20,6 +24,14 @@ export interface WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFam
      * The accept property
      */
     get accept(): AcceptRequestBuilder;
+    /**
+     * The decline property
+     */
+    get decline(): DeclineRequestBuilder;
+    /**
+     * The invitation property
+     */
+    get invitation(): InvitationRequestBuilder;
     /**
      * The invite property
      */
@@ -71,6 +83,12 @@ export const WithFamilyItemRequestBuilderUriTemplate = "{+baseurl}/families/{fam
 export const WithFamilyItemRequestBuilderNavigationMetadata: Record<Exclude<keyof WithFamilyItemRequestBuilder, KeysToExcludeForNavigationMetadata>, NavigationMetadata> = {
     accept: {
         requestsMetadata: AcceptRequestBuilderRequestsMetadata,
+    },
+    decline: {
+        requestsMetadata: DeclineRequestBuilderRequestsMetadata,
+    },
+    invitation: {
+        requestsMetadata: InvitationRequestBuilderRequestsMetadata,
     },
     invite: {
         requestsMetadata: InviteRequestBuilderRequestsMetadata,

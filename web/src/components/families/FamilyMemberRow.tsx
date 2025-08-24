@@ -29,10 +29,6 @@ export const FamilyMemberRow = ({member, familyId, isOwner}: FamilyMemberRowProp
     const [inviteOpen, setInviteOpen] = useState(false);
     const [unlinkOpen, setUnlinkOpen] = useState(false);
 
-
-
-
-
     // Function to start editing a family member
     const startEditingMember = (member: FamilyMember) => {
         setEditingMemberId(member.id);

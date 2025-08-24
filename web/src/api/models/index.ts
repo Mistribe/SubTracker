@@ -138,6 +138,15 @@ export function createFamilyAcceptInvitationRequestFromDiscriminatorValue(parseN
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {FamilyDeclineInvitationRequest}
+ */
+// @ts-ignore
+export function createFamilyDeclineInvitationRequestFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoFamilyDeclineInvitationRequest;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
  * @returns {FamilyInviteRequest}
  */
 // @ts-ignore
@@ -207,6 +216,15 @@ export interface CreateFamilyModel extends AdditionalDataHolder, Parsable {
 // @ts-ignore
 export function createFamilyModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
     return deserializeIntoFamilyModel;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {FamilySeeInvitationResponse}
+ */
+// @ts-ignore
+export function createFamilySeeInvitationResponseFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoFamilySeeInvitationResponse;
 }
 /**
  * Creates a new instance of the appropriate class based on discriminator value
@@ -865,6 +883,18 @@ export function deserializeIntoFamilyAcceptInvitationRequest(familyAcceptInvitat
 }
 /**
  * The deserialization information for the current model
+ * @param FamilyDeclineInvitationRequest The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoFamilyDeclineInvitationRequest(familyDeclineInvitationRequest: Partial<FamilyDeclineInvitationRequest> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "family_member_id": n => { familyDeclineInvitationRequest.familyMemberId = n.getStringValue(); },
+        "invitation_code": n => { familyDeclineInvitationRequest.invitationCode = n.getStringValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
  * @param FamilyInviteRequest The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
@@ -924,6 +954,18 @@ export function deserializeIntoFamilyModel(familyModel: Partial<FamilyModel> | u
         "members": n => { familyModel.members = n.getCollectionOfObjectValues<FamilyMemberModel>(createFamilyMemberModelFromDiscriminatorValue); },
         "name": n => { familyModel.name = n.getStringValue(); },
         "updated_at": n => { familyModel.updatedAt = n.getDateValue(); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param FamilySeeInvitationResponse The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoFamilySeeInvitationResponse(familySeeInvitationResponse: Partial<FamilySeeInvitationResponse> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "family": n => { familySeeInvitationResponse.family = n.getObjectValue<FamilyModel>(createFamilyModelFromDiscriminatorValue); },
+        "invited_inasmuch_as": n => { familySeeInvitationResponse.invitedInasmuchAs = n.getStringValue(); },
     }
 }
 /**
@@ -1425,6 +1467,16 @@ export interface FamilyAcceptInvitationRequest extends AdditionalDataHolder, Par
      */
     invitationCode?: string | null;
 }
+export interface FamilyDeclineInvitationRequest extends AdditionalDataHolder, Parsable {
+    /**
+     * ID of the family member accepting the invitation
+     */
+    familyMemberId?: string | null;
+    /**
+     * Code received in the invitation
+     */
+    invitationCode?: string | null;
+}
 export interface FamilyInviteRequest extends AdditionalDataHolder, Parsable {
     /**
      * Email of the invited member
@@ -1501,7 +1553,7 @@ export interface FamilyMemberModel extends AdditionalDataHolder, Parsable {
 }
 export type FamilyMemberModel_type = (typeof FamilyMemberModel_typeObject)[keyof typeof FamilyMemberModel_typeObject];
 /**
- * Family object containing family information and members
+ * Family details
  */
 export interface FamilyModel extends AdditionalDataHolder, Parsable {
     /**
@@ -1532,6 +1584,16 @@ export interface FamilyModel extends AdditionalDataHolder, Parsable {
      * @Description ISO 8601 timestamp indicating when the family information was last modified
      */
     updatedAt?: Date | null;
+}
+export interface FamilySeeInvitationResponse extends AdditionalDataHolder, Parsable {
+    /**
+     * Family details
+     */
+    family?: FamilyModel | null;
+    /**
+     * Role of the invited member
+     */
+    invitedInasmuchAs?: string | null;
 }
 export interface HttpErrorResponse extends AdditionalDataHolder, ApiError, Parsable {
     /**
@@ -2094,6 +2156,19 @@ export function serializeFamilyAcceptInvitationRequest(writer: SerializationWrit
 }
 /**
  * Serializes information the current object
+ * @param FamilyDeclineInvitationRequest The instance to serialize from.
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeFamilyDeclineInvitationRequest(writer: SerializationWriter, familyDeclineInvitationRequest: Partial<FamilyDeclineInvitationRequest> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!familyDeclineInvitationRequest || isSerializingDerivedType) { return; }
+    writer.writeStringValue("family_member_id", familyDeclineInvitationRequest.familyMemberId);
+    writer.writeStringValue("invitation_code", familyDeclineInvitationRequest.invitationCode);
+    writer.writeAdditionalData(familyDeclineInvitationRequest.additionalData);
+}
+/**
+ * Serializes information the current object
  * @param FamilyInviteRequest The instance to serialize from.
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
@@ -2158,6 +2233,19 @@ export function serializeFamilyModel(writer: SerializationWriter, familyModel: P
     writer.writeStringValue("name", familyModel.name);
     writer.writeDateValue("updated_at", familyModel.updatedAt);
     writer.writeAdditionalData(familyModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param FamilySeeInvitationResponse The instance to serialize from.
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeFamilySeeInvitationResponse(writer: SerializationWriter, familySeeInvitationResponse: Partial<FamilySeeInvitationResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!familySeeInvitationResponse || isSerializingDerivedType) { return; }
+    writer.writeObjectValue<FamilyModel>("family", familySeeInvitationResponse.family, serializeFamilyModel);
+    writer.writeStringValue("invited_inasmuch_as", familySeeInvitationResponse.invitedInasmuchAs);
+    writer.writeAdditionalData(familySeeInvitationResponse.additionalData);
 }
 /**
  * Serializes information the current object

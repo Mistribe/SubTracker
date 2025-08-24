@@ -27,9 +27,9 @@ export function FamilyMemberInviteDialog({ open, onOpenChange, familyId, member 
     try {
       const origin = window.location.origin;
       const url = new URL(`${origin}/invite/accept`);
-      url.searchParams.set("familyId", familyId);
-      url.searchParams.set("memberId", member.id);
-      url.searchParams.set("code", inviteCode);
+      url.searchParams.set("fid", familyId);
+      url.searchParams.set("mui", member.id);
+      url.searchParams.set("c", inviteCode);
       return url.toString();
     } catch {
       return "";
