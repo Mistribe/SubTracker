@@ -140,6 +140,20 @@ components:
       - family_member_id
       - invitation_code
       type: object
+    endpoints.FamilyDeclineInvitationRequest:
+      properties:
+        family_member_id:
+          description: ID of the family member accepting the invitation
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        invitation_code:
+          description: Code received in the invitation
+          example: "123456"
+          type: string
+      required:
+      - family_member_id
+      - invitation_code
+      type: object
     endpoints.FamilyInviteRequest:
       properties:
         email:
@@ -159,7 +173,6 @@ components:
           type: string
       required:
       - family_member_id
-      - type
       type: object
     endpoints.FamilyInviteResponse:
       properties:
@@ -176,6 +189,15 @@ components:
       - code
       - family_id
       - family_member_id
+      type: object
+    endpoints.FamilySeeInvitationResponse:
+      properties:
+        family:
+          $ref: '#/components/schemas/endpoints.familyModel'
+        invited_inasmuch_as:
+          description: Role of the invited member
+          example: OWNER
+          type: string
       type: object
     endpoints.HttpErrorResponse:
       properties:
@@ -980,7 +1002,7 @@ components:
       - updated_at
       type: object
     endpoints.familyModel:
-      description: Family object containing family information and members
+      description: Family details
       properties:
         created_at:
           description: '@Description ISO 8601 timestamp indicating when the family
@@ -1526,6 +1548,73 @@ paths:
       summary: Accept a family invitation
       tags:
       - family
+  /families/{familyId}/decline:
+    post:
+      description: Endpoint to decline an invitation to join a family
+      parameters:
+      - description: Family ID
+        in: path
+        name: familyId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.FamilyDeclineInvitationRequest'
+        description: Decline invitation request
+        required: true
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Bad Request
+      summary: Decline family invitation
+      tags:
+      - Family
+  /families/{familyId}/invitation:
+    get:
+      description: Get information about a family invitation using invitation code
+      parameters:
+      - description: Family ID
+        in: path
+        name: familyId
+        required: true
+        schema:
+          type: string
+      - description: Invitation code
+        in: query
+        name: code
+        required: true
+        schema:
+          type: string
+      - description: Family member ID
+        in: query
+        name: family_member_id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.FamilySeeInvitationResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.HttpErrorResponse'
+          description: Bad Request
+      summary: View family invitation details
+      tags:
+      - Family
   /families/{familyId}/invite:
     post:
       description: Creates an invitation for a new member to join the family

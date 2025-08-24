@@ -13,6 +13,7 @@ func Module() fx.Option {
 	return fx.Module("app_family",
 		fx.Provide(
 			core.AsQueryHandler[query.FindUserFamilyQuery, family.Family](query.NewFindOneQueryHandler),
+			core.AsQueryHandler[query.SeeInvitationQuery, query.SeeInvitationQueryResponse](query.NewSeeInvitationQueryHandler),
 
 			core.AsCommandHandler[command.CreateFamilyCommand, family.Family](command.NewCreateFamilyCommandHandler),
 			core.AsCommandHandler[command.UpdateFamilyCommand, family.Family](command.NewUpdateFamilyCommandHandler),
@@ -20,6 +21,7 @@ func Module() fx.Option {
 			core.AsCommandHandler[command.DeleteFamilyCommand, bool](command.NewDeleteFamilyCommandHandler),
 			core.AsCommandHandler[command.InviteMemberCommand, command.InviteMemberResponse](command.NewInviteMemberCommandHandler),
 			core.AsCommandHandler[command.AcceptInvitationCommand, bool](command.NewAcceptInvitationCommandHandler),
+			core.AsCommandHandler[command.DeclineInvitationCommand, bool](command.NewDeclineInvitationCommandHandler),
 			core.AsCommandHandler[command.RevokeMemberCommand, bool](command.NewRevokeMemberCommandHandler),
 			core.AsCommandHandler[command.CreateFamilyMemberCommand, family.Family](command.NewCreateFamilyMemberCommandHandler),
 			core.AsCommandHandler[command.UpdateFamilyMemberCommand, family.Family](command.NewUpdateFamilyMemberCommandHandler),

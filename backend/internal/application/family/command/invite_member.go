@@ -75,7 +75,7 @@ func (h InviteMemberCommandHandler) inviteExistingMember(
 	if familyMember.UserId() != nil {
 		return result.Fail[InviteMemberResponse](family.ErrCannotInviteUser)
 	}
-	if !familyMember.SetInvitationCode(code) {
+	if !familyMember.SetInvitationCode(&code) {
 		return result.Fail[InviteMemberResponse](family.ErrCannotInviteUser)
 	}
 

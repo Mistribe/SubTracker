@@ -65,7 +65,7 @@ type Member interface {
 
 	Equal(member Member) bool
 	GetValidationErrors() validationx.Errors
-	SetInvitationCode(code string) bool
+	SetInvitationCode(code *string) bool
 	InvitationCode() *string
 }
 
@@ -97,8 +97,8 @@ func NewMember(
 	}
 }
 
-func (m *member) SetInvitationCode(code string) bool {
-	m.invitationCode = &code
+func (m *member) SetInvitationCode(code *string) bool {
+	m.invitationCode = code
 	m.SetAsDirty()
 	return true
 }

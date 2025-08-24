@@ -51,7 +51,7 @@ func (e FamilyAcceptInvitationEndpoint) Handle(c *gin.Context) {
 	}
 
 	var model FamilyAcceptInvitationRequest
-	if err := c.ShouldBindJSON(&model); err != nil {
+	if err = c.ShouldBindJSON(&model); err != nil {
 		c.JSON(http.StatusBadRequest, HttpErrorResponse{
 			Message: err.Error(),
 		})
