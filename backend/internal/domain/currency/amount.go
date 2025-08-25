@@ -99,11 +99,11 @@ func (a amount) ToCurrency(
 		usdAmount = a.ToUSD(rates)
 	}
 	exchangeRate, ok := rates.FindExchangeRate(USD, to)
-	if !ok {
+	if !ok || exchangeRate == 0 {
 		return NewInvalidAmount()
 	}
 
-	currencyValue := usdAmount.Value() * exchangeRate
+	currencyValue := usdAmount.Value() / exchangeRate
 	return amount{
 		value:    currencyValue,
 		currency: to,
