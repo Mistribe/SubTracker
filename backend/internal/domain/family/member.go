@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/pkg/validationx"
+	"github.com/oleexo/subtracker/pkg/x/validation"
 )
 
 type MemberType string
@@ -64,7 +64,7 @@ type Member interface {
 	FamilyId() uuid.UUID
 
 	Equal(member Member) bool
-	GetValidationErrors() validationx.Errors
+	GetValidationErrors() validation.Errors
 	SetInvitationCode(code *string) bool
 	InvitationCode() *string
 }
@@ -139,11 +139,11 @@ func (m *member) ETag() string {
 	return entity.CalculateETag(m)
 }
 
-func (m *member) GetValidationErrors() validationx.Errors {
-	var errors validationx.Errors
+func (m *member) GetValidationErrors() validation.Errors {
+	var errors validation.Errors
 
 	if m.name == "" {
-		errors = append(errors, validationx.NewError("name", "name is empty"))
+		errors = append(errors, validation.NewError("name", "name is empty"))
 	}
 
 	if errors.HasErrors() {

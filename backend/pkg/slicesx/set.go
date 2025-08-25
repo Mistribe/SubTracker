@@ -31,6 +31,6 @@ func (s *Set[T]) ToSlice() []T {
 	return result
 }
 
-func (s *Set[T]) len() int {
+func (s *Set[T]) Len() int {
 	return len(s.elements)
 }

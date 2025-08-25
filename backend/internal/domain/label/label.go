@@ -9,7 +9,7 @@ import (
 
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/pkg/validationx"
+	"github.com/oleexo/subtracker/pkg/x/validation"
 )
 
 var (
@@ -24,7 +24,7 @@ type Label interface {
 	Key() *string
 	Owner() auth.Owner
 	Color() string
-	GetValidationErrors() validationx.Errors
+	GetValidationErrors() validation.Errors
 	SetName(name string)
 	SetColor(color string)
 	Equal(other Label) bool
@@ -73,21 +73,21 @@ func (l *label) Color() string {
 	return l.color
 }
 
-func (l *label) GetValidationErrors() validationx.Errors {
-	var errors validationx.Errors
+func (l *label) GetValidationErrors() validation.Errors {
+	var errors validation.Errors
 
 	name := strings.TrimSpace(l.name)
 	if name == "" {
-		errors = append(errors, validationx.NewError("name", "name is required and cannot be empty"))
+		errors = append(errors, validation.NewError("name", "name is required and cannot be empty"))
 	}
 
 	if len(name) > 100 {
-		errors = append(errors, validationx.NewError("name", "name cannot be longer than 100 characters"))
+		errors = append(errors, validation.NewError("name", "name cannot be longer than 100 characters"))
 	}
 
 	color := strings.TrimSpace(l.color)
 	if color == "" || !hexColorRegex.MatchString(color) {
-		errors = append(errors, validationx.NewError("color", "color is required and must be a valid hex color"))
+		errors = append(errors, validation.NewError("color", "color is required and must be a valid hex color"))
 	}
 
 	if errors.HasErrors() {

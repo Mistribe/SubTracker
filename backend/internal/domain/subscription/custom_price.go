@@ -3,7 +3,7 @@ package subscription
 import (
 	"github.com/oleexo/subtracker/internal/domain/currency"
 	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/pkg/validationx"
+	"github.com/oleexo/subtracker/pkg/x/validation"
 )
 
 type CustomPrice interface {
@@ -11,14 +11,15 @@ type CustomPrice interface {
 	currency.Amount
 
 	SetAmount(amount currency.Amount)
-	GetValidationErrors() validationx.Errors
+	GetValidationErrors() validation.Errors
 }
 
 type customSubscriptionPrice struct {
 	currency.Amount
 }
 
-func NewCustomPrice(amount float64,
+func NewCustomPrice(
+	amount float64,
 	curreny currency.Unit) CustomPrice {
 	return &customSubscriptionPrice{
 		Amount: currency.NewAmount(amount, curreny),
@@ -40,11 +41,11 @@ func (c *customSubscriptionPrice) ETagFields() []interface{} {
 	}
 }
 
-func (c *customSubscriptionPrice) GetValidationErrors() validationx.Errors {
-	var errors validationx.Errors
+func (c *customSubscriptionPrice) GetValidationErrors() validation.Errors {
+	var errors validation.Errors
 
 	if c.Amount.Value() <= 0 {
-		errors = append(errors, validationx.NewError("amount", "Amount must be greater than 0"))
+		errors = append(errors, validation.NewError("amount", "Amount must be greater than 0"))
 	}
 
 	if errors.HasErrors() {

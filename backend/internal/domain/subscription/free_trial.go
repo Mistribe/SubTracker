@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/pkg/validationx"
+	"github.com/oleexo/subtracker/pkg/x/validation"
 )
 
 type FreeTrial interface {
@@ -13,10 +13,11 @@ type FreeTrial interface {
 	StartDate() time.Time
 	EndDate() time.Time
 
-	GetValidationErrors() validationx.Errors
+	GetValidationErrors() validation.Errors
 }
 
-func NewFreeTrial(startDate time.Time,
+func NewFreeTrial(
+	startDate time.Time,
 	endDate time.Time) FreeTrial {
 	return &freeTrial{
 		startDate: startDate,
@@ -48,19 +49,19 @@ func (f freeTrial) ETag() string {
 	return entity.CalculateETag(f)
 }
 
-func (f freeTrial) GetValidationErrors() validationx.Errors {
-	var errors validationx.Errors
+func (f freeTrial) GetValidationErrors() validation.Errors {
+	var errors validation.Errors
 
 	if f.startDate.IsZero() {
-		errors = append(errors, validationx.NewError("startDate", "StartDate is required"))
+		errors = append(errors, validation.NewError("startDate", "StartDate is required"))
 	}
 
 	if f.endDate.IsZero() {
-		errors = append(errors, validationx.NewError("endDate", "EndDate is required"))
+		errors = append(errors, validation.NewError("endDate", "EndDate is required"))
 	}
 
 	if !f.endDate.IsZero() && !f.startDate.IsZero() && f.endDate.Before(f.startDate) {
-		errors = append(errors, validationx.NewError("endDate", "EndDate must be after StartDate"))
+		errors = append(errors, validation.NewError("endDate", "EndDate must be after StartDate"))
 	}
 
 	if errors.HasErrors() {

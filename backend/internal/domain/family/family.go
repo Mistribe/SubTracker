@@ -7,7 +7,7 @@ import (
 
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/pkg/slicesx"
-	"github.com/oleexo/subtracker/pkg/validationx"
+	"github.com/oleexo/subtracker/pkg/x/validation"
 )
 
 type Family interface {
@@ -24,7 +24,7 @@ type Family interface {
 	UpdateMember(member Member) error
 	ContainsMember(id uuid.UUID) bool
 	Equal(family Family) bool
-	GetValidationErrors() validationx.Errors
+	GetValidationErrors() validation.Errors
 }
 type family struct {
 	*entity.Base
@@ -49,28 +49,28 @@ func NewFamily(
 	}
 }
 
-func (f *family) GetValidationErrors() validationx.Errors {
-	var errors validationx.Errors
+func (f *family) GetValidationErrors() validation.Errors {
+	var errors validation.Errors
 
 	if f.name == "" {
-		errors = append(errors, validationx.NewError("name", "name is empty"))
+		errors = append(errors, validation.NewError("name", "name is empty"))
 	}
 	if len(f.name) < 3 {
-		errors = append(errors, validationx.NewError("name", "name must be at least 3 characters long"))
+		errors = append(errors, validation.NewError("name", "name must be at least 3 characters long"))
 	}
 	if len(f.name) > 100 {
-		errors = append(errors, validationx.NewError("name", "name cannot be longer than 100 characters"))
+		errors = append(errors, validation.NewError("name", "name cannot be longer than 100 characters"))
 	}
 
 	idMap := make(map[uuid.UUID]bool)
 
 	if f.members.Len() == 0 {
-		errors = append(errors, validationx.NewError("members", "family must have at least one member"))
+		errors = append(errors, validation.NewError("members", "family must have at least one member"))
 	}
 
 	for mbr := range f.members.It() {
 		if idMap[mbr.Id()] {
-			errors = append(errors, validationx.NewError("members", "duplicate member id"))
+			errors = append(errors, validation.NewError("members", "duplicate member id"))
 		}
 		idMap[mbr.Id()] = true
 

@@ -8,7 +8,7 @@ import (
 
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/pkg/slicesx"
-	"github.com/oleexo/subtracker/pkg/validationx"
+	"github.com/oleexo/subtracker/pkg/x/validation"
 )
 
 func planUniqueComparer(p1, p2 Plan) bool {
@@ -30,7 +30,7 @@ type Plan interface {
 	Prices() *slicesx.Tracked[Price]
 	SetPrices(prices []Price)
 	Equal(other Plan) bool
-	GetValidationErrors() validationx.Errors
+	GetValidationErrors() validation.Errors
 	ContainsPrice(priceId uuid.UUID) bool
 	AddPrice(price Price) bool
 	GetPriceById(priceId uuid.UUID) Price
@@ -149,11 +149,11 @@ func (p *plan) Equal(other Plan) bool {
 	return p.ETag() == other.ETag()
 }
 
-func (p *plan) GetValidationErrors() validationx.Errors {
-	var errors validationx.Errors
+func (p *plan) GetValidationErrors() validation.Errors {
+	var errors validation.Errors
 
 	if strings.TrimSpace(p.name) == "" {
-		errors = append(errors, validationx.NewError("name", "name is required and cannot be empty"))
+		errors = append(errors, validation.NewError("name", "name is required and cannot be empty"))
 	}
 
 	for _, pr := range p.prices.Values() {
