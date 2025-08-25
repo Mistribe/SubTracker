@@ -7,10 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/application/subscription/query"
-	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/internal/application/core"
+	"github.com/mistribe/subtracker/internal/application/subscription/query"
+	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
 type SubscriptionGetAllEndpoint struct {

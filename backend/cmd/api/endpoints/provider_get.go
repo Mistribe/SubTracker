@@ -5,9 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/application/provider/query"
-	"github.com/oleexo/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/application/core"
+	"github.com/mistribe/subtracker/internal/application/provider/query"
+	"github.com/mistribe/subtracker/internal/domain/provider"
 )
 
 type ProviderGetEndpoint struct {

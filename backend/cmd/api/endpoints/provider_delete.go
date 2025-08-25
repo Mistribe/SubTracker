@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/application/provider/command"
+	"github.com/mistribe/subtracker/internal/application/core"
+	"github.com/mistribe/subtracker/internal/application/provider/command"
 )
 
 type ProviderDeleteEndpoint struct {

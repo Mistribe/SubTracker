@@ -5,7 +5,7 @@ import (
 
 	"go.uber.org/fx"
 
-	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type Command interface{}

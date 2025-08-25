@@ -1,8 +1,8 @@
 package endpoints
 
 import (
-	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/internal/application/core"
+	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
 // PaginatedResponseModel

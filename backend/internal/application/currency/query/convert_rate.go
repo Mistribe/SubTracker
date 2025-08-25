@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/oleexo/subtracker/internal/domain/currency"
-	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 // CurrencyRateQuery represents a query to convert an amount from one currency to another

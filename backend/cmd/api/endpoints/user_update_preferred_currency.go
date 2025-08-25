@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/currency"
 
-	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/application/user/command"
+	"github.com/mistribe/subtracker/internal/application/core"
+	"github.com/mistribe/subtracker/internal/application/user/command"
 )
 
 type UserUpdatePreferredCurrencyEndpoint struct {

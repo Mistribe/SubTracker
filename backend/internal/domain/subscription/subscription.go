@@ -5,12 +5,12 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/oleexo/subtracker/internal/domain/auth"
-	"github.com/oleexo/subtracker/internal/domain/currency"
-	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/pkg/slicesx"
-	"github.com/oleexo/subtracker/pkg/x"
-	"github.com/oleexo/subtracker/pkg/x/validation"
+	"github.com/mistribe/subtracker/internal/domain/auth"
+	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/entity"
+	"github.com/mistribe/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/pkg/x"
+	"github.com/mistribe/subtracker/pkg/x/validation"
 )
 
 const (

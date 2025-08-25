@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/application/currency/command"
-	"github.com/oleexo/subtracker/internal/domain/currency"
-	"github.com/oleexo/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/internal/application/core"
+	"github.com/mistribe/subtracker/internal/application/currency/command"
+	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
 type CurrencyRefreshRatesEndpoint struct {

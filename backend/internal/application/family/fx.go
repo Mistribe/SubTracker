@@ -3,10 +3,10 @@ package family
 import (
 	"go.uber.org/fx"
 
-	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/application/family/command"
-	"github.com/oleexo/subtracker/internal/application/family/query"
-	"github.com/oleexo/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/application/core"
+	"github.com/mistribe/subtracker/internal/application/family/command"
+	"github.com/mistribe/subtracker/internal/application/family/query"
+	"github.com/mistribe/subtracker/internal/domain/family"
 )
 
 func Module() fx.Option {

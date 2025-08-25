@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 
-	"github.com/oleexo/subtracker/internal/domain/entity"
+	"github.com/mistribe/subtracker/internal/domain/entity"
 )
 
 type Rates []Rate

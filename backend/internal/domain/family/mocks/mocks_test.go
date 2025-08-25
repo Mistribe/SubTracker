@@ -8,8 +8,8 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/entity"
+	"github.com/mistribe/subtracker/internal/domain/family"
 	mock "github.com/stretchr/testify/mock"
 )
 

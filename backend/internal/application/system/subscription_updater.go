@@ -11,10 +11,10 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 
-	"github.com/oleexo/subtracker/internal/domain/auth"
-	"github.com/oleexo/subtracker/internal/domain/provider"
-	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/internal/domain/auth"
+	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
 type systemSubscriptionModel struct {

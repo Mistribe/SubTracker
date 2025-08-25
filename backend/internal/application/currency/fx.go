@@ -3,9 +3,9 @@ package currency
 import (
 	"go.uber.org/fx"
 
-	"github.com/oleexo/subtracker/internal/application/core"
-	currencyCommand "github.com/oleexo/subtracker/internal/application/currency/command"
-	currencyQuery "github.com/oleexo/subtracker/internal/application/currency/query"
+	"github.com/mistribe/subtracker/internal/application/core"
+	currencyCommand "github.com/mistribe/subtracker/internal/application/currency/command"
+	currencyQuery "github.com/mistribe/subtracker/internal/application/currency/query"
 )
 
 func Module() fx.Option {

@@ -1,9 +1,9 @@
 package persistence
 
 import (
-	"github.com/oleexo/subtracker/internal/domain/auth"
-	"github.com/oleexo/subtracker/internal/domain/label"
-	"github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/model"
+	"github.com/mistribe/subtracker/internal/domain/auth"
+	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/infrastructure/persistence/jet/app/public/model"
 )
 
 func createLabelFromJet(jetLabel model.Labels) label.Label {

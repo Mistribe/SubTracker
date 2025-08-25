@@ -8,9 +8,9 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 
-	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/application/provider/command"
-	"github.com/oleexo/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/application/core"
+	"github.com/mistribe/subtracker/internal/application/provider/command"
+	"github.com/mistribe/subtracker/internal/domain/provider"
 )
 
 type ProviderPriceCreateEndpoint struct {

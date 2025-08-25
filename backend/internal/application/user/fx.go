@@ -3,10 +3,10 @@ package user
 import (
 	"go.uber.org/fx"
 
-	"github.com/oleexo/subtracker/internal/application/core"
-	usrCommand "github.com/oleexo/subtracker/internal/application/user/command"
-	usrQuery "github.com/oleexo/subtracker/internal/application/user/query"
-	"github.com/oleexo/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/application/core"
+	usrCommand "github.com/mistribe/subtracker/internal/application/user/command"
+	usrQuery "github.com/mistribe/subtracker/internal/application/user/query"
+	"github.com/mistribe/subtracker/internal/domain/currency"
 )
 
 func Module() fx.Option {

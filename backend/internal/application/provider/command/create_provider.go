@@ -6,11 +6,11 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/oleexo/subtracker/internal/domain/auth"
-	"github.com/oleexo/subtracker/internal/domain/label"
-	"github.com/oleexo/subtracker/internal/domain/provider"
-	"github.com/oleexo/subtracker/pkg/ext"
-	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/mistribe/subtracker/internal/domain/auth"
+	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/pkg/ext"
+	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type CreateProviderCommand struct {

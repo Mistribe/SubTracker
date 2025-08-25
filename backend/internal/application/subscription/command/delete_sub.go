@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/oleexo/subtracker/internal/domain/subscription"
-	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type DeleteSubscriptionCommand struct {

@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/currency"
 
-	dcurrency "github.com/oleexo/subtracker/internal/domain/currency"
-	"github.com/oleexo/subtracker/pkg/slicesx"
+	dcurrency "github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
 type CurrencySupportedEndpoint struct {

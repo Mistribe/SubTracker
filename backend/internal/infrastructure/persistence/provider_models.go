@@ -6,10 +6,10 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 
-	"github.com/oleexo/subtracker/internal/domain/auth"
-	"github.com/oleexo/subtracker/internal/domain/provider"
-	"github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/model"
-	"github.com/oleexo/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/internal/domain/auth"
+	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/infrastructure/persistence/jet/app/public/model"
+	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
 func createProviderPriceFromJet(jetModel model.ProviderPrices) provider.Price {

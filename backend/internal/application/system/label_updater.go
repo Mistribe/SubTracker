@@ -9,9 +9,9 @@ import (
 	"github.com/Oleexo/config-go"
 	"github.com/google/uuid"
 
-	"github.com/oleexo/subtracker/internal/domain/auth"
-	"github.com/oleexo/subtracker/internal/domain/label"
-	"github.com/oleexo/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/internal/domain/auth"
+	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
 type systemLabelModel struct {

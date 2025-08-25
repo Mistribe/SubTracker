@@ -8,7 +8,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/oleexo/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/label"
 	mock "github.com/stretchr/testify/mock"
 )
 
