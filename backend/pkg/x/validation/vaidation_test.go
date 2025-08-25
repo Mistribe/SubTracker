@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/oleexo/subtracker/pkg/x/validation"
+	"github.com/mistribe/subtracker/pkg/x/validation"
 )
 
 func TestNewError(t *testing.T) {
