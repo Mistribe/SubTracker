@@ -44,47 +44,89 @@ The hosted SubTracker Cloud is in the works. Sign up to get notified when the be
 
 ## 🚀 Quickstart
 
-1) Clone and install
+Pick one of the following setups.
 
+A) All-in-one (Docker Compose)
+1) Create a web/.env file (used at build time by Vite):
 ```
-git clone <your-repo-url>
-cd SubTracker/web
-npm install
-```
-
-2) Configure environment variables
-
-Create a `.env` file in `web/` with the following keys:
-
-```
-# Backend API
 VITE_BACKEND_URL=http://localhost:8080
+VITE_KINDE_CLIENT_ID=your_kinde_client_id
+VITE_KINDE_DOMAIN=your_kinde_domain
+VITE_KINDE_REDIRECT_URL=http://localhost:9080
+VITE_KINDE_LOGOUT_URL=http://localhost:9080
+VITE_KINDE_AUDIENCE=your_kinde_audience
+```
+2) From the repository root, start everything:
+```
+docker compose up -d --build
+```
+- Web UI: http://localhost:9080
+- API: http://localhost:8080
+(See the Self-hosted section below for details.)
 
-# Auth (Kinde)
+B) From source (Backend + Web)
+Backend (Go):
+```
+# Terminal 1
+cd backend
+# Ensure a PostgreSQL instance is available and DATABASE_DSN points to it, e.g.:
+# set DATABASE_DSN=host=localhost user=postgres password=postgres dbname=app port=5432
+# or use Docker for Postgres and adjust host accordingly
+go run ./cmd/api
+```
+Web (React + Vite):
+```
+# Terminal 2
+cd web
+npm install
+# Create web/.env
+# Backend API
+# VITE_BACKEND_URL should point to the running API (default local backend below)
+# VITE_KINDE_REDIRECT_URL/LOGOUT_URL match your web app URL in Kinde
+cat > .env <<EOF
+VITE_BACKEND_URL=http://localhost:8080
 VITE_KINDE_CLIENT_ID=your_kinde_client_id
 VITE_KINDE_DOMAIN=your_kinde_domain
 VITE_KINDE_REDIRECT_URL=http://localhost:5173
 VITE_KINDE_LOGOUT_URL=http://localhost:5173
 VITE_KINDE_AUDIENCE=your_kinde_audience
-
-# Optional
 VITE_TARGET_ENV=development
-```
-
-3) Start the app
-
-```
+EOF
 npm run dev
 ```
 
-4) Build & preview production
-
+C) Mobile (Flutter)
+1) Create a mobile/.env file with your backend and Kinde settings:
 ```
-npm run build
-npm run preview
+# Backend API (choose based on how you run the backend)
+# Android Emulator: use 10.0.2.2 to reach host machine
+# BACKEND_URL=http://10.0.2.2:8080
+# iOS Simulator: localhost works
+# BACKEND_URL=http://localhost:8080
+# Physical device: use your computer's LAN IP
+# BACKEND_URL=http://<your-computer-LAN-IP>:8080
+
+# Example (uncomment one of the above or set appropriately)
+BACKEND_URL=http://10.0.2.2:8080
+
+# Kinde (must match your Kinde app settings)
+KINDE_AUTH_DOMAIN=your_kinde_domain
+KINDE_AUTH_CLIENT_ID=your_kinde_client_id
+KINDE_LOGIN_REDIRECT_URI=yourapp://callback
+KINDE_LOGOUT_REDIRECT_URI=yourapp://logout
+KINDE_AUDIENCE=your_kinde_audience
+```
+2) Run the app:
+```
+cd mobile
+flutter pub get
+flutter run
 ```
 
-> Note: The backend is a Go (Golang) service. Make sure it’s running and that `VITE_BACKEND_URL` points to it.
+Notes:
+- If you used Docker Compose above, the API is exposed at http://localhost:8080 by default.
+- For Android Emulator, http://10.0.2.2:8080 maps to your host's localhost:8080.
+- Ensure your firewall allows connections if testing from a physical device.
 
 ## 🏠 Self-hosted (Docker Compose)
 Prerequisites: Docker Desktop or Docker Engine 20.10+
