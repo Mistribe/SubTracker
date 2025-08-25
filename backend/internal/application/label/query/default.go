@@ -3,8 +3,8 @@ package query
 import (
 	"context"
 
-	"github.com/oleexo/subtracker/internal/domain/label"
-	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type DefaultLabelQuery struct {

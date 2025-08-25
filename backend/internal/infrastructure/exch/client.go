@@ -11,7 +11,7 @@ import (
 	"github.com/Oleexo/config-go"
 	"golang.org/x/text/currency"
 
-	"github.com/oleexo/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
 const (

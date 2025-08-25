@@ -3,9 +3,9 @@ package user
 import (
 	"context"
 
-	"github.com/oleexo/subtracker/internal/domain/currency"
-	"github.com/oleexo/subtracker/internal/domain/lang"
-	"github.com/oleexo/subtracker/internal/domain/user"
+	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/lang"
+	"github.com/mistribe/subtracker/internal/domain/user"
 )
 
 type service struct {

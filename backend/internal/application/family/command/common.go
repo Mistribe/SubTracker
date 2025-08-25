@@ -3,8 +3,8 @@ package command
 import (
 	"context"
 
-	"github.com/oleexo/subtracker/internal/domain/auth"
-	"github.com/oleexo/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/auth"
+	"github.com/mistribe/subtracker/internal/domain/family"
 )
 
 func ensureOwnerIsEditor(ctx context.Context, ownerId string) error {

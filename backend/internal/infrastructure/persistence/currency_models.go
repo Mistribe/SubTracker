@@ -1,8 +1,8 @@
 package persistence
 
 import (
-	"github.com/oleexo/subtracker/internal/domain/currency"
-	"github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/model"
+	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/infrastructure/persistence/jet/app/public/model"
 )
 
 func createCurrencyRateFromJet(jetCurrencyRate model.CurrencyRates) (currency.Rate, error) {

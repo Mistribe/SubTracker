@@ -8,12 +8,12 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 
-	"github.com/oleexo/subtracker/internal/domain/user"
-	"github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/model"
+	"github.com/mistribe/subtracker/internal/domain/user"
+	"github.com/mistribe/subtracker/internal/infrastructure/persistence/jet/app/public/model"
 
 	. "github.com/go-jet/jet/v2/postgres"
 
-	. "github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/table"
+	. "github.com/mistribe/subtracker/internal/infrastructure/persistence/jet/app/public/table"
 )
 
 type UserRepository struct {

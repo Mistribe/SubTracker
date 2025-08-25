@@ -1,9 +1,9 @@
 package subscription
 
 import (
-	"github.com/oleexo/subtracker/internal/domain/currency"
-	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/pkg/x/validation"
+	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/entity"
+	"github.com/mistribe/subtracker/pkg/x/validation"
 )
 
 type CustomPrice interface {

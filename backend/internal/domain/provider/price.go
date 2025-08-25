@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 
-	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/pkg/x/validation"
+	"github.com/mistribe/subtracker/internal/domain/entity"
+	"github.com/mistribe/subtracker/pkg/x/validation"
 )
 
 func priceUniqueComparer(p1, p2 Price) bool {

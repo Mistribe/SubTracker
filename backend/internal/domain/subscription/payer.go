@@ -3,7 +3,7 @@ package subscription
 import (
 	"github.com/google/uuid"
 
-	"github.com/oleexo/subtracker/internal/domain/entity"
+	"github.com/mistribe/subtracker/internal/domain/entity"
 )
 
 type PayerType string

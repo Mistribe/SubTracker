@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/oleexo/subtracker/internal/domain/entity"
+	"github.com/mistribe/subtracker/internal/domain/entity"
 )
 
 // Repository defines the interface for currency rate operations

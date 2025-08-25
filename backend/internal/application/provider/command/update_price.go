@@ -7,9 +7,9 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 
-	"github.com/oleexo/subtracker/internal/domain/provider"
-	"github.com/oleexo/subtracker/pkg/ext"
-	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/pkg/ext"
+	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type UpdatePriceCommand struct {

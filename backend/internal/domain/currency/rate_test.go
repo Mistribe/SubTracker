@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	xcur "golang.org/x/text/currency"
 
-	dc "github.com/oleexo/subtracker/internal/domain/currency"
+	dc "github.com/mistribe/subtracker/internal/domain/currency"
 )
 
 func makeRateAt(

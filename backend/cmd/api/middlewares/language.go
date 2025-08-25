@@ -3,7 +3,7 @@ package middlewares
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/oleexo/subtracker/internal/domain/lang"
+	"github.com/mistribe/subtracker/internal/domain/lang"
 )
 
 type LanguageMiddleware struct{}

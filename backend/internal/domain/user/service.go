@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 
-	"github.com/oleexo/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/currency"
 )
 
 type Service interface {
