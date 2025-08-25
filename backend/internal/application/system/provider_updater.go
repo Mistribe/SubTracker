@@ -191,7 +191,7 @@ func newProviderUpdater(
 	providerPath := cfg.GetStringOrDefault("DATA_PROVIDER", "")
 	var downloader DataDownloader
 	if providerPath != "" {
-		downloader = newDataDownloader(providerPath)
+		downloader = newDataDownloader(providerPath, cfg)
 	}
 	return &providerUpdater{
 		downloader:         downloader,
