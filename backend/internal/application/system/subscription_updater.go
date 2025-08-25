@@ -193,7 +193,7 @@ func newSubscriptionUpdater(
 	labelPath := cfg.GetStringOrDefault("DATA_SUBSCRIPTION", "")
 	var downloader DataDownloader
 	if labelPath != "" {
-		downloader = newDataDownloader(labelPath)
+		downloader = newDataDownloader(labelPath, cfg)
 	}
 
 	return &subscriptionUpdater{
