@@ -77,3 +77,59 @@ func TestTernary(t *testing.T) {
 		}
 	})
 }
+
+func TestTernaryFunc(t *testing.T) {
+	t.Run("condition_true_returns_ifTrue_string", func(t *testing.T) {
+		result := x.TernaryFunc(true, func() string { return "hello" }, func() string { return "world" })
+		expected := "hello"
+		if result != expected {
+			t.Errorf("expected %v, got %v", expected, result)
+		}
+	})
+
+	t.Run("condition_false_returns_ifFalse_string", func(t *testing.T) {
+		result := x.TernaryFunc(false, func() string { return "hello" }, func() string { return "world" })
+		expected := "world"
+		if result != expected {
+			t.Errorf("expected %v, got %v", expected, result)
+		}
+	})
+
+	t.Run("condition_true_returns_ifTrue_int", func(t *testing.T) {
+		result := x.TernaryFunc(true, func() int { return 42 }, func() int { return 0 })
+		expected := 42
+		if result != expected {
+			t.Errorf("expected %v, got %v", expected, result)
+		}
+	})
+
+	t.Run("condition_false_returns_ifFalse_int", func(t *testing.T) {
+		result := x.TernaryFunc(false, func() int { return 42 }, func() int { return 0 })
+		expected := 0
+		if result != expected {
+			t.Errorf("expected %v, got %v", expected, result)
+		}
+	})
+
+	t.Run("condition_true_returns_ifTrue_pointer", func(t *testing.T) {
+		var ptr1 *int = nil
+		var ptr2 = new(int)
+		*ptr2 = 10
+
+		result := x.TernaryFunc(true, func() *int { return ptr1 }, func() *int { return ptr2 })
+		if result != ptr1 {
+			t.Errorf("expected ptr1 (nil), got %v", result)
+		}
+	})
+
+	t.Run("condition_false_returns_ifFalse_pointer", func(t *testing.T) {
+		var ptr1 *int = nil
+		var ptr2 = new(int)
+		*ptr2 = 10
+
+		result := x.TernaryFunc(false, func() *int { return ptr1 }, func() *int { return ptr2 })
+		if result != ptr2 {
+			t.Errorf("expected ptr2, got %v", result)
+		}
+	})
+}
