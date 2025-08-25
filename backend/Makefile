@@ -25,6 +25,7 @@ dart-client:
     -v ./cmd/api/docs/swagger.yaml:/app/openapi.yaml \
     --user $(id -u):$(id -g) \
     mcr.microsoft.com/openapi/kiota generate --language dart --clean-output
+
 run-deps:
 	@docker compose down -v && docker compose up --build database database.migration
 
@@ -44,7 +45,7 @@ kinde:
 sql-jet:
 	@jet -dsn=postgresql://postgres:postgres@localhost:5432/app?sslmode=disable -schema=public -path=./internal/infrastructure/persistence/jet
 
-prepare: install-deps openapi sql-jet
+prepare: install-deps openapi clients
 
 build:
 	go build -v -o ./tmp/api ./cmd/api/
