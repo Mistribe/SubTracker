@@ -9,8 +9,8 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/currency"
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/pkg/slicesx"
-	"github.com/oleexo/subtracker/pkg/validationx"
 	"github.com/oleexo/subtracker/pkg/x"
+	"github.com/oleexo/subtracker/pkg/x/validation"
 )
 
 const (
@@ -79,7 +79,7 @@ type Subscription interface {
 	SetCustomRecurrency(customRecurrency *int32)
 
 	Equal(other Subscription) bool
-	GetValidationErrors() validationx.Errors
+	GetValidationErrors() validation.Errors
 }
 
 type subscription struct {
@@ -489,12 +489,12 @@ func (s *subscription) Equal(other Subscription) bool {
 	return s.ETag() == other.ETag()
 }
 
-func (s *subscription) GetValidationErrors() validationx.Errors {
-	var errors validationx.Errors
+func (s *subscription) GetValidationErrors() validation.Errors {
+	var errors validation.Errors
 
 	if s.friendlyName != nil && len(*s.friendlyName) > 100 {
 		errors = append(errors,
-			validationx.NewError("friendlyName", "FriendlyName cannot be longer than 100 characters"))
+			validation.NewError("friendlyName", "FriendlyName cannot be longer than 100 characters"))
 	}
 
 	if s.freeTrial != nil {
@@ -510,21 +510,21 @@ func (s *subscription) GetValidationErrors() validationx.Errors {
 	}
 
 	if s.serviceUsers != nil && s.serviceUsers.Len() > MaxFamilyMemberPerSubscriptionCount {
-		errors = append(errors, validationx.NewError("serviceUsers", "Number of service users cannot exceed 10"))
+		errors = append(errors, validation.NewError("serviceUsers", "Number of service users cannot exceed 10"))
 	}
 
 	if s.recurrency == CustomRecurrency && s.customRecurrency == nil {
 		errors = append(errors,
-			validationx.NewError("customRecurrency",
+			validation.NewError("customRecurrency",
 				"CustomRecurrency is required when Recurrency is CustomRecurrency"))
 	}
 
 	if s.customRecurrency != nil && *s.customRecurrency <= 0 {
-		errors = append(errors, validationx.NewError("customRecurrency", "CustomRecurrency must be greater than 0"))
+		errors = append(errors, validation.NewError("customRecurrency", "CustomRecurrency must be greater than 0"))
 	}
 
 	if s.endDate != nil && !s.endDate.IsZero() && s.endDate.Before(s.startDate) {
-		errors = append(errors, validationx.NewError("endDate", "EndDate must be after StartDate"))
+		errors = append(errors, validation.NewError("endDate", "EndDate must be after StartDate"))
 	}
 
 	if errors.HasErrors() {

@@ -9,8 +9,8 @@ import (
 	"github.com/oleexo/subtracker/internal/domain/auth"
 	"github.com/oleexo/subtracker/internal/domain/entity"
 	"github.com/oleexo/subtracker/pkg/slicesx"
-	"github.com/oleexo/subtracker/pkg/validationx"
 	"github.com/oleexo/subtracker/pkg/x"
+	"github.com/oleexo/subtracker/pkg/x/validation"
 )
 
 type Provider interface {
@@ -36,7 +36,7 @@ type Provider interface {
 	Plans() *slicesx.Tracked[Plan]
 	SetPlans(plans []Plan)
 	Equal(other Provider) bool
-	GetValidationErrors() validationx.Errors
+	GetValidationErrors() validation.Errors
 	ContainsPlan(planId uuid.UUID) bool
 	AddPlan(plan Plan) bool
 	GetPlanById(planId uuid.UUID) Plan
@@ -249,11 +249,11 @@ func (p *provider) Equal(other Provider) bool {
 	return p.ETag() == other.ETag()
 }
 
-func (p *provider) GetValidationErrors() validationx.Errors {
-	var errors validationx.Errors
+func (p *provider) GetValidationErrors() validation.Errors {
+	var errors validation.Errors
 
 	if strings.TrimSpace(p.name) == "" {
-		errors = append(errors, validationx.NewError(
+		errors = append(errors, validation.NewError(
 			"name",
 			"name is required and cannot be empty",
 		))

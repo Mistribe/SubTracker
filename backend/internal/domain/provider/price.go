@@ -7,7 +7,7 @@ import (
 	"golang.org/x/text/currency"
 
 	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/pkg/validationx"
+	"github.com/oleexo/subtracker/pkg/x/validation"
 )
 
 func priceUniqueComparer(p1, p2 Price) bool {
@@ -31,7 +31,7 @@ type Price interface {
 	Amount() float64
 	SetAmount(amount float64)
 	Equal(other Price) bool
-	GetValidationErrors() validationx.Errors
+	GetValidationErrors() validation.Errors
 }
 
 type price struct {
@@ -117,25 +117,25 @@ func (p *price) Equal(other Price) bool {
 	return p.ETag() == other.ETag()
 }
 
-func (p *price) GetValidationErrors() validationx.Errors {
-	var errors validationx.Errors
+func (p *price) GetValidationErrors() validation.Errors {
+	var errors validation.Errors
 
 	if p.startDate.IsZero() {
-		errors = append(errors, validationx.NewError(
+		errors = append(errors, validation.NewError(
 			"startDate",
 			"start date is required",
 		))
 	}
 
 	if p.amount <= 0 {
-		errors = append(errors, validationx.NewError(
+		errors = append(errors, validation.NewError(
 			"amount",
 			"amount must be greater than 0",
 		))
 	}
 
 	if p.currency.String() == "" {
-		errors = append(errors, validationx.NewError(
+		errors = append(errors, validation.NewError(
 			"currency",
 			"currency is required",
 		))
