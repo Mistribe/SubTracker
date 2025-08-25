@@ -30,8 +30,8 @@ type FamilySeeInvitationResponse struct {
 	InvitedInasmuchAs string `json:"invited_inasmuch_as" example:"OWNER"`
 }
 
-func NewFamilySeeInvitationEndpoint(handler core.QueryHandler[query.SeeInvitationQuery, query.SeeInvitationQueryResponse]) FamilySeeInvitationEndpoint {
-	return FamilySeeInvitationEndpoint{
+func NewFamilySeeInvitationEndpoint(handler core.QueryHandler[query.SeeInvitationQuery, query.SeeInvitationQueryResponse]) *FamilySeeInvitationEndpoint {
+	return &FamilySeeInvitationEndpoint{
 		handler: handler,
 	}
 }
