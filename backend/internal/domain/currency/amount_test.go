@@ -33,45 +33,6 @@ func TestNewInvalidAmount(t *testing.T) {
 	assert.False(t, a.IsValid(), "invalid amount should not be valid")
 }
 
-func TestAmount_ToUSD(t *testing.T) {
-	t.Run("invalid amount returns itself invalid", func(t *testing.T) {
-		a := dc.NewInvalidAmount()
-		out := a.ToUSD(nil)
-
-		assert.False(t, out.IsValid(), "ToUSD on invalid amount should remain invalid")
-	})
-
-	t.Run("already USD returns same amount", func(t *testing.T) {
-		a := dc.NewAmount(10.0, xcur.USD)
-		out := a.ToUSD(nil)
-
-		assert.True(t, out.IsValid(), "result should be valid")
-		assert.Equal(t, xcur.USD, out.Currency(), "currency should remain USD")
-		assert.Equal(t, 10.0, out.Value(), "value should be unchanged")
-	})
-
-	t.Run("missing rate returns invalid", func(t *testing.T) {
-		a := dc.NewAmount(10.0, xcur.EUR)
-		// No EUR->USD rate provided
-		out := a.ToUSD(makeRates())
-
-		assert.False(t, out.IsValid(), "missing conversion rate should yield invalid amount")
-	})
-
-	t.Run("converts to USD when rate exists", func(t *testing.T) {
-		a := dc.NewAmount(10.0, xcur.EUR)
-		rates := makeRates(
-			makeRate(xcur.EUR, xcur.USD, 1.2), // 10 EUR -> 12 USD
-		)
-
-		out := a.ToUSD(rates)
-
-		assert.True(t, out.IsValid(), "result should be valid")
-		assert.Equal(t, xcur.USD, out.Currency(), "currency should be USD")
-		assert.InDelta(t, 12.0, out.Value(), 1e-9, "value should be multiplied by the rate")
-	})
-}
-
 func TestAmount_ToCurrency(t *testing.T) {
 	t.Run("invalid amount returns itself invalid", func(t *testing.T) {
 		a := dc.NewInvalidAmount()
