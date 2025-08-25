@@ -6,10 +6,10 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/oleexo/subtracker/internal/domain/currency"
-	"github.com/oleexo/subtracker/internal/infrastructure/cache"
-	"github.com/oleexo/subtracker/internal/infrastructure/exch"
-	"github.com/oleexo/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/infrastructure/cache"
+	"github.com/mistribe/subtracker/internal/infrastructure/exch"
+	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
 const (

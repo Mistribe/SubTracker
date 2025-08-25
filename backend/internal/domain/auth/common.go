@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	"github.com/oleexo/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/family"
 )
 
 func EnsureOwnership(ctx context.Context,

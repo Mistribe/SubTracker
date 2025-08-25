@@ -3,8 +3,8 @@ package subscription
 import (
 	"time"
 
-	"github.com/oleexo/subtracker/internal/domain/entity"
-	"github.com/oleexo/subtracker/pkg/x/validation"
+	"github.com/mistribe/subtracker/internal/domain/entity"
+	"github.com/mistribe/subtracker/pkg/x/validation"
 )
 
 type FreeTrial interface {

@@ -6,14 +6,14 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 
-	"github.com/oleexo/subtracker/cmd/api/ginfx"
-	"github.com/oleexo/subtracker/cmd/api/middlewares"
-	"github.com/oleexo/subtracker/pkg/slicesx"
-	"github.com/oleexo/subtracker/pkg/x"
+	"github.com/mistribe/subtracker/cmd/api/ginfx"
+	"github.com/mistribe/subtracker/cmd/api/middlewares"
+	"github.com/mistribe/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/pkg/x"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/oleexo/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/subscription"
 )
 
 type SubscriptionEndpointGroup struct {

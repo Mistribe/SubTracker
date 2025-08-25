@@ -6,14 +6,14 @@ import (
 	configfx "github.com/Oleexo/config-go/fx"
 	"go.uber.org/fx"
 
-	"github.com/oleexo/subtracker/internal/application"
-	"github.com/oleexo/subtracker/internal/application/system"
-	"github.com/oleexo/subtracker/internal/infrastructure/cache"
-	"github.com/oleexo/subtracker/internal/infrastructure/exch"
-	"github.com/oleexo/subtracker/internal/infrastructure/kinde"
-	"github.com/oleexo/subtracker/internal/infrastructure/logfx"
-	"github.com/oleexo/subtracker/internal/infrastructure/persistence"
-	"github.com/oleexo/subtracker/internal/infrastructure/startup"
+	"github.com/mistribe/subtracker/internal/application"
+	"github.com/mistribe/subtracker/internal/application/system"
+	"github.com/mistribe/subtracker/internal/infrastructure/cache"
+	"github.com/mistribe/subtracker/internal/infrastructure/exch"
+	"github.com/mistribe/subtracker/internal/infrastructure/kinde"
+	"github.com/mistribe/subtracker/internal/infrastructure/logfx"
+	"github.com/mistribe/subtracker/internal/infrastructure/persistence"
+	"github.com/mistribe/subtracker/internal/infrastructure/startup"
 )
 
 // @title					SubTracker API

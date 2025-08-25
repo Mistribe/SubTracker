@@ -1,10 +1,10 @@
 package persistence
 
 import (
-	"github.com/oleexo/subtracker/internal/infrastructure/persistence/jet/app/public/model"
-	"github.com/oleexo/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/internal/infrastructure/persistence/jet/app/public/model"
+	"github.com/mistribe/subtracker/pkg/slicesx"
 
-	"github.com/oleexo/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/family"
 )
 
 type FamilyWithMembers struct {

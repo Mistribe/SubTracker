@@ -5,9 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/application/label/query"
-	"github.com/oleexo/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/application/core"
+	"github.com/mistribe/subtracker/internal/application/label/query"
+	"github.com/mistribe/subtracker/internal/domain/label"
 )
 
 type LabelGetEndpoint struct {

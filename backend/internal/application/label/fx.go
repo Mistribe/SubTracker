@@ -3,10 +3,10 @@ package label
 import (
 	"go.uber.org/fx"
 
-	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/application/label/command"
-	"github.com/oleexo/subtracker/internal/application/label/query"
-	"github.com/oleexo/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/application/core"
+	"github.com/mistribe/subtracker/internal/application/label/command"
+	"github.com/mistribe/subtracker/internal/application/label/query"
+	"github.com/mistribe/subtracker/internal/domain/label"
 )
 
 func Module() fx.Option {

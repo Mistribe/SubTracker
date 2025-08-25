@@ -5,9 +5,9 @@ import (
 
 	"golang.org/x/text/currency"
 
-	"github.com/oleexo/subtracker/internal/domain/auth"
-	"github.com/oleexo/subtracker/internal/domain/user"
-	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/mistribe/subtracker/internal/domain/auth"
+	"github.com/mistribe/subtracker/internal/domain/user"
+	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type FindPreferredCurrencyQuery struct {

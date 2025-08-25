@@ -6,10 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/swaggo/swag"
 
-	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/application/label/query"
-	"github.com/oleexo/subtracker/internal/domain/label"
-	"github.com/oleexo/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/internal/application/core"
+	"github.com/mistribe/subtracker/internal/application/label/query"
+	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
 type DefaultLabelEndpoint struct {

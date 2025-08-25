@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/oleexo/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/label"
 )
 
 func ensureLabelExists(ctx context.Context,

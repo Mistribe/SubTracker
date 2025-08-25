@@ -3,7 +3,7 @@ package x_test
 import (
 	"testing"
 
-	"github.com/oleexo/subtracker/pkg/x"
+	"github.com/mistribe/subtracker/pkg/x"
 )
 
 func TestMakeKey(t *testing.T) {

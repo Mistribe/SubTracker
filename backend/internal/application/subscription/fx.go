@@ -3,10 +3,10 @@ package subscription
 import (
 	"go.uber.org/fx"
 
-	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/application/subscription/command"
-	"github.com/oleexo/subtracker/internal/application/subscription/query"
-	"github.com/oleexo/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/application/core"
+	"github.com/mistribe/subtracker/internal/application/subscription/command"
+	"github.com/mistribe/subtracker/internal/application/subscription/query"
+	"github.com/mistribe/subtracker/internal/domain/subscription"
 )
 
 func Module() fx.Option {

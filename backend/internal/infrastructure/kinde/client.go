@@ -14,7 +14,7 @@ import (
 
 	"github.com/Oleexo/config-go"
 
-	openapi "github.com/oleexo/subtracker/internal/infrastructure/kinde/gen"
+	openapi "github.com/mistribe/subtracker/internal/infrastructure/kinde/gen"
 )
 
 // TokenGenerator is an interface for generating authentication tokens and providing API clients

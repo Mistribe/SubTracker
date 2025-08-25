@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/oleexo/subtracker/cmd/api/ginfx"
-	"github.com/oleexo/subtracker/cmd/api/middlewares"
+	"github.com/mistribe/subtracker/cmd/api/ginfx"
+	"github.com/mistribe/subtracker/cmd/api/middlewares"
 )
 
 type CurrencyEndpointGroup struct {

@@ -3,8 +3,8 @@ package query
 import (
 	"context"
 
-	"github.com/oleexo/subtracker/internal/domain/family"
-	"github.com/oleexo/subtracker/pkg/langext/result"
+	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type FindUserFamilyQuery struct {

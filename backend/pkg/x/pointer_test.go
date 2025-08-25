@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/oleexo/subtracker/pkg/x"
+	"github.com/mistribe/subtracker/pkg/x"
 )
 
 func TestPointerFunc(t *testing.T) {

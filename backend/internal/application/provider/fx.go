@@ -3,10 +3,10 @@ package provider
 import (
 	"go.uber.org/fx"
 
-	"github.com/oleexo/subtracker/internal/application/core"
-	"github.com/oleexo/subtracker/internal/application/provider/command"
-	"github.com/oleexo/subtracker/internal/application/provider/query"
-	"github.com/oleexo/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/application/core"
+	"github.com/mistribe/subtracker/internal/application/provider/command"
+	"github.com/mistribe/subtracker/internal/application/provider/query"
+	"github.com/mistribe/subtracker/internal/domain/provider"
 )
 
 func Module() fx.Option {
