@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/Oleexo/config-go"
 )
 
 type DataDownloader interface {
@@ -14,10 +16,10 @@ type DataDownloader interface {
 	String() string
 }
 
-func newDataDownloader(source string) DataDownloader {
+func newDataDownloader(source string, cfg config.Configuration) DataDownloader {
 	if strings.HasPrefix(source, "http") ||
 		strings.HasPrefix(source, "https") {
-		return newHttpDownloader(source)
+		return newHttpDownloader(source, cfg)
 	}
 	return newFileDownloader(source)
 }
@@ -50,19 +52,38 @@ func (f fileDownloader) Download(ctx context.Context) ([]byte, error) {
 }
 
 type httpDownloader struct {
-	url string
+	url   string
+	token string
 }
 
 func (h httpDownloader) String() string {
 	return h.url
 }
 
-func newHttpDownloader(url string) *httpDownloader {
-	return &httpDownloader{url: url}
+func newHttpDownloader(url string, cfg config.Configuration) *httpDownloader {
+	token := cfg.GetStringOrDefault("DATA_PRIVATE_TOKEN", "")
+	return &httpDownloader{
+		url:   url,
+		token: token,
+	}
 }
 
 func (h httpDownloader) Download(ctx context.Context) ([]byte, error) {
-	resp, err := http.Get(h.url)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, h.url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request for URL %s: %w", h.url, err)
+	}
+	if h.token != "" {
+		if strings.HasPrefix(h.url, "https://api.github.com/") {
+			req.Header.Add("Accept", "application/vnd.github.v3.raw")
+			req.Header.Add("Authorization", "token "+h.token)
+		} else {
+			req.Header.Add("Authorization", "Bearer "+h.token)
+		}
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to download from URL %s: %w", h.url, err)
 	}
@@ -71,6 +92,10 @@ func (h httpDownloader) Download(ctx context.Context) ([]byte, error) {
 	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body from %s: %w", h.url, err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to download from URL %s: %s", h.url, string(content))
 	}
 
 	return content, nil

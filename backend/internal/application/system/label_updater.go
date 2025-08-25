@@ -102,12 +102,13 @@ func (l labelUpdater) updateDatabase(ctx context.Context, sourceLabels []systemL
 	return nil
 }
 
-func newLabelUpdater(cfg config.Configuration,
+func newLabelUpdater(
+	cfg config.Configuration,
 	labelRepository label.Repository) *labelUpdater {
 	labelPath := cfg.GetStringOrDefault("DATA_LABEL", "")
 	var downloader DataDownloader
 	if labelPath != "" {
-		downloader = newDataDownloader(labelPath)
+		downloader = newDataDownloader(labelPath, cfg)
 	}
 	return &labelUpdater{
 		downloader:      downloader,

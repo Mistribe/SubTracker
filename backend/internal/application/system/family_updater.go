@@ -38,7 +38,7 @@ func newFamilyUpdater(
 	providerPath := cfg.GetStringOrDefault("DATA_FAMILY", "")
 	var downloader DataDownloader
 	if providerPath != "" {
-		downloader = newDataDownloader(providerPath)
+		downloader = newDataDownloader(providerPath, cfg)
 	}
 	return &familyUpdater{
 		downloader:       downloader,
@@ -59,7 +59,7 @@ func (l familyUpdater) Update(ctx context.Context) error {
 		return fmt.Errorf("failed to download familys: %w", err)
 	}
 	var familys []systemFamilyModel
-	if err := json.Unmarshal(content, &familys); err != nil {
+	if err = json.Unmarshal(content, &familys); err != nil {
 		return fmt.Errorf("failed to parse JSON content from %s: %w", l.downloader.String(), err)
 	}
 
