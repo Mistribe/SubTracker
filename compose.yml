@@ -1,0 +1,17 @@
+services:
+  web:
+    extends:
+      service: web
+      file: web/compose.yml
+  api:
+    extends:
+      service: api
+      file: backend/compose.yml
+  database:
+    extends:
+      service: database
+      file: backend/compose.yml
+  database.migration:
+    extends:
+      service: database.migration
+      file: backend/compose.yml
