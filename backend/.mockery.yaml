@@ -1,16 +1,38 @@
 packages:
-  github.com/oleexo/subtracker/internal/domain/label:
+  github.com/mistribe/subtracker/internal/domain/auth:
     config:
-      dir: ./internal/domain/label/mocks
+      dir: ./internal/domain/auth/mocks
+    interfaces:
+      Service:
+  github.com/mistribe/subtracker/internal/domain/currency:
+    config:
+      dir: ./internal/domain/currency/mocks
     interfaces:
       Repository:
-  github.com/oleexo/subtracker/internal/domain/family:
+      Service:
+  github.com/mistribe/subtracker/internal/domain/family:
     config:
       dir: ./internal/domain/family/mocks
     interfaces:
       Repository:
-  github.com/oleexo/subtracker/internal/domain/subscription:
+  github.com/mistribe/subtracker/internal/domain/label:
+    config:
+      dir: ./internal/domain/label/mocks
+    interfaces:
+      Repository:
+  github.com/mistribe/subtracker/internal/domain/provider:
+    config:
+      dir: ./internal/domain/provider/mocks
+    interfaces:
+      Repository:
+  github.com/mistribe/subtracker/internal/domain/subscription:
     config:
       dir: ./internal/domain/subscription/mocks
     interfaces:
       Repository:
+  github.com/mistribe/subtracker/internal/domain/user:
+    config:
+      dir: ./internal/domain/user/mocks
+    interfaces:
+      Repository:
+      Service:

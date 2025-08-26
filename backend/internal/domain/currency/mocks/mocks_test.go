@@ -2,13 +2,14 @@
 // github.com/vektra/mockery
 // template: testify
 
-package label
+package currency
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
-	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/currency"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -180,104 +181,24 @@ func (_c *MockRepository_Exists_Call) RunAndReturn(run func(ctx context.Context,
 	return _c
 }
 
-// GetAll provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetAll(ctx context.Context, userId string, parameters label.QueryParameters) ([]label.Label, int64, error) {
-	ret := _mock.Called(ctx, userId, parameters)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetAll")
-	}
-
-	var r0 []label.Label
-	var r1 int64
-	var r2 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, label.QueryParameters) ([]label.Label, int64, error)); ok {
-		return returnFunc(ctx, userId, parameters)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, label.QueryParameters) []label.Label); ok {
-		r0 = returnFunc(ctx, userId, parameters)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]label.Label)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, label.QueryParameters) int64); ok {
-		r1 = returnFunc(ctx, userId, parameters)
-	} else {
-		r1 = ret.Get(1).(int64)
-	}
-	if returnFunc, ok := ret.Get(2).(func(context.Context, string, label.QueryParameters) error); ok {
-		r2 = returnFunc(ctx, userId, parameters)
-	} else {
-		r2 = ret.Error(2)
-	}
-	return r0, r1, r2
-}
-
-// MockRepository_GetAll_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAll'
-type MockRepository_GetAll_Call struct {
-	*mock.Call
-}
-
-// GetAll is a helper method to define mock.On call
-//   - ctx context.Context
-//   - userId string
-//   - parameters label.QueryParameters
-func (_e *MockRepository_Expecter) GetAll(ctx interface{}, userId interface{}, parameters interface{}) *MockRepository_GetAll_Call {
-	return &MockRepository_GetAll_Call{Call: _e.mock.On("GetAll", ctx, userId, parameters)}
-}
-
-func (_c *MockRepository_GetAll_Call) Run(run func(ctx context.Context, userId string, parameters label.QueryParameters)) *MockRepository_GetAll_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 string
-		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		var arg2 label.QueryParameters
-		if args[2] != nil {
-			arg2 = args[2].(label.QueryParameters)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockRepository_GetAll_Call) Return(labels []label.Label, n int64, err error) *MockRepository_GetAll_Call {
-	_c.Call.Return(labels, n, err)
-	return _c
-}
-
-func (_c *MockRepository_GetAll_Call) RunAndReturn(run func(ctx context.Context, userId string, parameters label.QueryParameters) ([]label.Label, int64, error)) *MockRepository_GetAll_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetById provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetById(ctx context.Context, entityId uuid.UUID) (label.Label, error) {
+func (_mock *MockRepository) GetById(ctx context.Context, entityId uuid.UUID) (currency.Rate, error) {
 	ret := _mock.Called(ctx, entityId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetById")
 	}
 
-	var r0 label.Label
+	var r0 currency.Rate
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (label.Label, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (currency.Rate, error)); ok {
 		return returnFunc(ctx, entityId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) label.Label); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) currency.Rate); ok {
 		r0 = returnFunc(ctx, entityId)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(label.Label)
+			r0 = ret.Get(0).(currency.Rate)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
@@ -318,109 +239,33 @@ func (_c *MockRepository_GetById_Call) Run(run func(ctx context.Context, entityI
 	return _c
 }
 
-func (_c *MockRepository_GetById_Call) Return(label1 label.Label, err error) *MockRepository_GetById_Call {
-	_c.Call.Return(label1, err)
+func (_c *MockRepository_GetById_Call) Return(rate currency.Rate, err error) *MockRepository_GetById_Call {
+	_c.Call.Return(rate, err)
 	return _c
 }
 
-func (_c *MockRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId uuid.UUID) (label.Label, error)) *MockRepository_GetById_Call {
+func (_c *MockRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId uuid.UUID) (currency.Rate, error)) *MockRepository_GetById_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetByIdForUser provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetByIdForUser(ctx context.Context, userId string, id uuid.UUID) (label.Label, error) {
-	ret := _mock.Called(ctx, userId, id)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetByIdForUser")
-	}
-
-	var r0 label.Label
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) (label.Label, error)); ok {
-		return returnFunc(ctx, userId, id)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) label.Label); ok {
-		r0 = returnFunc(ctx, userId, id)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(label.Label)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, userId, id)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockRepository_GetByIdForUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByIdForUser'
-type MockRepository_GetByIdForUser_Call struct {
-	*mock.Call
-}
-
-// GetByIdForUser is a helper method to define mock.On call
-//   - ctx context.Context
-//   - userId string
-//   - id uuid.UUID
-func (_e *MockRepository_Expecter) GetByIdForUser(ctx interface{}, userId interface{}, id interface{}) *MockRepository_GetByIdForUser_Call {
-	return &MockRepository_GetByIdForUser_Call{Call: _e.mock.On("GetByIdForUser", ctx, userId, id)}
-}
-
-func (_c *MockRepository_GetByIdForUser_Call) Run(run func(ctx context.Context, userId string, id uuid.UUID)) *MockRepository_GetByIdForUser_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 string
-		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		var arg2 uuid.UUID
-		if args[2] != nil {
-			arg2 = args[2].(uuid.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockRepository_GetByIdForUser_Call) Return(label1 label.Label, err error) *MockRepository_GetByIdForUser_Call {
-	_c.Call.Return(label1, err)
-	return _c
-}
-
-func (_c *MockRepository_GetByIdForUser_Call) RunAndReturn(run func(ctx context.Context, userId string, id uuid.UUID) (label.Label, error)) *MockRepository_GetByIdForUser_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetSystemLabels provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetSystemLabels(ctx context.Context) ([]label.Label, error) {
+// GetLatestUpdateDate provides a mock function for the type MockRepository
+func (_mock *MockRepository) GetLatestUpdateDate(ctx context.Context) (time.Time, error) {
 	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetSystemLabels")
+		panic("no return value specified for GetLatestUpdateDate")
 	}
 
-	var r0 []label.Label
+	var r0 time.Time
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]label.Label, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (time.Time, error)); ok {
 		return returnFunc(ctx)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) []label.Label); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context) time.Time); ok {
 		r0 = returnFunc(ctx)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]label.Label)
-		}
+		r0 = ret.Get(0).(time.Time)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = returnFunc(ctx)
@@ -430,18 +275,18 @@ func (_mock *MockRepository) GetSystemLabels(ctx context.Context) ([]label.Label
 	return r0, r1
 }
 
-// MockRepository_GetSystemLabels_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetSystemLabels'
-type MockRepository_GetSystemLabels_Call struct {
+// MockRepository_GetLatestUpdateDate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetLatestUpdateDate'
+type MockRepository_GetLatestUpdateDate_Call struct {
 	*mock.Call
 }
 
-// GetSystemLabels is a helper method to define mock.On call
+// GetLatestUpdateDate is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockRepository_Expecter) GetSystemLabels(ctx interface{}) *MockRepository_GetSystemLabels_Call {
-	return &MockRepository_GetSystemLabels_Call{Call: _e.mock.On("GetSystemLabels", ctx)}
+func (_e *MockRepository_Expecter) GetLatestUpdateDate(ctx interface{}) *MockRepository_GetLatestUpdateDate_Call {
+	return &MockRepository_GetLatestUpdateDate_Call{Call: _e.mock.On("GetLatestUpdateDate", ctx)}
 }
 
-func (_c *MockRepository_GetSystemLabels_Call) Run(run func(ctx context.Context)) *MockRepository_GetSystemLabels_Call {
+func (_c *MockRepository_GetLatestUpdateDate_Call) Run(run func(ctx context.Context)) *MockRepository_GetLatestUpdateDate_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -454,18 +299,86 @@ func (_c *MockRepository_GetSystemLabels_Call) Run(run func(ctx context.Context)
 	return _c
 }
 
-func (_c *MockRepository_GetSystemLabels_Call) Return(labels []label.Label, err error) *MockRepository_GetSystemLabels_Call {
-	_c.Call.Return(labels, err)
+func (_c *MockRepository_GetLatestUpdateDate_Call) Return(time1 time.Time, err error) *MockRepository_GetLatestUpdateDate_Call {
+	_c.Call.Return(time1, err)
 	return _c
 }
 
-func (_c *MockRepository_GetSystemLabels_Call) RunAndReturn(run func(ctx context.Context) ([]label.Label, error)) *MockRepository_GetSystemLabels_Call {
+func (_c *MockRepository_GetLatestUpdateDate_Call) RunAndReturn(run func(ctx context.Context) (time.Time, error)) *MockRepository_GetLatestUpdateDate_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetRatesByDate provides a mock function for the type MockRepository
+func (_mock *MockRepository) GetRatesByDate(ctx context.Context, date time.Time) (currency.Rates, error) {
+	ret := _mock.Called(ctx, date)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetRatesByDate")
+	}
+
+	var r0 currency.Rates
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Time) (currency.Rates, error)); ok {
+		return returnFunc(ctx, date)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Time) currency.Rates); ok {
+		r0 = returnFunc(ctx, date)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(currency.Rates)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, time.Time) error); ok {
+		r1 = returnFunc(ctx, date)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockRepository_GetRatesByDate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetRatesByDate'
+type MockRepository_GetRatesByDate_Call struct {
+	*mock.Call
+}
+
+// GetRatesByDate is a helper method to define mock.On call
+//   - ctx context.Context
+//   - date time.Time
+func (_e *MockRepository_Expecter) GetRatesByDate(ctx interface{}, date interface{}) *MockRepository_GetRatesByDate_Call {
+	return &MockRepository_GetRatesByDate_Call{Call: _e.mock.On("GetRatesByDate", ctx, date)}
+}
+
+func (_c *MockRepository_GetRatesByDate_Call) Run(run func(ctx context.Context, date time.Time)) *MockRepository_GetRatesByDate_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 time.Time
+		if args[1] != nil {
+			arg1 = args[1].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_GetRatesByDate_Call) Return(rates currency.Rates, err error) *MockRepository_GetRatesByDate_Call {
+	_c.Call.Return(rates, err)
+	return _c
+}
+
+func (_c *MockRepository_GetRatesByDate_Call) RunAndReturn(run func(ctx context.Context, date time.Time) (currency.Rates, error)) *MockRepository_GetRatesByDate_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Save provides a mock function for the type MockRepository
-func (_mock *MockRepository) Save(ctx context.Context, entities ...label.Label) error {
+func (_mock *MockRepository) Save(ctx context.Context, entities ...currency.Rate) error {
 	var tmpRet mock.Arguments
 	if len(entities) > 0 {
 		tmpRet = _mock.Called(ctx, entities)
@@ -479,7 +392,7 @@ func (_mock *MockRepository) Save(ctx context.Context, entities ...label.Label) 
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, ...label.Label) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...currency.Rate) error); ok {
 		r0 = returnFunc(ctx, entities...)
 	} else {
 		r0 = ret.Error(0)
@@ -494,22 +407,22 @@ type MockRepository_Save_Call struct {
 
 // Save is a helper method to define mock.On call
 //   - ctx context.Context
-//   - entities ...label.Label
+//   - entities ...currency.Rate
 func (_e *MockRepository_Expecter) Save(ctx interface{}, entities ...interface{}) *MockRepository_Save_Call {
 	return &MockRepository_Save_Call{Call: _e.mock.On("Save",
 		append([]interface{}{ctx}, entities...)...)}
 }
 
-func (_c *MockRepository_Save_Call) Run(run func(ctx context.Context, entities ...label.Label)) *MockRepository_Save_Call {
+func (_c *MockRepository_Save_Call) Run(run func(ctx context.Context, entities ...currency.Rate)) *MockRepository_Save_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 []label.Label
-		var variadicArgs []label.Label
+		var arg1 []currency.Rate
+		var variadicArgs []currency.Rate
 		if len(args) > 1 {
-			variadicArgs = args[1].([]label.Label)
+			variadicArgs = args[1].([]currency.Rate)
 		}
 		arg1 = variadicArgs
 		run(
@@ -525,7 +438,108 @@ func (_c *MockRepository_Save_Call) Return(err error) *MockRepository_Save_Call 
 	return _c
 }
 
-func (_c *MockRepository_Save_Call) RunAndReturn(run func(ctx context.Context, entities ...label.Label) error) *MockRepository_Save_Call {
+func (_c *MockRepository_Save_Call) RunAndReturn(run func(ctx context.Context, entities ...currency.Rate) error) *MockRepository_Save_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NewMockService creates a new instance of MockService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func NewMockService(t interface {
+	mock.TestingT
+	Cleanup(func())
+}) *MockService {
+	mock := &MockService{}
+	mock.Mock.Test(t)
+
+	t.Cleanup(func() { mock.AssertExpectations(t) })
+
+	return mock
+}
+
+// MockService is an autogenerated mock type for the Service type
+type MockService struct {
+	mock.Mock
+}
+
+type MockService_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *MockService) EXPECT() *MockService_Expecter {
+	return &MockService_Expecter{mock: &_m.Mock}
+}
+
+// ConvertTo provides a mock function for the type MockService
+func (_mock *MockService) ConvertTo(ctx context.Context, from currency.Amount, to currency.Unit) (currency.Amount, error) {
+	ret := _mock.Called(ctx, from, to)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ConvertTo")
+	}
+
+	var r0 currency.Amount
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, currency.Amount, currency.Unit) (currency.Amount, error)); ok {
+		return returnFunc(ctx, from, to)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, currency.Amount, currency.Unit) currency.Amount); ok {
+		r0 = returnFunc(ctx, from, to)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(currency.Amount)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, currency.Amount, currency.Unit) error); ok {
+		r1 = returnFunc(ctx, from, to)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockService_ConvertTo_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ConvertTo'
+type MockService_ConvertTo_Call struct {
+	*mock.Call
+}
+
+// ConvertTo is a helper method to define mock.On call
+//   - ctx context.Context
+//   - from currency.Amount
+//   - to currency.Unit
+func (_e *MockService_Expecter) ConvertTo(ctx interface{}, from interface{}, to interface{}) *MockService_ConvertTo_Call {
+	return &MockService_ConvertTo_Call{Call: _e.mock.On("ConvertTo", ctx, from, to)}
+}
+
+func (_c *MockService_ConvertTo_Call) Run(run func(ctx context.Context, from currency.Amount, to currency.Unit)) *MockService_ConvertTo_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 currency.Amount
+		if args[1] != nil {
+			arg1 = args[1].(currency.Amount)
+		}
+		var arg2 currency.Unit
+		if args[2] != nil {
+			arg2 = args[2].(currency.Unit)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockService_ConvertTo_Call) Return(amount currency.Amount, err error) *MockService_ConvertTo_Call {
+	_c.Call.Return(amount, err)
+	return _c
+}
+
+func (_c *MockService_ConvertTo_Call) RunAndReturn(run func(ctx context.Context, from currency.Amount, to currency.Unit) (currency.Amount, error)) *MockService_ConvertTo_Call {
 	_c.Call.Return(run)
 	return _c
 }

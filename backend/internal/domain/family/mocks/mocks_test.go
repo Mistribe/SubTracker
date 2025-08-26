@@ -8,7 +8,6 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/mistribe/subtracker/internal/domain/entity"
 	"github.com/mistribe/subtracker/internal/domain/family"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -181,202 +180,6 @@ func (_c *MockRepository_Exists_Call) RunAndReturn(run func(ctx context.Context,
 	return _c
 }
 
-// GetAll provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetAll(ctx context.Context, parameters entity.QueryParameters) ([]family.Family, error) {
-	ret := _mock.Called(ctx, parameters)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetAll")
-	}
-
-	var r0 []family.Family
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, entity.QueryParameters) ([]family.Family, error)); ok {
-		return returnFunc(ctx, parameters)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, entity.QueryParameters) []family.Family); ok {
-		r0 = returnFunc(ctx, parameters)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]family.Family)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, entity.QueryParameters) error); ok {
-		r1 = returnFunc(ctx, parameters)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockRepository_GetAll_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAll'
-type MockRepository_GetAll_Call struct {
-	*mock.Call
-}
-
-// GetAll is a helper method to define mock.On call
-//   - ctx context.Context
-//   - parameters entity.QueryParameters
-func (_e *MockRepository_Expecter) GetAll(ctx interface{}, parameters interface{}) *MockRepository_GetAll_Call {
-	return &MockRepository_GetAll_Call{Call: _e.mock.On("GetAll", ctx, parameters)}
-}
-
-func (_c *MockRepository_GetAll_Call) Run(run func(ctx context.Context, parameters entity.QueryParameters)) *MockRepository_GetAll_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 entity.QueryParameters
-		if args[1] != nil {
-			arg1 = args[1].(entity.QueryParameters)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockRepository_GetAll_Call) Return(familys []family.Family, err error) *MockRepository_GetAll_Call {
-	_c.Call.Return(familys, err)
-	return _c
-}
-
-func (_c *MockRepository_GetAll_Call) RunAndReturn(run func(ctx context.Context, parameters entity.QueryParameters) ([]family.Family, error)) *MockRepository_GetAll_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetAllCount provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetAllCount(ctx context.Context) (int64, error) {
-	ret := _mock.Called(ctx)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetAllCount")
-	}
-
-	var r0 int64
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) (int64, error)); ok {
-		return returnFunc(ctx)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) int64); ok {
-		r0 = returnFunc(ctx)
-	} else {
-		r0 = ret.Get(0).(int64)
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = returnFunc(ctx)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockRepository_GetAllCount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAllCount'
-type MockRepository_GetAllCount_Call struct {
-	*mock.Call
-}
-
-// GetAllCount is a helper method to define mock.On call
-//   - ctx context.Context
-func (_e *MockRepository_Expecter) GetAllCount(ctx interface{}) *MockRepository_GetAllCount_Call {
-	return &MockRepository_GetAllCount_Call{Call: _e.mock.On("GetAllCount", ctx)}
-}
-
-func (_c *MockRepository_GetAllCount_Call) Run(run func(ctx context.Context)) *MockRepository_GetAllCount_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		run(
-			arg0,
-		)
-	})
-	return _c
-}
-
-func (_c *MockRepository_GetAllCount_Call) Return(n int64, err error) *MockRepository_GetAllCount_Call {
-	_c.Call.Return(n, err)
-	return _c
-}
-
-func (_c *MockRepository_GetAllCount_Call) RunAndReturn(run func(ctx context.Context) (int64, error)) *MockRepository_GetAllCount_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetAllMembers provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetAllMembers(ctx context.Context, id uuid.UUID) ([]family.Member, error) {
-	ret := _mock.Called(ctx, id)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetAllMembers")
-	}
-
-	var r0 []family.Member
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]family.Member, error)); ok {
-		return returnFunc(ctx, id)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []family.Member); ok {
-		r0 = returnFunc(ctx, id)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]family.Member)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, id)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockRepository_GetAllMembers_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAllMembers'
-type MockRepository_GetAllMembers_Call struct {
-	*mock.Call
-}
-
-// GetAllMembers is a helper method to define mock.On call
-//   - ctx context.Context
-//   - id uuid.UUID
-func (_e *MockRepository_Expecter) GetAllMembers(ctx interface{}, id interface{}) *MockRepository_GetAllMembers_Call {
-	return &MockRepository_GetAllMembers_Call{Call: _e.mock.On("GetAllMembers", ctx, id)}
-}
-
-func (_c *MockRepository_GetAllMembers_Call) Run(run func(ctx context.Context, id uuid.UUID)) *MockRepository_GetAllMembers_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 uuid.UUID
-		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockRepository_GetAllMembers_Call) Return(members []family.Member, err error) *MockRepository_GetAllMembers_Call {
-	_c.Call.Return(members, err)
-	return _c
-}
-
-func (_c *MockRepository_GetAllMembers_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) ([]family.Member, error)) *MockRepository_GetAllMembers_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetById provides a mock function for the type MockRepository
 func (_mock *MockRepository) GetById(ctx context.Context, entityId uuid.UUID) (family.Family, error) {
 	ret := _mock.Called(ctx, entityId)
@@ -441,6 +244,74 @@ func (_c *MockRepository_GetById_Call) Return(family1 family.Family, err error) 
 }
 
 func (_c *MockRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId uuid.UUID) (family.Family, error)) *MockRepository_GetById_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetUserFamily provides a mock function for the type MockRepository
+func (_mock *MockRepository) GetUserFamily(ctx context.Context, userId string) (family.Family, error) {
+	ret := _mock.Called(ctx, userId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetUserFamily")
+	}
+
+	var r0 family.Family
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (family.Family, error)); ok {
+		return returnFunc(ctx, userId)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) family.Family); ok {
+		r0 = returnFunc(ctx, userId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(family.Family)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, userId)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockRepository_GetUserFamily_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUserFamily'
+type MockRepository_GetUserFamily_Call struct {
+	*mock.Call
+}
+
+// GetUserFamily is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userId string
+func (_e *MockRepository_Expecter) GetUserFamily(ctx interface{}, userId interface{}) *MockRepository_GetUserFamily_Call {
+	return &MockRepository_GetUserFamily_Call{Call: _e.mock.On("GetUserFamily", ctx, userId)}
+}
+
+func (_c *MockRepository_GetUserFamily_Call) Run(run func(ctx context.Context, userId string)) *MockRepository_GetUserFamily_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_GetUserFamily_Call) Return(family1 family.Family, err error) *MockRepository_GetUserFamily_Call {
+	_c.Call.Return(family1, err)
+	return _c
+}
+
+func (_c *MockRepository_GetUserFamily_Call) RunAndReturn(run func(ctx context.Context, userId string) (family.Family, error)) *MockRepository_GetUserFamily_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -599,16 +470,22 @@ func (_c *MockRepository_MemberExists_Call) RunAndReturn(run func(ctx context.Co
 }
 
 // Save provides a mock function for the type MockRepository
-func (_mock *MockRepository) Save(ctx context.Context, entity1 family.Family) error {
-	ret := _mock.Called(ctx, entity1)
+func (_mock *MockRepository) Save(ctx context.Context, entities ...family.Family) error {
+	var tmpRet mock.Arguments
+	if len(entities) > 0 {
+		tmpRet = _mock.Called(ctx, entities)
+	} else {
+		tmpRet = _mock.Called(ctx)
+	}
+	ret := tmpRet
 
 	if len(ret) == 0 {
 		panic("no return value specified for Save")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, family.Family) error); ok {
-		r0 = returnFunc(ctx, entity1)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...family.Family) error); ok {
+		r0 = returnFunc(ctx, entities...)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -622,24 +499,27 @@ type MockRepository_Save_Call struct {
 
 // Save is a helper method to define mock.On call
 //   - ctx context.Context
-//   - entity1 family.Family
-func (_e *MockRepository_Expecter) Save(ctx interface{}, entity1 interface{}) *MockRepository_Save_Call {
-	return &MockRepository_Save_Call{Call: _e.mock.On("Save", ctx, entity1)}
+//   - entities ...family.Family
+func (_e *MockRepository_Expecter) Save(ctx interface{}, entities ...interface{}) *MockRepository_Save_Call {
+	return &MockRepository_Save_Call{Call: _e.mock.On("Save",
+		append([]interface{}{ctx}, entities...)...)}
 }
 
-func (_c *MockRepository_Save_Call) Run(run func(ctx context.Context, entity1 family.Family)) *MockRepository_Save_Call {
+func (_c *MockRepository_Save_Call) Run(run func(ctx context.Context, entities ...family.Family)) *MockRepository_Save_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 family.Family
-		if args[1] != nil {
-			arg1 = args[1].(family.Family)
+		var arg1 []family.Family
+		var variadicArgs []family.Family
+		if len(args) > 1 {
+			variadicArgs = args[1].([]family.Family)
 		}
+		arg1 = variadicArgs
 		run(
 			arg0,
-			arg1,
+			arg1...,
 		)
 	})
 	return _c
@@ -650,7 +530,7 @@ func (_c *MockRepository_Save_Call) Return(err error) *MockRepository_Save_Call 
 	return _c
 }
 
-func (_c *MockRepository_Save_Call) RunAndReturn(run func(ctx context.Context, entity1 family.Family) error) *MockRepository_Save_Call {
+func (_c *MockRepository_Save_Call) RunAndReturn(run func(ctx context.Context, entities ...family.Family) error) *MockRepository_Save_Call {
 	_c.Call.Return(run)
 	return _c
 }
