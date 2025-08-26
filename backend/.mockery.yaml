@@ -46,3 +46,13 @@ packages:
     interfaces:
       Repository:
       Service:
+  github.com/mistribe/subtracker/internal/infrastructure/cache:
+    config:
+      dir: ./internal/infrastructure/cache
+    interfaces:
+      Local:
+  github.com/mistribe/subtracker/internal/infrastructure/exchange:
+    config:
+      dir: ./internal/infrastructure/exchange
+    interfaces:
+      Client:

@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/domain/currency"
-	"github.com/mistribe/subtracker/internal/infrastructure/exch"
+	"github.com/mistribe/subtracker/internal/infrastructure/exchange"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 	"github.com/mistribe/subtracker/pkg/slicesx"
 )
@@ -26,14 +26,14 @@ type RefreshCurrencyRatesResponse struct {
 // RefreshCurrencyRatesCommandHandler handles the update currency rates command
 type RefreshCurrencyRatesCommandHandler struct {
 	repository currency.Repository
-	exchClient exch.Client
+	exchClient exchange.Client
 	logger     *slog.Logger
 }
 
 // NewRefreshCurrencyRatesCommandHandler creates a new RefreshCurrencyRatesCommandHandler
 func NewRefreshCurrencyRatesCommandHandler(
 	repository currency.Repository,
-	exchClient exch.Client,
+	exchClient exchange.Client,
 	logger *slog.Logger,
 ) *RefreshCurrencyRatesCommandHandler {
 	return &RefreshCurrencyRatesCommandHandler{
@@ -44,7 +44,8 @@ func NewRefreshCurrencyRatesCommandHandler(
 }
 
 // Handle processes the RefreshCurrencyRatesCommand
-func (h *RefreshCurrencyRatesCommandHandler) Handle(ctx context.Context,
+func (h *RefreshCurrencyRatesCommandHandler) Handle(
+	ctx context.Context,
 	_ RefreshCurrencyRatesCommand) result.Result[RefreshCurrencyRatesResponse] {
 	// Get the supported currencies
 	supportedCurrencies := currency.GetSupportedCurrencies()

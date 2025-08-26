@@ -9,7 +9,7 @@ import (
 	"github.com/mistribe/subtracker/internal/application"
 	"github.com/mistribe/subtracker/internal/application/system"
 	"github.com/mistribe/subtracker/internal/infrastructure/cache"
-	"github.com/mistribe/subtracker/internal/infrastructure/exch"
+	"github.com/mistribe/subtracker/internal/infrastructure/exchange"
 	"github.com/mistribe/subtracker/internal/infrastructure/kinde"
 	"github.com/mistribe/subtracker/internal/infrastructure/logfx"
 	"github.com/mistribe/subtracker/internal/infrastructure/persistence"
@@ -45,7 +45,7 @@ func main() {
 		cache.FxModule(),
 		fx.Provide(
 			kinde.NewTokenGenerator,
-			exch.NewClient,
+			exchange.NewClient,
 		),
 	}
 	opts = append(opts, application.BuildApplicationModules()...)

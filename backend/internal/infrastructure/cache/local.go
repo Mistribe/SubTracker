@@ -20,6 +20,7 @@ func WithDuration(duration time.Duration) func(*LocalOptions) {
 type Local interface {
 	Set(key string, value interface{}, options ...func(*LocalOptions))
 	Get(key string) interface{}
+	PurgeExpired()
 }
 
 type item struct {
@@ -50,6 +51,10 @@ func NewLocal(cfg config.Configuration) Local {
 		go l.janitor(cleanupInterval)
 	}
 	return l
+}
+
+func (l *local) PurgeExpired() {
+	l.purgeExpired()
 }
 
 func (l *local) janitor(interval time.Duration) {

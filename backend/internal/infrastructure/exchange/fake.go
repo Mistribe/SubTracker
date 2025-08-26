@@ -1,4 +1,4 @@
-package exch
+package exchange
 
 import (
 	"time"

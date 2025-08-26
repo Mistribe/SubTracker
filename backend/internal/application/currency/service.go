@@ -8,7 +8,7 @@ import (
 
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/infrastructure/cache"
-	"github.com/mistribe/subtracker/internal/infrastructure/exch"
+	"github.com/mistribe/subtracker/internal/infrastructure/exchange"
 	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
@@ -20,7 +20,7 @@ const (
 type service struct {
 	currencyRepository currency.Repository
 	localCache         cache.Local
-	exchangeClient     exch.Client
+	exchangeClient     exchange.Client
 }
 
 func (s service) getRatesFromApi(at time.Time) (currency.Rates, error) {
@@ -116,9 +116,10 @@ func (s service) ConvertTo(ctx context.Context, from currency.Amount, to currenc
 	return from.ToCurrency(to, rates), nil
 }
 
-func NewService(currencyRepository currency.Repository,
+func NewService(
+	currencyRepository currency.Repository,
 	localCache cache.Local,
-	exchangeClient exch.Client) currency.Service {
+	exchangeClient exchange.Client) currency.Service {
 	return service{
 		currencyRepository: currencyRepository,
 		localCache:         localCache,
