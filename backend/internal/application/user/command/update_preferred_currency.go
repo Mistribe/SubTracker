@@ -5,6 +5,7 @@ import (
 
 	"golang.org/x/text/currency"
 
+	auth2 "github.com/mistribe/subtracker/internal/application/auth"
 	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/pkg/langext/result"
@@ -33,7 +34,7 @@ func NewUpdatePreferredCurrencyCommandHandler(userRepository user.Repository) *U
 func (h UpdatePreferredCurrencyCommandHandler) Handle(
 	ctx context.Context,
 	cmd UpdatePreferredCurrencyCommand) result.Result[bool] {
-	userId, ok := auth.GetUserIdFromContext(ctx)
+	userId, ok := auth2.GetUserIdFromContext(ctx)
 	if !ok {
 		return result.Fail[bool](auth.ErrNotAuthorized)
 	}

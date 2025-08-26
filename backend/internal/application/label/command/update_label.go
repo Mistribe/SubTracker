@@ -24,13 +24,16 @@ type UpdateLabelCommand struct {
 type UpdateLabelCommandHandler struct {
 	labelRepository  label.Repository
 	familyRepository family.Repository
+	authService      auth.Service
 }
 
 func NewUpdateLabelCommandHandler(labelRepository label.Repository,
-	familyRepository family.Repository) *UpdateLabelCommandHandler {
+	familyRepository family.Repository,
+	authService auth.Service) *UpdateLabelCommandHandler {
 	return &UpdateLabelCommandHandler{
 		labelRepository:  labelRepository,
 		familyRepository: familyRepository,
+		authService:      authService,
 	}
 }
 
@@ -43,9 +46,13 @@ func (h UpdateLabelCommandHandler) Handle(ctx context.Context, command UpdateLab
 	if existingLabel == nil {
 		return result.Fail[label.Label](label.ErrLabelNotFound)
 	}
-	err = auth.EnsureOwnership(ctx, h.familyRepository, existingLabel.Owner())
+
+	ok, err := h.authService.IsOwner(ctx, existingLabel.Owner())
 	if err != nil {
 		return result.Fail[label.Label](err)
+	}
+	if !ok {
+		return result.Fail[label.Label](family.ErrFamilyNotFound)
 	}
 
 	return h.updateLabel(ctx, command, existingLabel)

@@ -5,9 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/mistribe/subtracker/internal/application/auth"
 	"github.com/mistribe/subtracker/internal/application/core"
 	"github.com/mistribe/subtracker/internal/application/family/query"
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/family"
 )
 

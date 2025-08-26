@@ -3,7 +3,7 @@ package command
 import (
 	"context"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
+	"github.com/mistribe/subtracker/internal/application/auth"
 	"github.com/mistribe/subtracker/internal/domain/family"
 )
 

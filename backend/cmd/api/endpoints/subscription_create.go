@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
+	auth2 "github.com/mistribe/subtracker/internal/application/auth"
 	"github.com/mistribe/subtracker/internal/domain/auth"
 
 	"github.com/mistribe/subtracker/internal/application/core"
@@ -172,7 +173,7 @@ func (s SubscriptionCreateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	userId, ok := auth.GetUserIdFromContext(c)
+	userId, ok := auth2.GetUserIdFromContext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, HttpErrorResponse{
 			Message: "invalid user id",

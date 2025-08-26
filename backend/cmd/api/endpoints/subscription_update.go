@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	auth2 "github.com/mistribe/subtracker/internal/application/auth"
 	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/pkg/ext"
 
@@ -176,7 +177,7 @@ func (s SubscriptionUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	userId, ok := auth.GetUserIdFromContext(c)
+	userId, ok := auth2.GetUserIdFromContext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, HttpErrorResponse{
 			Message: "invalid user id",

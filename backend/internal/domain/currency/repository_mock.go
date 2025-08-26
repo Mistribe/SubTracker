@@ -2,13 +2,13 @@
 // github.com/vektra/mockery
 // template: testify
 
-package family
+package currency
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
-	"github.com/mistribe/subtracker/internal/domain/family"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -181,23 +181,23 @@ func (_c *MockRepository_Exists_Call) RunAndReturn(run func(ctx context.Context,
 }
 
 // GetById provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetById(ctx context.Context, entityId uuid.UUID) (family.Family, error) {
+func (_mock *MockRepository) GetById(ctx context.Context, entityId uuid.UUID) (Rate, error) {
 	ret := _mock.Called(ctx, entityId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetById")
 	}
 
-	var r0 family.Family
+	var r0 Rate
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (family.Family, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (Rate, error)); ok {
 		return returnFunc(ctx, entityId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) family.Family); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) Rate); ok {
 		r0 = returnFunc(ctx, entityId)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(family.Family)
+			r0 = ret.Get(0).(Rate)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
@@ -238,65 +238,125 @@ func (_c *MockRepository_GetById_Call) Run(run func(ctx context.Context, entityI
 	return _c
 }
 
-func (_c *MockRepository_GetById_Call) Return(family1 family.Family, err error) *MockRepository_GetById_Call {
-	_c.Call.Return(family1, err)
+func (_c *MockRepository_GetById_Call) Return(rate Rate, err error) *MockRepository_GetById_Call {
+	_c.Call.Return(rate, err)
 	return _c
 }
 
-func (_c *MockRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId uuid.UUID) (family.Family, error)) *MockRepository_GetById_Call {
+func (_c *MockRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId uuid.UUID) (Rate, error)) *MockRepository_GetById_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GetUserFamily provides a mock function for the type MockRepository
-func (_mock *MockRepository) GetUserFamily(ctx context.Context, userId string) (family.Family, error) {
-	ret := _mock.Called(ctx, userId)
+// GetLatestUpdateDate provides a mock function for the type MockRepository
+func (_mock *MockRepository) GetLatestUpdateDate(ctx context.Context) (time.Time, error) {
+	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetUserFamily")
+		panic("no return value specified for GetLatestUpdateDate")
 	}
 
-	var r0 family.Family
+	var r0 time.Time
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (family.Family, error)); ok {
-		return returnFunc(ctx, userId)
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (time.Time, error)); ok {
+		return returnFunc(ctx)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) family.Family); ok {
-		r0 = returnFunc(ctx, userId)
+	if returnFunc, ok := ret.Get(0).(func(context.Context) time.Time); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Get(0).(time.Time)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockRepository_GetLatestUpdateDate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetLatestUpdateDate'
+type MockRepository_GetLatestUpdateDate_Call struct {
+	*mock.Call
+}
+
+// GetLatestUpdateDate is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockRepository_Expecter) GetLatestUpdateDate(ctx interface{}) *MockRepository_GetLatestUpdateDate_Call {
+	return &MockRepository_GetLatestUpdateDate_Call{Call: _e.mock.On("GetLatestUpdateDate", ctx)}
+}
+
+func (_c *MockRepository_GetLatestUpdateDate_Call) Run(run func(ctx context.Context)) *MockRepository_GetLatestUpdateDate_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepository_GetLatestUpdateDate_Call) Return(time1 time.Time, err error) *MockRepository_GetLatestUpdateDate_Call {
+	_c.Call.Return(time1, err)
+	return _c
+}
+
+func (_c *MockRepository_GetLatestUpdateDate_Call) RunAndReturn(run func(ctx context.Context) (time.Time, error)) *MockRepository_GetLatestUpdateDate_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetRatesByDate provides a mock function for the type MockRepository
+func (_mock *MockRepository) GetRatesByDate(ctx context.Context, date time.Time) (Rates, error) {
+	ret := _mock.Called(ctx, date)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetRatesByDate")
+	}
+
+	var r0 Rates
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Time) (Rates, error)); ok {
+		return returnFunc(ctx, date)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, time.Time) Rates); ok {
+		r0 = returnFunc(ctx, date)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(family.Family)
+			r0 = ret.Get(0).(Rates)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = returnFunc(ctx, userId)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, time.Time) error); ok {
+		r1 = returnFunc(ctx, date)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// MockRepository_GetUserFamily_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUserFamily'
-type MockRepository_GetUserFamily_Call struct {
+// MockRepository_GetRatesByDate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetRatesByDate'
+type MockRepository_GetRatesByDate_Call struct {
 	*mock.Call
 }
 
-// GetUserFamily is a helper method to define mock.On call
+// GetRatesByDate is a helper method to define mock.On call
 //   - ctx context.Context
-//   - userId string
-func (_e *MockRepository_Expecter) GetUserFamily(ctx interface{}, userId interface{}) *MockRepository_GetUserFamily_Call {
-	return &MockRepository_GetUserFamily_Call{Call: _e.mock.On("GetUserFamily", ctx, userId)}
+//   - date time.Time
+func (_e *MockRepository_Expecter) GetRatesByDate(ctx interface{}, date interface{}) *MockRepository_GetRatesByDate_Call {
+	return &MockRepository_GetRatesByDate_Call{Call: _e.mock.On("GetRatesByDate", ctx, date)}
 }
 
-func (_c *MockRepository_GetUserFamily_Call) Run(run func(ctx context.Context, userId string)) *MockRepository_GetUserFamily_Call {
+func (_c *MockRepository_GetRatesByDate_Call) Run(run func(ctx context.Context, date time.Time)) *MockRepository_GetRatesByDate_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 time.Time
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(time.Time)
 		}
 		run(
 			arg0,
@@ -306,171 +366,18 @@ func (_c *MockRepository_GetUserFamily_Call) Run(run func(ctx context.Context, u
 	return _c
 }
 
-func (_c *MockRepository_GetUserFamily_Call) Return(family1 family.Family, err error) *MockRepository_GetUserFamily_Call {
-	_c.Call.Return(family1, err)
+func (_c *MockRepository_GetRatesByDate_Call) Return(rates Rates, err error) *MockRepository_GetRatesByDate_Call {
+	_c.Call.Return(rates, err)
 	return _c
 }
 
-func (_c *MockRepository_GetUserFamily_Call) RunAndReturn(run func(ctx context.Context, userId string) (family.Family, error)) *MockRepository_GetUserFamily_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// IsUserMemberOfFamily provides a mock function for the type MockRepository
-func (_mock *MockRepository) IsUserMemberOfFamily(ctx context.Context, familyId uuid.UUID, userId string) (bool, error) {
-	ret := _mock.Called(ctx, familyId, userId)
-
-	if len(ret) == 0 {
-		panic("no return value specified for IsUserMemberOfFamily")
-	}
-
-	var r0 bool
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string) (bool, error)); ok {
-		return returnFunc(ctx, familyId, userId)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string) bool); ok {
-		r0 = returnFunc(ctx, familyId, userId)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, string) error); ok {
-		r1 = returnFunc(ctx, familyId, userId)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockRepository_IsUserMemberOfFamily_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IsUserMemberOfFamily'
-type MockRepository_IsUserMemberOfFamily_Call struct {
-	*mock.Call
-}
-
-// IsUserMemberOfFamily is a helper method to define mock.On call
-//   - ctx context.Context
-//   - familyId uuid.UUID
-//   - userId string
-func (_e *MockRepository_Expecter) IsUserMemberOfFamily(ctx interface{}, familyId interface{}, userId interface{}) *MockRepository_IsUserMemberOfFamily_Call {
-	return &MockRepository_IsUserMemberOfFamily_Call{Call: _e.mock.On("IsUserMemberOfFamily", ctx, familyId, userId)}
-}
-
-func (_c *MockRepository_IsUserMemberOfFamily_Call) Run(run func(ctx context.Context, familyId uuid.UUID, userId string)) *MockRepository_IsUserMemberOfFamily_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 uuid.UUID
-		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
-		}
-		var arg2 string
-		if args[2] != nil {
-			arg2 = args[2].(string)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *MockRepository_IsUserMemberOfFamily_Call) Return(b bool, err error) *MockRepository_IsUserMemberOfFamily_Call {
-	_c.Call.Return(b, err)
-	return _c
-}
-
-func (_c *MockRepository_IsUserMemberOfFamily_Call) RunAndReturn(run func(ctx context.Context, familyId uuid.UUID, userId string) (bool, error)) *MockRepository_IsUserMemberOfFamily_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// MemberExists provides a mock function for the type MockRepository
-func (_mock *MockRepository) MemberExists(ctx context.Context, familyId uuid.UUID, members ...uuid.UUID) (bool, error) {
-	var tmpRet mock.Arguments
-	if len(members) > 0 {
-		tmpRet = _mock.Called(ctx, familyId, members)
-	} else {
-		tmpRet = _mock.Called(ctx, familyId)
-	}
-	ret := tmpRet
-
-	if len(ret) == 0 {
-		panic("no return value specified for MemberExists")
-	}
-
-	var r0 bool
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, ...uuid.UUID) (bool, error)); ok {
-		return returnFunc(ctx, familyId, members...)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, ...uuid.UUID) bool); ok {
-		r0 = returnFunc(ctx, familyId, members...)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, ...uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, familyId, members...)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockRepository_MemberExists_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MemberExists'
-type MockRepository_MemberExists_Call struct {
-	*mock.Call
-}
-
-// MemberExists is a helper method to define mock.On call
-//   - ctx context.Context
-//   - familyId uuid.UUID
-//   - members ...uuid.UUID
-func (_e *MockRepository_Expecter) MemberExists(ctx interface{}, familyId interface{}, members ...interface{}) *MockRepository_MemberExists_Call {
-	return &MockRepository_MemberExists_Call{Call: _e.mock.On("MemberExists",
-		append([]interface{}{ctx, familyId}, members...)...)}
-}
-
-func (_c *MockRepository_MemberExists_Call) Run(run func(ctx context.Context, familyId uuid.UUID, members ...uuid.UUID)) *MockRepository_MemberExists_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 uuid.UUID
-		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
-		}
-		var arg2 []uuid.UUID
-		var variadicArgs []uuid.UUID
-		if len(args) > 2 {
-			variadicArgs = args[2].([]uuid.UUID)
-		}
-		arg2 = variadicArgs
-		run(
-			arg0,
-			arg1,
-			arg2...,
-		)
-	})
-	return _c
-}
-
-func (_c *MockRepository_MemberExists_Call) Return(b bool, err error) *MockRepository_MemberExists_Call {
-	_c.Call.Return(b, err)
-	return _c
-}
-
-func (_c *MockRepository_MemberExists_Call) RunAndReturn(run func(ctx context.Context, familyId uuid.UUID, members ...uuid.UUID) (bool, error)) *MockRepository_MemberExists_Call {
+func (_c *MockRepository_GetRatesByDate_Call) RunAndReturn(run func(ctx context.Context, date time.Time) (Rates, error)) *MockRepository_GetRatesByDate_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Save provides a mock function for the type MockRepository
-func (_mock *MockRepository) Save(ctx context.Context, entities ...family.Family) error {
+func (_mock *MockRepository) Save(ctx context.Context, entities ...Rate) error {
 	var tmpRet mock.Arguments
 	if len(entities) > 0 {
 		tmpRet = _mock.Called(ctx, entities)
@@ -484,7 +391,7 @@ func (_mock *MockRepository) Save(ctx context.Context, entities ...family.Family
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, ...family.Family) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...Rate) error); ok {
 		r0 = returnFunc(ctx, entities...)
 	} else {
 		r0 = ret.Error(0)
@@ -499,22 +406,22 @@ type MockRepository_Save_Call struct {
 
 // Save is a helper method to define mock.On call
 //   - ctx context.Context
-//   - entities ...family.Family
+//   - entities ...Rate
 func (_e *MockRepository_Expecter) Save(ctx interface{}, entities ...interface{}) *MockRepository_Save_Call {
 	return &MockRepository_Save_Call{Call: _e.mock.On("Save",
 		append([]interface{}{ctx}, entities...)...)}
 }
 
-func (_c *MockRepository_Save_Call) Run(run func(ctx context.Context, entities ...family.Family)) *MockRepository_Save_Call {
+func (_c *MockRepository_Save_Call) Run(run func(ctx context.Context, entities ...Rate)) *MockRepository_Save_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 []family.Family
-		var variadicArgs []family.Family
+		var arg1 []Rate
+		var variadicArgs []Rate
 		if len(args) > 1 {
-			variadicArgs = args[1].([]family.Family)
+			variadicArgs = args[1].([]Rate)
 		}
 		arg1 = variadicArgs
 		run(
@@ -530,7 +437,7 @@ func (_c *MockRepository_Save_Call) Return(err error) *MockRepository_Save_Call 
 	return _c
 }
 
-func (_c *MockRepository_Save_Call) RunAndReturn(run func(ctx context.Context, entities ...family.Family) error) *MockRepository_Save_Call {
+func (_c *MockRepository_Save_Call) RunAndReturn(run func(ctx context.Context, entities ...Rate) error) *MockRepository_Save_Call {
 	_c.Call.Return(run)
 	return _c
 }

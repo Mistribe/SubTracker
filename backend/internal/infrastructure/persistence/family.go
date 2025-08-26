@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
+	"github.com/mistribe/subtracker/internal/application/auth"
 	"github.com/mistribe/subtracker/internal/domain/entity"
 	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/infrastructure/persistence/jet/app/public/model"

@@ -19,13 +19,16 @@ type DeleteLabelCommand struct {
 type DeleteLabelCommandHandler struct {
 	labelRepository  label.Repository
 	familyRepository family.Repository
+	authService      auth.Service
 }
 
 func NewDeleteLabelCommandHandler(labelRepository label.Repository,
-	familyRepository family.Repository) *DeleteLabelCommandHandler {
+	familyRepository family.Repository,
+	authService auth.Service) *DeleteLabelCommandHandler {
 	return &DeleteLabelCommandHandler{
 		labelRepository:  labelRepository,
 		familyRepository: familyRepository,
+		authService:      authService,
 	}
 }
 
@@ -38,12 +41,15 @@ func (h DeleteLabelCommandHandler) Handle(ctx context.Context, command DeleteLab
 		return result.Fail[bool](label.ErrLabelNotFound)
 	}
 
-	err = auth.EnsureOwnership(ctx, h.familyRepository, existingLabel.Owner())
+	ok, err := h.authService.IsOwner(ctx, existingLabel.Owner())
 	if err != nil {
 		return result.Fail[bool](err)
 	}
+	if !ok {
+		return result.Fail[bool](family.ErrFamilyNotFound)
+	}
 
-	ok, err := h.labelRepository.Delete(ctx, command.Id)
+	ok, err = h.labelRepository.Delete(ctx, command.Id)
 	if err != nil {
 		return result.Fail[bool](err)
 	}

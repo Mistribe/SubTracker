@@ -16,13 +16,16 @@ type CreateLabelCommand struct {
 type CreateLabelCommandHandler struct {
 	labelRepository  label.Repository
 	familyRepository family.Repository
+	authService      auth.Service
 }
 
 func NewCreateLabelCommandHandler(labelRepository label.Repository,
-	familyRepository family.Repository) *CreateLabelCommandHandler {
+	familyRepository family.Repository,
+	authService auth.Service) *CreateLabelCommandHandler {
 	return &CreateLabelCommandHandler{
 		labelRepository:  labelRepository,
 		familyRepository: familyRepository,
+		authService:      authService,
 	}
 }
 
@@ -32,9 +35,12 @@ func (h CreateLabelCommandHandler) Handle(ctx context.Context, command CreateLab
 		return result.Fail[label.Label](err)
 	}
 
-	err = auth.EnsureOwnership(ctx, h.familyRepository, command.Label.Owner())
+	ok, err := h.authService.IsOwner(ctx, command.Label.Owner())
 	if err != nil {
 		return result.Fail[label.Label](err)
+	}
+	if !ok {
+		return result.Fail[label.Label](family.ErrFamilyNotFound)
 	}
 	if existingLabel != nil {
 		if existingLabel.Equal(command.Label) {

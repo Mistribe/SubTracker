@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
+	auth2 "github.com/mistribe/subtracker/internal/application/auth"
 	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/internal/domain/provider"
@@ -56,7 +57,7 @@ func (h UpdateCommandHandler) update(
 	cmd UpdateProviderCommand,
 	prov provider.Provider) result.Result[provider.Provider] {
 
-	userId, ok := auth.GetUserIdFromContext(ctx)
+	userId, ok := auth2.GetUserIdFromContext(ctx)
 	if !ok {
 		return result.Fail[provider.Provider](auth.ErrUnknownUser)
 	}

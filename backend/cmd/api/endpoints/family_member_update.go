@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/application/auth"
 	"github.com/mistribe/subtracker/internal/application/core"
 	"github.com/mistribe/subtracker/internal/application/family/command"
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 )

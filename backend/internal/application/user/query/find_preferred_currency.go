@@ -5,6 +5,7 @@ import (
 
 	"golang.org/x/text/currency"
 
+	auth2 "github.com/mistribe/subtracker/internal/application/auth"
 	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/pkg/langext/result"
@@ -30,7 +31,7 @@ func NewFindPreferredCurrencyQueryHandler(userService user.Service) *FindPreferr
 func (h FindPreferredCurrencyQueryHandler) Handle(
 	ctx context.Context,
 	_ FindPreferredCurrencyQuery) result.Result[currency.Unit] {
-	userId, ok := auth.GetUserIdFromContext(ctx)
+	userId, ok := auth2.GetUserIdFromContext(ctx)
 	if !ok {
 		return result.Fail[currency.Unit](auth.ErrNotAuthorized)
 	}
