@@ -1,9 +1,5 @@
 package currency
 
-import (
-	"golang.org/x/text/currency"
-)
-
 type Amount interface {
 	IsZero() bool
 	IsNegative() bool
@@ -15,7 +11,6 @@ type Amount interface {
 	Source() Amount
 	Currency() Unit
 	IsValid() bool
-	ToCurrency(to currency.Unit, rates Rates) Amount
 	Add(otherAmount Amount) Amount
 }
 type amount struct {
@@ -82,62 +77,19 @@ func (a amount) IsValid() bool {
 	return a.isValid
 }
 
-func (a amount) ToCurrency(
-	to currency.Unit,
-	rates Rates) Amount {
-	if !a.isValid {
-		return a
-	}
-	if a.currency == to {
-		return a
-	}
-
-	var usdAmount Amount
-	if a.currency == USD {
-		usdAmount = a
-	} else {
-		usdAmount = a.ToUSD(rates)
-	}
-	exchangeRate, ok := rates.FindExchangeRate(USD, to)
-	if !ok || exchangeRate == 0 {
-		return NewInvalidAmount()
-	}
-
-	currencyValue := usdAmount.Value() / exchangeRate
-	return amount{
-		value:    currencyValue,
-		currency: to,
-		source:   &a,
-		isValid:  true,
-	}
-}
-
-func (a amount) ToUSD(rates Rates) Amount {
-	if !a.isValid {
-		return a
-	}
-
-	if a.currency == USD {
-		return a
-	}
-
-	exchangeRate, ok := rates.FindExchangeRate(a.currency, USD)
-	if !ok {
-		return NewInvalidAmount()
-	}
-
-	return amount{
-		value:    a.value * exchangeRate,
-		currency: USD,
-		source:   &a,
-		isValid:  true,
-	}
-}
-
 func NewAmount(value float64, unit Unit) Amount {
 	return amount{
 		value:    value,
 		currency: unit,
+		isValid:  true,
+	}
+}
+
+func NewAmountWithSource(value float64, unit Unit, source Amount) Amount {
+	return amount{
+		value:    value,
+		currency: unit,
+		source:   source,
 		isValid:  true,
 	}
 }

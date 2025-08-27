@@ -8,26 +8,30 @@ import (
 
 type CustomPrice interface {
 	entity.ETagEntity
-	currency.Amount
 
+	Amount() currency.Amount
 	SetAmount(amount currency.Amount)
 	GetValidationErrors() validation.Errors
 }
 
 type customSubscriptionPrice struct {
-	currency.Amount
+	amount currency.Amount
 }
 
 func NewCustomPrice(
 	amount float64,
-	curreny currency.Unit) CustomPrice {
+	unit currency.Unit) CustomPrice {
 	return &customSubscriptionPrice{
-		Amount: currency.NewAmount(amount, curreny),
+		amount: currency.NewAmount(amount, unit),
 	}
 }
 
+func (c *customSubscriptionPrice) Amount() currency.Amount {
+	return c.amount
+}
+
 func (c *customSubscriptionPrice) SetAmount(amount currency.Amount) {
-	c.Amount = amount
+	c.amount = amount
 }
 
 func (c *customSubscriptionPrice) ETag() string {
@@ -36,15 +40,15 @@ func (c *customSubscriptionPrice) ETag() string {
 
 func (c *customSubscriptionPrice) ETagFields() []interface{} {
 	return []interface{}{
-		c.Amount.Value(),
-		c.Amount.Currency().String(),
+		c.amount.Value(),
+		c.amount.Currency().String(),
 	}
 }
 
 func (c *customSubscriptionPrice) GetValidationErrors() validation.Errors {
 	var errors validation.Errors
 
-	if c.Amount.Value() <= 0 {
+	if c.Amount().Value() <= 0 {
 		errors = append(errors, validation.NewError("amount", "Amount must be greater than 0"))
 	}
 
