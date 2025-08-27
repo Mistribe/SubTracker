@@ -1,9 +1,11 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../../models/family_model.dart';
-import '../../models/http_error_response.dart';
-import '../../models/update_family_model.dart';
+import '../../models/family/family_model.dart';
+import '../../models/family/update_family_model.dart';
+import '../../models/ginx/http_error_response.dart';
 import './accept/accept_request_builder.dart';
+import './decline/decline_request_builder.dart';
+import './invitation/invitation_request_builder.dart';
 import './invite/invite_request_builder.dart';
 import './members/members_request_builder.dart';
 
@@ -13,6 +15,14 @@ class WithFamilyItemRequestBuilder extends BaseRequestBuilder<WithFamilyItemRequ
     ///  The accept property
     AcceptRequestBuilder get accept {
         return AcceptRequestBuilder(pathParameters, requestAdapter);
+    }
+    ///  The decline property
+    DeclineRequestBuilder get decline {
+        return DeclineRequestBuilder(pathParameters, requestAdapter);
+    }
+    ///  The invitation property
+    InvitationRequestBuilder get invitation {
+        return InvitationRequestBuilder(pathParameters, requestAdapter);
     }
     ///  The invite property
     InviteRequestBuilder get invite {

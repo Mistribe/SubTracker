@@ -1,6 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import './owner_model.dart';
+import '../dto/owner_model.dart';
 import './plan_model.dart';
 
 /// auto generated

@@ -1,7 +1,7 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import './amount_model.dart';
-import './editable_owner_model.dart';
+import '../dto/amount_model.dart';
+import '../dto/editable_owner_model.dart';
 import './editable_subscription_payer_model.dart';
 import './subscription_free_trial_model.dart';
 

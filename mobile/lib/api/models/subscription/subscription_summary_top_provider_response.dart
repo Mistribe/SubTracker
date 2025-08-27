@@ -1,6 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import './amount_model.dart';
+import '../dto/amount_model.dart';
 
 /// auto generated
 class SubscriptionSummaryTopProviderResponse implements AdditionalDataHolder, Parsable {
