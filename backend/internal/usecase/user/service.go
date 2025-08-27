@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/mistribe/subtracker/internal/domain/currency"
-	"github.com/mistribe/subtracker/internal/domain/lang"
 	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/internal/shared/i18n"
 )
 
 type service struct {
@@ -20,7 +20,7 @@ func (s service) GetPreferredCurrency(ctx context.Context, userId string) curren
 	}
 
 	if profile == nil {
-		info := lang.FromContext(ctx)
+		info := i18n.FromContext(ctx)
 		return info.MostPreferred().PreferredCurrency()
 	}
 

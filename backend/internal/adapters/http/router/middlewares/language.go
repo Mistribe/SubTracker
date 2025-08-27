@@ -3,7 +3,7 @@ package middlewares
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/mistribe/subtracker/internal/domain/lang"
+	"github.com/mistribe/subtracker/internal/shared/i18n"
 )
 
 type LanguageMiddleware struct{}
@@ -16,13 +16,13 @@ func (m *LanguageMiddleware) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		acceptLanguageHeader := c.Request.Header.Get("Accept-Language")
 		var err error
-		var info lang.Info
-		info, err = lang.ParseAcceptLanguage(acceptLanguageHeader)
+		var info i18n.Info
+		info, err = i18n.ParseAcceptLanguage(acceptLanguageHeader)
 		if err != nil {
-			info = lang.GetDefault()
+			info = i18n.GetDefault()
 		}
 
-		c.Set(lang.ContextKey, info)
+		c.Set(i18n.ContextKey, info)
 
 		c.Next()
 	}
