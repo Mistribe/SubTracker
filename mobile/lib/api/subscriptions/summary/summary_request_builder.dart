@@ -1,7 +1,7 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../../models/http_error_response.dart';
-import '../../models/subscription_summary_response.dart';
+import '../../models/ginx/http_error_response.dart';
+import '../../models/subscription/subscription_summary_response.dart';
 import './summary_request_builder_get_query_parameters.dart';
 
 /// auto generated

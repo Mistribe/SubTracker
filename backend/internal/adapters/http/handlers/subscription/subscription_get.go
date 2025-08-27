@@ -20,7 +20,7 @@ type SubscriptionGetEndpoint struct {
 //
 //	@Summary		Get subscription by ID
 //	@Description	Retrieve a single subscription with all its details including provider, plan, and pricing information
-//	@Tags			subscription
+//	@Tags			subscriptions
 //	@Produce		json
 //	@Param			subscriptionId	path		string				true	"Subscription ID (UUID format)"
 //	@Success		200				{object}	SubscriptionModel	"Successfully retrieved subscription"

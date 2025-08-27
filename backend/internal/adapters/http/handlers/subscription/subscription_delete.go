@@ -20,7 +20,7 @@ type SubscriptionDeleteEndpoint struct {
 //
 //	@Summary		Delete subscription by ID
 //	@Description	Permanently delete an existing subscription
-//	@Tags			subscription
+//	@Tags			subscriptions
 //	@Param			subscriptionId	path	string	true	"Subscription ID (UUID format)"
 //	@Success		204				"No Content - Subscription successfully deleted"
 //	@Failure		400				{object}	HttpErrorResponse	"Bad Request - Invalid subscription ID format"

@@ -69,7 +69,7 @@ func (m createLabelModel) Command(userId string) (command.CreateLabelCommand, er
 //
 //	@Summary		Create a new label
 //	@Description	Create a new label with specified name, color, and owner information
-//	@Tags			label
+//	@Tags			labels
 //	@Accept			json
 //	@Produce		json
 //	@Param			label	body		createLabelModel	true	"Label creation data"

@@ -26,14 +26,14 @@ func NewLabelGetAllEndpoint(handler ports.QueryHandler[query.FindAllQuery, share
 //
 //	@Summary		Get all labels
 //	@Description	Retrieve a paginated list of labels with optional filtering by owner type and search text
-//	@Tags			label
+//	@Tags			labels
 //	@Produce		json
-//	@Param			search	query		string								false	"Search text to filter labels by name"
-//	@Param			limit	query		integer								false	"Maximum number of items to return (default: 10)"
-//	@Param			offset	query		integer								false	"Number of items to skip for pagination (default: 0)"
-//	@Success		200		{object}	PaginatedResponseModel[labelModel]	"Paginated list of labels"
-//	@Failure		400		{object}	HttpErrorResponse					"Bad Request - Invalid query parameters"
-//	@Failure		500		{object}	HttpErrorResponse					"Internal Server Error"
+//	@Param			search	query		string									false	"Search text to filter labels by name"
+//	@Param			limit	query		integer									false	"Maximum number of items to return (default: 10)"
+//	@Param			offset	query		integer									false	"Number of items to skip for pagination (default: 0)"
+//	@Success		200		{object}	dto.PaginatedResponseModel[labelModel]	"Paginated list of labels"
+//	@Failure		400		{object}	HttpErrorResponse						"Bad Request - Invalid query parameters"
+//	@Failure		500		{object}	HttpErrorResponse						"Internal Server Error"
 //	@Router			/labels [get]
 func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
 	searchText := c.DefaultQuery("search", "")

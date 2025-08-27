@@ -42,7 +42,7 @@ func NewFamilySeeInvitationEndpoint(handler ports.QueryHandler[query.SeeInvitati
 //
 //	@Summary		View family invitation details
 //	@Description	Get information about a family invitation using invitation code
-//	@Tags			Family
+//	@Tags			family
 //	@Produce		json
 //	@Param			familyId			path		string	true	"Family ID"
 //	@Param			code				query		string	true	"Invitation code"

@@ -1,8 +1,8 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../../../models/create_family_member_model.dart';
-import '../../../models/family_model.dart';
-import '../../../models/http_error_response.dart';
+import '../../../models/family/create_family_member_model.dart';
+import '../../../models/family/family_model.dart';
+import '../../../models/ginx/http_error_response.dart';
 import './item/family_member_item_request_builder.dart';
 
 /// auto generated

@@ -24,7 +24,7 @@ func NewDefaultLabelEndpoint(handler ports.QueryHandler[query.DefaultLabelQuery,
 //
 //	@Summary		Get default labels
 //	@Description	Retrieves a list of default system labels available to all users
-//	@Tags			label
+//	@Tags			labels
 //	@Produce		json
 //	@Success		200	{array}		labelModel			"List of default labels"
 //	@Failure		500	{object}	HttpErrorResponse	"Internal Server Error"

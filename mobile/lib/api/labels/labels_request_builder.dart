@@ -1,9 +1,9 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../models/create_label_model.dart';
-import '../models/http_error_response.dart';
-import '../models/label_model.dart';
-import '../models/paginated_response_model_endpoints_label_model.dart';
+import '../models/dto/paginated_response_model_label_label_model.dart';
+import '../models/ginx/http_error_response.dart';
+import '../models/label/create_label_model.dart';
+import '../models/label/label_model.dart';
 import './default_/default_request_builder.dart';
 import './item/labels_item_request_builder.dart';
 import './labels_request_builder_get_query_parameters.dart';
@@ -37,13 +37,13 @@ class LabelsRequestBuilder extends BaseRequestBuilder<LabelsRequestBuilder> {
     LabelsRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/labels{?limit*,offset*,search*}", {RequestInformation.rawUrlKey : rawUrl}) ;
     /// Retrieve a paginated list of labels with optional filtering by owner type and search text
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
-    Future<PaginatedResponseModelEndpointsLabelModel?> getAsync([void Function(RequestConfiguration<LabelsRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
+    Future<PaginatedResponseModelLabelLabelModel?> getAsync([void Function(RequestConfiguration<LabelsRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpErrorResponse.createFromDiscriminatorValue,
             '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
-        return await requestAdapter.send<PaginatedResponseModelEndpointsLabelModel>(requestInfo, PaginatedResponseModelEndpointsLabelModel.createFromDiscriminatorValue, errorMapping);
+        return await requestAdapter.send<PaginatedResponseModelLabelLabelModel>(requestInfo, PaginatedResponseModelLabelLabelModel.createFromDiscriminatorValue, errorMapping);
     }
     /// Create a new label with specified name, color, and owner information
     ///  [body] The request body
