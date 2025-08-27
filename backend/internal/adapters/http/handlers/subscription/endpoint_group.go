@@ -215,7 +215,7 @@ func newSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 		CreatedAt:        source.CreatedAt(),
 		UpdatedAt:        source.UpdatedAt(),
 		Etag:             source.ETag(),
-		CustomPrice:      x.P(dto.NewAmount(source.CustomPrice())),
+		CustomPrice:      x.P(dto.NewAmount(source.CustomPrice().Amount())),
 	}
 
 	if source.PlanId() != nil {

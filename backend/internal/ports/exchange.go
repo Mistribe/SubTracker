@@ -11,10 +11,10 @@ type Exchange interface {
 	ToCurrency(
 		ctx context.Context,
 		initial currency.Amount,
-		target currency.Unit) (amount currency.Amount, err error)
+		target currency.Unit) (currency.Amount, error)
 	ToCurrencyAt(
 		ctx context.Context,
 		initial currency.Amount,
 		target currency.Unit,
-		at time.Time) (amount currency.Amount, err error)
+		at time.Time) (currency.Amount, error)
 }

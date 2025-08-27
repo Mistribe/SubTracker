@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/shared"
@@ -87,8 +88,12 @@ func (h FindAllQueryHandler) Handle(
 	preferredCurrency := h.userService.GetPreferredCurrency(ctx, userId)
 
 	for _, sub := range subs {
-		if sub.CustomPrice() != nil && sub.CustomPrice().Currency() != preferredCurrency {
-			convertedPrice, err := h.exchange.ToCurrencyAt(ctx, sub.CustomPrice(), preferredCurrency, sub.StartDate())
+		if sub.CustomPrice() != nil {
+			var convertedPrice currency.Amount
+			convertedPrice, err = h.exchange.ToCurrencyAt(ctx,
+				sub.CustomPrice().Amount(),
+				preferredCurrency,
+				sub.StartDate())
 			if err != nil {
 				return result.Fail[shared.PaginatedResponse[subscription.Subscription]](err)
 			}

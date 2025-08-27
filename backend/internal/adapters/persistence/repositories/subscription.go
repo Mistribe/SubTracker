@@ -446,8 +446,8 @@ func (r SubscriptionRepository) create(ctx context.Context, subscriptions []subs
 
 		var customPriceCurrencyVal, customPriceAmountVal Expression
 		if sub.CustomPrice() != nil {
-			customPriceCurrencyVal = String(sub.CustomPrice().Currency().String())
-			customPriceAmountVal = Float(sub.CustomPrice().Value())
+			customPriceCurrencyVal = String(sub.CustomPrice().Amount().Currency().String())
+			customPriceAmountVal = Float(sub.CustomPrice().Amount().Value())
 		} else {
 			customPriceCurrencyVal = NULL
 			customPriceAmountVal = NULL
@@ -602,8 +602,8 @@ func (r SubscriptionRepository) update(ctx context.Context, sub subscription.Sub
 		var customPriceCurrencyVal StringExpression
 		var customPriceAmountVal FloatExpression
 		if sub.CustomPrice() != nil {
-			customPriceCurrencyVal = String(sub.CustomPrice().Currency().String())
-			customPriceAmountVal = Float(sub.CustomPrice().Value())
+			customPriceCurrencyVal = String(sub.CustomPrice().Amount().Currency().String())
+			customPriceAmountVal = Float(sub.CustomPrice().Amount().Value())
 		} else {
 			customPriceCurrencyVal = StringExp(NULL)
 			customPriceAmountVal = FloatExp(NULL)
