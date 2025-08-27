@@ -46,6 +46,9 @@ func (e exchange) getRateFromDatabase(ctx context.Context, from, to currency.Uni
 		return 0, err
 	}
 
+	if rate == nil {
+		return 0, nil
+	}
 	return rate.ExchangeRate(), nil
 }
 
@@ -135,12 +138,14 @@ func (e exchange) getRateAt(ctx context.Context, from, to currency.Unit, at time
 			return 0, err
 		}
 		if rate == 0 {
-			rate, err = e.getRateFromDatabase(ctx, from, to, time.Now())
+			rate, err = e.getRateFromExternalSource(from, to, time.Now())
 			if err != nil {
 				return 0, err
 			}
 		} else {
-			e.saveRateToDatabase(ctx, from, to, rate, at)
+			if err = e.saveRateToDatabase(ctx, from, to, rate, at); err != nil {
+				return 0, err
+			}
 		}
 	}
 
