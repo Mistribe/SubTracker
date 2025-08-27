@@ -17,13 +17,11 @@ type EndpointGroup struct {
 func NewEndpointGroup(
 	supportedEndpoint *CurrencySupportedEndpoint,
 	convertEndpoint *CurrencyGetRateEndpoint,
-	updateRatesEndpoint *CurrencyRefreshRatesEndpoint,
 	authenticationMiddleware *middlewares.AuthenticationMiddleware) *EndpointGroup {
 	return &EndpointGroup{
 		routes: []ginfx.Endpoint{
 			supportedEndpoint,
 			convertEndpoint,
-			updateRatesEndpoint,
 		},
 		middlewares: []gin.HandlerFunc{
 			authenticationMiddleware.Middleware(),

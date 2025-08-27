@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/shared"
@@ -25,7 +24,8 @@ type FindAllQuery struct {
 	Offset       int64
 }
 
-func NewFindAllQuery(searchText string,
+func NewFindAllQuery(
+	searchText string,
 	recurrencies []subscription.RecurrencyType,
 	fromDate *time.Time,
 	toDate *time.Time,
@@ -49,20 +49,20 @@ func NewFindAllQuery(searchText string,
 type FindAllQueryHandler struct {
 	subscriptionRepository ports.SubscriptionRepository
 	userService            ports.UserService
-	currencyService        currency.Service
+	exchange               ports.Exchange
 	authService            ports.AuthService
 }
 
 func NewFindAllQueryHandler(
 	subscriptionRepository ports.SubscriptionRepository,
 	userService ports.UserService,
-	currencyService currency.Service,
+	exchange ports.Exchange,
 	authService ports.AuthService) *FindAllQueryHandler {
 	return &FindAllQueryHandler{
 		subscriptionRepository: subscriptionRepository,
 		authService:            authService,
 		userService:            userService,
-		currencyService:        currencyService,
+		exchange:               exchange,
 	}
 }
 
@@ -88,7 +88,7 @@ func (h FindAllQueryHandler) Handle(
 
 	for _, sub := range subs {
 		if sub.CustomPrice() != nil && sub.CustomPrice().Currency() != preferredCurrency {
-			convertedPrice, err := h.currencyService.ConvertTo(ctx, sub.CustomPrice(), preferredCurrency)
+			convertedPrice, err := h.exchange.ToCurrencyAt(ctx, sub.CustomPrice(), preferredCurrency, sub.StartDate())
 			if err != nil {
 				return result.Fail[shared.PaginatedResponse[subscription.Subscription]](err)
 			}

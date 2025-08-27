@@ -309,6 +309,86 @@ func (_c *MockCurrencyRepository_GetLatestUpdateDate_Call) RunAndReturn(run func
 	return _c
 }
 
+// GetRateAt provides a mock function for the type MockCurrencyRepository
+func (_mock *MockCurrencyRepository) GetRateAt(ctx context.Context, from currency.Unit, to currency.Unit, at time.Time) (currency.Rate, error) {
+	ret := _mock.Called(ctx, from, to, at)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetRateAt")
+	}
+
+	var r0 currency.Rate
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, currency.Unit, currency.Unit, time.Time) (currency.Rate, error)); ok {
+		return returnFunc(ctx, from, to, at)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, currency.Unit, currency.Unit, time.Time) currency.Rate); ok {
+		r0 = returnFunc(ctx, from, to, at)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(currency.Rate)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, currency.Unit, currency.Unit, time.Time) error); ok {
+		r1 = returnFunc(ctx, from, to, at)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockCurrencyRepository_GetRateAt_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetRateAt'
+type MockCurrencyRepository_GetRateAt_Call struct {
+	*mock.Call
+}
+
+// GetRateAt is a helper method to define mock.On call
+//   - ctx context.Context
+//   - from currency.Unit
+//   - to currency.Unit
+//   - at time.Time
+func (_e *MockCurrencyRepository_Expecter) GetRateAt(ctx interface{}, from interface{}, to interface{}, at interface{}) *MockCurrencyRepository_GetRateAt_Call {
+	return &MockCurrencyRepository_GetRateAt_Call{Call: _e.mock.On("GetRateAt", ctx, from, to, at)}
+}
+
+func (_c *MockCurrencyRepository_GetRateAt_Call) Run(run func(ctx context.Context, from currency.Unit, to currency.Unit, at time.Time)) *MockCurrencyRepository_GetRateAt_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 currency.Unit
+		if args[1] != nil {
+			arg1 = args[1].(currency.Unit)
+		}
+		var arg2 currency.Unit
+		if args[2] != nil {
+			arg2 = args[2].(currency.Unit)
+		}
+		var arg3 time.Time
+		if args[3] != nil {
+			arg3 = args[3].(time.Time)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCurrencyRepository_GetRateAt_Call) Return(rate currency.Rate, err error) *MockCurrencyRepository_GetRateAt_Call {
+	_c.Call.Return(rate, err)
+	return _c
+}
+
+func (_c *MockCurrencyRepository_GetRateAt_Call) RunAndReturn(run func(ctx context.Context, from currency.Unit, to currency.Unit, at time.Time) (currency.Rate, error)) *MockCurrencyRepository_GetRateAt_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetRatesByDate provides a mock function for the type MockCurrencyRepository
 func (_mock *MockCurrencyRepository) GetRatesByDate(ctx context.Context, date time.Time) (currency.Rates, error) {
 	ret := _mock.Called(ctx, date)

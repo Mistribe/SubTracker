@@ -76,6 +76,28 @@ func (r CurrencyRateRepository) GetRatesByDate(ctx context.Context, date time.Ti
 	})
 }
 
+func (r CurrencyRateRepository) GetRateAt(ctx context.Context, from, to currency.Unit, at time.Time) (
+	currency.Rate,
+	error) {
+	stmt := SELECT(CurrencyRates.AllColumns).
+		FROM(CurrencyRates).
+		WHERE(CurrencyRates.RateDate.EQ(DateT(at)).
+			AND(CurrencyRates.FromCurrency.EQ(String(from.String()))).
+			AND(CurrencyRates.ToCurrency.EQ(String(to.String())))).
+		LIMIT(1)
+
+	var rows []model.CurrencyRates
+	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
+		return nil, err
+	}
+
+	if len(rows) == 0 {
+		return nil, nil
+	}
+
+	return models.CreateCurrencyRateFromModel(rows[0])
+}
+
 // Save saves one or more currency rates
 func (r CurrencyRateRepository) Save(ctx context.Context, rates ...currency.Rate) error {
 	var newRates []currency.Rate

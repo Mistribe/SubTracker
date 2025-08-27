@@ -13,6 +13,7 @@ packages:
     config:
       dir: ./internal/ports
     interfaces:
+      Exchange:
       AuthService:
       UserService:
       LocalCache:

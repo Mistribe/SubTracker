@@ -83,7 +83,6 @@ func BuildRoutesModule() fx.Option {
 
 			currency.NewCurrencySupportedEndpoint,
 			currency.NewCurrencyGetRateEndpoint,
-			currency.NewCurrencyRefreshRatesEndpoint,
 			ginfx.AsEndpointGroup(currency.NewEndpointGroup),
 
 			user.NewUserGetPreferredCurrencyEndpoint,

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	xcur "golang.org/x/text/currency"
 
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
@@ -56,19 +57,34 @@ type SummaryQueryHandler struct {
 	currencyRepository     ports.CurrencyRepository
 	userRepository         ports.UserRepository
 	authService            ports.AuthService
+	exchange               ports.Exchange
 }
 
 func NewSummaryQueryHandler(
 	subscriptionRepository ports.SubscriptionRepository,
 	currencyRepository ports.CurrencyRepository,
 	userRepository ports.UserRepository,
-	authService ports.AuthService) *SummaryQueryHandler {
+	authService ports.AuthService,
+	exchange ports.Exchange) *SummaryQueryHandler {
 	return &SummaryQueryHandler{
 		subscriptionRepository: subscriptionRepository,
 		currencyRepository:     currencyRepository,
 		userRepository:         userRepository,
 		authService:            authService,
+		exchange:               exchange,
 	}
+}
+
+func (h SummaryQueryHandler) convertToCurrency(
+	ctx context.Context,
+	amount currency.Amount,
+	preferredCurrency xcur.Unit,
+	date time.Time) currency.Amount {
+	v, err := h.exchange.ToCurrencyAt(ctx, amount, preferredCurrency, date)
+	if err != nil {
+		return currency.NewInvalidAmount()
+	}
+	return v
 }
 
 func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) result.Result[SummaryQueryResponse] {
@@ -104,29 +120,41 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 		}
 		if query.TotalMonthly {
 			if sub.IsActive() {
-				monthlyAmount := sub.GetRecurrencyAmount(subscription.MonthlyRecurrency)
+				monthlyAmount := h.convertToCurrency(ctx,
+					sub.GetRecurrencyAmount(subscription.MonthlyRecurrency),
+					preferredCurrency,
+					sub.StartDate())
 				if monthlyAmount.IsValid() {
-					totalMonthly += monthlyAmount.ToCurrency(preferredCurrency, currencyRates).Value()
+					totalMonthly += monthlyAmount.Value()
 				}
 			}
 			if sub.IsActiveAt(lastMonth) {
-				lastMonthAmount := sub.GetRecurrencyAmount(subscription.MonthlyRecurrency)
+				lastMonthAmount := h.convertToCurrency(ctx,
+					sub.GetRecurrencyAmount(subscription.MonthlyRecurrency),
+					preferredCurrency,
+					sub.StartDate())
 				if lastMonthAmount.IsValid() {
-					totalLastMonth += lastMonthAmount.ToCurrency(preferredCurrency, currencyRates).Value()
+					totalLastMonth += lastMonthAmount.Value()
 				}
 			}
 		}
 		if query.TotalYearly {
 			if sub.IsActive() {
-				yearlyAmount := sub.GetRecurrencyAmount(subscription.YearlyRecurrency)
+				yearlyAmount := h.convertToCurrency(ctx,
+					sub.GetRecurrencyAmount(subscription.YearlyRecurrency),
+					preferredCurrency,
+					sub.StartDate())
 				if yearlyAmount.IsValid() {
-					totalYearly += yearlyAmount.ToCurrency(preferredCurrency, currencyRates).Value()
+					totalYearly += yearlyAmount.Value()
 				}
 			}
 			if sub.IsActiveAt(lastYear) {
-				lastYearAmount := sub.GetRecurrencyAmount(subscription.YearlyRecurrency)
+				lastYearAmount := h.convertToCurrency(ctx,
+					sub.GetRecurrencyAmount(subscription.YearlyRecurrency),
+					preferredCurrency,
+					sub.StartDate())
 				if lastYearAmount.IsValid() {
-					totalLastYear += lastYearAmount.ToCurrency(preferredCurrency, currencyRates).Value()
+					totalLastYear += lastYearAmount.Value()
 				}
 			}
 		}
@@ -134,12 +162,15 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 		if query.UpcomingRenewals > 0 {
 			if sub.IsActive() {
 				renewalDate := sub.GetNextRenewalDate()
-				price := sub.GetPrice()
+				price := h.convertToCurrency(ctx,
+					sub.GetPrice(),
+					preferredCurrency,
+					sub.StartDate())
 				if renewalDate != nil && price.IsValid() {
 					upcomingRenewals = append(upcomingRenewals, SummaryQueryUpcomingRenewalsResponse{
 						ProviderId: sub.ProviderId(),
 						At:         *renewalDate,
-						Total:      price.ToCurrency(preferredCurrency, currencyRates),
+						Total:      price,
 						Source:     &price,
 					})
 				}
@@ -148,7 +179,10 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 
 		if query.TopProviders > 0 || query.TopLabels > 0 {
 			if sub.IsStarted() {
-				totalSpent := sub.GetTotalSpent().ToCurrency(preferredCurrency, currencyRates)
+				totalSpent := h.convertToCurrency(ctx,
+					sub.GetTotalSpent(),
+					preferredCurrency,
+					sub.StartDate())
 				if totalSpent.IsValid() && !totalSpent.IsZero() {
 					if query.TopProviders > 0 {
 						existingTopProvider, ok := topProviders[sub.ProviderId()]

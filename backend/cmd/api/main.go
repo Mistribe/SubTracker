@@ -33,7 +33,7 @@ func main() {
 		cache.FxModule(),
 		fx.Provide(
 			kinde.NewTokenGenerator,
-			exchange.NewClient,
+			exchange.New,
 		),
 	}
 	opts = append(opts, usecase.BuildApplicationModules()...)
