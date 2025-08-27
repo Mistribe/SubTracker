@@ -159,7 +159,7 @@ func (m CreateSubscriptionModel) Command(userId string) (command.CreateSubscript
 //
 //	@Summary		Create a new subscription
 //	@Description	Create a new subscription with provider, plan, pricing, and payment information
-//	@Tags			subscription
+//	@Tags			subscriptions
 //	@Accept			json
 //	@Produce		json
 //	@Param			subscription	body		CreateSubscriptionModel	true	"Subscription creation data"

@@ -45,7 +45,7 @@ func (m updateLabelModel) Command(id uuid.UUID) (command.UpdateLabelCommand, err
 //
 //	@Summary		Update label by ID
 //	@Description	Update an existing label's name and color by its unique identifier
-//	@Tags			label
+//	@Tags			labels
 //	@Accept			json
 //	@Produce		json
 //	@Param			id		path		string				true	"Label ID (UUID format)"

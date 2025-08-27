@@ -28,7 +28,7 @@ type UserPreferredCurrencyModel struct {
 //
 //	@Summary		Get user preferred currency
 //	@Description	Returns the preferred currency for the authenticated user
-//	@Tags			Users
+//	@Tags			users
 //	@Produce		json
 //	@Success		200	{object}	UserPreferredCurrencyModel
 //	@Failure		401	{object}	HttpErrorResponse	"Unauthorized"

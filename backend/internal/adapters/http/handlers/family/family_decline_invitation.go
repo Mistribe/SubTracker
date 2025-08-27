@@ -31,7 +31,7 @@ type FamilyDeclineInvitationRequest struct {
 //
 //	@Summary		Decline family invitation
 //	@Description	Endpoint to decline an invitation to join a family
-//	@Tags			Family
+//	@Tags			family
 //	@Accept			json
 //	@Produce		json
 //	@Param			familyId	path	string							true	"Family ID"
