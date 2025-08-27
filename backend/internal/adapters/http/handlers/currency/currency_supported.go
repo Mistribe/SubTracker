@@ -21,6 +21,7 @@ func NewCurrencySupportedEndpoint() *CurrencySupportedEndpoint {
 //
 //	@Summary		Get Supported Currencies
 //	@Description	get details of all supported currencies
+//	@Tags			currencies
 //	@Produce		json
 //	@Success		200	{array}	string	"currencies"
 //	@Router			/currencies/supported [get]

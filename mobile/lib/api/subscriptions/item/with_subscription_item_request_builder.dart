@@ -1,8 +1,8 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../../models/http_error_response.dart';
-import '../../models/subscription_model.dart';
-import '../../models/update_subscription_model.dart';
+import '../../models/ginx/http_error_response.dart';
+import '../../models/subscription/subscription_model.dart';
+import '../../models/subscription/update_subscription_model.dart';
 
 /// auto generated
 /// Builds and executes requests for operations under \subscriptions\{subscriptionId}

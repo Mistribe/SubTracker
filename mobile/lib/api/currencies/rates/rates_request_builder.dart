@@ -1,17 +1,12 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../../models/currency_rates_model.dart';
-import '../../models/http_error_response.dart';
+import '../../models/currency/currency_rates_model.dart';
+import '../../models/ginx/http_error_response.dart';
 import './rates_request_builder_get_query_parameters.dart';
-import './refresh/refresh_request_builder.dart';
 
 /// auto generated
 /// Builds and executes requests for operations under \currencies\rates
 class RatesRequestBuilder extends BaseRequestBuilder<RatesRequestBuilder> {
-    ///  The refresh property
-    RefreshRequestBuilder get refresh {
-        return RefreshRequestBuilder(pathParameters, requestAdapter);
-    }
     /// Clones the requestbuilder.
     @override
     RatesRequestBuilder clone() {

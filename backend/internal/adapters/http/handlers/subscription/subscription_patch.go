@@ -162,7 +162,7 @@ func (m PatchSubscriptionModel) Command(userId string) (command.PatchSubscriptio
 //
 //	@Summary		Patch subscription
 //	@Description	Update or create a subscription with complete details. If subscription doesn't exist, it will be created.
-//	@Tags			subscription
+//	@Tags			subscriptions
 //	@Accept			json
 //	@Produce		json
 //	@Param			subscription	body		PatchSubscriptionModel	true	"Complete subscription data"

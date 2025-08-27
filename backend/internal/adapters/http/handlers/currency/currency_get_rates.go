@@ -37,6 +37,7 @@ func NewCurrencyGetRateEndpoint(
 //
 //	@Summary		Get Currency Rates
 //	@Description	Get exchange rates for all currencies at a specific date
+//	@Tags			currencies
 //	@Produce		json
 //	@Param			date	query		string	false	"Conversion date in RFC3339 format (default: current time)"
 //	@Success		200		{object}	CurrencyRatesModel

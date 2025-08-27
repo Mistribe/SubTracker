@@ -1,5 +1,3 @@
-import React from "react";
-
 export function SubscriptionsEmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-12">

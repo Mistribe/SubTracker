@@ -1,9 +1,9 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../models/create_provider_model.dart';
-import '../models/http_error_response.dart';
-import '../models/paginated_response_model_endpoints_provider_model.dart';
-import '../models/provider_model.dart';
+import '../models/dto/paginated_response_model_provider_provider_model.dart';
+import '../models/ginx/http_error_response.dart';
+import '../models/provider/create_provider_model.dart';
+import '../models/provider/provider_model.dart';
 import './item/with_provider_item_request_builder.dart';
 import './providers_request_builder_get_query_parameters.dart';
 
@@ -32,13 +32,13 @@ class ProvidersRequestBuilder extends BaseRequestBuilder<ProvidersRequestBuilder
     ProvidersRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/providers{?limit*,offset*,search*}", {RequestInformation.rawUrlKey : rawUrl}) ;
     /// Retrieve a paginated list of all providers with their plans and prices
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
-    Future<PaginatedResponseModelEndpointsProviderModel?> getAsync([void Function(RequestConfiguration<ProvidersRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
+    Future<PaginatedResponseModelProviderProviderModel?> getAsync([void Function(RequestConfiguration<ProvidersRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpErrorResponse.createFromDiscriminatorValue,
             '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
-        return await requestAdapter.send<PaginatedResponseModelEndpointsProviderModel>(requestInfo, PaginatedResponseModelEndpointsProviderModel.createFromDiscriminatorValue, errorMapping);
+        return await requestAdapter.send<PaginatedResponseModelProviderProviderModel>(requestInfo, PaginatedResponseModelProviderProviderModel.createFromDiscriminatorValue, errorMapping);
     }
     /// Create a new service provider with labels and owner information
     ///  [body] The request body

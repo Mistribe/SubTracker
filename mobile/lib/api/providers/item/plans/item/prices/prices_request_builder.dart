@@ -1,8 +1,8 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../../../../../models/create_price_model.dart';
-import '../../../../../models/http_error_response.dart';
-import '../../../../../models/price_model.dart';
+import '../../../../../models/ginx/http_error_response.dart';
+import '../../../../../models/provider/create_price_model.dart';
+import '../../../../../models/provider/price_model.dart';
 import './item/with_price_item_request_builder.dart';
 
 /// auto generated

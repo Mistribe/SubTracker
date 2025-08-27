@@ -10,7 +10,7 @@ import { AlertCircle, Trash2 } from "lucide-react";
 import { useApiClient } from "@/hooks/use-api-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCurrenciesQuery } from "@/hooks/currencies/useCurrenciesQuery";
-import { PriceFormValues } from "../PriceForm";
+import type {PriceFormValues} from "../PriceForm";
 import Plan from "@/models/plan";
 import Price from "@/models/price";
 

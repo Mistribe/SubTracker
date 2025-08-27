@@ -19,7 +19,7 @@ type LabelGetEndpoint struct {
 //
 //	@Summary		Get label by ID
 //	@Description	Retrieve a single label by its unique identifier
-//	@Tags			label
+//	@Tags			labels
 //	@Produce		json
 //	@Param			id	path		string	true	"Label ID (UUID format)"
 //	@Success		200	{object}	labelModel

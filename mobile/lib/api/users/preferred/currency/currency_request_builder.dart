@@ -1,8 +1,8 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../../../models/http_error_response.dart';
-import '../../../models/update_preferred_currency_model.dart';
-import '../../../models/user_preferred_currency_model.dart';
+import '../../../models/ginx/http_error_response.dart';
+import '../../../models/user/update_preferred_currency_model.dart';
+import '../../../models/user/user_preferred_currency_model.dart';
 
 /// auto generated
 /// Builds and executes requests for operations under \users\preferred\currency

@@ -1,6 +1,6 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../models/http_error_response.dart';
+import '../models/ginx/http_error_response.dart';
 import './preferred/preferred_request_builder.dart';
 import './profile/profile_request_builder.dart';
 

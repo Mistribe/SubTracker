@@ -1,10 +1,10 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../models/create_subscription_model.dart';
-import '../models/http_error_response.dart';
-import '../models/paginated_response_model_endpoints_subscription_model.dart';
-import '../models/patch_subscription_model.dart';
-import '../models/subscription_model.dart';
+import '../models/dto/paginated_response_model_subscription_subscription_model.dart';
+import '../models/ginx/http_error_response.dart';
+import '../models/subscription/create_subscription_model.dart';
+import '../models/subscription/patch_subscription_model.dart';
+import '../models/subscription/subscription_model.dart';
 import './item/with_subscription_item_request_builder.dart';
 import './subscriptions_request_builder_get_query_parameters.dart';
 import './summary/summary_request_builder.dart';
@@ -38,13 +38,13 @@ class SubscriptionsRequestBuilder extends BaseRequestBuilder<SubscriptionsReques
     SubscriptionsRequestBuilder.withUrl(String rawUrl, RequestAdapter requestAdapter) : super(requestAdapter, "{+baseurl}/subscriptions{?from_date*,limit*,offset*,providers*,recurrencies*,search*,to_date*,users*,with_inactive*}", {RequestInformation.rawUrlKey : rawUrl}) ;
     /// Retrieve a paginated list of all subscriptions for the authenticated user
     ///  [requestConfiguration] Configuration for the request such as headers, query parameters, and middleware options.
-    Future<PaginatedResponseModelEndpointsSubscriptionModel?> getAsync([void Function(RequestConfiguration<SubscriptionsRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
+    Future<PaginatedResponseModelSubscriptionSubscriptionModel?> getAsync([void Function(RequestConfiguration<SubscriptionsRequestBuilderGetQueryParameters>)? requestConfiguration]) async {
         var requestInfo = toGetRequestInformation(requestConfiguration);
         final errorMapping = <String, ParsableFactory<Parsable>>{
             '400' :  HttpErrorResponse.createFromDiscriminatorValue,
             '500' :  HttpErrorResponse.createFromDiscriminatorValue,
         };
-        return await requestAdapter.send<PaginatedResponseModelEndpointsSubscriptionModel>(requestInfo, PaginatedResponseModelEndpointsSubscriptionModel.createFromDiscriminatorValue, errorMapping);
+        return await requestAdapter.send<PaginatedResponseModelSubscriptionSubscriptionModel>(requestInfo, PaginatedResponseModelSubscriptionSubscriptionModel.createFromDiscriminatorValue, errorMapping);
     }
     /// Update or create a subscription with complete details. If subscription doesn't exist, it will be created.
     ///  [body] The request body

@@ -65,7 +65,7 @@ type SubscriptionSummaryResponse struct {
 //
 //	@Summary		Get subscription summary
 //	@Description	Returns summary information about subscriptions including total costs and upcoming renewals
-//	@Tags			Subscriptions
+//	@Tags			subscriptions
 //	@Produce		json
 //	@Param			top_providers		query		integer	true	"Number of top providers to return"
 //	@Param			top_labels			query		integer	true	"Number of top labels to return"

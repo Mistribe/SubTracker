@@ -1,7 +1,7 @@
 // ignore_for_file: type=lint
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
-import '../../../models/family_accept_invitation_request.dart';
-import '../../../models/http_error_response.dart';
+import '../../../models/family/family_accept_invitation_request.dart';
+import '../../../models/ginx/http_error_response.dart';
 
 /// auto generated
 /// Builds and executes requests for operations under \families\{familyId}\accept

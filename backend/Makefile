@@ -7,22 +7,22 @@ install-deps:
 	go install github.com/go-jet/jet/v2/cmd/jet@latest
 
 openapi:
-	@swag fmt -d ./cmd/api/ &&\
-	swag init -d ./cmd/api/ -o ./cmd/api/docs --v3.1
+	swag fmt -d ./cmd/api/ -d ./internal/adapters/http/handlers/  &&\
+	swag init -d ./cmd/api/ -pdl 3 -o ./internal/adapters/http/handlers/openapi --v3.1
 
 clients: typescript-client dart-client
 
 typescript-client:
 	docker pull mcr.microsoft.com/openapi/kiota && \
     docker run --rm -v ../web/src/api:/app/output \
-    -v ./cmd/api/docs/swagger.yaml:/app/openapi.yaml \
+    -v ./internal/adapters/http/handlers/openapi/swagger.yaml:/app/openapi.yaml \
     --user $(id -u):$(id -g) \
     mcr.microsoft.com/openapi/kiota generate --language typescript --clean-output
 
 dart-client:
 	docker pull mcr.microsoft.com/openapi/kiota && \
     docker run --rm -v ../mobile/lib/api:/app/output \
-    -v ./cmd/api/docs/swagger.yaml:/app/openapi.yaml \
+    -v ./internal/adapters/http/handlers/openapi/swagger.yaml:/app/openapi.yaml \
     --user $(id -u):$(id -g) \
     mcr.microsoft.com/openapi/kiota generate --language dart --clean-output
 

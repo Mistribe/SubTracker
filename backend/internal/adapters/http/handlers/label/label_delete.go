@@ -20,7 +20,7 @@ type LabelDeleteEndpoint struct {
 //
 //	@Summary		Delete label by ID
 //	@Description	Permanently delete a label by its unique identifier
-//	@Tags			label
+//	@Tags			labels
 //	@Param			id	path	string	true	"Label ID (UUID format)"
 //	@Success		204	"No Content - Label successfully deleted"
 //	@Failure		400	{object}	HttpErrorResponse	"Bad Request - Invalid ID format"

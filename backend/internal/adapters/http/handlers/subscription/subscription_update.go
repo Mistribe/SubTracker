@@ -153,7 +153,7 @@ func (m UpdateSubscriptionModel) Command(userId string, id uuid.UUID) (command.U
 //
 //	@Summary		Update subscription by ID
 //	@Description	Update an existing subscription's details including provider, plan, pricing, and payment information
-//	@Tags			subscription
+//	@Tags			subscriptions
 //	@Accept			json
 //	@Produce		json
 //	@Param			subscriptionId	path		string					true	"Subscription ID (UUID format)"
