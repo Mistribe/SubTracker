@@ -1,22 +1,13 @@
 import {useMemo} from "react";
-import {useSubscriptionsQuery} from "@/hooks/subscriptions/useSubscriptionsQuery.ts";
 import {useProvidersByIds} from "@/hooks/providers/useProvidersByIds";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import UpcomingRenewals from "@/components/dashboard/UpcomingRenewals";
 import TopProviders from "@/components/dashboard/TopProviders";
 import TopLabels from "@/components/dashboard/TopLabels";
-import PriceEvolutionGraph from "@/components/dashboard/PriceEvolutionGraph";
 import {PageHeader} from "@/components/ui/page-header";
 import {useSubscriptionSummaryQuery} from "@/hooks/subscriptions/useSubscriptionSummaryQuery";
-import type Subscription from "@/models/subscription.ts";
 
 const DashboardPage = () => {
-    const {data: subscriptionsData, isLoading: isLoadingSubscriptions} = useSubscriptionsQuery();
-
-    const allSubscriptions: Subscription[] = useMemo(() =>
-            subscriptionsData?.pages.flatMap(page => page.subscriptions) || [],
-        [subscriptionsData]);
-
     const {
         activeSubscriptions: summaryActiveSubscriptions,
         upcomingRenewals: summaryUpcomingRenewals,
@@ -55,7 +46,7 @@ const DashboardPage = () => {
                 totalLastMonth={summaryLastMonth}
                 totalLastYear={summaryLastYear}
                 activeSubscriptionsCount={summaryActiveSubscriptions}
-                isLoading={isLoadingSubscriptions || isLoadingSummary}
+                isLoading={ isLoadingSummary}
             />
 
             {/* Side by side: Upcoming Renewals, Top Providers and Top Labels */}
@@ -69,20 +60,12 @@ const DashboardPage = () => {
                 <TopProviders
                     providers={summaryTopProviders}
                     providerMap={providerMap}
-                    isLoading={isLoadingSubscriptions || isLoadingProvidersByIds || isLoadingSummary}
+                    isLoading={isLoadingProvidersByIds || isLoadingSummary}
                 />
 
                 <TopLabels
                     labels={summaryTopLabels ?? []}
                     isLoading={isLoadingSummary}
-                />
-            </div>
-
-            <div className="mb-8">
-                <PriceEvolutionGraph
-                    subscriptions={allSubscriptions}
-                    providerMap={providerMap}
-                    isLoading={isLoadingSubscriptions || isLoadingProvidersByIds}
                 />
             </div>
         </div>
