@@ -14,14 +14,13 @@ import {useProfileManagement} from "@/hooks/profile/useProfileManagement";
  */
 const ProfilePage = () => {
     // Get authentication data from Kinde
-    const {user: kindeUser} = useKindeAuth();
+    const {user: kindeUser } = useKindeAuth();
     // Get theme information from theme context
     const {theme} = useTheme();
 
     // Check if user is using an external provider
-    const isExternalProvider = kindeUser?.identities?.[0]?.type !== 'password' ||
-        kindeUser?.identityProvider !== undefined ||
-        kindeUser?.provider !== undefined;
+    // todo: Implement external provider check
+    const isExternalProvider = false;
     // Use profile management hook for currency preferences and profile updates
     const {
         preferredCurrency,

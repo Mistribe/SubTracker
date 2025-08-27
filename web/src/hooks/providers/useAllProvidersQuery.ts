@@ -1,9 +1,9 @@
 import {useInfiniteQuery} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
-import type {ProviderModel} from "@/api/models";
 import type {ProvidersRequestBuilderGetQueryParameters} from "@/api/providers";
 import Provider from "@/models/provider";
 import {OwnerType} from "@/models/ownerType";
+import type {ProviderModel} from "@/api/models/provider";
 
 interface AllProvidersQueryOptions {
     ownerTypes?: OwnerType[];

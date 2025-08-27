@@ -1,4 +1,4 @@
-import {type SubscriptionPayerModel, SubscriptionPayerModel_typeObject} from "@/api/models";
+import {type SubscriptionPayerModel, SubscriptionPayerModel_typeObject} from "@/api/models/subscription";
 import {PayerType} from "@/models/payerType.ts";
 
 export class SubscriptionPayer {

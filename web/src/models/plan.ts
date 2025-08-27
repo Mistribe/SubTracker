@@ -1,5 +1,5 @@
 import Price from "@/models/price.ts";
-import type {PlanModel} from "@/api/models";
+import type {PlanModel} from "@/api/models/provider";
 
 export default class Plan {
     private readonly _id: string;

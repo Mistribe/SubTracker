@@ -1,7 +1,7 @@
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
-import type {CreateFamilyMemberModel, CreateFamilyModel, UpdateFamilyMemberModel} from "@/api/models";
 import {FamilyMemberType} from "@/models/familyMemberType.ts";
+import type {CreateFamilyMemberModel, CreateFamilyModel, UpdateFamilyMemberModel} from "@/api/models/family";
 
 export const useFamiliesMutations = () => {
     const {apiClient} = useApiClient();
@@ -90,7 +90,7 @@ export const useFamiliesMutations = () => {
                 type: isKid ? FamilyMemberType.Kid : FamilyMemberType.Adult
             };
 
-            return apiClient?.families.byFamilyId(familyId).members.byId(memberId).put(payload);
+            return apiClient?.families.byFamilyId(familyId).members.byFamilyMemberId(memberId).put(payload);
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({queryKey: ['families']});

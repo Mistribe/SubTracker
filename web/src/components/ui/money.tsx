@@ -2,9 +2,7 @@ import React, {useMemo} from "react";
 import type {Amount} from "@/models/amount.ts";
 
 export interface MoneyProps {
-    // Supports new API: pass an Amount instance, and optional source Amount.
-    // Backward compatibility: accepts a number with a separate currency prop.
-    amount: Amount | undefined | null;
+    amount?: Amount | null;
     className?: string;
     /**
      * Minimum fraction digits when formatting. Defaults to 2.

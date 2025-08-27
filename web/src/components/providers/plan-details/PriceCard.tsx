@@ -44,7 +44,7 @@ export function PriceCard({
                     <div className={isActive ? "font-medium" : ""}>
                         <span>
                             {/* Display in preferred currency, with original in parentheses when converted */}
-                            <Money amount={price.amount} currency={price.currency} />
+                            <Money amount={price.amount} />
                         </span>
                     </div>
                     <div className="text-xs text-gray-500">

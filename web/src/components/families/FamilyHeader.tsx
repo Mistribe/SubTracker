@@ -6,8 +6,8 @@ import { CheckIcon, Loader2, XIcon } from "lucide-react";
 import Family from "@/models/family.ts";
 import { useApiClient } from "@/hooks/use-api-client.ts";
 import { useQueryClient } from "@tanstack/react-query";
-import type { PatchFamilyModel } from "@/api/models";
 import { AddFamilyMemberDialog } from "./AddFamilyMemberDialog.tsx";
+import type {PatchFamilyModel} from "@/api/models/family";
 
 interface FamilyHeaderProps {
   family: Family;

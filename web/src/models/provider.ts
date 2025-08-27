@@ -1,6 +1,6 @@
-import type {ProviderModel} from "@/api/models";
 import Owner from "@/models/owner.ts";
 import Plan from "@/models/plan.ts";
+import type {ProviderModel} from "@/api/models/provider";
 
 export default class Provider {
     private readonly _id: string;

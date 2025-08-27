@@ -1,5 +1,5 @@
-import {type FamilyMemberModel} from "@/api/models";
 import {FamilyMemberType, fromHttpApi} from "@/models/familyMemberType.ts";
+import type {FamilyMemberModel} from "@/api/models/family";
 
 export default class FamilyMember {
     private readonly _id: string;
