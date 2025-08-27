@@ -10,16 +10,16 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/mistribe/subtracker/internal/adapters/cache"
 	"github.com/mistribe/subtracker/internal/adapters/exchange"
 	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/ports"
 	appcurrency "github.com/mistribe/subtracker/internal/usecase/currency"
 )
 
 func TestConvertTo(t *testing.T) {
 	ctx := context.Background()
-	mockRepo := currency.NewMockRepository(t)
-	mockCache := cache.NewMockLocal(t)
+	mockRepo := ports.NewMockCurrencyRepository(t)
+	mockCache := ports.NewMockLocalCache(t)
 	mockExchange := exchange.NewMockClient(t)
 	service := appcurrency.NewService(mockRepo, mockCache, mockExchange)
 

@@ -9,43 +9,41 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	domainauth "github.com/mistribe/subtracker/internal/domain/auth"
-	auth2 "github.com/mistribe/subtracker/internal/usecase/auth"
-
-	"github.com/mistribe/subtracker/internal/domain/family"
-	"github.com/mistribe/subtracker/internal/domain/user"
+	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/internal/usecase/auth"
 )
 
 func TestMustGetUserId(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth2.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
 
-	service := auth2.NewAuthenticationService(user.NewMockRepository(t), family.NewMockRepository(t))
+	service := auth.NewAuthenticationService(ports.NewMockUserRepository(t), ports.NewMockFamilyRepository(t))
 
 	assert.Equal(t, userId, service.MustGetUserId(ctx))
 }
 
 func TestMustGetFamilies(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth2.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
 	expectedFamilies := []uuid.UUID{uuid.New(), uuid.New()}
 
-	mockRepo := user.NewMockRepository(t)
+	mockRepo := ports.NewMockUserRepository(t)
 	mockRepo.On("GetUserFamilies", ctx, userId).Return(expectedFamilies, nil)
 
-	service := auth2.NewAuthenticationService(mockRepo, family.NewMockRepository(t))
+	service := auth.NewAuthenticationService(mockRepo, ports.NewMockFamilyRepository(t))
 
 	assert.Equal(t, expectedFamilies, service.MustGetFamilies(ctx))
 }
 
 func TestMustGetFamilies_Error(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth2.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
 	expectedError := errors.New("repository error")
 
-	mockRepo := user.NewMockRepository(t)
+	mockRepo := ports.NewMockUserRepository(t)
 	mockRepo.On("GetUserFamilies", ctx, userId).Return(nil, expectedError)
 
-	service := auth2.NewAuthenticationService(mockRepo, family.NewMockRepository(t))
+	service := auth.NewAuthenticationService(mockRepo, ports.NewMockFamilyRepository(t))
 
 	assert.Panics(t, func() {
 		service.MustGetFamilies(ctx)
@@ -54,13 +52,13 @@ func TestMustGetFamilies_Error(t *testing.T) {
 
 func TestIsInFamily(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth2.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
 	families := []uuid.UUID{uuid.New(), uuid.New()}
 
-	mockRepo := user.NewMockRepository(t)
+	mockRepo := ports.NewMockUserRepository(t)
 	mockRepo.On("GetUserFamilies", ctx, userId).Return(families, nil)
 
-	service := auth2.NewAuthenticationService(mockRepo, family.NewMockRepository(t))
+	service := auth.NewAuthenticationService(mockRepo, ports.NewMockFamilyRepository(t))
 
 	assert.True(t, service.IsInFamily(ctx, families[0]))
 	assert.False(t, service.IsInFamily(ctx, uuid.New()))
@@ -68,9 +66,9 @@ func TestIsInFamily(t *testing.T) {
 
 func TestIsOwner_SystemOwner(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth2.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
 
-	service := auth2.NewAuthenticationService(user.NewMockRepository(t), family.NewMockRepository(t))
+	service := auth.NewAuthenticationService(ports.NewMockUserRepository(t), ports.NewMockFamilyRepository(t))
 
 	isOwner, err := service.IsOwner(ctx, domainauth.NewSystemOwner())
 	assert.NoError(t, err)
@@ -79,14 +77,14 @@ func TestIsOwner_SystemOwner(t *testing.T) {
 
 func TestIsOwner_FamilyOwner_IsMember(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth2.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
 	familyId := uuid.New()
 
-	mockRepo := user.NewMockRepository(t)
-	mockFamilyRepo := family.NewMockRepository(t)
+	mockRepo := ports.NewMockUserRepository(t)
+	mockFamilyRepo := ports.NewMockFamilyRepository(t)
 	mockFamilyRepo.On("IsUserMemberOfFamily", ctx, familyId, userId).Return(true, nil)
 
-	service := auth2.NewAuthenticationService(mockRepo, mockFamilyRepo)
+	service := auth.NewAuthenticationService(mockRepo, mockFamilyRepo)
 
 	isOwner, err := service.IsOwner(ctx, domainauth.NewFamilyOwner(familyId))
 	assert.NoError(t, err)
@@ -95,14 +93,14 @@ func TestIsOwner_FamilyOwner_IsMember(t *testing.T) {
 
 func TestIsOwner_FamilyOwner_NotMember(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth2.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
 	familyId := uuid.New()
 
-	mockRepo := user.NewMockRepository(t)
-	mockFamilyRepo := family.NewMockRepository(t)
+	mockRepo := ports.NewMockUserRepository(t)
+	mockFamilyRepo := ports.NewMockFamilyRepository(t)
 	mockFamilyRepo.On("IsUserMemberOfFamily", ctx, familyId, userId).Return(false, nil)
 
-	service := auth2.NewAuthenticationService(mockRepo, mockFamilyRepo)
+	service := auth.NewAuthenticationService(mockRepo, mockFamilyRepo)
 
 	isOwner, err := service.IsOwner(ctx, domainauth.NewFamilyOwner(familyId))
 	assert.ErrorIs(t, err, domainauth.ErrNotAuthorized)
@@ -111,9 +109,9 @@ func TestIsOwner_FamilyOwner_NotMember(t *testing.T) {
 
 func TestIsOwner_PersonalOwner_Match(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth2.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
 
-	service := auth2.NewAuthenticationService(user.NewMockRepository(t), family.NewMockRepository(t))
+	service := auth.NewAuthenticationService(ports.NewMockUserRepository(t), ports.NewMockFamilyRepository(t))
 
 	isOwner, err := service.IsOwner(ctx, domainauth.NewPersonalOwner(userId))
 	assert.NoError(t, err)
@@ -122,9 +120,9 @@ func TestIsOwner_PersonalOwner_Match(t *testing.T) {
 
 func TestIsOwner_PersonalOwner_NoMatch(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth2.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
 
-	service := auth2.NewAuthenticationService(user.NewMockRepository(t), family.NewMockRepository(t))
+	service := auth.NewAuthenticationService(ports.NewMockUserRepository(t), ports.NewMockFamilyRepository(t))
 
 	isOwner, err := service.IsOwner(ctx, domainauth.NewPersonalOwner("DifferentUserId"))
 	assert.ErrorIs(t, err, domainauth.ErrNotAuthorized)
