@@ -6,7 +6,10 @@ import (
 
 type Unit = currency.Unit
 
-var USD = currency.USD
+var (
+	USD = currency.USD
+	EUR = currency.EUR
+)
 
 func ParseISO(code string) (Unit, error) {
 	return currency.ParseISO(code)

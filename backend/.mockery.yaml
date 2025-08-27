@@ -1,16 +1,25 @@
+all: false
+dir: '{{.InterfaceDir}}'
+filename: "{{.InterfaceName | snakecase}}_mock.go"
+force-file-write: true
+formatter: goimports
+log-level: info
+structname: '{{.Mock}}{{.InterfaceName}}'
+pkgname: '{{.SrcPackageName}}'
+recursive: false
+template: testify
 packages:
-  github.com/oleexo/subtracker/internal/domain/label:
+  github.com/mistribe/subtracker/internal/ports:
     config:
-      dir: ./internal/domain/label/mocks
+      dir: ./internal/ports
     interfaces:
-      Repository:
-  github.com/oleexo/subtracker/internal/domain/family:
-    config:
-      dir: ./internal/domain/family/mocks
-    interfaces:
-      Repository:
-  github.com/oleexo/subtracker/internal/domain/subscription:
-    config:
-      dir: ./internal/domain/subscription/mocks
-    interfaces:
-      Repository:
+      Exchange:
+      AuthService:
+      UserService:
+      LocalCache:
+      CurrencyRepository:
+      FamilyRepository:
+      LabelRepository:
+      ProviderRepository:
+      SubscriptionRepository:
+      UserRepository:
