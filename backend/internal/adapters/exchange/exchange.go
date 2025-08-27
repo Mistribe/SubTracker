@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -25,6 +26,7 @@ type externalSourceModel struct {
 type exchange struct {
 	cache      ports.LocalCache
 	repository ports.CurrencyRepository
+	logger     *slog.Logger
 }
 
 func getCacheKey(from, to currency.Unit, at time.Time) string {
@@ -138,6 +140,10 @@ func (e exchange) getRateAt(ctx context.Context, from, to currency.Unit, at time
 			return 0, err
 		}
 		if rate == 0 {
+			e.logger.Warn("missing rate",
+				slog.String("from", from.String()),
+				slog.String("to", to.String()),
+				slog.Time("at", at))
 			rate, err = e.getRateFromExternalSource(from, to, time.Now())
 			if err != nil {
 				return 0, err
@@ -211,9 +217,11 @@ func (e exchange) saveRateToDatabase(
 
 func New(
 	cache ports.LocalCache,
-	repository ports.CurrencyRepository) ports.Exchange {
+	repository ports.CurrencyRepository,
+	logger *slog.Logger) ports.Exchange {
 	return exchange{
 		cache:      cache,
 		repository: repository,
+		logger:     logger,
 	}
 }
