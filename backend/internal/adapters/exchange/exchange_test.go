@@ -11,17 +11,18 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/mistribe/subtracker/internal/adapters/exchange"
-	dcurrency "github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/pkg/testx"
 )
 
 func TestExchange_ToCurrencyAt_InvalidAmount(t *testing.T) {
 	localCacheMock := ports.NewMockLocalCache(t)
 	currencyRepositoryMock := ports.NewMockCurrencyRepository(t)
-	service := exchange.New(localCacheMock, currencyRepositoryMock)
+	service := exchange.New(localCacheMock, currencyRepositoryMock, testx.DiscardLogger())
 
-	invalid := dcurrency.NewInvalidAmount()
-	out, err := service.ToCurrencyAt(context.Background(), invalid, dcurrency.USD, time.Now())
+	invalid := currency.NewInvalidAmount()
+	out, err := service.ToCurrencyAt(context.Background(), invalid, currency.USD, time.Now())
 	require.Error(t, err)
 	require.Equal(t, "invalid amount", err.Error())
 	require.True(t, out.IsEqual(invalid))
@@ -30,10 +31,10 @@ func TestExchange_ToCurrencyAt_InvalidAmount(t *testing.T) {
 func TestExchange_ToCurrencyAt_SameCurrency(t *testing.T) {
 	localCacheMock := ports.NewMockLocalCache(t)
 	currencyRepositoryMock := ports.NewMockCurrencyRepository(t)
-	service := exchange.New(localCacheMock, currencyRepositoryMock)
+	service := exchange.New(localCacheMock, currencyRepositoryMock, testx.DiscardLogger())
 
-	initial := dcurrency.NewAmount(42.0, dcurrency.USD)
-	out, err := service.ToCurrencyAt(context.Background(), initial, dcurrency.USD, time.Now())
+	initial := currency.NewAmount(42.0, currency.USD)
+	out, err := service.ToCurrencyAt(context.Background(), initial, currency.USD, time.Now())
 	require.NoError(t, err)
 	require.True(t, out.IsEqual(initial))
 	require.Nil(t, out.Source())
@@ -42,7 +43,7 @@ func TestExchange_ToCurrencyAt_SameCurrency(t *testing.T) {
 func TestExchange_ToCurrencyAt_ErrorFromRepository(t *testing.T) {
 	localCacheMock := ports.NewMockLocalCache(t)
 	currencyRepositoryMock := ports.NewMockCurrencyRepository(t)
-	service := exchange.New(localCacheMock, currencyRepositoryMock)
+	service := exchange.New(localCacheMock, currencyRepositoryMock, testx.DiscardLogger())
 
 	at := time.Date(2024, 3, 1, 0, 0, 0, 0, time.UTC)
 
@@ -57,8 +58,8 @@ func TestExchange_ToCurrencyAt_ErrorFromRepository(t *testing.T) {
 		mock.Anything, // at
 	).Return(nil, errors.New("db error")).Once()
 
-	initial := dcurrency.NewAmount(10, dcurrency.USD)
-	out, err := service.ToCurrencyAt(context.Background(), initial, dcurrency.EUR, at)
+	initial := currency.NewAmount(10, currency.USD)
+	out, err := service.ToCurrencyAt(context.Background(), initial, currency.EUR, at)
 
 	require.Error(t, err)
 	require.Equal(t, "db error", err.Error())
@@ -68,7 +69,7 @@ func TestExchange_ToCurrencyAt_ErrorFromRepository(t *testing.T) {
 func TestExchange_ToCurrencyAt_SuccessFromCache(t *testing.T) {
 	localCacheMock := ports.NewMockLocalCache(t)
 	currencyRepositoryMock := ports.NewMockCurrencyRepository(t)
-	service := exchange.New(localCacheMock, currencyRepositoryMock)
+	service := exchange.New(localCacheMock, currencyRepositoryMock, testx.DiscardLogger())
 
 	at := time.Date(2024, 4, 2, 0, 0, 0, 0, time.UTC)
 	rate := 1.10
@@ -78,11 +79,11 @@ func TestExchange_ToCurrencyAt_SuccessFromCache(t *testing.T) {
 	// Service re-sets the cache with the same rate
 	localCacheMock.On("Set", mock.Anything, rate, mock.Anything).Return().Once()
 
-	initial := dcurrency.NewAmount(100, dcurrency.USD)
-	out, err := service.ToCurrencyAt(context.Background(), initial, dcurrency.EUR, at)
+	initial := currency.NewAmount(100, currency.USD)
+	out, err := service.ToCurrencyAt(context.Background(), initial, currency.EUR, at)
 
 	require.NoError(t, err)
-	require.Equal(t, dcurrency.EUR, out.Currency())
+	require.Equal(t, currency.EUR, out.Currency())
 	require.InDelta(t, 110.0, out.Value(), 1e-9)
 	require.NotNil(t, out.Source())
 	require.True(t, out.Source().IsEqual(initial))
@@ -94,14 +95,14 @@ func TestExchange_ToCurrencyAt_SuccessFromCache(t *testing.T) {
 func TestExchange_ToCurrencyAt_SuccessFromRepository(t *testing.T) {
 	localCacheMock := ports.NewMockLocalCache(t)
 	currencyRepositoryMock := ports.NewMockCurrencyRepository(t)
-	service := exchange.New(localCacheMock, currencyRepositoryMock)
+	service := exchange.New(localCacheMock, currencyRepositoryMock, testx.DiscardLogger())
 
 	at := time.Date(2024, 5, 3, 0, 0, 0, 0, time.UTC)
 	rateVal := 1.25
-	repoRate := dcurrency.NewRate(
+	repoRate := currency.NewRate(
 		uuid.New(),
-		dcurrency.USD,
-		dcurrency.EUR,
+		currency.USD,
+		currency.EUR,
 		at,
 		rateVal,
 		time.Now(),
@@ -121,11 +122,11 @@ func TestExchange_ToCurrencyAt_SuccessFromRepository(t *testing.T) {
 	// Cache set after obtaining rate
 	localCacheMock.On("Set", mock.Anything, rateVal, mock.Anything).Return().Once()
 
-	initial := dcurrency.NewAmount(80, dcurrency.USD)
-	out, err := service.ToCurrencyAt(context.Background(), initial, dcurrency.EUR, at)
+	initial := currency.NewAmount(80, currency.USD)
+	out, err := service.ToCurrencyAt(context.Background(), initial, currency.EUR, at)
 
 	require.NoError(t, err)
-	require.Equal(t, dcurrency.EUR, out.Currency())
+	require.Equal(t, currency.EUR, out.Currency())
 	require.InDelta(t, 100.0, out.Value(), 1e-9) // 80 * 1.25
 	require.NotNil(t, out.Source())
 	require.True(t, out.Source().IsEqual(initial))
