@@ -1,4 +1,4 @@
-import {type SubscriptionModel_recurrency, SubscriptionModel_recurrencyObject} from "@/api/models";
+import {type SubscriptionModel_recurrency, SubscriptionModel_recurrencyObject} from "@/api/models/subscription";
 
 export const SubscriptionRecurrency = {
     Unknown: 'unknown',

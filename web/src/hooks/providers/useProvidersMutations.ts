@@ -2,7 +2,7 @@ import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
 import Provider from "@/models/provider";
 import {OwnerType} from "@/models/ownerType";
-import type {CreateProviderModel, UpdateProviderModel} from "@/api/models";
+import type {CreateProviderModel, UpdateProviderModel} from "@/api/models/provider";
 
 export const useProvidersMutations = () => {
     const {apiClient} = useApiClient();

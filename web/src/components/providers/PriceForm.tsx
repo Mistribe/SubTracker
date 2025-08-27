@@ -96,7 +96,7 @@ const createPriceFormSchema = (existingPrices: Price[] = [], currentPriceId?: st
                 }
 
                 // Only check prices with the same currency
-                if (price.currency !== data.currency) {
+                if (price.amount.currency !== data.currency) {
                     return false;
                 }
 
@@ -135,7 +135,7 @@ export function PriceForm({
 
         // Filter prices by currency and sort by end date (most recent first)
         const currencyPrices = existingPrices
-            .filter(p => p.currency === currency)
+            .filter(p => p.amount.currency === currency)
             .sort((a, b) => {
                 // Handle null end dates (active prices)
                 if (!a.endDate && !b.endDate) return 0;
@@ -170,7 +170,7 @@ export function PriceForm({
         }
 
         // For new prices, use the latest end date for the default currency
-        return getLatestEndDateForCurrency(price?.currency || "USD");
+        return getLatestEndDateForCurrency(price?.amount?.currency || "USD");
     };
 
     const {
@@ -182,8 +182,8 @@ export function PriceForm({
     } = useForm<PriceFormValues>({
         resolver: zodResolver(validationSchema),
         defaultValues: {
-            amount: price?.amount || 0,
-            currency: price?.currency || "USD",
+            amount: price?.amount?.value || 0,
+            currency: price?.amount?.currency || "USD",
             startDate: getDefaultStartDate(),
             endDate: price?.endDate
                 ? price.endDate.toISOString().split('T')[0]

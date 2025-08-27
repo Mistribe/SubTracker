@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useApiClient } from "@/hooks/use-api-client";
-import type { LabelModel } from "@/api/models";
 import Label from "@/models/label";
+import type {LabelModel} from "@/api/models/label";
 
 export const useLabelQuery = (id: string | undefined | null) => {
   const { apiClient } = useApiClient();

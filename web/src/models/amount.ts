@@ -1,4 +1,4 @@
-import type {AmountModel} from "@/api/models";
+import type {AmountModel} from "@/api/models/dto";
 
 export interface Amount {
     value: number;

@@ -6,6 +6,7 @@ import Plan from "@/models/plan";
 import Price from "@/models/price";
 import {PlanForm, type PlanFormValues} from "./PlanForm";
 import {PriceForm, type PriceFormValues} from "./PriceForm";
+import Money from "@/components/ui/money.tsx";
 
 interface PlansListProps {
     plans: Plan[];
@@ -187,7 +188,7 @@ export function PlansList({
                                                      className="flex justify-between items-center p-2 border rounded-md">
                                                     <div>
                                                         <div className="font-medium">
-                                                            {price.amount} {price.currency}
+                                                            <Money amount={price.amount} />
                                                         </div>
                                                         <div className="text-xs text-gray-500">
                                                             From: {price.startDate.toLocaleDateString()}

@@ -1,4 +1,4 @@
-import {type FamilyMemberModel_type, FamilyMemberModel_typeObject} from "@/api/models";
+import {type FamilyMemberModel_type, FamilyMemberModel_typeObject} from "@/api/models/family";
 
 export const FamilyMemberType = {
     Owner: 'owner',

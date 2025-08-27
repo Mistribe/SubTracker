@@ -1,9 +1,9 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
-import {type UpdatePreferredCurrencyModel, type UpdateProfileModel} from "@/api/models";
 import currencyCodes from "currency-codes";
 import getSymbolFromCurrency from "currency-symbol-map";
 import {useKindeAuth} from "@kinde-oss/kinde-auth-react";
+import type {UpdatePreferredCurrencyModel, UpdateProfileModel} from "@/api/models/user";
 
 interface ProfileQueryOptions {
     /**

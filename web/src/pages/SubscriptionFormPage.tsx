@@ -111,7 +111,7 @@ const SubscriptionFormPage = () => {
             // Set custom price if available
             if (subscriptionToEdit.customPrice) {
                 form.setValue("customPrice", {
-                    amount: subscriptionToEdit.customPrice.amount,
+                    amount: subscriptionToEdit.customPrice.value,
                     currency: subscriptionToEdit.customPrice.currency
                 });
             }

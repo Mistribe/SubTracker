@@ -33,7 +33,7 @@ export function DeletePriceDialog({
                     <AlertDialogDescription>
                         {price ? (
                             <>
-                                Are you sure you want to delete the price of {price.amount} {price.currency}
+                                Are you sure you want to delete the price of {price.amount}
                                 {price.endDate 
                                     ? ` (${price.startDate.toLocaleDateString()} - ${price.endDate.toLocaleDateString()})`
                                     : ` (from ${price.startDate.toLocaleDateString()})`}? 

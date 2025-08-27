@@ -1,15 +1,13 @@
 import {useInfiniteQuery} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
-import type {SubscriptionModel} from "@/api/models";
 import type {SubscriptionsRequestBuilderGetQueryParameters} from "@/api/subscriptions";
 import Subscription from "@/models/subscription";
 import type {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
+import type {SubscriptionModel} from "@/api/models/subscription";
 
 interface SubscriptionsQueryOptions {
     limit?: number;
     search?: string;
-    sortBy?: 'provider' | 'name' | 'recurrency' | 'dates';
-    sortOrder?: 'asc' | 'desc';
     fromDate?: Date;
     toDate?: Date;
     providers?: string[];
@@ -26,8 +24,6 @@ export const useSubscriptionsQuery = (options: SubscriptionsQueryOptions = {}) =
     const {
         limit = 10,
         search,
-        sortBy,
-        sortOrder,
         fromDate,
         toDate,
         providers,
@@ -44,8 +40,6 @@ export const useSubscriptionsQuery = (options: SubscriptionsQueryOptions = {}) =
             'preferredCurrency',
             limit,
             search,
-            sortBy,
-            sortOrder,
             fromDate ? fromDate.toISOString() : null,
             toDate ? toDate.toISOString() : null,
             providers ?? [],
@@ -68,8 +62,6 @@ export const useSubscriptionsQuery = (options: SubscriptionsQueryOptions = {}) =
                 toDate: toDate?.toISOString(),
                 limit,
                 offset: pageParam,
-                sortBy: sortBy,
-                sortOrder: sortOrder,
                 providers: providers,
                 recurrencies: recurrencies,
                 users: users,

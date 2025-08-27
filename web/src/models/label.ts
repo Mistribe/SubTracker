@@ -1,5 +1,5 @@
-import type {LabelModel} from "@/api/models";
 import Owner from "@/models/owner.ts";
+import type {LabelModel} from "@/api/models/label";
 
 export default class Label {
     private readonly _id: string;

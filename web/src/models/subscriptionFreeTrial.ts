@@ -1,4 +1,4 @@
-import type {SubscriptionFreeTrialModel} from "@/api/models";
+import type {SubscriptionFreeTrialModel} from "@/api/models/subscription";
 
 export class SubscriptionFreeTrial {
     private readonly _endDate: Date | undefined;

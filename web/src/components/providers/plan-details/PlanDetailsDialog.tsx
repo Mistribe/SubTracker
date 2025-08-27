@@ -52,7 +52,7 @@ export function PlanDetailsDialog({
     
     // Group prices by currency
     const pricesByCurrency = plan.prices.reduce((groups, price) => {
-        const currency = price.currency;
+        const currency = price.amount.currency;
         if (!groups[currency]) {
             groups[currency] = [];
         }
@@ -135,8 +135,10 @@ export function PlanDetailsDialog({
             // Create a new Price object from the response
             const newPrice = new Price(
                 '',
-                data.amount,
-                data.currency,
+                {
+                    value: data.amount,
+                    currency: data.currency,
+                },
                 startDate,
                 endDate || null,
                 new Date(),
@@ -209,8 +211,10 @@ export function PlanDetailsDialog({
             // Update the local price object with the new data
             const updatedPrice = new Price(
                 editingPrice.id,
-                data.amount,
-                data.currency,
+                {
+                    value:data.amount,
+                    currency: data.currency,
+                },
                 startDate,
                 endDate ?? null,
                 response?.createdAt || new Date(),
