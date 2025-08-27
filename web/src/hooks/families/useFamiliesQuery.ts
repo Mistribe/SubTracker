@@ -1,7 +1,7 @@
 import {useQuery} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
-import type {FamilyModel} from "@/api/models";
 import Family from "@/models/family";
+import type {FamilyModel} from "@/api/models/family";
 
 interface FamiliesQueryOptions {
     offset?: number;

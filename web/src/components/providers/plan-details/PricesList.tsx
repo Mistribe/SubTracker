@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Price from "@/models/price";
 import { PriceCard } from "./PriceCard";
-import { PriceFormValues } from "../PriceForm";
+import type {PriceFormValues} from "../PriceForm";
 import { Plus } from "lucide-react";
 
 interface PricesListProps {

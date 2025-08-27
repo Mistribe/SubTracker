@@ -1,9 +1,9 @@
 import {useInfiniteQuery} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
-import type {LabelModel} from "@/api/models";
 import type {LabelsRequestBuilderGetQueryParameters} from "@/api/labels";
 import Label from "@/models/label";
 import {OwnerType} from "@/models/ownerType";
+import type {LabelModel} from "@/api/models/label";
 
 interface AllLabelsQueryOptions {
     ownerTypes?: OwnerType[];

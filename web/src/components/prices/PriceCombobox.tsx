@@ -41,7 +41,7 @@ export function PriceCombobox({
 
   // Format price display
   const formatPrice = (price: Price): string => {
-    return `${price.amount} ${price.currency}`;
+    return `${price.amount}`;
   };
 
   // Filter prices based on search query

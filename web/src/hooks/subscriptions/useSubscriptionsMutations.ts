@@ -1,18 +1,13 @@
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
 import {OwnerType} from "@/models/ownerType";
-import {
-    type AmountModel,
-    type CreateSubscriptionModel,
-    type EditableOwnerModel,
-    type EditableSubscriptionPayerModel,
-    type EditableSubscriptionPayerModel_type,
-    EditableSubscriptionPayerModel_typeObject,
-    type SubscriptionFreeTrialModel,
-    type UpdateSubscriptionModel
-} from "@/api/models";
 import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency";
 import {PayerType} from "@/models/payerType.ts";
+import {
+    type CreateSubscriptionModel, type EditableSubscriptionPayerModel, type EditableSubscriptionPayerModel_type,
+    EditableSubscriptionPayerModel_typeObject, type SubscriptionFreeTrialModel, type UpdateSubscriptionModel
+} from "@/api/models/subscription";
+import type {AmountModel, EditableOwnerModel} from "@/api/models/dto";
 
 export const useSubscriptionsMutations = () => {
     const {apiClient} = useApiClient();

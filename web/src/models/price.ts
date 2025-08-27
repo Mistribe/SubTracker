@@ -1,18 +1,17 @@
-import type {PriceModel} from "@/api/models";
+import type {PriceModel} from "@/api/models/provider";
+import type {Amount} from "@/models/amount.ts";
 
 export default class Price {
     private readonly _id: string;
     private readonly _createdAt: Date;
     private readonly _updatedAt: Date;
     private readonly _etag: string;
-    private readonly _amount: number;
-    private readonly _currency: string;
+    private readonly _amount: Amount;
     private readonly _startDate: Date;
     private readonly _endDate: Date | null;
 
     constructor(id: string,
-                amount: number,
-                currency: string,
+                amount: Amount,
                 startDate: Date,
                 endDate: Date | null,
                 createdAt: Date,
@@ -23,7 +22,6 @@ export default class Price {
         this._updatedAt = updatedAt;
         this._etag = etag;
         this._amount = amount;
-        this._currency = currency;
         this._startDate = startDate;
         this._endDate = endDate;
     }
@@ -48,12 +46,8 @@ export default class Price {
         return this._etag;
     }
 
-    get amount(): number {
+    get amount(): Amount {
         return this._amount;
-    }
-
-    get currency(): string {
-        return this._currency;
     }
 
     get startDate(): Date {
@@ -67,8 +61,10 @@ export default class Price {
     static fromModel(model: PriceModel): Price {
         return new Price(
             model.id || '',
-            model.amount || 0,
-            model.currency || '',
+            {
+                value: model.amount || 0,
+                currency: model.currency || '',
+            },
             model.startDate || new Date(),
             model.endDate || null,
             model.createdAt ? model.createdAt : new Date(),
