@@ -32,12 +32,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and push to GitHub Container Registry
         uses: docker/build-push-action@v5
         with:
           context: ./backend
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ toLower(github.repository) }}/backend-api:latest
-            ghcr.io/${{ toLower(github.repository) }}/backend-api:${{ github.sha }}
+            ghcr.io/mistribe/subtracker/backend-api:latest
+            ghcr.io/mistribe/subtracker/backend-api:${{ github.sha }}
