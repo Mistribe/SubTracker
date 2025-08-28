@@ -3,15 +3,16 @@ import {createRoot} from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import {KindeProvider} from "@kinde-oss/kinde-auth-react";
+import { requireEnv } from './lib/env';
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <KindeProvider
-            clientId={import.meta.env.VITE_KINDE_CLIENT_ID}
-            domain={import.meta.env.VITE_KINDE_DOMAIN}
-            logoutUri={import.meta.env.VITE_KINDE_LOGOUT_URL}
-            redirectUri={import.meta.env.VITE_KINDE_REDIRECT_URL}
-            audience={import.meta.env.VITE_KINDE_AUDIENCE}
+            clientId={requireEnv('VITE_KINDE_CLIENT_ID')}
+            domain={requireEnv('VITE_KINDE_DOMAIN')}
+            logoutUri={requireEnv('VITE_KINDE_LOGOUT_URL')}
+            redirectUri={requireEnv('VITE_KINDE_REDIRECT_URL')}
+            audience={requireEnv('VITE_KINDE_AUDIENCE')}
             // When running local against a custom domain, include the line below
             // useInsecureForRefreshToken={true}
         >
