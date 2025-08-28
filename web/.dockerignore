@@ -7,3 +7,4 @@
 .run/
 compose.yml
 node_modules/
+.env
