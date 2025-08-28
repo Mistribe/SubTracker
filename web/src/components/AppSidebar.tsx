@@ -40,6 +40,7 @@ import {
     UserIcon,
     UsersIcon
 } from "lucide-react";
+import { envVar } from "@/lib/env";
 
 export function AppSidebar() {
     const {user, logout} = useKindeAuth();
@@ -49,7 +50,7 @@ export function AppSidebar() {
 
     // Get environment from VITE_TARGET_ENV or default to development
     const getEnvironmentInfo = () => {
-        const env = import.meta.env.VITE_TARGET_ENV || 'development';
+        const env = envVar('VITE_TARGET_ENV') || 'development';
 
         switch (env) {
             case 'development':

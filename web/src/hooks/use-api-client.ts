@@ -3,6 +3,7 @@ import {FetchRequestAdapter} from '@microsoft/kiota-http-fetchlibrary';
 import {useState, useEffect} from 'react';
 import {useKindeAuth} from "@kinde-oss/kinde-auth-react";
 import {KindeAuthProvider} from '@/lib/KindeAuthProvider';
+import { requireEnv } from '@/lib/env';
 
 export function useApiClient() {
     const [apiClient, setApiClient] = useState<ApiClient | null>(null)
@@ -15,7 +16,7 @@ export function useApiClient() {
             try {
                 const authProvider = new KindeAuthProvider(getToken);
                 const adapter = new FetchRequestAdapter(authProvider);
-                adapter.baseUrl = import.meta.env.VITE_BACKEND_URL;
+                adapter.baseUrl = requireEnv('VITE_BACKEND_URL');
                 const client = createApiClient(adapter);
                 setApiClient(client);
             } catch (error) {
