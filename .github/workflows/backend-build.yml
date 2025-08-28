@@ -1,4 +1,4 @@
-name: backend-build.yml
+name: Backend Build and Test
 on:
   push:
     branches:
