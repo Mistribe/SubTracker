@@ -36,8 +36,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}
-          username: ${{ secrets.AZURE_CONTAINER_REGISTRY_USR }}
-          password: ${{ secrets.AZURE_CONTAINER_REGISTRY_PWD }}
+          username: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_USR }}
+          password: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_PWD }}
 
       - name: Build and push to GitHub Container Registry
         uses: docker/build-push-action@v5
