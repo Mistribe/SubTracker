@@ -1,5 +1,5 @@
 import {Skeleton} from "@/components/ui/skeleton";
-import {Building2, DollarSign} from "lucide-react";
+import {Building2, Clock} from "lucide-react";
 import Money from "@/components/ui/money.tsx";
 import type TopProvider from "@/models/topProvider.ts";
 import type Provider from "@/models/provider.ts";
@@ -46,7 +46,7 @@ const TopProviders = ({providers, providerMap, isLoading}: TopProvidersProps) =>
                                         </span>
                                 </div>
                                 <p className="text-sm text-muted-foreground mt-1 flex items-center">
-                                    <DollarSign className="h-3 w-3 mr-1 text-purple-500"/>
+                                    <Clock className="h-3 w-3 mr-1 text-purple-500"/>
                                     {formatProviderDuration(provider.duration)}
                                 </p>
                             </div>
