@@ -4,7 +4,7 @@ import {ProtectedRoute} from "@/contexts/ProtectedRoute"
 import {AppLayout} from "@/layouts/AppLayout"
 import HomePage from "@/pages/HomePage"
 import DashboardPage from "@/pages/DashboardPage"
-import ProfilePage from "@/pages/ProfilePage"
+import PreferencePage from "@/pages/PreferencePage.tsx"
 import FamilyPage from "@/pages/FamilyPage"
 import LabelsPage from "@/pages/LabelsPage"
 import ProvidersPage from "@/pages/ProvidersPage"
@@ -63,7 +63,7 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <AppLayout>
-                                            <ProfilePage/>
+                                            <PreferencePage/>
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
