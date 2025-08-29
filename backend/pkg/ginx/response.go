@@ -1,10 +1,12 @@
 package ginx
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
@@ -40,7 +42,11 @@ func WithNoContent[TValue any]() HandleResponseOptionFunc[TValue] {
 }
 
 func FromError(c *gin.Context, err error) {
-	c.AbortWithStatusJSON(http.StatusBadRequest, HttpErrorResponse{Message: err.Error()})
+	status := http.StatusInternalServerError
+	if errors.Is(err, auth.ErrUnauthorized) {
+		status = http.StatusUnauthorized
+	}
+	c.AbortWithStatusJSON(status, HttpErrorResponse{Message: err.Error()})
 }
 
 func FromResult[TValue any](
