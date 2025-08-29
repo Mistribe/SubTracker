@@ -187,7 +187,7 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 					if query.TopProviders > 0 {
 						existingTopProvider, ok := topProviders[sub.ProviderId()]
 						if ok {
-							existingTopProvider.Total = existingTopProvider.Total.Add(totalSpent)
+							existingTopProvider.Total = existingTopProvider.Total.Add(totalSpent.Value())
 							existingTopProvider.Duration += sub.GetTotalDuration()
 							topProviders[sub.ProviderId()] = existingTopProvider
 						} else {
@@ -202,7 +202,7 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 						for l := range sub.Labels().It() {
 							existingTopLabel, ok := topLabels[l.LabelId]
 							if ok {
-								existingTopLabel = existingTopLabel.Add(totalSpent)
+								existingTopLabel = existingTopLabel.Add(totalSpent.Value())
 								topLabels[l.LabelId] = existingTopLabel
 							} else {
 								topLabels[l.LabelId] = totalSpent

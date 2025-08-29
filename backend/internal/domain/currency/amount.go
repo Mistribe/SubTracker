@@ -11,7 +11,10 @@ type Amount interface {
 	Source() Amount
 	Currency() Unit
 	IsValid() bool
-	Add(otherAmount Amount) Amount
+	Add(value float64) Amount
+	Sub(value float64) Amount
+	Div(value float64) Amount
+	Mul(value float64) Amount
 }
 type amount struct {
 	value    float64
@@ -20,18 +23,71 @@ type amount struct {
 	isValid  bool
 }
 
-func (a amount) Add(otherAmount Amount) Amount {
-	if !a.isValid || !otherAmount.IsValid() {
+func (a amount) Add(value float64) Amount {
+	if !a.isValid {
 		return NewInvalidAmount()
 	}
 
-	if a.currency != otherAmount.Currency() {
+	var source Amount
+	if a.source != nil {
+		source = source.Add(value)
+	}
+
+	return amount{
+		value:    a.value + value,
+		currency: a.currency,
+		source:   source,
+		isValid:  true,
+	}
+}
+
+func (a amount) Sub(value float64) Amount {
+	if !a.isValid {
 		return NewInvalidAmount()
 	}
+	var source Amount
+	if a.source != nil {
+		source = source.Sub(value)
+	}
+
 	return amount{
-		value:    a.value + otherAmount.Value(),
+		value:    a.value - value,
 		currency: a.currency,
-		source:   nil,
+		source:   source,
+		isValid:  true,
+	}
+}
+
+func (a amount) Div(value float64) Amount {
+	if !a.isValid {
+		return NewInvalidAmount()
+	}
+	var source Amount
+	if a.source != nil {
+		source = source.Div(value)
+	}
+
+	return amount{
+		value:    a.value / value,
+		currency: a.currency,
+		source:   source,
+		isValid:  true,
+	}
+}
+
+func (a amount) Mul(value float64) Amount {
+	if !a.isValid {
+		return NewInvalidAmount()
+	}
+	var source Amount
+	if a.source != nil {
+		source = source.Mul(value)
+	}
+
+	return amount{
+		value:    a.value * value,
+		currency: a.currency,
+		source:   source,
 		isValid:  true,
 	}
 }
