@@ -1,12 +1,11 @@
 import {ModeToggle} from "@/components/mode-toggle";
 import {Link} from "react-router-dom";
-import {useKindeAuth} from "@kinde-oss/kinde-auth-react";
+import { SignedIn, SignedOut, SignInButton } from "@clerk/clerk-react";
 import {Button} from "@/components/ui/button.tsx";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {CalendarIcon, CreditCardIcon, DollarSignIcon, TagIcon, TrendingUpIcon, UsersIcon} from "lucide-react";
 
 const HomePage = () => {
-    const {login, isAuthenticated} = useKindeAuth();
 
     return (
         <div className="container mx-auto p-4">
@@ -25,15 +24,18 @@ const HomePage = () => {
                         The smart way to manage all your subscriptions in one place.
                     </p>
                     <div className="flex gap-4 justify-center">
-                        {!isAuthenticated ? (
-                            <Button
-                                onClick={() => login()} type="button"
-                                size="lg"
-                                className="text-base font-medium"
-                            >
-                                Get Started Now
-                            </Button>
-                        ) : (
+                        <SignedOut>
+                            <SignInButton mode="modal">
+                                <Button
+                                    type="button"
+                                    size="lg"
+                                    className="text-base font-medium"
+                                >
+                                    Get Started Now
+                                </Button>
+                            </SignInButton>
+                        </SignedOut>
+                        <SignedIn>
                             <Link to="/dashboard">
                                 <Button
                                     size="lg"
@@ -42,7 +44,7 @@ const HomePage = () => {
                                     Go to Dashboard
                                 </Button>
                             </Link>
-                        )}
+                        </SignedIn>
                     </div>
                 </section>
 
@@ -174,15 +176,18 @@ const HomePage = () => {
                         Join thousands of users who are saving money and reducing subscription stress.
                     </p>
                     <div>
-                        {!isAuthenticated ? (
-                            <Button
-                                onClick={() => login()} type="button"
-                                size="lg"
-                                className="text-base font-medium"
-                            >
-                                Start Managing Your Subscriptions
-                            </Button>
-                        ) : (
+                        <SignedOut>
+                            <SignInButton mode="modal">
+                                <Button
+                                    type="button"
+                                    size="lg"
+                                    className="text-base font-medium"
+                                >
+                                    Start Managing Your Subscriptions
+                                </Button>
+                            </SignInButton>
+                        </SignedOut>
+                        <SignedIn>
                             <Link to="/dashboard">
                                 <Button
                                     size="lg"
@@ -192,7 +197,7 @@ const HomePage = () => {
                                     Go to Dashboard
                                 </Button>
                             </Link>
-                        )}
+                        </SignedIn>
                     </div>
                 </section>
             </main>

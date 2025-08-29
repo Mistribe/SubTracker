@@ -33,7 +33,10 @@ export function requireEnv(name: string): string {
   const v = envVar(name);
   if (v === undefined || v === '') {
     // Keep console warning to avoid throwing in runtime; components can decide defaults if needed
-    console.warn(`[env] Missing required env var: ${name}`);
+      console.debug('[env] Runtime variables:', window.__ENV__);
+      console.debug('[env] Build variables:', import.meta.env);
+      console.debug(`[env] Requested variable '${name}' value:`, v);
+      console.warn(`[env] Missing required env var: ${name}`);
   }
   return (v ?? '') as string;
 }

@@ -25,7 +25,7 @@ import {Input} from "@/components/ui/input.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Loader2, PlusIcon} from "lucide-react";
 import {useFamiliesMutations} from "@/hooks/families/useFamiliesMutations";
-import {useKindeAuth} from "@kinde-oss/kinde-auth-react";
+import { useUser } from "@clerk/clerk-react";
 
 // Define the form schema
 const formSchema = z.object({
@@ -41,12 +41,12 @@ interface CreateFamilyDialogProps {
 
 export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
     const {createFamilyMutation} = useFamiliesMutations();
-    const {user} = useKindeAuth();
+    const { user } = useUser();
     const [open, setOpen] = useState(false);
 
     let defaultCreatorName = ""
-    if (user && user.givenName) {
-        defaultCreatorName = user.givenName
+    if (user && user.firstName) {
+        defaultCreatorName = user.firstName
     }
     // Initialize the form
     const form = useForm<FormValues>({

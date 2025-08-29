@@ -2,8 +2,7 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
 import currencyCodes from "currency-codes";
 import getSymbolFromCurrency from "currency-symbol-map";
-import {useKindeAuth} from "@kinde-oss/kinde-auth-react";
-import type {UpdatePreferredCurrencyModel, UpdateProfileModel} from "@/api/models/user";
+import type {UpdatePreferredCurrencyModel} from "@/api/models/user";
 
 interface ProfileQueryOptions {
     /**
@@ -32,7 +31,6 @@ const fallbackCurrencyCodes = ["USD", "EUR"]
  */
 export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
     const {enabled = true} = options;
-    const {logout} = useKindeAuth()
     const {apiClient} = useApiClient();
     const queryClient = useQueryClient();
 
@@ -135,50 +133,6 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
         }
     });
 
-    // Mutation to update the user profile name (given name and family name)
-    const updateProfileNameMutation = useMutation({
-        mutationFn: async ({givenName, familyName}: { givenName: string; familyName: string }) => {
-            if (!apiClient) {
-                throw new Error('API client not initialized');
-            }
-
-            try {
-                const payload: UpdateProfileModel = {
-                    givenName,
-                    familyName,
-                    additionalData: {}
-                };
-
-                return await apiClient.users.profile.put(payload);
-            } catch (error) {
-                console.error('Error updating profile name:', error);
-                throw error;
-            }
-        },
-        onSuccess: async () => {
-            // Invalidate and refetch profile data to ensure the UI is up to date
-            await queryClient.invalidateQueries({queryKey: ['profile']});
-        }
-    });
-
-    const deleteUserMutation = useMutation({
-        mutationFn: async () => {
-            if (!apiClient) {
-                throw new Error('API client not initialized');
-            }
-
-            try {
-                return await apiClient.users.delete();
-            } catch (error) {
-                console.error('Error deleting user:', error);
-                throw error;
-            }
-        },
-        onSuccess: async () => {
-            await logout();
-            window.location.href = '/';
-        }
-    })
 
     return {
         preferredCurrency: preferredCurrencyQuery.data,
@@ -189,10 +143,7 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
         isLoadingAvailableCurrencies: availableCurrencyQuery.isLoading,
         isErrorAvailableCurrencies: availableCurrencyQuery.isError,
         errorAvailableCurrencies: availableCurrencyQuery.error,
-        updateProfile: updatePreferredCurrencyMutation.mutate,
-        updateProfileName: (givenName: string, familyName: string) =>
-            updateProfileNameMutation.mutate({givenName, familyName}),
-        deleteUser: deleteUserMutation.mutate,
-        isUpdating: updatePreferredCurrencyMutation.isPending || updateProfileNameMutation.isPending
+        updateCurrency: updatePreferredCurrencyMutation.mutate,
+        isUpdating: updatePreferredCurrencyMutation.isPending
     };
 };

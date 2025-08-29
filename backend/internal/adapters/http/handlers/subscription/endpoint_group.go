@@ -9,8 +9,8 @@ import (
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/adapters/http/router/ginfx"
 	"github.com/mistribe/subtracker/internal/adapters/http/router/middlewares"
-	"github.com/mistribe/subtracker/pkg/slicesx"
 	"github.com/mistribe/subtracker/pkg/x"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 
 	"github.com/gin-gonic/gin"
 
@@ -194,10 +194,10 @@ func newSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 	if source.Payer() != nil {
 		payerModel = newSubscriptionPayerModel(source.Payer())
 	}
-	serviceUsers := slicesx.Select(source.ServiceUsers().Values(), func(in uuid.UUID) string {
+	serviceUsers := collection.Select(source.ServiceUsers().Values(), func(in uuid.UUID) string {
 		return in.String()
 	})
-	labelRefs := slicesx.Select(source.Labels().Values(), newSubscriptionLabelRef)
+	labelRefs := collection.Select(source.Labels().Values(), newSubscriptionLabelRef)
 	model := SubscriptionModel{
 		Id:               source.Id().String(),
 		FriendlyName:     source.FriendlyName(),

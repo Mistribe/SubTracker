@@ -52,11 +52,11 @@ func (s AuthenticationService) IsOwner(ctx context.Context,
 			return false, err
 		}
 		if !isMember {
-			return false, auth.ErrNotAuthorized
+			return false, auth.ErrUnauthorized
 		}
 	case auth.PersonalOwnerType:
 		if owner.UserId() != userId {
-			return false, auth.ErrNotAuthorized
+			return false, auth.ErrUnauthorized
 		}
 	}
 

@@ -11,7 +11,7 @@ import (
 
 	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 )
 
 type systemMemberModel struct {
@@ -75,7 +75,7 @@ func (l familyUpdater) updateDatabase(ctx context.Context, families []systemFami
 			return err
 		}
 		if fam == nil {
-			members := slicesx.Select(model.Members, func(memberModel systemMemberModel) family.Member {
+			members := collection.Select(model.Members, func(memberModel systemMemberModel) family.Member {
 				mbr := family.NewMember(
 					uuid.MustParse(memberModel.Id),
 					id,

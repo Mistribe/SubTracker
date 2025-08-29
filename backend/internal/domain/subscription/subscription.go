@@ -10,6 +10,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/entity"
 	"github.com/mistribe/subtracker/pkg/slicesx"
 	"github.com/mistribe/subtracker/pkg/x"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 	"github.com/mistribe/subtracker/pkg/x/validation"
 )
 
@@ -470,7 +471,7 @@ func (s *subscription) ETagFields() []interface{} {
 	}
 
 	if s.serviceUsers != nil && s.serviceUsers.Len() > 0 {
-		fields = append(fields, slicesx.Select(s.serviceUsers.Values(), func(su uuid.UUID) string {
+		fields = append(fields, collection.Select(s.serviceUsers.Values(), func(su uuid.UUID) string {
 			return su.String()
 		}))
 	}

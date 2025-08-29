@@ -15,7 +15,6 @@ func Module() fx.Option {
 			NewService,
 			ports.AsQueryHandler[usrQuery.FindPreferredCurrencyQuery, currency.Unit](usrQuery.NewFindPreferredCurrencyQueryHandler),
 			ports.AsCommandHandler[command.UpdatePreferredCurrencyCommand, bool](command.NewUpdatePreferredCurrencyCommandHandler),
-			ports.AsCommandHandler[command.UpdateProfileCommand, bool](command.NewUpdateProfileCommandHandler),
 			ports.AsCommandHandler[command.DeleteUserCommand, bool](command.NewDeleteUserCommandHandler),
 		),
 	)

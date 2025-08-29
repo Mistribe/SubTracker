@@ -72,7 +72,6 @@ func BuildRoutesModule() fx.Option {
 
 			user.NewUserGetPreferredCurrencyEndpoint,
 			user.NewUserUpdatePreferredCurrencyEndpoint,
-			user.NewUserUpdateProfileEndpoint,
 			user.NewUserDeleteEndpoint,
 			ginfx.AsEndpointGroup(user.NewEndpointGroup),
 
