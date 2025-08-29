@@ -15,14 +15,12 @@ type EndpointGroup struct {
 func NewEndpointGroup(
 	preferredCurrencyEndpoint *UserGetPreferredCurrencyEndpoint,
 	updatePreferredCurrencyEndpoint *UserUpdatePreferredCurrencyEndpoint,
-	updateProfileEndpoint *UserUpdateProfileEndpoint,
 	deleteEndpoint *UserDeleteEndpoint,
 	authenticationMiddleware *middlewares.AuthenticationMiddleware) *EndpointGroup {
 	return &EndpointGroup{
 		routes: []ginfx.Endpoint{
 			preferredCurrencyEndpoint,
 			updatePreferredCurrencyEndpoint,
-			updateProfileEndpoint,
 			deleteEndpoint,
 		},
 		middlewares: []gin.HandlerFunc{
