@@ -10,6 +10,7 @@ import (
 
 	. "github.com/mistribe/subtracker/pkg/ginx"
 	"github.com/mistribe/subtracker/pkg/x"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/domain/provider"
@@ -17,7 +18,6 @@ import (
 	"github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/internal/usecase/provider/command"
 	"github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
 type ProviderPatchEndpoint struct {
@@ -97,7 +97,7 @@ func (m patchPlanModel) Plan() (provider.Plan, error) {
 	if updatedAt.Before(createdAt) {
 		updatedAt = createdAt
 	}
-	prices, err := slicesx.SelectErr(m.Prices, func(prce patchPriceModel) (provider.Price, error) {
+	prices, err := collection.SelectErr(m.Prices, func(prce patchPriceModel) (provider.Price, error) {
 		return prce.Price()
 	})
 	if err != nil {
@@ -142,12 +142,12 @@ func (m patchProviderModel) Provider(userId string) (provider.Provider, error) {
 		return nil, err
 	}
 
-	labels, err := slicesx.SelectErr(m.Labels, uuid.Parse)
+	labels, err := collection.SelectErr(m.Labels, uuid.Parse)
 	if err != nil {
 		return nil, err
 	}
 
-	plans, err := slicesx.SelectErr(m.Plans, func(prce patchPlanModel) (provider.Plan, error) {
+	plans, err := collection.SelectErr(m.Plans, func(prce patchPlanModel) (provider.Plan, error) {
 		return prce.Plan()
 	})
 	if err != nil {

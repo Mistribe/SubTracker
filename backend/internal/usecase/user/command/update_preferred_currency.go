@@ -37,7 +37,7 @@ func (h UpdatePreferredCurrencyCommandHandler) Handle(
 	cmd UpdatePreferredCurrencyCommand) result.Result[bool] {
 	userId, ok := auth2.GetUserIdFromContext(ctx)
 	if !ok {
-		return result.Fail[bool](auth.ErrNotAuthorized)
+		return result.Fail[bool](auth.ErrUnauthorized)
 	}
 	profile, err := h.userRepository.GetUserProfile(ctx, userId)
 	if err != nil {

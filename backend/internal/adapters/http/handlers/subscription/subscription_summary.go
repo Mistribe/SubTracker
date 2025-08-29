@@ -7,12 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 
 	. "github.com/mistribe/subtracker/pkg/ginx"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/subscription/query"
 	"github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
 type SubscriptionSummaryEndpoint struct {
@@ -102,7 +102,7 @@ func (e SubscriptionSummaryEndpoint) Handle(c *gin.Context) {
 				TotalYearly:    dto.NewAmount(res.TotalYearly),
 				TotalLastMonth: dto.NewAmount(res.TotalLastMonth),
 				TotalLastYear:  dto.NewAmount(res.TotalLastYear),
-				TopProviders: slicesx.Select(res.TopProviders,
+				TopProviders: collection.Select(res.TopProviders,
 					func(topProvider query.SummaryQueryTopProvidersResponse) SubscriptionSummaryTopProviderResponse {
 						return SubscriptionSummaryTopProviderResponse{
 							ProviderId: topProvider.ProviderId.String(),
@@ -110,14 +110,14 @@ func (e SubscriptionSummaryEndpoint) Handle(c *gin.Context) {
 							Duration:   topProvider.Duration.String(),
 						}
 					}),
-				TopLabels: slicesx.Select(res.TopLabels,
+				TopLabels: collection.Select(res.TopLabels,
 					func(topLabel query.SummaryQueryLabelResponse) SubscriptionSummaryTopLabelResponse {
 						return SubscriptionSummaryTopLabelResponse{
 							LabelId: topLabel.TagId.String(),
 							Total:   dto.NewAmount(topLabel.Total),
 						}
 					}),
-				UpcomingRenewals: slicesx.Select(res.UpcomingRenewals,
+				UpcomingRenewals: collection.Select(res.UpcomingRenewals,
 					func(upcomingRenewal query.SummaryQueryUpcomingRenewalsResponse) SubscriptionSummaryUpcomingRenewalResponse {
 						m := SubscriptionSummaryUpcomingRenewalResponse{
 							ProviderId: upcomingRenewal.ProviderId.String(),

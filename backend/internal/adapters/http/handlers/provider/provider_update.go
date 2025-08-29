@@ -5,14 +5,14 @@ import (
 	"time"
 
 	. "github.com/mistribe/subtracker/pkg/ginx"
+	"github.com/mistribe/subtracker/pkg/x/collection"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/provider/command"
 	"github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/slicesx"
-
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/domain/provider"
 )
@@ -36,7 +36,7 @@ type updateProviderModel struct {
 }
 
 func (m updateProviderModel) Command(providerId uuid.UUID) (command.UpdateProviderCommand, error) {
-	labels, err := slicesx.SelectErr(m.Labels, uuid.Parse)
+	labels, err := collection.SelectErr(m.Labels, uuid.Parse)
 	if err != nil {
 		return command.UpdateProviderCommand{}, err
 	}

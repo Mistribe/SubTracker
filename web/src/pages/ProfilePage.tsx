@@ -1,5 +1,4 @@
 import {useEffect, useState} from "react";
-import {useKindeAuth} from "@kinde-oss/kinde-auth-react";
 import {useTheme} from "@/components/theme-provider";
 import {PageHeader} from "@/components/ui/page-header";
 import {UserProfileSection} from "@/components/profile/UserProfileSection";
@@ -13,8 +12,6 @@ import {useProfileManagement} from "@/hooks/profile/useProfileManagement";
  * Displays and manages user profile information, including preferences like currency and theme
  */
 const ProfilePage = () => {
-    // Get authentication data from Kinde
-    const {user: kindeUser } = useKindeAuth();
     // Get theme information from theme context
     const {theme} = useTheme();
 
@@ -37,25 +34,13 @@ const ProfilePage = () => {
 
     // User data from Kinde Auth with default values for missing fields
     const [user, setUser] = useState({
-        givenName: kindeUser?.givenName || "John",
-        familyName: kindeUser?.familyName || "Doe",
-        email: kindeUser?.email || "john.doe@example.com",
+        givenName: "John",
+        familyName:"Doe",
+        email: "john.doe@example.com",
         joinDate: new Date().toISOString().split('T')[0], // Current date as join date
         preferredCurrency: "USD", // Default currency
         preferredTheme: "system"
     });
-
-    // Update user data when Kinde Auth data changes
-    useEffect(() => {
-        if (kindeUser) {
-            setUser(prev => ({
-                ...prev,
-                givenName: kindeUser.givenName || prev.givenName,
-                familyName: kindeUser.familyName || prev.familyName,
-                email: kindeUser.email || prev.email
-            }));
-        }
-    }, [kindeUser]);
 
     // Update preferred currency when it's loaded from the backend
     useEffect(() => {
@@ -119,7 +104,6 @@ const ProfilePage = () => {
                     <UserProfileSection
                         name={`${user.givenName} ${user.familyName}`}
                         email={user.email}
-                        picture={kindeUser?.picture}
                     />
 
                     {/* Profile Details */}

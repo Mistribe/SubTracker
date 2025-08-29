@@ -15,7 +15,7 @@ import (
 
 func TestMustGetUserId(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextUserIdKey, userId)
 
 	service := auth.NewAuthenticationService(ports.NewMockUserRepository(t), ports.NewMockFamilyRepository(t))
 
@@ -24,7 +24,7 @@ func TestMustGetUserId(t *testing.T) {
 
 func TestMustGetFamilies(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextUserIdKey, userId)
 	expectedFamilies := []uuid.UUID{uuid.New(), uuid.New()}
 
 	mockRepo := ports.NewMockUserRepository(t)
@@ -37,7 +37,7 @@ func TestMustGetFamilies(t *testing.T) {
 
 func TestMustGetFamilies_Error(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextUserIdKey, userId)
 	expectedError := errors.New("repository error")
 
 	mockRepo := ports.NewMockUserRepository(t)
@@ -52,7 +52,7 @@ func TestMustGetFamilies_Error(t *testing.T) {
 
 func TestIsInFamily(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextUserIdKey, userId)
 	families := []uuid.UUID{uuid.New(), uuid.New()}
 
 	mockRepo := ports.NewMockUserRepository(t)
@@ -66,7 +66,7 @@ func TestIsInFamily(t *testing.T) {
 
 func TestIsOwner_SystemOwner(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextUserIdKey, userId)
 
 	service := auth.NewAuthenticationService(ports.NewMockUserRepository(t), ports.NewMockFamilyRepository(t))
 
@@ -77,7 +77,7 @@ func TestIsOwner_SystemOwner(t *testing.T) {
 
 func TestIsOwner_FamilyOwner_IsMember(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextUserIdKey, userId)
 	familyId := uuid.New()
 
 	mockRepo := ports.NewMockUserRepository(t)
@@ -93,7 +93,7 @@ func TestIsOwner_FamilyOwner_IsMember(t *testing.T) {
 
 func TestIsOwner_FamilyOwner_NotMember(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextUserIdKey, userId)
 	familyId := uuid.New()
 
 	mockRepo := ports.NewMockUserRepository(t)
@@ -103,13 +103,13 @@ func TestIsOwner_FamilyOwner_NotMember(t *testing.T) {
 	service := auth.NewAuthenticationService(mockRepo, mockFamilyRepo)
 
 	isOwner, err := service.IsOwner(ctx, domainauth.NewFamilyOwner(familyId))
-	assert.ErrorIs(t, err, domainauth.ErrNotAuthorized)
+	assert.ErrorIs(t, err, domainauth.ErrUnauthorized)
 	assert.False(t, isOwner)
 }
 
 func TestIsOwner_PersonalOwner_Match(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextUserIdKey, userId)
 
 	service := auth.NewAuthenticationService(ports.NewMockUserRepository(t), ports.NewMockFamilyRepository(t))
 
@@ -120,11 +120,11 @@ func TestIsOwner_PersonalOwner_Match(t *testing.T) {
 
 func TestIsOwner_PersonalOwner_NoMatch(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth.ContextKey, userId)
+	ctx := context.WithValue(context.Background(), auth.ContextUserIdKey, userId)
 
 	service := auth.NewAuthenticationService(ports.NewMockUserRepository(t), ports.NewMockFamilyRepository(t))
 
 	isOwner, err := service.IsOwner(ctx, domainauth.NewPersonalOwner("DifferentUserId"))
-	assert.ErrorIs(t, err, domainauth.ErrNotAuthorized)
+	assert.ErrorIs(t, err, domainauth.ErrUnauthorized)
 	assert.False(t, isOwner)
 }

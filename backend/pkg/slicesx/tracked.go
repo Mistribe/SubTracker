@@ -3,6 +3,8 @@ package slicesx
 import (
 	"iter"
 	"sort"
+
+	"github.com/mistribe/subtracker/pkg/x/collection"
 )
 
 type Tracked[T comparable] struct {
@@ -134,10 +136,10 @@ func (d *Tracked[T]) Set(values []T) {
 		}
 	}
 
-	addedElements := Except(values, d._values)
+	addedElements := collection.Except(values, d._values)
 	d._added = append(d._added, addedElements...)
 	newValues = append(newValues, addedElements...)
-	deletedElements := Except(d._values, values)
+	deletedElements := collection.Except(d._values, values)
 	d._removed = append(d._removed, deletedElements...)
 	d._values = newValues
 }

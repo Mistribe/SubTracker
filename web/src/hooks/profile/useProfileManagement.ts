@@ -2,7 +2,7 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
 import currencyCodes from "currency-codes";
 import getSymbolFromCurrency from "currency-symbol-map";
-import {useKindeAuth} from "@kinde-oss/kinde-auth-react";
+import { useClerk } from "@clerk/clerk-react";
 import type {UpdatePreferredCurrencyModel, UpdateProfileModel} from "@/api/models/user";
 
 interface ProfileQueryOptions {
@@ -32,7 +32,7 @@ const fallbackCurrencyCodes = ["USD", "EUR"]
  */
 export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
     const {enabled = true} = options;
-    const {logout} = useKindeAuth()
+    const { signOut } = useClerk()
     const {apiClient} = useApiClient();
     const queryClient = useQueryClient();
 
@@ -175,7 +175,7 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
             }
         },
         onSuccess: async () => {
-            await logout();
+            await signOut();
             window.location.href = '/';
         }
     })

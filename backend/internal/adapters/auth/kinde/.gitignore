@@ -1,9 +1,0 @@
-gen/test
-gen/docs
-gen/**.yml
-gen/**.md
-gen/**.sh
-gen/.gitignore
-gen/.openapi-generator-ignore
-gen/.openapi-generator/
-gen/api

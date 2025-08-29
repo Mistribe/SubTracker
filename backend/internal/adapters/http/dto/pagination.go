@@ -2,7 +2,7 @@ package dto
 
 import (
 	"github.com/mistribe/subtracker/internal/shared"
-	"github.com/mistribe/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 )
 
 // PaginatedResponseModel
@@ -20,7 +20,7 @@ func NewPaginatedResponseModel[TValue any, TOut any](
 	p shared.PaginatedResponse[TValue],
 	mapper func(TValue) TOut) PaginatedResponseModel[TOut] {
 	return PaginatedResponseModel[TOut]{
-		Data:   slicesx.Select(p.Data(), mapper),
+		Data:   collection.Select(p.Data(), mapper),
 		Length: p.Length(),
 		Total:  p.Total(),
 	}

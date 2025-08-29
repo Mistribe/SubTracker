@@ -13,6 +13,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 
 	. "github.com/go-jet/jet/v2/postgres"
 )
@@ -453,11 +454,11 @@ func (r ProviderRepository) create(ctx context.Context, providers []provider.Pro
 	}
 
 	// Insert provider labels
-	allLabels := slicesx.SelectMany(providers, func(prov provider.Provider) []struct {
+	allLabels := collection.SelectMany(providers, func(prov provider.Provider) []struct {
 		ProviderID uuid.UUID
 		LabelID    uuid.UUID
 	} {
-		return slicesx.Select(prov.Labels().Values(), func(labelId uuid.UUID) struct {
+		return collection.Select(prov.Labels().Values(), func(labelId uuid.UUID) struct {
 			ProviderID uuid.UUID
 			LabelID    uuid.UUID
 		} {
@@ -835,11 +836,11 @@ func (r ProviderRepository) createPlansAndPrices(ctx context.Context, providerId
 	}
 
 	// Insert prices for all plans
-	allPrices := slicesx.SelectMany(plans, func(plan provider.Plan) []struct {
+	allPrices := collection.SelectMany(plans, func(plan provider.Plan) []struct {
 		PlanID uuid.UUID
 		Price  provider.Price
 	} {
-		return slicesx.Select(plan.Prices().Values(), func(price provider.Price) struct {
+		return collection.Select(plan.Prices().Values(), func(price provider.Price) struct {
 			PlanID uuid.UUID
 			Price  provider.Price
 		} {

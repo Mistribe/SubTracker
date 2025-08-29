@@ -10,6 +10,7 @@ import (
 
 	. "github.com/mistribe/subtracker/pkg/ginx"
 	"github.com/mistribe/subtracker/pkg/x"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/domain/auth"
@@ -19,7 +20,6 @@ import (
 	"github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/domain/subscription"
-	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
 type SubscriptionCreateEndpoint struct {
@@ -103,11 +103,11 @@ func (m CreateSubscriptionModel) Subscription(userId string) (subscription.Subsc
 	if err != nil {
 		return nil, err
 	}
-	serviceUsers, err := slicesx.SelectErr(m.ServiceUsers, uuid.Parse)
+	serviceUsers, err := collection.SelectErr(m.ServiceUsers, uuid.Parse)
 	if err != nil {
 		return nil, err
 	}
-	labels, err := slicesx.SelectErr(m.Labels, func(in string) (subscription.LabelRef, error) {
+	labels, err := collection.SelectErr(m.Labels, func(in string) (subscription.LabelRef, error) {
 		labelId, err := uuid.Parse(in)
 		if err != nil {
 			return subscription.LabelRef{}, err

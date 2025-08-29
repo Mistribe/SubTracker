@@ -2,7 +2,7 @@ package models
 
 import (
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/model"
-	"github.com/mistribe/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 
 	"github.com/mistribe/subtracker/internal/domain/family"
 )
@@ -37,7 +37,7 @@ func createFamilyMemberFromJet(jetMember model.FamilyMembers) (family.Member, er
 }
 
 func CreateFamilyWithMembersFromModel(source FamilyWithMembers) (family.Family, error) {
-	members, err := slicesx.SelectErr(source.FamilyMembers, func(in model.FamilyMembers) (family.Member, error) {
+	members, err := collection.SelectErr(source.FamilyMembers, func(in model.FamilyMembers) (family.Member, error) {
 		return createFamilyMemberFromJet(in)
 	})
 	if err != nil {

@@ -33,7 +33,7 @@ func (h FindPreferredCurrencyQueryHandler) Handle(
 	_ FindPreferredCurrencyQuery) result.Result[currency.Unit] {
 	userId, ok := auth2.GetUserIdFromContext(ctx)
 	if !ok {
-		return result.Fail[currency.Unit](auth.ErrNotAuthorized)
+		return result.Fail[currency.Unit](auth.ErrUnauthorized)
 	}
 	return result.Success(h.userService.GetPreferredCurrency(ctx, userId))
 }
