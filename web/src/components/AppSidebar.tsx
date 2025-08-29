@@ -12,7 +12,7 @@
  */
 
 import {Link, useLocation,} from "react-router-dom";
-import {useUser,  UserButton} from "@clerk/clerk-react";
+import {useUser, UserButton} from "@clerk/clerk-react";
 import {
     Sidebar,
     SidebarContent,
@@ -34,7 +34,6 @@ import {
     HomeIcon,
     PackageIcon, Settings,
     TagIcon,
-    UserIcon,
     UsersIcon
 } from "lucide-react";
 import {envVar} from "@/lib/env";
@@ -152,45 +151,42 @@ export function AppSidebar() {
 
             <SidebarFooter>
                 <Separator className="my-2"/>
-                <div className="p-4">
-                    <div className="flex flex-col space-y-3">
-                        {/* User profile section */}
-                        <div className="flex items-center gap-3">
-                            <UserButton />
-                            {state === "expanded" && (
-                                <div className="flex justify-between w-full">
-                                    <div className="flex flex-col">
-                                        <p className="text-sm font-medium">
-                                            {user?.firstName} {user?.lastName}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <Link to="/profile">
-                                            <Settings
-                                                className="transition-transform hover:rotate-180 duration-500"/>
-                                        </Link>
-                                    </div>
-                                </div>
-                            )}
-                            {state === "collapsed" && (
-                                <TooltipProvider delayDuration={0}>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Link to="/profile"
-                                                  className="rounded-md p-1 text-muted-foreground hover:text-primary hover:bg-muted">
-                                                <UserIcon className="h-4 w-4"/>
-                                            </Link>
-                                        </TooltipTrigger>
-                                        <TooltipContent side="right" hidden={isMobile}>
-                                            Profile
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            )}
+                {state === "expanded" && (
+                    <div className="flex items-center gap-3">
+                        <UserButton/>
+                        <div className="flex justify-between w-full">
+                            <div className="flex flex-col">
+                                <p className="text-sm font-medium">
+                                    {user?.firstName} {user?.lastName}
+                                </p>
+                            </div>
+                            <div>
+                                <Link to="/profile" className="text-muted-foreground">
+                                    <Settings
+                                        className="transition-transform hover:rotate-180 duration-500"/>
+                                </Link>
+                            </div>
                         </div>
-
                     </div>
-                </div>
+                )}
+                {state === "collapsed" && (
+                    <div className="flex flex-col items-center gap-3">
+                        <UserButton/>
+                        <TooltipProvider delayDuration={0}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link to="/profile" className="text-muted-foreground ">
+                                        <Settings
+                                            className="h-4 w-4 transition-transform hover:rotate-180 duration-500"/>
+                                    </Link>
+                                </TooltipTrigger>
+                                <TooltipContent side="right" hidden={isMobile}>
+                                    Preference
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </div>
+                )}
             </SidebarFooter>
         </Sidebar>
     );
