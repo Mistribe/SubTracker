@@ -75,7 +75,7 @@ func (l providerUpdater) Update(ctx context.Context) error {
 		return fmt.Errorf("failed to download providers: %w", err)
 	}
 	var providers []systemProviderModel
-	if err := json.Unmarshal(content, &providers); err != nil {
+	if err = json.Unmarshal(content, &providers); err != nil {
 		return fmt.Errorf("failed to parse JSON content from %s: %w", l.downloader.String(), err)
 	}
 

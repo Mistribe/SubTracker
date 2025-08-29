@@ -2,13 +2,14 @@
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 
 /// auto generated
+/// @Description Custom price for this subscription
 class AmountModel implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
     ///  The currency property
     String? currency;
-    ///  The source property
+    ///  @Description Custom price for this subscription
     AmountModel? source;
     ///  The value property
     double? value;

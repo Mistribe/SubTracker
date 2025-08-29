@@ -2,7 +2,6 @@
 import 'package:microsoft_kiota_abstractions/microsoft_kiota_abstractions.dart';
 import '../models/ginx/http_error_response.dart';
 import './preferred/preferred_request_builder.dart';
-import './profile/profile_request_builder.dart';
 
 /// auto generated
 /// Builds and executes requests for operations under \users
@@ -10,10 +9,6 @@ class UsersRequestBuilder extends BaseRequestBuilder<UsersRequestBuilder> {
     ///  The preferred property
     PreferredRequestBuilder get preferred {
         return PreferredRequestBuilder(pathParameters, requestAdapter);
-    }
-    ///  The profile property
-    ProfileRequestBuilder get profile {
-        return ProfileRequestBuilder(pathParameters, requestAdapter);
     }
     /// Clones the requestbuilder.
     @override

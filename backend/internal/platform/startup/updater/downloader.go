@@ -77,8 +77,6 @@ func (h httpDownloader) Download(ctx context.Context) ([]byte, error) {
 		if strings.HasPrefix(h.url, "https://api.github.com/") {
 			req.Header.Add("Accept", "application/vnd.github.v3.raw")
 			req.Header.Add("Authorization", "token "+h.token)
-		} else {
-			req.Header.Add("Authorization", "Bearer "+h.token)
 		}
 	}
 

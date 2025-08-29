@@ -6,6 +6,7 @@ import './label_ref_model.dart';
 import './subscription_free_trial_model.dart';
 import './subscription_model_recurrency.dart';
 import './subscription_payer_model.dart';
+import './subscription_price_model.dart';
 
 /// auto generated
 /// Subscription object containing all information about an active subscription including billing and usage details
@@ -15,7 +16,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
     Map<String, Object?> additionalData;
     ///  @Description ISO 8601 timestamp when the subscription was originally created
     DateTime? createdAt;
-    ///  The custom_price property
+    ///  @Description Custom price for this subscription
     AmountModel? customPrice;
     ///  @Description CustomRecurrency recurrency interval in days (required when recurrency is custom)
     int? customRecurrency;
@@ -39,6 +40,8 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
     SubscriptionPayerModel? payer;
     ///  @Description ID of the specific plan being subscribed to
     String? planId;
+    ///  @Description Price details for this subscription
+    SubscriptionPriceModel? price;
     ///  @Description ID of the pricing tier for this subscription
     String? priceId;
     ///  @Description ID of the service provider offering this subscription
@@ -76,6 +79,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
         deserializerMap['owner'] = (node) => owner = node.getObjectValue<OwnerModel>(OwnerModel.createFromDiscriminatorValue);
         deserializerMap['payer'] = (node) => payer = node.getObjectValue<SubscriptionPayerModel>(SubscriptionPayerModel.createFromDiscriminatorValue);
         deserializerMap['plan_id'] = (node) => planId = node.getStringValue();
+        deserializerMap['price'] = (node) => price = node.getObjectValue<SubscriptionPriceModel>(SubscriptionPriceModel.createFromDiscriminatorValue);
         deserializerMap['price_id'] = (node) => priceId = node.getStringValue();
         deserializerMap['provider_id'] = (node) => providerId = node.getStringValue();
         deserializerMap['recurrency'] = (node) => recurrency = node.getEnumValue<SubscriptionModelRecurrency>((stringValue) => SubscriptionModelRecurrency.values.where((enumVal) => enumVal.value == stringValue).firstOrNull);
@@ -101,6 +105,7 @@ class SubscriptionModel implements AdditionalDataHolder, Parsable {
         writer.writeObjectValue<OwnerModel>('owner', owner);
         writer.writeObjectValue<SubscriptionPayerModel>('payer', payer);
         writer.writeStringValue('plan_id', planId);
+        writer.writeObjectValue<SubscriptionPriceModel>('price', price);
         writer.writeStringValue('price_id', priceId);
         writer.writeStringValue('provider_id', providerId);
         writer.writeEnumValue<SubscriptionModelRecurrency>('recurrency', recurrency, (e) => e?.value);

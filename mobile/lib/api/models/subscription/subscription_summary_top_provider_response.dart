@@ -11,7 +11,7 @@ class SubscriptionSummaryTopProviderResponse implements AdditionalDataHolder, Pa
     String? duration;
     ///  The provider_id property
     String? providerId;
-    ///  The total property
+    ///  @Description Custom price for this subscription
     AmountModel? total;
     /// Instantiates a new [SubscriptionSummaryTopProviderResponse] and sets the default values.
     SubscriptionSummaryTopProviderResponse() :  

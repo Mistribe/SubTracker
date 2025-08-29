@@ -11,9 +11,9 @@ class SubscriptionSummaryUpcomingRenewalResponse implements AdditionalDataHolder
     DateTime? at;
     ///  The provider_id property
     String? providerId;
-    ///  The source property
+    ///  @Description Custom price for this subscription
     AmountModel? source;
-    ///  The total property
+    ///  @Description Custom price for this subscription
     AmountModel? total;
     /// Instantiates a new [SubscriptionSummaryUpcomingRenewalResponse] and sets the default values.
     SubscriptionSummaryUpcomingRenewalResponse() :  

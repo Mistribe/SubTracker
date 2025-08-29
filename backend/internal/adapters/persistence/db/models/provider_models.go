@@ -73,7 +73,7 @@ type ProviderRow struct {
 
 type ProviderRowWithCount struct {
 	ProviderRow
-	TotalCount int64 `alias:"total_count"`
+	TotalCount int64 `alias:"total_count" json:"total_count"`
 }
 
 // createProviderFromJetRows converts jet rows to domain providers with plans and prices
