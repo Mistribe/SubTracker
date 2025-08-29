@@ -9,7 +9,7 @@ import (
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/model"
 	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
-	"github.com/mistribe/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 )
 
 type SubscriptionRow struct {
@@ -103,11 +103,11 @@ func CreateSubscriptionFromJetRows(rows []SubscriptionRow) []subscription.Subscr
 
 	subscriptions := make(map[uuid.UUID]model.Subscriptions)
 	orderedIDs := make([]uuid.UUID, 0, len(rows))
-	serviceUserSet := slicesx.NewSet[string]()
+	serviceUserSet := collection.NewSet[string]()
 	subscriptionServiceUsers := make(map[uuid.UUID][]uuid.UUID)
-	subscriptionLabelSet := slicesx.NewSet[string]()
+	subscriptionLabelSet := collection.NewSet[string]()
 	subscriptionLabels := make(map[uuid.UUID][]uuid.UUID)
-	providerLabelSet := slicesx.NewSet[string]()
+	providerLabelSet := collection.NewSet[string]()
 	providerLabels := make(map[uuid.UUID][]uuid.UUID)
 
 	for _, row := range rows {
@@ -159,7 +159,7 @@ func CreateSubscriptionFromJetRows(rows []SubscriptionRow) []subscription.Subscr
 }
 
 func CreateSubscriptionFromJetRowsWithCount(rows []SubscriptionRowWithCount) []subscription.Subscription {
-	simpleRows := slicesx.Select(rows, func(row SubscriptionRowWithCount) SubscriptionRow {
+	simpleRows := collection.Select(rows, func(row SubscriptionRowWithCount) SubscriptionRow {
 		return row.SubscriptionRow
 	})
 

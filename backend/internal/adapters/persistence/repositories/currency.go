@@ -12,7 +12,7 @@ import (
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/models"
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 
 	. "github.com/go-jet/jet/v2/postgres"
 )
@@ -71,7 +71,7 @@ func (r CurrencyRateRepository) GetRatesByDate(ctx context.Context, date time.Ti
 		return nil, nil
 	}
 
-	return slicesx.SelectErr(rows, func(in model.CurrencyRates) (currency.Rate, error) {
+	return collection.SelectErr(rows, func(in model.CurrencyRates) (currency.Rate, error) {
 		return models.CreateCurrencyRateFromModel(in)
 	})
 }

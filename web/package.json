@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
-    "@kinde-oss/kinde-auth-react": "^5.5.0",
+    "@clerk/clerk-react": "latest",
     "@microsoft/kiota-bundle": "^1.0.0-preview.96",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",

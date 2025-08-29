@@ -9,7 +9,7 @@ import (
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/label/query"
 	. "github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 )
 
 type DefaultLabelEndpoint struct {
@@ -34,7 +34,7 @@ func (e DefaultLabelEndpoint) Handle(c *gin.Context) {
 	FromResult(c,
 		r,
 		WithMapping[[]label.Label](func(lbls []label.Label) any {
-			return slicesx.Select[label.Label, labelModel](
+			return collection.Select[label.Label, labelModel](
 				lbls,
 				func(lbl label.Label) labelModel {
 					return newLabelModel(lbl)

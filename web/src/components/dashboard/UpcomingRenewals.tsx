@@ -1,7 +1,7 @@
 import {Skeleton} from "@/components/ui/skeleton";
 import {format} from "date-fns";
 import {Money} from "@/components/ui/money";
-import {Calendar, Clock} from "lucide-react";
+import {Calendar} from "lucide-react";
 import type UpcomingRenewal from "@/models/upcomingRenewals.ts";
 import { useNavigate } from "react-router-dom";
 
@@ -57,7 +57,7 @@ const UpcomingRenewals = ({
                                             </span>
                                     </div>
                                     <div className="mt-2 text-sm flex items-center">
-                                        <Clock className="h-3 w-3 mr-1 text-cyan-500"/>
+                                        <Calendar className="h-3 w-3 mr-1 text-cyan-500"/>
                                         <span className="font-medium">Next renewal:</span>{" "}
                                         {item.at ? format(item.at, 'MMM d, yyyy') : ""}
                                     </div>

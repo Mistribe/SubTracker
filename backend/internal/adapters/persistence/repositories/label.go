@@ -13,7 +13,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 
 	. "github.com/go-jet/jet/v2/postgres"
 )
@@ -116,7 +116,7 @@ func (r LabelRepository) GetAll(ctx context.Context, userId string, parameters p
 	}
 
 	totalCount := rows[0].TotalCount
-	labels := slicesx.Select(rows, func(row struct {
+	labels := collection.Select(rows, func(row struct {
 		Labels     model.Labels `json:"labels"`
 		TotalCount int64        `json:"total_count"`
 	}) label.Label {
@@ -140,7 +140,7 @@ func (r LabelRepository) GetSystemLabels(ctx context.Context) ([]label.Label, er
 		return nil, err
 	}
 
-	labels := slicesx.Select(rows, func(row model.Labels) label.Label {
+	labels := collection.Select(rows, func(row model.Labels) label.Label {
 		return models.CreateLabelFromModel(row)
 	})
 	return labels, nil

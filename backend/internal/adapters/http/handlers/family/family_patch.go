@@ -10,12 +10,12 @@ import (
 
 	. "github.com/mistribe/subtracker/pkg/ginx"
 	"github.com/mistribe/subtracker/pkg/x"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 
 	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/internal/usecase/family/command"
-	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
 type FamilyPatchEndpoint struct {
@@ -84,7 +84,7 @@ func (m patchFamilyModel) Command(ownerId string) (command.PatchFamilyCommand, e
 		return command.PatchFamilyCommand{}, err
 	}
 	updatedAt := x.ValueOrDefault(m.UpdatedAt, time.Now())
-	members, err := slicesx.SelectErr(m.Members, func(member patchFamilyMemberModel) (family.Member, error) {
+	members, err := collection.SelectErr(m.Members, func(member patchFamilyMemberModel) (family.Member, error) {
 		return member.Command(familyId)
 	})
 	if err != nil {

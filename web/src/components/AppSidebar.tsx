@@ -11,8 +11,8 @@
  * - Scrollable content area
  */
 
-import {Link, useLocation, useNavigate} from "react-router-dom";
-import {useKindeAuth} from "@kinde-oss/kinde-auth-react";
+import {Link, useLocation,} from "react-router-dom";
+import {useUser, UserButton} from "@clerk/clerk-react";
 import {
     Sidebar,
     SidebarContent,
@@ -24,8 +24,6 @@ import {
     SidebarTrigger,
     useSidebar,
 } from "@/components/ui/sidebar";
-import {ModeToggle} from "@/components/mode-toggle";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {Separator} from "@/components/ui/separator";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
@@ -34,17 +32,14 @@ import {
     AlertTriangleIcon,
     CreditCardIcon,
     HomeIcon,
-    LogOutIcon,
-    PackageIcon,
+    PackageIcon, Settings,
     TagIcon,
-    UserIcon,
     UsersIcon
 } from "lucide-react";
-import { envVar } from "@/lib/env";
+import {envVar} from "@/lib/env";
 
 export function AppSidebar() {
-    const {user, logout} = useKindeAuth();
-    const navigate = useNavigate();
+    const {user} = useUser();
     const location = useLocation();
     const {state, isMobile} = useSidebar();
 
@@ -77,17 +72,6 @@ export function AppSidebar() {
                     icon: <AlertTriangleIcon className="h-3 w-3"/>
                 };
         }
-    };
-
-    const handleLogout = () => {
-        logout();
-        navigate("/");
-    };
-
-    // Get user initials for avatar fallback
-    const getInitials = () => {
-        if (!user?.givenName && !user?.familyName) return "U";
-        return `${user?.givenName?.[0] || ""}${user?.familyName?.[0] || ""}`;
     };
 
     // Navigation items
@@ -167,78 +151,42 @@ export function AppSidebar() {
 
             <SidebarFooter>
                 <Separator className="my-2"/>
-                <div className="p-4">
-                    <div className="flex flex-col space-y-3">
-                        {/* User profile section */}
-                        <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10 border shadow-sm">
-                                <AvatarImage src={user?.picture || ""} alt={user?.givenName || "User"}/>
-                                <AvatarFallback className="bg-primary/10 text-primary">{getInitials()}</AvatarFallback>
-                            </Avatar>
-                            {state === "expanded" && (
-                                <div className="flex flex-col">
-                                    <Link
-                                        to="/profile"
-                                        className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
-                                    >
-                                        {user?.givenName} {user?.familyName}
-                                        <UserIcon className="h-3 w-3 ml-1"/>
-                                    </Link>
-                                    <span className="text-xs text-muted-foreground truncate max-w-[150px]">
-                                        {user?.email}
-                                    </span>
-                                </div>
-                            )}
-                            {state === "collapsed" && (
-                                <TooltipProvider delayDuration={0}>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Link to="/profile"
-                                                  className="rounded-md p-1 text-muted-foreground hover:text-primary hover:bg-muted">
-                                                <UserIcon className="h-4 w-4"/>
-                                            </Link>
-                                        </TooltipTrigger>
-                                        <TooltipContent side="right" hidden={isMobile}>
-                                            Profile
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            )}
-                        </div>
-
-                        {/* Actions section */}
-                        <div
-                            className={`flex ${state === "collapsed" ? "justify-center" : "justify-between"} items-center`}>
-                            <TooltipProvider delayDuration={0}>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <div>
-                                            <ModeToggle/>
-                                        </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="right" hidden={state !== "collapsed" || isMobile}>
-                                        Toggle theme
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                            <TooltipProvider delayDuration={0}>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <button
-                                            onClick={handleLogout}
-                                            className="rounded-md p-2 text-muted-foreground hover:text-destructive hover:bg-muted transition-colors"
-                                        >
-                                            <LogOutIcon className="h-4 w-4"/>
-                                        </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="right" hidden={state !== "collapsed" || isMobile}>
-                                        Logout
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                {state === "expanded" && (
+                    <div className="flex items-center gap-3">
+                        <UserButton/>
+                        <div className="flex justify-between w-full">
+                            <div className="flex flex-col">
+                                <p className="text-sm font-medium">
+                                    {user?.firstName} {user?.lastName}
+                                </p>
+                            </div>
+                            <div>
+                                <Link to="/profile" className="text-muted-foreground">
+                                    <Settings
+                                        className="transition-transform hover:rotate-180 duration-500"/>
+                                </Link>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
+                {state === "collapsed" && (
+                    <div className="flex flex-col items-center gap-3">
+                        <TooltipProvider delayDuration={0}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link to="/profile" className="text-muted-foreground ">
+                                        <Settings
+                                            className="h-4 w-4 transition-transform hover:rotate-180 duration-500"/>
+                                    </Link>
+                                </TooltipTrigger>
+                                <TooltipContent side="right" hidden={isMobile}>
+                                    Preference
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                        <UserButton/>
+                    </div>
+                )}
             </SidebarFooter>
         </Sidebar>
     );

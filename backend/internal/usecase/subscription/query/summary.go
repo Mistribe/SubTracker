@@ -12,7 +12,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
-	"github.com/mistribe/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 )
 
 type SummaryQuery struct {
@@ -222,11 +222,11 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 		TotalLastMonth:   currency.NewAmount(totalLastMonth, preferredCurrency),
 		TotalLastYear:    currency.NewAmount(totalLastYear, preferredCurrency),
 		UpcomingRenewals: upcomingRenewals,
-		TopProviders: slicesx.MapToArr(topProviders,
+		TopProviders: collection.MapToArr(topProviders,
 			func(providerId uuid.UUID, res SummaryQueryTopProvidersResponse) SummaryQueryTopProvidersResponse {
 				return res
 			}),
-		TopLabels: slicesx.MapToArr(topLabels,
+		TopLabels: collection.MapToArr(topLabels,
 			func(labelId uuid.UUID, res currency.Amount) SummaryQueryLabelResponse {
 				return SummaryQueryLabelResponse{
 					TagId: labelId,
@@ -237,14 +237,14 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 	sort.Slice(response.UpcomingRenewals, func(i, j int) bool {
 		return response.UpcomingRenewals[i].At.Before(response.UpcomingRenewals[j].At)
 	})
-	response.UpcomingRenewals = slicesx.Take(response.UpcomingRenewals, int(query.UpcomingRenewals))
+	response.UpcomingRenewals = collection.Take(response.UpcomingRenewals, int(query.UpcomingRenewals))
 	sort.Slice(response.TopProviders, func(i, j int) bool {
 		return response.TopProviders[i].Total.IsGreaterThan(response.TopProviders[j].Total)
 	})
-	response.TopProviders = slicesx.Take(response.TopProviders, int(query.TopProviders))
+	response.TopProviders = collection.Take(response.TopProviders, int(query.TopProviders))
 	sort.Slice(response.TopLabels, func(i, j int) bool {
 		return response.TopLabels[i].Total.IsGreaterThan(response.TopLabels[j].Total)
 	})
-	response.TopLabels = slicesx.Take(response.TopLabels, int(query.TopLabels))
+	response.TopLabels = collection.Take(response.TopLabels, int(query.TopLabels))
 	return result.Success(response)
 }

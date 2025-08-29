@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	. "github.com/mistribe/subtracker/pkg/ginx"
+	"github.com/mistribe/subtracker/pkg/x/collection"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/domain/provider"
@@ -15,7 +16,6 @@ import (
 	"github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/internal/usecase/provider/command"
 	"github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/slicesx"
 )
 
 type ProviderCreateEndpoint struct {
@@ -48,7 +48,7 @@ func (m createProviderModel) Command(userId string) (command.CreateProviderComma
 
 		providerId = &id
 	}
-	labels, err := slicesx.SelectErr(m.Labels, uuid.Parse)
+	labels, err := collection.SelectErr(m.Labels, uuid.Parse)
 	if err != nil {
 		return command.CreateProviderCommand{}, err
 	}
