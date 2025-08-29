@@ -171,7 +171,6 @@ export function AppSidebar() {
                 )}
                 {state === "collapsed" && (
                     <div className="flex flex-col items-center gap-3">
-                        <UserButton/>
                         <TooltipProvider delayDuration={0}>
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -185,6 +184,7 @@ export function AppSidebar() {
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
+                        <UserButton/>
                     </div>
                 )}
             </SidebarFooter>
