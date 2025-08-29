@@ -143,6 +143,7 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
         isLoadingAvailableCurrencies: availableCurrencyQuery.isLoading,
         isErrorAvailableCurrencies: availableCurrencyQuery.isError,
         errorAvailableCurrencies: availableCurrencyQuery.error,
+        updateCurrency: updatePreferredCurrencyMutation.mutate,
         isUpdating: updatePreferredCurrencyMutation.isPending
     };
 };

@@ -14,7 +14,7 @@ const PreferencePage = () => {
         availableCurrencies,
         isLoadingAvailableCurrencies,
         isErrorAvailableCurrencies,
-        updateProfile,
+        updateCurrency,
         isUpdating
     } = useProfileManagement();
 
@@ -59,8 +59,7 @@ const PreferencePage = () => {
                     preferredCurrency={selectedCurrency}
                     isUpdating={isUpdating}
                     onCurrencyChange={(value) => {
-                        // Persist to backend using the profile management hook
-                        updateProfile(value);
+                        updateCurrency(value);
                     }}
                     currencies={currencies}
                 />
