@@ -35,7 +35,9 @@ jobs:
             sudo apt-get install -y postgresql-client
 
       - name: Create goose schema
-        run: psql ${{ secrets.PROD_DSN }} -c "CREATE SCHEMA IF NOT EXISTS goose;"
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DSN }}
+        run: psql -d "$DATABASE_URL" -v ON_ERROR_STOP=1 -c 'CREATE SCHEMA IF NOT EXISTS goose;'
 
       - name: Run goose up
         env:
