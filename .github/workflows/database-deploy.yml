@@ -1,10 +1,12 @@
-name: Deploy production database schema update
+name: Deploy database schema update
 on:
   push:
     branches:
       - main
+      - features/database-schema-update
     paths:
       - 'backend/database/**'
+      - '.github/workflows/database-deploy.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
