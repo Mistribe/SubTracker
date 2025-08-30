@@ -107,7 +107,7 @@ func (r SubscriptionRepository) GetAll(
 
 	pagedSubs := SELECT(
 		Subscriptions.AllColumns,
-		COUNT(STAR).OVER().AS("total_count"),
+		COUNT(STAR).OVER().AS("subscription_row_with_count.total_count"),
 	).
 		FROM(Subscriptions).
 		ORDER_BY(Subscriptions.ID).
@@ -247,7 +247,7 @@ func (r SubscriptionRepository) GetAllForUser(
 	// Build counted CTE with pagination
 	counted := SELECT(
 		matches.AllColumns(),
-		COUNT(STAR).OVER().AS("total_count"),
+		COUNT(STAR).OVER().AS("subscription_row_with_count.total_count"),
 	).FROM(matches).
 		ORDER_BY(LOWER(Subscriptions.FriendlyName.From(matches)).ASC(),
 			LOWER(Providers.Name.From(matches)).ASC(),

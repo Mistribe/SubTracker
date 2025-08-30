@@ -10,13 +10,16 @@ import { createSubscriptionModelFromDiscriminatorValue, serializeSubscriptionMod
 // @ts-ignore
 import { type AdditionalDataHolder, type Parsable, type ParseNode, type SerializationWriter } from '@microsoft/kiota-abstractions';
 
+/**
+ * @Description Custom price for this subscription
+ */
 export interface AmountModel extends AdditionalDataHolder, Parsable {
     /**
      * The currency property
      */
     currency?: string | null;
     /**
-     * The source property
+     * @Description Custom price for this subscription
      */
     source?: AmountModel | null;
     /**

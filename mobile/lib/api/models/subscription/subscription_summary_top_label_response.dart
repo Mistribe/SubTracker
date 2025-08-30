@@ -9,7 +9,7 @@ class SubscriptionSummaryTopLabelResponse implements AdditionalDataHolder, Parsa
     Map<String, Object?> additionalData;
     ///  The label_id property
     String? labelId;
-    ///  The total property
+    ///  @Description Custom price for this subscription
     AmountModel? total;
     /// Instantiates a new [SubscriptionSummaryTopLabelResponse] and sets the default values.
     SubscriptionSummaryTopLabelResponse() :  

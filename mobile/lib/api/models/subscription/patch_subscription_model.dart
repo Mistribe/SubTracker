@@ -10,7 +10,7 @@ class PatchSubscriptionModel implements AdditionalDataHolder, Parsable {
     ///  Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
     @override
     Map<String, Object?> additionalData;
-    ///  The custom_price property
+    ///  @Description Custom price for this subscription
     AmountModel? customPrice;
     ///  The custom_recurrency property
     int? customRecurrency;

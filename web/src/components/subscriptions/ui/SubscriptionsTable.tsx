@@ -89,7 +89,15 @@ export function SubscriptionsTable({
                             </TableCell>
                             <TableCell>
                                 {subscription.customPrice && (
-                                    <Money amount={subscription.customPrice}/>
+                                    <div className="flex flex-col gap-1">
+                                        <Money amount={subscription.customPrice} />
+                                        <span className="text-xs text-muted-foreground">
+                                            Monthly: <Money amount={{ value: subscription.getMonthlyPrice(), currency: subscription.getCurrency() }} /> / month
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            Yearly: <Money amount={{ value: subscription.getYearlyPrice(), currency: subscription.getCurrency() }} /> / year
+                                        </span>
+                                    </div>
                                 )}
                             </TableCell>
                             <TableCell>
@@ -174,7 +182,7 @@ export function SubscriptionsTable({
                     ))}
                     {isFetchingNextPage && (
                         <TableRow>
-                            <TableCell colSpan={9} className="py-4 text-center">
+                            <TableCell colSpan={8} className="py-4 text-center">
                                 <div className="flex items-center justify-center gap-2 text-muted-foreground">
                                     <Loader2 className="h-4 w-4 animate-spin"/>
                                     Loading more subscriptions...

@@ -6,8 +6,6 @@ import { createHttpErrorResponseFromDiscriminatorValue, type HttpErrorResponse }
 // @ts-ignore
 import { PreferredRequestBuilderNavigationMetadata, type PreferredRequestBuilder } from './preferred/index.js';
 // @ts-ignore
-import { ProfileRequestBuilderRequestsMetadata, type ProfileRequestBuilder } from './profile/index.js';
-// @ts-ignore
 import { type BaseRequestBuilder, type KeysToExcludeForNavigationMetadata, type NavigationMetadata, type Parsable, type ParsableFactory, type RequestConfiguration, type RequestInformation, type RequestsMetadata } from '@microsoft/kiota-abstractions';
 
 /**
@@ -18,10 +16,6 @@ export interface UsersRequestBuilder extends BaseRequestBuilder<UsersRequestBuil
      * The preferred property
      */
     get preferred(): PreferredRequestBuilder;
-    /**
-     * The profile property
-     */
-    get profile(): ProfileRequestBuilder;
     /**
      * Deletes the authenticated user's account
      * @param requestConfiguration Configuration for the request such as headers, query parameters, and middleware options.
@@ -46,9 +40,6 @@ export const UsersRequestBuilderUriTemplate = "{+baseurl}/users";
 export const UsersRequestBuilderNavigationMetadata: Record<Exclude<keyof UsersRequestBuilder, KeysToExcludeForNavigationMetadata>, NavigationMetadata> = {
     preferred: {
         navigationMetadata: PreferredRequestBuilderNavigationMetadata,
-    },
-    profile: {
-        requestsMetadata: ProfileRequestBuilderRequestsMetadata,
     },
 };
 /**

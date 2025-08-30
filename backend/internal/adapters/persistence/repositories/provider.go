@@ -152,7 +152,7 @@ func (r ProviderRepository) GetAll(ctx context.Context, parameters ports.Provide
 
 	pagedProviders := SELECT(
 		Providers.AllColumns,
-		COUNT(STAR).OVER().AS("total_count"),
+		COUNT(STAR).OVER().AS("provider_row_with_count.total_count"),
 	).
 		FROM(Providers).
 		ORDER_BY(Providers.ID).
@@ -224,7 +224,7 @@ func (r ProviderRepository) GetAllForUser(
 	// Get matching provider IDs with pagination
 	pagedProviders := SELECT(
 		Providers.ID,
-		COUNT(STAR).OVER().AS("total_count"),
+		COUNT(STAR).OVER().AS("provider_row_with_count.total_count"),
 	).
 		FROM(Providers).
 		WHERE(searchFilter).
@@ -240,7 +240,7 @@ func (r ProviderRepository) GetAllForUser(
 		ProviderPrices.AllColumns,
 		ProviderLabels.LabelID,
 		ProviderLabels.ProviderID,
-		pagedProviders.AllColumns(),
+		pagedProviders.AllColumns().Except(Providers.ID),
 	).
 		FROM(
 			pagedProviders.

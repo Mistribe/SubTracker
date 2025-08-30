@@ -4,11 +4,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"golang.org/x/text/currency"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/adapters/http/router/ginfx"
 	"github.com/mistribe/subtracker/internal/adapters/http/router/middlewares"
+	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/pkg/x"
 	"github.com/mistribe/subtracker/pkg/x/collection"
 
@@ -121,6 +121,11 @@ type EditableSubscriptionPayerModel struct {
 	MemberId *string `json:"memberId,omitempty" example:"123e4567-e89b-12d3-a456-426614174001"`
 }
 
+type SubscriptionPriceModel struct {
+	Monthly dto.AmountModel `json:"monthly" binding:"required"`
+	Yearly  dto.AmountModel `json:"yearly" binding:"required"`
+}
+
 // SubscriptionModel represents an active subscription to a service provider's plan
 // @Description Subscription object containing all information about an active subscription including billing and usage details
 type SubscriptionModel struct {
@@ -135,7 +140,8 @@ type SubscriptionModel struct {
 	// @Description ID of the specific plan being subscribed to
 	PlanId *string `json:"plan_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174003"`
 	// @Description ID of the pricing tier for this subscription
-	PriceId     *string          `json:"price_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174004"`
+	PriceId *string `json:"price_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174004"`
+	// @Description Custom price for this subscription
 	CustomPrice *dto.AmountModel `json:"custom_price,omitempty"`
 	// @Description Ownership information specifying whether this subscription belongs to a user or family
 	Owner dto.OwnerModel `json:"owner" binding:"required"`
@@ -161,6 +167,8 @@ type SubscriptionModel struct {
 	IsActive bool `json:"is_active" binding:"required" example:"true"`
 	// @Description List of labels associated with this subscription
 	LabelRefs []LabelRefModel `json:"label_refs,omitempty"`
+	// @Description Price details for this subscription
+	Price SubscriptionPriceModel `json:"price,omitempty"`
 }
 
 func newSubscriptionPayerModel(source subscription.Payer) SubscriptionPayerModel {
@@ -177,6 +185,13 @@ func newSubscriptionPayerModel(source subscription.Payer) SubscriptionPayerModel
 	return model
 }
 
+func newSubscriptionPrice(sub subscription.Subscription) SubscriptionPriceModel {
+	return SubscriptionPriceModel{
+		Monthly: dto.NewAmount(sub.GetRecurrencyAmount(subscription.MonthlyRecurrency)),
+		Yearly:  dto.NewAmount(sub.GetRecurrencyAmount(subscription.YearlyRecurrency)),
+	}
+}
+
 type LabelRefModel struct {
 	LabelId string `json:"label_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
 	Source  string `json:"source" binding:"required" example:"subscription" enums:"subscription,provider"`
@@ -190,9 +205,9 @@ func newSubscriptionLabelRef(ref subscription.LabelRef) LabelRefModel {
 }
 
 func newSubscriptionModel(source subscription.Subscription) SubscriptionModel {
-	var payerModel SubscriptionPayerModel
+	var payerModel *SubscriptionPayerModel
 	if source.Payer() != nil {
-		payerModel = newSubscriptionPayerModel(source.Payer())
+		payerModel = x.P(newSubscriptionPayerModel(source.Payer()))
 	}
 	serviceUsers := collection.Select(source.ServiceUsers().Values(), func(in uuid.UUID) string {
 		return in.String()
@@ -210,12 +225,13 @@ func newSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 		EndDate:          source.EndDate(),
 		Recurrency:       source.Recurrency().String(),
 		CustomRecurrency: source.CustomRecurrency(),
-		Payer:            &payerModel,
+		Payer:            payerModel,
 		IsActive:         source.IsActive(),
 		CreatedAt:        source.CreatedAt(),
 		UpdatedAt:        source.UpdatedAt(),
 		Etag:             source.ETag(),
 		CustomPrice:      x.P(dto.NewAmount(source.CustomPrice().Amount())),
+		Price:            newSubscriptionPrice(source),
 	}
 
 	if source.PlanId() != nil {

@@ -12,7 +12,7 @@ class CreateSubscriptionModel implements AdditionalDataHolder, Parsable {
     Map<String, Object?> additionalData;
     ///  The created_at property
     String? createdAt;
-    ///  The custom_price property
+    ///  @Description Custom price for this subscription
     AmountModel? customPrice;
     ///  The custom_recurrency property
     int? customRecurrency;

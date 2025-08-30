@@ -57,7 +57,7 @@ export interface CreateSubscriptionModel extends AdditionalDataHolder, Parsable 
      */
     createdAt?: string | null;
     /**
-     * The custom_price property
+     * @Description Custom price for this subscription
      */
     customPrice?: AmountModel | null;
     /**
@@ -134,6 +134,15 @@ export function createSubscriptionModelFromDiscriminatorValue(parseNode: ParseNo
 // @ts-ignore
 export function createSubscriptionPayerModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
     return deserializeIntoSubscriptionPayerModel;
+}
+/**
+ * Creates a new instance of the appropriate class based on discriminator value
+ * @param parseNode The parse node to use to read the discriminator value and create the object
+ * @returns {SubscriptionPriceModel}
+ */
+// @ts-ignore
+export function createSubscriptionPriceModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
+    return deserializeIntoSubscriptionPriceModel;
 }
 /**
  * Creates a new instance of the appropriate class based on discriminator value
@@ -290,6 +299,7 @@ export function deserializeIntoSubscriptionModel(subscriptionModel: Partial<Subs
         "owner": n => { subscriptionModel.owner = n.getObjectValue<OwnerModel>(createOwnerModelFromDiscriminatorValue); },
         "payer": n => { subscriptionModel.payer = n.getObjectValue<SubscriptionPayerModel>(createSubscriptionPayerModelFromDiscriminatorValue); },
         "plan_id": n => { subscriptionModel.planId = n.getStringValue(); },
+        "price": n => { subscriptionModel.price = n.getObjectValue<SubscriptionPriceModel>(createSubscriptionPriceModelFromDiscriminatorValue); },
         "price_id": n => { subscriptionModel.priceId = n.getStringValue(); },
         "provider_id": n => { subscriptionModel.providerId = n.getStringValue(); },
         "recurrency": n => { subscriptionModel.recurrency = n.getEnumValue<SubscriptionModel_recurrency>(SubscriptionModel_recurrencyObject); },
@@ -310,6 +320,18 @@ export function deserializeIntoSubscriptionPayerModel(subscriptionPayerModel: Pa
         "family_id": n => { subscriptionPayerModel.familyId = n.getStringValue(); },
         "memberId": n => { subscriptionPayerModel.memberId = n.getStringValue(); },
         "type": n => { subscriptionPayerModel.type = n.getEnumValue<SubscriptionPayerModel_type>(SubscriptionPayerModel_typeObject); },
+    }
+}
+/**
+ * The deserialization information for the current model
+ * @param SubscriptionPriceModel The instance to deserialize into.
+ * @returns {Record<string, (node: ParseNode) => void>}
+ */
+// @ts-ignore
+export function deserializeIntoSubscriptionPriceModel(subscriptionPriceModel: Partial<SubscriptionPriceModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
+    return {
+        "monthly": n => { subscriptionPriceModel.monthly = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
+        "yearly": n => { subscriptionPriceModel.yearly = n.getObjectValue<AmountModel>(createAmountModelFromDiscriminatorValue); },
     }
 }
 /**
@@ -425,7 +447,7 @@ export interface LabelRefModel extends AdditionalDataHolder, Parsable {
 export type LabelRefModel_source = (typeof LabelRefModel_sourceObject)[keyof typeof LabelRefModel_sourceObject];
 export interface PatchSubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
-     * The custom_price property
+     * @Description Custom price for this subscription
      */
     customPrice?: AmountModel | null;
     /**
@@ -605,6 +627,7 @@ export function serializeSubscriptionModel(writer: SerializationWriter, subscrip
     writer.writeObjectValue<OwnerModel>("owner", subscriptionModel.owner, serializeOwnerModel);
     writer.writeObjectValue<SubscriptionPayerModel>("payer", subscriptionModel.payer, serializeSubscriptionPayerModel);
     writer.writeStringValue("plan_id", subscriptionModel.planId);
+    writer.writeObjectValue<SubscriptionPriceModel>("price", subscriptionModel.price, serializeSubscriptionPriceModel);
     writer.writeStringValue("price_id", subscriptionModel.priceId);
     writer.writeStringValue("provider_id", subscriptionModel.providerId);
     writer.writeEnumValue<SubscriptionModel_recurrency>("recurrency", subscriptionModel.recurrency);
@@ -627,6 +650,19 @@ export function serializeSubscriptionPayerModel(writer: SerializationWriter, sub
     writer.writeStringValue("memberId", subscriptionPayerModel.memberId);
     writer.writeEnumValue<SubscriptionPayerModel_type>("type", subscriptionPayerModel.type);
     writer.writeAdditionalData(subscriptionPayerModel.additionalData);
+}
+/**
+ * Serializes information the current object
+ * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
+ * @param SubscriptionPriceModel The instance to serialize from.
+ * @param writer Serialization writer to use to serialize this model
+ */
+// @ts-ignore
+export function serializeSubscriptionPriceModel(writer: SerializationWriter, subscriptionPriceModel: Partial<SubscriptionPriceModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
+    if (!subscriptionPriceModel || isSerializingDerivedType) { return; }
+    writer.writeObjectValue<AmountModel>("monthly", subscriptionPriceModel.monthly, serializeAmountModel);
+    writer.writeObjectValue<AmountModel>("yearly", subscriptionPriceModel.yearly, serializeAmountModel);
+    writer.writeAdditionalData(subscriptionPriceModel.additionalData);
 }
 /**
  * Serializes information the current object
@@ -737,7 +773,7 @@ export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
      */
     createdAt?: Date | null;
     /**
-     * The custom_price property
+     * @Description Custom price for this subscription
      */
     customPrice?: AmountModel | null;
     /**
@@ -784,6 +820,10 @@ export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
      * @Description ID of the specific plan being subscribed to
      */
     planId?: string | null;
+    /**
+     * @Description Price details for this subscription
+     */
+    price?: SubscriptionPriceModel | null;
     /**
      * @Description ID of the pricing tier for this subscription
      */
@@ -833,6 +873,19 @@ export interface SubscriptionPayerModel extends AdditionalDataHolder, Parsable {
 }
 export type SubscriptionPayerModel_type = (typeof SubscriptionPayerModel_typeObject)[keyof typeof SubscriptionPayerModel_typeObject];
 /**
+ * @Description Price details for this subscription
+ */
+export interface SubscriptionPriceModel extends AdditionalDataHolder, Parsable {
+    /**
+     * @Description Custom price for this subscription
+     */
+    monthly?: AmountModel | null;
+    /**
+     * @Description Custom price for this subscription
+     */
+    yearly?: AmountModel | null;
+}
+/**
  * Response containing subscription summary information
  */
 export interface SubscriptionSummaryResponse extends AdditionalDataHolder, Parsable {
@@ -849,19 +902,19 @@ export interface SubscriptionSummaryResponse extends AdditionalDataHolder, Parsa
      */
     topProviders?: SubscriptionSummaryTopProviderResponse[] | null;
     /**
-     * The total_last_month property
+     * @Description Custom price for this subscription
      */
     totalLastMonth?: AmountModel | null;
     /**
-     * The total_last_year property
+     * @Description Custom price for this subscription
      */
     totalLastYear?: AmountModel | null;
     /**
-     * The total_monthly property
+     * @Description Custom price for this subscription
      */
     totalMonthly?: AmountModel | null;
     /**
-     * The total_yearly property
+     * @Description Custom price for this subscription
      */
     totalYearly?: AmountModel | null;
     /**
@@ -875,7 +928,7 @@ export interface SubscriptionSummaryTopLabelResponse extends AdditionalDataHolde
      */
     labelId?: string | null;
     /**
-     * The total property
+     * @Description Custom price for this subscription
      */
     total?: AmountModel | null;
 }
@@ -889,7 +942,7 @@ export interface SubscriptionSummaryTopProviderResponse extends AdditionalDataHo
      */
     providerId?: string | null;
     /**
-     * The total property
+     * @Description Custom price for this subscription
      */
     total?: AmountModel | null;
 }
@@ -903,17 +956,17 @@ export interface SubscriptionSummaryUpcomingRenewalResponse extends AdditionalDa
      */
     providerId?: string | null;
     /**
-     * The source property
+     * @Description Custom price for this subscription
      */
     source?: AmountModel | null;
     /**
-     * The total property
+     * @Description Custom price for this subscription
      */
     total?: AmountModel | null;
 }
 export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
-     * The custom_price property
+     * @Description Custom price for this subscription
      */
     customPrice?: AmountModel | null;
     /**

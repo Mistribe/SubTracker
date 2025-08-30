@@ -25,6 +25,7 @@ components:
       - timestamp
       type: object
     dto.AmountModel:
+      description: '@Description Custom price for this subscription'
       properties:
         currency:
           example: USD
@@ -1031,6 +1032,8 @@ components:
           description: '@Description ID of the specific plan being subscribed to'
           example: 123e4567-e89b-12d3-a456-426614174003
           type: string
+        price:
+          $ref: '#/components/schemas/subscription.SubscriptionPriceModel'
         price_id:
           description: '@Description ID of the pricing tier for this subscription'
           example: 123e4567-e89b-12d3-a456-426614174004
@@ -1114,6 +1117,17 @@ components:
       - etag
       - family_id
       - type
+      type: object
+    subscription.SubscriptionPriceModel:
+      description: '@Description Price details for this subscription'
+      properties:
+        monthly:
+          $ref: '#/components/schemas/dto.AmountModel'
+        yearly:
+          $ref: '#/components/schemas/dto.AmountModel'
+      required:
+      - monthly
+      - yearly
       type: object
     subscription.SubscriptionSummaryResponse:
       description: Response containing subscription summary information
@@ -1226,16 +1240,6 @@ components:
       - provider_id
       - recurrency
       - start_date
-      type: object
-    user.UpdateProfileModel:
-      properties:
-        family_name:
-          type: string
-        given_name:
-          type: string
-      required:
-      - family_name
-      - given_name
       type: object
     user.UserPreferredCurrencyModel:
       properties:
@@ -3005,41 +3009,6 @@ paths:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Unauthorized
       summary: Update user preferred currency
-      tags:
-      - users
-  /users/profile:
-    put:
-      description: Updates the given name and family name for the authenticated user
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/user.UpdateProfileModel'
-        description: Profile update parameters
-        required: true
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Unauthorized
-      summary: Update user profile
       tags:
       - users
 servers:
