@@ -30,7 +30,7 @@ func (a amount) Add(value float64) Amount {
 
 	var source Amount
 	if a.source != nil {
-		source = source.Add(value)
+		source = a.source.Add(value)
 	}
 
 	return amount{
@@ -47,7 +47,7 @@ func (a amount) Sub(value float64) Amount {
 	}
 	var source Amount
 	if a.source != nil {
-		source = source.Sub(value)
+		source = a.source.Sub(value)
 	}
 
 	return amount{
@@ -64,7 +64,7 @@ func (a amount) Div(value float64) Amount {
 	}
 	var source Amount
 	if a.source != nil {
-		source = source.Div(value)
+		source = a.source.Div(value)
 	}
 
 	return amount{
@@ -81,7 +81,7 @@ func (a amount) Mul(value float64) Amount {
 	}
 	var source Amount
 	if a.source != nil {
-		source = source.Mul(value)
+		source = a.source.Mul(value)
 	}
 
 	return amount{
