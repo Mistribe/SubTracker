@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - features/database-schema-update
     paths:
       - 'backend/database/**'
       - '.github/workflows/database-deploy.yml'
