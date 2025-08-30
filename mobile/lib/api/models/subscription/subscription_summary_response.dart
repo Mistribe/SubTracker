@@ -17,13 +17,13 @@ class SubscriptionSummaryResponse implements AdditionalDataHolder, Parsable {
     Iterable<SubscriptionSummaryTopLabelResponse>? topLabels;
     ///  The top_providers property
     Iterable<SubscriptionSummaryTopProviderResponse>? topProviders;
-    ///  The total_last_month property
+    ///  @Description Custom price for this subscription
     AmountModel? totalLastMonth;
-    ///  The total_last_year property
+    ///  @Description Custom price for this subscription
     AmountModel? totalLastYear;
-    ///  The total_monthly property
+    ///  @Description Custom price for this subscription
     AmountModel? totalMonthly;
-    ///  The total_yearly property
+    ///  @Description Custom price for this subscription
     AmountModel? totalYearly;
     ///  The upcoming_renewals property
     Iterable<SubscriptionSummaryUpcomingRenewalResponse>? upcomingRenewals;

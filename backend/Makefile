@@ -13,7 +13,11 @@ openapi:
 clients: typescript-client dart-client
 
 typescript-client:
-	docker pull mcr.microsoft.com/openapi/kiota && \
+	@echo "Clean old client api" &&\
+		rm -fr "${PWD}/../web/src/api" &&\
+    	mkdir -p "${PWD}/../web/src/api" &&\
+    	cp "${PWD}/internal/adapters/http/handlers/openapi/swagger.yaml" "${PWD}/../web/src/api"
+	@docker pull mcr.microsoft.com/openapi/kiota && \
     docker run --rm -v ../web/src/api:/app/output \
     -v ./internal/adapters/http/handlers/openapi/swagger.yaml:/app/openapi.yaml \
     --user $(id -u):$(id -g) \

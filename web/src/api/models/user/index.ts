@@ -16,15 +16,6 @@ export function createUpdatePreferredCurrencyModelFromDiscriminatorValue(parseNo
 /**
  * Creates a new instance of the appropriate class based on discriminator value
  * @param parseNode The parse node to use to read the discriminator value and create the object
- * @returns {UpdateProfileModel}
- */
-// @ts-ignore
-export function createUpdateProfileModelFromDiscriminatorValue(parseNode: ParseNode | undefined) : ((instance?: Parsable) => Record<string, (node: ParseNode) => void>) {
-    return deserializeIntoUpdateProfileModel;
-}
-/**
- * Creates a new instance of the appropriate class based on discriminator value
- * @param parseNode The parse node to use to read the discriminator value and create the object
  * @returns {UserPreferredCurrencyModel}
  */
 // @ts-ignore
@@ -40,18 +31,6 @@ export function createUserPreferredCurrencyModelFromDiscriminatorValue(parseNode
 export function deserializeIntoUpdatePreferredCurrencyModel(updatePreferredCurrencyModel: Partial<UpdatePreferredCurrencyModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
     return {
         "currency": n => { updatePreferredCurrencyModel.currency = n.getStringValue(); },
-    }
-}
-/**
- * The deserialization information for the current model
- * @param UpdateProfileModel The instance to deserialize into.
- * @returns {Record<string, (node: ParseNode) => void>}
- */
-// @ts-ignore
-export function deserializeIntoUpdateProfileModel(updateProfileModel: Partial<UpdateProfileModel> | undefined = {}) : Record<string, (node: ParseNode) => void> {
-    return {
-        "family_name": n => { updateProfileModel.familyName = n.getStringValue(); },
-        "given_name": n => { updateProfileModel.givenName = n.getStringValue(); },
     }
 }
 /**
@@ -80,19 +59,6 @@ export function serializeUpdatePreferredCurrencyModel(writer: SerializationWrite
 /**
  * Serializes information the current object
  * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param UpdateProfileModel The instance to serialize from.
- * @param writer Serialization writer to use to serialize this model
- */
-// @ts-ignore
-export function serializeUpdateProfileModel(writer: SerializationWriter, updateProfileModel: Partial<UpdateProfileModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!updateProfileModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("family_name", updateProfileModel.familyName);
-    writer.writeStringValue("given_name", updateProfileModel.givenName);
-    writer.writeAdditionalData(updateProfileModel.additionalData);
-}
-/**
- * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param UserPreferredCurrencyModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
@@ -107,16 +73,6 @@ export interface UpdatePreferredCurrencyModel extends AdditionalDataHolder, Pars
      * The currency property
      */
     currency?: string | null;
-}
-export interface UpdateProfileModel extends AdditionalDataHolder, Parsable {
-    /**
-     * The family_name property
-     */
-    familyName?: string | null;
-    /**
-     * The given_name property
-     */
-    givenName?: string | null;
 }
 export interface UserPreferredCurrencyModel extends AdditionalDataHolder, Parsable {
     /**

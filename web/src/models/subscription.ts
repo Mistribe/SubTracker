@@ -6,8 +6,12 @@ import {addMonths, addYears} from "date-fns";
 import {daysBetween, monthsBetween} from "@/utils/date.ts";
 import {type Amount, fromModel} from "@/models/amount.ts";
 import type {SubscriptionModel} from "@/api/models/subscription";
+import SubscriptionPrice from "@/models/subscriptionPrice.ts";
 
 export default class Subscription {
+    get price(): SubscriptionPrice {
+        return this._price;
+    }
     private readonly _id: string;
     private readonly _createdAt: Date;
     private readonly _updatedAt: Date;
@@ -26,6 +30,7 @@ export default class Subscription {
     private readonly _customPrice: Amount | undefined;
     private readonly _freeTrial: SubscriptionFreeTrial | undefined;
     private readonly _isActive: boolean;
+    private readonly _price: SubscriptionPrice
 
     constructor(
         id: string,
@@ -46,6 +51,7 @@ export default class Subscription {
         customPrice: Amount | undefined,
         freeTrial: SubscriptionFreeTrial | undefined,
         isActive: boolean,
+        price: SubscriptionPrice,
     ) {
         this._id = id;
         this._createdAt = createdAt;
@@ -65,6 +71,7 @@ export default class Subscription {
         this._customPrice = customPrice;
         this._freeTrial = freeTrial;
         this._isActive = isActive;
+        this._price = price;
     }
 
     get id(): string {
@@ -159,6 +166,10 @@ export default class Subscription {
             model.customPrice ? fromModel(model.customPrice) : undefined,
             model.freeTrial ? SubscriptionFreeTrial.fromModel(model.freeTrial) : undefined,
             model.isActive || false,
+            new SubscriptionPrice(
+                model.price?.monthly ? fromModel(model.price?.monthly) : undefined,
+                model.price?.yearly ? fromModel(model.price?.yearly) : undefined
+            )
         );
     }
 
