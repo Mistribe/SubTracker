@@ -29,6 +29,9 @@ jobs:
       - name: Install goose
         run: go install github.com/pressly/goose/v3/cmd/goose@latest
 
+      - name: Create goose schema
+        run: psql ${{ secrets.PROD_DSN }} -c "CREATE SCHEMA IF NOT EXISTS goose;"
+
       - name: Run goose up
         env:
           GOOSE_DRIVER: postgres
