@@ -110,11 +110,22 @@ func registerRoutes(e *gin.RouterGroup, routes []fx2.Endpoint) {
 	}
 }
 
+func getOriginsFromConfig(cfg cfg.Configuration) []string {
+	o := cfg.GetStringOrDefault("CORS_ALLOWED_ORIGINS", "")
+	origins := strings.Split(o, ",")
+	if len(origins) == 0 {
+		origins = []string{"http://localhost:5173"}
+	}
+	return origins
+}
+
 func newGinEngine(parameters EchoServerParams) *gin.Engine {
 	e := gin.Default()
 
+	origins := getOriginsFromConfig(parameters.Config)
+
 	e.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"}, // adjust as needed
+		AllowOrigins:     origins, // adjust as needed
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "User-Agent"},
 		ExposeHeaders:    []string{"Content-Length"},
