@@ -4,7 +4,7 @@ import {useLabelMutations} from "@/hooks/labels/useLabelMutations";
 import {useFamiliesMutations} from "@/hooks/families/useFamiliesMutations";
 import {PageHeader} from "@/components/ui/page-header";
 import {useAllLabelsQuery} from "@/hooks/labels/useAllLabelsQuery";
-import {useFamiliesQuery} from "@/hooks/families/useFamiliesQuery";
+import {useFamilyQuery} from "@/hooks/families/useFamilyQuery.ts";
 import {LabelItem} from "@/components/labels/LabelItem";
 import {EditableLabelItem} from "@/components/labels/EditableLabelItem";
 import {AddLabelDialog} from "@/components/labels/AddLabelDialog";
@@ -31,9 +31,9 @@ const LabelsPage = () => {
     const [editingName, setEditingName] = useState("");
     const [editingColor, setEditingColor] = useState("");
 
-    // Fetch all families
-    const {data: familiesResponse} = useFamiliesQuery();
-    const families = familiesResponse?.families || [];
+    // Fetch the single family and adapt to an array for UI components expecting arrays
+    const { data: familyData } = useFamilyQuery();
+    const families = familyData ? [familyData] : [];
 
     // Fetch all labels (system, personal, and family)
     const {

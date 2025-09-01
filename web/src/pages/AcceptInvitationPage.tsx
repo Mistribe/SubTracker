@@ -5,14 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useApiClient } from "@/hooks/use-api-client";
-import { useFamiliesQuery } from "@/hooks/families/useFamiliesQuery";
+import { useFamilyQuery } from "@/hooks/families/useFamilyQuery.ts";
 
 const AcceptInvitationPage = () => {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { apiClient } = useApiClient();
   const queryClient = useQueryClient();
-  const familiesQuery = useFamiliesQuery();
+  const familiesQuery = useFamilyQuery();
 
   const familyId = params.get("fid") || "";
   const memberId = params.get("mid") || "";
@@ -38,7 +38,7 @@ const AcceptInvitationPage = () => {
   const leaveMutation = useMutation({
     mutationFn: async () => {
       if (!apiClient) throw new Error("API client not initialized");
-      const currentFamily = familiesQuery.data?.families?.[0];
+      const currentFamily = familiesQuery.data;
       if (!currentFamily) throw new Error("No family to leave");
       const you = currentFamily.members.find(m => m.isYou);
       if (!you) throw new Error("Could not determine your member entry");
@@ -59,8 +59,8 @@ const AcceptInvitationPage = () => {
     },
   });
 
-  const hasFamily = (familiesQuery.data?.families?.length || 0) > 0;
-  const currentFamily = familiesQuery.data?.families?.[0];
+  const hasFamily = !!familiesQuery.data;
+  const currentFamily = familiesQuery.data || undefined;
   const isInTargetFamily = hasFamily && currentFamily?.id === familyId;
 
   return (

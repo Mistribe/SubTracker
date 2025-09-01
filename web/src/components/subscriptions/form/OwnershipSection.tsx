@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {useFormContext} from "react-hook-form";
 import {Label} from "@/components/ui/label";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
@@ -8,12 +9,24 @@ import Family from "@/models/family";
 import {Checkbox} from "@/components/ui/checkbox";
 
 interface OwnershipSectionProps {
-    families: Family[];
+    family?: Family;
 }
 
-export const OwnershipSection = ({families}: OwnershipSectionProps) => {
+export const OwnershipSection = ({ family }: OwnershipSectionProps) => {
     const form = useFormContext<FormValues>();
     const selectedOwnerType = form.watch("ownerType");
+
+    useEffect(() => {
+        if (selectedOwnerType === OwnerType.Family && family) {
+            const currentFamilyId = form.getValues("familyId");
+            if (!currentFamilyId) {
+                form.setValue("familyId", family.id);
+                form.setValue("serviceUsers", []);
+                form.setValue("payerType", "family");
+                form.setValue("payerId", family.id);
+            }
+        }
+    }, [selectedOwnerType, family, form]);
 
     return (
         <div className="space-y-6">
@@ -60,11 +73,13 @@ export const OwnershipSection = ({families}: OwnershipSectionProps) => {
                                 <SelectValue placeholder="Select a family"/>
                             </SelectTrigger>
                             <SelectContent>
-                                {families.map((family) => (
+                                {family ? (
                                     <SelectItem key={family.id} value={family.id}>
                                         {family.name}
                                     </SelectItem>
-                                ))}
+                                ) : (
+                                    <div className="p-2 text-sm text-muted-foreground">No family available</div>
+                                )}
                             </SelectContent>
                         </Select>
                         {form.formState.errors.familyId && (
@@ -77,7 +92,7 @@ export const OwnershipSection = ({families}: OwnershipSectionProps) => {
                             <div>
                                 <Label className="text-lg mb-2 block">Who is using this subscription?</Label>
                                 <div className="space-y-2 mt-2">
-                                    {families.find(f => f.id === form.watch("familyId"))?.members.map((member) => (
+                                    {family?.members.map((member) => (
                                         <div key={member.id} className="flex items-center space-x-2">
                                             <Checkbox 
                                                 id={`member-${member.id}`}
@@ -117,9 +132,9 @@ export const OwnershipSection = ({families}: OwnershipSectionProps) => {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value={`family:${form.watch("familyId")}`}>
-                                            Family: {families.find(f => f.id === form.watch("familyId"))?.name}
+                                            Family: {family?.name}
                                         </SelectItem>
-                                        {families.find(f => f.id === form.watch("familyId"))?.members.map((member) => (
+                                        {family?.members.map((member) => (
                                             <SelectItem key={member.id} value={`family_member:${member.id}`}>
                                                 {member.name} {member.isYou ? "(You)" : ""}
                                             </SelectItem>
