@@ -3,7 +3,7 @@ import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {useProvidersMutations} from "@/hooks/providers/useProvidersMutations";
-import {useFamiliesQuery} from "@/hooks/families/useFamiliesQuery";
+import {useFamilyQuery} from "@/hooks/families/useFamilyQuery.ts";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
@@ -44,8 +44,8 @@ interface AddProviderFormProps {
 export function AddProviderForm({isOpen, onClose, familyId}: AddProviderFormProps) {
     const [error, setError] = useState<string | null>(null);
     const {createProviderMutation} = useProvidersMutations();
-    const {data: familiesData} = useFamiliesQuery({limit: 100});
-    const families = familiesData?.families || [];
+    const {data: familyData} = useFamilyQuery();
+    const families = familyData ? [familyData] : [];
 
     const {
         register,

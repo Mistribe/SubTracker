@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {useProvidersMutations} from "@/hooks/providers/useProvidersMutations";
-import {useFamiliesQuery} from "@/hooks/families/useFamiliesQuery";
+import {useFamilyQuery} from "@/hooks/families/useFamilyQuery.ts";
 import {Button} from "@/components/ui/button";
 import {
     Dialog,
@@ -25,8 +25,8 @@ interface EditProviderFormProps {
 export function EditProviderForm({isOpen, onClose, provider}: EditProviderFormProps) {
     const [error, setError] = useState<string | null>(null);
     const {updateProviderMutation} = useProvidersMutations();
-    const {data: familiesData} = useFamiliesQuery({limit: 100});
-    const families = familiesData?.families || [];
+    const {data: familyData} = useFamilyQuery();
+    const families = familyData ? [familyData] : [];
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Handle provider form submission

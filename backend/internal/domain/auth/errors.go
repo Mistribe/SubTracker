@@ -1,11 +1,11 @@
 package auth
 
 import (
-	"errors"
+	ex "github.com/mistribe/subtracker/pkg/x/exception"
 )
 
 var (
-	ErrUnknownOwnerType = errors.New("unknown owner type")
-	ErrUnknownUser      = errors.New("unknown userProfile")
-	ErrUnauthorized     = errors.New("unauthorized")
+	ErrUnknownOwnerType = ex.NewInvalidValue("unknown owner type")
+	ErrUnknownUser      = ex.NewInvalidValue("unknown userProfile")
+	ErrUnauthorized     = ex.NewUnauthorized("unauthorized")
 )

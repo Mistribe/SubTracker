@@ -1,16 +1,15 @@
 package provider
 
 import (
-	"errors"
+	ex "github.com/mistribe/subtracker/pkg/x/exception"
 )
 
 var (
-	ErrProviderNotFound      = errors.New("provider not found")
-	ErrPlanNotFound          = errors.New("plan not found")
-	ErrProviderAlreadyExists = errors.New("provider already exists")
-	ErrProviderInvalid       = errors.New("provider is invalid")
-	ErrOnlyOwnerCanEdit      = errors.New("only the owner can edit the provider")
-	ErrPlanAlreadyExists     = errors.New("plan already exists")
-	ErrPriceAlreadyExists    = errors.New("price already exists")
-	ErrPriceNotFound         = errors.New("price not found")
+	ErrProviderNotFound      = ex.NewNotFound("provider not found")
+	ErrPlanNotFound          = ex.NewNotFound("plan not found")
+	ErrProviderAlreadyExists = ex.NewAlreadyExists("provider already exists")
+	ErrOnlyOwnerCanEdit      = ex.NewUnauthorized("only the owner can edit the provider")
+	ErrPlanAlreadyExists     = ex.NewAlreadyExists("plan already exists")
+	ErrPriceAlreadyExists    = ex.NewAlreadyExists("price already exists")
+	ErrPriceNotFound         = ex.NewNotFound("price not found")
 )
