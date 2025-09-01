@@ -3,19 +3,17 @@ import { FamilyHeader } from "@/components/families/FamilyHeader";
 import { FamilyMembersTable } from "@/components/families/FamilyMembersTable";
 import { EmptyFamiliesState } from "@/components/families/EmptyFamiliesState";
 import { FamiliesLoadingError } from "@/components/families/FamiliesLoadingError";
-import { useFamiliesQuery } from "@/hooks/families/useFamiliesQuery";
+import { useFamilyQuery } from "@/hooks/families/useFamilyQuery.ts";
 import { PageHeader } from "@/components/ui/page-header";
 
 const FamilyPage = () => {
   const {
-    data: queryResponse,
+    data: family,
     isLoading,
     error,
-  } = useFamiliesQuery();
+  } = useFamilyQuery();
 
-  const families = queryResponse?.families || [];
-  const hasFamily = families.length > 0;
-  const family = hasFamily ? families[0] : undefined;
+  const hasFamily = !!family;
 
   return (
     <div className="container mx-auto py-6">

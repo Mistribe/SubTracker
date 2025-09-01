@@ -17,7 +17,7 @@ import {
     type SubscriptionsFiltersValues
 } from "@/components/subscriptions/ui/SubscriptionsFilters";
 import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
-import {useFamiliesQuery} from "@/hooks/families/useFamiliesQuery";
+import {useFamilyQuery} from "@/hooks/families/useFamilyQuery.ts";
 
 const SubscriptionsPage = () => {
     const navigate = useNavigate();
@@ -35,36 +35,29 @@ const SubscriptionsPage = () => {
     const [users, setUsers] = useState<string[]>([]);
     const [withInactive, setWithInactive] = useState<boolean>(false);
 
-    // Families and family members for users multi-select
-    const { data: familiesData } = useFamiliesQuery({ limit: 100 });
+    // Family and family members for users multi-select (single family context)
+    const { data: familyData } = useFamilyQuery();
     const usersOptions = useMemo(() => {
-        const families = familiesData?.families ?? [];
-        const hasMultipleFamilies = families.length > 1;
+        const members = familyData?.members ?? [];
         const labelByName = new Map<string, string>();
-        for (const f of families) {
-            for (const m of f.members) {
-                if (!m.name) continue;
-                if (!labelByName.has(m.name)) {
-                    labelByName.set(m.name, hasMultipleFamilies ? `${m.name} - ${f.name}` : m.name);
-                }
+        for (const m of members) {
+            if (!m.name) continue;
+            if (!labelByName.has(m.name)) {
+                labelByName.set(m.name, m.name);
             }
         }
         return Array.from(labelByName.entries()).map(([value, label]) => ({ value, label }));
-    }, [familiesData]);
+    }, [familyData]);
 
 
     const userNameMap = useMemo(() => {
-        const families = familiesData?.families ?? [];
-        const hasMultipleFamilies = families.length > 1;
+        const members = familyData?.members ?? [];
         const map = new Map<string, string>();
-        for (const f of families) {
-            for (const m of f.members) {
-                const display = hasMultipleFamilies ? `${m.name} - ${f.name}` : m.name;
-                map.set(m.id, display);
-            }
+        for (const m of members) {
+            map.set(m.id, m.name);
         }
         return map;
-    }, [familiesData]);
+    }, [familyData]);
 
     const handleClearFilters = () => {
         setFromDate(undefined);
