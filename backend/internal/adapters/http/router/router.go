@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 	"sort"
@@ -112,7 +113,10 @@ func registerRoutes(e *gin.RouterGroup, routes []fx2.Endpoint) {
 
 func getOriginsFromConfig(cfg cfg.Configuration) []string {
 	o := cfg.GetStringOrDefault("CORS_ALLOWED_ORIGINS", "")
-	origins := strings.Split(o, ",")
+	var origins []string
+	if o != "" {
+		origins = strings.Split(o, ",")
+	}
 	if len(origins) == 0 {
 		origins = []string{"http://localhost:5173"}
 	}
@@ -160,7 +164,7 @@ func newHttpServer(
 	lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go func() {
-				if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 					// Middleware the error (e.g., log it)
 				}
 			}()

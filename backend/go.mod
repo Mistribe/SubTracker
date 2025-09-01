@@ -3,13 +3,11 @@ module github.com/mistribe/subtracker
 go 1.25
 
 require (
-	github.com/MicahParks/keyfunc/v3 v3.6.1
 	github.com/Oleexo/config-go v1.0.0
 	github.com/clerk/clerk-sdk-go/v2 v2.3.1
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-jet/jet/v2 v2.13.0
-	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/stretchr/testify v1.11.1
@@ -18,12 +16,10 @@ require (
 	github.com/swaggo/swag/v2 v2.0.0-rc4
 	go.uber.org/fx v1.24.0
 	golang.org/x/text v0.28.0
-	gopkg.in/validator.v2 v2.0.1
 )
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
-	github.com/MicahParks/jwkset v0.9.6 // indirect
 	github.com/bytedance/sonic v1.14.0 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
@@ -68,7 +64,6 @@ require (
 	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.35.0 // indirect
-	golang.org/x/time v0.12.0 // indirect
 	golang.org/x/tools v0.36.0 // indirect
 	google.golang.org/protobuf v1.36.8 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

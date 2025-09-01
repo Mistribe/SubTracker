@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/pkg/langext/result"
+	"github.com/mistribe/subtracker/pkg/x/exception"
 )
 
 type HandleResponseOptions[TValue any] struct {
@@ -41,12 +41,54 @@ func WithNoContent[TValue any]() HandleResponseOptionFunc[TValue] {
 	}
 }
 
-func FromError(c *gin.Context, err error) {
-	status := http.StatusInternalServerError
-	if errors.Is(err, auth.ErrUnauthorized) {
-		status = http.StatusUnauthorized
+func httpStatusFromException(code exception.Code) int {
+	switch code {
+	case exception.Unknown:
+		return http.StatusInternalServerError
+	case exception.NotFound:
+		return http.StatusNotFound
+	case exception.AlreadyExists:
+		return http.StatusConflict
+	case exception.InvalidValue:
+		return http.StatusBadRequest
+	case exception.InvalidOperation:
+		return http.StatusBadRequest
+	case exception.InvalidState:
+		return http.StatusBadRequest
+	case exception.NotImplemented:
+		return http.StatusNotImplemented
+	case exception.InternalError:
+		return http.StatusInternalServerError
+	case exception.Unauthorized:
+		return http.StatusForbidden
+	case exception.Unauthenticated:
+		return http.StatusUnauthorized
+	case exception.DeadlineExceeded:
+		return http.StatusGatewayTimeout
+	case exception.Conflict:
+		return http.StatusConflict
+	default:
+		return http.StatusInternalServerError
 	}
-	c.AbortWithStatusJSON(status, HttpErrorResponse{Message: err.Error()})
+}
+
+func errorResponseFromException(ex exception.Exception) (HttpErrorResponse, int) {
+	status := httpStatusFromException(ex.Code())
+
+	return HttpErrorResponse{
+		Message: ex.Error(),
+	}, status
+}
+
+func FromError(c *gin.Context, err error) {
+	var ex exception.Exception
+	if ok := errors.As(err, &ex); ok {
+		response, status := errorResponseFromException(ex)
+		c.AbortWithStatusJSON(status, response)
+		return
+	}
+
+	c.AbortWithStatusJSON(http.StatusInternalServerError, HttpErrorResponse{Message: err.Error()})
 }
 
 func FromResult[TValue any](
