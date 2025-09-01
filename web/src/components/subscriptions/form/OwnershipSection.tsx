@@ -9,7 +9,7 @@ import Family from "@/models/family";
 import {Checkbox} from "@/components/ui/checkbox";
 
 interface OwnershipSectionProps {
-    family?: Family;
+    family?: Family | null;
 }
 
 export const OwnershipSection = ({ family }: OwnershipSectionProps) => {

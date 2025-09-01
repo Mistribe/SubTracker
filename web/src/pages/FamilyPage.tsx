@@ -1,4 +1,3 @@
-import { CreateFamilyDialog } from "@/components/families/CreateFamilyDialog";
 import { FamilyHeader } from "@/components/families/FamilyHeader";
 import { FamilyMembersTable } from "@/components/families/FamilyMembersTable";
 import { EmptyFamiliesState } from "@/components/families/EmptyFamiliesState";
@@ -20,7 +19,6 @@ const FamilyPage = () => {
       <PageHeader
         title="Family"
         description="Manage your family"
-        actionButton={!isLoading && !error && !hasFamily ? <CreateFamilyDialog /> : undefined}
       />
 
       {isLoading || error ? (

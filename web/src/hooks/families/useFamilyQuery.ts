@@ -7,7 +7,7 @@ import type {FamilyModel} from "@/api/models/family";
 export const useFamilyQuery = () => {
     const {apiClient} = useApiClient();
 
-    return useQuery({
+    return useQuery<Family | null>({
         queryKey: ['families'],
         queryFn: async () => {
             if (!apiClient) {
@@ -21,7 +21,7 @@ export const useFamilyQuery = () => {
                 if (result) {
                    return Family.fromModel(result);
                 }
-                return undefined;
+                return null;
             } catch (error: unknown) {
                 let status: number | undefined;
                 if (typeof error === 'object' && error !== null) {
@@ -30,7 +30,7 @@ export const useFamilyQuery = () => {
                 }
                 if (status === 404) {
                     // No family registered for this user
-                    return undefined;
+                    return null;
                 }
                 throw error;
             }
