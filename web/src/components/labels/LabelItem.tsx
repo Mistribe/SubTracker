@@ -52,7 +52,7 @@ export const LabelItem = ({
 
   return (
     <div
-      className="flex flex-col p-2 border rounded-md hover:bg-muted/50"
+      className="flex flex-col p-2 border rounded-md hover:bg-muted/50 bg-card dark:bg-card"
     >
       <div className="flex items-center mb-1">
         <div
