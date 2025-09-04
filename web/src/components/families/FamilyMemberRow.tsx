@@ -1,25 +1,27 @@
-import { useState } from "react";
-import { TableCell, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { CheckIcon, Loader2, UserCheck, UserX, XIcon } from "lucide-react";
+import {useState} from "react";
+import {TableCell, TableRow} from "@/components/ui/table";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Checkbox} from "@/components/ui/checkbox";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
+import {CheckIcon, Loader2, UserCheck, UserX, XIcon} from "lucide-react";
 import FamilyMember from "@/models/familyMember.ts";
-import { useFamiliesMutations } from "@/hooks/families/useFamiliesMutations";
-import { FamilyMemberType } from "@/models/familyMemberType.ts";
-import { FamilyMemberActionsMenu } from "./FamilyMemberActionsMenu";
-import { FamilyMemberInviteDialog } from "./FamilyMemberInviteDialog";
-import { FamilyMemberUnlinkAlert } from "./FamilyMemberUnlinkAlert";
+import {useFamiliesMutations} from "@/hooks/families/useFamiliesMutations";
+import {FamilyMemberType} from "@/models/familyMemberType.ts";
+import {FamilyMemberActionsMenu} from "./FamilyMemberActionsMenu";
+import {FamilyMemberInviteDialog} from "./FamilyMemberInviteDialog";
+import {FamilyMemberUnlinkAlert} from "./FamilyMemberUnlinkAlert";
+import {twJoin} from "tailwind-merge";
 
 interface FamilyMemberRowProps {
-    member: FamilyMember;
-    familyId: string;
-    isOwner: boolean;
+    member: FamilyMember,
+    familyId: string,
+    isOwner: boolean,
+    className?: string
 }
 
-export const FamilyMemberRow = ({member, familyId, isOwner}: FamilyMemberRowProps) => {
-    const { updateFamilyMemberMutation, removeFamilyMemberMutation } = useFamiliesMutations();
+export const FamilyMemberRow = ({member, familyId, isOwner, className}: FamilyMemberRowProps) => {
+    const {updateFamilyMemberMutation, removeFamilyMemberMutation} = useFamiliesMutations();
 
     const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
     const [editedMemberName, setEditedMemberName] = useState<string>("");
@@ -85,7 +87,7 @@ export const FamilyMemberRow = ({member, familyId, isOwner}: FamilyMemberRowProp
         });
     };
 
-    
+
     const formatMemberType = (memberType: FamilyMemberType): string => {
         switch (memberType) {
             case FamilyMemberType.Adult:
@@ -98,7 +100,7 @@ export const FamilyMemberRow = ({member, familyId, isOwner}: FamilyMemberRowProp
     }
 
     return (
-        <TableRow key={member.id}>
+        <TableRow key={member.id} className={twJoin(className)}>
             <TableCell className="font-medium">
                 {editingMemberId === member.id ? (
                     <Input

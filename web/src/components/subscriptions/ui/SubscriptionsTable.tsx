@@ -65,7 +65,7 @@ export function SubscriptionsTable({
                 </TableHeader>
                 <TableBody>
                     {subscriptions.map((subscription) => (
-                        <TableRow key={subscription.id}>
+                        <TableRow key={subscription.id} className="bg-white dark:bg-black">
                             <TableCell>
                                 <div className="flex items-center">
                                     {providerMap.get(subscription.providerId)?.iconUrl ? (

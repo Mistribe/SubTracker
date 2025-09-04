@@ -26,12 +26,7 @@ export const PreferencesSection = ({
 }: PreferencesSectionProps) => {
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold">Preferences</h2>
-        <p className="text-muted-foreground">Manage your application preferences</p>
-      </div>
-
-      <div className="space-y-6 bg-muted/20 p-6 rounded-lg">
+      <div className="space-y-6">
         {/* Currency Preference */}
         <div className="flex justify-between items-center">
           <div>

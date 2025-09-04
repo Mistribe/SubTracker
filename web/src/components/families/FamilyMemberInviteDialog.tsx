@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import FamilyMember from "@/models/familyMember";
 import { useFamiliesMutations } from "@/hooks/families/useFamiliesMutations";
@@ -21,6 +22,8 @@ export function FamilyMemberInviteDialog({ open, onOpenChange, familyId, member 
   const { inviteFamilyMemberMutation } = useFamiliesMutations();
 
   const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [method, setMethod] = useState<"email" | "link">("email");
 
   const inviteLink = useMemo(() => {
     if (!inviteCode) return "";
@@ -76,12 +79,33 @@ export function FamilyMemberInviteDialog({ open, onOpenChange, familyId, member 
     );
   };
 
+  const handleCopy = async () => {
+    if (!inviteLink) return;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (e) {
+      // ignore clipboard errors silently
+    }
+  };
+
   const handleOpenChange = (o: boolean) => {
     onOpenChange(o);
     if (!o) {
       setInviteCode(null);
+      setCopied(false);
+      setMethod("email");
       form.reset();
     }
+  };
+
+  const handleMethodChange = (val: string) => {
+    if (val === method) return;
+    setMethod(val as "email" | "link");
+    setInviteCode(null);
+    setCopied(false);
+    form.reset();
   };
 
   return (
@@ -90,56 +114,67 @@ export function FamilyMemberInviteDialog({ open, onOpenChange, familyId, member 
         <DialogHeader>
           <DialogTitle>Invite {member.name}</DialogTitle>
           <DialogDescription>
-            Invite this member by email or generate an invitation code to share.
+            Choose how you want to invite this member.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSendEmailInvite)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="name@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <Tabs value={method} onValueChange={handleMethodChange}>
+            <TabsList className="grid grid-cols-2 w-full">
+              <TabsTrigger value="email">Email</TabsTrigger>
+              <TabsTrigger value="link">Link</TabsTrigger>
+            </TabsList>
+            <TabsContent value="email" className="mt-4">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSendEmailInvite)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="name@example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div>
+                    <Button type="submit" disabled={inviteFamilyMemberMutation.isPending}>
+                      {inviteFamilyMemberMutation.isPending && (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      )}
+                      Send email invite
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </TabsContent>
+            <TabsContent value="link" className="mt-4">
               <div className="flex gap-2">
-                <Button type="submit" disabled={inviteFamilyMemberMutation.isPending}>
+                <Button type="button" onClick={onGenerateLink} disabled={inviteFamilyMemberMutation.isPending}>
                   {inviteFamilyMemberMutation.isPending && (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   )}
-                  Send email invite
-                </Button>
-                <Button type="button" variant="outline" onClick={onGenerateLink} disabled={inviteFamilyMemberMutation.isPending}>
                   Generate link
                 </Button>
               </div>
-            </form>
-          </Form>
+            </TabsContent>
+          </Tabs>
 
-          {inviteCode && (
+          {inviteCode && method === "link" && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="text-sm text-muted-foreground">Invitation code</div>
-                <div className="flex gap-2">
-                  <Input readOnly value={inviteCode} />
-                  <Button type="button" variant="outline" onClick={() => navigator.clipboard.writeText(inviteCode!)}>
-                    Copy
-                  </Button>
-                </div>
-              </div>
               <div className="space-y-2">
                 <div className="text-sm text-muted-foreground">Invitation link</div>
                 <div className="flex gap-2">
                   <Input readOnly value={inviteLink} />
-                  <Button type="button" variant="outline" onClick={() => inviteLink && navigator.clipboard.writeText(inviteLink)}>
-                    Copy
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCopy}
+                    className={copied ? "animate-pulse" : undefined}
+                  >
+                    {copied ? "Copied" : "Copy"}
                   </Button>
                 </div>
               </div>

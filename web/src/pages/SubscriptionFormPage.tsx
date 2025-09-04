@@ -200,7 +200,7 @@ const SubscriptionFormPage = () => {
                 </div>
             )}
 
-            <div className="max-w-3xl mx-auto mt-8">
+            <div className="max-w-3xl mx-auto mt-8 bg-white dark:bg-black rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
                 {error && (
                     <Alert variant="destructive" className="mb-6">
                         <AlertCircle className="h-4 w-4"/>

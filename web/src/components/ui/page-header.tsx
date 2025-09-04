@@ -110,7 +110,7 @@ export const PageHeader = ({
                             placeholder={searchPlaceholder}
                             value={localValue}
                             onChange={(e) => setLocalValue(e.target.value)}
-                            className="w-120"
+                            className="w-120 bg-white dark:bg-black"
                         />
                         {onFilter && (
                             <Button size="icon" onClick={onFilter}>

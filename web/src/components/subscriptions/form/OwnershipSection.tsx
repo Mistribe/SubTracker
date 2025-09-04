@@ -7,6 +7,7 @@ import type {FormValues} from "./SubscriptionFormSchema";
 import {OwnerType} from "@/models/ownerType";
 import Family from "@/models/family";
 import {Checkbox} from "@/components/ui/checkbox";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface OwnershipSectionProps {
     family?: Family | null;
@@ -15,6 +16,7 @@ interface OwnershipSectionProps {
 export const OwnershipSection = ({ family }: OwnershipSectionProps) => {
     const form = useFormContext<FormValues>();
     const selectedOwnerType = form.watch("ownerType");
+    const hasFamily = Boolean(family);
 
     useEffect(() => {
         if (selectedOwnerType === OwnerType.Family && family) {
@@ -25,6 +27,13 @@ export const OwnershipSection = ({ family }: OwnershipSectionProps) => {
                 form.setValue("payerType", "family");
                 form.setValue("payerId", family.id);
             }
+        }
+    }, [selectedOwnerType, family, form]);
+
+    // Safety: if user selects Family but has no family, revert to Personal
+    useEffect(() => {
+        if (selectedOwnerType === OwnerType.Family && !family) {
+            form.setValue("ownerType", OwnerType.Personal);
         }
     }, [selectedOwnerType, family, form]);
 
@@ -48,9 +57,30 @@ export const OwnershipSection = ({ family }: OwnershipSectionProps) => {
                         <ToggleGroupItem value={OwnerType.Personal} className="flex-1 justify-center py-6">
                             Just for me
                         </ToggleGroupItem>
-                        <ToggleGroupItem value={OwnerType.Family} className="flex-1 justify-center py-6">
-                            Family
-                        </ToggleGroupItem>
+                        {hasFamily ? (
+                            <ToggleGroupItem value={OwnerType.Family} className="flex-1 justify-center py-6">
+                                Family
+                            </ToggleGroupItem>
+                        ) : (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="flex-1">
+                                            <ToggleGroupItem
+                                                value={OwnerType.Family}
+                                                className="flex-1 justify-center py-6 cursor-not-allowed opacity-60"
+                                                disabled
+                                            >
+                                                Family
+                                            </ToggleGroupItem>
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>You don’t have a family yet. Create a family to use this feature.</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )}
                     </ToggleGroup>
                 </div>
             </div>
