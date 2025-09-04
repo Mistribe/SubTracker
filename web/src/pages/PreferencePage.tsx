@@ -1,6 +1,7 @@
 import {PageHeader} from "@/components/ui/page-header";
 import {PreferencesSection} from "@/components/profile/PreferencesSection";
 import {useProfileManagement} from "@/hooks/profile/useProfileManagement";
+import { Card, CardContent } from "@/components/ui/card";
 
 /**
  * Preferences page
@@ -55,14 +56,18 @@ const PreferencePage = () => {
             )}
 
             <div className="max-w-3xl mx-auto">
-                <PreferencesSection
-                    preferredCurrency={selectedCurrency}
-                    isUpdating={isUpdating}
-                    onCurrencyChange={(value) => {
-                        updateCurrency(value);
-                    }}
-                    currencies={currencies}
-                />
+                <Card>
+                    <CardContent className="p-6">
+                        <PreferencesSection
+                            preferredCurrency={selectedCurrency}
+                            isUpdating={isUpdating}
+                            onCurrencyChange={(value) => {
+                                updateCurrency(value);
+                            }}
+                            currencies={currencies}
+                        />
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
