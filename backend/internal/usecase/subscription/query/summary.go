@@ -89,7 +89,7 @@ func (h SummaryQueryHandler) convertToCurrency(
 
 func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) result.Result[SummaryQueryResponse] {
 	userId := h.authService.MustGetUserId(ctx)
-	userProfile, err := h.userRepository.GetUserProfile(ctx, userId)
+	userProfile, err := h.userRepository.GetUser(ctx, userId)
 	if err != nil {
 		return result.Fail[SummaryQueryResponse](err)
 	}

@@ -10,4 +10,5 @@ package model
 type Users struct {
 	ID       string `sql:"primary_key"`
 	Currency string
+	Plan     *string
 }
