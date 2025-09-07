@@ -13,7 +13,7 @@ type service struct {
 }
 
 func (s service) GetPreferredCurrency(ctx context.Context, userId string) currency.Unit {
-	profile, err := s.userRepository.GetUserProfile(ctx, userId)
+	profile, err := s.userRepository.GetUser(ctx, userId)
 	if err != nil {
 		// todo better err
 		panic(err)

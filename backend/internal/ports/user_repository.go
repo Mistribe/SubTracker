@@ -10,6 +10,7 @@ import (
 
 type UserRepository interface {
 	GetUserFamilies(ctx context.Context, userId string) ([]uuid.UUID, error)
-	GetUserProfile(ctx context.Context, userId string) (user.Profile, error)
-	SaveProfile(ctx context.Context, profile user.Profile) error
+	GetUser(ctx context.Context, userId string) (user.User, error)
+	Save(ctx context.Context, profile user.User) error
+	CreateDefault(ctx context.Context, userId string) (user.User, error)
 }

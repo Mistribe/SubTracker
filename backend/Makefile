@@ -47,7 +47,7 @@ kinde:
     -o /local/internal/infrastructure/kinde/gen
 
 sql-jet:
-	@jet -dsn=postgresql://postgres:postgres@localhost:5432/app?sslmode=disable -schema=public -path=./internal/infrastructure/persistence/jet
+	@jet -dsn=postgresql://postgres:postgres@localhost:5432/app?sslmode=disable -schema=public -path=./internal/adapters/persistence/db/jet
 
 prepare: install-deps openapi clients
 

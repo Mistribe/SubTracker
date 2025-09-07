@@ -19,6 +19,7 @@ type usersTable struct {
 	// Columns
 	ID       postgres.ColumnString
 	Currency postgres.ColumnString
+	Plan     postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -62,8 +63,9 @@ func newUsersTableImpl(schemaName, tableName, alias string) usersTable {
 	var (
 		IDColumn       = postgres.StringColumn("id")
 		CurrencyColumn = postgres.StringColumn("currency")
-		allColumns     = postgres.ColumnList{IDColumn, CurrencyColumn}
-		mutableColumns = postgres.ColumnList{CurrencyColumn}
+		PlanColumn     = postgres.StringColumn("plan")
+		allColumns     = postgres.ColumnList{IDColumn, CurrencyColumn, PlanColumn}
+		mutableColumns = postgres.ColumnList{CurrencyColumn, PlanColumn}
 		defaultColumns = postgres.ColumnList{}
 	)
 
@@ -73,6 +75,7 @@ func newUsersTableImpl(schemaName, tableName, alias string) usersTable {
 		//Columns
 		ID:       IDColumn,
 		Currency: CurrencyColumn,
+		Plan:     PlanColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

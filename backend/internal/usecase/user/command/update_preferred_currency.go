@@ -10,6 +10,7 @@ import (
 	"github.com/mistribe/subtracker/internal/ports"
 	auth2 "github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/pkg/langext/result"
+	"github.com/mistribe/subtracker/pkg/x"
 )
 
 type UpdatePreferredCurrencyCommand struct {
@@ -39,7 +40,7 @@ func (h UpdatePreferredCurrencyCommandHandler) Handle(
 	if !ok {
 		return result.Fail[bool](auth.ErrUnauthorized)
 	}
-	profile, err := h.userRepository.GetUserProfile(ctx, userId)
+	profile, err := h.userRepository.GetUser(ctx, userId)
 	if err != nil {
 		return result.Fail[bool](err)
 	}
@@ -56,9 +57,9 @@ func (h UpdatePreferredCurrencyCommandHandler) createProfile(
 	userId string,
 	cmd UpdatePreferredCurrencyCommand) result.Result[bool] {
 
-	profile := user.NewProfile(userId, cmd.Currency)
+	profile := user.New(userId, cmd.Currency, x.P(user.PlanFree))
 
-	if err := h.userRepository.SaveProfile(ctx, profile); err != nil {
+	if err := h.userRepository.Save(ctx, profile); err != nil {
 		return result.Fail[bool](err)
 	}
 
@@ -68,10 +69,10 @@ func (h UpdatePreferredCurrencyCommandHandler) createProfile(
 func (h UpdatePreferredCurrencyCommandHandler) updateProfile(
 	ctx context.Context,
 	cmd UpdatePreferredCurrencyCommand,
-	profile user.Profile) result.Result[bool] {
+	profile user.User) result.Result[bool] {
 	profile.SetCurrency(cmd.Currency)
 
-	if err := h.userRepository.SaveProfile(ctx, profile); err != nil {
+	if err := h.userRepository.Save(ctx, profile); err != nil {
 		return result.Fail[bool](err)
 	}
 
