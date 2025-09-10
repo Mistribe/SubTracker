@@ -6,6 +6,7 @@ import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
 import { SettingsProvider, useSettings } from "@/lib/SettingsContext";
 import { getClerkPublishableKey, tokenCache } from "@/lib/auth/clerk";
 import { useEffect } from "react";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 function InnerLayout() {
   const { setAccountConnected } = useSettings();
@@ -33,8 +34,12 @@ export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
       <SettingsProvider>
-        <InnerLayout />
-        <StatusBarController />
+        <SafeAreaProvider>
+          <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+            <InnerLayout />
+            <StatusBarController />
+          </SafeAreaView>
+        </SafeAreaProvider>
       </SettingsProvider>
     </ClerkProvider>
   );
