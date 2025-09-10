@@ -35,6 +35,7 @@ type EchoServerParams struct {
 	RouteGroups        []fx2.EndpointGroup `group:"route_groups"`
 	Config             cfg.Configuration
 	LanguageMiddleware *middlewares.LanguageMiddleware
+	CacheMiddleware    *middlewares.CacheMiddleware
 }
 
 func registerRouteGroups(e *gin.Engine, routeGroups []fx2.EndpointGroup) {
@@ -139,6 +140,8 @@ func newGinEngine(parameters EchoServerParams) *gin.Engine {
 
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	// Add cache middleware
+	e.Use(parameters.CacheMiddleware.Middleware())
 	// Add language middleware
 	e.Use(parameters.LanguageMiddleware.Middleware())
 

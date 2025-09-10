@@ -24,7 +24,7 @@ type externalSourceModel struct {
 	To   map[string]float64 `json:"to"`
 }
 type exchange struct {
-	cache      ports.LocalCache
+	cache      ports.Cache
 	repository ports.CurrencyRepository
 	logger     *slog.Logger
 }
@@ -33,8 +33,8 @@ func getCacheKey(from, to currency.Unit, at time.Time) string {
 	return fmt.Sprintf("%s-%s-%s", from, to, at.Format("2006-01-02"))
 }
 
-func (e exchange) getRateFromCache(key string) float64 {
-	rate, ok := e.cache.Get(key).(float64)
+func (e exchange) getRateFromCache(ctx context.Context, key string) float64 {
+	rate, ok := e.cache.From(ctx, ports.CacheLevelServer).Get(key).(float64)
 	if rate == 0 || !ok {
 		return 0
 	}
@@ -125,7 +125,7 @@ func (e exchange) getRateFromExternalSource(from, to currency.Unit, at time.Time
 
 func (e exchange) getRateAt(ctx context.Context, from, to currency.Unit, at time.Time) (float64, error) {
 	key := getCacheKey(from, to, at)
-	rate := e.getRateFromCache(key)
+	rate := e.getRateFromCache(ctx, key)
 	if rate == 0 {
 		var err error
 		rate, err = e.getRateFromDatabase(ctx, from, to, at)
@@ -156,7 +156,7 @@ func (e exchange) getRateAt(ctx context.Context, from, to currency.Unit, at time
 	}
 
 	if rate > 0 {
-		e.cache.Set(key, rate, ports.WithDuration(time.Hour*24))
+		e.cache.From(ctx, ports.CacheLevelServer).Set(key, rate, ports.WithDuration(time.Hour*24))
 		return rate, nil
 	}
 
@@ -216,7 +216,7 @@ func (e exchange) saveRateToDatabase(
 }
 
 func New(
-	cache ports.LocalCache,
+	cache ports.Cache,
 	repository ports.CurrencyRepository,
 	logger *slog.Logger) ports.Exchange {
 	return exchange{

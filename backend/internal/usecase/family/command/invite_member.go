@@ -27,12 +27,12 @@ type InviteMemberResponse struct {
 
 type InviteMemberCommandHandler struct {
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authService      ports.AuthenticationService
 }
 
 func NewInviteMemberCommandHandler(
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *InviteMemberCommandHandler {
+	authService ports.AuthenticationService) *InviteMemberCommandHandler {
 	return &InviteMemberCommandHandler{
 		familyRepository: familyRepository,
 		authService:      authService,

@@ -51,14 +51,14 @@ type FindAllQueryHandler struct {
 	subscriptionRepository ports.SubscriptionRepository
 	userService            ports.UserService
 	exchange               ports.Exchange
-	authService            ports.AuthService
+	authService            ports.AuthenticationService
 }
 
 func NewFindAllQueryHandler(
 	subscriptionRepository ports.SubscriptionRepository,
 	userService ports.UserService,
 	exchange ports.Exchange,
-	authService ports.AuthService) *FindAllQueryHandler {
+	authService ports.AuthenticationService) *FindAllQueryHandler {
 	return &FindAllQueryHandler{
 		subscriptionRepository: subscriptionRepository,
 		authService:            authService,

@@ -57,7 +57,7 @@ func (h UpdatePreferredCurrencyCommandHandler) createProfile(
 	userId string,
 	cmd UpdatePreferredCurrencyCommand) result.Result[bool] {
 
-	profile := user.New(userId, cmd.Currency, x.P(user.PlanFree))
+	profile := user.New(userId, cmd.Currency, x.P(user.PlanFree), nil, user.NewEmptyStats())
 
 	if err := h.userRepository.Save(ctx, profile); err != nil {
 		return result.Fail[bool](err)

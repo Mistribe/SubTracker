@@ -44,5 +44,6 @@ func CreateUserFromJetRow(rows []UserRow) (user.User, error) {
 	return user.New(id,
 		userCurrency,
 		plan,
-		familyIds), nil
+		familyIds,
+		user.NewStats(rows[0].CustomProviderCount, rows[0].CustomLabelCount, rows[0].ActiveSubscriptionCount)), nil
 }

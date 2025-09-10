@@ -16,12 +16,12 @@ type PatchFamilyCommand struct {
 
 type PatchFamilyCommandHandler struct {
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authService      ports.AuthenticationService
 }
 
 func NewPatchFamilyCommandHandler(
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *PatchFamilyCommandHandler {
+	authService ports.AuthenticationService) *PatchFamilyCommandHandler {
 	return &PatchFamilyCommandHandler{
 		familyRepository: familyRepository,
 		authService:      authService,

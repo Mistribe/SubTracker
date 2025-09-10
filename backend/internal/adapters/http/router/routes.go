@@ -19,6 +19,7 @@ func BuildRoutesModule() fx.Option {
 		fx.Provide(
 			middlewares.NewAuthenticationMiddleware,
 			middlewares.NewLanguageMiddleware,
+			middlewares.NewCacheMiddleware,
 
 			subscription.NewSubscriptionGetEndpoint,
 			subscription.NewSubscriptionGetAllEndpoint,

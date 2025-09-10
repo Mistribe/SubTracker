@@ -17,13 +17,13 @@ func NewDeleteUserCommand() DeleteUserCommand {
 type DeleteUserCommandHandler struct {
 	identityProvider ports.IdentityProvider
 	userRepository   ports.UserRepository
-	authService      ports.AuthService
+	authService      ports.AuthenticationService
 }
 
 func NewDeleteUserCommandHandler(
 	identityProvider ports.IdentityProvider,
 	userRepository ports.UserRepository,
-	authService ports.AuthService) *DeleteUserCommandHandler {
+	authService ports.AuthenticationService) *DeleteUserCommandHandler {
 	return &DeleteUserCommandHandler{
 		identityProvider: identityProvider,
 		userRepository:   userRepository,

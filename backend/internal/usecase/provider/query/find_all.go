@@ -25,12 +25,12 @@ func NewFindAllQuery(searchText string, limit, offset int64) FindAllQuery {
 
 type FindAllQueryHandler struct {
 	providerRepository ports.ProviderRepository
-	authService        ports.AuthService
+	authService        ports.AuthenticationService
 }
 
 func NewFindAllQueryHandler(
 	providerRepository ports.ProviderRepository,
-	authService ports.AuthService) *FindAllQueryHandler {
+	authService ports.AuthenticationService) *FindAllQueryHandler {
 	return &FindAllQueryHandler{
 		providerRepository: providerRepository,
 		authService:        authService,

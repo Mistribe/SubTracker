@@ -17,12 +17,12 @@ type RevokeMemberCommand struct {
 
 type RevokeMemberCommandHandler struct {
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authService      ports.AuthenticationService
 }
 
 func NewRevokeMemberCommandHandler(
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *RevokeMemberCommandHandler {
+	authService ports.AuthenticationService) *RevokeMemberCommandHandler {
 	return &RevokeMemberCommandHandler{familyRepository: familyRepository, authService: authService}
 }
 

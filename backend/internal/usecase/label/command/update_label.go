@@ -24,12 +24,12 @@ type UpdateLabelCommand struct {
 type UpdateLabelCommandHandler struct {
 	labelRepository  ports.LabelRepository
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authService      ports.AuthenticationService
 }
 
 func NewUpdateLabelCommandHandler(labelRepository ports.LabelRepository,
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *UpdateLabelCommandHandler {
+	authService ports.AuthenticationService) *UpdateLabelCommandHandler {
 	return &UpdateLabelCommandHandler{
 		labelRepository:  labelRepository,
 		familyRepository: familyRepository,

@@ -8,7 +8,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/auth"
 )
 
-type AuthService interface {
+type AuthenticationService interface {
 	MustGetUserId(ctx context.Context) string
 	MustGetFamilies(ctx context.Context) []uuid.UUID
 	IsInFamily(ctx context.Context, familyId uuid.UUID) bool

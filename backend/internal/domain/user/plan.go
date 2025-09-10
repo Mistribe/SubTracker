@@ -7,52 +7,36 @@ const (
 	PlanPremium Plan = "PREMIUM"
 )
 
-type PlanLimits interface {
-	MaxActiveSubscriptions() *int
-	MaxCustomLabels() *int
-	MaxCustomProviders() *int
-}
-
-type planLimits struct {
-	maxActiveSubscriptions *int
-	maxCustomLabels        *int
-	maxCustomProviders     *int
-}
-
-func (p planLimits) MaxActiveSubscriptions() *int {
-	return p.maxActiveSubscriptions
-}
-
-func (p planLimits) MaxCustomLabels() *int {
-	return p.maxCustomLabels
-}
-
-func (p planLimits) MaxCustomProviders() *int {
-	return p.maxCustomProviders
-}
-
 func (p Plan) String() string {
 	return string(p)
 }
 
-func (p Plan) Limits() PlanLimits {
-	switch p {
-	case PlanPremium:
-		return planLimits{
-			maxActiveSubscriptions: nil,
-			maxCustomLabels:        nil,
-			maxCustomProviders:     nil,
-		}
+func (p Plan) HasFeature(feature Feature) bool {
+	switch feature {
+	case FeatureCustomLabels:
+		return p == PlanPremium
+	case FeatureCustomProviders:
+		return p == PlanPremium
+	case FeatureActiveSubscriptions:
+		return true
 	default:
-		sub := 10
-		lbl := 5
-		prov := 5
-		return planLimits{
-			maxActiveSubscriptions: &sub,
-			maxCustomLabels:        &lbl,
-			maxCustomProviders:     &prov,
-		}
+		return false
 	}
+}
+
+func (p Plan) GetFeatureDetail(feature Feature) FeatureDetail {
+	var list map[Plan]FeatureDetail
+	var exists bool
+	var detail FeatureDetail
+
+	if list, exists = Features[feature]; !exists {
+		return nil
+	}
+	if detail, exists = list[p]; !exists {
+		return nil
+	}
+
+	return detail
 }
 
 func ParsePlan(in string) (Plan, error) {

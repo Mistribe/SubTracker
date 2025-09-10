@@ -16,12 +16,12 @@ type CreateLabelCommand struct {
 type CreateLabelCommandHandler struct {
 	labelRepository  ports.LabelRepository
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authService      ports.AuthenticationService
 }
 
 func NewCreateLabelCommandHandler(labelRepository ports.LabelRepository,
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *CreateLabelCommandHandler {
+	authService ports.AuthenticationService) *CreateLabelCommandHandler {
 	return &CreateLabelCommandHandler{
 		labelRepository:  labelRepository,
 		familyRepository: familyRepository,
