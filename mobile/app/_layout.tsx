@@ -2,25 +2,40 @@ import "../global.css";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "react-native";
+import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
 import { SettingsProvider, useSettings } from "@/lib/SettingsContext";
+import { getClerkPublishableKey, tokenCache } from "@/lib/auth/clerk";
+import { useEffect } from "react";
 
 function InnerLayout() {
+  const { setAccountConnected } = useSettings();
+  const { isSignedIn } = useAuth();
+
+  useEffect(() => {
+    setAccountConnected(Boolean(isSignedIn));
+  }, [isSignedIn, setAccountConnected]);
+
+  return <Stack screenOptions={{ headerShown: false }} />;
+}
+
+function StatusBarController() {
   const { resolvedScheme } = useSettings();
-  // StatusBar: use light content on dark scheme backgrounds
-  return (
-    <>
-      <Stack screenOptions={{ headerShown: false }} />
-      <StatusBar style={resolvedScheme === "dark" ? "light" : "dark"} />
-    </>
-  );
+  return <StatusBar style={resolvedScheme === "dark" ? "light" : "dark"} />;
 }
 
 export default function RootLayout() {
   // keep useColorScheme import to avoid tree-shaking removing RN Appearance integration in some bundlers
   void useColorScheme();
+  const publishableKey = getClerkPublishableKey();
+  if (!publishableKey && __DEV__) {
+    console.warn("EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY is not set. Clerk features will be disabled until configured.");
+  }
   return (
-    <SettingsProvider>
-      <InnerLayout />
-    </SettingsProvider>
+    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+      <SettingsProvider>
+        <InnerLayout />
+        <StatusBarController />
+      </SettingsProvider>
+    </ClerkProvider>
   );
 }

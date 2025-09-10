@@ -1,10 +1,12 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "react-native";
+import { useSettings } from "@/lib/SettingsContext";
 
 export default function TabsLayout() {
   const scheme = useColorScheme();
   const isDark = scheme === "dark";
+  const { accountConnected } = useSettings();
 
   return (
     <Tabs
@@ -63,6 +65,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="family"
         options={{
+          // Hide the tab when not connected
+          href: accountConnected ? undefined : null,
           title: "Family",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people-outline" color={color} size={size} />
