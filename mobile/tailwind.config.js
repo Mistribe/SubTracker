@@ -8,6 +8,8 @@ module.exports = {
         "./lib/**/*.{js,jsx,ts,tsx}",
     ],
     presets: [require("nativewind/preset")],
+    // Use class strategy so NativeWindStyleSheet.setColorScheme('dark'|'light') works
+    darkMode: "class",
     theme: {
         extend: {},
     },

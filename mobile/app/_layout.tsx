@@ -35,7 +35,7 @@ export default function RootLayout() {
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
       <SettingsProvider>
         <SafeAreaProvider>
-          <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+          <SafeAreaView className="flex-1 bg-white dark:bg-[#0b1220]" edges={["top"]}>
             <InnerLayout />
             <StatusBarController />
           </SafeAreaView>
