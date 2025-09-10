@@ -6,7 +6,8 @@ import (
 	configfx "github.com/Oleexo/config-go/fx"
 	"go.uber.org/fx"
 
-	"github.com/mistribe/subtracker/internal/adapters/auth"
+	"github.com/mistribe/subtracker/internal/adapters/authentication"
+	"github.com/mistribe/subtracker/internal/adapters/authorization"
 	"github.com/mistribe/subtracker/internal/adapters/cache"
 	"github.com/mistribe/subtracker/internal/adapters/exchange"
 	"github.com/mistribe/subtracker/internal/adapters/http/router"
@@ -44,7 +45,8 @@ func main() {
 		startup.BuildStartupModule(),
 		updater.NewUpdaterModule(),
 		cache.FxModule(),
-		auth.Module(),
+		authentication.Module(),
+		authorization.Module(),
 		fx.Provide(
 
 			exchange.New,

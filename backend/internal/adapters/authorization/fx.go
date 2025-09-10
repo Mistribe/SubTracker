@@ -1,13 +1,13 @@
-package auth
+package authorization
 
 import (
 	"go.uber.org/fx"
 )
 
 func Module() fx.Option {
-	return fx.Module("auth_idp",
+	return fx.Module("authorization",
 		fx.Provide(
-			NewClerkIdentityProvider,
+			New,
 		),
 	)
 }

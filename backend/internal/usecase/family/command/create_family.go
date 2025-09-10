@@ -21,12 +21,12 @@ type CreateFamilyCommand struct {
 
 type CreateFamilyCommandHandler struct {
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authService      ports.AuthenticationService
 }
 
 func NewCreateFamilyCommandHandler(
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *CreateFamilyCommandHandler {
+	authService ports.AuthenticationService) *CreateFamilyCommandHandler {
 	return &CreateFamilyCommandHandler{
 		familyRepository: familyRepository,
 		authService:      authService,

@@ -18,12 +18,12 @@ type AcceptInvitationCommand struct {
 
 type AcceptInvitationCommandHandler struct {
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authService      ports.AuthenticationService
 }
 
 func NewAcceptInvitationCommandHandler(
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *AcceptInvitationCommandHandler {
+	authService ports.AuthenticationService) *AcceptInvitationCommandHandler {
 	return &AcceptInvitationCommandHandler{familyRepository: familyRepository, authService: authService}
 }
 

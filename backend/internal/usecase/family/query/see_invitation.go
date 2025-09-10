@@ -24,11 +24,11 @@ type SeeInvitationQueryResponse struct {
 
 type SeeInvitationQueryHandler struct {
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authService      ports.AuthenticationService
 }
 
 func NewSeeInvitationQueryHandler(familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *SeeInvitationQueryHandler {
+	authService ports.AuthenticationService) *SeeInvitationQueryHandler {
 	return &SeeInvitationQueryHandler{
 		familyRepository: familyRepository,
 		authService:      authService,

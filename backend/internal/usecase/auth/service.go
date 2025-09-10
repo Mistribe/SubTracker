@@ -15,7 +15,7 @@ type AuthenticationService struct {
 }
 
 func NewAuthenticationService(userRepository ports.UserRepository,
-	familyRepository ports.FamilyRepository) ports.AuthService {
+	familyRepository ports.FamilyRepository) ports.AuthenticationService {
 	return &AuthenticationService{
 		userRepository:   userRepository,
 		familyRepository: familyRepository,

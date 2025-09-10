@@ -14,6 +14,11 @@ type item struct {
 	expiresAt time.Time // zero time means no expiration
 }
 
+type LocalCache interface {
+	ports.CacheLeveled
+	PurgeExpired()
+}
+
 type local struct {
 	mu         sync.RWMutex
 	items      map[string]item
@@ -25,7 +30,7 @@ type local struct {
 // and a cleanup interval for purging expired items.
 // If defaultTTL <= 0, items never expire.
 // If cleanupInterval > 0, a background janitor will periodically purge expired items.
-func NewLocal(cfg config.Configuration) ports.LocalCache {
+func NewLocal(cfg config.Configuration) LocalCache {
 	defaultTTL := time.Duration(cfg.GetIntOrDefault("CACHE_DEFAULT_TTL", 0))
 	cleanupInterval := time.Duration(cfg.GetIntOrDefault("CACHE_CLEANUP_INTERVAL", int64(1*time.Hour)))
 	l := &local{
@@ -68,16 +73,11 @@ func (l *local) purgeExpired() {
 }
 
 func (l *local) Set(key string, value interface{}, optionsFunc ...func(*ports.CacheOptions)) {
-	var exp time.Time
 	var options ports.CacheOptions
 	for _, opt := range optionsFunc {
 		opt(&options)
 	}
-	if options.Duration > 0 {
-		exp = time.Now().Add(options.Duration)
-	} else if l.defaultTTL > 0 {
-		exp = time.Now().Add(l.defaultTTL)
-	}
+	exp := options.ExpiresAt(l.defaultTTL)
 
 	l.mu.Lock()
 	l.items[key] = item{value: value, expiresAt: exp}

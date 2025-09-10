@@ -27,12 +27,12 @@ func NewFindAllQuery(
 
 type FindAllQueryHandler struct {
 	labelRepository ports.LabelRepository
-	authService     ports.AuthService
+	authService     ports.AuthenticationService
 }
 
 func NewFindAllQueryHandler(
 	labelRepository ports.LabelRepository,
-	authService ports.AuthService) *FindAllQueryHandler {
+	authService ports.AuthenticationService) *FindAllQueryHandler {
 	return &FindAllQueryHandler{
 		labelRepository: labelRepository,
 		authService:     authService,

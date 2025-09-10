@@ -19,12 +19,12 @@ type DeleteLabelCommand struct {
 type DeleteLabelCommandHandler struct {
 	labelRepository  ports.LabelRepository
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authService      ports.AuthenticationService
 }
 
 func NewDeleteLabelCommandHandler(labelRepository ports.LabelRepository,
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *DeleteLabelCommandHandler {
+	authService ports.AuthenticationService) *DeleteLabelCommandHandler {
 	return &DeleteLabelCommandHandler{
 		labelRepository:  labelRepository,
 		familyRepository: familyRepository,

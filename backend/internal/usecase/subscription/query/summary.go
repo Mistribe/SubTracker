@@ -56,7 +56,7 @@ type SummaryQueryHandler struct {
 	subscriptionRepository ports.SubscriptionRepository
 	currencyRepository     ports.CurrencyRepository
 	userRepository         ports.UserRepository
-	authService            ports.AuthService
+	authService            ports.AuthenticationService
 	exchange               ports.Exchange
 }
 
@@ -64,7 +64,7 @@ func NewSummaryQueryHandler(
 	subscriptionRepository ports.SubscriptionRepository,
 	currencyRepository ports.CurrencyRepository,
 	userRepository ports.UserRepository,
-	authService ports.AuthService,
+	authService ports.AuthenticationService,
 	exchange ports.Exchange) *SummaryQueryHandler {
 	return &SummaryQueryHandler{
 		subscriptionRepository: subscriptionRepository,

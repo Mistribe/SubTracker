@@ -12,6 +12,7 @@ type User interface {
 	Currency() currency.Unit
 	SetCurrency(newCurrency currency.Unit)
 	Plan() Plan
+	Stats() Stats
 }
 
 type profile struct {
@@ -19,22 +20,29 @@ type profile struct {
 	currency  currency.Unit
 	plan      *Plan
 	familyIds []uuid.UUID
+	stats     Stats
 }
 
 func New(id string,
 	currency currency.Unit,
 	plan *Plan,
-	familyIds []uuid.UUID) User {
+	familyIds []uuid.UUID,
+	stats Stats) User {
 	return &profile{
 		id:        id,
 		currency:  currency,
 		plan:      plan,
 		familyIds: familyIds,
+		stats:     stats,
 	}
 }
 
 func NewDefault(id string) User {
-	return New(id, currency.USD, x.P(PlanFree), nil)
+	return New(id, currency.USD, x.P(PlanFree), nil, NewEmptyStats())
+}
+
+func (u *profile) Stats() Stats {
+	return u.stats
 }
 
 func (u *profile) Id() string {
