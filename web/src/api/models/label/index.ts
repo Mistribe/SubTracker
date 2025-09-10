@@ -17,6 +17,10 @@ export function createCreateLabelModelFromDiscriminatorValue(parseNode: ParseNod
 }
 export interface CreateLabelModel extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * The color property
      */
     color?: string | null;
@@ -57,7 +61,6 @@ export function createUpdateLabelModelFromDiscriminatorValue(parseNode: ParseNod
 }
 /**
  * The deserialization information for the current model
- * @param CreateLabelModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -72,7 +75,6 @@ export function deserializeIntoCreateLabelModel(createLabelModel: Partial<Create
 }
 /**
  * The deserialization information for the current model
- * @param LabelModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -90,7 +92,6 @@ export function deserializeIntoLabelModel(labelModel: Partial<LabelModel> | unde
 }
 /**
  * The deserialization information for the current model
- * @param UpdateLabelModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -105,6 +106,10 @@ export function deserializeIntoUpdateLabelModel(updateLabelModel: Partial<Update
  * Label object used for categorizing and organizing subscriptions with customizable colors
  */
 export interface LabelModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * @Description Hexadecimal color code for visual representation of the label
      */
@@ -140,54 +145,55 @@ export interface LabelModel extends AdditionalDataHolder, Parsable {
 }
 /**
  * Serializes information the current object
- * @param CreateLabelModel The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeCreateLabelModel(writer: SerializationWriter, createLabelModel: Partial<CreateLabelModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!createLabelModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("color", createLabelModel.color);
-    writer.writeDateValue("created_at", createLabelModel.createdAt);
-    writer.writeStringValue("id", createLabelModel.id);
-    writer.writeStringValue("name", createLabelModel.name);
-    writer.writeObjectValue<EditableOwnerModel>("owner", createLabelModel.owner, serializeEditableOwnerModel);
-    writer.writeAdditionalData(createLabelModel.additionalData);
+export function serializeCreateLabelModel(writer: SerializationWriter, createLabelModel: Partial<CreateLabelModel> | undefined | null = {}) : void {
+    if (createLabelModel) {
+        writer.writeStringValue("color", createLabelModel.color);
+        writer.writeDateValue("created_at", createLabelModel.createdAt);
+        writer.writeStringValue("id", createLabelModel.id);
+        writer.writeStringValue("name", createLabelModel.name);
+        writer.writeObjectValue<EditableOwnerModel>("owner", createLabelModel.owner, serializeEditableOwnerModel);
+        writer.writeAdditionalData(createLabelModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param LabelModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeLabelModel(writer: SerializationWriter, labelModel: Partial<LabelModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!labelModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("color", labelModel.color);
-    writer.writeDateValue("created_at", labelModel.createdAt);
-    writer.writeStringValue("etag", labelModel.etag);
-    writer.writeStringValue("id", labelModel.id);
-    writer.writeStringValue("key", labelModel.key);
-    writer.writeStringValue("name", labelModel.name);
-    writer.writeObjectValue<OwnerModel>("owner", labelModel.owner, serializeOwnerModel);
-    writer.writeDateValue("updated_at", labelModel.updatedAt);
-    writer.writeAdditionalData(labelModel.additionalData);
+export function serializeLabelModel(writer: SerializationWriter, labelModel: Partial<LabelModel> | undefined | null = {}) : void {
+    if (labelModel) {
+        writer.writeStringValue("color", labelModel.color);
+        writer.writeDateValue("created_at", labelModel.createdAt);
+        writer.writeStringValue("etag", labelModel.etag);
+        writer.writeStringValue("id", labelModel.id);
+        writer.writeStringValue("key", labelModel.key);
+        writer.writeStringValue("name", labelModel.name);
+        writer.writeObjectValue<OwnerModel>("owner", labelModel.owner, serializeOwnerModel);
+        writer.writeDateValue("updated_at", labelModel.updatedAt);
+        writer.writeAdditionalData(labelModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param UpdateLabelModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeUpdateLabelModel(writer: SerializationWriter, updateLabelModel: Partial<UpdateLabelModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!updateLabelModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("color", updateLabelModel.color);
-    writer.writeStringValue("name", updateLabelModel.name);
-    writer.writeDateValue("updated_at", updateLabelModel.updatedAt);
-    writer.writeAdditionalData(updateLabelModel.additionalData);
+export function serializeUpdateLabelModel(writer: SerializationWriter, updateLabelModel: Partial<UpdateLabelModel> | undefined | null = {}) : void {
+    if (updateLabelModel) {
+        writer.writeStringValue("color", updateLabelModel.color);
+        writer.writeStringValue("name", updateLabelModel.name);
+        writer.writeDateValue("updated_at", updateLabelModel.updatedAt);
+        writer.writeAdditionalData(updateLabelModel.additionalData);
+    }
 }
 export interface UpdateLabelModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * The color property
      */

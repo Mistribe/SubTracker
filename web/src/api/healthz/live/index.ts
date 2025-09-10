@@ -15,7 +15,6 @@ export function createLiveGetResponseFromDiscriminatorValue(parseNode: ParseNode
 }
 /**
  * The deserialization information for the current model
- * @param LiveGetResponse The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -24,6 +23,10 @@ export function deserializeIntoLiveGetResponse(liveGetResponse: Partial<LiveGetR
     }
 }
 export interface LiveGetResponse extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
 }
 /**
  * Builds and executes requests for operations under /healthz/live
@@ -44,14 +47,13 @@ export interface LiveRequestBuilder extends BaseRequestBuilder<LiveRequestBuilde
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param LiveGetResponse The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeLiveGetResponse(writer: SerializationWriter, liveGetResponse: Partial<LiveGetResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!liveGetResponse || isSerializingDerivedType) { return; }
-    writer.writeAdditionalData(liveGetResponse.additionalData);
+export function serializeLiveGetResponse(writer: SerializationWriter, liveGetResponse: Partial<LiveGetResponse> | undefined | null = {}) : void {
+    if (liveGetResponse) {
+        writer.writeAdditionalData(liveGetResponse.additionalData);
+    }
 }
 /**
  * Uri template for the request builder.

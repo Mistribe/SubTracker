@@ -53,6 +53,10 @@ export function createSubscriptionFreeTrialModelFromDiscriminatorValue(parseNode
 }
 export interface CreateSubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * The created_at property
      */
     createdAt?: string | null;
@@ -191,7 +195,6 @@ export function createUpdateSubscriptionModelFromDiscriminatorValue(parseNode: P
 }
 /**
  * The deserialization information for the current model
- * @param CreateSubscriptionModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -217,7 +220,6 @@ export function deserializeIntoCreateSubscriptionModel(createSubscriptionModel: 
 }
 /**
  * The deserialization information for the current model
- * @param EditableSubscriptionPayerModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -230,7 +232,6 @@ export function deserializeIntoEditableSubscriptionPayerModel(editableSubscripti
 }
 /**
  * The deserialization information for the current model
- * @param LabelRefModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -242,7 +243,6 @@ export function deserializeIntoLabelRefModel(labelRefModel: Partial<LabelRefMode
 }
 /**
  * The deserialization information for the current model
- * @param PatchSubscriptionModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -268,7 +268,6 @@ export function deserializeIntoPatchSubscriptionModel(patchSubscriptionModel: Pa
 }
 /**
  * The deserialization information for the current model
- * @param SubscriptionFreeTrialModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -280,7 +279,6 @@ export function deserializeIntoSubscriptionFreeTrialModel(subscriptionFreeTrialM
 }
 /**
  * The deserialization information for the current model
- * @param SubscriptionModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -310,7 +308,6 @@ export function deserializeIntoSubscriptionModel(subscriptionModel: Partial<Subs
 }
 /**
  * The deserialization information for the current model
- * @param SubscriptionPayerModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -324,7 +321,6 @@ export function deserializeIntoSubscriptionPayerModel(subscriptionPayerModel: Pa
 }
 /**
  * The deserialization information for the current model
- * @param SubscriptionPriceModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -336,7 +332,6 @@ export function deserializeIntoSubscriptionPriceModel(subscriptionPriceModel: Pa
 }
 /**
  * The deserialization information for the current model
- * @param SubscriptionSummaryResponse The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -354,7 +349,6 @@ export function deserializeIntoSubscriptionSummaryResponse(subscriptionSummaryRe
 }
 /**
  * The deserialization information for the current model
- * @param SubscriptionSummaryTopLabelResponse The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -366,7 +360,6 @@ export function deserializeIntoSubscriptionSummaryTopLabelResponse(subscriptionS
 }
 /**
  * The deserialization information for the current model
- * @param SubscriptionSummaryTopProviderResponse The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -379,7 +372,6 @@ export function deserializeIntoSubscriptionSummaryTopProviderResponse(subscripti
 }
 /**
  * The deserialization information for the current model
- * @param SubscriptionSummaryUpcomingRenewalResponse The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -393,7 +385,6 @@ export function deserializeIntoSubscriptionSummaryUpcomingRenewalResponse(subscr
 }
 /**
  * The deserialization information for the current model
- * @param UpdateSubscriptionModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -421,6 +412,10 @@ export function deserializeIntoUpdateSubscriptionModel(updateSubscriptionModel: 
  */
 export interface EditableSubscriptionPayerModel extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * @Description ID of the family associated with this payer
      */
     familyId?: string | null;
@@ -436,6 +431,10 @@ export interface EditableSubscriptionPayerModel extends AdditionalDataHolder, Pa
 export type EditableSubscriptionPayerModel_type = (typeof EditableSubscriptionPayerModel_typeObject)[keyof typeof EditableSubscriptionPayerModel_typeObject];
 export interface LabelRefModel extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * The label_id property
      */
     labelId?: string | null;
@@ -446,6 +445,10 @@ export interface LabelRefModel extends AdditionalDataHolder, Parsable {
 }
 export type LabelRefModel_source = (typeof LabelRefModel_sourceObject)[keyof typeof LabelRefModel_sourceObject];
 export interface PatchSubscriptionModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * @Description Custom price for this subscription
      */
@@ -513,248 +516,239 @@ export interface PatchSubscriptionModel extends AdditionalDataHolder, Parsable {
 }
 /**
  * Serializes information the current object
- * @param CreateSubscriptionModel The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeCreateSubscriptionModel(writer: SerializationWriter, createSubscriptionModel: Partial<CreateSubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!createSubscriptionModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("created_at", createSubscriptionModel.createdAt);
-    writer.writeObjectValue<AmountModel>("custom_price", createSubscriptionModel.customPrice, serializeAmountModel);
-    writer.writeNumberValue("custom_recurrency", createSubscriptionModel.customRecurrency);
-    writer.writeDateValue("end_date", createSubscriptionModel.endDate);
-    writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", createSubscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
-    writer.writeStringValue("friendly_name", createSubscriptionModel.friendlyName);
-    writer.writeStringValue("id", createSubscriptionModel.id);
-    writer.writeCollectionOfPrimitiveValues<string>("labels", createSubscriptionModel.labels);
-    writer.writeObjectValue<EditableOwnerModel>("owner", createSubscriptionModel.owner, serializeEditableOwnerModel);
-    writer.writeObjectValue<EditableSubscriptionPayerModel>("payer", createSubscriptionModel.payer, serializeEditableSubscriptionPayerModel);
-    writer.writeStringValue("plan_id", createSubscriptionModel.planId);
-    writer.writeStringValue("price_id", createSubscriptionModel.priceId);
-    writer.writeStringValue("provider_id", createSubscriptionModel.providerId);
-    writer.writeStringValue("recurrency", createSubscriptionModel.recurrency);
-    writer.writeCollectionOfPrimitiveValues<string>("service_users", createSubscriptionModel.serviceUsers);
-    writer.writeDateValue("start_date", createSubscriptionModel.startDate);
-    writer.writeAdditionalData(createSubscriptionModel.additionalData);
+export function serializeCreateSubscriptionModel(writer: SerializationWriter, createSubscriptionModel: Partial<CreateSubscriptionModel> | undefined | null = {}) : void {
+    if (createSubscriptionModel) {
+        writer.writeStringValue("created_at", createSubscriptionModel.createdAt);
+        writer.writeObjectValue<AmountModel>("custom_price", createSubscriptionModel.customPrice, serializeAmountModel);
+        writer.writeNumberValue("custom_recurrency", createSubscriptionModel.customRecurrency);
+        writer.writeDateValue("end_date", createSubscriptionModel.endDate);
+        writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", createSubscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
+        writer.writeStringValue("friendly_name", createSubscriptionModel.friendlyName);
+        writer.writeStringValue("id", createSubscriptionModel.id);
+        writer.writeCollectionOfPrimitiveValues<string>("labels", createSubscriptionModel.labels);
+        writer.writeObjectValue<EditableOwnerModel>("owner", createSubscriptionModel.owner, serializeEditableOwnerModel);
+        writer.writeObjectValue<EditableSubscriptionPayerModel>("payer", createSubscriptionModel.payer, serializeEditableSubscriptionPayerModel);
+        writer.writeStringValue("plan_id", createSubscriptionModel.planId);
+        writer.writeStringValue("price_id", createSubscriptionModel.priceId);
+        writer.writeStringValue("provider_id", createSubscriptionModel.providerId);
+        writer.writeStringValue("recurrency", createSubscriptionModel.recurrency);
+        writer.writeCollectionOfPrimitiveValues<string>("service_users", createSubscriptionModel.serviceUsers);
+        writer.writeDateValue("start_date", createSubscriptionModel.startDate);
+        writer.writeAdditionalData(createSubscriptionModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param EditableSubscriptionPayerModel The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeEditableSubscriptionPayerModel(writer: SerializationWriter, editableSubscriptionPayerModel: Partial<EditableSubscriptionPayerModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!editableSubscriptionPayerModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("family_id", editableSubscriptionPayerModel.familyId);
-    writer.writeStringValue("memberId", editableSubscriptionPayerModel.memberId);
-    writer.writeEnumValue<EditableSubscriptionPayerModel_type>("type", editableSubscriptionPayerModel.type);
-    writer.writeAdditionalData(editableSubscriptionPayerModel.additionalData);
+export function serializeEditableSubscriptionPayerModel(writer: SerializationWriter, editableSubscriptionPayerModel: Partial<EditableSubscriptionPayerModel> | undefined | null = {}) : void {
+    if (editableSubscriptionPayerModel) {
+        writer.writeStringValue("family_id", editableSubscriptionPayerModel.familyId);
+        writer.writeStringValue("memberId", editableSubscriptionPayerModel.memberId);
+        writer.writeEnumValue<EditableSubscriptionPayerModel_type>("type", editableSubscriptionPayerModel.type);
+        writer.writeAdditionalData(editableSubscriptionPayerModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param LabelRefModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeLabelRefModel(writer: SerializationWriter, labelRefModel: Partial<LabelRefModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!labelRefModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("label_id", labelRefModel.labelId);
-    writer.writeEnumValue<LabelRefModel_source>("source", labelRefModel.source);
-    writer.writeAdditionalData(labelRefModel.additionalData);
+export function serializeLabelRefModel(writer: SerializationWriter, labelRefModel: Partial<LabelRefModel> | undefined | null = {}) : void {
+    if (labelRefModel) {
+        writer.writeStringValue("label_id", labelRefModel.labelId);
+        writer.writeEnumValue<LabelRefModel_source>("source", labelRefModel.source);
+        writer.writeAdditionalData(labelRefModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param PatchSubscriptionModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializePatchSubscriptionModel(writer: SerializationWriter, patchSubscriptionModel: Partial<PatchSubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!patchSubscriptionModel || isSerializingDerivedType) { return; }
-    writer.writeObjectValue<AmountModel>("custom_price", patchSubscriptionModel.customPrice, serializeAmountModel);
-    writer.writeNumberValue("custom_recurrency", patchSubscriptionModel.customRecurrency);
-    writer.writeDateValue("end_date", patchSubscriptionModel.endDate);
-    writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", patchSubscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
-    writer.writeStringValue("friendly_name", patchSubscriptionModel.friendlyName);
-    writer.writeStringValue("id", patchSubscriptionModel.id);
-    writer.writeCollectionOfPrimitiveValues<string>("labels", patchSubscriptionModel.labels);
-    writer.writeObjectValue<EditableOwnerModel>("owner", patchSubscriptionModel.owner, serializeEditableOwnerModel);
-    writer.writeObjectValue<EditableSubscriptionPayerModel>("payer", patchSubscriptionModel.payer, serializeEditableSubscriptionPayerModel);
-    writer.writeStringValue("plan_id", patchSubscriptionModel.planId);
-    writer.writeStringValue("price_id", patchSubscriptionModel.priceId);
-    writer.writeStringValue("provider_id", patchSubscriptionModel.providerId);
-    writer.writeStringValue("recurrency", patchSubscriptionModel.recurrency);
-    writer.writeCollectionOfPrimitiveValues<string>("service_users", patchSubscriptionModel.serviceUsers);
-    writer.writeDateValue("start_date", patchSubscriptionModel.startDate);
-    writer.writeDateValue("updated_at", patchSubscriptionModel.updatedAt);
-    writer.writeAdditionalData(patchSubscriptionModel.additionalData);
+export function serializePatchSubscriptionModel(writer: SerializationWriter, patchSubscriptionModel: Partial<PatchSubscriptionModel> | undefined | null = {}) : void {
+    if (patchSubscriptionModel) {
+        writer.writeObjectValue<AmountModel>("custom_price", patchSubscriptionModel.customPrice, serializeAmountModel);
+        writer.writeNumberValue("custom_recurrency", patchSubscriptionModel.customRecurrency);
+        writer.writeDateValue("end_date", patchSubscriptionModel.endDate);
+        writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", patchSubscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
+        writer.writeStringValue("friendly_name", patchSubscriptionModel.friendlyName);
+        writer.writeStringValue("id", patchSubscriptionModel.id);
+        writer.writeCollectionOfPrimitiveValues<string>("labels", patchSubscriptionModel.labels);
+        writer.writeObjectValue<EditableOwnerModel>("owner", patchSubscriptionModel.owner, serializeEditableOwnerModel);
+        writer.writeObjectValue<EditableSubscriptionPayerModel>("payer", patchSubscriptionModel.payer, serializeEditableSubscriptionPayerModel);
+        writer.writeStringValue("plan_id", patchSubscriptionModel.planId);
+        writer.writeStringValue("price_id", patchSubscriptionModel.priceId);
+        writer.writeStringValue("provider_id", patchSubscriptionModel.providerId);
+        writer.writeStringValue("recurrency", patchSubscriptionModel.recurrency);
+        writer.writeCollectionOfPrimitiveValues<string>("service_users", patchSubscriptionModel.serviceUsers);
+        writer.writeDateValue("start_date", patchSubscriptionModel.startDate);
+        writer.writeDateValue("updated_at", patchSubscriptionModel.updatedAt);
+        writer.writeAdditionalData(patchSubscriptionModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param SubscriptionFreeTrialModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeSubscriptionFreeTrialModel(writer: SerializationWriter, subscriptionFreeTrialModel: Partial<SubscriptionFreeTrialModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!subscriptionFreeTrialModel || isSerializingDerivedType) { return; }
-    writer.writeDateValue("end_date", subscriptionFreeTrialModel.endDate);
-    writer.writeDateValue("start_date", subscriptionFreeTrialModel.startDate);
-    writer.writeAdditionalData(subscriptionFreeTrialModel.additionalData);
+export function serializeSubscriptionFreeTrialModel(writer: SerializationWriter, subscriptionFreeTrialModel: Partial<SubscriptionFreeTrialModel> | undefined | null = {}) : void {
+    if (subscriptionFreeTrialModel) {
+        writer.writeDateValue("end_date", subscriptionFreeTrialModel.endDate);
+        writer.writeDateValue("start_date", subscriptionFreeTrialModel.startDate);
+        writer.writeAdditionalData(subscriptionFreeTrialModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param SubscriptionModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeSubscriptionModel(writer: SerializationWriter, subscriptionModel: Partial<SubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!subscriptionModel || isSerializingDerivedType) { return; }
-    writer.writeDateValue("created_at", subscriptionModel.createdAt);
-    writer.writeObjectValue<AmountModel>("custom_price", subscriptionModel.customPrice, serializeAmountModel);
-    writer.writeNumberValue("custom_recurrency", subscriptionModel.customRecurrency);
-    writer.writeDateValue("end_date", subscriptionModel.endDate);
-    writer.writeStringValue("etag", subscriptionModel.etag);
-    writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", subscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
-    writer.writeStringValue("friendly_name", subscriptionModel.friendlyName);
-    writer.writeStringValue("id", subscriptionModel.id);
-    writer.writeBooleanValue("is_active", subscriptionModel.isActive);
-    writer.writeCollectionOfObjectValues<LabelRefModel>("label_refs", subscriptionModel.labelRefs, serializeLabelRefModel);
-    writer.writeObjectValue<OwnerModel>("owner", subscriptionModel.owner, serializeOwnerModel);
-    writer.writeObjectValue<SubscriptionPayerModel>("payer", subscriptionModel.payer, serializeSubscriptionPayerModel);
-    writer.writeStringValue("plan_id", subscriptionModel.planId);
-    writer.writeObjectValue<SubscriptionPriceModel>("price", subscriptionModel.price, serializeSubscriptionPriceModel);
-    writer.writeStringValue("price_id", subscriptionModel.priceId);
-    writer.writeStringValue("provider_id", subscriptionModel.providerId);
-    writer.writeEnumValue<SubscriptionModel_recurrency>("recurrency", subscriptionModel.recurrency);
-    writer.writeCollectionOfPrimitiveValues<string>("service_users", subscriptionModel.serviceUsers);
-    writer.writeDateValue("start_date", subscriptionModel.startDate);
-    writer.writeDateValue("updated_at", subscriptionModel.updatedAt);
-    writer.writeAdditionalData(subscriptionModel.additionalData);
+export function serializeSubscriptionModel(writer: SerializationWriter, subscriptionModel: Partial<SubscriptionModel> | undefined | null = {}) : void {
+    if (subscriptionModel) {
+        writer.writeDateValue("created_at", subscriptionModel.createdAt);
+        writer.writeObjectValue<AmountModel>("custom_price", subscriptionModel.customPrice, serializeAmountModel);
+        writer.writeNumberValue("custom_recurrency", subscriptionModel.customRecurrency);
+        writer.writeDateValue("end_date", subscriptionModel.endDate);
+        writer.writeStringValue("etag", subscriptionModel.etag);
+        writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", subscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
+        writer.writeStringValue("friendly_name", subscriptionModel.friendlyName);
+        writer.writeStringValue("id", subscriptionModel.id);
+        writer.writeBooleanValue("is_active", subscriptionModel.isActive);
+        writer.writeCollectionOfObjectValues<LabelRefModel>("label_refs", subscriptionModel.labelRefs, serializeLabelRefModel);
+        writer.writeObjectValue<OwnerModel>("owner", subscriptionModel.owner, serializeOwnerModel);
+        writer.writeObjectValue<SubscriptionPayerModel>("payer", subscriptionModel.payer, serializeSubscriptionPayerModel);
+        writer.writeStringValue("plan_id", subscriptionModel.planId);
+        writer.writeObjectValue<SubscriptionPriceModel>("price", subscriptionModel.price, serializeSubscriptionPriceModel);
+        writer.writeStringValue("price_id", subscriptionModel.priceId);
+        writer.writeStringValue("provider_id", subscriptionModel.providerId);
+        writer.writeEnumValue<SubscriptionModel_recurrency>("recurrency", subscriptionModel.recurrency);
+        writer.writeCollectionOfPrimitiveValues<string>("service_users", subscriptionModel.serviceUsers);
+        writer.writeDateValue("start_date", subscriptionModel.startDate);
+        writer.writeDateValue("updated_at", subscriptionModel.updatedAt);
+        writer.writeAdditionalData(subscriptionModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param SubscriptionPayerModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeSubscriptionPayerModel(writer: SerializationWriter, subscriptionPayerModel: Partial<SubscriptionPayerModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!subscriptionPayerModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("etag", subscriptionPayerModel.etag);
-    writer.writeStringValue("family_id", subscriptionPayerModel.familyId);
-    writer.writeStringValue("memberId", subscriptionPayerModel.memberId);
-    writer.writeEnumValue<SubscriptionPayerModel_type>("type", subscriptionPayerModel.type);
-    writer.writeAdditionalData(subscriptionPayerModel.additionalData);
+export function serializeSubscriptionPayerModel(writer: SerializationWriter, subscriptionPayerModel: Partial<SubscriptionPayerModel> | undefined | null = {}) : void {
+    if (subscriptionPayerModel) {
+        writer.writeStringValue("etag", subscriptionPayerModel.etag);
+        writer.writeStringValue("family_id", subscriptionPayerModel.familyId);
+        writer.writeStringValue("memberId", subscriptionPayerModel.memberId);
+        writer.writeEnumValue<SubscriptionPayerModel_type>("type", subscriptionPayerModel.type);
+        writer.writeAdditionalData(subscriptionPayerModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param SubscriptionPriceModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeSubscriptionPriceModel(writer: SerializationWriter, subscriptionPriceModel: Partial<SubscriptionPriceModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!subscriptionPriceModel || isSerializingDerivedType) { return; }
-    writer.writeObjectValue<AmountModel>("monthly", subscriptionPriceModel.monthly, serializeAmountModel);
-    writer.writeObjectValue<AmountModel>("yearly", subscriptionPriceModel.yearly, serializeAmountModel);
-    writer.writeAdditionalData(subscriptionPriceModel.additionalData);
+export function serializeSubscriptionPriceModel(writer: SerializationWriter, subscriptionPriceModel: Partial<SubscriptionPriceModel> | undefined | null = {}) : void {
+    if (subscriptionPriceModel) {
+        writer.writeObjectValue<AmountModel>("monthly", subscriptionPriceModel.monthly, serializeAmountModel);
+        writer.writeObjectValue<AmountModel>("yearly", subscriptionPriceModel.yearly, serializeAmountModel);
+        writer.writeAdditionalData(subscriptionPriceModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param SubscriptionSummaryResponse The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeSubscriptionSummaryResponse(writer: SerializationWriter, subscriptionSummaryResponse: Partial<SubscriptionSummaryResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!subscriptionSummaryResponse || isSerializingDerivedType) { return; }
-    writer.writeNumberValue("active", subscriptionSummaryResponse.active);
-    writer.writeCollectionOfObjectValues<SubscriptionSummaryTopLabelResponse>("top_labels", subscriptionSummaryResponse.topLabels, serializeSubscriptionSummaryTopLabelResponse);
-    writer.writeCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>("top_providers", subscriptionSummaryResponse.topProviders, serializeSubscriptionSummaryTopProviderResponse);
-    writer.writeObjectValue<AmountModel>("total_last_month", subscriptionSummaryResponse.totalLastMonth, serializeAmountModel);
-    writer.writeObjectValue<AmountModel>("total_last_year", subscriptionSummaryResponse.totalLastYear, serializeAmountModel);
-    writer.writeObjectValue<AmountModel>("total_monthly", subscriptionSummaryResponse.totalMonthly, serializeAmountModel);
-    writer.writeObjectValue<AmountModel>("total_yearly", subscriptionSummaryResponse.totalYearly, serializeAmountModel);
-    writer.writeCollectionOfObjectValues<SubscriptionSummaryUpcomingRenewalResponse>("upcoming_renewals", subscriptionSummaryResponse.upcomingRenewals, serializeSubscriptionSummaryUpcomingRenewalResponse);
-    writer.writeAdditionalData(subscriptionSummaryResponse.additionalData);
+export function serializeSubscriptionSummaryResponse(writer: SerializationWriter, subscriptionSummaryResponse: Partial<SubscriptionSummaryResponse> | undefined | null = {}) : void {
+    if (subscriptionSummaryResponse) {
+        writer.writeNumberValue("active", subscriptionSummaryResponse.active);
+        writer.writeCollectionOfObjectValues<SubscriptionSummaryTopLabelResponse>("top_labels", subscriptionSummaryResponse.topLabels, serializeSubscriptionSummaryTopLabelResponse);
+        writer.writeCollectionOfObjectValues<SubscriptionSummaryTopProviderResponse>("top_providers", subscriptionSummaryResponse.topProviders, serializeSubscriptionSummaryTopProviderResponse);
+        writer.writeObjectValue<AmountModel>("total_last_month", subscriptionSummaryResponse.totalLastMonth, serializeAmountModel);
+        writer.writeObjectValue<AmountModel>("total_last_year", subscriptionSummaryResponse.totalLastYear, serializeAmountModel);
+        writer.writeObjectValue<AmountModel>("total_monthly", subscriptionSummaryResponse.totalMonthly, serializeAmountModel);
+        writer.writeObjectValue<AmountModel>("total_yearly", subscriptionSummaryResponse.totalYearly, serializeAmountModel);
+        writer.writeCollectionOfObjectValues<SubscriptionSummaryUpcomingRenewalResponse>("upcoming_renewals", subscriptionSummaryResponse.upcomingRenewals, serializeSubscriptionSummaryUpcomingRenewalResponse);
+        writer.writeAdditionalData(subscriptionSummaryResponse.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param SubscriptionSummaryTopLabelResponse The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeSubscriptionSummaryTopLabelResponse(writer: SerializationWriter, subscriptionSummaryTopLabelResponse: Partial<SubscriptionSummaryTopLabelResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!subscriptionSummaryTopLabelResponse || isSerializingDerivedType) { return; }
-    writer.writeStringValue("label_id", subscriptionSummaryTopLabelResponse.labelId);
-    writer.writeObjectValue<AmountModel>("total", subscriptionSummaryTopLabelResponse.total, serializeAmountModel);
-    writer.writeAdditionalData(subscriptionSummaryTopLabelResponse.additionalData);
+export function serializeSubscriptionSummaryTopLabelResponse(writer: SerializationWriter, subscriptionSummaryTopLabelResponse: Partial<SubscriptionSummaryTopLabelResponse> | undefined | null = {}) : void {
+    if (subscriptionSummaryTopLabelResponse) {
+        writer.writeStringValue("label_id", subscriptionSummaryTopLabelResponse.labelId);
+        writer.writeObjectValue<AmountModel>("total", subscriptionSummaryTopLabelResponse.total, serializeAmountModel);
+        writer.writeAdditionalData(subscriptionSummaryTopLabelResponse.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param SubscriptionSummaryTopProviderResponse The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeSubscriptionSummaryTopProviderResponse(writer: SerializationWriter, subscriptionSummaryTopProviderResponse: Partial<SubscriptionSummaryTopProviderResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!subscriptionSummaryTopProviderResponse || isSerializingDerivedType) { return; }
-    writer.writeStringValue("duration", subscriptionSummaryTopProviderResponse.duration);
-    writer.writeStringValue("provider_id", subscriptionSummaryTopProviderResponse.providerId);
-    writer.writeObjectValue<AmountModel>("total", subscriptionSummaryTopProviderResponse.total, serializeAmountModel);
-    writer.writeAdditionalData(subscriptionSummaryTopProviderResponse.additionalData);
+export function serializeSubscriptionSummaryTopProviderResponse(writer: SerializationWriter, subscriptionSummaryTopProviderResponse: Partial<SubscriptionSummaryTopProviderResponse> | undefined | null = {}) : void {
+    if (subscriptionSummaryTopProviderResponse) {
+        writer.writeStringValue("duration", subscriptionSummaryTopProviderResponse.duration);
+        writer.writeStringValue("provider_id", subscriptionSummaryTopProviderResponse.providerId);
+        writer.writeObjectValue<AmountModel>("total", subscriptionSummaryTopProviderResponse.total, serializeAmountModel);
+        writer.writeAdditionalData(subscriptionSummaryTopProviderResponse.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param SubscriptionSummaryUpcomingRenewalResponse The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeSubscriptionSummaryUpcomingRenewalResponse(writer: SerializationWriter, subscriptionSummaryUpcomingRenewalResponse: Partial<SubscriptionSummaryUpcomingRenewalResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!subscriptionSummaryUpcomingRenewalResponse || isSerializingDerivedType) { return; }
-    writer.writeDateValue("at", subscriptionSummaryUpcomingRenewalResponse.at);
-    writer.writeStringValue("provider_id", subscriptionSummaryUpcomingRenewalResponse.providerId);
-    writer.writeObjectValue<AmountModel>("source", subscriptionSummaryUpcomingRenewalResponse.source, serializeAmountModel);
-    writer.writeObjectValue<AmountModel>("total", subscriptionSummaryUpcomingRenewalResponse.total, serializeAmountModel);
-    writer.writeAdditionalData(subscriptionSummaryUpcomingRenewalResponse.additionalData);
+export function serializeSubscriptionSummaryUpcomingRenewalResponse(writer: SerializationWriter, subscriptionSummaryUpcomingRenewalResponse: Partial<SubscriptionSummaryUpcomingRenewalResponse> | undefined | null = {}) : void {
+    if (subscriptionSummaryUpcomingRenewalResponse) {
+        writer.writeDateValue("at", subscriptionSummaryUpcomingRenewalResponse.at);
+        writer.writeStringValue("provider_id", subscriptionSummaryUpcomingRenewalResponse.providerId);
+        writer.writeObjectValue<AmountModel>("source", subscriptionSummaryUpcomingRenewalResponse.source, serializeAmountModel);
+        writer.writeObjectValue<AmountModel>("total", subscriptionSummaryUpcomingRenewalResponse.total, serializeAmountModel);
+        writer.writeAdditionalData(subscriptionSummaryUpcomingRenewalResponse.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param UpdateSubscriptionModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeUpdateSubscriptionModel(writer: SerializationWriter, updateSubscriptionModel: Partial<UpdateSubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!updateSubscriptionModel || isSerializingDerivedType) { return; }
-    writer.writeObjectValue<AmountModel>("custom_price", updateSubscriptionModel.customPrice, serializeAmountModel);
-    writer.writeNumberValue("custom_recurrency", updateSubscriptionModel.customRecurrency);
-    writer.writeDateValue("end_date", updateSubscriptionModel.endDate);
-    writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", updateSubscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
-    writer.writeStringValue("friendly_name", updateSubscriptionModel.friendlyName);
-    writer.writeCollectionOfPrimitiveValues<string>("labels", updateSubscriptionModel.labels);
-    writer.writeObjectValue<EditableOwnerModel>("owner", updateSubscriptionModel.owner, serializeEditableOwnerModel);
-    writer.writeObjectValue<EditableSubscriptionPayerModel>("payer", updateSubscriptionModel.payer, serializeEditableSubscriptionPayerModel);
-    writer.writeStringValue("plan_id", updateSubscriptionModel.planId);
-    writer.writeStringValue("price_id", updateSubscriptionModel.priceId);
-    writer.writeStringValue("provider_id", updateSubscriptionModel.providerId);
-    writer.writeStringValue("recurrency", updateSubscriptionModel.recurrency);
-    writer.writeCollectionOfPrimitiveValues<string>("service_users", updateSubscriptionModel.serviceUsers);
-    writer.writeDateValue("start_date", updateSubscriptionModel.startDate);
-    writer.writeDateValue("updated_at", updateSubscriptionModel.updatedAt);
-    writer.writeAdditionalData(updateSubscriptionModel.additionalData);
+export function serializeUpdateSubscriptionModel(writer: SerializationWriter, updateSubscriptionModel: Partial<UpdateSubscriptionModel> | undefined | null = {}) : void {
+    if (updateSubscriptionModel) {
+        writer.writeObjectValue<AmountModel>("custom_price", updateSubscriptionModel.customPrice, serializeAmountModel);
+        writer.writeNumberValue("custom_recurrency", updateSubscriptionModel.customRecurrency);
+        writer.writeDateValue("end_date", updateSubscriptionModel.endDate);
+        writer.writeObjectValue<SubscriptionFreeTrialModel>("free_trial", updateSubscriptionModel.freeTrial, serializeSubscriptionFreeTrialModel);
+        writer.writeStringValue("friendly_name", updateSubscriptionModel.friendlyName);
+        writer.writeCollectionOfPrimitiveValues<string>("labels", updateSubscriptionModel.labels);
+        writer.writeObjectValue<EditableOwnerModel>("owner", updateSubscriptionModel.owner, serializeEditableOwnerModel);
+        writer.writeObjectValue<EditableSubscriptionPayerModel>("payer", updateSubscriptionModel.payer, serializeEditableSubscriptionPayerModel);
+        writer.writeStringValue("plan_id", updateSubscriptionModel.planId);
+        writer.writeStringValue("price_id", updateSubscriptionModel.priceId);
+        writer.writeStringValue("provider_id", updateSubscriptionModel.providerId);
+        writer.writeStringValue("recurrency", updateSubscriptionModel.recurrency);
+        writer.writeCollectionOfPrimitiveValues<string>("service_users", updateSubscriptionModel.serviceUsers);
+        writer.writeDateValue("start_date", updateSubscriptionModel.startDate);
+        writer.writeDateValue("updated_at", updateSubscriptionModel.updatedAt);
+        writer.writeAdditionalData(updateSubscriptionModel.additionalData);
+    }
 }
 /**
  * @Description Number of free trial days remaining (null if no trial or trial expired)
  */
 export interface SubscriptionFreeTrialModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * The end_date property
      */
@@ -768,6 +762,10 @@ export interface SubscriptionFreeTrialModel extends AdditionalDataHolder, Parsab
  * Subscription object containing all information about an active subscription including billing and usage details
  */
 export interface SubscriptionModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * @Description ISO 8601 timestamp when the subscription was originally created
      */
@@ -855,6 +853,10 @@ export type SubscriptionModel_recurrency = (typeof SubscriptionModel_recurrencyO
  */
 export interface SubscriptionPayerModel extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
      */
     etag?: string | null;
@@ -877,6 +879,10 @@ export type SubscriptionPayerModel_type = (typeof SubscriptionPayerModel_typeObj
  */
 export interface SubscriptionPriceModel extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * @Description Custom price for this subscription
      */
     monthly?: AmountModel | null;
@@ -893,6 +899,10 @@ export interface SubscriptionSummaryResponse extends AdditionalDataHolder, Parsa
      * The active property
      */
     active?: number | null;
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * The top_labels property
      */
@@ -924,6 +934,10 @@ export interface SubscriptionSummaryResponse extends AdditionalDataHolder, Parsa
 }
 export interface SubscriptionSummaryTopLabelResponse extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * The label_id property
      */
     labelId?: string | null;
@@ -933,6 +947,10 @@ export interface SubscriptionSummaryTopLabelResponse extends AdditionalDataHolde
     total?: AmountModel | null;
 }
 export interface SubscriptionSummaryTopProviderResponse extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * The duration property
      */
@@ -947,6 +965,10 @@ export interface SubscriptionSummaryTopProviderResponse extends AdditionalDataHo
     total?: AmountModel | null;
 }
 export interface SubscriptionSummaryUpcomingRenewalResponse extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * The at property
      */
@@ -965,6 +987,10 @@ export interface SubscriptionSummaryUpcomingRenewalResponse extends AdditionalDa
     total?: AmountModel | null;
 }
 export interface UpdateSubscriptionModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * @Description Custom price for this subscription
      */

@@ -35,6 +35,10 @@ export function createCreateProviderModelFromDiscriminatorValue(parseNode: Parse
 }
 export interface CreatePlanModel extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * The created_at property
      */
     createdAt?: Date | null;
@@ -64,6 +68,10 @@ export function createPlanModelFromDiscriminatorValue(parseNode: ParseNode | und
  * Price information for a plan
  */
 export interface CreatePriceModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * The amount property
      */
@@ -99,6 +107,10 @@ export function createPriceModelFromDiscriminatorValue(parseNode: ParseNode | un
     return deserializeIntoPriceModel;
 }
 export interface CreateProviderModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * The created_at property
      */
@@ -174,7 +186,6 @@ export function createUpdateProviderModelFromDiscriminatorValue(parseNode: Parse
 }
 /**
  * The deserialization information for the current model
- * @param CreatePlanModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -188,7 +199,6 @@ export function deserializeIntoCreatePlanModel(createPlanModel: Partial<CreatePl
 }
 /**
  * The deserialization information for the current model
- * @param CreatePriceModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -204,7 +214,6 @@ export function deserializeIntoCreatePriceModel(createPriceModel: Partial<Create
 }
 /**
  * The deserialization information for the current model
- * @param CreateProviderModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -223,7 +232,6 @@ export function deserializeIntoCreateProviderModel(createProviderModel: Partial<
 }
 /**
  * The deserialization information for the current model
- * @param PlanModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -240,7 +248,6 @@ export function deserializeIntoPlanModel(planModel: Partial<PlanModel> | undefin
 }
 /**
  * The deserialization information for the current model
- * @param PriceModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -258,7 +265,6 @@ export function deserializeIntoPriceModel(priceModel: Partial<PriceModel> | unde
 }
 /**
  * The deserialization information for the current model
- * @param ProviderModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -281,7 +287,6 @@ export function deserializeIntoProviderModel(providerModel: Partial<ProviderMode
 }
 /**
  * The deserialization information for the current model
- * @param UpdatePlanModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -294,7 +299,6 @@ export function deserializeIntoUpdatePlanModel(updatePlanModel: Partial<UpdatePl
 }
 /**
  * The deserialization information for the current model
- * @param UpdatePriceModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -309,7 +313,6 @@ export function deserializeIntoUpdatePriceModel(updatePriceModel: Partial<Update
 }
 /**
  * The deserialization information for the current model
- * @param UpdateProviderModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -328,6 +331,10 @@ export function deserializeIntoUpdateProviderModel(updateProviderModel: Partial<
  * Plan object defining a specific subscription tier with associated pricing options
  */
 export interface PlanModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * @Description ISO 8601 timestamp when the plan was originally created
      */
@@ -361,6 +368,10 @@ export interface PlanModel extends AdditionalDataHolder, Parsable {
  * Price object defining the cost of a subscription plan with currency and time validity
  */
 export interface PriceModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * @Description Price amount in the specified currency (supports decimal values)
      */
@@ -398,6 +409,10 @@ export interface PriceModel extends AdditionalDataHolder, Parsable {
  * Provider object containing information about a subscription service provider and their available plans
  */
 export interface ProviderModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * @Description ISO 8601 timestamp when the provider was originally created
      */
@@ -453,166 +468,161 @@ export interface ProviderModel extends AdditionalDataHolder, Parsable {
 }
 /**
  * Serializes information the current object
- * @param CreatePlanModel The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeCreatePlanModel(writer: SerializationWriter, createPlanModel: Partial<CreatePlanModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!createPlanModel || isSerializingDerivedType) { return; }
-    writer.writeDateValue("created_at", createPlanModel.createdAt);
-    writer.writeStringValue("description", createPlanModel.description);
-    writer.writeStringValue("id", createPlanModel.id);
-    writer.writeStringValue("name", createPlanModel.name);
-    writer.writeAdditionalData(createPlanModel.additionalData);
+export function serializeCreatePlanModel(writer: SerializationWriter, createPlanModel: Partial<CreatePlanModel> | undefined | null = {}) : void {
+    if (createPlanModel) {
+        writer.writeDateValue("created_at", createPlanModel.createdAt);
+        writer.writeStringValue("description", createPlanModel.description);
+        writer.writeStringValue("id", createPlanModel.id);
+        writer.writeStringValue("name", createPlanModel.name);
+        writer.writeAdditionalData(createPlanModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param CreatePriceModel The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeCreatePriceModel(writer: SerializationWriter, createPriceModel: Partial<CreatePriceModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!createPriceModel || isSerializingDerivedType) { return; }
-    writer.writeNumberValue("amount", createPriceModel.amount);
-    writer.writeDateValue("created_at", createPriceModel.createdAt);
-    writer.writeStringValue("currency", createPriceModel.currency);
-    writer.writeDateValue("end_date", createPriceModel.endDate);
-    writer.writeStringValue("id", createPriceModel.id);
-    writer.writeDateValue("start_date", createPriceModel.startDate);
-    writer.writeAdditionalData(createPriceModel.additionalData);
+export function serializeCreatePriceModel(writer: SerializationWriter, createPriceModel: Partial<CreatePriceModel> | undefined | null = {}) : void {
+    if (createPriceModel) {
+        writer.writeNumberValue("amount", createPriceModel.amount);
+        writer.writeDateValue("created_at", createPriceModel.createdAt);
+        writer.writeStringValue("currency", createPriceModel.currency);
+        writer.writeDateValue("end_date", createPriceModel.endDate);
+        writer.writeStringValue("id", createPriceModel.id);
+        writer.writeDateValue("start_date", createPriceModel.startDate);
+        writer.writeAdditionalData(createPriceModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param CreateProviderModel The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeCreateProviderModel(writer: SerializationWriter, createProviderModel: Partial<CreateProviderModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!createProviderModel || isSerializingDerivedType) { return; }
-    writer.writeDateValue("created_at", createProviderModel.createdAt);
-    writer.writeStringValue("description", createProviderModel.description);
-    writer.writeStringValue("icon_url", createProviderModel.iconUrl);
-    writer.writeStringValue("id", createProviderModel.id);
-    writer.writeCollectionOfPrimitiveValues<string>("labels", createProviderModel.labels);
-    writer.writeStringValue("name", createProviderModel.name);
-    writer.writeObjectValue<EditableOwnerModel>("owner", createProviderModel.owner, serializeEditableOwnerModel);
-    writer.writeStringValue("pricing_page_url", createProviderModel.pricingPageUrl);
-    writer.writeStringValue("url", createProviderModel.url);
-    writer.writeAdditionalData(createProviderModel.additionalData);
+export function serializeCreateProviderModel(writer: SerializationWriter, createProviderModel: Partial<CreateProviderModel> | undefined | null = {}) : void {
+    if (createProviderModel) {
+        writer.writeDateValue("created_at", createProviderModel.createdAt);
+        writer.writeStringValue("description", createProviderModel.description);
+        writer.writeStringValue("icon_url", createProviderModel.iconUrl);
+        writer.writeStringValue("id", createProviderModel.id);
+        writer.writeCollectionOfPrimitiveValues<string>("labels", createProviderModel.labels);
+        writer.writeStringValue("name", createProviderModel.name);
+        writer.writeObjectValue<EditableOwnerModel>("owner", createProviderModel.owner, serializeEditableOwnerModel);
+        writer.writeStringValue("pricing_page_url", createProviderModel.pricingPageUrl);
+        writer.writeStringValue("url", createProviderModel.url);
+        writer.writeAdditionalData(createProviderModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param PlanModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializePlanModel(writer: SerializationWriter, planModel: Partial<PlanModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!planModel || isSerializingDerivedType) { return; }
-    writer.writeDateValue("created_at", planModel.createdAt);
-    writer.writeStringValue("description", planModel.description);
-    writer.writeStringValue("etag", planModel.etag);
-    writer.writeStringValue("id", planModel.id);
-    writer.writeStringValue("name", planModel.name);
-    writer.writeCollectionOfObjectValues<PriceModel>("prices", planModel.prices, serializePriceModel);
-    writer.writeDateValue("updated_at", planModel.updatedAt);
-    writer.writeAdditionalData(planModel.additionalData);
+export function serializePlanModel(writer: SerializationWriter, planModel: Partial<PlanModel> | undefined | null = {}) : void {
+    if (planModel) {
+        writer.writeDateValue("created_at", planModel.createdAt);
+        writer.writeStringValue("description", planModel.description);
+        writer.writeStringValue("etag", planModel.etag);
+        writer.writeStringValue("id", planModel.id);
+        writer.writeStringValue("name", planModel.name);
+        writer.writeCollectionOfObjectValues<PriceModel>("prices", planModel.prices, serializePriceModel);
+        writer.writeDateValue("updated_at", planModel.updatedAt);
+        writer.writeAdditionalData(planModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param PriceModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializePriceModel(writer: SerializationWriter, priceModel: Partial<PriceModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!priceModel || isSerializingDerivedType) { return; }
-    writer.writeNumberValue("amount", priceModel.amount);
-    writer.writeDateValue("created_at", priceModel.createdAt);
-    writer.writeStringValue("currency", priceModel.currency);
-    writer.writeDateValue("end_date", priceModel.endDate);
-    writer.writeStringValue("etag", priceModel.etag);
-    writer.writeStringValue("id", priceModel.id);
-    writer.writeDateValue("start_date", priceModel.startDate);
-    writer.writeDateValue("updated_at", priceModel.updatedAt);
-    writer.writeAdditionalData(priceModel.additionalData);
+export function serializePriceModel(writer: SerializationWriter, priceModel: Partial<PriceModel> | undefined | null = {}) : void {
+    if (priceModel) {
+        writer.writeNumberValue("amount", priceModel.amount);
+        writer.writeDateValue("created_at", priceModel.createdAt);
+        writer.writeStringValue("currency", priceModel.currency);
+        writer.writeDateValue("end_date", priceModel.endDate);
+        writer.writeStringValue("etag", priceModel.etag);
+        writer.writeStringValue("id", priceModel.id);
+        writer.writeDateValue("start_date", priceModel.startDate);
+        writer.writeDateValue("updated_at", priceModel.updatedAt);
+        writer.writeAdditionalData(priceModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param ProviderModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeProviderModel(writer: SerializationWriter, providerModel: Partial<ProviderModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!providerModel || isSerializingDerivedType) { return; }
-    writer.writeDateValue("created_at", providerModel.createdAt);
-    writer.writeStringValue("description", providerModel.description);
-    writer.writeStringValue("etag", providerModel.etag);
-    writer.writeStringValue("icon_url", providerModel.iconUrl);
-    writer.writeStringValue("id", providerModel.id);
-    writer.writeStringValue("key", providerModel.key);
-    writer.writeCollectionOfPrimitiveValues<string>("labels", providerModel.labels);
-    writer.writeStringValue("name", providerModel.name);
-    writer.writeObjectValue<OwnerModel>("owner", providerModel.owner, serializeOwnerModel);
-    writer.writeCollectionOfObjectValues<PlanModel>("plans", providerModel.plans, serializePlanModel);
-    writer.writeStringValue("pricing_page_url", providerModel.pricingPageUrl);
-    writer.writeDateValue("updated_at", providerModel.updatedAt);
-    writer.writeStringValue("url", providerModel.url);
-    writer.writeAdditionalData(providerModel.additionalData);
+export function serializeProviderModel(writer: SerializationWriter, providerModel: Partial<ProviderModel> | undefined | null = {}) : void {
+    if (providerModel) {
+        writer.writeDateValue("created_at", providerModel.createdAt);
+        writer.writeStringValue("description", providerModel.description);
+        writer.writeStringValue("etag", providerModel.etag);
+        writer.writeStringValue("icon_url", providerModel.iconUrl);
+        writer.writeStringValue("id", providerModel.id);
+        writer.writeStringValue("key", providerModel.key);
+        writer.writeCollectionOfPrimitiveValues<string>("labels", providerModel.labels);
+        writer.writeStringValue("name", providerModel.name);
+        writer.writeObjectValue<OwnerModel>("owner", providerModel.owner, serializeOwnerModel);
+        writer.writeCollectionOfObjectValues<PlanModel>("plans", providerModel.plans, serializePlanModel);
+        writer.writeStringValue("pricing_page_url", providerModel.pricingPageUrl);
+        writer.writeDateValue("updated_at", providerModel.updatedAt);
+        writer.writeStringValue("url", providerModel.url);
+        writer.writeAdditionalData(providerModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param UpdatePlanModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeUpdatePlanModel(writer: SerializationWriter, updatePlanModel: Partial<UpdatePlanModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!updatePlanModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("description", updatePlanModel.description);
-    writer.writeStringValue("name", updatePlanModel.name);
-    writer.writeStringValue("updateAt", updatePlanModel.updateAt);
-    writer.writeAdditionalData(updatePlanModel.additionalData);
+export function serializeUpdatePlanModel(writer: SerializationWriter, updatePlanModel: Partial<UpdatePlanModel> | undefined | null = {}) : void {
+    if (updatePlanModel) {
+        writer.writeStringValue("description", updatePlanModel.description);
+        writer.writeStringValue("name", updatePlanModel.name);
+        writer.writeStringValue("updateAt", updatePlanModel.updateAt);
+        writer.writeAdditionalData(updatePlanModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param UpdatePriceModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeUpdatePriceModel(writer: SerializationWriter, updatePriceModel: Partial<UpdatePriceModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!updatePriceModel || isSerializingDerivedType) { return; }
-    writer.writeNumberValue("amount", updatePriceModel.amount);
-    writer.writeDateValue("created_at", updatePriceModel.createdAt);
-    writer.writeStringValue("currency", updatePriceModel.currency);
-    writer.writeDateValue("end_date", updatePriceModel.endDate);
-    writer.writeDateValue("start_date", updatePriceModel.startDate);
-    writer.writeAdditionalData(updatePriceModel.additionalData);
+export function serializeUpdatePriceModel(writer: SerializationWriter, updatePriceModel: Partial<UpdatePriceModel> | undefined | null = {}) : void {
+    if (updatePriceModel) {
+        writer.writeNumberValue("amount", updatePriceModel.amount);
+        writer.writeDateValue("created_at", updatePriceModel.createdAt);
+        writer.writeStringValue("currency", updatePriceModel.currency);
+        writer.writeDateValue("end_date", updatePriceModel.endDate);
+        writer.writeDateValue("start_date", updatePriceModel.startDate);
+        writer.writeAdditionalData(updatePriceModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param UpdateProviderModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeUpdateProviderModel(writer: SerializationWriter, updateProviderModel: Partial<UpdateProviderModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!updateProviderModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("description", updateProviderModel.description);
-    writer.writeStringValue("icon_url", updateProviderModel.iconUrl);
-    writer.writeCollectionOfPrimitiveValues<string>("labels", updateProviderModel.labels);
-    writer.writeStringValue("name", updateProviderModel.name);
-    writer.writeStringValue("pricing_page_url", updateProviderModel.pricingPageUrl);
-    writer.writeDateValue("updated_at", updateProviderModel.updatedAt);
-    writer.writeStringValue("url", updateProviderModel.url);
-    writer.writeAdditionalData(updateProviderModel.additionalData);
+export function serializeUpdateProviderModel(writer: SerializationWriter, updateProviderModel: Partial<UpdateProviderModel> | undefined | null = {}) : void {
+    if (updateProviderModel) {
+        writer.writeStringValue("description", updateProviderModel.description);
+        writer.writeStringValue("icon_url", updateProviderModel.iconUrl);
+        writer.writeCollectionOfPrimitiveValues<string>("labels", updateProviderModel.labels);
+        writer.writeStringValue("name", updateProviderModel.name);
+        writer.writeStringValue("pricing_page_url", updateProviderModel.pricingPageUrl);
+        writer.writeDateValue("updated_at", updateProviderModel.updatedAt);
+        writer.writeStringValue("url", updateProviderModel.url);
+        writer.writeAdditionalData(updateProviderModel.additionalData);
+    }
 }
 export interface UpdatePlanModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * The description property
      */
@@ -627,6 +637,10 @@ export interface UpdatePlanModel extends AdditionalDataHolder, Parsable {
     updateAt?: string | null;
 }
 export interface UpdatePriceModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * The amount property
      */
@@ -649,6 +663,10 @@ export interface UpdatePriceModel extends AdditionalDataHolder, Parsable {
     startDate?: Date | null;
 }
 export interface UpdateProviderModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * The description property
      */

@@ -24,6 +24,10 @@ export function createCurrencyRatesModelFromDiscriminatorValue(parseNode: ParseN
 }
 export interface CurrencyRateModel extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * The currency property
      */
     currency?: string | null;
@@ -33,6 +37,10 @@ export interface CurrencyRateModel extends AdditionalDataHolder, Parsable {
     rate?: number | null;
 }
 export interface CurrencyRatesModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * The rates property
      */
@@ -44,7 +52,6 @@ export interface CurrencyRatesModel extends AdditionalDataHolder, Parsable {
 }
 /**
  * The deserialization information for the current model
- * @param CurrencyRateModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -56,7 +63,6 @@ export function deserializeIntoCurrencyRateModel(currencyRateModel: Partial<Curr
 }
 /**
  * The deserialization information for the current model
- * @param CurrencyRatesModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -68,29 +74,27 @@ export function deserializeIntoCurrencyRatesModel(currencyRatesModel: Partial<Cu
 }
 /**
  * Serializes information the current object
- * @param CurrencyRateModel The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeCurrencyRateModel(writer: SerializationWriter, currencyRateModel: Partial<CurrencyRateModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!currencyRateModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("currency", currencyRateModel.currency);
-    writer.writeNumberValue("rate", currencyRateModel.rate);
-    writer.writeAdditionalData(currencyRateModel.additionalData);
+export function serializeCurrencyRateModel(writer: SerializationWriter, currencyRateModel: Partial<CurrencyRateModel> | undefined | null = {}) : void {
+    if (currencyRateModel) {
+        writer.writeStringValue("currency", currencyRateModel.currency);
+        writer.writeNumberValue("rate", currencyRateModel.rate);
+        writer.writeAdditionalData(currencyRateModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param CurrencyRatesModel The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeCurrencyRatesModel(writer: SerializationWriter, currencyRatesModel: Partial<CurrencyRatesModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!currencyRatesModel || isSerializingDerivedType) { return; }
-    writer.writeCollectionOfObjectValues<CurrencyRateModel>("rates", currencyRatesModel.rates, serializeCurrencyRateModel);
-    writer.writeDateValue("timestamp", currencyRatesModel.timestamp);
-    writer.writeAdditionalData(currencyRatesModel.additionalData);
+export function serializeCurrencyRatesModel(writer: SerializationWriter, currencyRatesModel: Partial<CurrencyRatesModel> | undefined | null = {}) : void {
+    if (currencyRatesModel) {
+        writer.writeCollectionOfObjectValues<CurrencyRateModel>("rates", currencyRatesModel.rates, serializeCurrencyRateModel);
+        writer.writeDateValue("timestamp", currencyRatesModel.timestamp);
+        writer.writeAdditionalData(currencyRatesModel.additionalData);
+    }
 }
 /* tslint:enable */
 /* eslint-enable */

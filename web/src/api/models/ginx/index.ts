@@ -15,7 +15,6 @@ export function createHttpErrorResponseFromDiscriminatorValue(parseNode: ParseNo
 }
 /**
  * The deserialization information for the current model
- * @param HttpErrorResponse The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -26,21 +25,24 @@ export function deserializeIntoHttpErrorResponse(httpErrorResponse: Partial<Http
 }
 export interface HttpErrorResponse extends AdditionalDataHolder, ApiError, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * The message property
      */
     messageEscaped?: string | null;
 }
 /**
  * Serializes information the current object
- * @param HttpErrorResponse The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeHttpErrorResponse(writer: SerializationWriter, httpErrorResponse: Partial<HttpErrorResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!httpErrorResponse || isSerializingDerivedType) { return; }
-    writer.writeStringValue("message", httpErrorResponse.messageEscaped);
-    writer.writeAdditionalData(httpErrorResponse.additionalData);
+export function serializeHttpErrorResponse(writer: SerializationWriter, httpErrorResponse: Partial<HttpErrorResponse> | undefined | null = {}) : void {
+    if (httpErrorResponse) {
+        writer.writeStringValue("message", httpErrorResponse.messageEscaped);
+        writer.writeAdditionalData(httpErrorResponse.additionalData);
+    }
 }
 /* tslint:enable */
 /* eslint-enable */

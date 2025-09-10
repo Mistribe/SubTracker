@@ -1,117 +1,50 @@
-# Subscription Tracker
+# Welcome to your Expo app 👋
 
-A Flutter application to track subscriptions and their history.
+This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-## Features
+## Get started
 
-- Add, edit, and delete subscriptions
-- Track subscription history and price changes over time
-- Calculate monthly and annual costs
-- Persistent storage of subscription data
+1. Install dependencies
 
-## Persistence Implementation
-
-This application uses Hive for local data persistence. Hive is a lightweight, fast NoSQL database that works well with Flutter and is suitable for storing structured data like subscription records.
-
-### Architecture
-
-The persistence layer follows a repository pattern to abstract the data access:
-
-1. **Models**: The `Subscription` and `PriceChange` classes in `lib/models/subscription.dart` are annotated with Hive annotations for serialization.
-
-2. **Repository**: The `SubscriptionRepository` class in `lib/repositories/subscription_repository.dart` handles all interactions with the Hive database.
-
-3. **Provider**: The `SubscriptionProvider` class in `lib/providers/subscription_provider.dart` uses the repository to load, save, update, and delete subscriptions.
-
-### Future API Integration
-
-The current architecture is designed to make it easy to switch from local storage to an API-based solution in the future. Here's how to implement API integration:
-
-1. **Create an API Service**:
-   ```dart
-   class SubscriptionApiService {
-     final String baseUrl;
-     final http.Client client;
-
-     SubscriptionApiService({required this.baseUrl, http.Client? client})
-         : client = client ?? http.Client();
-
-     Future<List<Subscription>> getSubscriptions() async {
-       final response = await client.get(Uri.parse('$baseUrl/subscriptions'));
-       if (response.statusCode == 200) {
-         final List<dynamic> data = json.decode(response.body);
-         return data.map((json) => Subscription.fromJson(json)).toList();
-       } else {
-         throw Exception('Failed to load subscriptions');
-       }
-     }
-
-     Future<Subscription> addSubscription(Subscription subscription) async {
-       // Implementation
-     }
-
-     Future<Subscription> updateSubscription(Subscription subscription) async {
-       // Implementation
-     }
-
-     Future<void> deleteSubscription(String id) async {
-       // Implementation
-     }
-   }
+   ```bash
+   npm install
    ```
 
-2. **Create a New Repository Implementation**:
-   ```dart
-   class ApiSubscriptionRepository implements SubscriptionRepository {
-     final SubscriptionApiService apiService;
+2. Start the app
 
-     ApiSubscriptionRepository({required this.apiService});
-
-     @override
-     Future<void> initialize() async {
-       // No initialization needed for API
-     }
-
-     @override
-     List<Subscription> getAllSubscriptions() async {
-       return await apiService.getSubscriptions();
-     }
-
-     @override
-     Future<void> addSubscription(Subscription subscription) async {
-       await apiService.addSubscription(subscription);
-     }
-
-     @override
-     Future<void> updateSubscription(Subscription subscription) async {
-       await apiService.updateSubscription(subscription);
-     }
-
-     @override
-     Future<void> deleteSubscription(String id) async {
-       await apiService.deleteSubscription(id);
-     }
-   }
+   ```bash
+   npx expo start
    ```
 
-3. **Implement Caching Strategy**:
-   - Consider implementing a caching strategy to improve performance and provide offline capabilities.
-   - You could use Hive to cache API responses and implement a sync mechanism.
+In the output, you'll find options to open the app in a
 
-4. **Update Dependency Injection**:
-   - Modify the `main.dart` file to inject the appropriate repository implementation based on configuration.
+- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
+- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-5. **Error Handling and Connectivity**:
-   - Add proper error handling for API calls
-   - Implement connectivity checks to handle offline scenarios
+You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-By following this approach, you can easily switch between local storage and API-based storage without changing the rest of the application code.
+## Get a fresh project
 
-## Getting Started
+When you're ready, run:
 
-To run this project:
+```bash
+npm run reset-project
+```
 
-1. Ensure you have Flutter installed
-2. Clone the repository
-3. Run `flutter pub get` to install dependencies
-4. Run `flutter run` to start the application
+This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+
+## Learn more
+
+To learn more about developing your project with Expo, look at the following resources:
+
+- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
+- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+
+## Join the community
+
+Join our community of developers creating universal apps.
+
+- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
+- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.

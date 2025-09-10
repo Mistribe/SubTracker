@@ -10,25 +10,33 @@ openapi:
 	swag fmt -d ./cmd/api/ -d ./internal/adapters/http/handlers/  &&\
 	swag init -d ./cmd/api/ -pdl 3 -o ./internal/adapters/http/handlers/openapi --v3.1
 
-clients: typescript-client dart-client
+clients: typescript-client
 
-typescript-client:
+typescript-client: typescript-client-mobile typescript-client-web
+
+typescript-client-web:
 	@echo "Clean old client api" &&\
 		rm -fr "${PWD}/../web/src/api" &&\
     	mkdir -p "${PWD}/../web/src/api" &&\
     	cp "${PWD}/internal/adapters/http/handlers/openapi/swagger.yaml" "${PWD}/../web/src/api"
-	@docker pull mcr.microsoft.com/openapi/kiota && \
+	@docker pull mcr.microsoft.com/openapi/kiota:1.27.0 && \
     docker run --rm -v ../web/src/api:/app/output \
     -v ./internal/adapters/http/handlers/openapi/swagger.yaml:/app/openapi.yaml \
     --user $(id -u):$(id -g) \
-    mcr.microsoft.com/openapi/kiota generate --language typescript --clean-output
+    mcr.microsoft.com/openapi/kiota:1.27.0 generate --language typescript --clean-output
 
-dart-client:
-	docker pull mcr.microsoft.com/openapi/kiota && \
-    docker run --rm -v ../mobile/lib/api:/app/output \
-    -v ./internal/adapters/http/handlers/openapi/swagger.yaml:/app/openapi.yaml \
+typescript-client-mobile:
+	@echo "Clean old client api" &&\
+		rm -fr "${PWD}/../mobile/services/api" &&\
+    	mkdir -p "${PWD}/../mobile/services/api" &&\
+    	cp "${PWD}/internal/adapters/http/handlers/openapi/swagger.yaml" "${PWD}/../mobile/services/api"
+	@docker pull openapitools/openapi-generator-cli && \
+    docker run --rm -v ../mobile/services/api:/app/output \
     --user $(id -u):$(id -g) \
-    mcr.microsoft.com/openapi/kiota generate --language dart --clean-output
+    -v ${PWD}/../mobile/services/api:/local openapitools/openapi-generator-cli generate \
+    -i /local/swagger.yaml \
+    -g typescript \
+    -o /local/
 
 run-deps:
 	@docker compose down -v && docker compose up --build database database.migration

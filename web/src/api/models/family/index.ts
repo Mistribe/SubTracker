@@ -60,6 +60,10 @@ export function createFamilyInviteResponseFromDiscriminatorValue(parseNode: Pars
 }
 export interface CreateFamilyMemberModel extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * The created_at property
      */
     createdAt?: Date | null;
@@ -87,6 +91,10 @@ export function createFamilyMemberModelFromDiscriminatorValue(parseNode: ParseNo
     return deserializeIntoFamilyMemberModel;
 }
 export interface CreateFamilyModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * The created_at property
      */
@@ -160,7 +168,6 @@ export function createUpdateFamilyModelFromDiscriminatorValue(parseNode: ParseNo
 }
 /**
  * The deserialization information for the current model
- * @param CreateFamilyMemberModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -174,7 +181,6 @@ export function deserializeIntoCreateFamilyMemberModel(createFamilyMemberModel: 
 }
 /**
  * The deserialization information for the current model
- * @param CreateFamilyModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -188,7 +194,6 @@ export function deserializeIntoCreateFamilyModel(createFamilyModel: Partial<Crea
 }
 /**
  * The deserialization information for the current model
- * @param FamilyAcceptInvitationRequest The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -200,7 +205,6 @@ export function deserializeIntoFamilyAcceptInvitationRequest(familyAcceptInvitat
 }
 /**
  * The deserialization information for the current model
- * @param FamilyDeclineInvitationRequest The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -212,7 +216,6 @@ export function deserializeIntoFamilyDeclineInvitationRequest(familyDeclineInvit
 }
 /**
  * The deserialization information for the current model
- * @param FamilyInviteRequest The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -226,7 +229,6 @@ export function deserializeIntoFamilyInviteRequest(familyInviteRequest: Partial<
 }
 /**
  * The deserialization information for the current model
- * @param FamilyInviteResponse The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -239,7 +241,6 @@ export function deserializeIntoFamilyInviteResponse(familyInviteResponse: Partia
 }
 /**
  * The deserialization information for the current model
- * @param FamilyMemberModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -258,7 +259,6 @@ export function deserializeIntoFamilyMemberModel(familyMemberModel: Partial<Fami
 }
 /**
  * The deserialization information for the current model
- * @param FamilyModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -275,7 +275,6 @@ export function deserializeIntoFamilyModel(familyModel: Partial<FamilyModel> | u
 }
 /**
  * The deserialization information for the current model
- * @param FamilySeeInvitationResponse The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -287,7 +286,6 @@ export function deserializeIntoFamilySeeInvitationResponse(familySeeInvitationRe
 }
 /**
  * The deserialization information for the current model
- * @param PatchFamilyMemberModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -301,7 +299,6 @@ export function deserializeIntoPatchFamilyMemberModel(patchFamilyMemberModel: Pa
 }
 /**
  * The deserialization information for the current model
- * @param PatchFamilyModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -315,7 +312,6 @@ export function deserializeIntoPatchFamilyModel(patchFamilyModel: Partial<PatchF
 }
 /**
  * The deserialization information for the current model
- * @param UpdateFamilyMemberModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -328,7 +324,6 @@ export function deserializeIntoUpdateFamilyMemberModel(updateFamilyMemberModel: 
 }
 /**
  * The deserialization information for the current model
- * @param UpdateFamilyModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -340,6 +335,10 @@ export function deserializeIntoUpdateFamilyModel(updateFamilyModel: Partial<Upda
 }
 export interface FamilyAcceptInvitationRequest extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * ID of the family member accepting the invitation
      */
     familyMemberId?: string | null;
@@ -350,6 +349,10 @@ export interface FamilyAcceptInvitationRequest extends AdditionalDataHolder, Par
 }
 export interface FamilyDeclineInvitationRequest extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * ID of the family member accepting the invitation
      */
     familyMemberId?: string | null;
@@ -359,6 +362,10 @@ export interface FamilyDeclineInvitationRequest extends AdditionalDataHolder, Pa
     invitationCode?: string | null;
 }
 export interface FamilyInviteRequest extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * Email of the invited member
      */
@@ -379,6 +386,10 @@ export interface FamilyInviteRequest extends AdditionalDataHolder, Parsable {
 export type FamilyInviteRequest_type = (typeof FamilyInviteRequest_typeObject)[keyof typeof FamilyInviteRequest_typeObject];
 export interface FamilyInviteResponse extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * The code property
      */
     code?: string | null;
@@ -395,6 +406,10 @@ export interface FamilyInviteResponse extends AdditionalDataHolder, Parsable {
  * Family member object containing member information
  */
 export interface FamilyMemberModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * @Description Timestamp when the member was created
      */
@@ -438,6 +453,10 @@ export type FamilyMemberModel_type = (typeof FamilyMemberModel_typeObject)[keyof
  */
 export interface FamilyModel extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * @Description ISO 8601 timestamp indicating when the family was originally created
      */
     createdAt?: Date | null;
@@ -468,6 +487,10 @@ export interface FamilyModel extends AdditionalDataHolder, Parsable {
 }
 export interface FamilySeeInvitationResponse extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * Family details
      */
     family?: FamilyModel | null;
@@ -480,6 +503,10 @@ export interface FamilySeeInvitationResponse extends AdditionalDataHolder, Parsa
  * Model for updating family member details
  */
 export interface PatchFamilyMemberModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * Optional member ID. If not provided, new member will be created
      */
@@ -503,6 +530,10 @@ export type PatchFamilyMemberModel_type = (typeof PatchFamilyMemberModel_typeObj
  */
 export interface PatchFamilyModel extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * Family ID
      */
     id?: string | null;
@@ -521,198 +552,189 @@ export interface PatchFamilyModel extends AdditionalDataHolder, Parsable {
 }
 /**
  * Serializes information the current object
- * @param CreateFamilyMemberModel The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeCreateFamilyMemberModel(writer: SerializationWriter, createFamilyMemberModel: Partial<CreateFamilyMemberModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!createFamilyMemberModel || isSerializingDerivedType) { return; }
-    writer.writeDateValue("created_at", createFamilyMemberModel.createdAt);
-    writer.writeStringValue("id", createFamilyMemberModel.id);
-    writer.writeStringValue("name", createFamilyMemberModel.name);
-    writer.writeEnumValue<CreateFamilyMemberModel_type>("type", createFamilyMemberModel.type);
-    writer.writeAdditionalData(createFamilyMemberModel.additionalData);
+export function serializeCreateFamilyMemberModel(writer: SerializationWriter, createFamilyMemberModel: Partial<CreateFamilyMemberModel> | undefined | null = {}) : void {
+    if (createFamilyMemberModel) {
+        writer.writeDateValue("created_at", createFamilyMemberModel.createdAt);
+        writer.writeStringValue("id", createFamilyMemberModel.id);
+        writer.writeStringValue("name", createFamilyMemberModel.name);
+        writer.writeEnumValue<CreateFamilyMemberModel_type>("type", createFamilyMemberModel.type);
+        writer.writeAdditionalData(createFamilyMemberModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param CreateFamilyModel The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeCreateFamilyModel(writer: SerializationWriter, createFamilyModel: Partial<CreateFamilyModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!createFamilyModel || isSerializingDerivedType) { return; }
-    writer.writeDateValue("created_at", createFamilyModel.createdAt);
-    writer.writeStringValue("creator_name", createFamilyModel.creatorName);
-    writer.writeStringValue("id", createFamilyModel.id);
-    writer.writeStringValue("name", createFamilyModel.name);
-    writer.writeAdditionalData(createFamilyModel.additionalData);
+export function serializeCreateFamilyModel(writer: SerializationWriter, createFamilyModel: Partial<CreateFamilyModel> | undefined | null = {}) : void {
+    if (createFamilyModel) {
+        writer.writeDateValue("created_at", createFamilyModel.createdAt);
+        writer.writeStringValue("creator_name", createFamilyModel.creatorName);
+        writer.writeStringValue("id", createFamilyModel.id);
+        writer.writeStringValue("name", createFamilyModel.name);
+        writer.writeAdditionalData(createFamilyModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param FamilyAcceptInvitationRequest The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeFamilyAcceptInvitationRequest(writer: SerializationWriter, familyAcceptInvitationRequest: Partial<FamilyAcceptInvitationRequest> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!familyAcceptInvitationRequest || isSerializingDerivedType) { return; }
-    writer.writeStringValue("family_member_id", familyAcceptInvitationRequest.familyMemberId);
-    writer.writeStringValue("invitation_code", familyAcceptInvitationRequest.invitationCode);
-    writer.writeAdditionalData(familyAcceptInvitationRequest.additionalData);
+export function serializeFamilyAcceptInvitationRequest(writer: SerializationWriter, familyAcceptInvitationRequest: Partial<FamilyAcceptInvitationRequest> | undefined | null = {}) : void {
+    if (familyAcceptInvitationRequest) {
+        writer.writeStringValue("family_member_id", familyAcceptInvitationRequest.familyMemberId);
+        writer.writeStringValue("invitation_code", familyAcceptInvitationRequest.invitationCode);
+        writer.writeAdditionalData(familyAcceptInvitationRequest.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param FamilyDeclineInvitationRequest The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeFamilyDeclineInvitationRequest(writer: SerializationWriter, familyDeclineInvitationRequest: Partial<FamilyDeclineInvitationRequest> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!familyDeclineInvitationRequest || isSerializingDerivedType) { return; }
-    writer.writeStringValue("family_member_id", familyDeclineInvitationRequest.familyMemberId);
-    writer.writeStringValue("invitation_code", familyDeclineInvitationRequest.invitationCode);
-    writer.writeAdditionalData(familyDeclineInvitationRequest.additionalData);
+export function serializeFamilyDeclineInvitationRequest(writer: SerializationWriter, familyDeclineInvitationRequest: Partial<FamilyDeclineInvitationRequest> | undefined | null = {}) : void {
+    if (familyDeclineInvitationRequest) {
+        writer.writeStringValue("family_member_id", familyDeclineInvitationRequest.familyMemberId);
+        writer.writeStringValue("invitation_code", familyDeclineInvitationRequest.invitationCode);
+        writer.writeAdditionalData(familyDeclineInvitationRequest.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param FamilyInviteRequest The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeFamilyInviteRequest(writer: SerializationWriter, familyInviteRequest: Partial<FamilyInviteRequest> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!familyInviteRequest || isSerializingDerivedType) { return; }
-    writer.writeStringValue("email", familyInviteRequest.email);
-    writer.writeStringValue("family_member_id", familyInviteRequest.familyMemberId);
-    writer.writeStringValue("name", familyInviteRequest.name);
-    writer.writeEnumValue<FamilyInviteRequest_type>("type", familyInviteRequest.type);
-    writer.writeAdditionalData(familyInviteRequest.additionalData);
+export function serializeFamilyInviteRequest(writer: SerializationWriter, familyInviteRequest: Partial<FamilyInviteRequest> | undefined | null = {}) : void {
+    if (familyInviteRequest) {
+        writer.writeStringValue("email", familyInviteRequest.email);
+        writer.writeStringValue("family_member_id", familyInviteRequest.familyMemberId);
+        writer.writeStringValue("name", familyInviteRequest.name);
+        writer.writeEnumValue<FamilyInviteRequest_type>("type", familyInviteRequest.type);
+        writer.writeAdditionalData(familyInviteRequest.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param FamilyInviteResponse The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeFamilyInviteResponse(writer: SerializationWriter, familyInviteResponse: Partial<FamilyInviteResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!familyInviteResponse || isSerializingDerivedType) { return; }
-    writer.writeStringValue("code", familyInviteResponse.code);
-    writer.writeStringValue("family_id", familyInviteResponse.familyId);
-    writer.writeStringValue("family_member_id", familyInviteResponse.familyMemberId);
-    writer.writeAdditionalData(familyInviteResponse.additionalData);
+export function serializeFamilyInviteResponse(writer: SerializationWriter, familyInviteResponse: Partial<FamilyInviteResponse> | undefined | null = {}) : void {
+    if (familyInviteResponse) {
+        writer.writeStringValue("code", familyInviteResponse.code);
+        writer.writeStringValue("family_id", familyInviteResponse.familyId);
+        writer.writeStringValue("family_member_id", familyInviteResponse.familyMemberId);
+        writer.writeAdditionalData(familyInviteResponse.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param FamilyMemberModel The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeFamilyMemberModel(writer: SerializationWriter, familyMemberModel: Partial<FamilyMemberModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!familyMemberModel || isSerializingDerivedType) { return; }
-    writer.writeDateValue("created_at", familyMemberModel.createdAt);
-    writer.writeStringValue("etag", familyMemberModel.etag);
-    writer.writeStringValue("family_id", familyMemberModel.familyId);
-    writer.writeBooleanValue("has_account", familyMemberModel.hasAccount);
-    writer.writeStringValue("id", familyMemberModel.id);
-    writer.writeBooleanValue("is_you", familyMemberModel.isYou);
-    writer.writeStringValue("name", familyMemberModel.name);
-    writer.writeEnumValue<FamilyMemberModel_type>("type", familyMemberModel.type);
-    writer.writeDateValue("updated_at", familyMemberModel.updatedAt);
-    writer.writeAdditionalData(familyMemberModel.additionalData);
+export function serializeFamilyMemberModel(writer: SerializationWriter, familyMemberModel: Partial<FamilyMemberModel> | undefined | null = {}) : void {
+    if (familyMemberModel) {
+        writer.writeDateValue("created_at", familyMemberModel.createdAt);
+        writer.writeStringValue("etag", familyMemberModel.etag);
+        writer.writeStringValue("family_id", familyMemberModel.familyId);
+        writer.writeBooleanValue("has_account", familyMemberModel.hasAccount);
+        writer.writeStringValue("id", familyMemberModel.id);
+        writer.writeBooleanValue("is_you", familyMemberModel.isYou);
+        writer.writeStringValue("name", familyMemberModel.name);
+        writer.writeEnumValue<FamilyMemberModel_type>("type", familyMemberModel.type);
+        writer.writeDateValue("updated_at", familyMemberModel.updatedAt);
+        writer.writeAdditionalData(familyMemberModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param FamilyModel The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeFamilyModel(writer: SerializationWriter, familyModel: Partial<FamilyModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!familyModel || isSerializingDerivedType) { return; }
-    writer.writeDateValue("created_at", familyModel.createdAt);
-    writer.writeStringValue("etag", familyModel.etag);
-    writer.writeStringValue("id", familyModel.id);
-    writer.writeBooleanValue("is_owner", familyModel.isOwner);
-    writer.writeCollectionOfObjectValues<FamilyMemberModel>("members", familyModel.members, serializeFamilyMemberModel);
-    writer.writeStringValue("name", familyModel.name);
-    writer.writeDateValue("updated_at", familyModel.updatedAt);
-    writer.writeAdditionalData(familyModel.additionalData);
+export function serializeFamilyModel(writer: SerializationWriter, familyModel: Partial<FamilyModel> | undefined | null = {}) : void {
+    if (familyModel) {
+        writer.writeDateValue("created_at", familyModel.createdAt);
+        writer.writeStringValue("etag", familyModel.etag);
+        writer.writeStringValue("id", familyModel.id);
+        writer.writeBooleanValue("is_owner", familyModel.isOwner);
+        writer.writeCollectionOfObjectValues<FamilyMemberModel>("members", familyModel.members, serializeFamilyMemberModel);
+        writer.writeStringValue("name", familyModel.name);
+        writer.writeDateValue("updated_at", familyModel.updatedAt);
+        writer.writeAdditionalData(familyModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param FamilySeeInvitationResponse The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeFamilySeeInvitationResponse(writer: SerializationWriter, familySeeInvitationResponse: Partial<FamilySeeInvitationResponse> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!familySeeInvitationResponse || isSerializingDerivedType) { return; }
-    writer.writeObjectValue<FamilyModel>("family", familySeeInvitationResponse.family, serializeFamilyModel);
-    writer.writeStringValue("invited_inasmuch_as", familySeeInvitationResponse.invitedInasmuchAs);
-    writer.writeAdditionalData(familySeeInvitationResponse.additionalData);
+export function serializeFamilySeeInvitationResponse(writer: SerializationWriter, familySeeInvitationResponse: Partial<FamilySeeInvitationResponse> | undefined | null = {}) : void {
+    if (familySeeInvitationResponse) {
+        writer.writeObjectValue<FamilyModel>("family", familySeeInvitationResponse.family, serializeFamilyModel);
+        writer.writeStringValue("invited_inasmuch_as", familySeeInvitationResponse.invitedInasmuchAs);
+        writer.writeAdditionalData(familySeeInvitationResponse.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param PatchFamilyMemberModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializePatchFamilyMemberModel(writer: SerializationWriter, patchFamilyMemberModel: Partial<PatchFamilyMemberModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!patchFamilyMemberModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("id", patchFamilyMemberModel.id);
-    writer.writeStringValue("name", patchFamilyMemberModel.name);
-    writer.writeEnumValue<PatchFamilyMemberModel_type>("type", patchFamilyMemberModel.type);
-    writer.writeDateValue("updated_at", patchFamilyMemberModel.updatedAt);
-    writer.writeAdditionalData(patchFamilyMemberModel.additionalData);
+export function serializePatchFamilyMemberModel(writer: SerializationWriter, patchFamilyMemberModel: Partial<PatchFamilyMemberModel> | undefined | null = {}) : void {
+    if (patchFamilyMemberModel) {
+        writer.writeStringValue("id", patchFamilyMemberModel.id);
+        writer.writeStringValue("name", patchFamilyMemberModel.name);
+        writer.writeEnumValue<PatchFamilyMemberModel_type>("type", patchFamilyMemberModel.type);
+        writer.writeDateValue("updated_at", patchFamilyMemberModel.updatedAt);
+        writer.writeAdditionalData(patchFamilyMemberModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param PatchFamilyModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializePatchFamilyModel(writer: SerializationWriter, patchFamilyModel: Partial<PatchFamilyModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!patchFamilyModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("id", patchFamilyModel.id);
-    writer.writeCollectionOfObjectValues<PatchFamilyMemberModel>("members", patchFamilyModel.members, serializePatchFamilyMemberModel);
-    writer.writeStringValue("name", patchFamilyModel.name);
-    writer.writeDateValue("updated_at", patchFamilyModel.updatedAt);
-    writer.writeAdditionalData(patchFamilyModel.additionalData);
+export function serializePatchFamilyModel(writer: SerializationWriter, patchFamilyModel: Partial<PatchFamilyModel> | undefined | null = {}) : void {
+    if (patchFamilyModel) {
+        writer.writeStringValue("id", patchFamilyModel.id);
+        writer.writeCollectionOfObjectValues<PatchFamilyMemberModel>("members", patchFamilyModel.members, serializePatchFamilyMemberModel);
+        writer.writeStringValue("name", patchFamilyModel.name);
+        writer.writeDateValue("updated_at", patchFamilyModel.updatedAt);
+        writer.writeAdditionalData(patchFamilyModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param UpdateFamilyMemberModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeUpdateFamilyMemberModel(writer: SerializationWriter, updateFamilyMemberModel: Partial<UpdateFamilyMemberModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!updateFamilyMemberModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("name", updateFamilyMemberModel.name);
-    writer.writeEnumValue<UpdateFamilyMemberModel_type>("type", updateFamilyMemberModel.type);
-    writer.writeDateValue("updated_at", updateFamilyMemberModel.updatedAt);
-    writer.writeAdditionalData(updateFamilyMemberModel.additionalData);
+export function serializeUpdateFamilyMemberModel(writer: SerializationWriter, updateFamilyMemberModel: Partial<UpdateFamilyMemberModel> | undefined | null = {}) : void {
+    if (updateFamilyMemberModel) {
+        writer.writeStringValue("name", updateFamilyMemberModel.name);
+        writer.writeEnumValue<UpdateFamilyMemberModel_type>("type", updateFamilyMemberModel.type);
+        writer.writeDateValue("updated_at", updateFamilyMemberModel.updatedAt);
+        writer.writeAdditionalData(updateFamilyMemberModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param UpdateFamilyModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeUpdateFamilyModel(writer: SerializationWriter, updateFamilyModel: Partial<UpdateFamilyModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!updateFamilyModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("name", updateFamilyModel.name);
-    writer.writeDateValue("updated_at", updateFamilyModel.updatedAt);
-    writer.writeAdditionalData(updateFamilyModel.additionalData);
+export function serializeUpdateFamilyModel(writer: SerializationWriter, updateFamilyModel: Partial<UpdateFamilyModel> | undefined | null = {}) : void {
+    if (updateFamilyModel) {
+        writer.writeStringValue("name", updateFamilyModel.name);
+        writer.writeDateValue("updated_at", updateFamilyModel.updatedAt);
+        writer.writeAdditionalData(updateFamilyModel.additionalData);
+    }
 }
 export interface UpdateFamilyMemberModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * The name property
      */
@@ -728,6 +750,10 @@ export interface UpdateFamilyMemberModel extends AdditionalDataHolder, Parsable 
 }
 export type UpdateFamilyMemberModel_type = (typeof UpdateFamilyMemberModel_typeObject)[keyof typeof UpdateFamilyMemberModel_typeObject];
 export interface UpdateFamilyModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * The name property
      */

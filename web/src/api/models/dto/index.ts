@@ -15,6 +15,10 @@ import { type AdditionalDataHolder, type Parsable, type ParseNode, type Serializ
  */
 export interface AmountModel extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * The currency property
      */
     currency?: string | null;
@@ -83,7 +87,6 @@ export function createPaginatedResponseModelSubscription_SubscriptionModelFromDi
 }
 /**
  * The deserialization information for the current model
- * @param AmountModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -96,7 +99,6 @@ export function deserializeIntoAmountModel(amountModel: Partial<AmountModel> | u
 }
 /**
  * The deserialization information for the current model
- * @param EditableOwnerModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -108,7 +110,6 @@ export function deserializeIntoEditableOwnerModel(editableOwnerModel: Partial<Ed
 }
 /**
  * The deserialization information for the current model
- * @param OwnerModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -122,7 +123,6 @@ export function deserializeIntoOwnerModel(ownerModel: Partial<OwnerModel> | unde
 }
 /**
  * The deserialization information for the current model
- * @param PaginatedResponseModelLabel_labelModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -135,7 +135,6 @@ export function deserializeIntoPaginatedResponseModelLabel_labelModel(paginatedR
 }
 /**
  * The deserialization information for the current model
- * @param PaginatedResponseModelProvider_ProviderModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -148,7 +147,6 @@ export function deserializeIntoPaginatedResponseModelProvider_ProviderModel(pagi
 }
 /**
  * The deserialization information for the current model
- * @param PaginatedResponseModelSubscription_SubscriptionModel The instance to deserialize into.
  * @returns {Record<string, (node: ParseNode) => void>}
  */
 // @ts-ignore
@@ -160,6 +158,10 @@ export function deserializeIntoPaginatedResponseModelSubscription_SubscriptionMo
     }
 }
 export interface EditableOwnerModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * @Description Family ID when an ownership type is family (required for family ownership)
      */
@@ -174,6 +176,10 @@ export type EditableOwnerModel_type = (typeof EditableOwnerModel_typeObject)[key
  * @Description Ownership information specifying whether this subscription belongs to a user or family
  */
 export interface OwnerModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * @Description Entity tag for optimistic concurrency control
      */
@@ -194,6 +200,10 @@ export interface OwnerModel extends AdditionalDataHolder, Parsable {
 export type OwnerModel_type = (typeof OwnerModel_typeObject)[keyof typeof OwnerModel_typeObject];
 export interface PaginatedResponseModelLabel_labelModel extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * Data contains the list of items for the current page
      */
     data?: LabelModel[] | null;
@@ -207,6 +217,10 @@ export interface PaginatedResponseModelLabel_labelModel extends AdditionalDataHo
     total?: number | null;
 }
 export interface PaginatedResponseModelProvider_ProviderModel extends AdditionalDataHolder, Parsable {
+    /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
     /**
      * Data contains the list of items for the current page
      */
@@ -222,6 +236,10 @@ export interface PaginatedResponseModelProvider_ProviderModel extends Additional
 }
 export interface PaginatedResponseModelSubscription_SubscriptionModel extends AdditionalDataHolder, Parsable {
     /**
+     * Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.
+     */
+    additionalData?: Record<string, unknown>;
+    /**
      * Data contains the list of items for the current page
      */
     data?: SubscriptionModel[] | null;
@@ -236,87 +254,81 @@ export interface PaginatedResponseModelSubscription_SubscriptionModel extends Ad
 }
 /**
  * Serializes information the current object
- * @param AmountModel The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeAmountModel(writer: SerializationWriter, amountModel: Partial<AmountModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!amountModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("currency", amountModel.currency);
-    writer.writeObjectValue<AmountModel>("source", amountModel.source, serializeAmountModel);
-    writer.writeNumberValue("value", amountModel.value);
-    writer.writeAdditionalData(amountModel.additionalData);
+export function serializeAmountModel(writer: SerializationWriter, amountModel: Partial<AmountModel> | undefined | null = {}) : void {
+    if (amountModel) {
+        writer.writeStringValue("currency", amountModel.currency);
+        writer.writeObjectValue<AmountModel>("source", amountModel.source, serializeAmountModel);
+        writer.writeNumberValue("value", amountModel.value);
+        writer.writeAdditionalData(amountModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param EditableOwnerModel The instance to serialize from.
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeEditableOwnerModel(writer: SerializationWriter, editableOwnerModel: Partial<EditableOwnerModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!editableOwnerModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("family_id", editableOwnerModel.familyId);
-    writer.writeEnumValue<EditableOwnerModel_type>("type", editableOwnerModel.type);
-    writer.writeAdditionalData(editableOwnerModel.additionalData);
+export function serializeEditableOwnerModel(writer: SerializationWriter, editableOwnerModel: Partial<EditableOwnerModel> | undefined | null = {}) : void {
+    if (editableOwnerModel) {
+        writer.writeStringValue("family_id", editableOwnerModel.familyId);
+        writer.writeEnumValue<EditableOwnerModel_type>("type", editableOwnerModel.type);
+        writer.writeAdditionalData(editableOwnerModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param OwnerModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializeOwnerModel(writer: SerializationWriter, ownerModel: Partial<OwnerModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!ownerModel || isSerializingDerivedType) { return; }
-    writer.writeStringValue("etag", ownerModel.etag);
-    writer.writeStringValue("family_id", ownerModel.familyId);
-    writer.writeEnumValue<OwnerModel_type>("type", ownerModel.type);
-    writer.writeStringValue("userId", ownerModel.userId);
-    writer.writeAdditionalData(ownerModel.additionalData);
+export function serializeOwnerModel(writer: SerializationWriter, ownerModel: Partial<OwnerModel> | undefined | null = {}) : void {
+    if (ownerModel) {
+        writer.writeStringValue("etag", ownerModel.etag);
+        writer.writeStringValue("family_id", ownerModel.familyId);
+        writer.writeEnumValue<OwnerModel_type>("type", ownerModel.type);
+        writer.writeStringValue("userId", ownerModel.userId);
+        writer.writeAdditionalData(ownerModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param PaginatedResponseModelLabel_labelModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializePaginatedResponseModelLabel_labelModel(writer: SerializationWriter, paginatedResponseModelLabel_labelModel: Partial<PaginatedResponseModelLabel_labelModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!paginatedResponseModelLabel_labelModel || isSerializingDerivedType) { return; }
-    writer.writeCollectionOfObjectValues<LabelModel>("data", paginatedResponseModelLabel_labelModel.data, serializeLabelModel);
-    writer.writeNumberValue("length", paginatedResponseModelLabel_labelModel.length);
-    writer.writeNumberValue("total", paginatedResponseModelLabel_labelModel.total);
-    writer.writeAdditionalData(paginatedResponseModelLabel_labelModel.additionalData);
+export function serializePaginatedResponseModelLabel_labelModel(writer: SerializationWriter, paginatedResponseModelLabel_labelModel: Partial<PaginatedResponseModelLabel_labelModel> | undefined | null = {}) : void {
+    if (paginatedResponseModelLabel_labelModel) {
+        writer.writeCollectionOfObjectValues<LabelModel>("data", paginatedResponseModelLabel_labelModel.data, serializeLabelModel);
+        writer.writeNumberValue("length", paginatedResponseModelLabel_labelModel.length);
+        writer.writeNumberValue("total", paginatedResponseModelLabel_labelModel.total);
+        writer.writeAdditionalData(paginatedResponseModelLabel_labelModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param PaginatedResponseModelProvider_ProviderModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializePaginatedResponseModelProvider_ProviderModel(writer: SerializationWriter, paginatedResponseModelProvider_ProviderModel: Partial<PaginatedResponseModelProvider_ProviderModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!paginatedResponseModelProvider_ProviderModel || isSerializingDerivedType) { return; }
-    writer.writeCollectionOfObjectValues<ProviderModel>("data", paginatedResponseModelProvider_ProviderModel.data, serializeProviderModel);
-    writer.writeNumberValue("length", paginatedResponseModelProvider_ProviderModel.length);
-    writer.writeNumberValue("total", paginatedResponseModelProvider_ProviderModel.total);
-    writer.writeAdditionalData(paginatedResponseModelProvider_ProviderModel.additionalData);
+export function serializePaginatedResponseModelProvider_ProviderModel(writer: SerializationWriter, paginatedResponseModelProvider_ProviderModel: Partial<PaginatedResponseModelProvider_ProviderModel> | undefined | null = {}) : void {
+    if (paginatedResponseModelProvider_ProviderModel) {
+        writer.writeCollectionOfObjectValues<ProviderModel>("data", paginatedResponseModelProvider_ProviderModel.data, serializeProviderModel);
+        writer.writeNumberValue("length", paginatedResponseModelProvider_ProviderModel.length);
+        writer.writeNumberValue("total", paginatedResponseModelProvider_ProviderModel.total);
+        writer.writeAdditionalData(paginatedResponseModelProvider_ProviderModel.additionalData);
+    }
 }
 /**
  * Serializes information the current object
- * @param isSerializingDerivedType A boolean indicating whether the serialization is for a derived type.
- * @param PaginatedResponseModelSubscription_SubscriptionModel The instance to serialize from.
  * @param writer Serialization writer to use to serialize this model
  */
 // @ts-ignore
-export function serializePaginatedResponseModelSubscription_SubscriptionModel(writer: SerializationWriter, paginatedResponseModelSubscription_SubscriptionModel: Partial<PaginatedResponseModelSubscription_SubscriptionModel> | undefined | null = {}, isSerializingDerivedType: boolean = false) : void {
-    if (!paginatedResponseModelSubscription_SubscriptionModel || isSerializingDerivedType) { return; }
-    writer.writeCollectionOfObjectValues<SubscriptionModel>("data", paginatedResponseModelSubscription_SubscriptionModel.data, serializeSubscriptionModel);
-    writer.writeNumberValue("length", paginatedResponseModelSubscription_SubscriptionModel.length);
-    writer.writeNumberValue("total", paginatedResponseModelSubscription_SubscriptionModel.total);
-    writer.writeAdditionalData(paginatedResponseModelSubscription_SubscriptionModel.additionalData);
+export function serializePaginatedResponseModelSubscription_SubscriptionModel(writer: SerializationWriter, paginatedResponseModelSubscription_SubscriptionModel: Partial<PaginatedResponseModelSubscription_SubscriptionModel> | undefined | null = {}) : void {
+    if (paginatedResponseModelSubscription_SubscriptionModel) {
+        writer.writeCollectionOfObjectValues<SubscriptionModel>("data", paginatedResponseModelSubscription_SubscriptionModel.data, serializeSubscriptionModel);
+        writer.writeNumberValue("length", paginatedResponseModelSubscription_SubscriptionModel.length);
+        writer.writeNumberValue("total", paginatedResponseModelSubscription_SubscriptionModel.total);
+        writer.writeAdditionalData(paginatedResponseModelSubscription_SubscriptionModel.additionalData);
+    }
 }
 /**
  * @Description Type of ownership (personal, family or system)
