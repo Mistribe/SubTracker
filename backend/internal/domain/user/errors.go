@@ -5,7 +5,8 @@ import (
 )
 
 var (
-	ErrUnknownPlan = exception.New("unknown plan")
+	ErrUnknownPlan  = exception.New("unknown plan")
+	ErrUnauthorized = exception.NewUnauthorized("unauthorized")
 )
 
 func NewLimitExceededErr(feature Feature, limit int64, usage int64) PlanLimitExceeded {

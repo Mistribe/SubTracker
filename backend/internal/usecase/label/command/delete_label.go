@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 
 	"github.com/mistribe/subtracker/internal/domain/label"
@@ -19,16 +19,16 @@ type DeleteLabelCommand struct {
 type DeleteLabelCommandHandler struct {
 	labelRepository  ports.LabelRepository
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthenticationService
+	authorization    ports.Authorization
 }
 
 func NewDeleteLabelCommandHandler(labelRepository ports.LabelRepository,
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthenticationService) *DeleteLabelCommandHandler {
+	authorization ports.Authorization) *DeleteLabelCommandHandler {
 	return &DeleteLabelCommandHandler{
 		labelRepository:  labelRepository,
 		familyRepository: familyRepository,
-		authService:      authService,
+		authorization:    authorization,
 	}
 }
 
@@ -41,15 +41,12 @@ func (h DeleteLabelCommandHandler) Handle(ctx context.Context, command DeleteLab
 		return result.Fail[bool](label.ErrLabelNotFound)
 	}
 
-	ok, err := h.authService.IsOwner(ctx, existingLabel.Owner())
+	err = h.authorization.Can(ctx, user.PermissionDelete).For(existingLabel)
 	if err != nil {
 		return result.Fail[bool](err)
 	}
-	if !ok {
-		return result.Fail[bool](family.ErrFamilyNotFound)
-	}
 
-	ok, err = h.labelRepository.Delete(ctx, command.Id)
+	ok, err := h.labelRepository.Delete(ctx, command.Id)
 	if err != nil {
 		return result.Fail[bool](err)
 	}
