@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 
 	"github.com/google/uuid"
@@ -24,16 +24,16 @@ type UpdateLabelCommand struct {
 type UpdateLabelCommandHandler struct {
 	labelRepository  ports.LabelRepository
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthenticationService
+	authorization    ports.Authorization
 }
 
 func NewUpdateLabelCommandHandler(labelRepository ports.LabelRepository,
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthenticationService) *UpdateLabelCommandHandler {
+	authorization ports.Authorization) *UpdateLabelCommandHandler {
 	return &UpdateLabelCommandHandler{
 		labelRepository:  labelRepository,
 		familyRepository: familyRepository,
-		authService:      authService,
+		authorization:    authorization,
 	}
 }
 
@@ -47,12 +47,9 @@ func (h UpdateLabelCommandHandler) Handle(ctx context.Context, command UpdateLab
 		return result.Fail[label.Label](label.ErrLabelNotFound)
 	}
 
-	ok, err := h.authService.IsOwner(ctx, existingLabel.Owner())
+	err = h.authorization.Can(ctx, user.PermissionWrite).For(existingLabel)
 	if err != nil {
 		return result.Fail[label.Label](err)
-	}
-	if !ok {
-		return result.Fail[label.Label](family.ErrFamilyNotFound)
 	}
 
 	return h.updateLabel(ctx, command, existingLabel)

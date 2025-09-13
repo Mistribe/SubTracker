@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -15,14 +16,17 @@ type PatchSubscriptionCommand struct {
 type PatchSubscriptionCommandHandler struct {
 	subscriptionRepository ports.SubscriptionRepository
 	familyRepository       ports.FamilyRepository
+	authorization          ports.Authorization
 }
 
 func NewPatchSubscriptionCommandHandler(
 	subscriptionRepository ports.SubscriptionRepository,
-	familyRepository ports.FamilyRepository) *PatchSubscriptionCommandHandler {
+	familyRepository ports.FamilyRepository,
+	authorization ports.Authorization) *PatchSubscriptionCommandHandler {
 	return &PatchSubscriptionCommandHandler{
 		subscriptionRepository: subscriptionRepository,
 		familyRepository:       familyRepository,
+		authorization:          authorization,
 	}
 }
 
@@ -33,7 +37,15 @@ func (h PatchSubscriptionCommandHandler) Handle(
 	if err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
+	err = h.authorization.Can(ctx, user.PermissionWrite).For(cmd.Subscription)
+	if err != nil {
+		return result.Fail[subscription.Subscription](err)
+	}
 	if sub == nil {
+		err = h.authorization.EnsureWithinLimit(ctx, user.FeatureActiveSubscriptions, 1)
+		if err != nil {
+			return result.Fail[subscription.Subscription](err)
+		}
 		return h.createSubscription(ctx, cmd)
 	}
 	return h.patchSubscription(ctx, cmd, sub)

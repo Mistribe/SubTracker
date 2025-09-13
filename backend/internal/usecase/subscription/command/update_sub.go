@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -15,14 +16,17 @@ type UpdateSubscriptionCommand struct {
 type UpdateSubscriptionCommandHandler struct {
 	subscriptionRepository ports.SubscriptionRepository
 	familyRepository       ports.FamilyRepository
+	authorization          ports.Authorization
 }
 
 func NewUpdateSubscriptionCommandHandler(
 	subscriptionRepository ports.SubscriptionRepository,
-	familyRepository ports.FamilyRepository) *UpdateSubscriptionCommandHandler {
+	familyRepository ports.FamilyRepository,
+	authorization ports.Authorization) *UpdateSubscriptionCommandHandler {
 	return &UpdateSubscriptionCommandHandler{
 		subscriptionRepository: subscriptionRepository,
 		familyRepository:       familyRepository,
+		authorization:          authorization,
 	}
 }
 
@@ -36,6 +40,12 @@ func (h UpdateSubscriptionCommandHandler) Handle(
 	if sub == nil {
 		return result.Fail[subscription.Subscription](subscription.ErrSubscriptionNotFound)
 	}
+
+	err = h.authorization.Can(ctx, user.PermissionWrite).For(sub)
+	if err != nil {
+		return result.Fail[subscription.Subscription](err)
+	}
+
 	return h.updateSubscription(ctx, cmd, sub)
 }
 

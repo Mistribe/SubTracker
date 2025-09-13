@@ -39,6 +39,142 @@ func (_m *MockUserRepository) EXPECT() *MockUserRepository_Expecter {
 	return &MockUserRepository_Expecter{mock: &_m.Mock}
 }
 
+// CreateDefault provides a mock function for the type MockUserRepository
+func (_mock *MockUserRepository) CreateDefault(ctx context.Context, userId string) (user.User, error) {
+	ret := _mock.Called(ctx, userId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateDefault")
+	}
+
+	var r0 user.User
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (user.User, error)); ok {
+		return returnFunc(ctx, userId)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) user.User); ok {
+		r0 = returnFunc(ctx, userId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(user.User)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, userId)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUserRepository_CreateDefault_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateDefault'
+type MockUserRepository_CreateDefault_Call struct {
+	*mock.Call
+}
+
+// CreateDefault is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userId string
+func (_e *MockUserRepository_Expecter) CreateDefault(ctx interface{}, userId interface{}) *MockUserRepository_CreateDefault_Call {
+	return &MockUserRepository_CreateDefault_Call{Call: _e.mock.On("CreateDefault", ctx, userId)}
+}
+
+func (_c *MockUserRepository_CreateDefault_Call) Run(run func(ctx context.Context, userId string)) *MockUserRepository_CreateDefault_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUserRepository_CreateDefault_Call) Return(user1 user.User, err error) *MockUserRepository_CreateDefault_Call {
+	_c.Call.Return(user1, err)
+	return _c
+}
+
+func (_c *MockUserRepository_CreateDefault_Call) RunAndReturn(run func(ctx context.Context, userId string) (user.User, error)) *MockUserRepository_CreateDefault_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetUser provides a mock function for the type MockUserRepository
+func (_mock *MockUserRepository) GetUser(ctx context.Context, userId string) (user.User, error) {
+	ret := _mock.Called(ctx, userId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetUser")
+	}
+
+	var r0 user.User
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (user.User, error)); ok {
+		return returnFunc(ctx, userId)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) user.User); ok {
+		r0 = returnFunc(ctx, userId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(user.User)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, userId)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUserRepository_GetUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUser'
+type MockUserRepository_GetUser_Call struct {
+	*mock.Call
+}
+
+// GetUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userId string
+func (_e *MockUserRepository_Expecter) GetUser(ctx interface{}, userId interface{}) *MockUserRepository_GetUser_Call {
+	return &MockUserRepository_GetUser_Call{Call: _e.mock.On("GetUser", ctx, userId)}
+}
+
+func (_c *MockUserRepository_GetUser_Call) Run(run func(ctx context.Context, userId string)) *MockUserRepository_GetUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUserRepository_GetUser_Call) Return(user1 user.User, err error) *MockUserRepository_GetUser_Call {
+	_c.Call.Return(user1, err)
+	return _c
+}
+
+func (_c *MockUserRepository_GetUser_Call) RunAndReturn(run func(ctx context.Context, userId string) (user.User, error)) *MockUserRepository_GetUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetUserFamilies provides a mock function for the type MockUserRepository
 func (_mock *MockUserRepository) GetUserFamilies(ctx context.Context, userId string) ([]uuid.UUID, error) {
 	ret := _mock.Called(ctx, userId)
@@ -107,75 +243,7 @@ func (_c *MockUserRepository_GetUserFamilies_Call) RunAndReturn(run func(ctx con
 	return _c
 }
 
-// GetUserProfile provides a mock function for the type MockUserRepository
-func (_mock *MockUserRepository) GetUser(ctx context.Context, userId string) (user.User, error) {
-	ret := _mock.Called(ctx, userId)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetUser")
-	}
-
-	var r0 user.User
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (user.User, error)); ok {
-		return returnFunc(ctx, userId)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) user.User); ok {
-		r0 = returnFunc(ctx, userId)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(user.User)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = returnFunc(ctx, userId)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockUserRepository_GetUserProfile_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUser'
-type MockUserRepository_GetUserProfile_Call struct {
-	*mock.Call
-}
-
-// GetUserProfile is a helper method to define mock.On call
-//   - ctx context.Context
-//   - userId string
-func (_e *MockUserRepository_Expecter) GetUserProfile(ctx interface{}, userId interface{}) *MockUserRepository_GetUserProfile_Call {
-	return &MockUserRepository_GetUserProfile_Call{Call: _e.mock.On("GetUser", ctx, userId)}
-}
-
-func (_c *MockUserRepository_GetUserProfile_Call) Run(run func(ctx context.Context, userId string)) *MockUserRepository_GetUserProfile_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 string
-		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockUserRepository_GetUserProfile_Call) Return(profile user.User, err error) *MockUserRepository_GetUserProfile_Call {
-	_c.Call.Return(profile, err)
-	return _c
-}
-
-func (_c *MockUserRepository_GetUserProfile_Call) RunAndReturn(run func(ctx context.Context, userId string) (user.User, error)) *MockUserRepository_GetUserProfile_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// SaveProfile provides a mock function for the type MockUserRepository
+// Save provides a mock function for the type MockUserRepository
 func (_mock *MockUserRepository) Save(ctx context.Context, profile user.User) error {
 	ret := _mock.Called(ctx, profile)
 
@@ -192,19 +260,19 @@ func (_mock *MockUserRepository) Save(ctx context.Context, profile user.User) er
 	return r0
 }
 
-// MockUserRepository_SaveProfile_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Save'
-type MockUserRepository_SaveProfile_Call struct {
+// MockUserRepository_Save_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Save'
+type MockUserRepository_Save_Call struct {
 	*mock.Call
 }
 
-// SaveProfile is a helper method to define mock.On call
+// Save is a helper method to define mock.On call
 //   - ctx context.Context
 //   - profile user.User
-func (_e *MockUserRepository_Expecter) SaveProfile(ctx interface{}, profile interface{}) *MockUserRepository_SaveProfile_Call {
-	return &MockUserRepository_SaveProfile_Call{Call: _e.mock.On("Save", ctx, profile)}
+func (_e *MockUserRepository_Expecter) Save(ctx interface{}, profile interface{}) *MockUserRepository_Save_Call {
+	return &MockUserRepository_Save_Call{Call: _e.mock.On("Save", ctx, profile)}
 }
 
-func (_c *MockUserRepository_SaveProfile_Call) Run(run func(ctx context.Context, profile user.User)) *MockUserRepository_SaveProfile_Call {
+func (_c *MockUserRepository_Save_Call) Run(run func(ctx context.Context, profile user.User)) *MockUserRepository_Save_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -222,12 +290,12 @@ func (_c *MockUserRepository_SaveProfile_Call) Run(run func(ctx context.Context,
 	return _c
 }
 
-func (_c *MockUserRepository_SaveProfile_Call) Return(err error) *MockUserRepository_SaveProfile_Call {
+func (_c *MockUserRepository_Save_Call) Return(err error) *MockUserRepository_Save_Call {
 	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *MockUserRepository_SaveProfile_Call) RunAndReturn(run func(ctx context.Context, profile user.User) error) *MockUserRepository_SaveProfile_Call {
+func (_c *MockUserRepository_Save_Call) RunAndReturn(run func(ctx context.Context, profile user.User) error) *MockUserRepository_Save_Call {
 	_c.Call.Return(run)
 	return _c
 }

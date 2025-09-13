@@ -3,8 +3,8 @@ package command
 import (
 	"context"
 
-	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -16,37 +16,38 @@ type CreateLabelCommand struct {
 type CreateLabelCommandHandler struct {
 	labelRepository  ports.LabelRepository
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthenticationService
+	authorization    ports.Authorization
 }
 
 func NewCreateLabelCommandHandler(labelRepository ports.LabelRepository,
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthenticationService) *CreateLabelCommandHandler {
+	authorization ports.Authorization) *CreateLabelCommandHandler {
 	return &CreateLabelCommandHandler{
 		labelRepository:  labelRepository,
 		familyRepository: familyRepository,
-		authService:      authService,
+		authorization:    authorization,
 	}
 }
 
 func (h CreateLabelCommandHandler) Handle(ctx context.Context, command CreateLabelCommand) result.Result[label.Label] {
+	if err := h.authorization.Can(ctx, user.PermissionWrite).For(command.Label); err != nil {
+		return result.Fail[label.Label](err)
+	}
 	existingLabel, err := h.labelRepository.GetById(ctx, command.Label.Id())
 	if err != nil {
 		return result.Fail[label.Label](err)
 	}
 
-	ok, err := h.authService.IsOwner(ctx, command.Label.Owner())
-	if err != nil {
-		return result.Fail[label.Label](err)
-	}
-	if !ok {
-		return result.Fail[label.Label](family.ErrFamilyNotFound)
-	}
 	if existingLabel != nil {
 		if existingLabel.Equal(command.Label) {
 			return result.Success(command.Label)
 		}
 		return result.Fail[label.Label](label.ErrLabelAlreadyExists)
+	}
+
+	err = h.authorization.EnsureWithinLimit(ctx, user.FeatureCustomLabels, 1)
+	if err != nil {
+		return result.Fail[label.Label](err)
 	}
 
 	return h.createLabel(ctx, command)

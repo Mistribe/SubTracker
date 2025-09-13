@@ -15,12 +15,14 @@ packages:
     interfaces:
       IdentityProvider:
       Exchange:
-      AuthService:
+      AuthenticationService:
       UserService:
-      LocalCache:
+      Cache:
       CurrencyRepository:
       FamilyRepository:
       LabelRepository:
       ProviderRepository:
       SubscriptionRepository:
       UserRepository:
+      Authorization:
+      PermissionRequest:

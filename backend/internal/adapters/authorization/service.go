@@ -4,13 +4,48 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
+
 	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 )
 
 type service struct {
-	userRepository ports.UserRepository
-	cache          ports.Cache
+	userRepository   ports.UserRepository
+	familyRepository ports.FamilyRepository
+	cache            ports.Cache
+	authentication   ports.AuthenticationService
+}
+
+func (s service) Can(ctx context.Context, permission user.Permission) ports.PermissionRequest {
+	userId := s.authentication.MustGetUserId(ctx)
+	userRole := s.authentication.MustGetUserRole(ctx)
+	familyId, err := s.getFamilyId(ctx, userId)
+	return &permissionRequest{
+		error:      err,
+		userRole:   userRole,
+		userId:     userId,
+		permission: permission,
+		userFamily: familyId,
+	}
+}
+
+func (s service) getFamilyId(ctx context.Context, userId string) (*uuid.UUID, error) {
+	familyUserCacheKey := fmt.Sprintf("family-user-%s", userId)
+	fromCache, ok := s.cache.From(ctx, ports.CacheLevelRequest).Get(familyUserCacheKey).(uuid.UUID)
+	if ok {
+		return &fromCache, nil
+	}
+	fromDatabase, err := s.familyRepository.GetUserFamily(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+	if fromDatabase != nil {
+		familyId := fromDatabase.Id()
+		s.cache.From(ctx, ports.CacheLevelRequest).Set(familyUserCacheKey, familyId)
+		return &familyId, nil
+	}
+	return nil, nil
 }
 
 func (s service) getUser(ctx context.Context, userId string) (user.User, error) {
@@ -26,12 +61,12 @@ func (s service) getUser(ctx context.Context, userId string) (user.User, error) 
 	if fromDatabase != nil {
 		s.cache.From(ctx, ports.CacheLevelRequest).Set(userCacheKey, fromDatabase)
 		return fromDatabase, nil
-	} else {
-		return nil, nil
 	}
+	return nil, nil
 }
 
-func (s service) EnsureWithinLimit(ctx context.Context, userId string, feature user.Feature, delta int) error {
+func (s service) EnsureWithinLimit(ctx context.Context, feature user.Feature, delta int) error {
+	userId := s.authentication.MustGetUserId(ctx)
 	currentUser, err := s.getUser(ctx, userId)
 	if err != nil {
 		return err

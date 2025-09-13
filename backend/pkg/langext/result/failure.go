@@ -31,7 +31,7 @@ func (f failure[V]) getError() error {
 }
 
 func (f failure[V]) IsFaulted() bool {
-	return false
+	return true
 }
 
 func (f failure[V]) IsSuccess() bool {
