@@ -10,7 +10,7 @@ import (
 	"github.com/mistribe/subtracker/internal/adapters/http/router/ginfx"
 	"github.com/mistribe/subtracker/internal/adapters/http/router/middlewares"
 	"github.com/mistribe/subtracker/internal/domain/provider"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type EndpointGroup struct {
@@ -144,8 +144,8 @@ func newProviderModel(source provider.Provider) ProviderModel {
 		IconUrl:        source.IconUrl(),
 		Url:            source.Url(),
 		PricingPageUrl: source.PricingPageUrl(),
-		Labels:         collection.Select(source.Labels().Values(), func(id uuid.UUID) string { return id.String() }),
-		Plans:          collection.Select(source.Plans().Values(), newPlanModel),
+		Labels:         herd.Select(source.Labels().Values(), func(id uuid.UUID) string { return id.String() }),
+		Plans:          herd.Select(source.Plans().Values(), newPlanModel),
 		Owner:          dto.NewOwnerModel(source.Owner()),
 		CreatedAt:      source.CreatedAt(),
 		UpdatedAt:      source.UpdatedAt(),
@@ -158,7 +158,7 @@ func newPlanModel(source provider.Plan) PlanModel {
 		Id:          source.Id().String(),
 		Name:        source.Name(),
 		Description: source.Description(),
-		Prices:      collection.Select(source.Prices().Values(), newPriceModel),
+		Prices:      herd.Select(source.Prices().Values(), newPriceModel),
 		CreatedAt:   source.CreatedAt(),
 		UpdatedAt:   source.UpdatedAt(),
 		Etag:        source.ETag(),

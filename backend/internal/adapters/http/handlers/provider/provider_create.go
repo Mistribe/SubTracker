@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	. "github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/domain/provider"
@@ -48,7 +48,7 @@ func (m createProviderModel) Command(userId string) (command.CreateProviderComma
 
 		providerId = &id
 	}
-	labels, err := collection.SelectErr(m.Labels, uuid.Parse)
+	labels, err := herd.SelectErr(m.Labels, uuid.Parse)
 	if err != nil {
 		return command.CreateProviderCommand{}, err
 	}

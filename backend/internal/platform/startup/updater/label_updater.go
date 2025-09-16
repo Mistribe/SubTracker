@@ -12,7 +12,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type systemLabelModel struct {
@@ -52,10 +52,10 @@ func (l labelUpdater) updateDatabase(ctx context.Context, sourceLabels []systemL
 		return err
 	}
 
-	systemLabelMap := collection.ToMap(systemLabels, func(lbl label.Label) string {
+	systemLabelMap := herd.ToMap(systemLabels, func(lbl label.Label) string {
 		return *lbl.Key()
 	}, func(lbl label.Label) label.Label { return lbl })
-	sourceLabelMap := collection.ToMap(sourceLabels, func(lbl systemLabelModel) string {
+	sourceLabelMap := herd.ToMap(sourceLabels, func(lbl systemLabelModel) string {
 		return lbl.Key
 	}, func(lbl systemLabelModel) systemLabelModel { return lbl })
 	for key, lbl := range sourceLabelMap {

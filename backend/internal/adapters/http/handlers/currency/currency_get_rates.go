@@ -10,7 +10,7 @@ import (
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/currency/query"
 	. "github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 // CurrencyGetRateResponse represents the response body for currency conversion
@@ -63,7 +63,7 @@ func (e CurrencyGetRateEndpoint) Handle(c *gin.Context) {
 		WithMapping[query.CurrencyRateResponse](func(c query.CurrencyRateResponse) any {
 			return CurrencyRatesModel{
 				Timestamp: c.Timestamp,
-				Rates: collection.Select(c.Rates,
+				Rates: herd.Select(c.Rates,
 					func(key currency.Rate) CurrencyRateModel {
 						return CurrencyRateModel{
 							Rate:     key.ExchangeRate(),
