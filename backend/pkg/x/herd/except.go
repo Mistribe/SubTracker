@@ -1,4 +1,4 @@
-package collection
+package herd
 
 // Except returns a slice containing elements in 'a' that are not present in 'b'.
 // Elements are compared using their natural equality defined by the comparable interface.

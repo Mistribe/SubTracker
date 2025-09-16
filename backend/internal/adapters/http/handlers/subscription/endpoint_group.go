@@ -10,7 +10,7 @@ import (
 	"github.com/mistribe/subtracker/internal/adapters/http/router/middlewares"
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/pkg/x"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	"github.com/gin-gonic/gin"
 
@@ -209,10 +209,10 @@ func newSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 	if source.Payer() != nil {
 		payerModel = x.P(newSubscriptionPayerModel(source.Payer()))
 	}
-	serviceUsers := collection.Select(source.ServiceUsers().Values(), func(in uuid.UUID) string {
+	serviceUsers := herd.Select(source.ServiceUsers().Values(), func(in uuid.UUID) string {
 		return in.String()
 	})
-	labelRefs := collection.Select(source.Labels().Values(), newSubscriptionLabelRef)
+	labelRefs := herd.Select(source.Labels().Values(), newSubscriptionLabelRef)
 	model := SubscriptionModel{
 		Id:               source.Id().String(),
 		FriendlyName:     source.FriendlyName(),

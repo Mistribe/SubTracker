@@ -1,4 +1,4 @@
-package collection_test
+package herd_test
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 func TestSelect(t *testing.T) {
@@ -15,7 +15,7 @@ func TestSelect(t *testing.T) {
 		arr := []int{1, 2, 3}
 		want := []int{2, 3, 4}
 
-		got := collection.Select(arr, func(i int) int {
+		got := herd.Select(arr, func(i int) int {
 			return i + 1
 		})
 
@@ -28,7 +28,7 @@ func TestSelect(t *testing.T) {
 		arr := []int{}
 		want := []int{}
 
-		got := collection.Select(arr, func(i int) int {
+		got := herd.Select(arr, func(i int) int {
 			return i + 1
 		})
 
@@ -40,7 +40,7 @@ func TestSelect(t *testing.T) {
 		var arr []int
 		var want []int
 
-		got := collection.Select(arr, func(i int) int {
+		got := herd.Select(arr, func(i int) int {
 			return i + 1
 		})
 
@@ -54,7 +54,7 @@ func TestSelectErr(t *testing.T) {
 		arr := []int{1, 2, 3}
 		want := []int{2, 3, 4}
 
-		got, err := collection.SelectErr(arr, func(i int) (int, error) {
+		got, err := herd.SelectErr(arr, func(i int) (int, error) {
 			return i + 1, nil
 		})
 
@@ -67,7 +67,7 @@ func TestSelectErr(t *testing.T) {
 	t.Run("err", func(t *testing.T) {
 		arr := []int{1, 2, 3}
 
-		_, err := collection.SelectErr(arr, func(i int) (int, error) {
+		_, err := herd.SelectErr(arr, func(i int) (int, error) {
 			return i + 1, errors.New("test error")
 		})
 
@@ -78,7 +78,7 @@ func TestSelectErr(t *testing.T) {
 		var arr []int
 		var want []int
 
-		got, err := collection.SelectErr(arr, func(i int) (int, error) {
+		got, err := herd.SelectErr(arr, func(i int) (int, error) {
 			return i + 1, nil
 		})
 
@@ -90,7 +90,7 @@ func TestSelectErr(t *testing.T) {
 		arr := []int{}
 		want := []int{}
 
-		got, err := collection.SelectErr(arr, func(i int) (int, error) {
+		got, err := herd.SelectErr(arr, func(i int) (int, error) {
 			return i + 1, nil
 		})
 
@@ -107,7 +107,7 @@ func TestSelectMany(t *testing.T) {
 		}
 		want := []int{1, 2, 3, 4, 5, 6}
 
-		got := collection.SelectMany(arr, func(values []int) []int {
+		got := herd.SelectMany(arr, func(values []int) []int {
 			return values
 		})
 
@@ -125,7 +125,7 @@ func TestSelectManyErr(t *testing.T) {
 		}
 		want := []int{1, 2, 3, 4, 5, 6}
 
-		got, err := collection.SelectManyErr(arr, func(values []int) ([]int, error) {
+		got, err := herd.SelectManyErr(arr, func(values []int) ([]int, error) {
 			return values, nil
 		})
 

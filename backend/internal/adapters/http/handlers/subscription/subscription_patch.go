@@ -10,7 +10,7 @@ import (
 
 	. "github.com/mistribe/subtracker/pkg/ginx"
 	"github.com/mistribe/subtracker/pkg/x"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/domain/auth"
@@ -103,13 +103,13 @@ func (m PatchSubscriptionModel) Subscription(userId string) (subscription.Subscr
 	if err != nil {
 		return nil, err
 	}
-	serviceUsers, err := collection.SelectErr(m.ServiceUsers, func(in string) (uuid.UUID, error) {
+	serviceUsers, err := herd.SelectErr(m.ServiceUsers, func(in string) (uuid.UUID, error) {
 		return uuid.Parse(in)
 	})
 	if err != nil {
 		return nil, err
 	}
-	labels, err := collection.SelectErr(m.Labels, func(in string) (subscription.LabelRef, error) {
+	labels, err := herd.SelectErr(m.Labels, func(in string) (subscription.LabelRef, error) {
 		labelId, err := uuid.Parse(in)
 		if err != nil {
 			return subscription.LabelRef{}, err

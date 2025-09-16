@@ -13,7 +13,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/slicesx"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	. "github.com/go-jet/jet/v2/postgres"
 )
@@ -454,11 +454,11 @@ func (r ProviderRepository) create(ctx context.Context, providers []provider.Pro
 	}
 
 	// Insert provider labels
-	allLabels := collection.SelectMany(providers, func(prov provider.Provider) []struct {
+	allLabels := herd.SelectMany(providers, func(prov provider.Provider) []struct {
 		ProviderID uuid.UUID
 		LabelID    uuid.UUID
 	} {
-		return collection.Select(prov.Labels().Values(), func(labelId uuid.UUID) struct {
+		return herd.Select(prov.Labels().Values(), func(labelId uuid.UUID) struct {
 			ProviderID uuid.UUID
 			LabelID    uuid.UUID
 		} {
@@ -597,7 +597,8 @@ func (r ProviderRepository) update(ctx context.Context, dirtyProvider provider.P
 
 // Helper methods for handling tracked collections with go-jet
 
-func (r ProviderRepository) saveTrackedLabelsWithJet(ctx context.Context, providerId uuid.UUID,
+func (r ProviderRepository) saveTrackedLabelsWithJet(
+	ctx context.Context, providerId uuid.UUID,
 	labels *slicesx.Tracked[uuid.UUID]) error {
 	// Handle new labels
 	newLabels := labels.Added()
@@ -638,7 +639,8 @@ func (r ProviderRepository) saveTrackedLabelsWithJet(ctx context.Context, provid
 	return nil
 }
 
-func (r ProviderRepository) saveTrackedPlansWithJet(ctx context.Context, providerId uuid.UUID,
+func (r ProviderRepository) saveTrackedPlansWithJet(
+	ctx context.Context, providerId uuid.UUID,
 	plans *slicesx.Tracked[provider.Plan]) error {
 	// Handle new plans
 	newPlans := plans.Added()
@@ -699,7 +701,8 @@ func (r ProviderRepository) saveTrackedPlansWithJet(ctx context.Context, provide
 	return nil
 }
 
-func (r ProviderRepository) saveTrackedPricesWithJet(ctx context.Context, planId uuid.UUID,
+func (r ProviderRepository) saveTrackedPricesWithJet(
+	ctx context.Context, planId uuid.UUID,
 	prices *slicesx.Tracked[provider.Price]) error {
 	// Handle new prices
 	newPrices := prices.Added()
@@ -791,7 +794,8 @@ func (r ProviderRepository) saveTrackedPricesWithJet(ctx context.Context, planId
 	return nil
 }
 
-func (r ProviderRepository) createPlansAndPrices(ctx context.Context, providerId uuid.UUID,
+func (r ProviderRepository) createPlansAndPrices(
+	ctx context.Context, providerId uuid.UUID,
 	plans []provider.Plan) error {
 	if len(plans) == 0 {
 		return nil
@@ -836,11 +840,11 @@ func (r ProviderRepository) createPlansAndPrices(ctx context.Context, providerId
 	}
 
 	// Insert prices for all plans
-	allPrices := collection.SelectMany(plans, func(plan provider.Plan) []struct {
+	allPrices := herd.SelectMany(plans, func(plan provider.Plan) []struct {
 		PlanID uuid.UUID
 		Price  provider.Price
 	} {
-		return collection.Select(plan.Prices().Values(), func(price provider.Price) struct {
+		return herd.Select(plan.Prices().Values(), func(price provider.Price) struct {
 			PlanID uuid.UUID
 			Price  provider.Price
 		} {

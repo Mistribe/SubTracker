@@ -11,7 +11,7 @@ import (
 
 	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type systemMemberModel struct {
@@ -75,7 +75,7 @@ func (l familyUpdater) updateDatabase(ctx context.Context, families []systemFami
 			return err
 		}
 		if fam == nil {
-			members := collection.Select(model.Members, func(memberModel systemMemberModel) family.Member {
+			members := herd.Select(model.Members, func(memberModel systemMemberModel) family.Member {
 				mbr := family.NewMember(
 					uuid.MustParse(memberModel.Id),
 					id,

@@ -9,7 +9,7 @@ import (
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/model"
 	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/provider"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 func createProviderPriceFromJet(jetModel model.ProviderPrices) provider.Price {
@@ -127,11 +127,11 @@ func CreateProviderFromJetRows(rows []ProviderRow) []provider.Provider {
 		var plans []provider.Plan
 		jetPlans, planExists := providerPlans[providerId]
 		if planExists {
-			plans = collection.Select(jetPlans, func(jetPlan model.ProviderPlans) provider.Plan {
+			plans = herd.Select(jetPlans, func(jetPlan model.ProviderPlans) provider.Plan {
 				var prices []provider.Price
 				jetPrices, priceExists := planPrices[jetPlan.ID]
 				if priceExists {
-					prices = collection.Select(jetPrices, func(jetPrice model.ProviderPrices) provider.Price {
+					prices = herd.Select(jetPrices, func(jetPrice model.ProviderPrices) provider.Price {
 						return createProviderPriceFromJet(jetPrice)
 					})
 				}
@@ -150,7 +150,7 @@ func CreateProviderFromJetRows(rows []ProviderRow) []provider.Provider {
 
 func CreateProviderFromJetRowsWithCount(rows []ProviderRowWithCount) []provider.Provider {
 	// Convert to the simpler row structure
-	simpleRows := collection.Select(rows, func(row ProviderRowWithCount) ProviderRow {
+	simpleRows := herd.Select(rows, func(row ProviderRowWithCount) ProviderRow {
 		return ProviderRow{
 			Providers:      row.Providers,
 			ProviderPlans:  row.ProviderPlans,

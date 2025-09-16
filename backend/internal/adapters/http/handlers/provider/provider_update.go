@@ -5,7 +5,7 @@ import (
 	"time"
 
 	. "github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -36,7 +36,7 @@ type updateProviderModel struct {
 }
 
 func (m updateProviderModel) Command(providerId uuid.UUID) (command.UpdateProviderCommand, error) {
-	labels, err := collection.SelectErr(m.Labels, uuid.Parse)
+	labels, err := herd.SelectErr(m.Labels, uuid.Parse)
 	if err != nil {
 		return command.UpdateProviderCommand{}, err
 	}

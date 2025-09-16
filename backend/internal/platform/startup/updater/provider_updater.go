@@ -14,7 +14,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type labelMap map[string]uuid.UUID
@@ -88,7 +88,7 @@ func (l providerUpdater) getSystemLabels(ctx context.Context) (labelMap, error) 
 		return nil, err
 	}
 
-	return collection.ToMap(lbls,
+	return herd.ToMap(lbls,
 		func(lbl label.Label) string {
 			return *lbl.Key()
 		}, func(lbl label.Label) uuid.UUID {
@@ -107,10 +107,10 @@ func (l providerUpdater) updateDatabase(ctx context.Context, sourceProviders []s
 		return err
 	}
 
-	systemProviderMap := collection.ToMap(systemProviders, func(prov provider.Provider) string {
+	systemProviderMap := herd.ToMap(systemProviders, func(prov provider.Provider) string {
 		return *prov.Key()
 	}, func(prov provider.Provider) provider.Provider { return prov })
-	sourceProviderMap := collection.ToMap(sourceProviders, func(prov systemProviderModel) string {
+	sourceProviderMap := herd.ToMap(sourceProviders, func(prov systemProviderModel) string {
 		return prov.Key
 	}, func(prov systemProviderModel) systemProviderModel { return prov })
 	for key, prov := range sourceProviderMap {

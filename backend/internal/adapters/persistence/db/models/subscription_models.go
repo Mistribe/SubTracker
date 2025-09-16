@@ -9,7 +9,7 @@ import (
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/model"
 	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type SubscriptionRow struct {
@@ -103,11 +103,11 @@ func CreateSubscriptionFromJetRows(rows []SubscriptionRow) []subscription.Subscr
 
 	subscriptions := make(map[uuid.UUID]model.Subscriptions)
 	orderedIDs := make([]uuid.UUID, 0, len(rows))
-	serviceUserSet := collection.NewSet[string]()
+	serviceUserSet := herd.NewSet[string]()
 	subscriptionServiceUsers := make(map[uuid.UUID][]uuid.UUID)
-	subscriptionLabelSet := collection.NewSet[string]()
+	subscriptionLabelSet := herd.NewSet[string]()
 	subscriptionLabels := make(map[uuid.UUID][]uuid.UUID)
-	providerLabelSet := collection.NewSet[string]()
+	providerLabelSet := herd.NewSet[string]()
 	providerLabels := make(map[uuid.UUID][]uuid.UUID)
 
 	for _, row := range rows {
@@ -159,7 +159,7 @@ func CreateSubscriptionFromJetRows(rows []SubscriptionRow) []subscription.Subscr
 }
 
 func CreateSubscriptionFromJetRowsWithCount(rows []SubscriptionRowWithCount) []subscription.Subscription {
-	simpleRows := collection.Select(rows, func(row SubscriptionRowWithCount) SubscriptionRow {
+	simpleRows := herd.Select(rows, func(row SubscriptionRowWithCount) SubscriptionRow {
 		return row.SubscriptionRow
 	})
 

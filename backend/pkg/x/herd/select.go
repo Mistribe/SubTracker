@@ -1,4 +1,4 @@
-package collection
+package herd
 
 func Select[TIn any, TOut any](source []TIn, f func(TIn) TOut) []TOut {
 	if source == nil {

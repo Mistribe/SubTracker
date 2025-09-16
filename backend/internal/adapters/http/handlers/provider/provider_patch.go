@@ -10,7 +10,7 @@ import (
 
 	. "github.com/mistribe/subtracker/pkg/ginx"
 	"github.com/mistribe/subtracker/pkg/x"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/domain/provider"
@@ -97,7 +97,7 @@ func (m patchPlanModel) Plan() (provider.Plan, error) {
 	if updatedAt.Before(createdAt) {
 		updatedAt = createdAt
 	}
-	prices, err := collection.SelectErr(m.Prices, func(prce patchPriceModel) (provider.Price, error) {
+	prices, err := herd.SelectErr(m.Prices, func(prce patchPriceModel) (provider.Price, error) {
 		return prce.Price()
 	})
 	if err != nil {
@@ -142,12 +142,12 @@ func (m patchProviderModel) Provider(userId string) (provider.Provider, error) {
 		return nil, err
 	}
 
-	labels, err := collection.SelectErr(m.Labels, uuid.Parse)
+	labels, err := herd.SelectErr(m.Labels, uuid.Parse)
 	if err != nil {
 		return nil, err
 	}
 
-	plans, err := collection.SelectErr(m.Plans, func(prce patchPlanModel) (provider.Plan, error) {
+	plans, err := herd.SelectErr(m.Plans, func(prce patchPlanModel) (provider.Plan, error) {
 		return prce.Plan()
 	})
 	if err != nil {
