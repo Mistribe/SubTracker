@@ -24,11 +24,21 @@ typescript-client:
     mcr.microsoft.com/openapi/kiota generate --language typescript --clean-output
 
 dart-client:
-	docker pull mcr.microsoft.com/openapi/kiota && \
-    docker run --rm -v ../mobile/lib/api:/app/output \
-    -v ./internal/adapters/http/handlers/openapi/swagger.yaml:/app/openapi.yaml \
+	@echo "Clean old dart client api" &&\
+		rm -fr "${PWD}/../mobile/lib/http_client" &&\
+		mkdir -p "${PWD}/../mobile/lib/http_client"
+	@docker pull openapitools/openapi-generator-cli && \
+    docker run --rm \
+    -v ${PWD}/../mobile/lib/http_client_tmp:/app/output \
+    -v ${PWD}/internal/adapters/http/handlers/openapi/swagger.yaml:/app/openapi.yaml \
     --user $(id -u):$(id -g) \
-    mcr.microsoft.com/openapi/kiota generate --language dart --clean-output
+    openapitools/openapi-generator-cli generate \
+    -i /app/openapi.yaml \
+    -g dart \
+    --global-property=apiDocs=false,modelDocs=false,apiTests=false,modelTests=false \
+    -o /app/output && \
+    cp -r "${PWD}/../mobile/lib/http_client_tmp/lib/"  "${PWD}/../mobile/lib/http_client" && \
+    rm -fr "${PWD}/../mobile/lib/http_client_tmp"
 
 run-deps:
 	@docker compose down -v && docker compose up --build database database.migration
