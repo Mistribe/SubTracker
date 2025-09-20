@@ -16,7 +16,7 @@ export const useCurrenciesQuery = (options: CurrenciesQueryOptions = {}) => {
         throw new Error('API client not initialized');
       }
 
-      const result = await apiClient.currencies.supported.get();
+      const result = await apiClient.currencies.currenciesSupportedGet();
       
       return result || [];
     },

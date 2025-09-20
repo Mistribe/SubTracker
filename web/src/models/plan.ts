@@ -1,5 +1,6 @@
 import Price from "@/models/price.ts";
-import type {PlanModel} from "@/api/models/provider";
+import type { DtoPlanModel as PlanModel } from "@/api/models/DtoPlanModel";
+import type { DtoPriceModel } from "@/api/models/DtoPriceModel";
 
 export default class Plan {
     private readonly _id: string;
@@ -64,7 +65,7 @@ export default class Plan {
             model.id || '',
             model.name || '',
             model.description || null,
-            model.prices?.map(price => Price.fromModel(price)) || [],
+            model.prices?.map((price: DtoPriceModel) => Price.fromModel(price)) || [],
             model.createdAt ? model.createdAt : new Date(),
             model.updatedAt ? model.updatedAt : new Date(),
             model.etag || ''

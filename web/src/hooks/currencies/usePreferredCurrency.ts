@@ -14,7 +14,7 @@ export function usePreferredCurrency(options: UsePreferredCurrencyOptions = {}) 
     enabled: !!apiClient && enabled,
     queryFn: async () => {
       if (!apiClient) throw new Error("API client not initialized");
-      const res = await apiClient.users.preferred.currency.get();
+      const res = await apiClient.users.usersPreferredCurrencyGet();
       const currency = res?.currency ?? "USD";
       return currency;
     },

@@ -1,9 +1,8 @@
 import {useInfiniteQuery} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
-import type {LabelsRequestBuilderGetQueryParameters} from "@/api/labels";
 import Label from "@/models/label";
 import {OwnerType} from "@/models/ownerType";
-import type {LabelModel} from "@/api/models/label";
+import type { DtoLabelModel as LabelModel } from "@/api/models/DtoLabelModel";
 
 interface AllLabelsQueryOptions {
     ownerTypes?: OwnerType[];
@@ -34,7 +33,7 @@ export const useAllLabelsQuery = (options: AllLabelsQueryOptions = {}) => {
                 throw new Error('API client not initialized');
             }
 
-            const queryParameters: LabelsRequestBuilderGetQueryParameters = {
+            const queryParameters: any = {
                 limit,
                 offset: pageParam,
             };
@@ -46,7 +45,7 @@ export const useAllLabelsQuery = (options: AllLabelsQueryOptions = {}) => {
             }
 
             try {
-                const result = await apiClient.labels.get({queryParameters});
+                const result = await apiClient.labels.labelsGet(queryParameters);
 
                 if (result && result.data) {
                     return {

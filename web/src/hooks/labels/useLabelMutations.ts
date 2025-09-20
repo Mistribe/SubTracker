@@ -3,18 +3,6 @@ import { useApiClient } from "@/hooks/use-api-client";
 import Label from "@/models/label";
 import { OwnerType } from "@/models/ownerType";
 
-// Define types for the payload
-interface LabelOwner {
-  type: OwnerType;
-  family_id?: string;
-}
-
-interface CreateLabelPayload {
-  name: string;
-  color: string;
-  owner?: LabelOwner;
-}
-
 export const useLabelMutations = () => {
   const { apiClient } = useApiClient();
   const queryClient = useQueryClient();
@@ -22,51 +10,47 @@ export const useLabelMutations = () => {
   // Create label mutation
   const createLabelMutation = useMutation({
     mutationFn: async (labelData: { name: string, color: string, ownerType?: OwnerType, familyId?: string }) => {
-      const payload: CreateLabelPayload = {
+      const ownerType = labelData.ownerType ?? OwnerType.Personal;
+      const payload = {
         name: labelData.name,
-        color: labelData.color
+        color: labelData.color,
+        owner: {
+          type: ownerType,
+          ...(ownerType === OwnerType.Family && labelData.familyId ? { familyId: labelData.familyId } : {}),
+        },
       };
       
-      // Add owner information if specified
-      if (labelData.ownerType) {
-        payload.owner = {
-          type: labelData.ownerType
-        };
-        
-        // Add family ID if owner type is family and family ID is provided
-        if (labelData.ownerType === OwnerType.Family && labelData.familyId) {
-          payload.owner.family_id = labelData.familyId;
-        }
-      }
-      
-      return apiClient?.labels.post(payload);
+      return apiClient?.labels.labelsPost({ dtoCreateLabelRequest: payload });
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ['labels'] });
+      await queryClient.invalidateQueries({ queryKey: ['labels'] });
     }
   });
 
   // Update label mutation
   const updateLabelMutation = useMutation({
     mutationFn: async ({ id, name, color }: { id: string, name: string, color: string }) => {
-      return apiClient?.labels.byId(id).put({
-        name: name,
-        color: color,
+      return apiClient?.labels.labelsIdPut({
+        id,
+        dtoUpdateLabelRequest: {
+          name,
+          color,
+        },
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['labels'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['labels'] });
     }
   });
 
   // Delete label mutation
   const deleteLabelMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiClient?.labels.byId(id).delete();
+      return apiClient?.labels.labelsIdDelete({ id });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['labels'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['labels'] });
     }
   });
 

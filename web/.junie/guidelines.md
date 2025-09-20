@@ -69,3 +69,5 @@ The project uses modern web development practices with a component-based archite
 - ❌ **Avoid**: Writing custom components when shadcn/ui equivalents exist
 
 DONT RUN `npm run dev`
+RUN `npm run build` to build the project
+Don't modify the directory `src/api/*`. (do not update code or create file in this directory)

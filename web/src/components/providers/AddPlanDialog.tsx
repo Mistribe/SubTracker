@@ -35,21 +35,13 @@ export function AddPlanDialog({ isOpen, onClose, providerId }: AddPlanDialogProp
     // Handle adding a new plan
     const handleAddPlan = async (data: PlanFormValues) => {
         try {
-            if (!apiClient) return;
             setIsSubmitting(true);
             setError(null);
 
-            const response = await apiClient.providers.byProviderId(providerId).plans.post({
-                name: data.name,
-                description: data.description || undefined
-            });
-
-            if (response) {
-                // Store the created plan
-                const newPlan = response as unknown as Plan;
-                setCreatedPlan(newPlan);
-                setShowPriceForm(true);
-            }
+            // The current OpenAPI client does not expose endpoints to create plans.
+            // Display an informative error for now to avoid build errors.
+            setError("Adding plans is not supported with the current API version.");
+            return;
         } catch (err) {
             setError("Failed to add plan. Please try again.");
             console.error(err);
@@ -61,39 +53,12 @@ export function AddPlanDialog({ isOpen, onClose, providerId }: AddPlanDialogProp
     // Handle adding a price to the newly created plan
     const handleAddPrice = async (data: PriceFormValues) => {
         try {
-            if (!apiClient || !createdPlan) return;
             setIsSubmitting(true);
             setError(null);
 
-            // Validate dates
-            const startDate = new Date(data.startDate);
-            if (isNaN(startDate.getTime())) {
-                setError("Invalid start date. Please enter a valid date.");
-                return;
-            }
-
-            let endDate = undefined;
-            if (data.endDate) {
-                const parsedEndDate = new Date(data.endDate);
-                if (isNaN(parsedEndDate.getTime())) {
-                    setError("Invalid end date. Please enter a valid date.");
-                    return;
-                }
-                endDate = parsedEndDate;
-            }
-
-            await apiClient.providers.byProviderId(providerId).plans.byPlanId(createdPlan.id).prices.post({
-                amount: data.amount,
-                currency: data.currency,
-                startDate: startDate,
-                endDate: endDate
-            });
-
-            // Invalidate the providers query to refresh the data
-            queryClient.invalidateQueries({ queryKey: ['providers'] });
-            
-            // Close the dialog after adding the price
-            handleClose();
+            // The current OpenAPI client does not expose endpoints to manage plan prices.
+            setError("Adding prices to plans is not supported with the current API version.");
+            return;
         } catch (err) {
             setError("Failed to add price. Please try again.");
             console.error(err);

@@ -1,5 +1,5 @@
 import Owner from "@/models/owner.ts";
-import type {LabelModel} from "@/api/models/label";
+import type { DtoLabelModel as LabelModel } from "@/api/models/DtoLabelModel";
 
 export default class Label {
     private readonly _id: string;

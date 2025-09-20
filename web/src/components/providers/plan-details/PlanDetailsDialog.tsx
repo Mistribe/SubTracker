@@ -123,43 +123,9 @@ export function PlanDetailsDialog({
             // Extract plan ID from the full plan ID if it contains a separator
             const planId = plan.id.includes('/') ? plan.id.split('/')[1] : plan.id;
 
-            const response = await apiClient.providers.byProviderId(providerId)
-                .plans.byPlanId(planId)
-                .prices.post({
-                    amount: data.amount,
-                    currency: data.currency,
-                    startDate: startDate,
-                    endDate: endDate
-                });
-
-            // Create a new Price object from the response
-            const newPrice = new Price(
-                '',
-                {
-                    value: data.amount,
-                    currency: data.currency,
-                },
-                startDate,
-                endDate || null,
-                new Date(),
-                new Date(),
-                response?.etag || ''
-            );
-
-            // Update the local plan state with the new price
-            plan.prices = [...plan.prices, newPrice];
-
-            // Invalidate the providers query to refresh the data
-            await queryClient.invalidateQueries({queryKey: ['providers']});
-
-            // Notify parent component that plan was updated
-            if (onPlanUpdated) {
-                onPlanUpdated();
-            }
-
-            // Hide the price form
-            setShowAddPriceForm(false);
-            setEditingPrice(null);
+            // The current OpenAPI client does not expose endpoints to manage plan prices.
+            setError("Adding prices to plans is not supported with the current API version.");
+            return;
         } catch (err) {
             setError("Failed to add price. Please try again.");
             console.error(err);
@@ -195,48 +161,9 @@ export function PlanDetailsDialog({
             // Extract plan ID from the full plan ID if it contains a separator
             const planId = plan.id.includes('/') ? plan.id.split('/')[1] : plan.id;
 
-            const response = await apiClient.providers.byProviderId(providerId)
-                .plans.byPlanId(planId)
-                .prices.byPriceId(editingPrice.id)
-                .put({
-                    amount: data.amount,
-                    currency: data.currency,
-                    startDate: startDate,
-                    endDate: endDate,
-                    additionalData: {
-                        etag: editingPrice.etag
-                    }
-                });
-
-            // Update the local price object with the new data
-            const updatedPrice = new Price(
-                editingPrice.id,
-                {
-                    value:data.amount,
-                    currency: data.currency,
-                },
-                startDate,
-                endDate ?? null,
-                response?.createdAt || new Date(),
-                new Date(),
-                response?.etag || ''
-            );
-
-            // Update the local plan state by replacing the edited price
-            plan.prices = plan.prices.map(price =>
-                price.id === editingPrice.id ? updatedPrice : price
-            );
-
-            // Invalidate the providers query to refresh the data
-            await queryClient.invalidateQueries({queryKey: ['providers']});
-
-            // Notify parent component that plan was updated
-            if (onPlanUpdated) {
-                onPlanUpdated();
-            }
-
-            // Hide the price form
-            setEditingPrice(null);
+            // The current OpenAPI client does not expose endpoints to manage plan prices.
+            setError("Updating prices is not supported with the current API version.");
+            return;
         } catch (err) {
             setError("Failed to update price. Please try again.");
             console.error(err);
@@ -255,24 +182,9 @@ export function PlanDetailsDialog({
             // Extract plan ID from the full plan ID if it contains a separator
             const planId = plan.id.includes('/') ? plan.id.split('/')[1] : plan.id;
 
-            await apiClient.providers.byProviderId(providerId)
-                .plans.byPlanId(planId)
-                .prices.byPriceId(deletingPrice.id)
-                .delete();
-
-            // Update the local plan state by removing the deleted price
-            plan.prices = plan.prices.filter(price => price.id !== deletingPrice.id);
-
-            // Invalidate the providers query to refresh the data
-            await queryClient.invalidateQueries({queryKey: ['providers']});
-
-            // Notify parent component that plan was updated
-            if (onPlanUpdated) {
-                onPlanUpdated();
-            }
-
-            // Reset the deleting price
-            setDeletingPrice(null);
+            // The current OpenAPI client does not expose endpoints to manage plan prices.
+            setError("Deleting prices is not supported with the current API version.");
+            return;
         } catch (err) {
             setError("Failed to delete price. Please try again.");
             console.error(err);
@@ -299,20 +211,9 @@ export function PlanDetailsDialog({
             // Extract plan ID from the full plan ID if it contains a separator
             const planId = plan.id.includes('/') ? plan.id.split('/')[1] : plan.id;
 
-            await apiClient.providers.byProviderId(providerId)
-                .plans.byPlanId(planId)
-                .delete();
-
-            // Invalidate the providers query to refresh the data
-            await queryClient.invalidateQueries({queryKey: ['providers']});
-
-            // Close the dialog
-            onClose();
-
-            // Notify parent component that plan was updated
-            if (onPlanUpdated) {
-                onPlanUpdated();
-            }
+            // The current OpenAPI client does not expose endpoints to manage plans.
+            setError("Deleting plans is not supported with the current API version.");
+            return;
         } catch (err) {
             setError("Failed to delete plan. Please try again.");
             console.error(err);

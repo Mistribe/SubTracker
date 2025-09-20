@@ -1,9 +1,8 @@
 import {useInfiniteQuery} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
-import type {ProvidersRequestBuilderGetQueryParameters} from "@/api/providers";
 import Provider from "@/models/provider";
 import {OwnerType} from "@/models/ownerType";
-import type {ProviderModel} from "@/api/models/provider";
+import type { DtoProviderModel as ProviderModel } from "@/api/models/DtoProviderModel";
 
 interface AllProvidersQueryOptions {
     ownerTypes?: OwnerType[];
@@ -37,7 +36,7 @@ export const useAllProvidersQuery = (options: AllProvidersQueryOptions = {}) => 
                 throw new Error('API client not initialized');
             }
 
-            const queryParameters: ProvidersRequestBuilderGetQueryParameters = {
+            const queryParameters: any = {
                 limit,
                 offset: pageParam,
             };
@@ -47,7 +46,7 @@ export const useAllProvidersQuery = (options: AllProvidersQueryOptions = {}) => 
             }
 
             try {
-                const result = await apiClient.providers.get({queryParameters});
+                const result = await apiClient.providers.providersGet(queryParameters);
 
                 if (result && result.data) {
                     return {

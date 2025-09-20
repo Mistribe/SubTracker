@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useApiClient } from "@/hooks/use-api-client";
 import Label from "@/models/label";
-import type {LabelModel} from "@/api/models/label";
+import type { DtoLabelModel as LabelModel } from "@/api/models/DtoLabelModel";
 
 export const useLabelQuery = (id: string | undefined | null) => {
   const { apiClient } = useApiClient();
@@ -14,7 +14,7 @@ export const useLabelQuery = (id: string | undefined | null) => {
       if (!apiClient || !id) {
         throw new Error("API client not initialized or invalid label id");
       }
-      const result = await apiClient.labels.byId(id).get();
+      const result = await apiClient.labels.labelsIdGet({ id });
       if (result) {
         return Label.fromModel(result as LabelModel);
       }

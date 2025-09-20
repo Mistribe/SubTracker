@@ -1,4 +1,4 @@
-import type {SubscriptionFreeTrialModel} from "@/api/models/subscription";
+import type { DtoSubscriptionFreeTrialModel as SubscriptionFreeTrialModel } from "@/api/models/DtoSubscriptionFreeTrialModel";
 
 export class SubscriptionFreeTrial {
     private readonly _endDate: Date | undefined;

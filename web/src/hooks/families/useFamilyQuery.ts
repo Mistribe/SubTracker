@@ -1,7 +1,7 @@
 import {useQuery} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
 import Family from "@/models/family";
-import type {FamilyModel} from "@/api/models/family";
+import type { DtoUserFamilyResponse } from "@/api/models/DtoUserFamilyResponse";
 
 
 export const useFamilyQuery = () => {
@@ -15,11 +15,11 @@ export const useFamilyQuery = () => {
             }
 
             try {
-                // Fetch the current user's single family; backend now supports only one family
-                const result: FamilyModel | undefined = await apiClient.families.me.get();
-
-                if (result) {
-                   return Family.fromModel(result);
+                // Fetch the current user's family response; backend now returns a wrapper with optional family
+                const result: DtoUserFamilyResponse = await apiClient.families.familyGet();
+                const family = result.family;
+                if (family) {
+                   return Family.fromModel(family);
                 }
                 return null;
             } catch (error: unknown) {

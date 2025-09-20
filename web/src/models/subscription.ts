@@ -5,7 +5,7 @@ import {fromHttpApi, SubscriptionRecurrency} from "@/models/subscriptionRecurren
 import {addMonths, addYears} from "date-fns";
 import {daysBetween, monthsBetween} from "@/utils/date.ts";
 import {type Amount, fromModel} from "@/models/amount.ts";
-import type {SubscriptionModel} from "@/api/models/subscription";
+import type { DtoSubscriptionModel as SubscriptionModel } from "@/api/models/DtoSubscriptionModel";
 import SubscriptionPrice from "@/models/subscriptionPrice.ts";
 
 export default class Subscription {

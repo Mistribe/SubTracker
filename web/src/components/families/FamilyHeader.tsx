@@ -7,7 +7,6 @@ import Family from "@/models/family.ts";
 import { useApiClient } from "@/hooks/use-api-client.ts";
 import { useQueryClient } from "@tanstack/react-query";
 import { AddFamilyMemberDialog } from "./AddFamilyMemberDialog.tsx";
-import type {PatchFamilyModel} from "@/api/models/family";
 
 interface FamilyHeaderProps {
   family: Family;
@@ -46,13 +45,13 @@ export const FamilyHeader = ({ family }: FamilyHeaderProps) => {
         return;
       }
 
-      const patchModel: Partial<PatchFamilyModel> = {
-        id: family.id,
-        name: editedName,
-        updatedAt: new Date()
-      };
-
-      await apiClient.families.patch(patchModel);
+      await apiClient.families.familyFamilyIdPut({
+        familyId: family.id,
+        dtoUpdateFamilyRequest: {
+          name: editedName,
+          updatedAt: new Date(),
+        }
+      });
 
       // Invalidate and refetch the families query
       await queryClient.invalidateQueries({ queryKey: ['families'] });

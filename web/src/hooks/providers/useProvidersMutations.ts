@@ -2,7 +2,8 @@ import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
 import Provider from "@/models/provider";
 import {OwnerType} from "@/models/ownerType";
-import type {CreateProviderModel, UpdateProviderModel} from "@/api/models/provider";
+import type { DtoCreateProviderRequest as CreateProviderModel } from "@/api/models/DtoCreateProviderRequest";
+import type { DtoUpdateProviderRequest as UpdateProviderModel } from "@/api/models/DtoUpdateProviderRequest";
 
 export const useProvidersMutations = () => {
     const {apiClient} = useApiClient();
@@ -26,22 +27,14 @@ export const useProvidersMutations = () => {
                 iconUrl: providerData.iconUrl,
                 url: providerData.url,
                 pricingPageUrl: providerData.pricingPageUrl,
-                labels: providerData.labels || []
+                labels: providerData.labels || [],
+                owner: {
+                    type: providerData.ownerType ?? OwnerType.Personal,
+                    ...(providerData.ownerType === OwnerType.Family && providerData.familyId ? { familyId: providerData.familyId } : {}),
+                },
             };
 
-            // Add owner information if specified
-            if (providerData.ownerType) {
-                payload.owner = {
-                    type: providerData.ownerType
-                };
-
-                // Add family ID if owner type is family and family ID is provided
-                if (providerData.ownerType === OwnerType.Family && providerData.familyId) {
-                    payload.owner.familyId = providerData.familyId;
-                }
-            }
-
-            return apiClient?.providers.post(payload);
+            return apiClient?.providers.providersPost({ dtoCreateProviderRequest: payload });
         },
         onSuccess: () => {
             // Invalidate and refetch
@@ -72,15 +65,10 @@ export const useProvidersMutations = () => {
                 url: providerData.url,
                 pricingPageUrl: providerData.pricingPageUrl,
                 labels: providerData.labels || [],
+                updatedAt: new Date(),
             };
             
-            // Add etag to the additional data for optimistic concurrency control
-            payload.additionalData = {
-                ...payload.additionalData,
-                etag: providerData.etag
-            };
-            
-            return apiClient.providers.byProviderId(providerData.id).put(payload);
+            return apiClient.providers.providersProviderIdPut({ providerId: providerData.id, dtoUpdateProviderRequest: payload });
         },
         onSuccess: () => {
             // Invalidate and refetch
@@ -92,7 +80,7 @@ export const useProvidersMutations = () => {
     const deleteProviderMutation = useMutation({
         mutationFn: async (providerId: string) => {
             if (!apiClient) throw new Error("API client not initialized");
-            return apiClient.providers.byProviderId(providerId).delete();
+            return apiClient.providers.providersProviderIdDelete({ providerId });
         },
         onSuccess: () => {
             // Invalidate and refetch

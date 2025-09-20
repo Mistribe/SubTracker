@@ -1,9 +1,8 @@
 import {useInfiniteQuery} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
-import type {SubscriptionsRequestBuilderGetQueryParameters} from "@/api/subscriptions";
 import Subscription from "@/models/subscription";
 import type {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
-import type {SubscriptionModel} from "@/api/models/subscription";
+import type { DtoSubscriptionModel as SubscriptionModel } from "@/api/models/DtoSubscriptionModel";
 
 interface SubscriptionsQueryOptions {
     limit?: number;
@@ -56,20 +55,20 @@ export const useSubscriptionsQuery = (options: SubscriptionsQueryOptions = {}) =
                 throw new Error('API client not initialized');
             }
 
-            const queryParameters: SubscriptionsRequestBuilderGetQueryParameters = {
+            const queryParameters = {
                 search: search,
                 fromDate: fromDate?.toISOString(),
                 toDate: toDate?.toISOString(),
                 limit,
                 offset: pageParam,
                 providers: providers,
-                recurrencies: recurrencies,
+                recurrencies: recurrencies as string[] | undefined,
                 users: users,
                 withInactive: withInactive
-            };
+            } as const;
 
             try {
-                const result = await apiClient.subscriptions.get({queryParameters});
+                const result = await apiClient.subscriptions.subscriptionsGet(queryParameters);
 
                 if (result && result.data) {
                     return {

@@ -1,4 +1,4 @@
-import type {PriceModel} from "@/api/models/provider";
+import type { DtoPriceModel as PriceModel } from "@/api/models/DtoPriceModel";
 import type {Amount} from "@/models/amount.ts";
 
 export default class Price {
