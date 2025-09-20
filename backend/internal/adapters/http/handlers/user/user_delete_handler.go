@@ -10,7 +10,7 @@ import (
 	. "github.com/mistribe/subtracker/pkg/ginx"
 )
 
-type UserDeleteEndpoint struct {
+type DeleteEndpoint struct {
 	handler ports.CommandHandler[command.DeleteUserCommand, bool]
 }
 
@@ -24,27 +24,27 @@ type UserDeleteEndpoint struct {
 //	@Failure		401	{object}	HttpErrorResponse
 //	@Failure		500	{object}	HttpErrorResponse
 //	@Router			/users [delete]
-func (e UserDeleteEndpoint) Handle(c *gin.Context) {
+func (e DeleteEndpoint) Handle(c *gin.Context) {
 	cmd := command.NewDeleteUserCommand()
 
 	r := e.handler.Handle(c, cmd)
 	FromResult(c, r, WithNoContent[bool]())
 }
 
-func (e UserDeleteEndpoint) Pattern() []string {
+func (e DeleteEndpoint) Pattern() []string {
 	return []string{
 		"",
 	}
 }
 
-func (e UserDeleteEndpoint) Method() string {
+func (e DeleteEndpoint) Method() string {
 	return http.MethodDelete
 }
 
-func (e UserDeleteEndpoint) Middlewares() []gin.HandlerFunc {
+func (e DeleteEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewUserDeleteEndpoint(handler ports.CommandHandler[command.DeleteUserCommand, bool]) *UserDeleteEndpoint {
-	return &UserDeleteEndpoint{handler: handler}
+func NewDeleteEndpoint(handler ports.CommandHandler[command.DeleteUserCommand, bool]) *DeleteEndpoint {
+	return &DeleteEndpoint{handler: handler}
 }

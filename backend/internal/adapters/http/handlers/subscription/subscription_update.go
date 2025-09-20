@@ -22,67 +22,52 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 )
 
-type SubscriptionUpdateEndpoint struct {
+type UpdateEndpoint struct {
 	handler ports.CommandHandler[command.UpdateSubscriptionCommand, subscription.Subscription]
 }
 
-type UpdateSubscriptionModel struct {
-	FriendlyName     *string                         `json:"friendly_name,omitempty"`
-	FreeTrial        *SubscriptionFreeTrialModel     `json:"free_trial,omitempty"`
-	ProviderId       string                          `json:"provider_id" binding:"required"`
-	PlanId           *string                         `json:"plan_id,omitempty"`
-	PriceId          *string                         `json:"price_id,omitempty"`
-	CustomPrice      *dto.AmountModel                `json:"custom_price,omitempty"`
-	ServiceUsers     []string                        `json:"service_users,omitempty"`
-	Labels           []string                        `json:"labels,omitempty"`
-	StartDate        time.Time                       `json:"start_date" binding:"required" format:"date-time"`
-	EndDate          *time.Time                      `json:"end_date,omitempty" format:"date-time"`
-	Recurrency       string                          `json:"recurrency" binding:"required"`
-	CustomRecurrency *int32                          `json:"custom_recurrency,omitempty"`
-	Payer            *EditableSubscriptionPayerModel `json:"payer,omitempty"`
-	Owner            dto.EditableOwnerModel          `json:"owner" binding:"required"`
-	UpdatedAt        *time.Time                      `json:"updated_at,omitempty" format:"date-time"`
-}
-
-func (m UpdateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (subscription.Subscription, error) {
-	serviceProviderId, err := uuid.Parse(m.ProviderId)
+func updateSubscriptionRequestToSubscription(
+	r dto.UpdateSubscriptionRequest,
+	userId string,
+	subId uuid.UUID) (subscription.Subscription, error) {
+	serviceProviderId, err := uuid.Parse(r.ProviderId)
 	if err != nil {
 		return nil, err
 	}
-	planId, err := x.ParseOrNilUUID(m.PlanId)
+	planId, err := x.ParseOrNilUUID(r.PlanId)
 	if err != nil {
 		return nil, err
 	}
-	priceId, err := x.ParseOrNilUUID(m.PriceId)
+	priceId, err := x.ParseOrNilUUID(r.PriceId)
 	if err != nil {
 		return nil, err
 	}
-	ownerType, err := auth.ParseOwnerType(m.Owner.Type)
+	ownerType, err := auth.ParseOwnerType(r.Owner.Type)
 	if err != nil {
 		return nil, err
 	}
 	var familyId *uuid.UUID
-	if m.Owner.FamilyId != nil {
-		fid, err := uuid.Parse(*m.Owner.FamilyId)
+	if r.Owner.FamilyId != nil {
+		fid, err := uuid.Parse(*r.Owner.FamilyId)
 		if err != nil {
 			return nil, err
 		}
 		familyId = &fid
 	}
 	owner := auth.NewOwner(ownerType, familyId, &userId)
-	updatedAt := x.ValueOrDefault(m.UpdatedAt, time.Now())
+	updatedAt := x.ValueOrDefault(r.UpdatedAt, time.Now())
 	var payer subscription.Payer
-	if m.Payer != nil {
+	if r.Payer != nil {
 		if familyId == nil {
 			return nil, errors.New("missing family_id for adding a payer")
 		}
-		payerType, err := subscription.ParsePayerType(m.Payer.Type)
+		payerType, err := subscription.ParsePayerType(r.Payer.Type)
 		if err != nil {
 			return nil, err
 		}
 		var memberId *uuid.UUID
-		if m.Payer.MemberId != nil {
-			mbrId, err := uuid.Parse(*m.Payer.MemberId)
+		if r.Payer.MemberId != nil {
+			mbrId, err := uuid.Parse(*r.Payer.MemberId)
 			if err != nil {
 				return nil, err
 			}
@@ -90,17 +75,17 @@ func (m UpdateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (s
 		}
 		payer = subscription.NewPayer(payerType, *familyId, memberId)
 	}
-	recurrency, err := subscription.ParseRecurrencyType(m.Recurrency)
+	recurrency, err := subscription.ParseRecurrencyType(r.Recurrency)
 	if err != nil {
 		return nil, err
 	}
-	serviceUsers, err := collection.SelectErr(m.ServiceUsers, func(in string) (uuid.UUID, error) {
+	serviceUsers, err := collection.SelectErr(r.ServiceUsers, func(in string) (uuid.UUID, error) {
 		return uuid.Parse(in)
 	})
 	if err != nil {
 		return nil, err
 	}
-	labels, err := collection.SelectErr(m.Labels, func(in string) (subscription.LabelRef, error) {
+	labels, err := collection.SelectErr(r.Labels, func(in string) (subscription.LabelRef, error) {
 		labelId, err := uuid.Parse(in)
 		if err != nil {
 			return subscription.LabelRef{}, err
@@ -113,15 +98,15 @@ func (m UpdateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (s
 	if err != nil {
 		return nil, err
 	}
-	price, err := newSubscriptionCustomPrice(m.CustomPrice)
+	price, err := dto.NewSubscriptionCustomPrice(r.CustomPrice)
 	if err != nil {
 		return nil, err
 	}
 
 	return subscription.NewSubscription(
 		subId,
-		m.FriendlyName,
-		newSubscriptionFreeTrial(m.FreeTrial),
+		r.FriendlyName,
+		dto.NewSubscriptionFreeTrial(r.FreeTrial),
 		serviceProviderId,
 		planId,
 		priceId,
@@ -130,23 +115,13 @@ func (m UpdateSubscriptionModel) Subscription(userId string, subId uuid.UUID) (s
 		payer,
 		serviceUsers,
 		labels,
-		m.StartDate,
-		m.EndDate,
+		r.StartDate,
+		r.EndDate,
 		recurrency,
-		m.CustomRecurrency,
+		r.CustomRecurrency,
 		updatedAt,
 		updatedAt,
 	), nil
-}
-
-func (m UpdateSubscriptionModel) Command(userId string, id uuid.UUID) (command.UpdateSubscriptionCommand, error) {
-	sub, err := m.Subscription(userId, id)
-	if err != nil {
-		return command.UpdateSubscriptionCommand{}, err
-	}
-	return command.UpdateSubscriptionCommand{
-		Subscription: sub,
-	}, nil
 }
 
 // Handle godoc
@@ -156,15 +131,15 @@ func (m UpdateSubscriptionModel) Command(userId string, id uuid.UUID) (command.U
 //	@Tags			subscriptions
 //	@Accept			json
 //	@Produce		json
-//	@Param			subscriptionId	path		string					true	"Subscription ID (UUID format)"
-//	@Param			subscription	body		UpdateSubscriptionModel	true	"Updated subscription data"
-//	@Success		200				{object}	SubscriptionModel		"Successfully updated subscription"
-//	@Failure		400				{object}	HttpErrorResponse		"Bad Request - Invalid input data or subscription ID"
-//	@Failure		401				{object}	HttpErrorResponse		"Unauthorized - Invalid user authentication"
-//	@Failure		404				{object}	HttpErrorResponse		"Subscription not found"
-//	@Failure		500				{object}	HttpErrorResponse		"Internal Server Error"
+//	@Param			subscriptionId	path		string							true	"Subscription ID (UUID format)"
+//	@Param			subscription	body		dto.UpdateSubscriptionRequest	true	"Updated subscription data"
+//	@Success		200				{object}	dto.SubscriptionModel			"Successfully updated subscription"
+//	@Failure		400				{object}	HttpErrorResponse				"Bad Request - Invalid input data or subscription ID"
+//	@Failure		401				{object}	HttpErrorResponse				"Unauthorized - Invalid user authentication"
+//	@Failure		404				{object}	HttpErrorResponse				"Subscription not found"
+//	@Failure		500				{object}	HttpErrorResponse				"Internal Server Error"
 //	@Router			/subscriptions/{subscriptionId} [put]
-func (s SubscriptionUpdateEndpoint) Handle(c *gin.Context) {
+func (s UpdateEndpoint) Handle(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("subscriptionId"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
@@ -173,7 +148,7 @@ func (s SubscriptionUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	var model UpdateSubscriptionModel
+	var model dto.UpdateSubscriptionRequest
 	if err := c.ShouldBindJSON(&model); err != nil {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
 			Message: err.Error(),
@@ -189,38 +164,40 @@ func (s SubscriptionUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	cmd, err := model.Command(userId, id)
+	sub, err := updateSubscriptionRequestToSubscription(model, userId, id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
 			Message: err.Error(),
 		})
-		c.Abort()
 		return
+	}
+	cmd := command.UpdateSubscriptionCommand{
+		Subscription: sub,
 	}
 	r := s.handler.Handle(c, cmd)
 	FromResult(c,
 		r,
 		WithMapping[subscription.Subscription](func(sub subscription.Subscription) any {
-			return newSubscriptionModel(sub)
+			return dto.NewSubscriptionModel(sub)
 		}))
 }
 
-func (s SubscriptionUpdateEndpoint) Pattern() []string {
+func (s UpdateEndpoint) Pattern() []string {
 	return []string{
 		"/:subscriptionId",
 	}
 }
 
-func (s SubscriptionUpdateEndpoint) Method() string {
+func (s UpdateEndpoint) Method() string {
 	return http.MethodPut
 }
 
-func (s SubscriptionUpdateEndpoint) Middlewares() []gin.HandlerFunc {
+func (s UpdateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewSubscriptionUpdateEndpoint(handler ports.CommandHandler[command.UpdateSubscriptionCommand, subscription.Subscription]) *SubscriptionUpdateEndpoint {
-	return &SubscriptionUpdateEndpoint{
+func NewUpdateEndpoint(handler ports.CommandHandler[command.UpdateSubscriptionCommand, subscription.Subscription]) *UpdateEndpoint {
+	return &UpdateEndpoint{
 		handler: handler,
 	}
 }

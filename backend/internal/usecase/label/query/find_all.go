@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/shared"
 	"github.com/mistribe/subtracker/pkg/langext/result"
@@ -27,26 +28,33 @@ func NewFindAllQuery(
 
 type FindAllQueryHandler struct {
 	labelRepository ports.LabelRepository
-	authService     ports.AuthenticationService
+	authentication  ports.Authentication
+	authorization   ports.Authorization
 }
 
 func NewFindAllQueryHandler(
 	labelRepository ports.LabelRepository,
-	authService ports.AuthenticationService) *FindAllQueryHandler {
+	authentication ports.Authentication,
+	authorization ports.Authorization) *FindAllQueryHandler {
 	return &FindAllQueryHandler{
 		labelRepository: labelRepository,
-		authService:     authService,
+		authentication:  authentication,
+		authorization:   authorization,
 	}
 }
 
 func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[shared.PaginatedResponse[label.Label]] {
-	userId := h.authService.MustGetUserId(ctx)
+	userId := h.authentication.MustGetUserId(ctx)
 	params := ports.NewLabelQueryParameters(query.SearchText, query.Limit, query.Offset)
 	lbs, count, err := h.labelRepository.GetAll(ctx, userId, params)
 	if err != nil {
 		return result.Fail[shared.PaginatedResponse[label.Label]](err)
 	}
-	return result.Success(shared.NewPaginatedResponse(lbs, count))
+	limits, err := h.authorization.GetCurrentLimits(ctx, user.CategoryLabel)
+	if err != nil {
+		return result.Fail[shared.PaginatedResponse[label.Label]](err)
+	}
+	return result.Success(shared.NewPaginatedResponse(lbs, count, limits))
 }

@@ -14,12 +14,12 @@ import (
 	"github.com/mistribe/subtracker/pkg/ginx"
 )
 
-type ProviderDeleteEndpoint struct {
+type DeleteEndpoint struct {
 	handler ports.CommandHandler[command.DeleteProviderCommand, bool]
 }
 
-func NewProviderDeleteEndpoint(handler ports.CommandHandler[command.DeleteProviderCommand, bool]) *ProviderDeleteEndpoint {
-	return &ProviderDeleteEndpoint{handler: handler}
+func NewDeleteEndpoint(handler ports.CommandHandler[command.DeleteProviderCommand, bool]) *DeleteEndpoint {
+	return &DeleteEndpoint{handler: handler}
 }
 
 // Handle godoc
@@ -33,7 +33,7 @@ func NewProviderDeleteEndpoint(handler ports.CommandHandler[command.DeleteProvid
 //	@Failure		404			{object}	HttpErrorResponse	"Provider not found"
 //	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/providers/{providerId} [delete]
-func (e ProviderDeleteEndpoint) Handle(c *gin.Context) {
+func (e DeleteEndpoint) Handle(c *gin.Context) {
 	providerId, err := uuid.Parse(c.Param("providerId"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
@@ -50,16 +50,16 @@ func (e ProviderDeleteEndpoint) Handle(c *gin.Context) {
 	FromResult(c, r, WithNoContent[bool]())
 }
 
-func (e ProviderDeleteEndpoint) Pattern() []string {
+func (e DeleteEndpoint) Pattern() []string {
 	return []string{
 		":providerId",
 	}
 }
 
-func (e ProviderDeleteEndpoint) Method() string {
+func (e DeleteEndpoint) Method() string {
 	return http.MethodDelete
 }
 
-func (e ProviderDeleteEndpoint) Middlewares() []gin.HandlerFunc {
+func (e DeleteEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

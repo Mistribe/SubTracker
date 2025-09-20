@@ -15,6 +15,7 @@ type UserRow struct {
 	ActiveSubscriptionCount int64      `alias:"active_subscription_count"`
 	CustomLabelCount        int64      `alias:"custom_label_count"`
 	CustomProviderCount     int64      `alias:"custom_provider_count"`
+	FamilyMemberCount       int64      `alias:"family_member_count"`
 }
 
 func CreateUserFromJetRow(rows []UserRow) (user.User, error) {

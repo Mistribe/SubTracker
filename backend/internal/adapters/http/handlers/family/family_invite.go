@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/domain/family"
@@ -14,30 +15,12 @@ import (
 	"github.com/mistribe/subtracker/pkg/ginx"
 )
 
-type FamilyInviteEndpoint struct {
+type InviteEndpoint struct {
 	handler ports.CommandHandler[command.InviteMemberCommand, command.InviteMemberResponse]
 }
 
-func NewFamilyInviteEndpoint(handler ports.CommandHandler[command.InviteMemberCommand, command.InviteMemberResponse]) *FamilyInviteEndpoint {
-	return &FamilyInviteEndpoint{handler: handler}
-}
-
-// FamilyInviteRequest represents the request body for inviting a family member
-type FamilyInviteRequest struct {
-	// Email of the invited member
-	Email *string `json:"email,omitempty"`
-	// ID of the family member to be invited
-	FamilyMemberId string `json:"family_member_id" binding:"required"`
-	// Name of the invited member
-	Name *string `json:"name,omitempty"`
-	// Type of the member (adult or kid)
-	Type *string `json:"type,omitempty" enums:"adult,kid"`
-}
-
-type FamilyInviteResponse struct {
-	Code           string `json:"code" binding:"required" example:"123456"`
-	FamilyId       string `json:"family_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
-	FamilyMemberId string `json:"family_member_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174001"`
+func NewInviteEndpoint(handler ports.CommandHandler[command.InviteMemberCommand, command.InviteMemberResponse]) *InviteEndpoint {
+	return &InviteEndpoint{handler: handler}
 }
 
 // Handle godoc
@@ -47,22 +30,22 @@ type FamilyInviteResponse struct {
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			familyId	path		string					true	"Family ID (UUID format)"
-//	@Param			request		body		FamilyInviteRequest		true	"Invitation details including email, name, member ID and type (adult/kid)"
-//	@Success		200			{object}	FamilyInviteResponse	"Successfully created invitation with code and IDs"
-//	@Failure		400			{object}	HttpErrorResponse		"Bad Request - Invalid input data"
-//	@Failure		401			{object}	HttpErrorResponse		"Unauthorized - Invalid or missing authentication"
-//	@Failure		404			{object}	HttpErrorResponse		"Family not found"
-//	@Failure		500			{object}	HttpErrorResponse		"Internal Server Error"
-//	@Router			/families/{familyId}/invite [post]
-func (e FamilyInviteEndpoint) Handle(c *gin.Context) {
+//	@Param			familyId	path		string						true	"Family ID (UUID format)"
+//	@Param			request		body		dto.FamilyInviteRequest		true	"Invitation details including email, name, member ID and type (adult/kid)"
+//	@Success		200			{object}	dto.FamilyInviteResponse	"Successfully created invitation with code and IDs"
+//	@Failure		400			{object}	HttpErrorResponse			"Bad Request - Invalid input data"
+//	@Failure		401			{object}	HttpErrorResponse			"Unauthorized - Invalid or missing authentication"
+//	@Failure		404			{object}	HttpErrorResponse			"Family not found"
+//	@Failure		500			{object}	HttpErrorResponse			"Internal Server Error"
+//	@Router			/family/{familyId}/invite [post]
+func (e InviteEndpoint) Handle(c *gin.Context) {
 	familyId, err := uuid.Parse(c.Param("familyId"))
 	if err != nil {
 		FromError(c, err)
 		return
 	}
 
-	var model FamilyInviteRequest
+	var model dto.FamilyInviteRequest
 	if err = c.ShouldBindJSON(&model); err != nil {
 		FromError(c, err)
 		return
@@ -94,7 +77,7 @@ func (e FamilyInviteEndpoint) Handle(c *gin.Context) {
 		FamilyMemberId: familyMemberId,
 	})
 	FromResult(c, r, WithMapping(func(response command.InviteMemberResponse) any {
-		return FamilyInviteResponse{
+		return dto.FamilyInviteResponse{
 			Code:           response.Code,
 			FamilyId:       response.FamilyId.String(),
 			FamilyMemberId: response.FamilyMemberId.String(),
@@ -102,16 +85,16 @@ func (e FamilyInviteEndpoint) Handle(c *gin.Context) {
 	}))
 }
 
-func (e FamilyInviteEndpoint) Pattern() []string {
+func (e InviteEndpoint) Pattern() []string {
 	return []string{
 		"/:familyId/invite",
 	}
 }
 
-func (e FamilyInviteEndpoint) Method() string {
+func (e InviteEndpoint) Method() string {
 	return http.MethodPost
 }
 
-func (e FamilyInviteEndpoint) Middlewares() []gin.HandlerFunc {
+func (e InviteEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

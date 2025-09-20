@@ -17,7 +17,7 @@ import (
 )
 
 func TestExchange_ToCurrencyAt_InvalidAmount(t *testing.T) {
-	localCacheMock := ports.NewMockLocalCache(t)
+	localCacheMock := ports.NewMockCache(t)
 	currencyRepositoryMock := ports.NewMockCurrencyRepository(t)
 	service := exchange.New(localCacheMock, currencyRepositoryMock, testx.DiscardLogger())
 
@@ -29,7 +29,7 @@ func TestExchange_ToCurrencyAt_InvalidAmount(t *testing.T) {
 }
 
 func TestExchange_ToCurrencyAt_SameCurrency(t *testing.T) {
-	localCacheMock := ports.NewMockLocalCache(t)
+	localCacheMock := ports.NewMockCache(t)
 	currencyRepositoryMock := ports.NewMockCurrencyRepository(t)
 	service := exchange.New(localCacheMock, currencyRepositoryMock, testx.DiscardLogger())
 
@@ -41,7 +41,7 @@ func TestExchange_ToCurrencyAt_SameCurrency(t *testing.T) {
 }
 
 func TestExchange_ToCurrencyAt_ErrorFromRepository(t *testing.T) {
-	localCacheMock := ports.NewMockLocalCache(t)
+	localCacheMock := ports.NewMockCache(t)
 	currencyRepositoryMock := ports.NewMockCurrencyRepository(t)
 	service := exchange.New(localCacheMock, currencyRepositoryMock, testx.DiscardLogger())
 
@@ -67,7 +67,7 @@ func TestExchange_ToCurrencyAt_ErrorFromRepository(t *testing.T) {
 }
 
 func TestExchange_ToCurrencyAt_SuccessFromCache(t *testing.T) {
-	localCacheMock := ports.NewMockLocalCache(t)
+	localCacheMock := ports.NewMockCache(t)
 	currencyRepositoryMock := ports.NewMockCurrencyRepository(t)
 	service := exchange.New(localCacheMock, currencyRepositoryMock, testx.DiscardLogger())
 
@@ -93,7 +93,7 @@ func TestExchange_ToCurrencyAt_SuccessFromCache(t *testing.T) {
 }
 
 func TestExchange_ToCurrencyAt_SuccessFromRepository(t *testing.T) {
-	localCacheMock := ports.NewMockLocalCache(t)
+	localCacheMock := ports.NewMockCache(t)
 	currencyRepositoryMock := ports.NewMockCurrencyRepository(t)
 	service := exchange.New(localCacheMock, currencyRepositoryMock, testx.DiscardLogger())
 

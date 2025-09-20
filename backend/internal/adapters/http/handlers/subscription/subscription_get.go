@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/domain/subscription"
@@ -12,7 +13,7 @@ import (
 	"github.com/mistribe/subtracker/internal/usecase/subscription/query"
 )
 
-type SubscriptionGetEndpoint struct {
+type GetEndpoint struct {
 	handler ports.QueryHandler[query.FindOneQuery, subscription.Subscription]
 }
 
@@ -22,13 +23,13 @@ type SubscriptionGetEndpoint struct {
 //	@Description	Retrieve a single subscription with all its details including provider, plan, and pricing information
 //	@Tags			subscriptions
 //	@Produce		json
-//	@Param			subscriptionId	path		string				true	"Subscription ID (UUID format)"
-//	@Success		200				{object}	SubscriptionModel	"Successfully retrieved subscription"
-//	@Failure		400				{object}	HttpErrorResponse	"Bad Request - Invalid subscription ID format"
-//	@Failure		404				{object}	HttpErrorResponse	"Subscription not found"
-//	@Failure		500				{object}	HttpErrorResponse	"Internal Server Error"
+//	@Param			subscriptionId	path		string					true	"Subscription ID (UUID format)"
+//	@Success		200				{object}	dto.SubscriptionModel	"Successfully retrieved subscription"
+//	@Failure		400				{object}	HttpErrorResponse		"Bad Request - Invalid subscription ID format"
+//	@Failure		404				{object}	HttpErrorResponse		"Subscription not found"
+//	@Failure		500				{object}	HttpErrorResponse		"Internal Server Error"
 //	@Router			/subscriptions/{subscriptionId} [get]
-func (e SubscriptionGetEndpoint) Handle(c *gin.Context) {
+func (e GetEndpoint) Handle(c *gin.Context) {
 	id, err := QueryParamAsUUID(c, "subscriptionId")
 	if err != nil {
 		FromError(c, err)
@@ -39,24 +40,24 @@ func (e SubscriptionGetEndpoint) Handle(c *gin.Context) {
 	FromResult(c,
 		r,
 		WithMapping[subscription.Subscription](func(sub subscription.Subscription) any {
-			return newSubscriptionModel(sub)
+			return dto.NewSubscriptionModel(sub)
 		}))
 }
 
-func (e SubscriptionGetEndpoint) Pattern() []string {
+func (e GetEndpoint) Pattern() []string {
 	return []string{
 		"/:subscriptionId",
 	}
 }
 
-func (e SubscriptionGetEndpoint) Method() string {
+func (e GetEndpoint) Method() string {
 	return http.MethodGet
 }
 
-func (e SubscriptionGetEndpoint) Middlewares() []gin.HandlerFunc {
+func (e GetEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewSubscriptionGetEndpoint() *SubscriptionGetEndpoint {
-	return &SubscriptionGetEndpoint{}
+func NewGetEndpoint() *GetEndpoint {
+	return &GetEndpoint{}
 }

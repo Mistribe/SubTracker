@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
@@ -12,16 +13,12 @@ import (
 	"github.com/mistribe/subtracker/internal/usecase/user/query"
 )
 
-type UserGetPreferredCurrencyEndpoint struct {
+type GetPreferredCurrencyEndpoint struct {
 	handler ports.QueryHandler[query.FindPreferredCurrencyQuery, currency.Unit]
 }
 
-func NewUserGetPreferredCurrencyEndpoint(handler ports.QueryHandler[query.FindPreferredCurrencyQuery, currency.Unit]) *UserGetPreferredCurrencyEndpoint {
-	return &UserGetPreferredCurrencyEndpoint{handler: handler}
-}
-
-type UserPreferredCurrencyModel struct {
-	Currency string `json:"currency"`
+func NewUserGetPreferredCurrencyEndpoint(handler ports.QueryHandler[query.FindPreferredCurrencyQuery, currency.Unit]) *GetPreferredCurrencyEndpoint {
+	return &GetPreferredCurrencyEndpoint{handler: handler}
 }
 
 // Handle godoc
@@ -30,32 +27,32 @@ type UserPreferredCurrencyModel struct {
 //	@Description	Returns the preferred currency for the authenticated user
 //	@Tags			users
 //	@Produce		json
-//	@Success		200	{object}	UserPreferredCurrencyModel
+//	@Success		200	{object}	dto.UserPreferredCurrencyModel
 //	@Failure		401	{object}	HttpErrorResponse	"Unauthorized"
 //	@Router			/users/preferred/currency [get]
-func (e UserGetPreferredCurrencyEndpoint) Handle(c *gin.Context) {
+func (e GetPreferredCurrencyEndpoint) Handle(c *gin.Context) {
 	q := query.NewFindPreferredCurrencyQuery()
 
 	r := e.handler.Handle(c, q)
 	FromResult(c,
 		r,
 		WithMapping[currency.Unit](func(up currency.Unit) any {
-			return UserPreferredCurrencyModel{
+			return dto.UserPreferredCurrencyModel{
 				Currency: up.String(),
 			}
 		}))
 }
 
-func (e UserGetPreferredCurrencyEndpoint) Pattern() []string {
+func (e GetPreferredCurrencyEndpoint) Pattern() []string {
 	return []string{
 		"/preferred/currency",
 	}
 }
 
-func (e UserGetPreferredCurrencyEndpoint) Method() string {
+func (e GetPreferredCurrencyEndpoint) Method() string {
 	return http.MethodGet
 }
 
-func (e UserGetPreferredCurrencyEndpoint) Middlewares() []gin.HandlerFunc {
+func (e GetPreferredCurrencyEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

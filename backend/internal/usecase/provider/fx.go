@@ -21,7 +21,6 @@ func Module() fx.Option {
 			ports.AsCommandHandler[command2.UpdateProviderCommand, provider.Provider](command2.NewUpdateProviderCommandHandler),
 			ports.AsCommandHandler[command2.UpdatePlanCommand, provider.Plan](command2.NewUpdatePlanCommandHandler),
 			ports.AsCommandHandler[command2.UpdatePriceCommand, provider.Price](command2.NewUpdatePriceCommandHandler),
-			ports.AsCommandHandler[command2.PatchProviderCommand, provider.Provider](command2.NewPatchProviderCommandHandler),
 			ports.AsCommandHandler[command2.DeleteProviderCommand, bool](command2.NewDeleteProviderCommandHandler),
 			ports.AsCommandHandler[command2.DeletePlanCommand, bool](command2.NewDeletePlanCommandHandler),
 			ports.AsCommandHandler[command2.DeletePriceCommand, bool](command2.NewDeletePriceCommandHandler),

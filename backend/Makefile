@@ -15,13 +15,17 @@ clients: typescript-client dart-client
 typescript-client:
 	@echo "Clean old client api" &&\
 		rm -fr "${PWD}/../web/src/api" &&\
-    	mkdir -p "${PWD}/../web/src/api" &&\
-    	cp "${PWD}/internal/adapters/http/handlers/openapi/swagger.yaml" "${PWD}/../web/src/api"
-	@docker pull mcr.microsoft.com/openapi/kiota && \
-    docker run --rm -v ../web/src/api:/app/output \
-    -v ./internal/adapters/http/handlers/openapi/swagger.yaml:/app/openapi.yaml \
+    	mkdir -p "${PWD}/../web/src/api"
+	@docker pull openapitools/openapi-generator-cli && \
+    docker run --rm \
+    -v ${PWD}/../web/src/api:/app/output \
+    -v ${PWD}/internal/adapters/http/handlers/openapi/swagger.yaml:/app/openapi.yaml \
     --user $(id -u):$(id -g) \
-    mcr.microsoft.com/openapi/kiota generate --language typescript --clean-output
+    openapitools/openapi-generator-cli generate \
+    -i /app/openapi.yaml \
+    -g typescript-fetch \
+    --global-property=apiDocs=false,modelDocs=false,apiTests=false,modelTests=false \
+    -o /app/output
 
 dart-client:
 	@echo "Clean old dart client api" &&\

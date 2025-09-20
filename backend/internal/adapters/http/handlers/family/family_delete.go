@@ -13,12 +13,12 @@ import (
 	"github.com/mistribe/subtracker/internal/usecase/family/command"
 )
 
-type FamilyDeleteEndpoint struct {
+type DeleteEndpoint struct {
 	handler ports.CommandHandler[command.DeleteFamilyCommand, bool]
 }
 
-func NewFamilyDeleteEndpoint(handler ports.CommandHandler[command.DeleteFamilyCommand, bool]) *FamilyDeleteEndpoint {
-	return &FamilyDeleteEndpoint{handler: handler}
+func NewDeleteEndpoint(handler ports.CommandHandler[command.DeleteFamilyCommand, bool]) *DeleteEndpoint {
+	return &DeleteEndpoint{handler: handler}
 }
 
 // Handle godoc
@@ -31,8 +31,8 @@ func NewFamilyDeleteEndpoint(handler ports.CommandHandler[command.DeleteFamilyCo
 //	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid family ID format"
 //	@Failure		404			{object}	HttpErrorResponse	"Family not found"
 //	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
-//	@Router			/families/{familyId} [delete]
-func (e FamilyDeleteEndpoint) Handle(c *gin.Context) {
+//	@Router			/family/{familyId} [delete]
+func (e DeleteEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("familyId")
 	if idParam == "" {
 		FromError(c, errors.New("familyId parameter is required"))
@@ -53,16 +53,16 @@ func (e FamilyDeleteEndpoint) Handle(c *gin.Context) {
 	FromResult(c, r, WithNoContent[bool]())
 }
 
-func (e FamilyDeleteEndpoint) Pattern() []string {
+func (e DeleteEndpoint) Pattern() []string {
 	return []string{
 		"/:familyId",
 	}
 }
 
-func (e FamilyDeleteEndpoint) Method() string {
+func (e DeleteEndpoint) Method() string {
 	return http.MethodDelete
 }
 
-func (e FamilyDeleteEndpoint) Middlewares() []gin.HandlerFunc {
+func (e DeleteEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

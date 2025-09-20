@@ -18,19 +18,11 @@ import (
 	"github.com/mistribe/subtracker/pkg/x"
 )
 
-type LabelCreateEndpoint struct {
+type CreateEndpoint struct {
 	handler ports.CommandHandler[command.CreateLabelCommand, label.Label]
 }
 
-type createLabelModel struct {
-	Id        *string                `json:"id,omitempty"`
-	Name      string                 `json:"name" binding:"required"`
-	Color     string                 `json:"color" binding:"required"`
-	Owner     dto.EditableOwnerModel `json:"owner" binding:"required"`
-	CreatedAt *time.Time             `json:"created_at,omitempty" format:"date-time"`
-}
-
-func (m createLabelModel) ToLabel(userId string) (label.Label, error) {
+func createLabelRequestToLabel(m dto.CreateLabelRequest, userId string) (label.Label, error) {
 	var id uuid.UUID
 	var err error
 	var createdAt time.Time
@@ -55,16 +47,6 @@ func (m createLabelModel) ToLabel(userId string) (label.Label, error) {
 	), nil
 }
 
-func (m createLabelModel) Command(userId string) (command.CreateLabelCommand, error) {
-	lbl, err := m.ToLabel(userId)
-	if err != nil {
-		return command.CreateLabelCommand{}, err
-	}
-	return command.CreateLabelCommand{
-		Label: lbl,
-	}, nil
-}
-
 // Handle godoc
 //
 //	@Summary		Create a new label
@@ -72,14 +54,14 @@ func (m createLabelModel) Command(userId string) (command.CreateLabelCommand, er
 //	@Tags			labels
 //	@Accept			json
 //	@Produce		json
-//	@Param			label	body		createLabelModel	true	"Label creation data"
-//	@Success		201		{object}	labelModel			"Successfully created label"
-//	@Failure		400		{object}	HttpErrorResponse	"Bad Request - Invalid input data"
-//	@Failure		401		{object}	HttpErrorResponse	"Unauthorized - Invalid user authentication"
-//	@Failure		500		{object}	HttpErrorResponse	"Internal Server Error"
+//	@Param			label	body		dto.CreateLabelRequest	true	"Label creation data"
+//	@Success		201		{object}	dto.LabelModel			"Successfully created label"
+//	@Failure		400		{object}	HttpErrorResponse		"Bad Request - Invalid input data"
+//	@Failure		401		{object}	HttpErrorResponse		"Unauthorized - Invalid user authentication"
+//	@Failure		500		{object}	HttpErrorResponse		"Internal Server Error"
 //	@Router			/labels [post]
-func (l LabelCreateEndpoint) Handle(c *gin.Context) {
-	var model createLabelModel
+func (l CreateEndpoint) Handle(c *gin.Context) {
+	var model dto.CreateLabelRequest
 	if err := c.ShouldBindJSON(&model); err != nil {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
 			Message: err.Error(),
@@ -95,7 +77,7 @@ func (l LabelCreateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	cmd, err := model.Command(userId)
+	lbl, err := createLabelRequestToLabel(model, userId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
 			Message: err.Error(),
@@ -103,32 +85,35 @@ func (l LabelCreateEndpoint) Handle(c *gin.Context) {
 		c.Abort()
 		return
 	}
+	cmd := command.CreateLabelCommand{
+		Label: lbl,
+	}
 
 	r := l.handler.Handle(c, cmd)
 	FromResult(c,
 		r,
 		WithStatus[label.Label](http.StatusCreated),
 		WithMapping[label.Label](func(lbl label.Label) any {
-			return newLabelModel(lbl)
+			return dto.NewLabelModel(lbl)
 		}))
 }
 
-func (l LabelCreateEndpoint) Pattern() []string {
+func (l CreateEndpoint) Pattern() []string {
 	return []string{
 		"",
 	}
 }
 
-func (l LabelCreateEndpoint) Method() string {
+func (l CreateEndpoint) Method() string {
 	return http.MethodPost
 }
 
-func (l LabelCreateEndpoint) Middlewares() []gin.HandlerFunc {
+func (l CreateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewLabelCreateEndpoint(handler ports.CommandHandler[command.CreateLabelCommand, label.Label]) *LabelCreateEndpoint {
-	return &LabelCreateEndpoint{
+func NewCreateEndpoint(handler ports.CommandHandler[command.CreateLabelCommand, label.Label]) *CreateEndpoint {
+	return &CreateEndpoint{
 		handler: handler,
 	}
 }

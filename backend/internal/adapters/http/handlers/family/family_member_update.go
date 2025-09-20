@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/domain/family"
@@ -17,17 +18,13 @@ import (
 	"github.com/mistribe/subtracker/pkg/langext/option"
 )
 
-type FamilyMemberUpdateEndpoint struct {
+type MemberUpdateEndpoint struct {
 	handler ports.CommandHandler[command.UpdateFamilyMemberCommand, family.Family]
 }
 
-type updateFamilyMemberModel struct {
-	Name      string     `json:"name" binding:"required"`
-	Type      string     `json:"type" binding:"required" enums:"owner,adult,kid"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
-}
-
-func (m updateFamilyMemberModel) Command(familyId, memberId uuid.UUID) (command.UpdateFamilyMemberCommand, error) {
+func updateFamilyMemberRequestToCommand(
+	m dto.UpdateFamilyMemberRequest,
+	familyId, memberId uuid.UUID) (command.UpdateFamilyMemberCommand, error) {
 
 	updatedAt := option.None[time.Time]()
 	if m.UpdatedAt != nil {
@@ -55,16 +52,16 @@ func (m updateFamilyMemberModel) Command(familyId, memberId uuid.UUID) (command.
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			familyId	path		string					true	"Family ID (UUID format)"
-//	@Param			id			path		string					true	"Family member ID (UUID format)"
-//	@Param			member		body		updateFamilyMemberModel	true	"Updated family member data"
-//	@Success		200			{object}	familyModel				"Successfully updated family member"
-//	@Failure		400			{object}	HttpErrorResponse		"Bad Request - Invalid input data or ID format"
-//	@Failure		401			{object}	HttpErrorResponse		"Unauthorized - Invalid user authentication"
-//	@Failure		404			{object}	HttpErrorResponse		"Family or family member not found"
-//	@Failure		500			{object}	HttpErrorResponse		"Internal Server Error"
-//	@Router			/families/{familyId}/members/{id} [put]
-func (f FamilyMemberUpdateEndpoint) Handle(c *gin.Context) {
+//	@Param			familyId	path		string							true	"Family ID (UUID format)"
+//	@Param			id			path		string							true	"Family member ID (UUID format)"
+//	@Param			member		body		dto.UpdateFamilyMemberRequest	true	"Updated family member data"
+//	@Success		200			{object}	dto.FamilyModel					"Successfully updated family member"
+//	@Failure		400			{object}	HttpErrorResponse				"Bad Request - Invalid input data or ID format"
+//	@Failure		401			{object}	HttpErrorResponse				"Unauthorized - Invalid user authentication"
+//	@Failure		404			{object}	HttpErrorResponse				"Family or family member not found"
+//	@Failure		500			{object}	HttpErrorResponse				"Internal Server Error"
+//	@Router			/family/{familyId}/members/{id} [put]
+func (f MemberUpdateEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")
 	if idParam == "" {
 		FromError(c, errors.New("id parameter is required"))
@@ -89,13 +86,13 @@ func (f FamilyMemberUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	var model updateFamilyMemberModel
+	var model dto.UpdateFamilyMemberRequest
 	if err = c.ShouldBindJSON(&model); err != nil {
 		FromError(c, err)
 		return
 	}
 
-	cmd, err := model.Command(familyId, id)
+	cmd, err := updateFamilyMemberRequestToCommand(model, familyId, id)
 	if err != nil {
 		FromError(c, err)
 		return
@@ -105,26 +102,26 @@ func (f FamilyMemberUpdateEndpoint) Handle(c *gin.Context) {
 	FromResult(c,
 		r,
 		WithMapping[family.Family](func(mbr family.Family) any {
-			return newFamilyModel(userId, mbr)
+			return dto.NewFamilyModel(userId, mbr)
 		}))
 }
 
-func (f FamilyMemberUpdateEndpoint) Pattern() []string {
+func (f MemberUpdateEndpoint) Pattern() []string {
 	return []string{
 		"/:familyId/members/:id",
 	}
 }
 
-func (f FamilyMemberUpdateEndpoint) Method() string {
+func (f MemberUpdateEndpoint) Method() string {
 	return http.MethodPut
 }
 
-func (f FamilyMemberUpdateEndpoint) Middlewares() []gin.HandlerFunc {
+func (f MemberUpdateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewFamilyMemberUpdateEndpoint(handler ports.CommandHandler[command.UpdateFamilyMemberCommand, family.Family]) *FamilyMemberUpdateEndpoint {
-	return &FamilyMemberUpdateEndpoint{
+func NewMemberUpdateEndpoint(handler ports.CommandHandler[command.UpdateFamilyMemberCommand, family.Family]) *MemberUpdateEndpoint {
+	return &MemberUpdateEndpoint{
 		handler: handler,
 	}
 }

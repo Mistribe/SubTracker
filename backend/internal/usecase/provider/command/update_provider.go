@@ -6,10 +6,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
-	auth2 "github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 	"github.com/mistribe/subtracker/pkg/x"
 )
@@ -25,20 +24,26 @@ type UpdateProviderCommand struct {
 	UpdatedAt      *time.Time
 }
 
-type UpdateCommandHandler struct {
+type UpdateProviderCommandHandler struct {
 	providerRepository ports.ProviderRepository
 	labelRepository    ports.LabelRepository
+	authorization      ports.Authorization
 }
 
-func NewUpdateProviderCommandHandler(providerRepository ports.ProviderRepository,
-	labelRepository ports.LabelRepository) *UpdateCommandHandler {
-	return &UpdateCommandHandler{
+func NewUpdateProviderCommandHandler(
+	providerRepository ports.ProviderRepository,
+	labelRepository ports.LabelRepository,
+	authorization ports.Authorization) *UpdateProviderCommandHandler {
+	return &UpdateProviderCommandHandler{
 		providerRepository: providerRepository,
 		labelRepository:    labelRepository,
+		authorization:      authorization,
 	}
 }
 
-func (h UpdateCommandHandler) Handle(ctx context.Context, cmd UpdateProviderCommand) result.Result[provider.Provider] {
+func (h UpdateProviderCommandHandler) Handle(
+	ctx context.Context,
+	cmd UpdateProviderCommand) result.Result[provider.Provider] {
 	prov, err := h.providerRepository.GetById(ctx, cmd.Id)
 	if err != nil {
 		return result.Fail[provider.Provider](err)
@@ -49,23 +54,17 @@ func (h UpdateCommandHandler) Handle(ctx context.Context, cmd UpdateProviderComm
 
 	}
 
+	if err = h.authorization.Can(ctx, user.PermissionWrite).For(prov); err != nil {
+		return result.Fail[provider.Provider](err)
+	}
+
 	return h.update(ctx, cmd, prov)
 }
 
-func (h UpdateCommandHandler) update(
+func (h UpdateProviderCommandHandler) update(
 	ctx context.Context,
 	cmd UpdateProviderCommand,
 	prov provider.Provider) result.Result[provider.Provider] {
-
-	userId, ok := auth2.GetUserIdFromContext(ctx)
-	if !ok {
-		return result.Fail[provider.Provider](auth.ErrUnknownUser)
-	}
-
-	if prov.Owner().Type() == auth.PersonalOwnerType &&
-		prov.Owner().UserId() != userId {
-		return result.Fail[provider.Provider](provider.ErrOnlyOwnerCanEdit)
-	}
 
 	if err := ensureLabelExists(ctx, h.labelRepository, cmd.Labels); err != nil {
 		return result.Fail[provider.Provider](err)

@@ -2,8 +2,8 @@ package provider
 
 import (
 	"net/http"
-	"time"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 	"github.com/mistribe/subtracker/pkg/x/collection"
 
@@ -17,37 +17,29 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/provider"
 )
 
-type ProviderUpdateEndpoint struct {
+type UpdateEndpoint struct {
 	handler ports.CommandHandler[command.UpdateProviderCommand, provider.Provider]
 }
 
-func NewProviderUpdateEndpoint(handler ports.CommandHandler[command.UpdateProviderCommand, provider.Provider]) *ProviderUpdateEndpoint {
-	return &ProviderUpdateEndpoint{handler: handler}
+func NewUpdateEndpoint(handler ports.CommandHandler[command.UpdateProviderCommand, provider.Provider]) *UpdateEndpoint {
+	return &UpdateEndpoint{handler: handler}
 }
 
-type updateProviderModel struct {
-	Name           string     `json:"name" binding:"required"`
-	Description    *string    `json:"description,omitempty"`
-	IconUrl        *string    `json:"icon_url,omitempty"`
-	Url            *string    `json:"url,omitempty"`
-	PricingPageUrl *string    `json:"pricing_page_url,omitempty"`
-	Labels         []string   `json:"labels" binding:"required"`
-	UpdatedAt      *time.Time `json:"updated_at,omitempty" format:"date-time"`
-}
-
-func (m updateProviderModel) Command(providerId uuid.UUID) (command.UpdateProviderCommand, error) {
-	labels, err := collection.SelectErr(m.Labels, uuid.Parse)
+func updateProviderRequestToCommand(r dto.UpdateProviderRequest, providerId uuid.UUID) (
+	command.UpdateProviderCommand,
+	error) {
+	labels, err := collection.SelectErr(r.Labels, uuid.Parse)
 	if err != nil {
 		return command.UpdateProviderCommand{}, err
 	}
 
 	return command.UpdateProviderCommand{
 		Id:             providerId,
-		Name:           m.Name,
-		Description:    m.Description,
-		IconUrl:        m.IconUrl,
-		Url:            m.Url,
-		PricingPageUrl: m.PricingPageUrl,
+		Name:           r.Name,
+		Description:    r.Description,
+		IconUrl:        r.IconUrl,
+		Url:            r.Url,
+		PricingPageUrl: r.PricingPageUrl,
 		Labels:         labels,
 		UpdatedAt:      nil,
 	}, nil
@@ -60,14 +52,14 @@ func (m updateProviderModel) Command(providerId uuid.UUID) (command.UpdateProvid
 //	@Tags			providers
 //	@Accept			json
 //	@Produce		json
-//	@Param			providerId	path		string				true	"Provider ID (UUID format)"
-//	@Param			provider	body		updateProviderModel	true	"Updated provider data"
-//	@Success		200			{object}	ProviderModel		"Successfully updated provider"
-//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid input data or provider ID"
-//	@Failure		404			{object}	HttpErrorResponse	"Provider not found"
-//	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
+//	@Param			providerId	path		string						true	"Provider ID (UUID format)"
+//	@Param			provider	body		dto.UpdateProviderRequest	true	"Updated provider data"
+//	@Success		200			{object}	dto.ProviderModel			"Successfully updated provider"
+//	@Failure		400			{object}	HttpErrorResponse			"Bad Request - Invalid input data or provider ID"
+//	@Failure		404			{object}	HttpErrorResponse			"Provider not found"
+//	@Failure		500			{object}	HttpErrorResponse			"Internal Server Error"
 //	@Router			/providers/{providerId} [put]
-func (e ProviderUpdateEndpoint) Handle(c *gin.Context) {
+func (e UpdateEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("providerId")
 	if idParam == "" {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
@@ -84,14 +76,14 @@ func (e ProviderUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	var model updateProviderModel
-	if err := c.ShouldBindJSON(&model); err != nil {
+	var model dto.UpdateProviderRequest
+	if err = c.ShouldBindJSON(&model); err != nil {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
 			Message: err.Error(),
 		})
 		return
 	}
-	cmd, err := model.Command(id)
+	cmd, err := updateProviderRequestToCommand(model, id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
 			Message: err.Error(),
@@ -103,20 +95,20 @@ func (e ProviderUpdateEndpoint) Handle(c *gin.Context) {
 	FromResult(c,
 		r,
 		WithMapping[provider.Provider](func(prov provider.Provider) any {
-			return newProviderModel(prov)
+			return dto.NewProviderModel(prov)
 		}))
 }
 
-func (e ProviderUpdateEndpoint) Pattern() []string {
+func (e UpdateEndpoint) Pattern() []string {
 	return []string{
 		":providerId",
 	}
 }
 
-func (e ProviderUpdateEndpoint) Method() string {
+func (e UpdateEndpoint) Method() string {
 	return http.MethodPut
 }
 
-func (e ProviderUpdateEndpoint) Middlewares() []gin.HandlerFunc {
+func (e UpdateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

@@ -238,7 +238,7 @@ func (r FamilyRepository) create(ctx context.Context, families []family.Family) 
 		stmt = stmt.VALUES(
 			UUID(fam.Id()),
 			String(fam.Name()),
-			String(fam.OwnerId()),
+			String(fam.Owner().UserId()),
 			TimestampzT(fam.CreatedAt()),
 			TimestampzT(fam.UpdatedAt()),
 			String(fam.ETag()),
@@ -314,7 +314,7 @@ func (r FamilyRepository) update(ctx context.Context, fam family.Family) error {
 	stmt := Families.UPDATE().
 		SET(
 			Families.Name.SET(String(fam.Name())),
-			Families.OwnerID.SET(String(fam.OwnerId())),
+			Families.OwnerID.SET(String(fam.Owner().UserId())),
 			Families.UpdatedAt.SET(TimestampzT(fam.UpdatedAt())),
 			Families.Etag.SET(String(fam.ETag())),
 		).

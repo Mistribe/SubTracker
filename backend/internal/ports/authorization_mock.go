@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/mistribe/subtracker/internal/domain/user"
+	"github.com/mistribe/subtracker/internal/shared"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -156,6 +157,142 @@ func (_c *MockAuthorization_EnsureWithinLimit_Call) Return(err error) *MockAutho
 }
 
 func (_c *MockAuthorization_EnsureWithinLimit_Call) RunAndReturn(run func(ctx context.Context, feature user.Feature, delta int) error) *MockAuthorization_EnsureWithinLimit_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetCurrentLimit provides a mock function for the type MockAuthorization
+func (_mock *MockAuthorization) GetCurrentLimit(ctx context.Context, feature user.Feature) (shared.Limit, error) {
+	ret := _mock.Called(ctx, feature)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetCurrentLimit")
+	}
+
+	var r0 shared.Limit
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, user.Feature) (shared.Limit, error)); ok {
+		return returnFunc(ctx, feature)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, user.Feature) shared.Limit); ok {
+		r0 = returnFunc(ctx, feature)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(shared.Limit)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, user.Feature) error); ok {
+		r1 = returnFunc(ctx, feature)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAuthorization_GetCurrentLimit_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetCurrentLimit'
+type MockAuthorization_GetCurrentLimit_Call struct {
+	*mock.Call
+}
+
+// GetCurrentLimit is a helper method to define mock.On call
+//   - ctx context.Context
+//   - feature user.Feature
+func (_e *MockAuthorization_Expecter) GetCurrentLimit(ctx interface{}, feature interface{}) *MockAuthorization_GetCurrentLimit_Call {
+	return &MockAuthorization_GetCurrentLimit_Call{Call: _e.mock.On("GetCurrentLimit", ctx, feature)}
+}
+
+func (_c *MockAuthorization_GetCurrentLimit_Call) Run(run func(ctx context.Context, feature user.Feature)) *MockAuthorization_GetCurrentLimit_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 user.Feature
+		if args[1] != nil {
+			arg1 = args[1].(user.Feature)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAuthorization_GetCurrentLimit_Call) Return(limit shared.Limit, err error) *MockAuthorization_GetCurrentLimit_Call {
+	_c.Call.Return(limit, err)
+	return _c
+}
+
+func (_c *MockAuthorization_GetCurrentLimit_Call) RunAndReturn(run func(ctx context.Context, feature user.Feature) (shared.Limit, error)) *MockAuthorization_GetCurrentLimit_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetCurrentLimits provides a mock function for the type MockAuthorization
+func (_mock *MockAuthorization) GetCurrentLimits(ctx context.Context, category user.Category) (shared.Limits, error) {
+	ret := _mock.Called(ctx, category)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetCurrentLimits")
+	}
+
+	var r0 shared.Limits
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, user.Category) (shared.Limits, error)); ok {
+		return returnFunc(ctx, category)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, user.Category) shared.Limits); ok {
+		r0 = returnFunc(ctx, category)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(shared.Limits)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, user.Category) error); ok {
+		r1 = returnFunc(ctx, category)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockAuthorization_GetCurrentLimits_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetCurrentLimits'
+type MockAuthorization_GetCurrentLimits_Call struct {
+	*mock.Call
+}
+
+// GetCurrentLimits is a helper method to define mock.On call
+//   - ctx context.Context
+//   - category user.Category
+func (_e *MockAuthorization_Expecter) GetCurrentLimits(ctx interface{}, category interface{}) *MockAuthorization_GetCurrentLimits_Call {
+	return &MockAuthorization_GetCurrentLimits_Call{Call: _e.mock.On("GetCurrentLimits", ctx, category)}
+}
+
+func (_c *MockAuthorization_GetCurrentLimits_Call) Run(run func(ctx context.Context, category user.Category)) *MockAuthorization_GetCurrentLimits_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 user.Category
+		if args[1] != nil {
+			arg1 = args[1].(user.Category)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockAuthorization_GetCurrentLimits_Call) Return(limits shared.Limits, err error) *MockAuthorization_GetCurrentLimits_Call {
+	_c.Call.Return(limits, err)
+	return _c
+}
+
+func (_c *MockAuthorization_GetCurrentLimits_Call) RunAndReturn(run func(ctx context.Context, category user.Category) (shared.Limits, error)) *MockAuthorization_GetCurrentLimits_Call {
 	_c.Call.Return(run)
 	return _c
 }

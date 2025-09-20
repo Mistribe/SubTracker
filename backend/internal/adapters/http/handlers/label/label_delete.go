@@ -12,7 +12,7 @@ import (
 	. "github.com/mistribe/subtracker/pkg/ginx"
 )
 
-type LabelDeleteEndpoint struct {
+type DeleteEndpoint struct {
 	handler ports.CommandHandler[command.DeleteLabelCommand, bool]
 }
 
@@ -27,7 +27,7 @@ type LabelDeleteEndpoint struct {
 //	@Failure		404	{object}	HttpErrorResponse	"Label not found"
 //	@Failure		500	{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/labels/{id} [delete]
-func (l LabelDeleteEndpoint) Handle(c *gin.Context) {
+func (l DeleteEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")
 	if idParam == "" {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
@@ -52,22 +52,22 @@ func (l LabelDeleteEndpoint) Handle(c *gin.Context) {
 	FromResult(c, r, WithNoContent[bool]())
 }
 
-func (l LabelDeleteEndpoint) Pattern() []string {
+func (l DeleteEndpoint) Pattern() []string {
 	return []string{
 		"/:id",
 	}
 }
 
-func (l LabelDeleteEndpoint) Method() string {
+func (l DeleteEndpoint) Method() string {
 	return http.MethodDelete
 }
 
-func (l LabelDeleteEndpoint) Middlewares() []gin.HandlerFunc {
+func (l DeleteEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewLabelDeleteEndpoint(handler ports.CommandHandler[command.DeleteLabelCommand, bool]) *LabelDeleteEndpoint {
-	return &LabelDeleteEndpoint{
+func NewDeleteEndpoint(handler ports.CommandHandler[command.DeleteLabelCommand, bool]) *DeleteEndpoint {
+	return &DeleteEndpoint{
 		handler: handler,
 	}
 }

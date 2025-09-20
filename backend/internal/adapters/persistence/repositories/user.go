@@ -99,6 +99,8 @@ func (r UserRepository) GetUser(ctx context.Context, userId string) (user.User, 
 				),
 		)
 
+	// todo count family members
+
 	stmt := SELECT(
 		Users.AllColumns,
 		Families.ID,

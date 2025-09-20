@@ -24,18 +24,20 @@ type SeeInvitationQueryResponse struct {
 
 type SeeInvitationQueryHandler struct {
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthenticationService
+	authService      ports.Authentication
 }
 
-func NewSeeInvitationQueryHandler(familyRepository ports.FamilyRepository,
-	authService ports.AuthenticationService) *SeeInvitationQueryHandler {
+func NewSeeInvitationQueryHandler(
+	familyRepository ports.FamilyRepository,
+	authService ports.Authentication) *SeeInvitationQueryHandler {
 	return &SeeInvitationQueryHandler{
 		familyRepository: familyRepository,
 		authService:      authService,
 	}
 }
 
-func (h SeeInvitationQueryHandler) Handle(ctx context.Context,
+func (h SeeInvitationQueryHandler) Handle(
+	ctx context.Context,
 	query SeeInvitationQuery) result.Result[SeeInvitationQueryResponse] {
 	fam, err := h.familyRepository.GetById(ctx, query.FamilyId)
 	if err != nil {

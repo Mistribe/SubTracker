@@ -8,13 +8,39 @@ import (
 
 	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/internal/shared"
 )
 
 type service struct {
 	userRepository   ports.UserRepository
 	familyRepository ports.FamilyRepository
 	cache            ports.Cache
-	authentication   ports.AuthenticationService
+	authentication   ports.Authentication
+}
+
+func (s service) GetCurrentLimits(ctx context.Context, category user.Category) (shared.Limits, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s service) GetCurrentLimit(ctx context.Context, feature user.Feature) (shared.Limit, error) {
+	userId := s.authentication.MustGetUserId(ctx)
+	currentUser, err := s.getUser(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	if !currentUser.Plan().HasFeature(feature) {
+		return nil, user.NewLimitExceededErr(feature, 0, 0)
+	}
+
+	info := currentUser.Plan().GetFeatureDetail(feature)
+	if info == nil {
+		return nil, user.NewLimitExceededErr(feature, 0, 0)
+	}
+	currentCount := currentUser.Stats().GetCountFromFeature(feature)
+
+	return newLimitInfo(currentCount, info), nil
 }
 
 func (s service) Can(ctx context.Context, permission user.Permission) ports.PermissionRequest {
@@ -94,7 +120,8 @@ func (s service) EnsureWithinLimit(ctx context.Context, feature user.Feature, de
 	return nil
 }
 
-func New(userRepository ports.UserRepository,
+func New(
+	userRepository ports.UserRepository,
 	cache ports.Cache) ports.Authorization {
 	return &service{
 		userRepository: userRepository,

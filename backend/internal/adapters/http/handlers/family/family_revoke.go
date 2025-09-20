@@ -12,12 +12,12 @@ import (
 	"github.com/mistribe/subtracker/internal/usecase/family/command"
 )
 
-type FamilyRevokeEndpoint struct {
+type RevokeEndpoint struct {
 	handler ports.CommandHandler[command.RevokeMemberCommand, bool]
 }
 
-func NewFamilyRevokeEndpoint(handler ports.CommandHandler[command.RevokeMemberCommand, bool]) *FamilyRevokeEndpoint {
-	return &FamilyRevokeEndpoint{handler: handler}
+func NewRevokeEndpoint(handler ports.CommandHandler[command.RevokeMemberCommand, bool]) *RevokeEndpoint {
+	return &RevokeEndpoint{handler: handler}
 }
 
 // Handle godoc
@@ -34,8 +34,8 @@ func NewFamilyRevokeEndpoint(handler ports.CommandHandler[command.RevokeMemberCo
 //	@Failure		401				{object}	HttpErrorResponse	"Unauthorized - Invalid or missing authentication"
 //	@Failure		404				{object}	HttpErrorResponse	"Family or member not found"
 //	@Failure		500				{object}	HttpErrorResponse	"Internal Server Error"
-//	@Router			/families/{familyId}/members/{familyMemberId}/revoke [post]
-func (e FamilyRevokeEndpoint) Handle(c *gin.Context) {
+//	@Router			/family/{familyId}/members/{familyMemberId}/revoke [post]
+func (e RevokeEndpoint) Handle(c *gin.Context) {
 	familyId, err := uuid.Parse(c.Param("familyId"))
 	if err != nil {
 		FromError(c, err)
@@ -56,16 +56,16 @@ func (e FamilyRevokeEndpoint) Handle(c *gin.Context) {
 	FromResult(c, r, WithNoContent[bool]())
 }
 
-func (e FamilyRevokeEndpoint) Pattern() []string {
+func (e RevokeEndpoint) Pattern() []string {
 	return []string{
 		"/:familyId/members/:familyMemberId/revoke",
 	}
 }
 
-func (e FamilyRevokeEndpoint) Method() string {
+func (e RevokeEndpoint) Method() string {
 	return http.MethodPost
 }
 
-func (e FamilyRevokeEndpoint) Middlewares() []gin.HandlerFunc {
+func (e RevokeEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

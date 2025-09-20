@@ -22,12 +22,12 @@ func NewFindOneQuery(id uuid.UUID) FindOneQuery {
 
 type FindOneQueryHandler struct {
 	labelRepository ports.LabelRepository
-	authService     ports.AuthenticationService
+	authService     ports.Authentication
 }
 
 func NewFindOneQueryHandler(
 	labelRepository ports.LabelRepository,
-	authService ports.AuthenticationService) *FindOneQueryHandler {
+	authService ports.Authentication) *FindOneQueryHandler {
 	return &FindOneQueryHandler{
 		labelRepository: labelRepository,
 		authService:     authService,

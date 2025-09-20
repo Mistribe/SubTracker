@@ -16,12 +16,12 @@ import (
 	"github.com/mistribe/subtracker/pkg/x/collection"
 )
 
-type SubscriptionGetAllEndpoint struct {
+type GetAllEndpoint struct {
 	handler ports.QueryHandler[query.FindAllQuery, shared.PaginatedResponse[subscription.Subscription]]
 }
 
-func NewSubscriptionGetAllEndpoint(handler ports.QueryHandler[query.FindAllQuery, shared.PaginatedResponse[subscription.Subscription]]) *SubscriptionGetAllEndpoint {
-	return &SubscriptionGetAllEndpoint{handler: handler}
+func NewGetAllEndpoint(handler ports.QueryHandler[query.FindAllQuery, shared.PaginatedResponse[subscription.Subscription]]) *GetAllEndpoint {
+	return &GetAllEndpoint{handler: handler}
 }
 
 type subscriptionGetAllQueryParams struct {
@@ -55,7 +55,7 @@ type subscriptionGetAllQueryParams struct {
 //	@Failure		400				{object}	HttpErrorResponse								"Bad Request - Invalid query parameters"
 //	@Failure		500				{object}	HttpErrorResponse								"Internal Server Error"
 //	@Router			/subscriptions [get]
-func (s SubscriptionGetAllEndpoint) Handle(c *gin.Context) {
+func (s GetAllEndpoint) Handle(c *gin.Context) {
 	var params subscriptionGetAllQueryParams
 	if err := c.ShouldBindQuery(&params); err != nil {
 		// Ignore binding errors and apply defaults
@@ -94,20 +94,20 @@ func (s SubscriptionGetAllEndpoint) Handle(c *gin.Context) {
 	FromResult(c,
 		r,
 		WithMapping[shared.PaginatedResponse[subscription.Subscription]](func(paginatedResult shared.PaginatedResponse[subscription.Subscription]) any {
-			return dto.NewPaginatedResponseModel(paginatedResult, newSubscriptionModel)
+			return dto.NewPaginatedResponseModel(paginatedResult, dto.NewSubscriptionModel)
 		}))
 }
 
-func (s SubscriptionGetAllEndpoint) Pattern() []string {
+func (s GetAllEndpoint) Pattern() []string {
 	return []string{
 		"",
 	}
 }
 
-func (s SubscriptionGetAllEndpoint) Method() string {
+func (s GetAllEndpoint) Method() string {
 	return http.MethodGet
 }
 
-func (s SubscriptionGetAllEndpoint) Middlewares() []gin.HandlerFunc {
+func (s GetAllEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

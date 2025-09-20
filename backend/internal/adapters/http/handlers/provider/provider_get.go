@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/domain/provider"
@@ -12,12 +13,12 @@ import (
 	"github.com/mistribe/subtracker/internal/usecase/provider/query"
 )
 
-type ProviderGetEndpoint struct {
+type GetEndpoint struct {
 	handler ports.QueryHandler[query.FindOneQuery, provider.Provider]
 }
 
-func NewProviderGetEndpoint(handler ports.QueryHandler[query.FindOneQuery, provider.Provider]) *ProviderGetEndpoint {
-	return &ProviderGetEndpoint{handler: handler}
+func NewGetEndpoint(handler ports.QueryHandler[query.FindOneQuery, provider.Provider]) *GetEndpoint {
+	return &GetEndpoint{handler: handler}
 }
 
 // Handle godoc
@@ -27,12 +28,12 @@ func NewProviderGetEndpoint(handler ports.QueryHandler[query.FindOneQuery, provi
 //	@Tags			providers
 //	@Produce		json
 //	@Param			providerId	path		string				true	"Provider ID (UUID format)"
-//	@Success		200			{object}	ProviderModel		"Successfully retrieved provider"
+//	@Success		200			{object}	dto.ProviderModel	"Successfully retrieved provider"
 //	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid provider ID format"
 //	@Failure		404			{object}	HttpErrorResponse	"Provider not found"
 //	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/providers/{providerId} [get]
-func (e ProviderGetEndpoint) Handle(c *gin.Context) {
+func (e GetEndpoint) Handle(c *gin.Context) {
 	id, err := QueryParamAsUUID(c, "providerId")
 	if err != nil {
 		FromError(c, err)
@@ -43,20 +44,20 @@ func (e ProviderGetEndpoint) Handle(c *gin.Context) {
 	FromResult(c,
 		r,
 		WithMapping[provider.Provider](func(prvdr provider.Provider) any {
-			return newProviderModel(prvdr)
+			return dto.NewProviderModel(prvdr)
 		}))
 }
 
-func (e ProviderGetEndpoint) Pattern() []string {
+func (e GetEndpoint) Pattern() []string {
 	return []string{
 		":providerId",
 	}
 }
 
-func (e ProviderGetEndpoint) Method() string {
+func (e GetEndpoint) Method() string {
 	return http.MethodGet
 }
 
-func (e ProviderGetEndpoint) Middlewares() []gin.HandlerFunc {
+func (e GetEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

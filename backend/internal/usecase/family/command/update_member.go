@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 	"github.com/mistribe/subtracker/pkg/langext/result"
@@ -21,17 +22,23 @@ type UpdateFamilyMemberCommand struct {
 }
 
 type UpdateFamilyMemberCommandHandler struct {
-	repository ports.FamilyRepository
+	familyRepository ports.FamilyRepository
+	authorization    ports.Authorization
 }
 
-func NewUpdateFamilyMemberCommandHandler(repository ports.FamilyRepository) *UpdateFamilyMemberCommandHandler {
-	return &UpdateFamilyMemberCommandHandler{repository: repository}
+func NewUpdateFamilyMemberCommandHandler(
+	familyRepository ports.FamilyRepository,
+	authorization ports.Authorization) *UpdateFamilyMemberCommandHandler {
+	return &UpdateFamilyMemberCommandHandler{
+		familyRepository: familyRepository,
+		authorization:    authorization,
+	}
 }
 
 func (h UpdateFamilyMemberCommandHandler) Handle(
 	ctx context.Context,
 	command UpdateFamilyMemberCommand) result.Result[family.Family] {
-	fam, err := h.repository.GetById(ctx, command.FamilyId)
+	fam, err := h.familyRepository.GetById(ctx, command.FamilyId)
 	if err != nil {
 		return result.Fail[family.Family](err)
 	}
@@ -42,8 +49,13 @@ func (h UpdateFamilyMemberCommandHandler) Handle(
 
 	mbr := fam.GetMember(command.Id)
 	if mbr == nil {
-		result.Fail[family.Family](family.ErrFamilyMemberNotFound)
+		return result.Fail[family.Family](family.ErrFamilyMemberNotFound)
 	}
+
+	if err = h.authorization.Can(ctx, user.PermissionWrite).For(fam); err != nil {
+		return result.Fail[family.Family](err)
+	}
+
 	return h.updateFamilyMember(ctx, command, fam, mbr)
 }
 
@@ -52,9 +64,6 @@ func (h UpdateFamilyMemberCommandHandler) updateFamilyMember(
 	cmd UpdateFamilyMemberCommand,
 	fam family.Family,
 	mbr family.Member) result.Result[family.Family] {
-	if err := ensureOwnerIsEditor(ctx, fam.OwnerId()); err != nil {
-		return result.Fail[family.Family](err)
-	}
 	mbr.SetName(cmd.Name)
 	mbr.SetType(cmd.Type)
 
@@ -73,7 +82,7 @@ func (h UpdateFamilyMemberCommandHandler) updateFamilyMember(
 		return result.Fail[family.Family](err)
 	}
 
-	if err := h.repository.Save(ctx, fam); err != nil {
+	if err := h.familyRepository.Save(ctx, fam); err != nil {
 		return result.Fail[family.Family](err)
 	}
 

@@ -6,16 +6,16 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
-	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/internal/usecase/family/query"
 )
 
-type FamilyGetEndpoint struct {
-	handler ports.QueryHandler[query.FindUserFamilyQuery, family.Family]
+type GetEndpoint struct {
+	handler ports.QueryHandler[query.FindUserFamilyQuery, query.FindUserFamilyQueryResponse]
 }
 
 // Handle godoc
@@ -24,13 +24,13 @@ type FamilyGetEndpoint struct {
 //	@Description	Retrieve the user's family
 //	@Tags			family
 //	@Produce		json
-//	@Success		200	{object}	familyModel			"Successfully retrieved family"
-//	@Failure		400	{object}	HttpErrorResponse	"Bad Request - Invalid ID format"
-//	@Failure		401	{object}	HttpErrorResponse	"Unauthorized - Invalid user authentication"
-//	@Failure		404	{object}	HttpErrorResponse	"Family not found"
-//	@Failure		500	{object}	HttpErrorResponse	"Internal Server Error"
-//	@Router			/families/me [get]
-func (f FamilyGetEndpoint) Handle(c *gin.Context) {
+//	@Success		200	{object}	dto.UserFamilyResponse	"Successfully retrieved family"
+//	@Failure		400	{object}	HttpErrorResponse		"Bad Request - Invalid ID format"
+//	@Failure		401	{object}	HttpErrorResponse		"Unauthorized - Invalid user authentication"
+//	@Failure		404	{object}	HttpErrorResponse		"Family not found"
+//	@Failure		500	{object}	HttpErrorResponse		"Internal Server Error"
+//	@Router			/family [get]
+func (f GetEndpoint) Handle(c *gin.Context) {
 	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
 		FromError(c, errors.New("invalid user id"))
@@ -44,27 +44,30 @@ func (f FamilyGetEndpoint) Handle(c *gin.Context) {
 	r := f.handler.Handle(c, q)
 	FromResult(c,
 		r,
-		WithMapping[family.Family](func(fm family.Family) any {
-			return newFamilyModel(userId, fm)
+		WithMapping[query.FindUserFamilyQueryResponse](func(r query.FindUserFamilyQueryResponse) any {
+			return dto.UserFamilyResponse{
+				Family: dto.NewFamilyModel(userId, r.Family),
+				Limits: dto.NewLimits(r.Limits),
+			}
 		}))
 }
 
-func (f FamilyGetEndpoint) Pattern() []string {
+func (f GetEndpoint) Pattern() []string {
 	return []string{
-		"/me",
+		"",
 	}
 }
 
-func (f FamilyGetEndpoint) Method() string {
+func (f GetEndpoint) Method() string {
 	return http.MethodGet
 }
 
-func (f FamilyGetEndpoint) Middlewares() []gin.HandlerFunc {
+func (f GetEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewFamilyMemberGetEndpoint(handler ports.QueryHandler[query.FindUserFamilyQuery, family.Family]) *FamilyGetEndpoint {
-	return &FamilyGetEndpoint{
+func NewGetEndpoint(handler ports.QueryHandler[query.FindUserFamilyQuery, query.FindUserFamilyQueryResponse]) *GetEndpoint {
+	return &GetEndpoint{
 		handler: handler,
 	}
 }

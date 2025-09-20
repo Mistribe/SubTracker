@@ -6,21 +6,20 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/shared"
-	command2 "github.com/mistribe/subtracker/internal/usecase/subscription/command"
-	query2 "github.com/mistribe/subtracker/internal/usecase/subscription/query"
+	"github.com/mistribe/subtracker/internal/usecase/subscription/command"
+	"github.com/mistribe/subtracker/internal/usecase/subscription/query"
 )
 
 func Module() fx.Option {
 	return fx.Module("app_subscription",
 		fx.Provide(
-			ports.AsQueryHandler[query2.SummaryQuery, query2.SummaryQueryResponse](query2.NewSummaryQueryHandler),
-			ports.AsQueryHandler[query2.FindOneQuery, subscription.Subscription](query2.NewFindOneQueryHandler),
-			ports.AsQueryHandler[query2.FindAllQuery, shared.PaginatedResponse[subscription.Subscription]](query2.NewFindAllQueryHandler),
+			ports.AsQueryHandler[query.SummaryQuery, query.SummaryQueryResponse](query.NewSummaryQueryHandler),
+			ports.AsQueryHandler[query.FindOneQuery, subscription.Subscription](query.NewFindOneQueryHandler),
+			ports.AsQueryHandler[query.FindAllQuery, shared.PaginatedResponse[subscription.Subscription]](query.NewFindAllQueryHandler),
 
-			ports.AsCommandHandler[command2.CreateSubscriptionCommand, subscription.Subscription](command2.NewCreateSubscriptionCommandHandler),
-			ports.AsCommandHandler[command2.UpdateSubscriptionCommand, subscription.Subscription](command2.NewUpdateSubscriptionCommandHandler),
-			ports.AsCommandHandler[command2.DeleteSubscriptionCommand, bool](command2.NewDeleteSubscriptionCommandHandler),
-			ports.AsCommandHandler[command2.PatchSubscriptionCommand, subscription.Subscription](command2.NewPatchSubscriptionCommandHandler),
+			ports.AsCommandHandler[command.CreateSubscriptionCommand, subscription.Subscription](command.NewCreateSubscriptionCommandHandler),
+			ports.AsCommandHandler[command.UpdateSubscriptionCommand, subscription.Subscription](command.NewUpdateSubscriptionCommandHandler),
+			ports.AsCommandHandler[command.DeleteSubscriptionCommand, bool](command.NewDeleteSubscriptionCommandHandler),
 		),
 	)
 }

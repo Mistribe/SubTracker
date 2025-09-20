@@ -8,6 +8,7 @@ import (
 
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/shared"
 	"github.com/mistribe/subtracker/pkg/langext/result"
@@ -51,26 +52,29 @@ type FindAllQueryHandler struct {
 	subscriptionRepository ports.SubscriptionRepository
 	userService            ports.UserService
 	exchange               ports.Exchange
-	authService            ports.AuthenticationService
+	authentication         ports.Authentication
+	authorization          ports.Authorization
 }
 
 func NewFindAllQueryHandler(
 	subscriptionRepository ports.SubscriptionRepository,
 	userService ports.UserService,
 	exchange ports.Exchange,
-	authService ports.AuthenticationService) *FindAllQueryHandler {
+	authService ports.Authentication,
+	authorization ports.Authorization) *FindAllQueryHandler {
 	return &FindAllQueryHandler{
 		subscriptionRepository: subscriptionRepository,
-		authService:            authService,
+		authentication:         authService,
 		userService:            userService,
 		exchange:               exchange,
+		authorization:          authorization,
 	}
 }
 
 func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[shared.PaginatedResponse[subscription.Subscription]] {
-	userId := h.authService.MustGetUserId(ctx)
+	userId := h.authentication.MustGetUserId(ctx)
 	parameters := ports.NewSubscriptionQueryParameters(query.SearchText,
 		query.Recurrencies,
 		query.FromDate,
@@ -102,5 +106,10 @@ func (h FindAllQueryHandler) Handle(
 		}
 	}
 
-	return result.Success(shared.NewPaginatedResponse(subs, count))
+	limits, err := h.authorization.GetCurrentLimits(ctx, user.CategorySubscription)
+	if err != nil {
+		return result.Fail[shared.PaginatedResponse[subscription.Subscription]](err)
+	}
+
+	return result.Success(shared.NewPaginatedResponse(subs, count, limits))
 }

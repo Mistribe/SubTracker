@@ -15,7 +15,7 @@ packages:
     interfaces:
       IdentityProvider:
       Exchange:
-      AuthenticationService:
+      Authentication:
       UserService:
       Cache:
       CurrencyRepository:

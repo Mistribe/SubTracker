@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/text/currency"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/ports"
@@ -13,18 +14,14 @@ import (
 	"github.com/mistribe/subtracker/pkg/ginx"
 )
 
-type UserUpdatePreferredCurrencyEndpoint struct {
+type UpdatePreferredCurrencyEndpoint struct {
 	handler ports.CommandHandler[command.UpdatePreferredCurrencyCommand, bool]
 }
 
-func NewUserUpdatePreferredCurrencyEndpoint(handler ports.CommandHandler[command.UpdatePreferredCurrencyCommand, bool]) *UserUpdatePreferredCurrencyEndpoint {
-	return &UserUpdatePreferredCurrencyEndpoint{
+func NewUpdatePreferredCurrencyEndpoint(handler ports.CommandHandler[command.UpdatePreferredCurrencyCommand, bool]) *UpdatePreferredCurrencyEndpoint {
+	return &UpdatePreferredCurrencyEndpoint{
 		handler: handler,
 	}
-}
-
-type updatePreferredCurrencyModel struct {
-	Currency string `json:"currency" binding:"required"`
 }
 
 // Handle godoc
@@ -34,14 +31,14 @@ type updatePreferredCurrencyModel struct {
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			Authorization	header	string							true	"Bearer token"
-//	@Param			request			body	updatePreferredCurrencyModel	true	"Profile update parameters"
+//	@Param			Authorization	header	string								true	"Bearer token"
+//	@Param			request			body	dto.UpdatePreferredCurrencyRequest	true	"Profile update parameters"
 //	@Success		204
 //	@Failure		400	{object}	HttpErrorResponse
 //	@Failure		401	{object}	HttpErrorResponse
 //	@Router			/users/preferred/currency [put]
-func (e UserUpdatePreferredCurrencyEndpoint) Handle(c *gin.Context) {
-	var model updatePreferredCurrencyModel
+func (e UpdatePreferredCurrencyEndpoint) Handle(c *gin.Context) {
+	var model dto.UpdatePreferredCurrencyRequest
 	if err := c.ShouldBindJSON(&model); err != nil {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{Message: err.Error()})
 		return
@@ -59,16 +56,16 @@ func (e UserUpdatePreferredCurrencyEndpoint) Handle(c *gin.Context) {
 	FromResult(c, r, WithNoContent[bool]())
 }
 
-func (e UserUpdatePreferredCurrencyEndpoint) Pattern() []string {
+func (e UpdatePreferredCurrencyEndpoint) Pattern() []string {
 	return []string{
 		"/preferred/currency",
 	}
 }
 
-func (e UserUpdatePreferredCurrencyEndpoint) Method() string {
+func (e UpdatePreferredCurrencyEndpoint) Method() string {
 	return http.MethodPut
 }
 
-func (e UserUpdatePreferredCurrencyEndpoint) Middlewares() []gin.HandlerFunc {
+func (e UpdatePreferredCurrencyEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

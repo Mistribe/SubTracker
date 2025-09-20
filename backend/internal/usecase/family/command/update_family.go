@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 	"github.com/mistribe/subtracker/pkg/langext/result"
@@ -18,22 +19,22 @@ type UpdateFamilyCommand struct {
 	UpdatedAt option.Option[time.Time]
 }
 
-type UpdateFamilyCommandHandler interface {
-	Handle(ctx context.Context, cmd UpdateFamilyCommand) result.Result[family.Family]
+type UpdateFamilyCommandHandler struct {
+	familyRepository ports.FamilyRepository
+	authorization    ports.Authorization
 }
 
-type updateFamilyCommandHandler struct {
-	repository ports.FamilyRepository
-}
-
-func NewUpdateFamilyCommandHandler(repository ports.FamilyRepository) UpdateFamilyCommandHandler {
-	return &updateFamilyCommandHandler{
-		repository: repository,
+func NewUpdateFamilyCommandHandler(
+	familyRepository ports.FamilyRepository,
+	authorization ports.Authorization) *UpdateFamilyCommandHandler {
+	return &UpdateFamilyCommandHandler{
+		familyRepository: familyRepository,
+		authorization:    authorization,
 	}
 }
 
-func (h *updateFamilyCommandHandler) Handle(ctx context.Context, cmd UpdateFamilyCommand) result.Result[family.Family] {
-	fam, err := h.repository.GetById(ctx, cmd.Id)
+func (h *UpdateFamilyCommandHandler) Handle(ctx context.Context, cmd UpdateFamilyCommand) result.Result[family.Family] {
+	fam, err := h.familyRepository.GetById(ctx, cmd.Id)
 	if err != nil {
 		return result.Fail[family.Family](err)
 	}
@@ -41,16 +42,17 @@ func (h *updateFamilyCommandHandler) Handle(ctx context.Context, cmd UpdateFamil
 		return result.Fail[family.Family](family.ErrFamilyNotFound)
 
 	}
+
+	if err = h.authorization.Can(ctx, user.PermissionWrite).For(fam); err != nil {
+		return result.Fail[family.Family](err)
+	}
 	return h.updateFamily(ctx, cmd, fam)
 
 }
 
-func (h *updateFamilyCommandHandler) updateFamily(
+func (h *UpdateFamilyCommandHandler) updateFamily(
 	ctx context.Context, cmd UpdateFamilyCommand,
 	fam family.Family) result.Result[family.Family] {
-	if err := ensureOwnerIsEditor(ctx, fam.OwnerId()); err != nil {
-		return result.Fail[family.Family](err)
-	}
 	fam.SetName(cmd.Name)
 
 	cmd.UpdatedAt.IfSome(func(updatedAt time.Time) {
@@ -64,7 +66,7 @@ func (h *updateFamilyCommandHandler) updateFamily(
 		return result.Fail[family.Family](err)
 	}
 
-	if err := h.repository.Save(ctx, fam); err != nil {
+	if err := h.familyRepository.Save(ctx, fam); err != nil {
 		return result.Fail[family.Family](err)
 	}
 

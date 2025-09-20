@@ -13,7 +13,7 @@ import (
 	"github.com/mistribe/subtracker/internal/usecase/family/command"
 )
 
-type FamilyMemberDeleteEndpoint struct {
+type MemberDeleteEndpoint struct {
 	handler ports.CommandHandler[command.DeleteFamilyMemberCommand, bool]
 }
 
@@ -28,8 +28,8 @@ type FamilyMemberDeleteEndpoint struct {
 //	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid ID format"
 //	@Failure		404			{object}	HttpErrorResponse	"Family or family member not found"
 //	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
-//	@Router			/families/{familyId}/members/{id} [delete]
-func (f FamilyMemberDeleteEndpoint) Handle(c *gin.Context) {
+//	@Router			/family/{familyId}/members/{id} [delete]
+func (f MemberDeleteEndpoint) Handle(c *gin.Context) {
 	idParam := c.Param("id")
 	if idParam == "" {
 		FromError(c, errors.New("id parameter is required"))
@@ -63,22 +63,22 @@ func (f FamilyMemberDeleteEndpoint) Handle(c *gin.Context) {
 	FromResult(c, r, WithNoContent[bool]())
 }
 
-func (f FamilyMemberDeleteEndpoint) Pattern() []string {
+func (f MemberDeleteEndpoint) Pattern() []string {
 	return []string{
 		"/:familyId/members/:id",
 	}
 }
 
-func (f FamilyMemberDeleteEndpoint) Method() string {
+func (f MemberDeleteEndpoint) Method() string {
 	return http.MethodDelete
 }
 
-func (f FamilyMemberDeleteEndpoint) Middlewares() []gin.HandlerFunc {
+func (f MemberDeleteEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewFamilyMemberDeleteEndpoint(handler ports.CommandHandler[command.DeleteFamilyMemberCommand, bool]) *FamilyMemberDeleteEndpoint {
-	return &FamilyMemberDeleteEndpoint{
+func NewMemberDeleteEndpoint(handler ports.CommandHandler[command.DeleteFamilyMemberCommand, bool]) *MemberDeleteEndpoint {
+	return &MemberDeleteEndpoint{
 		handler: handler,
 	}
 }

@@ -81,7 +81,7 @@ func (e exchange) getRateFromExternalSource(from, to currency.Unit, at time.Time
 		return 0, err
 	}
 
-	// The external source contains only USD to currencies
+	// The external source contains only USD currencies
 	usdTo := source.To
 	fromCode := from.String()
 	toCode := to.String()

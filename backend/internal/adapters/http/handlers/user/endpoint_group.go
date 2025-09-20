@@ -13,9 +13,9 @@ type EndpointGroup struct {
 }
 
 func NewEndpointGroup(
-	preferredCurrencyEndpoint *UserGetPreferredCurrencyEndpoint,
-	updatePreferredCurrencyEndpoint *UserUpdatePreferredCurrencyEndpoint,
-	deleteEndpoint *UserDeleteEndpoint,
+	preferredCurrencyEndpoint *GetPreferredCurrencyEndpoint,
+	updatePreferredCurrencyEndpoint *UpdatePreferredCurrencyEndpoint,
+	deleteEndpoint *DeleteEndpoint,
 	authenticationMiddleware *middlewares.AuthenticationMiddleware) *EndpointGroup {
 	return &EndpointGroup{
 		routes: []ginfx.Endpoint{

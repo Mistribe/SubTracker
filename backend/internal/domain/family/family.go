@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/entity"
 	"github.com/mistribe/subtracker/pkg/slicesx"
 	"github.com/mistribe/subtracker/pkg/x/validation"
@@ -16,7 +17,7 @@ type Family interface {
 
 	Name() string
 	SetName(name string)
-	OwnerId() string
+	Owner() auth.Owner
 	Members() *slicesx.Tracked[Member]
 	AddMember(member Member) error
 	RemoveMember(member Member) error
@@ -29,7 +30,7 @@ type Family interface {
 type family struct {
 	*entity.Base
 
-	ownerId string
+	owner   auth.Owner
 	name    string
 	members *slicesx.Tracked[Member]
 }
@@ -43,7 +44,7 @@ func NewFamily(
 	updatedAt time.Time) Family {
 	return &family{
 		Base:    entity.NewBase(id, createdAt, updatedAt, true, false),
-		ownerId: ownerId,
+		owner:   auth.NewPersonalOwner(ownerId),
 		name:    name,
 		members: slicesx.NewTracked(members, memberUniqueComparer, memberComparer),
 	}
@@ -88,8 +89,8 @@ func (f *family) Name() string {
 	return f.name
 }
 
-func (f *family) OwnerId() string {
-	return f.ownerId
+func (f *family) Owner() auth.Owner {
+	return f.owner
 }
 
 func (f *family) Members() *slicesx.Tracked[Member] {
@@ -168,13 +169,14 @@ func (f *family) Equal(other Family) bool {
 
 func (f *family) ETagFields() []interface{} {
 	fields := []interface{}{
-		f.ownerId,
 		f.name,
 	}
 
 	for mbr := range f.members.It() {
 		fields = append(fields, mbr.ETagFields()...)
 	}
+
+	fields = append(fields, f.owner.ETag())
 
 	return fields
 }

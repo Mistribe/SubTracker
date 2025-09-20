@@ -3,11 +3,11 @@ package family
 import (
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/domain/family"
@@ -16,19 +16,11 @@ import (
 	"github.com/mistribe/subtracker/internal/usecase/family/command"
 )
 
-type FamilyCreateEndpoint struct {
+type CreateEndpoint struct {
 	handler ports.CommandHandler[command.CreateFamilyCommand, family.Family]
 }
 
-// @name	CreateFamily
-type createFamilyModel struct {
-	Id          *string    `json:"id,omitempty"`
-	Name        string     `json:"name" binding:"required"`
-	CreatorName string     `json:"creator_name" binding:"required"`
-	CreatedAt   *time.Time `json:"created_at,omitempty" format:"date-time"`
-}
-
-func (m createFamilyModel) Command() (command.CreateFamilyCommand, error) {
+func createFamilyRequestToCommand(m dto.CreateFamilyRequest) (command.CreateFamilyCommand, error) {
 	var familyId *uuid.UUID
 	if m.Id != nil {
 		id, err := uuid.Parse(*m.Id)
@@ -53,26 +45,25 @@ func (m createFamilyModel) Command() (command.CreateFamilyCommand, error) {
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			family	body		createFamilyModel	true	"Family creation data"
-//	@Success		201		{object}	familyModel			"Successfully created family"
-//	@Failure		400		{object}	HttpErrorResponse	"Bad Request - Invalid input data"
-//	@Failure		401		{object}	HttpErrorResponse	"Unauthorized - Invalid user authentication"
-//	@Failure		500		{object}	HttpErrorResponse	"Internal Server Error"
-//	@Router			/families [post]
-func (f FamilyCreateEndpoint) Handle(c *gin.Context) {
-	var model createFamilyModel
+//	@Param			family	body		dto.CreateFamilyRequest	true	"Family creation data"
+//	@Success		201		{object}	dto.FamilyModel			"Successfully created family"
+//	@Failure		400		{object}	HttpErrorResponse		"Bad Request - Invalid input data"
+//	@Failure		401		{object}	HttpErrorResponse		"Unauthorized - Invalid user authentication"
+//	@Failure		500		{object}	HttpErrorResponse		"Internal Server Error"
+//	@Router			/family [post]
+func (f CreateEndpoint) Handle(c *gin.Context) {
+	var model dto.CreateFamilyRequest
 	if err := c.ShouldBindJSON(&model); err != nil {
 		FromError(c, err)
 		return
 	}
 	userId, ok := auth.GetUserIdFromContext(c)
 	if !ok {
-		// todo
 		FromError(c, errors.New("invalid user id"))
 		return
 	}
 
-	cmd, err := model.Command()
+	cmd, err := createFamilyRequestToCommand(model)
 	if err != nil {
 		FromError(c, err)
 		return
@@ -82,26 +73,26 @@ func (f FamilyCreateEndpoint) Handle(c *gin.Context) {
 		r,
 		WithStatus[family.Family](http.StatusCreated),
 		WithMapping[family.Family](func(f family.Family) any {
-			return newFamilyModel(userId, f)
+			return dto.NewFamilyModel(userId, f)
 		}))
 }
 
-func (f FamilyCreateEndpoint) Pattern() []string {
+func (f CreateEndpoint) Pattern() []string {
 	return []string{
 		"",
 	}
 }
 
-func (f FamilyCreateEndpoint) Method() string {
+func (f CreateEndpoint) Method() string {
 	return http.MethodPost
 }
 
-func (f FamilyCreateEndpoint) Middlewares() []gin.HandlerFunc {
+func (f CreateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewFamilyCreateEndpoint(handler ports.CommandHandler[command.CreateFamilyCommand, family.Family]) *FamilyCreateEndpoint {
-	return &FamilyCreateEndpoint{
+func NewCreateEndpoint(handler ports.CommandHandler[command.CreateFamilyCommand, family.Family]) *CreateEndpoint {
+	return &CreateEndpoint{
 		handler: handler,
 	}
 }

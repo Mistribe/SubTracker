@@ -8,6 +8,7 @@ import (
 
 	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 	"github.com/mistribe/subtracker/pkg/x"
@@ -25,20 +26,26 @@ type CreateProviderCommand struct {
 	CreatedAt      *time.Time
 }
 
-type CreateCommandHandler struct {
+type CreateProviderCommandHandler struct {
 	providerRepository ports.ProviderRepository
 	labelRepository    ports.LabelRepository
+	authorization      ports.Authorization
 }
 
-func NewCreateProviderCommandHandler(providerRepository ports.ProviderRepository,
-	labelRepository ports.LabelRepository) *CreateCommandHandler {
-	return &CreateCommandHandler{
+func NewCreateProviderCommandHandler(
+	providerRepository ports.ProviderRepository,
+	labelRepository ports.LabelRepository,
+	authorization ports.Authorization) *CreateProviderCommandHandler {
+	return &CreateProviderCommandHandler{
 		providerRepository: providerRepository,
 		labelRepository:    labelRepository,
+		authorization:      authorization,
 	}
 }
 
-func (h CreateCommandHandler) Handle(ctx context.Context, cmd CreateProviderCommand) result.Result[provider.Provider] {
+func (h CreateProviderCommandHandler) Handle(
+	ctx context.Context,
+	cmd CreateProviderCommand) result.Result[provider.Provider] {
 	if cmd.Id != nil {
 		exists, err := h.providerRepository.Exists(ctx, *cmd.Id)
 		if err != nil {
@@ -74,6 +81,14 @@ func (h CreateCommandHandler) Handle(ctx context.Context, cmd CreateProviderComm
 		createdAt,
 		createdAt,
 	)
+
+	if err := h.authorization.Can(ctx, user.PermissionWrite).For(prov); err != nil {
+		return result.Fail[provider.Provider](err)
+	}
+
+	if err := h.authorization.EnsureWithinLimit(ctx, user.FeatureCustomProviders, 1); err != nil {
+		return result.Fail[provider.Provider](err)
+	}
 
 	if err := prov.GetValidationErrors(); err != nil {
 		return result.Fail[provider.Provider](err)

@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -17,13 +18,16 @@ type RevokeMemberCommand struct {
 
 type RevokeMemberCommandHandler struct {
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthenticationService
+	authorization    ports.Authorization
 }
 
 func NewRevokeMemberCommandHandler(
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthenticationService) *RevokeMemberCommandHandler {
-	return &RevokeMemberCommandHandler{familyRepository: familyRepository, authService: authService}
+	authorization ports.Authorization) *RevokeMemberCommandHandler {
+	return &RevokeMemberCommandHandler{
+		familyRepository: familyRepository,
+		authorization:    authorization,
+	}
 }
 
 func (h RevokeMemberCommandHandler) Handle(ctx context.Context, cmd RevokeMemberCommand) result.Result[bool] {
@@ -36,9 +40,8 @@ func (h RevokeMemberCommandHandler) Handle(ctx context.Context, cmd RevokeMember
 		return result.Fail[bool](family.ErrFamilyNotFound)
 	}
 
-	userId := h.authService.MustGetUserId(ctx)
-	if fam.OwnerId() != userId {
-		return result.Fail[bool](family.ErrOnlyOwnerCanEditFamily)
+	if err = h.authorization.Can(ctx, user.PermissionWrite).For(fam); err != nil {
+		return result.Fail[bool](err)
 	}
 
 	member := fam.GetMember(cmd.FamilyMemberId)

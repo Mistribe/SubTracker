@@ -14,12 +14,12 @@ import (
 	. "github.com/mistribe/subtracker/pkg/ginx"
 )
 
-type ProviderGetAllEndpoint struct {
+type GetAllEndpoint struct {
 	handler ports.QueryHandler[query.FindAllQuery, shared.PaginatedResponse[provider.Provider]]
 }
 
-func NewProviderGetAllEndpoint(handler ports.QueryHandler[query.FindAllQuery, shared.PaginatedResponse[provider.Provider]]) *ProviderGetAllEndpoint {
-	return &ProviderGetAllEndpoint{handler: handler}
+func NewGetAllEndpoint(handler ports.QueryHandler[query.FindAllQuery, shared.PaginatedResponse[provider.Provider]]) *GetAllEndpoint {
+	return &GetAllEndpoint{handler: handler}
 }
 
 // Handle godoc
@@ -35,7 +35,7 @@ func NewProviderGetAllEndpoint(handler ports.QueryHandler[query.FindAllQuery, sh
 //	@Failure		400		{object}	HttpErrorResponse							"Bad Request - Invalid query parameters"
 //	@Failure		500		{object}	HttpErrorResponse							"Internal Server Error"
 //	@Router			/providers [get]
-func (e ProviderGetAllEndpoint) Handle(c *gin.Context) {
+func (e GetAllEndpoint) Handle(c *gin.Context) {
 	search := c.DefaultQuery("search", "")
 	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 64)
 	if err != nil {
@@ -50,20 +50,20 @@ func (e ProviderGetAllEndpoint) Handle(c *gin.Context) {
 	FromResult(c,
 		r,
 		WithMapping[shared.PaginatedResponse[provider.Provider]](func(paginatedResult shared.PaginatedResponse[provider.Provider]) any {
-			return dto.NewPaginatedResponseModel(paginatedResult, newProviderModel)
+			return dto.NewPaginatedResponseModel(paginatedResult, dto.NewProviderModel)
 		}))
 }
 
-func (e ProviderGetAllEndpoint) Pattern() []string {
+func (e GetAllEndpoint) Pattern() []string {
 	return []string{
 		"",
 	}
 }
 
-func (e ProviderGetAllEndpoint) Method() string {
+func (e GetAllEndpoint) Method() string {
 	return http.MethodGet
 }
 
-func (e ProviderGetAllEndpoint) Middlewares() []gin.HandlerFunc {
+func (e GetAllEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
