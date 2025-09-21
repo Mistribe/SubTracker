@@ -9,7 +9,6 @@ export const useProvidersMutations = () => {
     const {apiClient} = useApiClient();
     const queryClient = useQueryClient();
 
-    // Create provider mutation
     const createProviderMutation = useMutation({
         mutationFn: async (providerData: {
             name: string,
@@ -36,9 +35,9 @@ export const useProvidersMutations = () => {
 
             return apiClient?.providers.providersPost({ dtoCreateProviderRequest: payload });
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             // Invalidate and refetch
-            queryClient.invalidateQueries({queryKey: ['providers']});
+            await queryClient.invalidateQueries({queryKey: ['providers']});
         }
     });
 
@@ -70,9 +69,9 @@ export const useProvidersMutations = () => {
             
             return apiClient.providers.providersProviderIdPut({ providerId: providerData.id, dtoUpdateProviderRequest: payload });
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             // Invalidate and refetch
-            queryClient.invalidateQueries({queryKey: ['providers']});
+            await queryClient.invalidateQueries({queryKey: ['providers']});
         }
     });
 
@@ -82,9 +81,9 @@ export const useProvidersMutations = () => {
             if (!apiClient) throw new Error("API client not initialized");
             return apiClient.providers.providersProviderIdDelete({ providerId });
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             // Invalidate and refetch
-            queryClient.invalidateQueries({queryKey: ['providers']});
+            await queryClient.invalidateQueries({queryKey: ['providers']});
         }
     });
 

@@ -1,7 +1,5 @@
 import Owner from "@/models/owner.ts";
-import Plan from "@/models/plan.ts";
 import type { DtoProviderModel as ProviderModel } from "@/api/models/DtoProviderModel";
-import type { DtoPlanModel } from "@/api/models/DtoPlanModel";
 
 export default class Provider {
     private readonly _id: string;
@@ -14,7 +12,6 @@ export default class Provider {
     private readonly _url: string | null;
     private readonly _pricingPageUrl: string | null;
     private readonly _labels: string[];
-    private readonly _plans: Plan[];
     private readonly _owner: Owner;
 
 
@@ -25,7 +22,6 @@ export default class Provider {
                 url: string | null,
                 pricingPageUrl: string | null,
                 labels: string[],
-                plans: Plan[],
                 owner: Owner,
                 createdAt: Date,
                 updatedAt: Date,
@@ -40,7 +36,6 @@ export default class Provider {
         this._url = url;
         this._pricingPageUrl = pricingPageUrl;
         this._labels = labels;
-        this._plans = plans;
         this._owner = owner;
     }
 
@@ -84,10 +79,6 @@ export default class Provider {
         return this._labels;
     }
 
-    get plans(): Plan[] {
-        return this._plans;
-    }
-
     get owner(): Owner {
         return this._owner;
     }
@@ -101,7 +92,6 @@ export default class Provider {
             model.url || null,
             model.pricingPageUrl || null,
             model.labels || [],
-            model.plans?.map((plan: DtoPlanModel) => Plan.fromModel(plan)) || [],
             Owner.fromModel(model.owner || {}),
             model.createdAt ? model.createdAt : new Date(),
             model.updatedAt ? model.updatedAt : new Date(),
