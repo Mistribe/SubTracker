@@ -47,19 +47,6 @@ dart-client:
 run-deps:
 	@docker compose down -v && docker compose up --build database database.migration
 
-kinde:
-	@rm -fr ./internal/infrastructure/kinde/gen
-	@docker run --rm \
-    -v ${PWD}:/local openapitools/openapi-generator-cli generate \
-    -i /local/internal/infrastructure/kinde/kinde-management-api.yaml \
-    -g go \
-    --additional-properties=withGoMod=false \
-    --global-property=apiDocs=false \
-    --global-property=modelDocs=false \
-    --global-property=apiTests=false \
-    --global-property=modelTests=false \
-    -o /local/internal/infrastructure/kinde/gen
-
 sql-jet:
 	@jet -dsn=postgresql://postgres:postgres@localhost:5432/app?sslmode=disable -schema=public -path=./internal/adapters/persistence/db/jet
 

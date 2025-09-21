@@ -33,6 +33,12 @@ func (h CreateLabelCommandHandler) Handle(ctx context.Context, command CreateLab
 	if err := h.authorization.Can(ctx, user.PermissionWrite).For(command.Label); err != nil {
 		return result.Fail[label.Label](err)
 	}
+
+	// Ensure the operation respects limits regardless of label existence state
+	if err := h.authorization.EnsureWithinLimit(ctx, user.FeatureCustomLabels, 1); err != nil {
+		return result.Fail[label.Label](err)
+	}
+
 	existingLabel, err := h.labelRepository.GetById(ctx, command.Label.Id())
 	if err != nil {
 		return result.Fail[label.Label](err)
@@ -43,11 +49,6 @@ func (h CreateLabelCommandHandler) Handle(ctx context.Context, command CreateLab
 			return result.Success(command.Label)
 		}
 		return result.Fail[label.Label](label.ErrLabelAlreadyExists)
-	}
-
-	err = h.authorization.EnsureWithinLimit(ctx, user.FeatureCustomLabels, 1)
-	if err != nil {
-		return result.Fail[label.Label](err)
 	}
 
 	return h.createLabel(ctx, command)

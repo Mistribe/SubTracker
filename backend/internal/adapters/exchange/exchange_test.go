@@ -16,6 +16,24 @@ import (
 	"github.com/mistribe/subtracker/pkg/testx"
 )
 
+type leveledCacheMock struct{ mock.Mock }
+
+func (m *leveledCacheMock) Get(key string) interface{} {
+	args := m.Called(key)
+	if len(args) == 0 {
+		return nil
+	}
+	return args.Get(0)
+}
+
+func (m *leveledCacheMock) Set(key string, value interface{}, options ...func(*ports.CacheOptions)) {
+	if len(options) > 0 {
+		m.Called(key, value, options)
+	} else {
+		m.Called(key, value)
+	}
+}
+
 func TestExchange_ToCurrencyAt_InvalidAmount(t *testing.T) {
 	localCacheMock := ports.NewMockCache(t)
 	currencyRepositoryMock := ports.NewMockCurrencyRepository(t)
@@ -47,8 +65,10 @@ func TestExchange_ToCurrencyAt_ErrorFromRepository(t *testing.T) {
 
 	at := time.Date(2024, 3, 1, 0, 0, 0, 0, time.UTC)
 
-	// Cache miss
-	localCacheMock.On("Get", mock.Anything).Return(0.0).Once()
+	// Cache miss via leveled cache
+	lc := new(leveledCacheMock)
+	localCacheMock.On("From", mock.Anything, ports.CacheLevelServer).Return(lc).Once()
+	lc.On("Get", mock.Anything).Return(0.0).Once()
 	// Repository error
 	currencyRepositoryMock.On(
 		"GetRateAt",
@@ -74,10 +94,12 @@ func TestExchange_ToCurrencyAt_SuccessFromCache(t *testing.T) {
 	at := time.Date(2024, 4, 2, 0, 0, 0, 0, time.UTC)
 	rate := 1.10
 
-	// Cache hit
-	localCacheMock.On("Get", mock.Anything).Return(rate).Once()
+	// Cache hit via leveled cache
+	lc := new(leveledCacheMock)
+	localCacheMock.On("From", mock.Anything, ports.CacheLevelServer).Return(lc).Twice()
+	lc.On("Get", mock.Anything).Return(rate).Once()
 	// Service re-sets the cache with the same rate
-	localCacheMock.On("Set", mock.Anything, rate, mock.Anything).Return().Once()
+	lc.On("Set", mock.Anything, rate, mock.Anything).Return().Once()
 
 	initial := currency.NewAmount(100, currency.USD)
 	out, err := service.ToCurrencyAt(context.Background(), initial, currency.EUR, at)
@@ -109,8 +131,10 @@ func TestExchange_ToCurrencyAt_SuccessFromRepository(t *testing.T) {
 		time.Now(),
 	)
 
-	// Cache miss
-	localCacheMock.On("Get", mock.Anything).Return(0.0).Once()
+	// Cache miss via leveled cache
+	lc := new(leveledCacheMock)
+	localCacheMock.On("From", mock.Anything, ports.CacheLevelServer).Return(lc).Twice()
+	lc.On("Get", mock.Anything).Return(0.0).Once()
 	// Repository provides the rate
 	currencyRepositoryMock.On(
 		"GetRateAt",
@@ -120,7 +144,7 @@ func TestExchange_ToCurrencyAt_SuccessFromRepository(t *testing.T) {
 		mock.Anything, // at
 	).Return(repoRate, nil).Once()
 	// Cache set after obtaining rate
-	localCacheMock.On("Set", mock.Anything, rateVal, mock.Anything).Return().Once()
+	lc.On("Set", mock.Anything, rateVal, mock.Anything).Return().Once()
 
 	initial := currency.NewAmount(80, currency.USD)
 	out, err := service.ToCurrencyAt(context.Background(), initial, currency.EUR, at)

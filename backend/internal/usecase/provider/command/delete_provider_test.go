@@ -12,6 +12,7 @@ import (
 
 	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/provider/command"
 )
@@ -45,6 +46,10 @@ func TestDeleteProviderCommandHandler_Handle(t *testing.T) {
 		prov := makeProvider(id)
 
 		repo.EXPECT().GetById(mock.Anything, id).Return(prov, nil)
+		// Authorization allows deletion
+		permReq := ports.NewMockPermissionRequest(t)
+		authz.EXPECT().Can(mock.Anything, user.PermissionDelete).Return(permReq)
+		permReq.EXPECT().For(mock.Anything).Return(nil)
 		repo.EXPECT().Delete(mock.Anything, id).Return(true, nil)
 
 		h := command.NewDeleteProviderCommandHandler(repo, authz)
@@ -64,6 +69,10 @@ func TestDeleteProviderCommandHandler_Handle(t *testing.T) {
 		prov := makeProvider(id)
 
 		repo.EXPECT().GetById(mock.Anything, id).Return(prov, nil)
+		// Authorization allows deletion
+		permReq := ports.NewMockPermissionRequest(t)
+		authz.EXPECT().Can(mock.Anything, user.PermissionDelete).Return(permReq)
+		permReq.EXPECT().For(mock.Anything).Return(nil)
 		repo.EXPECT().Delete(mock.Anything, id).Return(false, nil)
 
 		h := command.NewDeleteProviderCommandHandler(repo, authz)
@@ -119,6 +128,10 @@ func TestDeleteProviderCommandHandler_Handle(t *testing.T) {
 		authz := ports.NewMockAuthorization(t)
 
 		repo.EXPECT().GetById(mock.Anything, id).Return(prov, nil)
+		// Authorization denies deletion
+		permReq := ports.NewMockPermissionRequest(t)
+		authz.EXPECT().Can(mock.Anything, user.PermissionDelete).Return(permReq)
+		permReq.EXPECT().For(mock.Anything).Return(expectedErr)
 
 		h := command.NewDeleteProviderCommandHandler(repo, authz)
 		res := h.Handle(ctx, command.NewDeleteProviderCommand(id))
@@ -138,6 +151,10 @@ func TestDeleteProviderCommandHandler_Handle(t *testing.T) {
 		authz := ports.NewMockAuthorization(t)
 
 		repo.EXPECT().GetById(mock.Anything, id).Return(prov, nil)
+		// Authorization allows deletion
+		permReq := ports.NewMockPermissionRequest(t)
+		authz.EXPECT().Can(mock.Anything, user.PermissionDelete).Return(permReq)
+		permReq.EXPECT().For(mock.Anything).Return(nil)
 		repo.EXPECT().Delete(mock.Anything, id).Return(false, expectedErr)
 
 		h := command.NewDeleteProviderCommandHandler(repo, authz)
