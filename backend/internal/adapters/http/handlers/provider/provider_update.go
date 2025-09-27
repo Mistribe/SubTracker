@@ -47,15 +47,15 @@ func updateProviderRequestToCommand(r dto.UpdateProviderRequest, providerId uuid
 
 // Handle godoc
 //
-//	@Summary		Update provider by ID
+//	@Summary		Update provider by LabelID
 //	@Description	Update an existing provider's basic information
 //	@Tags			providers
 //	@Accept			json
 //	@Produce		json
-//	@Param			providerId	path		string						true	"Provider ID (UUID format)"
+//	@Param			providerId	path		string						true	"Provider LabelID (UUID format)"
 //	@Param			provider	body		dto.UpdateProviderRequest	true	"Updated provider data"
 //	@Success		200			{object}	dto.ProviderModel			"Successfully updated provider"
-//	@Failure		400			{object}	HttpErrorResponse			"Bad Request - Invalid input data or provider ID"
+//	@Failure		400			{object}	HttpErrorResponse			"Bad Request - Invalid input data or provider LabelID"
 //	@Failure		404			{object}	HttpErrorResponse			"Provider not found"
 //	@Failure		500			{object}	HttpErrorResponse			"Internal Server Error"
 //	@Router			/providers/{providerId} [put]

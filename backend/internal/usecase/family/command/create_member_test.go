@@ -94,7 +94,8 @@ func TestCreateFamilyMemberCommandHandler(t *testing.T) {
 		res := h.Handle(ctx, cmd)
 
 		// Assert
-		receivedErr := result.Match(res, func(_ family.Family) error { return nil }, func(err error) error { return err })
+		receivedErr := result.Match(res, func(_ family.Family) error { return nil },
+			func(err error) error { return err })
 		require.Error(t, receivedErr)
 		assert.True(t, errors.Is(receivedErr, expectedErr))
 		repo.AssertNotCalled(t, "Save", mock.Anything, mock.Anything)
@@ -115,7 +116,8 @@ func TestCreateFamilyMemberCommandHandler(t *testing.T) {
 		res := h.Handle(ctx, cmd)
 
 		// Assert
-		receivedErr := result.Match(res, func(_ family.Family) error { return nil }, func(err error) error { return err })
+		receivedErr := result.Match(res, func(_ family.Family) error { return nil },
+			func(err error) error { return err })
 		require.Error(t, receivedErr)
 		assert.True(t, errors.Is(receivedErr, family.ErrFamilyNotFound))
 		repo.AssertNotCalled(t, "Save", mock.Anything, mock.Anything)
@@ -138,7 +140,8 @@ func TestCreateFamilyMemberCommandHandler(t *testing.T) {
 		res := h.Handle(ctx, cmd)
 
 		// Assert
-		receivedErr := result.Match(res, func(_ family.Family) error { return nil }, func(err error) error { return err })
+		receivedErr := result.Match(res, func(_ family.Family) error { return nil },
+			func(err error) error { return err })
 		require.Error(t, receivedErr)
 		assert.True(t, errors.Is(receivedErr, expectedErr))
 		assert.False(t, auth.ensureCalled, "EnsureWithinLimit should not be called when authorization fails")
@@ -163,7 +166,8 @@ func TestCreateFamilyMemberCommandHandler(t *testing.T) {
 		res := h.Handle(ctx, cmd)
 
 		// Assert
-		receivedErr := result.Match(res, func(_ family.Family) error { return nil }, func(err error) error { return err })
+		receivedErr := result.Match(res, func(_ family.Family) error { return nil },
+			func(err error) error { return err })
 		require.Error(t, receivedErr)
 		assert.True(t, errors.Is(receivedErr, expectedErr))
 		assert.True(t, auth.ensureCalled, "EnsureWithinLimit should be called")
@@ -178,7 +182,7 @@ func TestCreateFamilyMemberCommandHandler(t *testing.T) {
 
 		famID := uuid.New()
 		existing := family.NewMember(uuid.New(), famID, "John", family.AdultMemberType, nil, time.Now(), time.Now())
-		// Use same ID to force duplicate
+		// Use same LabelID to force duplicate
 		dup := family.NewMember(existing.Id(), famID, "John", family.AdultMemberType, nil, time.Now(), time.Now())
 		fam := newFamily("owner1", "Doe family", []family.Member{existing})
 		cmd := command.CreateFamilyMemberCommand{FamilyId: fam.Id(), Member: dup}
@@ -213,7 +217,8 @@ func TestCreateFamilyMemberCommandHandler(t *testing.T) {
 		res := h.Handle(ctx, cmd)
 
 		// Assert
-		receivedErr := result.Match(res, func(_ family.Family) error { return nil }, func(err error) error { return err })
+		receivedErr := result.Match(res, func(_ family.Family) error { return nil },
+			func(err error) error { return err })
 		require.Error(t, receivedErr)
 		repo.AssertNotCalled(t, "Save", mock.Anything, mock.Anything)
 	})

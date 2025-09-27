@@ -1,7 +1,6 @@
 package family
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -12,12 +11,12 @@ import (
 
 	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/internal/usecase/family/command"
 )
 
 type CreateEndpoint struct {
-	handler ports.CommandHandler[command.CreateFamilyCommand, family.Family]
+	handler        ports.CommandHandler[command.CreateFamilyCommand, family.Family]
+	authentication ports.Authentication
 }
 
 func createFamilyRequestToCommand(m dto.CreateFamilyRequest) (command.CreateFamilyCommand, error) {
@@ -51,48 +50,46 @@ func createFamilyRequestToCommand(m dto.CreateFamilyRequest) (command.CreateFami
 //	@Failure		401		{object}	HttpErrorResponse		"Unauthorized - Invalid user authentication"
 //	@Failure		500		{object}	HttpErrorResponse		"Internal Server Error"
 //	@Router			/family [post]
-func (f CreateEndpoint) Handle(c *gin.Context) {
+func (e CreateEndpoint) Handle(c *gin.Context) {
 	var model dto.CreateFamilyRequest
 	if err := c.ShouldBindJSON(&model); err != nil {
 		FromError(c, err)
 		return
 	}
-	userId, ok := auth.GetUserIdFromContext(c)
-	if !ok {
-		FromError(c, errors.New("invalid user id"))
-		return
-	}
+	connectedAccount := e.authentication.MustGetConnectedAccount(c)
 
 	cmd, err := createFamilyRequestToCommand(model)
 	if err != nil {
 		FromError(c, err)
 		return
 	}
-	r := f.handler.Handle(c, cmd)
+	r := e.handler.Handle(c, cmd)
 	FromResult(c,
 		r,
 		WithStatus[family.Family](http.StatusCreated),
 		WithMapping[family.Family](func(f family.Family) any {
-			return dto.NewFamilyModel(userId, f)
+			return dto.NewFamilyModel(connectedAccount.UserID(), f)
 		}))
 }
 
-func (f CreateEndpoint) Pattern() []string {
+func (e CreateEndpoint) Pattern() []string {
 	return []string{
 		"",
 	}
 }
 
-func (f CreateEndpoint) Method() string {
+func (e CreateEndpoint) Method() string {
 	return http.MethodPost
 }
 
-func (f CreateEndpoint) Middlewares() []gin.HandlerFunc {
+func (e CreateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewCreateEndpoint(handler ports.CommandHandler[command.CreateFamilyCommand, family.Family]) *CreateEndpoint {
+func NewCreateEndpoint(handler ports.CommandHandler[command.CreateFamilyCommand, family.Family],
+	authentication ports.Authentication) *CreateEndpoint {
 	return &CreateEndpoint{
-		handler: handler,
+		handler:        handler,
+		authentication: authentication,
 	}
 }

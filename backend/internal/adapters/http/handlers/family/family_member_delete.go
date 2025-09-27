@@ -19,13 +19,13 @@ type MemberDeleteEndpoint struct {
 
 // Handle godoc
 //
-//	@Summary		Delete family member by ID
+//	@Summary		Delete family member by LabelID
 //	@Description	Permanently delete a family member from a family
 //	@Tags			family
-//	@Param			familyId	path	string	true	"Family ID (UUID format)"
-//	@Param			id			path	string	true	"Family member ID (UUID format)"
+//	@Param			familyId	path	string	true	"Family LabelID (UUID format)"
+//	@Param			id			path	string	true	"Family member LabelID (UUID format)"
 //	@Success		204			"No Content - Family member successfully deleted"
-//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid ID format"
+//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid LabelID format"
 //	@Failure		404			{object}	HttpErrorResponse	"Family or family member not found"
 //	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/family/{familyId}/members/{id} [delete]

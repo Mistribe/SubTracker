@@ -54,9 +54,9 @@ func NewSubscriptionCustomPrice(model *AmountModel) (subscription.CustomPrice, e
 type SubscriptionPayerModel struct {
 	// @Description Type of payer (family or family member)
 	Type string `json:"type" binding:"required" example:"family_member" enums:"family,family_member"`
-	// @Description ID of the family associated with this payer
+	// @Description LabelID of the family associated with this payer
 	FamilyId string `json:"family_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
-	// @Description ID of the specific family member who pays (required when type is family_member)
+	// @Description LabelID of the specific family member who pays (required when type is family_member)
 	MemberId *string `json:"memberId,omitempty" example:"123e4567-e89b-12d3-a456-426614174001"`
 	// @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
 	Etag string `json:"etag" binding:"required" example:"W/\"123456789\""`
@@ -67,9 +67,9 @@ type SubscriptionPayerModel struct {
 type EditableSubscriptionPayerModel struct {
 	// @Description Type of payer (family or family member)
 	Type string `json:"type" binding:"required" example:"family_member" enums:"family,family_member"`
-	// @Description ID of the family associated with this payer
+	// @Description LabelID of the family associated with this payer
 	FamilyId string `json:"family_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
-	// @Description ID of the specific family member who pays (required when type is family_member)
+	// @Description LabelID of the specific family member who pays (required when type is family_member)
 	MemberId *string `json:"memberId,omitempty" example:"123e4567-e89b-12d3-a456-426614174001"`
 }
 
@@ -87,11 +87,11 @@ type SubscriptionModel struct {
 	FriendlyName *string `json:"friendly_name,omitempty" example:"Netflix Family Account" maxLength:"255"`
 	// @Description Number of free trial days remaining (null if no trial or trial expired)
 	FreeTrial *SubscriptionFreeTrialModel `json:"free_trial,omitempty"`
-	// @Description ID of the service provider offering this subscription
+	// @Description LabelID of the service provider offering this subscription
 	ProviderId string `json:"provider_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174002"`
-	// @Description ID of the specific plan being subscribed to
+	// @Description LabelID of the specific plan being subscribed to
 	PlanId *string `json:"plan_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174003"`
-	// @Description ID of the pricing tier for this subscription
+	// @Description LabelID of the pricing tier for this subscription
 	PriceId *string `json:"price_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174004"`
 	// @Description Custom price for this subscription
 	CustomPrice *AmountModel `json:"custom_price,omitempty"`

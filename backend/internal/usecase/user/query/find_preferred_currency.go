@@ -5,9 +5,7 @@ import (
 
 	"golang.org/x/text/currency"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/ports"
-	auth2 "github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
@@ -19,21 +17,25 @@ func NewFindPreferredCurrencyQuery() FindPreferredCurrencyQuery {
 }
 
 type FindPreferredCurrencyQueryHandler struct {
-	userService ports.UserService
+	accountRepository ports.AccountRepository
+	authentication    ports.Authentication
 }
 
-func NewFindPreferredCurrencyQueryHandler(userService ports.UserService) *FindPreferredCurrencyQueryHandler {
+func NewFindPreferredCurrencyQueryHandler(accountRepository ports.AccountRepository,
+	authentication ports.Authentication) *FindPreferredCurrencyQueryHandler {
 	return &FindPreferredCurrencyQueryHandler{
-		userService: userService,
+		accountRepository: accountRepository,
+		authentication:    authentication,
 	}
 }
 
 func (h FindPreferredCurrencyQueryHandler) Handle(
 	ctx context.Context,
 	_ FindPreferredCurrencyQuery) result.Result[currency.Unit] {
-	userId, ok := auth2.GetUserIdFromContext(ctx)
-	if !ok {
-		return result.Fail[currency.Unit](auth.ErrUnauthorized)
+	connectedAccount := h.authentication.MustGetConnectedAccount(ctx)
+	account, err := h.accountRepository.GetById(ctx, connectedAccount.UserID())
+	if err != nil {
+		return result.Fail[currency.Unit](err)
 	}
-	return result.Success(h.userService.GetPreferredCurrency(ctx, userId))
+	return result.Success(account.Currency())
 }

@@ -81,7 +81,7 @@ func (e CreateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	userId, ok := auth.GetUserIdFromContext(c)
+	userId, ok := authentication.GetUserIdFromContext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, ginx.HttpErrorResponse{
 			Message: "invalid user id",

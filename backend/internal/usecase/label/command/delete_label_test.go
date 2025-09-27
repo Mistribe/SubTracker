@@ -9,9 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
-	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/internal/domain/user"
+
+	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/label/command"
 )
@@ -27,7 +28,7 @@ func TestDeleteLabelCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().GetById(t.Context(), id).Return(nil, errors.New("db error"))
 
 		h := command.NewDeleteLabelCommandHandler(labelRepo, familyRepo, authz)
-		cmd := command.DeleteLabelCommand{Id: id}
+		cmd := command.DeleteLabelCommand{LabelID: id}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -41,7 +42,7 @@ func TestDeleteLabelCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().GetById(t.Context(), id).Return(nil, nil)
 
 		h := command.NewDeleteLabelCommandHandler(labelRepo, familyRepo, authz)
-		cmd := command.DeleteLabelCommand{Id: id}
+		cmd := command.DeleteLabelCommand{LabelID: id}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -59,7 +60,7 @@ func TestDeleteLabelCommandHandler_Handle(t *testing.T) {
 		perm.EXPECT().For(mock.Anything).Return(user.ErrUnauthorized)
 
 		h := command.NewDeleteLabelCommandHandler(labelRepo, familyRepo, authz)
-		cmd := command.DeleteLabelCommand{Id: id}
+		cmd := command.DeleteLabelCommand{LabelID: id}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -78,7 +79,7 @@ func TestDeleteLabelCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Delete(t.Context(), id).Return(false, errors.New("delete failed"))
 
 		h := command.NewDeleteLabelCommandHandler(labelRepo, familyRepo, authz)
-		cmd := command.DeleteLabelCommand{Id: id}
+		cmd := command.DeleteLabelCommand{LabelID: id}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -97,7 +98,7 @@ func TestDeleteLabelCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Delete(t.Context(), id).Return(false, nil)
 
 		h := command.NewDeleteLabelCommandHandler(labelRepo, familyRepo, authz)
-		cmd := command.DeleteLabelCommand{Id: id}
+		cmd := command.DeleteLabelCommand{LabelID: id}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -116,7 +117,7 @@ func TestDeleteLabelCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Delete(t.Context(), id).Return(true, nil)
 
 		h := command.NewDeleteLabelCommandHandler(labelRepo, familyRepo, authz)
-		cmd := command.DeleteLabelCommand{Id: id}
+		cmd := command.DeleteLabelCommand{LabelID: id}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsSuccess())
@@ -126,7 +127,7 @@ func TestDeleteLabelCommandHandler_Handle(t *testing.T) {
 func newPersonalLabel() label.Label {
 	return label.NewLabel(
 		uuid.Must(uuid.NewV7()),
-		auth.NewPersonalOwner("userID-Test"),
+		types.NewPersonalOwner("userID-Test"),
 		"label test",
 		nil,
 		"#FFFFFF",

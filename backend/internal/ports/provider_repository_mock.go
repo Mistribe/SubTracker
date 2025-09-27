@@ -7,8 +7,8 @@ package ports
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -40,7 +40,7 @@ func (_m *MockProviderRepository) EXPECT() *MockProviderRepository_Expecter {
 }
 
 // Delete provides a mock function for the type MockProviderRepository
-func (_mock *MockProviderRepository) Delete(ctx context.Context, entityId uuid.UUID) (bool, error) {
+func (_mock *MockProviderRepository) Delete(ctx context.Context, entityId types.ProviderID) (bool, error) {
 	ret := _mock.Called(ctx, entityId)
 
 	if len(ret) == 0 {
@@ -49,15 +49,15 @@ func (_mock *MockProviderRepository) Delete(ctx context.Context, entityId uuid.U
 
 	var r0 bool
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (bool, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.ProviderID) (bool, error)); ok {
 		return returnFunc(ctx, entityId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) bool); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.ProviderID) bool); ok {
 		r0 = returnFunc(ctx, entityId)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.ProviderID) error); ok {
 		r1 = returnFunc(ctx, entityId)
 	} else {
 		r1 = ret.Error(1)
@@ -72,20 +72,20 @@ type MockProviderRepository_Delete_Call struct {
 
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
-//   - entityId uuid.UUID
+//   - entityId types.ProviderID
 func (_e *MockProviderRepository_Expecter) Delete(ctx interface{}, entityId interface{}) *MockProviderRepository_Delete_Call {
 	return &MockProviderRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, entityId)}
 }
 
-func (_c *MockProviderRepository_Delete_Call) Run(run func(ctx context.Context, entityId uuid.UUID)) *MockProviderRepository_Delete_Call {
+func (_c *MockProviderRepository_Delete_Call) Run(run func(ctx context.Context, entityId types.ProviderID)) *MockProviderRepository_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 uuid.UUID
+		var arg1 types.ProviderID
 		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
+			arg1 = args[1].(types.ProviderID)
 		}
 		run(
 			arg0,
@@ -100,145 +100,13 @@ func (_c *MockProviderRepository_Delete_Call) Return(b bool, err error) *MockPro
 	return _c
 }
 
-func (_c *MockProviderRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, entityId uuid.UUID) (bool, error)) *MockProviderRepository_Delete_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// DeletePlan provides a mock function for the type MockProviderRepository
-func (_mock *MockProviderRepository) DeletePlan(ctx context.Context, planId uuid.UUID) (bool, error) {
-	ret := _mock.Called(ctx, planId)
-
-	if len(ret) == 0 {
-		panic("no return value specified for DeletePlan")
-	}
-
-	var r0 bool
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (bool, error)); ok {
-		return returnFunc(ctx, planId)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) bool); ok {
-		r0 = returnFunc(ctx, planId)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, planId)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockProviderRepository_DeletePlan_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeletePlan'
-type MockProviderRepository_DeletePlan_Call struct {
-	*mock.Call
-}
-
-// DeletePlan is a helper method to define mock.On call
-//   - ctx context.Context
-//   - planId uuid.UUID
-func (_e *MockProviderRepository_Expecter) DeletePlan(ctx interface{}, planId interface{}) *MockProviderRepository_DeletePlan_Call {
-	return &MockProviderRepository_DeletePlan_Call{Call: _e.mock.On("DeletePlan", ctx, planId)}
-}
-
-func (_c *MockProviderRepository_DeletePlan_Call) Run(run func(ctx context.Context, planId uuid.UUID)) *MockProviderRepository_DeletePlan_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 uuid.UUID
-		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockProviderRepository_DeletePlan_Call) Return(b bool, err error) *MockProviderRepository_DeletePlan_Call {
-	_c.Call.Return(b, err)
-	return _c
-}
-
-func (_c *MockProviderRepository_DeletePlan_Call) RunAndReturn(run func(ctx context.Context, planId uuid.UUID) (bool, error)) *MockProviderRepository_DeletePlan_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// DeletePrice provides a mock function for the type MockProviderRepository
-func (_mock *MockProviderRepository) DeletePrice(ctx context.Context, id uuid.UUID) (bool, error) {
-	ret := _mock.Called(ctx, id)
-
-	if len(ret) == 0 {
-		panic("no return value specified for DeletePrice")
-	}
-
-	var r0 bool
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (bool, error)); ok {
-		return returnFunc(ctx, id)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) bool); ok {
-		r0 = returnFunc(ctx, id)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, id)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockProviderRepository_DeletePrice_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeletePrice'
-type MockProviderRepository_DeletePrice_Call struct {
-	*mock.Call
-}
-
-// DeletePrice is a helper method to define mock.On call
-//   - ctx context.Context
-//   - id uuid.UUID
-func (_e *MockProviderRepository_Expecter) DeletePrice(ctx interface{}, id interface{}) *MockProviderRepository_DeletePrice_Call {
-	return &MockProviderRepository_DeletePrice_Call{Call: _e.mock.On("DeletePrice", ctx, id)}
-}
-
-func (_c *MockProviderRepository_DeletePrice_Call) Run(run func(ctx context.Context, id uuid.UUID)) *MockProviderRepository_DeletePrice_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 uuid.UUID
-		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockProviderRepository_DeletePrice_Call) Return(b bool, err error) *MockProviderRepository_DeletePrice_Call {
-	_c.Call.Return(b, err)
-	return _c
-}
-
-func (_c *MockProviderRepository_DeletePrice_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (bool, error)) *MockProviderRepository_DeletePrice_Call {
+func (_c *MockProviderRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, entityId types.ProviderID) (bool, error)) *MockProviderRepository_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Exists provides a mock function for the type MockProviderRepository
-func (_mock *MockProviderRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
+func (_mock *MockProviderRepository) Exists(ctx context.Context, ids ...types.ProviderID) (bool, error) {
 	var tmpRet mock.Arguments
 	if len(ids) > 0 {
 		tmpRet = _mock.Called(ctx, ids)
@@ -253,15 +121,15 @@ func (_mock *MockProviderRepository) Exists(ctx context.Context, ids ...uuid.UUI
 
 	var r0 bool
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, ...uuid.UUID) (bool, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...types.ProviderID) (bool, error)); ok {
 		return returnFunc(ctx, ids...)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, ...uuid.UUID) bool); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...types.ProviderID) bool); ok {
 		r0 = returnFunc(ctx, ids...)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, ...uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ...types.ProviderID) error); ok {
 		r1 = returnFunc(ctx, ids...)
 	} else {
 		r1 = ret.Error(1)
@@ -276,22 +144,22 @@ type MockProviderRepository_Exists_Call struct {
 
 // Exists is a helper method to define mock.On call
 //   - ctx context.Context
-//   - ids ...uuid.UUID
+//   - ids ...types.ProviderID
 func (_e *MockProviderRepository_Expecter) Exists(ctx interface{}, ids ...interface{}) *MockProviderRepository_Exists_Call {
 	return &MockProviderRepository_Exists_Call{Call: _e.mock.On("Exists",
 		append([]interface{}{ctx}, ids...)...)}
 }
 
-func (_c *MockProviderRepository_Exists_Call) Run(run func(ctx context.Context, ids ...uuid.UUID)) *MockProviderRepository_Exists_Call {
+func (_c *MockProviderRepository_Exists_Call) Run(run func(ctx context.Context, ids ...types.ProviderID)) *MockProviderRepository_Exists_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 []uuid.UUID
-		var variadicArgs []uuid.UUID
+		var arg1 []types.ProviderID
+		var variadicArgs []types.ProviderID
 		if len(args) > 1 {
-			variadicArgs = args[1].([]uuid.UUID)
+			variadicArgs = args[1].([]types.ProviderID)
 		}
 		arg1 = variadicArgs
 		run(
@@ -307,7 +175,7 @@ func (_c *MockProviderRepository_Exists_Call) Return(b bool, err error) *MockPro
 	return _c
 }
 
-func (_c *MockProviderRepository_Exists_Call) RunAndReturn(run func(ctx context.Context, ids ...uuid.UUID) (bool, error)) *MockProviderRepository_Exists_Call {
+func (_c *MockProviderRepository_Exists_Call) RunAndReturn(run func(ctx context.Context, ids ...types.ProviderID) (bool, error)) *MockProviderRepository_Exists_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -387,7 +255,7 @@ func (_c *MockProviderRepository_GetAll_Call) RunAndReturn(run func(ctx context.
 }
 
 // GetAllForUser provides a mock function for the type MockProviderRepository
-func (_mock *MockProviderRepository) GetAllForUser(ctx context.Context, userId string, parameters ProviderQueryParameters) ([]provider.Provider, int64, error) {
+func (_mock *MockProviderRepository) GetAllForUser(ctx context.Context, userId types.UserID, parameters ProviderQueryParameters) ([]provider.Provider, int64, error) {
 	ret := _mock.Called(ctx, userId, parameters)
 
 	if len(ret) == 0 {
@@ -397,22 +265,22 @@ func (_mock *MockProviderRepository) GetAllForUser(ctx context.Context, userId s
 	var r0 []provider.Provider
 	var r1 int64
 	var r2 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, ProviderQueryParameters) ([]provider.Provider, int64, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, ProviderQueryParameters) ([]provider.Provider, int64, error)); ok {
 		return returnFunc(ctx, userId, parameters)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, ProviderQueryParameters) []provider.Provider); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, ProviderQueryParameters) []provider.Provider); ok {
 		r0 = returnFunc(ctx, userId, parameters)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]provider.Provider)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, ProviderQueryParameters) int64); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.UserID, ProviderQueryParameters) int64); ok {
 		r1 = returnFunc(ctx, userId, parameters)
 	} else {
 		r1 = ret.Get(1).(int64)
 	}
-	if returnFunc, ok := ret.Get(2).(func(context.Context, string, ProviderQueryParameters) error); ok {
+	if returnFunc, ok := ret.Get(2).(func(context.Context, types.UserID, ProviderQueryParameters) error); ok {
 		r2 = returnFunc(ctx, userId, parameters)
 	} else {
 		r2 = ret.Error(2)
@@ -427,21 +295,21 @@ type MockProviderRepository_GetAllForUser_Call struct {
 
 // GetAllForUser is a helper method to define mock.On call
 //   - ctx context.Context
-//   - userId string
+//   - userId types.UserID
 //   - parameters ProviderQueryParameters
 func (_e *MockProviderRepository_Expecter) GetAllForUser(ctx interface{}, userId interface{}, parameters interface{}) *MockProviderRepository_GetAllForUser_Call {
 	return &MockProviderRepository_GetAllForUser_Call{Call: _e.mock.On("GetAllForUser", ctx, userId, parameters)}
 }
 
-func (_c *MockProviderRepository_GetAllForUser_Call) Run(run func(ctx context.Context, userId string, parameters ProviderQueryParameters)) *MockProviderRepository_GetAllForUser_Call {
+func (_c *MockProviderRepository_GetAllForUser_Call) Run(run func(ctx context.Context, userId types.UserID, parameters ProviderQueryParameters)) *MockProviderRepository_GetAllForUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 types.UserID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(types.UserID)
 		}
 		var arg2 ProviderQueryParameters
 		if args[2] != nil {
@@ -461,13 +329,13 @@ func (_c *MockProviderRepository_GetAllForUser_Call) Return(providers []provider
 	return _c
 }
 
-func (_c *MockProviderRepository_GetAllForUser_Call) RunAndReturn(run func(ctx context.Context, userId string, parameters ProviderQueryParameters) ([]provider.Provider, int64, error)) *MockProviderRepository_GetAllForUser_Call {
+func (_c *MockProviderRepository_GetAllForUser_Call) RunAndReturn(run func(ctx context.Context, userId types.UserID, parameters ProviderQueryParameters) ([]provider.Provider, int64, error)) *MockProviderRepository_GetAllForUser_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetById provides a mock function for the type MockProviderRepository
-func (_mock *MockProviderRepository) GetById(ctx context.Context, entityId uuid.UUID) (provider.Provider, error) {
+func (_mock *MockProviderRepository) GetById(ctx context.Context, entityId types.ProviderID) (provider.Provider, error) {
 	ret := _mock.Called(ctx, entityId)
 
 	if len(ret) == 0 {
@@ -476,17 +344,17 @@ func (_mock *MockProviderRepository) GetById(ctx context.Context, entityId uuid.
 
 	var r0 provider.Provider
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (provider.Provider, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.ProviderID) (provider.Provider, error)); ok {
 		return returnFunc(ctx, entityId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) provider.Provider); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.ProviderID) provider.Provider); ok {
 		r0 = returnFunc(ctx, entityId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(provider.Provider)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.ProviderID) error); ok {
 		r1 = returnFunc(ctx, entityId)
 	} else {
 		r1 = ret.Error(1)
@@ -501,20 +369,20 @@ type MockProviderRepository_GetById_Call struct {
 
 // GetById is a helper method to define mock.On call
 //   - ctx context.Context
-//   - entityId uuid.UUID
+//   - entityId types.ProviderID
 func (_e *MockProviderRepository_Expecter) GetById(ctx interface{}, entityId interface{}) *MockProviderRepository_GetById_Call {
 	return &MockProviderRepository_GetById_Call{Call: _e.mock.On("GetById", ctx, entityId)}
 }
 
-func (_c *MockProviderRepository_GetById_Call) Run(run func(ctx context.Context, entityId uuid.UUID)) *MockProviderRepository_GetById_Call {
+func (_c *MockProviderRepository_GetById_Call) Run(run func(ctx context.Context, entityId types.ProviderID)) *MockProviderRepository_GetById_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 uuid.UUID
+		var arg1 types.ProviderID
 		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
+			arg1 = args[1].(types.ProviderID)
 		}
 		run(
 			arg0,
@@ -529,13 +397,13 @@ func (_c *MockProviderRepository_GetById_Call) Return(provider1 provider.Provide
 	return _c
 }
 
-func (_c *MockProviderRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId uuid.UUID) (provider.Provider, error)) *MockProviderRepository_GetById_Call {
+func (_c *MockProviderRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId types.ProviderID) (provider.Provider, error)) *MockProviderRepository_GetById_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetByIdForUser provides a mock function for the type MockProviderRepository
-func (_mock *MockProviderRepository) GetByIdForUser(ctx context.Context, userId string, providerId uuid.UUID) (provider.Provider, error) {
+func (_mock *MockProviderRepository) GetByIdForUser(ctx context.Context, userId types.UserID, providerId types.ProviderID) (provider.Provider, error) {
 	ret := _mock.Called(ctx, userId, providerId)
 
 	if len(ret) == 0 {
@@ -544,17 +412,17 @@ func (_mock *MockProviderRepository) GetByIdForUser(ctx context.Context, userId 
 
 	var r0 provider.Provider
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) (provider.Provider, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, types.ProviderID) (provider.Provider, error)); ok {
 		return returnFunc(ctx, userId, providerId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) provider.Provider); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, types.ProviderID) provider.Provider); ok {
 		r0 = returnFunc(ctx, userId, providerId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(provider.Provider)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.UserID, types.ProviderID) error); ok {
 		r1 = returnFunc(ctx, userId, providerId)
 	} else {
 		r1 = ret.Error(1)
@@ -569,25 +437,25 @@ type MockProviderRepository_GetByIdForUser_Call struct {
 
 // GetByIdForUser is a helper method to define mock.On call
 //   - ctx context.Context
-//   - userId string
-//   - providerId uuid.UUID
+//   - userId types.UserID
+//   - providerId types.ProviderID
 func (_e *MockProviderRepository_Expecter) GetByIdForUser(ctx interface{}, userId interface{}, providerId interface{}) *MockProviderRepository_GetByIdForUser_Call {
 	return &MockProviderRepository_GetByIdForUser_Call{Call: _e.mock.On("GetByIdForUser", ctx, userId, providerId)}
 }
 
-func (_c *MockProviderRepository_GetByIdForUser_Call) Run(run func(ctx context.Context, userId string, providerId uuid.UUID)) *MockProviderRepository_GetByIdForUser_Call {
+func (_c *MockProviderRepository_GetByIdForUser_Call) Run(run func(ctx context.Context, userId types.UserID, providerId types.ProviderID)) *MockProviderRepository_GetByIdForUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 types.UserID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(types.UserID)
 		}
-		var arg2 uuid.UUID
+		var arg2 types.ProviderID
 		if args[2] != nil {
-			arg2 = args[2].(uuid.UUID)
+			arg2 = args[2].(types.ProviderID)
 		}
 		run(
 			arg0,
@@ -603,7 +471,7 @@ func (_c *MockProviderRepository_GetByIdForUser_Call) Return(provider1 provider.
 	return _c
 }
 
-func (_c *MockProviderRepository_GetByIdForUser_Call) RunAndReturn(run func(ctx context.Context, userId string, providerId uuid.UUID) (provider.Provider, error)) *MockProviderRepository_GetByIdForUser_Call {
+func (_c *MockProviderRepository_GetByIdForUser_Call) RunAndReturn(run func(ctx context.Context, userId types.UserID, providerId types.ProviderID) (provider.Provider, error)) *MockProviderRepository_GetByIdForUser_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -10,9 +10,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
-	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/internal/domain/user"
+
+	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/label/command"
 	"github.com/mistribe/subtracker/pkg/langext/option"
@@ -25,7 +26,7 @@ func TestUpdateLabelCommandHandler_Handle(t *testing.T) {
 	newPersonalLabel := func() label.Label {
 		return label.NewLabel(
 			uuid.Must(uuid.NewV7()),
-			auth.NewPersonalOwner("userID-Test"),
+			types.NewPersonalOwner("userID-Test"),
 			"label test",
 			nil,
 			"#FFFFFF",
@@ -45,7 +46,7 @@ func TestUpdateLabelCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().GetById(t.Context(), id).Return(nil, errors.New("db error"))
 
 		h := command.NewUpdateLabelCommandHandler(labelRepo, familyRepo, authz)
-		cmd := command.UpdateLabelCommand{Id: id, Name: "n", Color: "#000000", UpdatedAt: option.None[time.Time]()}
+		cmd := command.UpdateLabelCommand{LabelID: id, Name: "n", Color: "#000000", UpdatedAt: option.None[time.Time]()}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -62,7 +63,7 @@ func TestUpdateLabelCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().GetById(t.Context(), id).Return(nil, nil)
 
 		h := command.NewUpdateLabelCommandHandler(labelRepo, familyRepo, authz)
-		cmd := command.UpdateLabelCommand{Id: id, Name: "n", Color: "#000000", UpdatedAt: option.None[time.Time]()}
+		cmd := command.UpdateLabelCommand{LabelID: id, Name: "n", Color: "#000000", UpdatedAt: option.None[time.Time]()}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -83,7 +84,7 @@ func TestUpdateLabelCommandHandler_Handle(t *testing.T) {
 		perm.EXPECT().For(mock.Anything).Return(user.ErrUnauthorized)
 
 		h := command.NewUpdateLabelCommandHandler(labelRepo, familyRepo, authz)
-		cmd := command.UpdateLabelCommand{Id: id, Name: "n", Color: "#000000", UpdatedAt: option.None[time.Time]()}
+		cmd := command.UpdateLabelCommand{LabelID: id, Name: "n", Color: "#000000", UpdatedAt: option.None[time.Time]()}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -104,7 +105,8 @@ func TestUpdateLabelCommandHandler_Handle(t *testing.T) {
 		perm.EXPECT().For(mock.Anything).Return(nil)
 
 		h := command.NewUpdateLabelCommandHandler(labelRepo, familyRepo, authz)
-		cmd := command.UpdateLabelCommand{Id: id, Name: "", Color: "invalid-color", UpdatedAt: option.None[time.Time]()}
+		cmd := command.UpdateLabelCommand{LabelID: id, Name: "", Color: "invalid-color",
+			UpdatedAt: option.None[time.Time]()}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -126,7 +128,8 @@ func TestUpdateLabelCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Save(t.Context(), mock.Anything).Return(errors.New("save failed"))
 
 		h := command.NewUpdateLabelCommandHandler(labelRepo, familyRepo, authz)
-		cmd := command.UpdateLabelCommand{Id: id, Name: "new name", Color: "#123456", UpdatedAt: option.None[time.Time]()}
+		cmd := command.UpdateLabelCommand{LabelID: id, Name: "new name", Color: "#123456",
+			UpdatedAt: option.None[time.Time]()}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -154,7 +157,8 @@ func TestUpdateLabelCommandHandler_Handle(t *testing.T) {
 		h := command.NewUpdateLabelCommandHandler(labelRepo, familyRepo, authz)
 
 		newTime := time.Now().Add(time.Minute)
-		cmd := command.UpdateLabelCommand{Id: id, Name: "updated name", Color: "#000000", UpdatedAt: option.Some(newTime)}
+		cmd := command.UpdateLabelCommand{LabelID: id, Name: "updated name", Color: "#000000",
+			UpdatedAt: option.Some(newTime)}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsSuccess())
@@ -185,7 +189,8 @@ func TestUpdateLabelCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Save(t.Context(), mock.Anything).Return(nil)
 
 		h := command.NewUpdateLabelCommandHandler(labelRepo, familyRepo, authz)
-		cmd := command.UpdateLabelCommand{Id: id, Name: "updated name 2", Color: "#ABCDEF", UpdatedAt: option.None[time.Time]()}
+		cmd := command.UpdateLabelCommand{LabelID: id, Name: "updated name 2", Color: "#ABCDEF",
+			UpdatedAt: option.None[time.Time]()}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsSuccess())

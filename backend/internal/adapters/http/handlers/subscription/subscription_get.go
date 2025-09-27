@@ -19,13 +19,13 @@ type GetEndpoint struct {
 
 // Handle godoc
 //
-//	@Summary		Get subscription by ID
+//	@Summary		Get subscription by LabelID
 //	@Description	Retrieve a single subscription with all its details including provider, plan, and pricing information
 //	@Tags			subscriptions
 //	@Produce		json
-//	@Param			subscriptionId	path		string					true	"Subscription ID (UUID format)"
+//	@Param			subscriptionId	path		string					true	"Subscription LabelID (UUID format)"
 //	@Success		200				{object}	dto.SubscriptionModel	"Successfully retrieved subscription"
-//	@Failure		400				{object}	HttpErrorResponse		"Bad Request - Invalid subscription ID format"
+//	@Failure		400				{object}	HttpErrorResponse		"Bad Request - Invalid subscription LabelID format"
 //	@Failure		404				{object}	HttpErrorResponse		"Subscription not found"
 //	@Failure		500				{object}	HttpErrorResponse		"Internal Server Error"
 //	@Router			/subscriptions/{subscriptionId} [get]

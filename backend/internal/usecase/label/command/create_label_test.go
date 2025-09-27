@@ -8,9 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/label"
-	"github.com/mistribe/subtracker/internal/domain/user"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/label/command"
 )
@@ -30,7 +29,7 @@ func TestCreateLabel(t *testing.T) {
 		labelRepository.EXPECT().Save(t.Context(), mock.Anything).Return(nil)
 		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization)
 
-		owner := auth.NewPersonalOwner(userId)
+		owner := types.NewPersonalOwner(userId)
 		cmd := command.CreateLabelCommand{
 			Label: label.NewLabel(
 				uuid.Must(uuid.NewV7()),
@@ -57,7 +56,7 @@ func TestCreateLabel(t *testing.T) {
 		permissionRequest.EXPECT().For(mock.Anything).Return(user.ErrUnauthorized)
 		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization)
 
-		owner := auth.NewPersonalOwner(userId)
+		owner := types.NewPersonalOwner(userId)
 		cmd := command.CreateLabelCommand{
 			Label: label.NewLabel(
 				uuid.Must(uuid.NewV7()),
@@ -84,7 +83,7 @@ func TestCreateLabel(t *testing.T) {
 		permissionRequest.EXPECT().For(mock.Anything).Return(nil)
 		lbl := label.NewLabel(
 			uuid.Must(uuid.NewV7()),
-			auth.NewPersonalOwner(userId),
+			types.NewPersonalOwner(userId),
 			"label test",
 			nil,
 			"#FFFFFF",
@@ -98,7 +97,7 @@ func TestCreateLabel(t *testing.T) {
 		cmd := command.CreateLabelCommand{
 			Label: label.NewLabel(
 				uuid.Must(uuid.NewV7()),
-				auth.NewPersonalOwner(userId),
+				types.NewPersonalOwner(userId),
 				"label test 2",
 				nil,
 				"#FFFFFF",
@@ -120,7 +119,7 @@ func TestCreateLabel(t *testing.T) {
 		permissionRequest.EXPECT().For(mock.Anything).Return(nil)
 		lbl := label.NewLabel(
 			uuid.Must(uuid.NewV7()),
-			auth.NewPersonalOwner(userId),
+			types.NewPersonalOwner(userId),
 			"label test",
 			nil,
 			"#FFFFFF",

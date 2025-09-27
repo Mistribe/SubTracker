@@ -1,7 +1,6 @@
 package family
 
 import (
-	"errors"
 	"net/http"
 	"time"
 
@@ -13,7 +12,6 @@ import (
 	"github.com/mistribe/subtracker/pkg/x"
 
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/internal/usecase/family/command"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 
@@ -21,7 +19,8 @@ import (
 )
 
 type UpdateEndpoint struct {
-	handler ports.CommandHandler[command.UpdateFamilyCommand, family.Family]
+	handler        ports.CommandHandler[command.UpdateFamilyCommand, family.Family]
+	authentication ports.Authentication
 }
 
 func updateFamilyRequestToCommand(m dto.UpdateFamilyRequest, familyId uuid.UUID) (command.UpdateFamilyCommand, error) {
@@ -40,10 +39,10 @@ func updateFamilyRequestToCommand(m dto.UpdateFamilyRequest, familyId uuid.UUID)
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			familyId	path		string					true	"Family ID (UUID format)"
+//	@Param			familyId	path		string					true	"Family LabelID (UUID format)"
 //	@Param			family		body		dto.UpdateFamilyRequest	true	"Updated family data"
 //	@Success		200			{object}	dto.FamilyModel			"Successfully updated family"
-//	@Failure		400			{object}	HttpErrorResponse		"Bad Request - Invalid input data or family ID"
+//	@Failure		400			{object}	HttpErrorResponse		"Bad Request - Invalid input data or family LabelID"
 //	@Failure		401			{object}	HttpErrorResponse		"Unauthorized - Invalid user authentication"
 //	@Failure		404			{object}	HttpErrorResponse		"Family not found"
 //	@Failure		500			{object}	HttpErrorResponse		"Internal Server Error"
@@ -55,11 +54,7 @@ func (f UpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	userId, ok := auth.GetUserIdFromContext(c)
-	if !ok {
-		FromError(c, errors.New("invalid user id"))
-		return
-	}
+	connectedAccount := f.authentication.MustGetConnectedAccount(c)
 
 	var model dto.UpdateFamilyRequest
 	if err = c.ShouldBindJSON(&model); err != nil {
@@ -77,7 +72,7 @@ func (f UpdateEndpoint) Handle(c *gin.Context) {
 		r,
 		WithStatus[family.Family](http.StatusOK),
 		WithMapping[family.Family](func(f family.Family) any {
-			return dto.NewFamilyModel(userId, f)
+			return dto.NewFamilyModel(connectedAccount.UserID(), f)
 		}))
 }
 
@@ -95,8 +90,10 @@ func (f UpdateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewUpdateEndpoint(handler ports.CommandHandler[command.UpdateFamilyCommand, family.Family]) *UpdateEndpoint {
+func NewUpdateEndpoint(handler ports.CommandHandler[command.UpdateFamilyCommand, family.Family],
+	authentication ports.Authentication) *UpdateEndpoint {
 	return &UpdateEndpoint{
-		handler: handler,
+		handler:        handler,
+		authentication: authentication,
 	}
 }

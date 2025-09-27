@@ -11,9 +11,9 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/x/herd"
 )
@@ -126,7 +126,7 @@ func (l subscriptionUpdater) updateDatabase(ctx context.Context, subscriptions [
 				}
 				familyId = &fid
 			}
-			owner := auth.NewOwner(auth.OwnerType(model.Owner.Type), familyId, model.Owner.UserID)
+			owner := types.NewOwner(types.OwnerType(model.Owner.Type), familyId, model.Owner.UserID)
 			var payer subscription.Payer
 			if model.Payer != nil {
 				var memberId *uuid.UUID

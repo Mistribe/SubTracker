@@ -23,12 +23,12 @@ func NewDeleteEndpoint(handler ports.CommandHandler[command.DeleteFamilyCommand,
 
 // Handle godoc
 //
-//	@Summary		Delete family by ID
+//	@Summary		Delete family by LabelID
 //	@Description	Permanently delete a family and all its members
 //	@Tags			family
-//	@Param			familyId	path	string	true	"Family ID (UUID format)"
+//	@Param			familyId	path	string	true	"Family LabelID (UUID format)"
 //	@Success		204			"No Content - Family successfully deleted"
-//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid family ID format"
+//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid family LabelID format"
 //	@Failure		404			{object}	HttpErrorResponse	"Family not found"
 //	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/family/{familyId} [delete]

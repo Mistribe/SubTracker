@@ -1,4 +1,4 @@
-package auth_test
+package authentication_test
 
 import (
 	"context"
@@ -12,9 +12,9 @@ import (
 
 func TestMustGetUserId(t *testing.T) {
 	userId := "RandomUserId1234567890"
-	ctx := context.WithValue(context.Background(), auth.ContextUserIdKey, userId)
+	ctx := context.WithValue(context.Background(), authentication.ContextUserIdKey, userId)
 
-	service := auth.NewAuthentication(ports.NewMockUserRepository(t), ports.NewMockFamilyRepository(t))
+	service := authentication.NewAuthentication(ports.NewMockUserRepository(t), ports.NewMockFamilyRepository(t))
 
 	assert.Equal(t, userId, service.MustGetUserId(ctx))
 }

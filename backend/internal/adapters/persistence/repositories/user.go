@@ -18,7 +18,7 @@ type UserRepository struct {
 	dbContext *db.Context
 }
 
-func NewUserRepository(repository *db.Context) ports.UserRepository {
+func NewUserRepository(repository *db.Context) ports.AccountRepository {
 	return &UserRepository{dbContext: repository}
 }
 

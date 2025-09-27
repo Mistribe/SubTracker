@@ -8,6 +8,7 @@ import (
 
 	"github.com/mistribe/subtracker/internal/adapters/authentication"
 	"github.com/mistribe/subtracker/internal/adapters/authorization"
+	"github.com/mistribe/subtracker/internal/adapters/billing"
 	"github.com/mistribe/subtracker/internal/adapters/cache"
 	"github.com/mistribe/subtracker/internal/adapters/exchange"
 	"github.com/mistribe/subtracker/internal/adapters/http/router"
@@ -47,6 +48,7 @@ func main() {
 		cache.FxModule(),
 		authentication.Module(),
 		authorization.Module(),
+		billing.Module(),
 		fx.Provide(
 
 			exchange.New,

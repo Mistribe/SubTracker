@@ -5,9 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/entity"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/pkg/x/validation"
 )
 
@@ -52,16 +51,16 @@ func ParseMemberType(input string) (MemberType, error) {
 }
 
 type Member interface {
-	entity.Entity
+	entity.Entity[types.FamilyMemberID]
 	entity.ETagEntity
 
 	Name() string
 	Type() MemberType
-	UserId() *string
+	UserId() *types.UserID
+	FamilyId() types.FamilyID
+	SetUserId(*types.UserID)
 	SetName(string)
 	SetType(MemberType)
-	SetUserId(*string)
-	FamilyId() uuid.UUID
 
 	Equal(member Member) bool
 	GetValidationErrors() validation.Errors
@@ -70,25 +69,25 @@ type Member interface {
 }
 
 type member struct {
-	*entity.Base
+	*entity.Base[types.FamilyMemberID]
 
-	familyId       uuid.UUID
+	familyId       types.FamilyID
 	name           string
-	userId         *string
+	userId         *types.UserID
 	userType       MemberType
 	invitationCode *string
 }
 
 func NewMember(
-	id uuid.UUID,
-	familyId uuid.UUID,
+	id types.FamilyMemberID,
+	familyId types.FamilyID,
 	name string,
 	userType MemberType,
 	invitationCode *string,
 	createdAt time.Time,
 	updatedAt time.Time) Member {
 	return &member{
-		Base:           entity.NewBase(id, createdAt, updatedAt, true, false),
+		Base:           entity.NewBase[types.FamilyMemberID](id, createdAt, updatedAt, true, false),
 		familyId:       familyId,
 		name:           strings.TrimSpace(name),
 		userId:         nil,
@@ -115,11 +114,11 @@ func (m *member) Type() MemberType {
 	return m.userType
 }
 
-func (m *member) UserId() *string {
+func (m *member) UserId() *types.UserID {
 	return m.userId
 }
 
-func (m *member) SetUserId(userId *string) {
+func (m *member) SetUserId(userId *types.UserID) {
 	if m.userId == userId {
 		return
 	}
@@ -163,7 +162,7 @@ func (m *member) SetType(userType MemberType) {
 	m.SetAsDirty()
 }
 
-func (m *member) FamilyId() uuid.UUID {
+func (m *member) FamilyId() types.FamilyID {
 	return m.familyId
 }
 

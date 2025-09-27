@@ -7,8 +7,8 @@ import (
 	"golang.org/x/text/currency"
 
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/model"
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
@@ -52,8 +52,8 @@ func createSubscriptionFromJet(
 		payer = subscription.NewPayer(payerType, *jetModel.FamilyID, jetModel.PayerMemberID)
 	}
 
-	ownerType := auth.MustParseOwnerType(jetModel.OwnerType)
-	owner := auth.NewOwner(ownerType, jetModel.OwnerFamilyID, jetModel.OwnerUserID)
+	ownerType := types.MustParseOwnerType(jetModel.OwnerType)
+	owner := types.NewOwner(ownerType, jetModel.OwnerFamilyID, jetModel.OwnerUserID)
 
 	recurrency := subscription.MustParseRecurrencyType(jetModel.Recurrency)
 

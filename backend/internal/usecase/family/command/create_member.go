@@ -5,28 +5,33 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/domain/authorization"
+	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/domain/family"
-	"github.com/mistribe/subtracker/internal/domain/user"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type CreateFamilyMemberCommand struct {
-	FamilyId uuid.UUID
+	FamilyId types.FamilyID
 	Member   family.Member
 }
 
 type CreateFamilyMemberCommandHandler struct {
-	familyRepository ports.FamilyRepository
-	authorization    ports.Authorization
+	familyRepository    ports.FamilyRepository
+	authorization       ports.Authorization
+	entitlementResolver ports.EntitlementResolver
 }
 
 func NewCreateFamilyMemberCommandHandler(
 	familyRepository ports.FamilyRepository,
-	authorization ports.Authorization) *CreateFamilyMemberCommandHandler {
+	authorization ports.Authorization,
+	entitlementResolver ports.EntitlementResolver) *CreateFamilyMemberCommandHandler {
 	return &CreateFamilyMemberCommandHandler{
-		familyRepository: familyRepository,
-		authorization:    authorization,
+		familyRepository:    familyRepository,
+		authorization:       authorization,
+		entitlementResolver: entitlementResolver,
 	}
 }
 
@@ -42,12 +47,16 @@ func (h CreateFamilyMemberCommandHandler) Handle(
 
 	}
 
-	if err = h.authorization.Can(ctx, user.PermissionWrite).For(fam); err != nil {
+	if err = h.authorization.Can(ctx, authorization.PermissionWrite).For(fam); err != nil {
 		return result.Fail[family.Family](err)
 	}
 
-	if err = h.authorization.EnsureWithinLimit(ctx, user.FeatureFamilyMembers, 1); err != nil {
+	ok, effectiveEnt, err := h.entitlementResolver.CheckQuota(ctx, billing.FeatureIdFamilyMembersCount, 1)
+	if err != nil {
 		return result.Fail[family.Family](err)
+	}
+	if !ok {
+		return result.Fail[family.Family](family.ErrFamilyMembersLimitReached)
 	}
 
 	return h.addFamilyMemberToFamily(ctx, command, fam)

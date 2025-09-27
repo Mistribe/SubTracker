@@ -10,15 +10,16 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
-	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/domain/user"
+
+	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/provider/command"
 )
 
 func makeProvider(id uuid.UUID) provider.Provider {
-	owner := auth.NewPersonalOwner("user-1")
+	owner := types.NewPersonalOwner("user-1")
 	return provider.NewProvider(
 		id,
 		"Test Provider",

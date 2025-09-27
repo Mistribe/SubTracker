@@ -9,9 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
-	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/domain/user"
+
+	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/subscription/command"
 )
@@ -26,7 +27,7 @@ func newPersonalSubscription() subscription.Subscription {
 		nil, // planId
 		nil, // priceId
 		nil, // customPrice
-		auth.NewPersonalOwner("userID-Test"),
+		types.NewPersonalOwner("userID-Test"),
 		nil, // payer
 		nil, // serviceUsers
 		nil, // labels
@@ -49,7 +50,7 @@ func newFamilySubscriptionWithMembers(familyId uuid.UUID, members []uuid.UUID) s
 		nil,
 		nil,
 		nil,
-		auth.NewFamilyOwner(familyId),
+		types.NewFamilyOwner(familyId),
 		nil,
 		members,
 		nil,
@@ -136,7 +137,7 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 			nil,
 			nil,
 			nil,
-			auth.NewPersonalOwner(userId),
+			types.NewPersonalOwner(userId),
 			nil,
 			nil,
 			nil,
@@ -237,7 +238,7 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 			nil,
 			nil,
 			nil,
-			auth.NewPersonalOwner(userId),
+			types.NewPersonalOwner(userId),
 			nil,
 			nil,
 			nil,

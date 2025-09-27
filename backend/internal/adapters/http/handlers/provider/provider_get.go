@@ -23,13 +23,13 @@ func NewGetEndpoint(handler ports.QueryHandler[query.FindOneQuery, provider.Prov
 
 // Handle godoc
 //
-//	@Summary		Get provider by ID
-//	@Description	Retrieve a single provider with all its plans and prices by ID
+//	@Summary		Get provider by LabelID
+//	@Description	Retrieve a single provider with all its plans and prices by LabelID
 //	@Tags			providers
 //	@Produce		json
-//	@Param			providerId	path		string				true	"Provider ID (UUID format)"
+//	@Param			providerId	path		string				true	"Provider LabelID (UUID format)"
 //	@Success		200			{object}	dto.ProviderModel	"Successfully retrieved provider"
-//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid provider ID format"
+//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid provider LabelID format"
 //	@Failure		404			{object}	HttpErrorResponse	"Provider not found"
 //	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/providers/{providerId} [get]

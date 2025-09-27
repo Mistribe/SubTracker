@@ -1,6 +1,7 @@
-package auth
+package types
 
 import (
+	"errors"
 	"slices"
 
 	"github.com/google/uuid"
@@ -9,7 +10,8 @@ import (
 )
 
 var (
-	SystemOwner = NewSystemOwner()
+	SystemOwner         = NewSystemOwner()
+	ErrUnknownOwnerType = errors.New("unknown owner type")
 )
 
 type OwnerType string
@@ -62,8 +64,8 @@ func MustParseOwnerType(input string) OwnerType {
 type Owner interface {
 	entity.ETagEntity
 
-	FamilyId() uuid.UUID
-	UserId() string
+	FamilyId() FamilyID
+	UserId() UserID
 	Type() OwnerType
 	Equal(other Owner) bool
 }
@@ -74,7 +76,7 @@ func NewOwner(ownerType OwnerType, familyId *uuid.UUID, userId *string) Owner {
 		if userId == nil {
 			panic("missing userProfile id for a personal owner type")
 		}
-		return NewPersonalOwner(*userId)
+		return NewPersonalOwner(UserID(*userId))
 	case FamilyOwnerType:
 		if familyId == nil {
 			panic("missing family id for a family owner type")
@@ -86,20 +88,20 @@ func NewOwner(ownerType OwnerType, familyId *uuid.UUID, userId *string) Owner {
 }
 
 type familyOwner struct {
-	familyId uuid.UUID
+	familyId FamilyID
 }
 
-func NewFamilyOwner(familyId uuid.UUID) Owner {
+func NewFamilyOwner(familyId FamilyID) Owner {
 	return &familyOwner{
 		familyId: familyId,
 	}
 }
 
-func (o familyOwner) FamilyId() uuid.UUID {
+func (o familyOwner) FamilyId() FamilyID {
 	return o.familyId
 }
 
-func (o familyOwner) UserId() string {
+func (o familyOwner) UserId() UserID {
 	panic("family owner cannot have owner id")
 }
 
@@ -127,20 +129,20 @@ func (o familyOwner) ETag() string {
 }
 
 type personalOwner struct {
-	ownerId string
+	ownerId UserID
 }
 
-func NewPersonalOwner(ownerId string) Owner {
+func NewPersonalOwner(ownerId UserID) Owner {
 	return &personalOwner{
 		ownerId: ownerId,
 	}
 }
 
-func (o personalOwner) FamilyId() uuid.UUID {
+func (o personalOwner) FamilyId() FamilyID {
 	panic("personal owner cannot have family id")
 }
 
-func (o personalOwner) UserId() string {
+func (o personalOwner) UserId() UserID {
 	return o.ownerId
 }
 
@@ -174,11 +176,11 @@ func NewSystemOwner() Owner {
 	return &systemOwner{}
 }
 
-func (o systemOwner) FamilyId() uuid.UUID {
+func (o systemOwner) FamilyId() FamilyID {
 	panic("system owner cannot have family id")
 }
 
-func (o systemOwner) UserId() string {
+func (o systemOwner) UserId() UserID {
 	panic("system owner cannot have userProfile id")
 }
 

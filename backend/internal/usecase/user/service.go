@@ -9,11 +9,11 @@ import (
 )
 
 type service struct {
-	userRepository ports.UserRepository
+	userRepository ports.AccountRepository
 }
 
 func (s service) GetPreferredCurrency(ctx context.Context, userId string) currency.Unit {
-	profile, err := s.userRepository.GetUser(ctx, userId)
+	profile, err := s.userRepository.GetById(ctx, userId)
 	if err != nil {
 		// todo better err
 		panic(err)
@@ -28,7 +28,7 @@ func (s service) GetPreferredCurrency(ctx context.Context, userId string) curren
 
 }
 
-func NewService(userRepository ports.UserRepository) ports.UserService {
+func NewService(userRepository ports.AccountRepository) ports.UserService {
 	return service{
 		userRepository: userRepository,
 	}

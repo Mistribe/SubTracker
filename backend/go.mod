@@ -1,6 +1,6 @@
 module github.com/mistribe/subtracker
 
-go 1.25
+go 1.24.0
 
 require (
 	github.com/Oleexo/config-go v1.0.0

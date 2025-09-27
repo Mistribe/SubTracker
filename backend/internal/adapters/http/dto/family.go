@@ -3,6 +3,7 @@ package dto
 import (
 	"time"
 
+	"github.com/mistribe/subtracker/internal/domain/account"
 	"github.com/mistribe/subtracker/internal/domain/family"
 )
 
@@ -25,7 +26,7 @@ type FamilyModel struct {
 	Etag string `json:"etag" binding:"required" example:"W/\"123456789\""`
 }
 
-func NewFamilyModel(userId string, source family.Family) FamilyModel {
+func NewFamilyModel(userId account.UserID, source family.Family) FamilyModel {
 	var members []FamilyMemberModel
 	for member := range source.Members().It() {
 		members = append(members, NewFamilyMemberModel(userId, member))
@@ -51,7 +52,7 @@ type FamilyMemberModel struct {
 	Name string `json:"name" binding:"required" example:"John Smith"`
 	// @Description Whether this member is a child (affects permissions and features)
 	Type string `json:"type" binding:"required" enums:"owner,adult,kid"`
-	// @Description ID of the family this member belongs to
+	// @Description LabelID of the family this member belongs to
 	FamilyId string `json:"family_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
 	// @Description Indicates whether this member is the current authenticated user
 	IsYou bool `json:"is_you" binding:"required" example:"false"`

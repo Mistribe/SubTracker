@@ -2,12 +2,10 @@ package entity
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
-type Entity interface {
-	Id() uuid.UUID
+type Entity[TKey comparable] interface {
+	Id() TKey
 	CreatedAt() time.Time
 	UpdatedAt() time.Time
 	Clean()
@@ -17,21 +15,21 @@ type Entity interface {
 	IsExists() bool
 }
 
-type Base struct {
-	id        uuid.UUID
+type Base[TKey comparable] struct {
+	id        TKey
 	createdAt time.Time
 	updatedAt time.Time
 	isDirty   bool
 	isExists  bool
 }
 
-func NewBase(
-	id uuid.UUID,
+func NewBase[TKey comparable](
+	id TKey,
 	createdAt time.Time,
 	updatedAt time.Time,
 	isDirty bool,
-	isExists bool) *Base {
-	return &Base{
+	isExists bool) *Base[TKey] {
+	return &Base[TKey]{
 		id:        id,
 		createdAt: createdAt,
 		updatedAt: updatedAt,
@@ -40,41 +38,41 @@ func NewBase(
 	}
 }
 
-func (b *Base) Id() uuid.UUID {
+func (b *Base[TKey]) Id() TKey {
 	return b.id
 }
 
-func (b *Base) CreatedAt() time.Time {
+func (b *Base[TKey]) CreatedAt() time.Time {
 	return b.createdAt
 }
 
-func (b *Base) UpdatedAt() time.Time {
+func (b *Base[TKey]) UpdatedAt() time.Time {
 	return b.updatedAt
 }
 
-func (b *Base) Clean() {
+func (b *Base[TKey]) Clean() {
 	b.isDirty = false
 	b.isExists = true
 }
 
-func (b *Base) IsDirty() bool {
+func (b *Base[TKey]) IsDirty() bool {
 	return b.isDirty
 }
 
-func (b *Base) SetUpdatedAt(updatedAt time.Time) {
+func (b *Base[TKey]) SetUpdatedAt(updatedAt time.Time) {
 	b.updatedAt = updatedAt
 	b.SetAsDirty()
 }
 
-func (b *Base) SetAsDirty() {
+func (b *Base[TKey]) SetAsDirty() {
 	b.isDirty = true
 }
 
-func (b *Base) IsExists() bool {
+func (b *Base[TKey]) IsExists() bool {
 	return b.isExists
 }
 
-func (b *Base) Equal(other Base) bool {
+func (b *Base[TKey]) Equal(other Base[TKey]) bool {
 	return b.id == other.id &&
 		b.createdAt == other.createdAt &&
 		b.updatedAt == other.updatedAt

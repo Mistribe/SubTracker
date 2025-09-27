@@ -28,7 +28,7 @@ func NewAcceptInvitationEndpoint(handler ports.CommandHandler[command.AcceptInvi
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			familyId	path		string								true	"Family ID (UUID format)"
+//	@Param			familyId	path		string								true	"Family LabelID (UUID format)"
 //	@Param			request		body		dto.FamilyAcceptInvitationRequest	true	"Invitation acceptance details"
 //	@Success		204			{object}	nil									"Successfully accepted invitation"
 //	@Failure		400			{object}	HttpErrorResponse					"Bad Request - Invalid input data"

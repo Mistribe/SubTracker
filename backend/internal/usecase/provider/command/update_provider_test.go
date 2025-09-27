@@ -10,17 +10,18 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
+	"github.com/mistribe/subtracker/internal/domain/user"
+
 	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/internal/domain/provider"
-	"github.com/mistribe/subtracker/internal/domain/user"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/provider/command"
 )
 
 func TestUpdateProviderCommandHandler_Handle(t *testing.T) {
 	userId := "user-id-update-test"
-	owner := auth.NewPersonalOwner(userId)
+	owner := types.NewPersonalOwner(userId)
 	baseProv := func() provider.Provider {
 		id := uuid.Must(uuid.NewV7())
 		createdAt := time.Now().Add(-24 * time.Hour)

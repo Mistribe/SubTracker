@@ -6,9 +6,10 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
-	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/domain/user"
+
+	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 	"github.com/mistribe/subtracker/pkg/x"
@@ -22,7 +23,7 @@ type CreateProviderCommand struct {
 	Url            *string
 	PricingPageUrl *string
 	Labels         []uuid.UUID
-	Owner          auth.Owner
+	Owner          types.Owner
 	CreatedAt      *time.Time
 }
 

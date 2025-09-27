@@ -16,7 +16,7 @@ func BuildApplicationModules() []fx.Option {
 	return []fx.Option{
 		currency.Module(),
 		family.Module(),
-		auth.Module(),
+		authentication.Module(),
 		label.Module(),
 		provider.Module(),
 		subscription.Module(),

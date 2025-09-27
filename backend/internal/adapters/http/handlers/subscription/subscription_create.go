@@ -8,12 +8,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 	"github.com/mistribe/subtracker/pkg/x"
 	"github.com/mistribe/subtracker/pkg/x/collection"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/ports"
 	auth2 "github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/internal/usecase/subscription/command"
@@ -49,7 +49,7 @@ func createSubscriptionRequestToSubscription(r dto.CreateSubscriptionRequest, us
 	if err != nil {
 		return nil, err
 	}
-	ownerType, err := auth.ParseOwnerType(r.Owner.Type)
+	ownerType, err := types.ParseOwnerType(r.Owner.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func createSubscriptionRequestToSubscription(r dto.CreateSubscriptionRequest, us
 		}
 		familyId = &fid
 	}
-	owner := auth.NewOwner(ownerType, familyId, &userId)
+	owner := types.NewOwner(ownerType, familyId, &userId)
 	createdAt := x.ValueOrDefault(r.CreatedAt, time.Now())
 	var payer subscription.Payer
 	if r.Payer != nil {

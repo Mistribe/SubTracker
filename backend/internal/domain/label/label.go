@@ -5,10 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
-
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/entity"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/pkg/x/validation"
 )
 
@@ -17,12 +15,12 @@ var (
 )
 
 type Label interface {
-	entity.Entity
+	entity.Entity[types.LabelID]
 	entity.ETagEntity
 
 	Name() string
 	Key() *string
-	Owner() auth.Owner
+	Owner() types.Owner
 	Color() string
 	GetValidationErrors() validation.Errors
 	SetName(name string)
@@ -31,9 +29,9 @@ type Label interface {
 }
 
 type label struct {
-	*entity.Base
+	*entity.Base[types.LabelID]
 
-	owner     auth.Owner
+	owner     types.Owner
 	name      string
 	key       *string
 	isDefault bool
@@ -41,8 +39,8 @@ type label struct {
 }
 
 func NewLabel(
-	id uuid.UUID,
-	owner auth.Owner,
+	id types.LabelID,
+	owner types.Owner,
 	name string,
 	key *string,
 	color string,
@@ -65,7 +63,7 @@ func (l *label) Key() *string {
 	return l.key
 }
 
-func (l *label) Owner() auth.Owner {
+func (l *label) Owner() types.Owner {
 	return l.owner
 }
 

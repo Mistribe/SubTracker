@@ -3,10 +3,9 @@ package ports
 import (
 	"context"
 
-	"github.com/mistribe/subtracker/internal/domain/user"
+	"github.com/mistribe/subtracker/internal/domain/account"
 )
 
 type Authentication interface {
-	MustGetUserId(ctx context.Context) string
-	MustGetUserRole(ctx context.Context) user.Role
+	MustGetConnectedAccount(ctx context.Context) account.ConnectedAccount
 }

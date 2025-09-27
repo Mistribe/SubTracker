@@ -9,8 +9,8 @@ import (
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db"
 	. "github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/table"
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/models"
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/slicesx"
 	"github.com/mistribe/subtracker/pkg/x/herd"
@@ -382,10 +382,10 @@ func (r ProviderRepository) create(ctx context.Context, providers []provider.Pro
 		var ownerUserID Expression
 
 		switch prov.Owner().Type() {
-		case auth.PersonalOwnerType:
+		case types.PersonalOwnerType:
 			ownerFamilyID = NULL
 			ownerUserID = String(prov.Owner().UserId())
-		case auth.FamilyOwnerType:
+		case types.FamilyOwnerType:
 			ownerFamilyID = UUID(prov.Owner().FamilyId())
 			ownerUserID = NULL
 		default:
@@ -507,10 +507,10 @@ func (r ProviderRepository) update(ctx context.Context, dirtyProvider provider.P
 	var ownerUserID StringExpression
 
 	switch dirtyProvider.Owner().Type() {
-	case auth.PersonalOwnerType:
+	case types.PersonalOwnerType:
 		ownerFamilyID = StringExp(NULL)
 		ownerUserID = String(dirtyProvider.Owner().UserId())
-	case auth.FamilyOwnerType:
+	case types.FamilyOwnerType:
 		ownerFamilyID = StringExp(UUID(dirtyProvider.Owner().FamilyId()))
 		ownerUserID = StringExp(NULL)
 	default:

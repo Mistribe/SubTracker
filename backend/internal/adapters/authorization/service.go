@@ -6,13 +6,13 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/mistribe/subtracker/internal/domain/user"
+	user "github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/shared"
 )
 
 type service struct {
-	userRepository   ports.UserRepository
+	userRepository   ports.AccountRepository
 	familyRepository ports.FamilyRepository
 	cache            ports.Cache
 	authentication   ports.Authentication
@@ -80,7 +80,7 @@ func (s service) getUser(ctx context.Context, userId string) (user.User, error) 
 	if ok {
 		return fromCache, nil
 	}
-	fromDatabase, err := s.userRepository.GetUser(ctx, userId)
+	fromDatabase, err := s.userRepository.GetById(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (s service) EnsureWithinLimit(ctx context.Context, feature user.Feature, de
 }
 
 func New(
-	userRepository ports.UserRepository,
+	userRepository ports.AccountRepository,
 	cache ports.Cache) ports.Authorization {
 	return &service{
 		userRepository: userRepository,

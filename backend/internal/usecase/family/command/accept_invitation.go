@@ -50,7 +50,7 @@ func (h AcceptInvitationCommandHandler) Handle(ctx context.Context, cmd AcceptIn
 		return result.Fail[bool](family.ErrBadInvitationCode)
 	}
 
-	userId := h.authService.MustGetUserId(ctx)
+	userId := h.authService.MustGetConnectedAccount(ctx).UserID
 	member.SetUserId(&userId)
 
 	if err = fam.UpdateMember(member); err != nil {

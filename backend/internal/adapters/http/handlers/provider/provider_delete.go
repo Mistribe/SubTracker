@@ -24,12 +24,12 @@ func NewDeleteEndpoint(handler ports.CommandHandler[command.DeleteProviderComman
 
 // Handle godoc
 //
-//	@Summary		Delete provider by ID
+//	@Summary		Delete provider by LabelID
 //	@Description	Permanently delete a provider and all its associated plans and prices
 //	@Tags			providers
-//	@Param			providerId	path	string	true	"Provider ID (UUID format)"
+//	@Param			providerId	path	string	true	"Provider LabelID (UUID format)"
 //	@Success		204			"No Content - Provider successfully deleted"
-//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid provider ID format"
+//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid provider LabelID format"
 //	@Failure		404			{object}	HttpErrorResponse	"Provider not found"
 //	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/providers/{providerId} [delete]

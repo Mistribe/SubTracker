@@ -18,12 +18,12 @@ type DeleteEndpoint struct {
 
 // Handle godoc
 //
-//	@Summary		Delete subscription by ID
+//	@Summary		Delete subscription by LabelID
 //	@Description	Permanently delete an existing subscription
 //	@Tags			subscriptions
-//	@Param			subscriptionId	path	string	true	"Subscription ID (UUID format)"
+//	@Param			subscriptionId	path	string	true	"Subscription LabelID (UUID format)"
 //	@Success		204				"No Content - Subscription successfully deleted"
-//	@Failure		400				{object}	HttpErrorResponse	"Bad Request - Invalid subscription ID format"
+//	@Failure		400				{object}	HttpErrorResponse	"Bad Request - Invalid subscription LabelID format"
 //	@Failure		404				{object}	HttpErrorResponse	"Subscription not found"
 //	@Failure		500				{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/subscriptions/{subscriptionId} [delete]

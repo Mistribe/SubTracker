@@ -10,8 +10,8 @@ import (
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db"
 	. "github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/table"
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/models"
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/slicesx"
 	"github.com/mistribe/subtracker/pkg/x/herd"
@@ -456,10 +456,10 @@ func (r SubscriptionRepository) create(ctx context.Context, subscriptions []subs
 
 		var ownerFamilyIdVal, ownerUserIdVal Expression
 		switch sub.Owner().Type() {
-		case auth.PersonalOwnerType:
+		case types.PersonalOwnerType:
 			ownerFamilyIdVal = NULL
 			ownerUserIdVal = String(sub.Owner().UserId())
-		case auth.FamilyOwnerType:
+		case types.FamilyOwnerType:
 			ownerFamilyIdVal = UUID(sub.Owner().FamilyId())
 			ownerUserIdVal = NULL
 		default:
@@ -612,10 +612,10 @@ func (r SubscriptionRepository) update(ctx context.Context, sub subscription.Sub
 
 		var ownerFamilyIdVal, ownerUserIdVal StringExpression
 		switch sub.Owner().Type() {
-		case auth.PersonalOwnerType:
+		case types.PersonalOwnerType:
 			ownerFamilyIdVal = StringExp(NULL)
 			ownerUserIdVal = String(sub.Owner().UserId())
-		case auth.FamilyOwnerType:
+		case types.FamilyOwnerType:
 			ownerFamilyIdVal = StringExp(UUID(sub.Owner().FamilyId()))
 			ownerUserIdVal = StringExp(NULL)
 		default:

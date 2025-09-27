@@ -4,17 +4,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
-
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/entity"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/pkg/slicesx"
-	"github.com/mistribe/subtracker/pkg/x"
 	"github.com/mistribe/subtracker/pkg/x/validation"
 )
 
 type Provider interface {
-	entity.Entity
+	entity.Entity[types.ProviderID]
 	entity.ETagEntity
 
 	Name() string
@@ -28,23 +25,17 @@ type Provider interface {
 	SetUrl(url *string)
 	PricingPageUrl() *string
 	SetPricingPageUrl(pricingUrl *string)
-	Labels() *slicesx.Tracked[uuid.UUID]
-	SetLabels(labels []uuid.UUID)
+	Labels() *slicesx.Tracked[types.LabelID]
+	SetLabels(labels []types.LabelID)
 	IsCustom() bool
-	SetOwner(owner auth.Owner)
-	Owner() auth.Owner
-	Plans() *slicesx.Tracked[Plan]
-	SetPlans(plans []Plan)
+	SetOwner(owner types.Owner)
+	Owner() types.Owner
 	Equal(other Provider) bool
 	GetValidationErrors() validation.Errors
-	ContainsPlan(planId uuid.UUID) bool
-	AddPlan(plan Plan) bool
-	GetPlanById(planId uuid.UUID) Plan
-	RemovePlanById(planId uuid.UUID) bool
 }
 
 type provider struct {
-	*entity.Base
+	*entity.Base[types.ProviderID]
 
 	name           string
 	key            *string
@@ -52,22 +43,20 @@ type provider struct {
 	iconUrl        *string
 	url            *string
 	pricingPageUrl *string
-	labels         *slicesx.Tracked[uuid.UUID]
-	plans          *slicesx.Tracked[Plan]
-	owner          auth.Owner
+	labels         *slicesx.Tracked[types.LabelID]
+	owner          types.Owner
 }
 
 func NewProvider(
-	id uuid.UUID,
+	id types.ProviderID,
 	name string,
 	key *string,
 	description *string,
 	iconUrl *string,
 	url *string,
 	pricingPageUrl *string,
-	labels []uuid.UUID,
-	plans []Plan,
-	owner auth.Owner,
+	labels []types.LabelID,
+	owner types.Owner,
 	createdAt time.Time,
 	updatedAt time.Time) Provider {
 	return &provider{
@@ -78,51 +67,13 @@ func NewProvider(
 		iconUrl:        iconUrl,
 		url:            url,
 		pricingPageUrl: pricingPageUrl,
-		labels:         slicesx.NewTracked(labels, x.UuidUniqueComparer, x.UuidComparer),
-		plans:          slicesx.NewTracked(plans, planUniqueComparer, planComparer),
+		labels:         slicesx.NewTracked[types.LabelID](labels, types.LabelIDComparer, types.LabelIDComparer),
 		owner:          owner,
 	}
 }
 
 func (p *provider) Key() *string {
 	return p.key
-}
-
-func (p *provider) RemovePlanById(planId uuid.UUID) bool {
-	pl := p.GetPlanById(planId)
-	if pl == nil {
-		return false
-	}
-
-	return p.plans.Remove(pl)
-}
-
-func (p *provider) GetPlanById(planId uuid.UUID) Plan {
-	for pl := range p.plans.It() {
-		if pl.Id() == planId {
-			return pl
-		}
-	}
-
-	return nil
-}
-
-func (p *provider) ContainsPlan(planId uuid.UUID) bool {
-	for pl := range p.plans.It() {
-		if pl.Id() == planId {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (p *provider) AddPlan(plan Plan) bool {
-	if p.plans.Add(plan) {
-		p.SetAsDirty()
-		return true
-	}
-	return false
 }
 
 func (p *provider) Name() string {
@@ -185,11 +136,11 @@ func (p *provider) SetPricingPageUrl(pricingUrl *string) {
 	p.SetAsDirty()
 }
 
-func (p *provider) Labels() *slicesx.Tracked[uuid.UUID] {
+func (p *provider) Labels() *slicesx.Tracked[types.LabelID] {
 	return p.labels
 }
 
-func (p *provider) SetLabels(labels []uuid.UUID) {
+func (p *provider) SetLabels(labels []types.LabelID) {
 	p.labels.Set(labels)
 	p.SetAsDirty()
 }
@@ -198,22 +149,13 @@ func (p *provider) IsCustom() bool {
 	return p.owner != nil
 }
 
-func (p *provider) SetOwner(owner auth.Owner) {
+func (p *provider) SetOwner(owner types.Owner) {
 	p.owner = owner
 	p.SetAsDirty()
 }
 
-func (p *provider) Owner() auth.Owner {
+func (p *provider) Owner() types.Owner {
 	return p.owner
-}
-
-func (p *provider) Plans() *slicesx.Tracked[Plan] {
-	return p.plans
-}
-
-func (p *provider) SetPlans(plans []Plan) {
-	p.plans = slicesx.NewTracked(plans, planUniqueComparer, planComparer)
-	p.SetAsDirty()
 }
 
 func (p *provider) ETagFields() []interface{} {
@@ -224,10 +166,6 @@ func (p *provider) ETagFields() []interface{} {
 		p.url,
 		p.pricingPageUrl,
 		p.owner.ETag(),
-	}
-
-	for pl := range p.plans.It() {
-		fields = append(fields, pl.ETagFields()...)
 	}
 
 	for lbl := range p.labels.It() {
@@ -257,14 +195,6 @@ func (p *provider) GetValidationErrors() validation.Errors {
 			"name",
 			"name is required and cannot be empty",
 		))
-	}
-
-	if p.plans != nil {
-		for _, pl := range p.plans.Values() {
-			if planErr := pl.GetValidationErrors(); planErr != nil {
-				errors = append(errors, planErr...)
-			}
-		}
 	}
 
 	if errors.HasErrors() {

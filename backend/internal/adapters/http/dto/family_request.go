@@ -8,7 +8,7 @@ import (
 type FamilyAcceptInvitationRequest struct {
 	// Code received in the invitation
 	InvitationCode string `json:"invitation_code" binding:"required" example:"123456"`
-	// ID of the family member accepting the invitation
+	// LabelID of the family member accepting the invitation
 	FamilyMemberId string `json:"family_member_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
 }
 
@@ -22,7 +22,7 @@ type CreateFamilyRequest struct {
 type FamilyDeclineInvitationRequest struct {
 	// Code received in the invitation
 	InvitationCode string `json:"invitation_code" binding:"required" example:"123456"`
-	// ID of the family member accepting the invitation
+	// LabelID of the family member accepting the invitation
 	FamilyMemberId string `json:"family_member_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
 }
 
@@ -30,7 +30,7 @@ type FamilyDeclineInvitationRequest struct {
 type FamilyInviteRequest struct {
 	// Email of the invited member
 	Email *string `json:"email,omitempty"`
-	// ID of the family member to be invited
+	// LabelID of the family member to be invited
 	FamilyMemberId string `json:"family_member_id" binding:"required"`
 	// Name of the invited member
 	Name *string `json:"name,omitempty"`

@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/pkg/x"
 )
 
@@ -15,9 +15,9 @@ import (
 type OwnerModel struct {
 	// @Description Type of ownership (personal, family or system)
 	Type string `json:"type" binding:"required" example:"personal" enums:"personal,family,system"`
-	// @Description Family ID when an ownership type is family (required for family ownership)
+	// @Description Family LabelID when an ownership type is family (required for family ownership)
 	FamilyId *string `json:"family_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174000"`
-	// @Description UserProfile ID when an ownership type is personal (required for personal ownership)
+	// @Description UserProfile LabelID when an ownership type is personal (required for personal ownership)
 	UserId *string `json:"userId,omitempty" example:"123e4567-e89b-12d3-a456-426614174001"`
 	// @Description Entity tag for optimistic concurrency control
 	Etag string `json:"etag" binding:"required" example:"W/\"123456789\""`
@@ -26,20 +26,20 @@ type OwnerModel struct {
 type EditableOwnerModel struct {
 	// @Description Type of ownership (personal, family or system)
 	Type string `json:"type" binding:"required" example:"personal" enums:"personal,family,system"`
-	// @Description Family ID when an ownership type is family (required for family ownership)
+	// @Description Family LabelID when an ownership type is family (required for family ownership)
 	FamilyId *string `json:"family_id,omitempty"`
 }
 
-func (m EditableOwnerModel) Owner(userId string) (auth.Owner, error) {
-	ownerType, err := auth.ParseOwnerType(m.Type)
+func (m EditableOwnerModel) Owner(userId string) (types.Owner, error) {
+	ownerType, err := types.ParseOwnerType(m.Type)
 	if err != nil {
 		return nil, err
 	}
 
 	switch ownerType {
-	case auth.PersonalOwnerType:
-		return auth.NewPersonalOwner(userId), nil
-	case auth.FamilyOwnerType:
+	case types.PersonalOwnerType:
+		return types.NewPersonalOwner(userId), nil
+	case types.FamilyOwnerType:
 		if m.FamilyId == nil {
 			return nil, errors.New("missing family_id")
 		}
@@ -47,22 +47,22 @@ func (m EditableOwnerModel) Owner(userId string) (auth.Owner, error) {
 		if err2 != nil {
 			return nil, err2
 		}
-		return auth.NewFamilyOwner(familyId), nil
+		return types.NewFamilyOwner(familyId), nil
 	}
 
 	return nil, errors.New("unknown owner type")
 }
 
-func NewOwnerModel(source auth.Owner) OwnerModel {
+func NewOwnerModel(source types.Owner) OwnerModel {
 	model := OwnerModel{
 		Type: source.Type().String(),
 		Etag: source.ETag(),
 	}
 	switch source.Type() {
-	case auth.PersonalOwnerType:
+	case types.PersonalOwnerType:
 		userId := source.UserId()
 		model.UserId = &userId
-	case auth.FamilyOwnerType:
+	case types.FamilyOwnerType:
 		familyId := source.FamilyId().String()
 		model.FamilyId = &familyId
 	}

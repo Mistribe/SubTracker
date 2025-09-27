@@ -3,48 +3,47 @@ package family
 import (
 	"time"
 
-	"github.com/google/uuid"
-
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/entity"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/pkg/slicesx"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 	"github.com/mistribe/subtracker/pkg/x/validation"
 )
 
 type Family interface {
-	entity.Entity
+	entity.Entity[types.FamilyID]
 	entity.ETagEntity
 
 	Name() string
 	SetName(name string)
-	Owner() auth.Owner
+	Owner() types.Owner
 	Members() *slicesx.Tracked[Member]
 	AddMember(member Member) error
 	RemoveMember(member Member) error
-	GetMember(id uuid.UUID) Member
+	GetMember(id types.FamilyMemberID) Member
 	UpdateMember(member Member) error
-	ContainsMember(id uuid.UUID) bool
+	ContainsMember(id types.FamilyMemberID) bool
 	Equal(family Family) bool
 	GetValidationErrors() validation.Errors
 }
 type family struct {
-	*entity.Base
+	*entity.Base[types.FamilyID]
 
-	owner   auth.Owner
+	owner   types.Owner
 	name    string
 	members *slicesx.Tracked[Member]
 }
 
 func NewFamily(
-	id uuid.UUID,
-	ownerId string,
+	id types.FamilyID,
+	ownerId types.UserID,
 	name string,
 	members []Member,
 	createdAt time.Time,
 	updatedAt time.Time) Family {
 	return &family{
-		Base:    entity.NewBase(id, createdAt, updatedAt, true, false),
-		owner:   auth.NewPersonalOwner(ownerId),
+		Base:    entity.NewBase[types.FamilyID](id, createdAt, updatedAt, true, false),
+		owner:   types.NewPersonalOwner(ownerId),
 		name:    name,
 		members: slicesx.NewTracked(members, memberUniqueComparer, memberComparer),
 	}
@@ -63,17 +62,17 @@ func (f *family) GetValidationErrors() validation.Errors {
 		errors = append(errors, validation.NewError("name", "name cannot be longer than 100 characters"))
 	}
 
-	idMap := make(map[uuid.UUID]bool)
+	idMap := herd.NewSet[types.FamilyMemberID]()
 
 	if f.members.Len() == 0 {
 		errors = append(errors, validation.NewError("members", "family must have at least one member"))
 	}
 
 	for mbr := range f.members.It() {
-		if idMap[mbr.Id()] {
+		if idMap.Contains(mbr.Id()) {
 			errors = append(errors, validation.NewError("members", "duplicate member id"))
 		}
-		idMap[mbr.Id()] = true
+		idMap.Add(mbr.Id())
 
 		errors = append(errors, mbr.GetValidationErrors()...)
 	}
@@ -89,7 +88,7 @@ func (f *family) Name() string {
 	return f.name
 }
 
-func (f *family) Owner() auth.Owner {
+func (f *family) Owner() types.Owner {
 	return f.owner
 }
 
@@ -125,7 +124,7 @@ func (f *family) isDuplicateMember(member Member) bool {
 	return false
 }
 
-func (f *family) GetMember(id uuid.UUID) Member {
+func (f *family) GetMember(id types.FamilyMemberID) Member {
 	for m := range f.members.It() {
 		if m.Id() == id {
 			return m
@@ -144,7 +143,7 @@ func (f *family) UpdateMember(member Member) error {
 	return nil
 }
 
-func (f *family) ContainsMember(id uuid.UUID) bool {
+func (f *family) ContainsMember(id types.FamilyMemberID) bool {
 	for m := range f.members.It() {
 		if m.Id() == id {
 			return true

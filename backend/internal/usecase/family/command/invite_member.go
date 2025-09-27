@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/family"
-	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -50,7 +50,7 @@ func (h InviteMemberCommandHandler) Handle(
 	if fam == nil {
 		return result.Fail[InviteMemberResponse](family.ErrFamilyNotFound)
 	}
-	if err = h.authorization.Can(ctx, user.PermissionWrite).For(fam); err != nil {
+	if err = h.authorization.Can(ctx, authorization.PermissionWrite).For(fam); err != nil {
 		return result.Fail[InviteMemberResponse](err)
 	}
 

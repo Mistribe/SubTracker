@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/domain/provider"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 // PriceModel represents a pricing tier with currency and validity period
@@ -88,8 +88,8 @@ func NewProviderModel(source provider.Provider) ProviderModel {
 		IconUrl:        source.IconUrl(),
 		Url:            source.Url(),
 		PricingPageUrl: source.PricingPageUrl(),
-		Labels:         collection.Select(source.Labels().Values(), func(id uuid.UUID) string { return id.String() }),
-		Plans:          collection.Select(source.Plans().Values(), NewPlanModel),
+		Labels:         herd.Select(source.Labels().Values(), func(id uuid.UUID) string { return id.String() }),
+		Plans:          herd.Select(source.Plans().Values(), NewPlanModel),
 		Owner:          NewOwnerModel(source.Owner()),
 		CreatedAt:      source.CreatedAt(),
 		UpdatedAt:      source.UpdatedAt(),

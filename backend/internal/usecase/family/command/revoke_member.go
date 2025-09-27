@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/family"
-	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -40,7 +40,7 @@ func (h RevokeMemberCommandHandler) Handle(ctx context.Context, cmd RevokeMember
 		return result.Fail[bool](family.ErrFamilyNotFound)
 	}
 
-	if err = h.authorization.Can(ctx, user.PermissionWrite).For(fam); err != nil {
+	if err = h.authorization.Can(ctx, authorization.PermissionWrite).For(fam); err != nil {
 		return result.Fail[bool](err)
 	}
 

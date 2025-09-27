@@ -10,16 +10,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
-	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/domain/user"
+
+	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/provider/command"
 )
 
 func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 	userId := "userID-Test"
-	owner := auth.NewPersonalOwner(userId)
+	owner := types.NewPersonalOwner(userId)
 
 	t.Run("success with provided id", func(t *testing.T) {
 		provRepo := ports.NewMockProviderRepository(t)
@@ -112,7 +113,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz)
 		cmd := command.CreateProviderCommand{
 			Id:     nil,
-			Name:   "Auto ID",
+			Name:   "Auto LabelID",
 			Labels: labels,
 			Owner:  owner,
 		}

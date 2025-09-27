@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/family"
-	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -39,7 +39,7 @@ func (h DeleteFamilyCommandHandler) Handle(
 	if fam == nil {
 		return result.Fail[bool](family.ErrFamilyNotFound)
 	}
-	if err = h.authorization.Can(ctx, user.PermissionDelete).For(fam); err != nil {
+	if err = h.authorization.Can(ctx, authorization.PermissionDelete).For(fam); err != nil {
 		return result.Fail[bool](err)
 	}
 	ok, err := h.familyRepository.Delete(ctx, command.FamilyId)

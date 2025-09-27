@@ -18,13 +18,13 @@ type GetEndpoint struct {
 
 // Handle godoc
 //
-//	@Summary		Get label by ID
+//	@Summary		Get label by LabelID
 //	@Description	Retrieve a single label by its unique identifier
 //	@Tags			labels
 //	@Produce		json
-//	@Param			id	path		string	true	"Label ID (UUID format)"
+//	@Param			id	path		string	true	"Label LabelID (UUID format)"
 //	@Success		200	{object}	dto.LabelModel
-//	@Failure		400	{object}	HttpErrorResponse	"Bad Request - Invalid ID format"
+//	@Failure		400	{object}	HttpErrorResponse	"Bad Request - Invalid LabelID format"
 //	@Failure		404	{object}	HttpErrorResponse	"Label not found"
 //	@Failure		500	{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/labels/{id} [get]

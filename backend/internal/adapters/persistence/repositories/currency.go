@@ -17,7 +17,7 @@ import (
 	. "github.com/go-jet/jet/v2/postgres"
 )
 
-// CurrencyRateRepository implements the currency.UserRepository interface
+// CurrencyRateRepository implements the currency.AccountRepository interface
 type CurrencyRateRepository struct {
 	dbContext *db.Context
 }
@@ -192,7 +192,7 @@ func (r CurrencyRateRepository) update(ctx context.Context, rate currency.Rate) 
 	return nil
 }
 
-// Delete deletes a currency rate by its ID
+// Delete deletes a currency rate by its LabelID
 func (r CurrencyRateRepository) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
 	stmt := CurrencyRates.
 		DELETE().

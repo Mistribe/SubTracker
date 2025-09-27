@@ -3,9 +3,8 @@ package ports
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/types"
 )
 
 type LabelQueryParameters struct {
@@ -27,9 +26,9 @@ func NewLabelQueryParameters(
 }
 
 type LabelRepository interface {
-	Repository[label.Label]
+	Repository[types.LabelID, label.Label]
 
 	GetSystemLabels(ctx context.Context) ([]label.Label, error)
-	GetAll(ctx context.Context, userId string, parameters LabelQueryParameters) ([]label.Label, int64, error)
-	GetByIdForUser(ctx context.Context, userId string, id uuid.UUID) (label.Label, error)
+	GetAll(ctx context.Context, userId types.UserID, parameters LabelQueryParameters) ([]label.Label, int64, error)
+	GetByIdForUser(ctx context.Context, userId types.UserID, id types.LabelID) (label.Label, error)
 }

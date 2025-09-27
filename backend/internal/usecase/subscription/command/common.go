@@ -5,9 +5,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 )
 
@@ -16,7 +16,7 @@ func ensureRelatedEntityExists(
 	familyRepository ports.FamilyRepository,
 	newSubscription subscription.Subscription,
 ) error {
-	if newSubscription.Owner().Type() == auth.FamilyOwnerType {
+	if newSubscription.Owner().Type() == types.FamilyOwnerType {
 		familyId := newSubscription.Owner().FamilyId()
 
 		var members []uuid.UUID

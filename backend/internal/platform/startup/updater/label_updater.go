@@ -9,8 +9,8 @@ import (
 	"github.com/Oleexo/config-go"
 	"github.com/google/uuid"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/x/herd"
 )
@@ -72,7 +72,7 @@ func (l labelUpdater) updateDatabase(ctx context.Context, sourceLabels []systemL
 		} else {
 			newLabel := label.NewLabel(
 				uuid.Must(uuid.NewV7()),
-				auth.SystemOwner,
+				types.SystemOwner,
 				lbl.Name,
 				&lbl.Key,
 				lbl.Color,

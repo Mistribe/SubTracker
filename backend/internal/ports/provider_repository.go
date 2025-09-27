@@ -3,9 +3,8 @@ package ports
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/domain/types"
 )
 
 type ProviderQueryParameters struct {
@@ -27,13 +26,12 @@ func NewProviderQueryParameters(
 }
 
 type ProviderRepository interface {
-	Repository[provider.Provider]
+	Repository[types.ProviderID, provider.Provider]
 
-	GetByIdForUser(ctx context.Context, userId string, providerId uuid.UUID) (provider.Provider, error)
+	GetByIdForUser(ctx context.Context, userId types.UserID, providerId types.ProviderID) (provider.Provider, error)
 	GetAll(ctx context.Context, parameters ProviderQueryParameters) ([]provider.Provider, int64, error)
-	GetAllForUser(ctx context.Context, userId string, parameters ProviderQueryParameters) ([]provider.Provider, int64,
+	GetAllForUser(ctx context.Context, userId types.UserID, parameters ProviderQueryParameters) ([]provider.Provider,
+		int64,
 		error)
 	GetSystemProviders(ctx context.Context) ([]provider.Provider, int64, error)
-	DeletePlan(ctx context.Context, planId uuid.UUID) (bool, error)
-	DeletePrice(ctx context.Context, id uuid.UUID) (bool, error)
 }

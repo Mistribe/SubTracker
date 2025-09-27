@@ -38,9 +38,9 @@ func NewSeeInvitationEndpoint(handler ports.QueryHandler[query.SeeInvitationQuer
 //	@Description	Get information about a family invitation using invitation code
 //	@Tags			family
 //	@Produce		json
-//	@Param			familyId			path		string	true	"Family ID"
+//	@Param			familyId			path		string	true	"Family LabelID"
 //	@Param			code				query		string	true	"Invitation code"
-//	@Param			family_member_id	query		string	true	"Family member ID"
+//	@Param			family_member_id	query		string	true	"Family member LabelID"
 //	@Success		200					{object}	dto.FamilySeeInvitationResponse
 //	@Failure		400					{object}	HttpErrorResponse
 //	@Router			/family/{familyId}/invitation [get]

@@ -7,8 +7,8 @@ package ports
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -40,7 +40,7 @@ func (_m *MockLabelRepository) EXPECT() *MockLabelRepository_Expecter {
 }
 
 // Delete provides a mock function for the type MockLabelRepository
-func (_mock *MockLabelRepository) Delete(ctx context.Context, entityId uuid.UUID) (bool, error) {
+func (_mock *MockLabelRepository) Delete(ctx context.Context, entityId types.LabelID) (bool, error) {
 	ret := _mock.Called(ctx, entityId)
 
 	if len(ret) == 0 {
@@ -49,15 +49,15 @@ func (_mock *MockLabelRepository) Delete(ctx context.Context, entityId uuid.UUID
 
 	var r0 bool
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (bool, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.LabelID) (bool, error)); ok {
 		return returnFunc(ctx, entityId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) bool); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.LabelID) bool); ok {
 		r0 = returnFunc(ctx, entityId)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.LabelID) error); ok {
 		r1 = returnFunc(ctx, entityId)
 	} else {
 		r1 = ret.Error(1)
@@ -72,20 +72,20 @@ type MockLabelRepository_Delete_Call struct {
 
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
-//   - entityId uuid.UUID
+//   - entityId types.LabelID
 func (_e *MockLabelRepository_Expecter) Delete(ctx interface{}, entityId interface{}) *MockLabelRepository_Delete_Call {
 	return &MockLabelRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, entityId)}
 }
 
-func (_c *MockLabelRepository_Delete_Call) Run(run func(ctx context.Context, entityId uuid.UUID)) *MockLabelRepository_Delete_Call {
+func (_c *MockLabelRepository_Delete_Call) Run(run func(ctx context.Context, entityId types.LabelID)) *MockLabelRepository_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 uuid.UUID
+		var arg1 types.LabelID
 		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
+			arg1 = args[1].(types.LabelID)
 		}
 		run(
 			arg0,
@@ -100,13 +100,13 @@ func (_c *MockLabelRepository_Delete_Call) Return(b bool, err error) *MockLabelR
 	return _c
 }
 
-func (_c *MockLabelRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, entityId uuid.UUID) (bool, error)) *MockLabelRepository_Delete_Call {
+func (_c *MockLabelRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, entityId types.LabelID) (bool, error)) *MockLabelRepository_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Exists provides a mock function for the type MockLabelRepository
-func (_mock *MockLabelRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
+func (_mock *MockLabelRepository) Exists(ctx context.Context, ids ...types.LabelID) (bool, error) {
 	var tmpRet mock.Arguments
 	if len(ids) > 0 {
 		tmpRet = _mock.Called(ctx, ids)
@@ -121,15 +121,15 @@ func (_mock *MockLabelRepository) Exists(ctx context.Context, ids ...uuid.UUID) 
 
 	var r0 bool
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, ...uuid.UUID) (bool, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...types.LabelID) (bool, error)); ok {
 		return returnFunc(ctx, ids...)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, ...uuid.UUID) bool); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...types.LabelID) bool); ok {
 		r0 = returnFunc(ctx, ids...)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, ...uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ...types.LabelID) error); ok {
 		r1 = returnFunc(ctx, ids...)
 	} else {
 		r1 = ret.Error(1)
@@ -144,22 +144,22 @@ type MockLabelRepository_Exists_Call struct {
 
 // Exists is a helper method to define mock.On call
 //   - ctx context.Context
-//   - ids ...uuid.UUID
+//   - ids ...types.LabelID
 func (_e *MockLabelRepository_Expecter) Exists(ctx interface{}, ids ...interface{}) *MockLabelRepository_Exists_Call {
 	return &MockLabelRepository_Exists_Call{Call: _e.mock.On("Exists",
 		append([]interface{}{ctx}, ids...)...)}
 }
 
-func (_c *MockLabelRepository_Exists_Call) Run(run func(ctx context.Context, ids ...uuid.UUID)) *MockLabelRepository_Exists_Call {
+func (_c *MockLabelRepository_Exists_Call) Run(run func(ctx context.Context, ids ...types.LabelID)) *MockLabelRepository_Exists_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 []uuid.UUID
-		var variadicArgs []uuid.UUID
+		var arg1 []types.LabelID
+		var variadicArgs []types.LabelID
 		if len(args) > 1 {
-			variadicArgs = args[1].([]uuid.UUID)
+			variadicArgs = args[1].([]types.LabelID)
 		}
 		arg1 = variadicArgs
 		run(
@@ -175,13 +175,13 @@ func (_c *MockLabelRepository_Exists_Call) Return(b bool, err error) *MockLabelR
 	return _c
 }
 
-func (_c *MockLabelRepository_Exists_Call) RunAndReturn(run func(ctx context.Context, ids ...uuid.UUID) (bool, error)) *MockLabelRepository_Exists_Call {
+func (_c *MockLabelRepository_Exists_Call) RunAndReturn(run func(ctx context.Context, ids ...types.LabelID) (bool, error)) *MockLabelRepository_Exists_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetAll provides a mock function for the type MockLabelRepository
-func (_mock *MockLabelRepository) GetAll(ctx context.Context, userId string, parameters LabelQueryParameters) ([]label.Label, int64, error) {
+func (_mock *MockLabelRepository) GetAll(ctx context.Context, userId types.UserID, parameters LabelQueryParameters) ([]label.Label, int64, error) {
 	ret := _mock.Called(ctx, userId, parameters)
 
 	if len(ret) == 0 {
@@ -191,22 +191,22 @@ func (_mock *MockLabelRepository) GetAll(ctx context.Context, userId string, par
 	var r0 []label.Label
 	var r1 int64
 	var r2 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, LabelQueryParameters) ([]label.Label, int64, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, LabelQueryParameters) ([]label.Label, int64, error)); ok {
 		return returnFunc(ctx, userId, parameters)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, LabelQueryParameters) []label.Label); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, LabelQueryParameters) []label.Label); ok {
 		r0 = returnFunc(ctx, userId, parameters)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]label.Label)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, LabelQueryParameters) int64); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.UserID, LabelQueryParameters) int64); ok {
 		r1 = returnFunc(ctx, userId, parameters)
 	} else {
 		r1 = ret.Get(1).(int64)
 	}
-	if returnFunc, ok := ret.Get(2).(func(context.Context, string, LabelQueryParameters) error); ok {
+	if returnFunc, ok := ret.Get(2).(func(context.Context, types.UserID, LabelQueryParameters) error); ok {
 		r2 = returnFunc(ctx, userId, parameters)
 	} else {
 		r2 = ret.Error(2)
@@ -221,21 +221,21 @@ type MockLabelRepository_GetAll_Call struct {
 
 // GetAll is a helper method to define mock.On call
 //   - ctx context.Context
-//   - userId string
+//   - userId types.UserID
 //   - parameters LabelQueryParameters
 func (_e *MockLabelRepository_Expecter) GetAll(ctx interface{}, userId interface{}, parameters interface{}) *MockLabelRepository_GetAll_Call {
 	return &MockLabelRepository_GetAll_Call{Call: _e.mock.On("GetAll", ctx, userId, parameters)}
 }
 
-func (_c *MockLabelRepository_GetAll_Call) Run(run func(ctx context.Context, userId string, parameters LabelQueryParameters)) *MockLabelRepository_GetAll_Call {
+func (_c *MockLabelRepository_GetAll_Call) Run(run func(ctx context.Context, userId types.UserID, parameters LabelQueryParameters)) *MockLabelRepository_GetAll_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 types.UserID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(types.UserID)
 		}
 		var arg2 LabelQueryParameters
 		if args[2] != nil {
@@ -255,13 +255,13 @@ func (_c *MockLabelRepository_GetAll_Call) Return(labels []label.Label, n int64,
 	return _c
 }
 
-func (_c *MockLabelRepository_GetAll_Call) RunAndReturn(run func(ctx context.Context, userId string, parameters LabelQueryParameters) ([]label.Label, int64, error)) *MockLabelRepository_GetAll_Call {
+func (_c *MockLabelRepository_GetAll_Call) RunAndReturn(run func(ctx context.Context, userId types.UserID, parameters LabelQueryParameters) ([]label.Label, int64, error)) *MockLabelRepository_GetAll_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetById provides a mock function for the type MockLabelRepository
-func (_mock *MockLabelRepository) GetById(ctx context.Context, entityId uuid.UUID) (label.Label, error) {
+func (_mock *MockLabelRepository) GetById(ctx context.Context, entityId types.LabelID) (label.Label, error) {
 	ret := _mock.Called(ctx, entityId)
 
 	if len(ret) == 0 {
@@ -270,17 +270,17 @@ func (_mock *MockLabelRepository) GetById(ctx context.Context, entityId uuid.UUI
 
 	var r0 label.Label
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (label.Label, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.LabelID) (label.Label, error)); ok {
 		return returnFunc(ctx, entityId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) label.Label); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.LabelID) label.Label); ok {
 		r0 = returnFunc(ctx, entityId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(label.Label)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.LabelID) error); ok {
 		r1 = returnFunc(ctx, entityId)
 	} else {
 		r1 = ret.Error(1)
@@ -295,20 +295,20 @@ type MockLabelRepository_GetById_Call struct {
 
 // GetById is a helper method to define mock.On call
 //   - ctx context.Context
-//   - entityId uuid.UUID
+//   - entityId types.LabelID
 func (_e *MockLabelRepository_Expecter) GetById(ctx interface{}, entityId interface{}) *MockLabelRepository_GetById_Call {
 	return &MockLabelRepository_GetById_Call{Call: _e.mock.On("GetById", ctx, entityId)}
 }
 
-func (_c *MockLabelRepository_GetById_Call) Run(run func(ctx context.Context, entityId uuid.UUID)) *MockLabelRepository_GetById_Call {
+func (_c *MockLabelRepository_GetById_Call) Run(run func(ctx context.Context, entityId types.LabelID)) *MockLabelRepository_GetById_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 uuid.UUID
+		var arg1 types.LabelID
 		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
+			arg1 = args[1].(types.LabelID)
 		}
 		run(
 			arg0,
@@ -323,13 +323,13 @@ func (_c *MockLabelRepository_GetById_Call) Return(label1 label.Label, err error
 	return _c
 }
 
-func (_c *MockLabelRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId uuid.UUID) (label.Label, error)) *MockLabelRepository_GetById_Call {
+func (_c *MockLabelRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId types.LabelID) (label.Label, error)) *MockLabelRepository_GetById_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetByIdForUser provides a mock function for the type MockLabelRepository
-func (_mock *MockLabelRepository) GetByIdForUser(ctx context.Context, userId string, id uuid.UUID) (label.Label, error) {
+func (_mock *MockLabelRepository) GetByIdForUser(ctx context.Context, userId types.UserID, id types.LabelID) (label.Label, error) {
 	ret := _mock.Called(ctx, userId, id)
 
 	if len(ret) == 0 {
@@ -338,17 +338,17 @@ func (_mock *MockLabelRepository) GetByIdForUser(ctx context.Context, userId str
 
 	var r0 label.Label
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) (label.Label, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, types.LabelID) (label.Label, error)); ok {
 		return returnFunc(ctx, userId, id)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) label.Label); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, types.LabelID) label.Label); ok {
 		r0 = returnFunc(ctx, userId, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(label.Label)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.UserID, types.LabelID) error); ok {
 		r1 = returnFunc(ctx, userId, id)
 	} else {
 		r1 = ret.Error(1)
@@ -363,25 +363,25 @@ type MockLabelRepository_GetByIdForUser_Call struct {
 
 // GetByIdForUser is a helper method to define mock.On call
 //   - ctx context.Context
-//   - userId string
-//   - id uuid.UUID
+//   - userId types.UserID
+//   - id types.LabelID
 func (_e *MockLabelRepository_Expecter) GetByIdForUser(ctx interface{}, userId interface{}, id interface{}) *MockLabelRepository_GetByIdForUser_Call {
 	return &MockLabelRepository_GetByIdForUser_Call{Call: _e.mock.On("GetByIdForUser", ctx, userId, id)}
 }
 
-func (_c *MockLabelRepository_GetByIdForUser_Call) Run(run func(ctx context.Context, userId string, id uuid.UUID)) *MockLabelRepository_GetByIdForUser_Call {
+func (_c *MockLabelRepository_GetByIdForUser_Call) Run(run func(ctx context.Context, userId types.UserID, id types.LabelID)) *MockLabelRepository_GetByIdForUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 types.UserID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(types.UserID)
 		}
-		var arg2 uuid.UUID
+		var arg2 types.LabelID
 		if args[2] != nil {
-			arg2 = args[2].(uuid.UUID)
+			arg2 = args[2].(types.LabelID)
 		}
 		run(
 			arg0,
@@ -397,7 +397,7 @@ func (_c *MockLabelRepository_GetByIdForUser_Call) Return(label1 label.Label, er
 	return _c
 }
 
-func (_c *MockLabelRepository_GetByIdForUser_Call) RunAndReturn(run func(ctx context.Context, userId string, id uuid.UUID) (label.Label, error)) *MockLabelRepository_GetByIdForUser_Call {
+func (_c *MockLabelRepository_GetByIdForUser_Call) RunAndReturn(run func(ctx context.Context, userId types.UserID, id types.LabelID) (label.Label, error)) *MockLabelRepository_GetByIdForUser_Call {
 	_c.Call.Return(run)
 	return _c
 }

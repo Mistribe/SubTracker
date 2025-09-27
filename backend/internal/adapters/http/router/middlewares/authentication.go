@@ -6,8 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/mistribe/subtracker/internal/domain/account"
+	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/internal/usecase/auth"
+	"github.com/mistribe/subtracker/internal/usecase/authentication"
 	"github.com/mistribe/subtracker/pkg/ginx"
 )
 
@@ -53,9 +55,39 @@ func (m AuthenticationMiddleware) Middleware() gin.HandlerFunc {
 		}
 
 		// Store claims in context for use in handlers
-		c.Set(auth.ContextIdentityKey, identity)
-		c.Set(auth.ContextUserIdKey, identity.Id)
+		c.Set(authentication.ContextConnectedAccountKey, newConnectedAccountInformation(
+			account.UserID(identity.Id),
+			account.ParseRoleOrDefault(identity.Role, account.RoleUser),
+			billing.ParsePlanOrDefault(identity.Plan, billing.PlanFree),
+		))
 
 		c.Next()
 	}
+}
+
+type connectedAccountInformation struct {
+	userId account.UserID
+	role   account.Role
+	planID billing.PlanID
+}
+
+func newConnectedAccountInformation(userId account.UserID, role account.Role,
+	planID billing.PlanID) connectedAccountInformation {
+	return connectedAccountInformation{
+		userId: userId,
+		role:   role,
+		planID: planID,
+	}
+}
+
+func (c connectedAccountInformation) UserID() account.UserID {
+	return c.userId
+}
+
+func (c connectedAccountInformation) PlanID() billing.PlanID {
+	return c.planID
+}
+
+func (c connectedAccountInformation) Role() account.Role {
+	return c.role
 }

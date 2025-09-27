@@ -29,7 +29,7 @@ func updateLabelRequestToCommand(m dto.UpdateLabelRequest, id uuid.UUID) (comman
 	}
 
 	return command.UpdateLabelCommand{
-		Id:        id,
+		LabelID:   id,
 		Name:      m.Name,
 		Color:     strings.ToUpper(m.Color),
 		UpdatedAt: updatedAt,
@@ -38,15 +38,15 @@ func updateLabelRequestToCommand(m dto.UpdateLabelRequest, id uuid.UUID) (comman
 
 // Handle godoc
 //
-//	@Summary		Update label by ID
+//	@Summary		Update label by LabelID
 //	@Description	Update an existing label's name and color by its unique identifier
 //	@Tags			labels
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path		string					true	"Label ID (UUID format)"
+//	@Param			id		path		string					true	"Label LabelID (UUID format)"
 //	@Param			label	body		dto.UpdateLabelRequest	true	"Updated label data"
 //	@Success		200		{object}	dto.LabelModel			"Successfully updated label"
-//	@Failure		400		{object}	HttpErrorResponse		"Bad Request - Invalid ID format or input data"
+//	@Failure		400		{object}	HttpErrorResponse		"Bad Request - Invalid LabelID format or input data"
 //	@Failure		404		{object}	HttpErrorResponse		"Label not found"
 //	@Failure		500		{object}	HttpErrorResponse		"Internal Server Error"
 //	@Router			/labels/{id} [put]

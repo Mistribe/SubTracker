@@ -4,10 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/mistribe/subtracker/internal/domain/user"
+	"github.com/mistribe/subtracker/internal/domain/authorization"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
-
-	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/pkg/langext/option"
@@ -15,7 +14,7 @@ import (
 )
 
 type UpdateLabelCommand struct {
-	Id        uuid.UUID
+	LabelID   types.LabelID
 	Name      string
 	Color     string
 	UpdatedAt option.Option[time.Time]
@@ -38,7 +37,7 @@ func NewUpdateLabelCommandHandler(labelRepository ports.LabelRepository,
 }
 
 func (h UpdateLabelCommandHandler) Handle(ctx context.Context, command UpdateLabelCommand) result.Result[label.Label] {
-	existingLabel, err := h.labelRepository.GetById(ctx, command.Id)
+	existingLabel, err := h.labelRepository.GetById(ctx, command.LabelID)
 	if err != nil {
 		return result.Fail[label.Label](err)
 	}
@@ -47,7 +46,7 @@ func (h UpdateLabelCommandHandler) Handle(ctx context.Context, command UpdateLab
 		return result.Fail[label.Label](label.ErrLabelNotFound)
 	}
 
-	err = h.authorization.Can(ctx, user.PermissionWrite).For(existingLabel)
+	err = h.authorization.Can(ctx, authorization.PermissionWrite).For(existingLabel)
 	if err != nil {
 		return result.Fail[label.Label](err)
 	}
@@ -62,12 +61,7 @@ func (h UpdateLabelCommandHandler) updateLabel(
 	lbl.SetName(command.Name)
 	lbl.SetColor(command.Color)
 
-	command.UpdatedAt.IfSome(func(updatedAt time.Time) {
-		lbl.SetUpdatedAt(updatedAt)
-	})
-	command.UpdatedAt.IfNone(func() {
-		lbl.SetUpdatedAt(time.Now())
-	})
+	lbl.SetUpdatedAt(command.UpdatedAt.ValueOrDefault(time.Now()))
 
 	if err := lbl.GetValidationErrors(); err != nil {
 		return result.Fail[label.Label](err)

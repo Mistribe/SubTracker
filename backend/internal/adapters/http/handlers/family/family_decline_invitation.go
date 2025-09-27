@@ -28,7 +28,7 @@ func NewDeclineEndpoint(handler ports.CommandHandler[command.DeclineInvitationCo
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			familyId	path	string								true	"Family ID"
+//	@Param			familyId	path	string								true	"Family LabelID"
 //	@Param			request		body	dto.FamilyDeclineInvitationRequest	true	"Decline invitation request"
 //	@Success		204			"No Content"
 //	@Failure		400			{object}	HttpErrorResponse	"Bad Request"

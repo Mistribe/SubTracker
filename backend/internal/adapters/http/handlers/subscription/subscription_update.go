@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 	"github.com/mistribe/subtracker/pkg/x"
 	"github.com/mistribe/subtracker/pkg/x/collection"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/ports"
 	auth2 "github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/internal/usecase/subscription/command"
@@ -42,7 +42,7 @@ func updateSubscriptionRequestToSubscription(
 	if err != nil {
 		return nil, err
 	}
-	ownerType, err := auth.ParseOwnerType(r.Owner.Type)
+	ownerType, err := types.ParseOwnerType(r.Owner.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func updateSubscriptionRequestToSubscription(
 		}
 		familyId = &fid
 	}
-	owner := auth.NewOwner(ownerType, familyId, &userId)
+	owner := types.NewOwner(ownerType, familyId, &userId)
 	updatedAt := x.ValueOrDefault(r.UpdatedAt, time.Now())
 	var payer subscription.Payer
 	if r.Payer != nil {
@@ -126,15 +126,15 @@ func updateSubscriptionRequestToSubscription(
 
 // Handle godoc
 //
-//	@Summary		Update subscription by ID
+//	@Summary		Update subscription by LabelID
 //	@Description	Update an existing subscription's details including provider, plan, pricing, and payment information
 //	@Tags			subscriptions
 //	@Accept			json
 //	@Produce		json
-//	@Param			subscriptionId	path		string							true	"Subscription ID (UUID format)"
+//	@Param			subscriptionId	path		string							true	"Subscription LabelID (UUID format)"
 //	@Param			subscription	body		dto.UpdateSubscriptionRequest	true	"Updated subscription data"
 //	@Success		200				{object}	dto.SubscriptionModel			"Successfully updated subscription"
-//	@Failure		400				{object}	HttpErrorResponse				"Bad Request - Invalid input data or subscription ID"
+//	@Failure		400				{object}	HttpErrorResponse				"Bad Request - Invalid input data or subscription LabelID"
 //	@Failure		401				{object}	HttpErrorResponse				"Unauthorized - Invalid user authentication"
 //	@Failure		404				{object}	HttpErrorResponse				"Subscription not found"
 //	@Failure		500				{object}	HttpErrorResponse				"Internal Server Error"

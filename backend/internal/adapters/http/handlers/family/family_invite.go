@@ -30,8 +30,8 @@ func NewInviteEndpoint(handler ports.CommandHandler[command.InviteMemberCommand,
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			familyId	path		string						true	"Family ID (UUID format)"
-//	@Param			request		body		dto.FamilyInviteRequest		true	"Invitation details including email, name, member ID and type (adult/kid)"
+//	@Param			familyId	path		string						true	"Family LabelID (UUID format)"
+//	@Param			request		body		dto.FamilyInviteRequest		true	"Invitation details including email, name, member LabelID and type (adult/kid)"
 //	@Success		200			{object}	dto.FamilyInviteResponse	"Successfully created invitation with code and IDs"
 //	@Failure		400			{object}	HttpErrorResponse			"Bad Request - Invalid input data"
 //	@Failure		401			{object}	HttpErrorResponse			"Unauthorized - Invalid or missing authentication"

@@ -10,8 +10,8 @@ import (
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/model"
 	. "github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/table"
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/models"
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/x/herd"
 
@@ -194,10 +194,10 @@ func (r LabelRepository) create(ctx context.Context, labels []label.Label) error
 		var ownerUserID Expression
 
 		switch lbl.Owner().Type() {
-		case auth.PersonalOwnerType:
+		case types.PersonalOwnerType:
 			ownerFamilyID = NULL
 			ownerUserID = String(lbl.Owner().UserId())
-		case auth.FamilyOwnerType:
+		case types.FamilyOwnerType:
 			ownerFamilyID = UUID(lbl.Owner().FamilyId())
 			ownerUserID = NULL
 		default:
@@ -244,10 +244,10 @@ func (r LabelRepository) update(ctx context.Context, lbl label.Label) error {
 	var ownerUserID StringExpression
 
 	switch lbl.Owner().Type() {
-	case auth.PersonalOwnerType:
+	case types.PersonalOwnerType:
 		ownerFamilyID = StringExp(NULL)
 		ownerUserID = String(lbl.Owner().UserId())
-	case auth.FamilyOwnerType:
+	case types.FamilyOwnerType:
 		ownerFamilyID = StringExp(UUID(lbl.Owner().FamilyId()))
 		ownerUserID = StringExp(NULL)
 	default:

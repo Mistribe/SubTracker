@@ -3,8 +3,6 @@ package ports
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/entity"
 )
 
@@ -20,9 +18,9 @@ func NewQueryParameters(limit, offset int64) QueryParameters {
 	}
 }
 
-type Repository[TEntity entity.Entity] interface {
-	GetById(ctx context.Context, entityId uuid.UUID) (TEntity, error)
+type Repository[TKey comparable, TEntity entity.Entity[TKey]] interface {
+	GetById(ctx context.Context, entityId TKey) (TEntity, error)
 	Save(ctx context.Context, entities ...TEntity) error
-	Delete(ctx context.Context, entityId uuid.UUID) (bool, error)
-	Exists(ctx context.Context, ids ...uuid.UUID) (bool, error)
+	Delete(ctx context.Context, entityId TKey) (bool, error)
+	Exists(ctx context.Context, ids ...TKey) (bool, error)
 }

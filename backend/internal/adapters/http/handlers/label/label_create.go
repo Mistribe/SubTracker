@@ -11,7 +11,6 @@ import (
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/internal/usecase/label/command"
 	"github.com/mistribe/subtracker/pkg/ginx"
 	. "github.com/mistribe/subtracker/pkg/ginx"
@@ -19,7 +18,8 @@ import (
 )
 
 type CreateEndpoint struct {
-	handler ports.CommandHandler[command.CreateLabelCommand, label.Label]
+	handler        ports.CommandHandler[command.CreateLabelCommand, label.Label]
+	authentication ports.Authentication
 }
 
 func createLabelRequestToLabel(m dto.CreateLabelRequest, userId string) (label.Label, error) {
@@ -69,7 +69,7 @@ func (l CreateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	userId, ok := auth.GetUserIdFromContext(c)
+	userId, ok := authentication.GetUserIdFromContext(c)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, ginx.HttpErrorResponse{
 			Message: "invalid user id",

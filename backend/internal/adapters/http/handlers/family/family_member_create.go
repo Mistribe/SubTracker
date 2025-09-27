@@ -1,7 +1,6 @@
 package family
 
 import (
-	"errors"
 	"net/http"
 	"time"
 
@@ -14,12 +13,12 @@ import (
 
 	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/internal/usecase/family/command"
 )
 
 type MemberCreateEndpoint struct {
-	handler ports.CommandHandler[command.CreateFamilyMemberCommand, family.Family]
+	handler        ports.CommandHandler[command.CreateFamilyMemberCommand, family.Family]
+	authentication ports.Authentication
 }
 
 func createFamilyMemberRequestToFamilyMember(m dto.CreateFamilyMemberRequest, familyId uuid.UUID) (
@@ -57,26 +56,22 @@ func createFamilyMemberRequestToFamilyMember(m dto.CreateFamilyMemberRequest, fa
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			familyId	path		string							true	"Family ID (UUID format)"
+//	@Param			familyId	path		string							true	"Family LabelID (UUID format)"
 //	@Param			member		body		dto.CreateFamilyMemberRequest	true	"Family member creation data"
 //	@Success		201			{object}	dto.FamilyModel					"Successfully added family member"
-//	@Failure		400			{object}	HttpErrorResponse				"Bad Request - Invalid input data or family ID"
+//	@Failure		400			{object}	HttpErrorResponse				"Bad Request - Invalid input data or family LabelID"
 //	@Failure		401			{object}	HttpErrorResponse				"Unauthorized - Invalid user authentication"
 //	@Failure		404			{object}	HttpErrorResponse				"Family not found"
 //	@Failure		500			{object}	HttpErrorResponse				"Internal Server Error"
 //	@Router			/family/{familyId}/members [post]
-func (f MemberCreateEndpoint) Handle(c *gin.Context) {
+func (e MemberCreateEndpoint) Handle(c *gin.Context) {
 	familyId, err := uuid.Parse(c.Param("familyId"))
 	if err != nil {
 		FromError(c, err)
 		return
 	}
 
-	userId, ok := auth.GetUserIdFromContext(c)
-	if !ok {
-		FromError(c, errors.New("invalid user id"))
-		return
-	}
+	connectedAccount := e.authentication.MustGetConnectedAccount(c)
 
 	var model dto.CreateFamilyMemberRequest
 	if err = c.ShouldBindJSON(&model); err != nil {
@@ -93,31 +88,33 @@ func (f MemberCreateEndpoint) Handle(c *gin.Context) {
 		FamilyId: familyId,
 		Member:   fm,
 	}
-	r := f.handler.Handle(c, cmd)
+	r := e.handler.Handle(c, cmd)
 	FromResult(c,
 		r,
 		WithStatus[family.Family](http.StatusCreated),
 		WithMapping[family.Family](func(fm family.Family) any {
-			return dto.NewFamilyModel(userId, fm)
+			return dto.NewFamilyModel(connectedAccount.UserID(), fm)
 		}))
 }
 
-func (f MemberCreateEndpoint) Pattern() []string {
+func (e MemberCreateEndpoint) Pattern() []string {
 	return []string{
 		"/:familyId/members",
 	}
 }
 
-func (f MemberCreateEndpoint) Method() string {
+func (e MemberCreateEndpoint) Method() string {
 	return http.MethodPost
 }
 
-func (f MemberCreateEndpoint) Middlewares() []gin.HandlerFunc {
+func (e MemberCreateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewMemberCreateEndpoint(handler ports.CommandHandler[command.CreateFamilyMemberCommand, family.Family]) *MemberCreateEndpoint {
+func NewMemberCreateEndpoint(handler ports.CommandHandler[command.CreateFamilyMemberCommand, family.Family],
+	authentication ports.Authentication) *MemberCreateEndpoint {
 	return &MemberCreateEndpoint{
-		handler: handler,
+		handler:        handler,
+		authentication: authentication,
 	}
 }

@@ -7,8 +7,8 @@ import (
 	"golang.org/x/text/currency"
 
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/model"
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
@@ -42,8 +42,8 @@ func createProviderPlanFromJet(jetPlan model.ProviderPlans, prices []provider.Pr
 }
 
 func createProviderFromJet(jetModel model.Providers, plans []provider.Plan, labels []uuid.UUID) provider.Provider {
-	ownerType := auth.MustParseOwnerType(jetModel.OwnerType)
-	owner := auth.NewOwner(ownerType, jetModel.OwnerFamilyID, jetModel.OwnerUserID)
+	ownerType := types.MustParseOwnerType(jetModel.OwnerType)
+	owner := types.NewOwner(ownerType, jetModel.OwnerFamilyID, jetModel.OwnerUserID)
 
 	p := provider.NewProvider(
 		jetModel.ID,

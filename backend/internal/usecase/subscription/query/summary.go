@@ -55,7 +55,7 @@ type SummaryQueryResponse struct {
 type SummaryQueryHandler struct {
 	subscriptionRepository ports.SubscriptionRepository
 	currencyRepository     ports.CurrencyRepository
-	userRepository         ports.UserRepository
+	userRepository         ports.AccountRepository
 	authService            ports.Authentication
 	exchange               ports.Exchange
 }
@@ -63,7 +63,7 @@ type SummaryQueryHandler struct {
 func NewSummaryQueryHandler(
 	subscriptionRepository ports.SubscriptionRepository,
 	currencyRepository ports.CurrencyRepository,
-	userRepository ports.UserRepository,
+	userRepository ports.AccountRepository,
 	authService ports.Authentication,
 	exchange ports.Exchange) *SummaryQueryHandler {
 	return &SummaryQueryHandler{
@@ -89,7 +89,7 @@ func (h SummaryQueryHandler) convertToCurrency(
 
 func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) result.Result[SummaryQueryResponse] {
 	userId := h.authService.MustGetUserId(ctx)
-	userProfile, err := h.userRepository.GetUser(ctx, userId)
+	userProfile, err := h.userRepository.GetById(ctx, userId)
 	if err != nil {
 		return result.Fail[SummaryQueryResponse](err)
 	}

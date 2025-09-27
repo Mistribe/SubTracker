@@ -16,6 +16,7 @@ packages:
       IdentityProvider:
       Exchange:
       Authentication:
+      EntitlementResolver:
       UserService:
       Cache:
       CurrencyRepository:
@@ -23,6 +24,6 @@ packages:
       LabelRepository:
       ProviderRepository:
       SubscriptionRepository:
-      UserRepository:
       Authorization:
       PermissionRequest:
+      AccountRepository:

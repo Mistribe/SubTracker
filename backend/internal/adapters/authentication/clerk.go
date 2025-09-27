@@ -10,7 +10,7 @@ import (
 	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/clerk/clerk-sdk-go/v2/jwks"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
+	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/x"
 )
@@ -18,6 +18,10 @@ import (
 type clerkIdentityProvider struct {
 	jwksClient *jwks.Client
 	userClient *user.Client
+}
+
+type publicUserMetadata struct {
+	Role string `json:"role"`
 }
 
 func NewClerkIdentityProvider(cfg config.Configuration) ports.IdentityProvider {
@@ -36,7 +40,7 @@ func (c *clerkIdentityProvider) DeleteUser(ctx context.Context, userId string) e
 }
 
 func (c *clerkIdentityProvider) ReadSessionToken(ctx context.Context, sessionToken string) (ports.Identity, error) {
-	// Decode the session JWT to find the key ID
+	// Decode the session JWT to find the key LabelID
 	unsafeClaims, err := jwt.Decode(ctx, &jwt.DecodeParams{
 		Token: sessionToken,
 	})
@@ -50,7 +54,7 @@ func (c *clerkIdentityProvider) ReadSessionToken(ctx context.Context, sessionTok
 		JWKSClient: c.jwksClient,
 	})
 	if err != nil {
-		return ports.NewInvalidIdentity(), auth.ErrUnauthorized
+		return ports.NewInvalidIdentity(), authorization.ErrUnauthorized
 	}
 
 	// Verify the session
@@ -59,9 +63,10 @@ func (c *clerkIdentityProvider) ReadSessionToken(ctx context.Context, sessionTok
 		JWK:   jwk,
 	})
 	if err != nil {
-		return ports.NewInvalidIdentity(), auth.ErrUnauthorized
+		return ports.NewInvalidIdentity(), authorization.ErrUnauthorized
 	}
 
+	// todo extract metadata from public metadata
 	return ports.Identity{
 		Id:      claims.Subject,
 		IsValid: true,

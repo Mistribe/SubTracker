@@ -50,7 +50,7 @@ func (s some[TValue]) Value() *TValue {
 	return &s.value
 }
 
-func (s some[TValue]) ValueWithDefault(_ TValue) TValue {
+func (s some[TValue]) ValueOrDefault(_ TValue) TValue {
 	return s.value
 }
 

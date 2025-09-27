@@ -7,7 +7,7 @@ package ports
 import (
 	"context"
 
-	"github.com/mistribe/subtracker/internal/domain/user"
+	"github.com/mistribe/subtracker/internal/domain/account"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -38,35 +38,37 @@ func (_m *MockAuthentication) EXPECT() *MockAuthentication_Expecter {
 	return &MockAuthentication_Expecter{mock: &_m.Mock}
 }
 
-// MustGetUserId provides a mock function for the type MockAuthentication
-func (_mock *MockAuthentication) MustGetUserId(ctx context.Context) string {
+// MustGetConnectedAccount provides a mock function for the type MockAuthentication
+func (_mock *MockAuthentication) MustGetConnectedAccount(ctx context.Context) account.ConnectedAccount {
 	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
-		panic("no return value specified for MustGetUserId")
+		panic("no return value specified for MustGetConnectedAccount")
 	}
 
-	var r0 string
-	if returnFunc, ok := ret.Get(0).(func(context.Context) string); ok {
+	var r0 account.ConnectedAccount
+	if returnFunc, ok := ret.Get(0).(func(context.Context) account.ConnectedAccount); ok {
 		r0 = returnFunc(ctx)
 	} else {
-		r0 = ret.Get(0).(string)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(account.ConnectedAccount)
+		}
 	}
 	return r0
 }
 
-// MockAuthentication_MustGetUserId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MustGetUserId'
-type MockAuthentication_MustGetUserId_Call struct {
+// MockAuthentication_MustGetConnectedAccount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MustGetConnectedAccount'
+type MockAuthentication_MustGetConnectedAccount_Call struct {
 	*mock.Call
 }
 
-// MustGetUserId is a helper method to define mock.On call
+// MustGetConnectedAccount is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockAuthentication_Expecter) MustGetUserId(ctx interface{}) *MockAuthentication_MustGetUserId_Call {
-	return &MockAuthentication_MustGetUserId_Call{Call: _e.mock.On("MustGetUserId", ctx)}
+func (_e *MockAuthentication_Expecter) MustGetConnectedAccount(ctx interface{}) *MockAuthentication_MustGetConnectedAccount_Call {
+	return &MockAuthentication_MustGetConnectedAccount_Call{Call: _e.mock.On("MustGetConnectedAccount", ctx)}
 }
 
-func (_c *MockAuthentication_MustGetUserId_Call) Run(run func(ctx context.Context)) *MockAuthentication_MustGetUserId_Call {
+func (_c *MockAuthentication_MustGetConnectedAccount_Call) Run(run func(ctx context.Context)) *MockAuthentication_MustGetConnectedAccount_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -79,63 +81,12 @@ func (_c *MockAuthentication_MustGetUserId_Call) Run(run func(ctx context.Contex
 	return _c
 }
 
-func (_c *MockAuthentication_MustGetUserId_Call) Return(s string) *MockAuthentication_MustGetUserId_Call {
-	_c.Call.Return(s)
+func (_c *MockAuthentication_MustGetConnectedAccount_Call) Return(connectedAccount account.ConnectedAccount) *MockAuthentication_MustGetConnectedAccount_Call {
+	_c.Call.Return(connectedAccount)
 	return _c
 }
 
-func (_c *MockAuthentication_MustGetUserId_Call) RunAndReturn(run func(ctx context.Context) string) *MockAuthentication_MustGetUserId_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// MustGetUserRole provides a mock function for the type MockAuthentication
-func (_mock *MockAuthentication) MustGetUserRole(ctx context.Context) user.Role {
-	ret := _mock.Called(ctx)
-
-	if len(ret) == 0 {
-		panic("no return value specified for MustGetUserRole")
-	}
-
-	var r0 user.Role
-	if returnFunc, ok := ret.Get(0).(func(context.Context) user.Role); ok {
-		r0 = returnFunc(ctx)
-	} else {
-		r0 = ret.Get(0).(user.Role)
-	}
-	return r0
-}
-
-// MockAuthentication_MustGetUserRole_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MustGetUserRole'
-type MockAuthentication_MustGetUserRole_Call struct {
-	*mock.Call
-}
-
-// MustGetUserRole is a helper method to define mock.On call
-//   - ctx context.Context
-func (_e *MockAuthentication_Expecter) MustGetUserRole(ctx interface{}) *MockAuthentication_MustGetUserRole_Call {
-	return &MockAuthentication_MustGetUserRole_Call{Call: _e.mock.On("MustGetUserRole", ctx)}
-}
-
-func (_c *MockAuthentication_MustGetUserRole_Call) Run(run func(ctx context.Context)) *MockAuthentication_MustGetUserRole_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		run(
-			arg0,
-		)
-	})
-	return _c
-}
-
-func (_c *MockAuthentication_MustGetUserRole_Call) Return(role user.Role) *MockAuthentication_MustGetUserRole_Call {
-	_c.Call.Return(role)
-	return _c
-}
-
-func (_c *MockAuthentication_MustGetUserRole_Call) RunAndReturn(run func(ctx context.Context) user.Role) *MockAuthentication_MustGetUserRole_Call {
+func (_c *MockAuthentication_MustGetConnectedAccount_Call) RunAndReturn(run func(ctx context.Context) account.ConnectedAccount) *MockAuthentication_MustGetConnectedAccount_Call {
 	_c.Call.Return(run)
 	return _c
 }

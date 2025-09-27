@@ -12,6 +12,8 @@ type IdentityProvider interface {
 type Identity struct {
 	IsValid bool
 	Id      string
+	Role    string
+	Plan    string
 }
 
 func NewInvalidIdentity() Identity {

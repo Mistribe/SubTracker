@@ -27,8 +27,8 @@ func NewRevokeEndpoint(handler ports.CommandHandler[command.RevokeMemberCommand,
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			familyId		path		string				true	"Family ID (UUID format)"
-//	@Param			familyMemberId	path		string				true	"Family Member ID (UUID format)"
+//	@Param			familyId		path		string				true	"Family LabelID (UUID format)"
+//	@Param			familyMemberId	path		string				true	"Family Member LabelID (UUID format)"
 //	@Success		204				{object}	nil					"Successfully revoked member"
 //	@Failure		400				{object}	HttpErrorResponse	"Bad Request - Invalid input data"
 //	@Failure		401				{object}	HttpErrorResponse	"Unauthorized - Invalid or missing authentication"

@@ -128,7 +128,7 @@ func TestRates_WithReverse(t *testing.T) {
 		assert.Equal(t, original.UpdatedAt(), rev.UpdatedAt())
 	})
 
-	t.Run("reverse has different ID from original", func(t *testing.T) {
+	t.Run("reverse has different LabelID from original", func(t *testing.T) {
 		rev := withReverse[1]
 		assert.NotEqual(t, original.Id(), rev.Id())
 	})

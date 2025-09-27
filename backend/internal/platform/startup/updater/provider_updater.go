@@ -10,9 +10,9 @@ import (
 	"github.com/Oleexo/config-go"
 	"github.com/google/uuid"
 
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/x/herd"
 )
@@ -156,7 +156,7 @@ func (l providerUpdater) updateDatabase(ctx context.Context, sourceProviders []s
 				&prov.PricingPage,
 				labelIds,
 				nil,
-				auth.SystemOwner,
+				types.SystemOwner,
 				time.Now(),
 				time.Now(),
 			)

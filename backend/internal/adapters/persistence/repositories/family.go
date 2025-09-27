@@ -116,7 +116,7 @@ func (r FamilyRepository) GetById(ctx context.Context, id uuid.UUID) (family.Fam
 func (r FamilyRepository) GetAll(ctx context.Context, parameters ports.QueryParameters) (
 	[]family.Family, int64,
 	error) {
-	userId, ok := auth.GetUserIdFromContext(ctx)
+	userId, ok := authentication.GetUserIdFromContext(ctx)
 	if !ok {
 		return []family.Family{}, 0, nil
 	}
@@ -163,7 +163,7 @@ func (r FamilyRepository) GetAll(ctx context.Context, parameters ports.QueryPara
 
 	totalCount := rows[0].TotalCount
 
-	// Group by family ID
+	// Group by family LabelID
 	familyMap := make(map[uuid.UUID]models.FamilyWithMembers)
 	for _, row := range rows {
 		if _, exists := familyMap[row.Family.ID]; !exists {
