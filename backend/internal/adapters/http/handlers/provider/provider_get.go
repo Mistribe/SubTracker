@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/domain/provider"
@@ -34,12 +35,12 @@ func NewGetEndpoint(handler ports.QueryHandler[query.FindOneQuery, provider.Prov
 //	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/providers/{providerId} [get]
 func (e GetEndpoint) Handle(c *gin.Context) {
-	id, err := QueryParamAsUUID(c, "providerId")
+	providerID, err := types.ParseProviderID(c.Param("providerId"))
 	if err != nil {
 		FromError(c, err)
 		return
 	}
-	q := query.NewFindOneQuery(id)
+	q := query.NewFindOneQuery(providerID)
 	r := e.handler.Handle(c, q)
 	FromResult(c,
 		r,

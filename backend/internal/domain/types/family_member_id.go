@@ -17,3 +17,24 @@ func NewFamilyMemberID() FamilyMemberID {
 func FamilyMemberIdComparer(fm1, fm2 FamilyMemberID) bool {
 	return fm1 == fm2
 }
+
+func ParseFamilyMemberID(s string) (FamilyMemberID, error) {
+	u, err := uuid.Parse(s)
+	if err != nil {
+		return FamilyMemberID{}, err
+	}
+	return FamilyMemberID(u), nil
+}
+
+func ParseFamilyMemberIDOrNil(s *string) (*FamilyMemberID, error) {
+	if s == nil {
+		return nil, nil
+	}
+
+	u, err := ParseFamilyMemberID(*s)
+	if err != nil {
+		return nil, err
+	}
+
+	return &u, nil
+}

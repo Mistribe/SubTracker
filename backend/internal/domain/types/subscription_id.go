@@ -13,3 +13,23 @@ func (id SubscriptionID) String() string {
 func NewSubscriptionID() SubscriptionID {
 	return SubscriptionID(uuid.Must(uuid.NewV7()))
 }
+
+func ParseSubscriptionID(id string) (SubscriptionID, error) {
+	u, err := uuid.Parse(id)
+	if err != nil {
+		return SubscriptionID{}, err
+	}
+	return SubscriptionID(u), nil
+}
+
+func ParseSubscriptionIDOrNil(id *string) (*SubscriptionID, error) {
+	if id == nil {
+		return nil, nil
+	}
+
+	u, err := ParseSubscriptionID(*id)
+	if err != nil {
+		return nil, err
+	}
+	return &u, nil
+}

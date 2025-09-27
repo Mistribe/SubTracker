@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 	"github.com/mistribe/subtracker/pkg/x"
 
@@ -23,7 +23,8 @@ type UpdateEndpoint struct {
 	authentication ports.Authentication
 }
 
-func updateFamilyRequestToCommand(m dto.UpdateFamilyRequest, familyId uuid.UUID) (command.UpdateFamilyCommand, error) {
+func updateFamilyRequestToCommand(m dto.UpdateFamilyRequest, familyId types.FamilyID) (command.UpdateFamilyCommand,
+	error) {
 	return command.UpdateFamilyCommand{
 		FamilyID:  familyId,
 		Name:      m.Name,
@@ -48,7 +49,7 @@ func updateFamilyRequestToCommand(m dto.UpdateFamilyRequest, familyId uuid.UUID)
 //	@Failure		500			{object}	HttpErrorResponse		"Internal Server Error"
 //	@Router			/family/{familyId} [put]
 func (f UpdateEndpoint) Handle(c *gin.Context) {
-	familyId, err := uuid.Parse(c.Param("familyId"))
+	familyId, err := types.ParseFamilyID(c.Param("familyId"))
 	if err != nil {
 		FromError(c, err)
 		return

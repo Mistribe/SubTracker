@@ -30,7 +30,7 @@ type EditableOwnerModel struct {
 	FamilyId *string `json:"family_id,omitempty"`
 }
 
-func (m EditableOwnerModel) Owner(userId string) (types.Owner, error) {
+func (m EditableOwnerModel) Owner(userId types.UserID) (types.Owner, error) {
 	ownerType, err := types.ParseOwnerType(m.Type)
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (m EditableOwnerModel) Owner(userId string) (types.Owner, error) {
 		if m.FamilyId == nil {
 			return nil, errors.New("missing family_id")
 		}
-		familyId, err2 := uuid.Parse(*m.FamilyId)
+		familyId, err2 := types.ParseFamilyID(*m.FamilyId)
 		if err2 != nil {
 			return nil, err2
 		}
@@ -86,4 +86,12 @@ func NewAmount(amount currency.Amount) AmountModel {
 		Currency: amount.Currency().String(),
 		Source:   source,
 	}
+}
+
+func (a AmountModel) Amount() (currency.Amount, error) {
+	c, err := currency.ParseISO(a.Currency)
+	if err != nil {
+		return nil, err
+	}
+	return currency.NewAmount(a.Value, c), nil
 }

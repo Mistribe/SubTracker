@@ -3,15 +3,13 @@ package provider
 import (
 	"net/http"
 
-	"github.com/google/uuid"
-
 	"github.com/gin-gonic/gin"
 
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/provider/command"
-	"github.com/mistribe/subtracker/pkg/ginx"
 )
 
 type DeleteEndpoint struct {
@@ -34,11 +32,9 @@ func NewDeleteEndpoint(handler ports.CommandHandler[command.DeleteProviderComman
 //	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/providers/{providerId} [delete]
 func (e DeleteEndpoint) Handle(c *gin.Context) {
-	providerId, err := uuid.Parse(c.Param("providerId"))
+	providerId, err := types.ParseProviderID(c.Param("providerId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
+		FromError(c, err)
 		return
 	}
 

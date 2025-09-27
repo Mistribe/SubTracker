@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/label/command"
 	"github.com/mistribe/subtracker/pkg/ginx"
@@ -21,31 +21,23 @@ type DeleteEndpoint struct {
 //	@Summary		Delete label by LabelID
 //	@Description	Permanently delete a label by its unique identifier
 //	@Tags			labels
-//	@Param			id	path	string	true	"Label LabelID (UUID format)"
+//	@Param			labelId	path	string	true	"Label LabelID (UUID format)"
 //	@Success		204	"No Content - Label successfully deleted"
 //	@Failure		400	{object}	HttpErrorResponse	"Bad Request - Invalid LabelID format"
 //	@Failure		404	{object}	HttpErrorResponse	"Label not found"
 //	@Failure		500	{object}	HttpErrorResponse	"Internal Server Error"
-//	@Router			/labels/{id} [delete]
+//	@Router			/labels/{labelId} [delete]
 func (l DeleteEndpoint) Handle(c *gin.Context) {
-	idParam := c.Param("id")
-	if idParam == "" {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: "id parameter is required",
-		})
-		return
-	}
-
-	id, err := uuid.Parse(idParam)
+	labelID, err := types.ParseLabelID(c.Param("labelId"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: "invalid id format",
+			Message: "invalid labelID format",
 		})
 		return
 	}
 
 	cmd := command.DeleteLabelCommand{
-		LabelID: id,
+		LabelID: labelID,
 	}
 
 	r := l.handler.Handle(c, cmd)
@@ -54,7 +46,7 @@ func (l DeleteEndpoint) Handle(c *gin.Context) {
 
 func (l DeleteEndpoint) Pattern() []string {
 	return []string{
-		"/:id",
+		"/:labelId",
 	}
 }
 

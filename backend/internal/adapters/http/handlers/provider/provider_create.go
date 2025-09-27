@@ -4,38 +4,39 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/langext/option"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/internal/usecase/provider/command"
 	"github.com/mistribe/subtracker/pkg/ginx"
 )
 
 type CreateEndpoint struct {
-	handler ports.CommandHandler[command.CreateProviderCommand, provider.Provider]
+	handler        ports.CommandHandler[command.CreateProviderCommand, provider.Provider]
+	authentication ports.Authentication
 }
 
-func NewCreateEndpoint(handler ports.CommandHandler[command.CreateProviderCommand, provider.Provider]) *CreateEndpoint {
-	return &CreateEndpoint{handler: handler}
-}
-
-func createProviderRequestToCommand(r dto.CreateProviderRequest, userId string) (command.CreateProviderCommand, error) {
-	var providerId *uuid.UUID
-	if r.Id != nil {
-		id, err := uuid.Parse(*r.Id)
-		if err != nil {
-			return command.CreateProviderCommand{}, err
-		}
-
-		providerId = &id
+func NewCreateEndpoint(handler ports.CommandHandler[command.CreateProviderCommand, provider.Provider],
+	authentication ports.Authentication) *CreateEndpoint {
+	return &CreateEndpoint{
+		handler:        handler,
+		authentication: authentication,
 	}
-	labels, err := collection.SelectErr(r.Labels, uuid.Parse)
+}
+
+func createProviderRequestToCommand(r dto.CreateProviderRequest,
+	userId types.UserID) (command.CreateProviderCommand, error) {
+	providerID, err := types.ParseProviderIDOrNil(r.Id)
+	if err != nil {
+		return command.CreateProviderCommand{}, err
+	}
+	labels, err := herd.SelectErr(r.Labels, types.ParseLabelID)
 	if err != nil {
 		return command.CreateProviderCommand{}, err
 	}
@@ -46,8 +47,7 @@ func createProviderRequestToCommand(r dto.CreateProviderRequest, userId string) 
 	}
 
 	return command.CreateProviderCommand{
-		ProviderID: providerId,
-
+		ProviderID:     option.New(providerID),
 		Name:           r.Name,
 		Description:    r.Description,
 		IconUrl:        r.IconUrl,
@@ -55,7 +55,7 @@ func createProviderRequestToCommand(r dto.CreateProviderRequest, userId string) 
 		PricingPageUrl: r.PricingPageUrl,
 		Labels:         labels,
 		Owner:          owner,
-		CreatedAt:      r.CreatedAt,
+		CreatedAt:      option.New(r.CreatedAt),
 	}, nil
 }
 
@@ -75,21 +75,13 @@ func createProviderRequestToCommand(r dto.CreateProviderRequest, userId string) 
 func (e CreateEndpoint) Handle(c *gin.Context) {
 	var model dto.CreateProviderRequest
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
+		FromError(c, err)
 		return
 	}
 
-	userId, ok := authentication.GetUserIdFromContext(c)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, ginx.HttpErrorResponse{
-			Message: "invalid user id",
-		})
-		return
-	}
+	connectedAccount := e.authentication.MustGetConnectedAccount(c)
 
-	cmd, err := createProviderRequestToCommand(model, userId)
+	cmd, err := createProviderRequestToCommand(model, connectedAccount.UserID())
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
 			Message: err.Error(),

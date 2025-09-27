@@ -1,12 +1,11 @@
 package family
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/ports"
@@ -28,35 +27,24 @@ type MemberDeleteEndpoint struct {
 //	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid LabelID format"
 //	@Failure		404			{object}	HttpErrorResponse	"Family or family member not found"
 //	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
-//	@Router			/family/{familyId}/members/{id} [delete]
+//	@Router			/family/{familyId}/members/{familyMemberId} [delete]
 func (f MemberDeleteEndpoint) Handle(c *gin.Context) {
-	idParam := c.Param("id")
-	if idParam == "" {
-		FromError(c, errors.New("id parameter is required"))
-		return
-	}
 
-	id, err := uuid.Parse(idParam)
+	familyMemberID, err := types.ParseFamilyMemberID(c.Param("familyMemberId"))
 	if err != nil {
 		FromError(c, err)
 		return
 	}
 
-	familyIdParam := c.Param("familyId")
-	if familyIdParam == "" {
-		FromError(c, errors.New("family id parameter is required"))
-		return
-	}
-
-	familyId, err := uuid.Parse(familyIdParam)
+	familyID, err := types.ParseFamilyID(c.Param("familyID"))
 	if err != nil {
 		FromError(c, err)
 		return
 	}
 
 	cmd := command.DeleteFamilyMemberCommand{
-		FamilyMemberID: id,
-		FamilyID:       familyId,
+		FamilyMemberID: familyMemberID,
+		FamilyID:       familyID,
 	}
 
 	r := f.handler.Handle(c, cmd)
@@ -65,7 +53,7 @@ func (f MemberDeleteEndpoint) Handle(c *gin.Context) {
 
 func (f MemberDeleteEndpoint) Pattern() []string {
 	return []string{
-		"/:familyId/members/:id",
+		"/:familyId/members/:familyMemberId",
 	}
 }
 

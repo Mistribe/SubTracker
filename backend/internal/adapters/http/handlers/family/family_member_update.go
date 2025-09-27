@@ -1,14 +1,12 @@
 package family
 
 import (
-	"errors"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/domain/family"
@@ -24,12 +22,9 @@ type MemberUpdateEndpoint struct {
 
 func updateFamilyMemberRequestToCommand(
 	m dto.UpdateFamilyMemberRequest,
-	familyId, memberId uuid.UUID) (command.UpdateFamilyMemberCommand, error) {
+	familyID types.FamilyID, familyMemberID types.FamilyMemberID) (command.UpdateFamilyMemberCommand, error) {
 
-	updatedAt := option.None[time.Time]()
-	if m.UpdatedAt != nil {
-		updatedAt = option.Some(*m.UpdatedAt)
-	}
+	updatedAt := option.New(m.UpdatedAt)
 
 	memberType, err := family.ParseMemberType(m.Type)
 	if err != nil {
@@ -37,8 +32,8 @@ func updateFamilyMemberRequestToCommand(
 	}
 
 	return command.UpdateFamilyMemberCommand{
-		FamilyID:       familyId,
-		FamilyMemberID: memberId,
+		FamilyID:       familyID,
+		FamilyMemberID: familyMemberID,
 		Name:           m.Name,
 		Type:           memberType,
 		UpdatedAt:      updatedAt,
@@ -60,21 +55,16 @@ func updateFamilyMemberRequestToCommand(
 //	@Failure		401			{object}	HttpErrorResponse				"Unauthorized - Invalid user authentication"
 //	@Failure		404			{object}	HttpErrorResponse				"Family or family member not found"
 //	@Failure		500			{object}	HttpErrorResponse				"Internal Server Error"
-//	@Router			/family/{familyId}/members/{id} [put]
+//	@Router			/family/{familyId}/members/{familyMemberId} [put]
 func (e MemberUpdateEndpoint) Handle(c *gin.Context) {
-	idParam := c.Param("id")
-	if idParam == "" {
-		FromError(c, errors.New("id parameter is required"))
-		return
-	}
 
-	id, err := uuid.Parse(idParam)
+	familyMemberID, err := types.ParseFamilyMemberID(c.Param("familyMemberId"))
 	if err != nil {
 		FromError(c, err)
 		return
 	}
 
-	familyId, err := uuid.Parse(c.Param("familyId"))
+	familyID, err := types.ParseFamilyID(c.Param("familyId"))
 	if err != nil {
 		FromError(c, err)
 		return
@@ -88,7 +78,7 @@ func (e MemberUpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	cmd, err := updateFamilyMemberRequestToCommand(model, familyId, id)
+	cmd, err := updateFamilyMemberRequestToCommand(model, familyID, familyMemberID)
 	if err != nil {
 		FromError(c, err)
 		return
@@ -104,7 +94,7 @@ func (e MemberUpdateEndpoint) Handle(c *gin.Context) {
 
 func (e MemberUpdateEndpoint) Pattern() []string {
 	return []string{
-		"/:familyId/members/:id",
+		"/:familyId/members/:familyMemberId",
 	}
 }
 

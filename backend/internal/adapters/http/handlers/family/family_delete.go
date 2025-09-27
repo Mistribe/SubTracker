@@ -1,12 +1,11 @@
 package family
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/ports"
@@ -33,20 +32,14 @@ func NewDeleteEndpoint(handler ports.CommandHandler[command.DeleteFamilyCommand,
 //	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/family/{familyId} [delete]
 func (e DeleteEndpoint) Handle(c *gin.Context) {
-	idParam := c.Param("familyId")
-	if idParam == "" {
-		FromError(c, errors.New("familyId parameter is required"))
-		return
-	}
-
-	id, err := uuid.Parse(idParam)
+	familyID, err := types.ParseFamilyID(c.Param("familyId"))
 	if err != nil {
 		FromError(c, err)
 		return
 	}
 
 	cmd := command.DeleteFamilyCommand{
-		FamilyId: id,
+		FamilyId: familyID,
 	}
 
 	r := e.handler.Handle(c, cmd)

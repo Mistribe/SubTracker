@@ -2,19 +2,17 @@ package label
 
 import (
 	"net/http"
-	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/label/command"
 	"github.com/mistribe/subtracker/pkg/ginx"
 	. "github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/x"
+	"github.com/mistribe/subtracker/pkg/langext/option"
 )
 
 type CreateEndpoint struct {
@@ -22,29 +20,22 @@ type CreateEndpoint struct {
 	authentication ports.Authentication
 }
 
-func createLabelRequestToLabel(m dto.CreateLabelRequest, userId string) (label.Label, error) {
-	var id uuid.UUID
-	var err error
-	var createdAt time.Time
-
-	id, err = x.ParseOrNewUUID(m.Id)
-	if err != nil {
-		return nil, err
-	}
-
+func createLabelRequestToCommand(m dto.CreateLabelRequest, userId types.UserID) (command.CreateLabelCommand, error) {
 	owner, err := m.Owner.Owner(userId)
 	if err != nil {
-		return nil, err
+		return command.CreateLabelCommand{}, err
 	}
-	return label.NewLabel(
-		id,
-		owner,
-		m.Name,
-		nil,
-		strings.ToUpper(m.Color),
-		createdAt,
-		createdAt,
-	), nil
+	labelID, err := types.ParseLabelIDOrNil(m.Id)
+	if err != nil {
+		return command.CreateLabelCommand{}, err
+	}
+	return command.CreateLabelCommand{
+		LabelID:   option.New(labelID),
+		Name:      m.Name,
+		Color:     m.Color,
+		Owner:     owner,
+		CreatedAt: option.New(m.CreatedAt),
+	}, nil
 }
 
 // Handle godoc
@@ -69,15 +60,9 @@ func (l CreateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	userId, ok := authentication.GetUserIdFromContext(c)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, ginx.HttpErrorResponse{
-			Message: "invalid user id",
-		})
-		return
-	}
+	connectedAccount := l.authentication.MustGetConnectedAccount(c)
 
-	lbl, err := createLabelRequestToLabel(model, userId)
+	cmd, err := createLabelRequestToCommand(model, connectedAccount.UserID())
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
 			Message: err.Error(),
@@ -85,10 +70,6 @@ func (l CreateEndpoint) Handle(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	cmd := command.CreateLabelCommand{
-		Label: lbl,
-	}
-
 	r := l.handler.Handle(c, cmd)
 	FromResult(c,
 		r,

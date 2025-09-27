@@ -14,3 +14,24 @@ func (f FamilyID) String() string {
 func NewFamilyID() FamilyID {
 	return FamilyID(uuid.Must(uuid.NewV7()))
 }
+
+func ParseFamilyID(s string) (FamilyID, error) {
+	u, err := uuid.Parse(s)
+	if err != nil {
+		return FamilyID{}, err
+	}
+	return FamilyID(u), nil
+}
+
+func ParseFamilyIDOrNil(s *string) (*FamilyID, error) {
+	if s == nil {
+		return nil, nil
+	}
+
+	u, err := ParseFamilyID(*s)
+	if err != nil {
+		return nil, err
+	}
+
+	return &u, nil
+}

@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/ports"
@@ -34,7 +34,7 @@ func NewDeclineEndpoint(handler ports.CommandHandler[command.DeclineInvitationCo
 //	@Failure		400			{object}	HttpErrorResponse	"Bad Request"
 //	@Router			/family/{familyId}/decline [post]
 func (e DeclineInvitationEndpoint) Handle(c *gin.Context) {
-	familyId, err := uuid.Parse(c.Param("familyId"))
+	familyId, err := types.ParseFamilyID(c.Param("familyId"))
 	if err != nil {
 		FromError(c, err)
 		return
@@ -46,7 +46,7 @@ func (e DeclineInvitationEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	familyMemberId, err := uuid.Parse(request.FamilyMemberId)
+	familyMemberId, err := types.ParseFamilyMemberID(request.FamilyMemberId)
 	if err != nil {
 		FromError(c, err)
 		return

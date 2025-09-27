@@ -2,18 +2,16 @@ package family
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
-	. "github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/x"
-
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/family/command"
+	. "github.com/mistribe/subtracker/pkg/ginx"
+	"github.com/mistribe/subtracker/pkg/langext/option"
 )
 
 type MemberCreateEndpoint struct {
@@ -21,32 +19,26 @@ type MemberCreateEndpoint struct {
 	authentication ports.Authentication
 }
 
-func createFamilyMemberRequestToFamilyMember(m dto.CreateFamilyMemberRequest, familyId uuid.UUID) (
-	family.Member,
+func createFamilyMemberRequestToCommand(m dto.CreateFamilyMemberRequest, familyId types.FamilyID) (
+	command.CreateFamilyMemberCommand,
 	error) {
-	var id uuid.UUID
-	var err error
-	var createdAt time.Time
-	id, err = x.ParseOrNewUUID(m.Id)
+	familyMemberID, err := types.ParseFamilyMemberIDOrNil(m.Id)
 	if err != nil {
-		return nil, err
+		return command.CreateFamilyMemberCommand{}, err
 	}
-
-	createdAt = x.ValueOrDefault(m.CreatedAt, time.Now())
 
 	memberType, err := family.ParseMemberType(m.Type)
 	if err != nil {
-		return nil, err
+		return command.CreateFamilyMemberCommand{}, err
 	}
-	return family.NewMember(
-		id,
-		familyId,
-		m.Name,
-		memberType,
-		nil,
-		createdAt,
-		createdAt,
-	), nil
+
+	return command.CreateFamilyMemberCommand{
+		FamilyID:       familyId,
+		FamilyMemberID: option.New(familyMemberID),
+		Name:           m.Name,
+		Type:           memberType,
+		CreatedAt:      option.New(m.CreatedAt),
+	}, nil
 }
 
 // Handle godoc
@@ -65,7 +57,7 @@ func createFamilyMemberRequestToFamilyMember(m dto.CreateFamilyMemberRequest, fa
 //	@Failure		500			{object}	HttpErrorResponse				"Internal Server Error"
 //	@Router			/family/{familyId}/members [post]
 func (e MemberCreateEndpoint) Handle(c *gin.Context) {
-	familyId, err := uuid.Parse(c.Param("familyId"))
+	familyId, err := types.ParseFamilyID(c.Param("familyId"))
 	if err != nil {
 		FromError(c, err)
 		return
@@ -79,14 +71,10 @@ func (e MemberCreateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	fm, err := createFamilyMemberRequestToFamilyMember(model, familyId)
+	cmd, err := createFamilyMemberRequestToCommand(model, familyId)
 	if err != nil {
 		FromError(c, err)
 		return
-	}
-	cmd := command.CreateFamilyMemberCommand{
-		FamilyId: familyId,
-		Member:   fm,
 	}
 	r := e.handler.Handle(c, cmd)
 	FromResult(c,

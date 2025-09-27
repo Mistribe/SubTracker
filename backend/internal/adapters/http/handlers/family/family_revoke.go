@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/ports"
@@ -36,13 +36,13 @@ func NewRevokeEndpoint(handler ports.CommandHandler[command.RevokeMemberCommand,
 //	@Failure		500				{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/family/{familyId}/members/{familyMemberId}/revoke [post]
 func (e RevokeEndpoint) Handle(c *gin.Context) {
-	familyId, err := uuid.Parse(c.Param("familyId"))
+	familyId, err := types.ParseFamilyID(c.Param("familyId"))
 	if err != nil {
 		FromError(c, err)
 		return
 	}
 
-	familyMemberId, err := uuid.Parse(c.Param("familyMemberId"))
+	familyMemberId, err := types.ParseFamilyMemberID(c.Param("familyMemberId"))
 	if err != nil {
 		FromError(c, err)
 		return

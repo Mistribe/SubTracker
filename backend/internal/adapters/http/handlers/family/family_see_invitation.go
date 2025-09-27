@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/ports"
@@ -51,13 +51,13 @@ func (e SeeInvitationEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	familyId, err := uuid.Parse(req.FamilyId)
+	familyId, err := types.ParseFamilyID(req.FamilyId)
 	if err != nil {
 		FromError(c, err)
 		return
 	}
 
-	familyMemberId, err := uuid.Parse(req.FamilyMemberId)
+	familyMemberId, err := types.ParseFamilyMemberID(req.FamilyMemberId)
 	if err != nil {
 		FromError(c, err)
 		return

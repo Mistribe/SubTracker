@@ -2,18 +2,23 @@ package command
 
 import (
 	"context"
+	"time"
 
 	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/pkg/langext/option"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type CreateFamilyMemberCommand struct {
-	FamilyId types.FamilyID
-	Member   family.Member
+	FamilyID       types.FamilyID
+	FamilyMemberID option.Option[types.FamilyMemberID]
+	Name           string
+	Type           family.MemberType
+	CreatedAt      option.Option[time.Time]
 }
 
 type CreateFamilyMemberCommandHandler struct {
@@ -36,7 +41,7 @@ func NewCreateFamilyMemberCommandHandler(
 func (h CreateFamilyMemberCommandHandler) Handle(
 	ctx context.Context,
 	command CreateFamilyMemberCommand) result.Result[family.Family] {
-	fam, err := h.familyRepository.GetById(ctx, command.FamilyId)
+	fam, err := h.familyRepository.GetById(ctx, command.FamilyID)
 	if err != nil {
 		return result.Fail[family.Family](err)
 	}
@@ -64,7 +69,25 @@ func (h CreateFamilyMemberCommandHandler) addFamilyMemberToFamily(
 	ctx context.Context,
 	command CreateFamilyMemberCommand, fam family.Family) result.Result[family.Family] {
 
-	if err := fam.AddMember(command.Member); err != nil {
+	var familyMemberID types.FamilyMemberID
+	if command.FamilyMemberID.IsSome() {
+		familyMemberID = *command.FamilyMemberID.Value()
+	} else {
+		familyMemberID = types.NewFamilyMemberID()
+	}
+
+	createdAt := command.CreatedAt.ValueOrDefault(time.Now())
+	familyMember := family.NewMember(
+		familyMemberID,
+		command.FamilyID,
+		command.Name,
+		command.Type,
+		nil,
+		createdAt,
+		createdAt,
+	)
+
+	if err := fam.AddMember(familyMember); err != nil {
 		return result.Success(fam)
 	}
 

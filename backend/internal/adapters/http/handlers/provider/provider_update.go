@@ -3,18 +3,16 @@ package provider
 import (
 	"net/http"
 
-	"github.com/mistribe/subtracker/internal/adapters/http/dto"
-	. "github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/x/collection"
-
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
-	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/internal/usecase/provider/command"
-	"github.com/mistribe/subtracker/pkg/ginx"
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
+	"github.com/mistribe/subtracker/internal/domain/types"
+	. "github.com/mistribe/subtracker/pkg/ginx"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	"github.com/mistribe/subtracker/internal/domain/provider"
+	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/internal/usecase/provider/command"
 )
 
 type UpdateEndpoint struct {
@@ -25,10 +23,9 @@ func NewUpdateEndpoint(handler ports.CommandHandler[command.UpdateProviderComman
 	return &UpdateEndpoint{handler: handler}
 }
 
-func updateProviderRequestToCommand(r dto.UpdateProviderRequest, providerId uuid.UUID) (
-	command.UpdateProviderCommand,
-	error) {
-	labels, err := collection.SelectErr(r.Labels, uuid.Parse)
+func updateProviderRequestToCommand(r dto.UpdateProviderRequest,
+	providerId types.ProviderID) (command.UpdateProviderCommand, error) {
+	labels, err := herd.SelectErr(r.Labels, types.ParseLabelID)
 	if err != nil {
 		return command.UpdateProviderCommand{}, err
 	}
@@ -60,35 +57,20 @@ func updateProviderRequestToCommand(r dto.UpdateProviderRequest, providerId uuid
 //	@Failure		500			{object}	HttpErrorResponse			"Internal Server Error"
 //	@Router			/providers/{providerId} [put]
 func (e UpdateEndpoint) Handle(c *gin.Context) {
-	idParam := c.Param("providerId")
-	if idParam == "" {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: "id parameter is required",
-		})
-		return
-	}
-
-	id, err := uuid.Parse(idParam)
+	id, err := types.ParseProviderID(c.Param("providerId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: "invalid id format",
-		})
+		FromError(c, err)
 		return
 	}
 
 	var model dto.UpdateProviderRequest
 	if err = c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
+		FromError(c, err)
 		return
 	}
 	cmd, err := updateProviderRequestToCommand(model, id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
-		c.Abort()
+		FromError(c, err)
 		return
 	}
 	r := e.handler.Handle(c, cmd)

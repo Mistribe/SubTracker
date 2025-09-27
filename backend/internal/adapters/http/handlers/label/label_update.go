@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/label/command"
 	"github.com/mistribe/subtracker/pkg/ginx"
@@ -21,7 +21,7 @@ type UpdateEndpoint struct {
 	handler ports.CommandHandler[command.UpdateLabelCommand, label.Label]
 }
 
-func updateLabelRequestToCommand(m dto.UpdateLabelRequest, id uuid.UUID) (command.UpdateLabelCommand, error) {
+func updateLabelRequestToCommand(m dto.UpdateLabelRequest, labelID types.LabelID) (command.UpdateLabelCommand, error) {
 	updatedAt := option.None[time.Time]()
 
 	if m.UpdatedAt != nil {
@@ -29,7 +29,7 @@ func updateLabelRequestToCommand(m dto.UpdateLabelRequest, id uuid.UUID) (comman
 	}
 
 	return command.UpdateLabelCommand{
-		LabelID:   id,
+		LabelID:   labelID,
 		Name:      m.Name,
 		Color:     strings.ToUpper(m.Color),
 		UpdatedAt: updatedAt,
@@ -43,38 +43,25 @@ func updateLabelRequestToCommand(m dto.UpdateLabelRequest, id uuid.UUID) (comman
 //	@Tags			labels
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path		string					true	"Label LabelID (UUID format)"
+//	@Param			labelId		path		string					true	"Label LabelID (UUID format)"
 //	@Param			label	body		dto.UpdateLabelRequest	true	"Updated label data"
 //	@Success		200		{object}	dto.LabelModel			"Successfully updated label"
 //	@Failure		400		{object}	HttpErrorResponse		"Bad Request - Invalid LabelID format or input data"
 //	@Failure		404		{object}	HttpErrorResponse		"Label not found"
 //	@Failure		500		{object}	HttpErrorResponse		"Internal Server Error"
-//	@Router			/labels/{id} [put]
+//	@Router			/labels/{labelId} [put]
 func (l UpdateEndpoint) Handle(c *gin.Context) {
-	idParam := c.Param("id")
-	if idParam == "" {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: "id parameter is required",
-		})
-		return
-	}
-
-	id, err := uuid.Parse(idParam)
+	labelID, err := types.ParseLabelID(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: "invalid id format",
-		})
+		FromError(c, err)
 		return
 	}
 
 	var model dto.UpdateLabelRequest
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
-		return
+		FromError(c, err)
 	}
-	cmd, err := updateLabelRequestToCommand(model, id)
+	cmd, err := updateLabelRequestToCommand(model, labelID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
 			Message: err.Error(),
@@ -92,7 +79,7 @@ func (l UpdateEndpoint) Handle(c *gin.Context) {
 
 func (l UpdateEndpoint) Pattern() []string {
 	return []string{
-		"/:id",
+		"/:labelId",
 	}
 }
 

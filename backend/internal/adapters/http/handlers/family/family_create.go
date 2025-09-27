@@ -4,10 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
+	"github.com/mistribe/subtracker/pkg/langext/option"
 
 	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/ports"
@@ -20,19 +21,15 @@ type CreateEndpoint struct {
 }
 
 func createFamilyRequestToCommand(m dto.CreateFamilyRequest) (command.CreateFamilyCommand, error) {
-	var familyId *uuid.UUID
-	if m.Id != nil {
-		id, err := uuid.Parse(*m.Id)
-		if err != nil {
-			return command.CreateFamilyCommand{}, err
-		}
-		familyId = &id
+	familyID, err := types.ParseFamilyIDOrNil(m.Id)
+	if err != nil {
+		return command.CreateFamilyCommand{}, err
 	}
 	return command.CreateFamilyCommand{
-		FamilyId:    familyId,
+		FamilyId:    option.New(familyID),
 		Name:        m.Name,
 		CreatorName: m.CreatorName,
-		CreatedAt:   m.CreatedAt,
+		CreatedAt:   option.New(m.CreatedAt),
 	}, nil
 
 }

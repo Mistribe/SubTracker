@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/ports"
@@ -37,7 +37,7 @@ func NewAcceptInvitationEndpoint(handler ports.CommandHandler[command.AcceptInvi
 //	@Failure		500			{object}	HttpErrorResponse					"Internal Server Error"
 //	@Router			/family/{familyId}/accept [post]
 func (e AcceptInvitationEndpoint) Handle(c *gin.Context) {
-	familyId, err := uuid.Parse(c.Param("familyId"))
+	familyId, err := types.ParseFamilyID(c.Param("familyId"))
 	if err != nil {
 		FromError(c, err)
 		return
@@ -48,7 +48,7 @@ func (e AcceptInvitationEndpoint) Handle(c *gin.Context) {
 		FromError(c, err)
 		return
 	}
-	familyMemberId, err := uuid.Parse(model.FamilyMemberId)
+	familyMemberId, err := types.ParseFamilyMemberID(model.FamilyMemberId)
 	if err != nil {
 		FromError(c, err)
 		return
