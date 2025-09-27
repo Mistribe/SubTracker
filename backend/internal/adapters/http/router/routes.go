@@ -4,12 +4,12 @@ import (
 	"go.uber.org/fx"
 
 	. "github.com/mistribe/subtracker/internal/adapters/http/handlers"
+	"github.com/mistribe/subtracker/internal/adapters/http/handlers/account"
 	"github.com/mistribe/subtracker/internal/adapters/http/handlers/currency"
 	"github.com/mistribe/subtracker/internal/adapters/http/handlers/family"
 	"github.com/mistribe/subtracker/internal/adapters/http/handlers/label"
 	"github.com/mistribe/subtracker/internal/adapters/http/handlers/provider"
 	"github.com/mistribe/subtracker/internal/adapters/http/handlers/subscription"
-	"github.com/mistribe/subtracker/internal/adapters/http/handlers/user"
 	"github.com/mistribe/subtracker/internal/adapters/http/router/ginfx"
 	"github.com/mistribe/subtracker/internal/adapters/http/router/middlewares"
 )
@@ -61,10 +61,10 @@ func BuildRoutesModule() fx.Option {
 			currency.NewGetRateEndpoint,
 			ginfx.AsEndpointGroup(currency.NewEndpointGroup),
 
-			user.NewUserGetPreferredCurrencyEndpoint,
-			user.NewUpdatePreferredCurrencyEndpoint,
-			user.NewDeleteEndpoint,
-			ginfx.AsEndpointGroup(user.NewEndpointGroup),
+			account.NewUserGetPreferredCurrencyEndpoint,
+			account.NewUpdatePreferredCurrencyEndpoint,
+			account.NewDeleteEndpoint,
+			ginfx.AsEndpointGroup(account.NewEndpointGroup),
 
 			ginfx.AsEndpoint(NewHealthCheckLiveEndpoint),
 		),

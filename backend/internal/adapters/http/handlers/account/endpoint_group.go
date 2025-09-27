@@ -1,4 +1,4 @@
-package user
+package account
 
 import (
 	"github.com/gin-gonic/gin"
@@ -30,7 +30,7 @@ func NewEndpointGroup(
 }
 
 func (u EndpointGroup) Prefix() string {
-	return "/users"
+	return "/accounts"
 }
 
 func (u EndpointGroup) Routes() []ginfx.Endpoint {

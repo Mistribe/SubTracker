@@ -7,11 +7,11 @@ import (
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
-type DeleteUserCommand struct {
+type DeleteAccountCommand struct {
 }
 
-func NewDeleteUserCommand() DeleteUserCommand {
-	return DeleteUserCommand{}
+func NewDeleteAccountCommand() DeleteAccountCommand {
+	return DeleteAccountCommand{}
 }
 
 type DeleteUserCommandHandler struct {
@@ -31,7 +31,7 @@ func NewDeleteUserCommandHandler(
 	}
 }
 
-func (h DeleteUserCommandHandler) Handle(ctx context.Context, cmd DeleteUserCommand) result.Result[bool] {
+func (h DeleteUserCommandHandler) Handle(ctx context.Context, cmd DeleteAccountCommand) result.Result[bool] {
 	connectedAccount := h.authService.MustGetConnectedAccount(ctx)
 
 	if err := h.identityProvider.DeleteUser(ctx, connectedAccount.UserID()); err != nil {

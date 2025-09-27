@@ -1,4 +1,4 @@
-package user
+package account
 
 import (
 	"net/http"
@@ -24,12 +24,12 @@ func NewUserGetPreferredCurrencyEndpoint(handler ports.QueryHandler[query.FindPr
 // Handle godoc
 //
 //	@Summary		Get user preferred currency
-//	@Description	Returns the preferred currency for the authenticated user
-//	@Tags			users
+//	@Description	Returns the preferred currency for the authenticated account
+//	@Tags			accounts
 //	@Produce		json
 //	@Success		200	{object}	dto.UserPreferredCurrencyModel
 //	@Failure		401	{object}	HttpErrorResponse	"Unauthorized"
-//	@Router			/users/preferred/currency [get]
+//	@Router			/accounts/preferred/currency [get]
 func (e GetPreferredCurrencyEndpoint) Handle(c *gin.Context) {
 	q := query.NewFindPreferredCurrencyQuery()
 

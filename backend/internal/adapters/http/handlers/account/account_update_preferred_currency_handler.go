@@ -1,4 +1,4 @@
-package user
+package account
 
 import (
 	"net/http"
@@ -10,7 +10,7 @@ import (
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/internal/usecase/user/command"
+	"github.com/mistribe/subtracker/internal/usecase/account/command"
 	"github.com/mistribe/subtracker/pkg/ginx"
 )
 
@@ -27,8 +27,8 @@ func NewUpdatePreferredCurrencyEndpoint(handler ports.CommandHandler[command.Upd
 // Handle godoc
 //
 //	@Summary		Update user preferred currency
-//	@Description	Updates the preferred currency for the authenticated user
-//	@Tags			users
+//	@Description	Updates the preferred currency for the authenticated account
+//	@Tags			accounts
 //	@Accept			json
 //	@Produce		json
 //	@Param			Authorization	header	string								true	"Bearer token"
