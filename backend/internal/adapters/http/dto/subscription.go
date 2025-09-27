@@ -3,12 +3,11 @@ package dto
 import (
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/pkg/x"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type SubscriptionFreeTrialModel struct {
@@ -45,7 +44,7 @@ func NewSubscriptionCustomPrice(model *AmountModel) (subscription.Price, error) 
 		return nil, err
 	}
 
-	return subscription.NewPrice(model.Value, cry), nil
+	return subscription.NewPrice(currency.NewAmount(model.Value, cry)), nil
 
 }
 
@@ -161,10 +160,10 @@ func NewSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 	if source.Payer() != nil {
 		payerModel = x.P(newSubscriptionPayerModel(source.Payer()))
 	}
-	serviceUsers := collection.Select(source.ServiceUsers().Values(), func(in uuid.UUID) string {
+	serviceUsers := herd.Select(source.FamilyUsers().Values(), func(in types.FamilyMemberID) string {
 		return in.String()
 	})
-	labelRefs := collection.Select(source.Labels().Values(), newSubscriptionLabelRef)
+	labelRefs := herd.Select(source.Labels().Values(), newSubscriptionLabelRef)
 	model := SubscriptionModel{
 		Id:               source.Id().String(),
 		FriendlyName:     source.FriendlyName(),
@@ -184,16 +183,6 @@ func NewSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 		Etag:             source.ETag(),
 		CustomPrice:      x.P(NewAmount(source.Price().Amount())),
 		Price:            newSubscriptionPrice(source),
-	}
-
-	if source.PlanId() != nil {
-		planId := source.PlanId().String()
-		model.PlanId = &planId
-	}
-
-	if source.PriceId() != nil {
-		priceId := source.PriceId().String()
-		model.PriceId = &priceId
 	}
 
 	return model

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/Oleexo/config-go"
-	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/internal/domain/types"
@@ -71,7 +70,7 @@ func (l labelUpdater) updateDatabase(ctx context.Context, sourceLabels []systemL
 			}
 		} else {
 			newLabel := label.NewLabel(
-				uuid.Must(uuid.NewV7()),
+				types.NewLabelID(),
 				types.SystemOwner,
 				lbl.Name,
 				&lbl.Key,

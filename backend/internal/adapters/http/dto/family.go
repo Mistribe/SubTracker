@@ -3,8 +3,8 @@ package dto
 import (
 	"time"
 
-	"github.com/mistribe/subtracker/internal/domain/account"
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 )
 
 // Family represents a family unit with its members and settings
@@ -26,7 +26,7 @@ type FamilyModel struct {
 	Etag string `json:"etag" binding:"required" example:"W/\"123456789\""`
 }
 
-func NewFamilyModel(userId account.UserID, source family.Family) FamilyModel {
+func NewFamilyModel(userId types.UserID, source family.Family) FamilyModel {
 	var members []FamilyMemberModel
 	for member := range source.Members().It() {
 		members = append(members, NewFamilyMemberModel(userId, member))
@@ -66,7 +66,7 @@ type FamilyMemberModel struct {
 	Etag string `json:"etag" binding:"required" example:"W/\"123456789\""`
 }
 
-func NewFamilyMemberModel(currentUserId string, source family.Member) FamilyMemberModel {
+func NewFamilyMemberModel(currentUserId types.UserID, source family.Member) FamilyMemberModel {
 	model := FamilyMemberModel{
 		Id:        source.Id().String(),
 		Name:      source.Name(),

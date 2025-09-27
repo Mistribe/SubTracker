@@ -8,9 +8,8 @@ import (
 	"time"
 
 	"github.com/Oleexo/config-go"
-	"github.com/google/uuid"
-	"golang.org/x/text/currency"
 
+	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/domain/types"
@@ -26,7 +25,7 @@ type systemSubscriptionModel struct {
 	FreeTrial        *systemFreeTrialModel `json:"free_trial"`
 	Owner            systemOwnerModel      `json:"owner"`
 	Payer            *systemPayerModel     `json:"payer"`
-	ServiceUsers     []string              `json:"service_users"`
+	FamilyUsers      []string              `json:"family_users"`
 	StartDate        time.Time             `json:"start_date"`
 	EndDate          *time.Time            `json:"end_date"`
 	Recurrency       string                `json:"recurrency"`
@@ -79,17 +78,22 @@ func (l subscriptionUpdater) Update(ctx context.Context) error {
 	return l.updateDatabase(ctx, subscriptions)
 }
 
-func (l subscriptionUpdater) getSystemProviders(ctx context.Context) (map[string]uuid.UUID, error) {
+func (l subscriptionUpdater) getSystemProviders(ctx context.Context) (herd.Dictionary[string, types.ProviderID],
+	error) {
 	providers, _, err := l.providerRepository.GetSystemProviders(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return herd.ToMap(providers, func(prov provider.Provider) string {
-		return *prov.Key()
-	}, func(prov provider.Provider) uuid.UUID {
-		return prov.Id()
-	}), nil
+	return herd.NewDictionaryFromSlice(
+		providers,
+		func(prov provider.Provider) string {
+			return *prov.Key()
+		},
+		func(prov provider.Provider) types.ProviderID {
+			return prov.Id()
+		},
+	), nil
 
 }
 
@@ -99,8 +103,8 @@ func (l subscriptionUpdater) updateDatabase(ctx context.Context, subscriptions [
 		return err
 	}
 	for _, model := range subscriptions {
-		id := uuid.MustParse(model.Id)
-		sub, err := l.subscriptionRepository.GetById(ctx, id)
+		subscriptionID := types.MustParseSubscriptionID(model.Id)
+		sub, err := l.subscriptionRepository.GetById(ctx, subscriptionID)
 		if err != nil {
 			return err
 		}
@@ -116,33 +120,36 @@ func (l subscriptionUpdater) updateDatabase(ctx context.Context, subscriptions [
 				if err != nil {
 					return err
 				}
-				customPrice = subscription.NewPrice(model.CustomPrice.Amount, cry)
+				customPrice = subscription.NewPrice(currency.NewAmount(model.CustomPrice.Amount, cry))
 			}
-			var familyId *uuid.UUID
-			if model.Owner.FamilyID != nil {
-				fid, err := uuid.Parse(*model.Owner.FamilyID)
+
+			familyId, err := types.ParseFamilyIDOrNil(model.Owner.FamilyID)
+			if err != nil {
+				return err
+			}
+			userId, err := types.ParseUserIDOrNil(model.Owner.UserID)
+			if err != nil {
+				return err
+			}
+			owner := types.NewOwner(
+				types.OwnerType(model.Owner.Type),
+				familyId,
+				userId,
+			)
+			var payer subscription.Payer
+			if model.Payer != nil {
+				memberId, err := types.ParseFamilyMemberIDOrNil(model.Payer.MemberId)
 				if err != nil {
 					return err
 				}
-				familyId = &fid
+				payer = subscription.NewPayer(
+					subscription.PayerType(model.Payer.Type),
+					*familyId,
+					memberId)
 			}
-			owner := types.NewOwner(types.OwnerType(model.Owner.Type), familyId, model.Owner.UserID)
-			var payer subscription.Payer
-			if model.Payer != nil {
-				var memberId *uuid.UUID
-				if model.Payer.MemberId != nil {
-					mid, err := uuid.Parse(*model.Payer.MemberId)
-					if err != nil {
-						return err
-					}
-					memberId = &mid
-				}
-				payer = subscription.NewPayer(subscription.PayerType(model.Payer.Type),
-					*familyId, memberId)
-			}
-			var serviceUsers []uuid.UUID
-			for _, userId := range model.ServiceUsers {
-				serviceUsers = append(serviceUsers, uuid.MustParse(userId))
+			var familyUsers []types.FamilyMemberID
+			for _, familyMemberId := range model.FamilyUsers {
+				familyUsers = append(familyUsers, types.MustParseFamilyMemberID(familyMemberId))
 			}
 			providerId, ok := providers[model.ProviderKey]
 			if !ok {
@@ -154,16 +161,14 @@ func (l subscriptionUpdater) updateDatabase(ctx context.Context, subscriptions [
 			}
 
 			sub = subscription.NewSubscription(
-				id,
+				subscriptionID,
 				&model.FriendlyName,
 				freeTrial,
 				providerId,
-				nil,
-				nil,
 				customPrice,
 				owner,
 				payer,
-				serviceUsers,
+				familyUsers,
 				nil,
 				model.StartDate,
 				model.EndDate,

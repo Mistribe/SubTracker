@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/shared/i18n"
 )
@@ -12,7 +13,7 @@ type service struct {
 	userRepository ports.AccountRepository
 }
 
-func (s service) GetPreferredCurrency(ctx context.Context, userId string) currency.Unit {
+func (s service) GetPreferredCurrency(ctx context.Context, userId types.UserID) currency.Unit {
 	profile, err := s.userRepository.GetById(ctx, userId)
 	if err != nil {
 		// todo better err

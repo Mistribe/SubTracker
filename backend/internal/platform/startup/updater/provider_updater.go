@@ -33,18 +33,6 @@ func (m labelMap) getUuids(keys []string) ([]uuid.UUID, bool) {
 	return results, true
 }
 
-func (m labelMap) Keys() []string {
-	results := make([]string, len(m))
-
-	idx := 0
-	for k := range m {
-		results[idx] = k
-		idx++
-	}
-
-	return results
-}
-
 type systemProviderModel struct {
 	Name        string   `json:"name"`
 	Key         string   `json:"key"`
@@ -82,16 +70,16 @@ func (l providerUpdater) Update(ctx context.Context) error {
 	return l.updateDatabase(ctx, providers)
 }
 
-func (l providerUpdater) getSystemLabels(ctx context.Context) (labelMap, error) {
+func (l providerUpdater) getSystemLabels(ctx context.Context) (herd.Dictionary[string, types.LabelID], error) {
 	lbls, err := l.labelRepository.GetSystemLabels(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return herd.ToMap(lbls,
+	return herd.NewDictionaryFromSlice(lbls,
 		func(lbl label.Label) string {
 			return *lbl.Key()
-		}, func(lbl label.Label) uuid.UUID {
+		}, func(lbl label.Label) types.LabelID {
 			return lbl.Id()
 		}), nil
 }
@@ -107,12 +95,20 @@ func (l providerUpdater) updateDatabase(ctx context.Context, sourceProviders []s
 		return err
 	}
 
-	systemProviderMap := herd.ToMap(systemProviders, func(prov provider.Provider) string {
-		return *prov.Key()
-	}, func(prov provider.Provider) provider.Provider { return prov })
-	sourceProviderMap := herd.ToMap(sourceProviders, func(prov systemProviderModel) string {
-		return prov.Key
-	}, func(prov systemProviderModel) systemProviderModel { return prov })
+	systemProviderMap := herd.NewDictionaryFromSlice(
+		systemProviders,
+		func(prov provider.Provider) string {
+			return *prov.Key()
+		},
+		func(prov provider.Provider) provider.Provider { return prov },
+	)
+	sourceProviderMap := herd.NewDictionaryFromSlice(
+		sourceProviders,
+		func(prov systemProviderModel) string {
+			return prov.Key
+		},
+		func(prov systemProviderModel) systemProviderModel { return prov },
+	)
 	for key, prov := range sourceProviderMap {
 		existing, ok := systemProviderMap[key]
 		if ok {
@@ -147,7 +143,7 @@ func (l providerUpdater) updateDatabase(ctx context.Context, sourceProviders []s
 			}
 
 			newProvider := provider.NewProvider(
-				uuid.Must(uuid.NewV7()),
+				types.NewProviderID(),
 				prov.Name,
 				&prov.Key,
 				prov.Description,
@@ -155,7 +151,6 @@ func (l providerUpdater) updateDatabase(ctx context.Context, sourceProviders []s
 				&prov.Website,
 				&prov.PricingPage,
 				labelIds,
-				nil,
 				types.SystemOwner,
 				time.Now(),
 				time.Now(),

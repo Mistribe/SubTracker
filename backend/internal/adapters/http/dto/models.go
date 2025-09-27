@@ -3,8 +3,6 @@ package dto
 import (
 	"errors"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/pkg/x"
@@ -61,7 +59,7 @@ func NewOwnerModel(source types.Owner) OwnerModel {
 	switch source.Type() {
 	case types.PersonalOwnerType:
 		userId := source.UserId()
-		model.UserId = &userId
+		model.UserId = x.P(userId.String())
 	case types.FamilyOwnerType:
 		familyId := source.FamilyId().String()
 		model.FamilyId = &familyId

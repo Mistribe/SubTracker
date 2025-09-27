@@ -16,10 +16,8 @@ func UseSchema(schema string) {
 	FamilyMembers = FamilyMembers.FromSchema(schema)
 	Labels = Labels.FromSchema(schema)
 	ProviderLabels = ProviderLabels.FromSchema(schema)
-	ProviderPlans = ProviderPlans.FromSchema(schema)
-	ProviderPrices = ProviderPrices.FromSchema(schema)
 	Providers = Providers.FromSchema(schema)
+	SubscriptionFamilyUsers = SubscriptionFamilyUsers.FromSchema(schema)
 	SubscriptionLabels = SubscriptionLabels.FromSchema(schema)
-	SubscriptionServiceUsers = SubscriptionServiceUsers.FromSchema(schema)
 	Subscriptions = Subscriptions.FromSchema(schema)
 }

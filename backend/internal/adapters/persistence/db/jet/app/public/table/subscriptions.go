@@ -25,8 +25,6 @@ type subscriptionsTable struct {
 	FreeTrialStartDate  postgres.ColumnTimestampz
 	FreeTrialEndDate    postgres.ColumnTimestampz
 	ProviderID          postgres.ColumnString
-	PlanID              postgres.ColumnString
-	PriceID             postgres.ColumnString
 	FamilyID            postgres.ColumnString
 	PayerType           postgres.ColumnString
 	PayerMemberID       postgres.ColumnString
@@ -88,8 +86,6 @@ func newSubscriptionsTableImpl(schemaName, tableName, alias string) subscription
 		FreeTrialStartDateColumn  = postgres.TimestampzColumn("free_trial_start_date")
 		FreeTrialEndDateColumn    = postgres.TimestampzColumn("free_trial_end_date")
 		ProviderIDColumn          = postgres.StringColumn("provider_id")
-		PlanIDColumn              = postgres.StringColumn("plan_id")
-		PriceIDColumn             = postgres.StringColumn("price_id")
 		FamilyIDColumn            = postgres.StringColumn("family_id")
 		PayerTypeColumn           = postgres.StringColumn("payer_type")
 		PayerMemberIDColumn       = postgres.StringColumn("payer_member_id")
@@ -102,8 +98,8 @@ func newSubscriptionsTableImpl(schemaName, tableName, alias string) subscription
 		CreatedAtColumn           = postgres.TimestampzColumn("created_at")
 		UpdatedAtColumn           = postgres.TimestampzColumn("updated_at")
 		EtagColumn                = postgres.StringColumn("etag")
-		allColumns                = postgres.ColumnList{IDColumn, OwnerTypeColumn, OwnerFamilyIDColumn, OwnerUserIDColumn, FriendlyNameColumn, FreeTrialStartDateColumn, FreeTrialEndDateColumn, ProviderIDColumn, PlanIDColumn, PriceIDColumn, FamilyIDColumn, PayerTypeColumn, PayerMemberIDColumn, StartDateColumn, EndDateColumn, RecurrencyColumn, CustomRecurrencyColumn, CustomPriceCurrencyColumn, CustomPriceAmountColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
-		mutableColumns            = postgres.ColumnList{OwnerTypeColumn, OwnerFamilyIDColumn, OwnerUserIDColumn, FriendlyNameColumn, FreeTrialStartDateColumn, FreeTrialEndDateColumn, ProviderIDColumn, PlanIDColumn, PriceIDColumn, FamilyIDColumn, PayerTypeColumn, PayerMemberIDColumn, StartDateColumn, EndDateColumn, RecurrencyColumn, CustomRecurrencyColumn, CustomPriceCurrencyColumn, CustomPriceAmountColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
+		allColumns                = postgres.ColumnList{IDColumn, OwnerTypeColumn, OwnerFamilyIDColumn, OwnerUserIDColumn, FriendlyNameColumn, FreeTrialStartDateColumn, FreeTrialEndDateColumn, ProviderIDColumn, FamilyIDColumn, PayerTypeColumn, PayerMemberIDColumn, StartDateColumn, EndDateColumn, RecurrencyColumn, CustomRecurrencyColumn, CustomPriceCurrencyColumn, CustomPriceAmountColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
+		mutableColumns            = postgres.ColumnList{OwnerTypeColumn, OwnerFamilyIDColumn, OwnerUserIDColumn, FriendlyNameColumn, FreeTrialStartDateColumn, FreeTrialEndDateColumn, ProviderIDColumn, FamilyIDColumn, PayerTypeColumn, PayerMemberIDColumn, StartDateColumn, EndDateColumn, RecurrencyColumn, CustomRecurrencyColumn, CustomPriceCurrencyColumn, CustomPriceAmountColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
 		defaultColumns            = postgres.ColumnList{}
 	)
 
@@ -119,8 +115,6 @@ func newSubscriptionsTableImpl(schemaName, tableName, alias string) subscription
 		FreeTrialStartDate:  FreeTrialStartDateColumn,
 		FreeTrialEndDate:    FreeTrialEndDateColumn,
 		ProviderID:          ProviderIDColumn,
-		PlanID:              PlanIDColumn,
-		PriceID:             PriceIDColumn,
 		FamilyID:            FamilyIDColumn,
 		PayerType:           PayerTypeColumn,
 		PayerMemberID:       PayerMemberIDColumn,

@@ -33,3 +33,12 @@ func ParseSubscriptionIDOrNil(id *string) (*SubscriptionID, error) {
 	}
 	return &u, nil
 }
+
+func MustParseSubscriptionID(id string) SubscriptionID {
+	u, err := ParseSubscriptionID(id)
+	if err != nil {
+		panic(err)
+	}
+
+	return u
+}

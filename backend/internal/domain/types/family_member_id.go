@@ -38,3 +38,11 @@ func ParseFamilyMemberIDOrNil(s *string) (*FamilyMemberID, error) {
 
 	return &u, nil
 }
+
+func MustParseFamilyMemberID(s string) FamilyMemberID {
+	u, err := ParseFamilyMemberID(s)
+	if err != nil {
+		panic(err)
+	}
+	return u
+}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/mistribe/subtracker/internal/domain/account"
 	"github.com/mistribe/subtracker/internal/domain/billing"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/authentication"
 	"github.com/mistribe/subtracker/pkg/ginx"
@@ -66,12 +67,12 @@ func (m AuthenticationMiddleware) Middleware() gin.HandlerFunc {
 }
 
 type connectedAccountInformation struct {
-	userId account.UserID
+	userId types.UserID
 	role   account.Role
 	planID billing.PlanID
 }
 
-func newConnectedAccountInformation(userId account.UserID, role account.Role,
+func newConnectedAccountInformation(userId types.UserID, role account.Role,
 	planID billing.PlanID) connectedAccountInformation {
 	return connectedAccountInformation{
 		userId: userId,
@@ -80,7 +81,7 @@ func newConnectedAccountInformation(userId account.UserID, role account.Role,
 	}
 }
 
-func (c connectedAccountInformation) UserID() account.UserID {
+func (c connectedAccountInformation) UserID() types.UserID {
 	return c.userId
 }
 
