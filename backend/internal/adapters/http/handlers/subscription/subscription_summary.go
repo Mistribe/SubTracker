@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	. "github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/ports"
@@ -63,7 +63,7 @@ func (e SummaryEndpoint) Handle(c *gin.Context) {
 				TotalYearly:    dto.NewAmount(res.TotalYearly),
 				TotalLastMonth: dto.NewAmount(res.TotalLastMonth),
 				TotalLastYear:  dto.NewAmount(res.TotalLastYear),
-				TopProviders: collection.Select(res.TopProviders,
+				TopProviders: herd.Select(res.TopProviders,
 					func(topProvider query.SummaryQueryTopProvidersResponse) dto.SubscriptionSummaryTopProviderResponse {
 						return dto.SubscriptionSummaryTopProviderResponse{
 							ProviderId: topProvider.ProviderID.String(),
@@ -71,14 +71,14 @@ func (e SummaryEndpoint) Handle(c *gin.Context) {
 							Duration:   topProvider.Duration.String(),
 						}
 					}),
-				TopLabels: collection.Select(res.TopLabels,
+				TopLabels: herd.Select(res.TopLabels,
 					func(topLabel query.SummaryQueryLabelResponse) dto.SubscriptionSummaryTopLabelResponse {
 						return dto.SubscriptionSummaryTopLabelResponse{
 							LabelId: topLabel.LabelID.String(),
 							Total:   dto.NewAmount(topLabel.Total),
 						}
 					}),
-				UpcomingRenewals: collection.Select(res.UpcomingRenewals,
+				UpcomingRenewals: herd.Select(res.UpcomingRenewals,
 					func(upcomingRenewal query.SummaryQueryUpcomingRenewalsResponse) dto.SubscriptionSummaryUpcomingRenewalResponse {
 						m := dto.SubscriptionSummaryUpcomingRenewalResponse{
 							ProviderId: upcomingRenewal.ProviderId.String(),

@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/domain/subscription"
@@ -30,12 +31,12 @@ type GetEndpoint struct {
 //	@Failure		500				{object}	HttpErrorResponse		"Internal Server Error"
 //	@Router			/subscriptions/{subscriptionId} [get]
 func (e GetEndpoint) Handle(c *gin.Context) {
-	id, err := QueryParamAsUUID(c, "subscriptionId")
+	subscriptionID, err := types.ParseSubscriptionID(c.Param("subscriptionId"))
 	if err != nil {
 		FromError(c, err)
 		return
 	}
-	q := query.NewFindOneQuery(id)
+	q := query.NewFindOneQuery(subscriptionID)
 	r := e.handler.Handle(c, q)
 	FromResult(c,
 		r,

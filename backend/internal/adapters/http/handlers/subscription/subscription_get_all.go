@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/shared"
 	"github.com/mistribe/subtracker/internal/usecase/subscription/query"
@@ -71,12 +71,12 @@ func (s GetAllEndpoint) Handle(c *gin.Context) {
 
 	recurrencies := subscription.ParseRecurrencyTypesOrDefault(params.Recurrencies, subscription.UnknownRecurrency)
 
-	users, err := herd.SelectErr(params.Users, uuid.Parse)
+	users, err := herd.SelectErr(params.Users, types.ParseUserID)
 	if err != nil {
 		FromError(c, err)
 		return
 	}
-	providers, err := herd.SelectErr(params.Providers, uuid.Parse)
+	providers, err := herd.SelectErr(params.Providers, types.ParseProviderID)
 	if err != nil {
 		FromError(c, err)
 		return

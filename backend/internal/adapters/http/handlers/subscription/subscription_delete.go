@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/ports"
@@ -28,14 +28,14 @@ type DeleteEndpoint struct {
 //	@Failure		500				{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/subscriptions/{subscriptionId} [delete]
 func (s DeleteEndpoint) Handle(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("subscriptionId"))
+	subscriptionID, err := types.ParseSubscriptionID(c.Param("subscriptionId"))
 	if err != nil {
 		FromError(c, err)
 		return
 	}
 
 	cmd := command.DeleteSubscriptionCommand{
-		SubscriptionID: id,
+		SubscriptionID: subscriptionID,
 	}
 
 	r := s.handler.Handle(c, cmd)

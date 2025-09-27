@@ -3,125 +3,95 @@ package subscription
 import (
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/x"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/langext/option"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/ports"
-	auth2 "github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/internal/usecase/subscription/command"
-	"github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 )
 
 type UpdateEndpoint struct {
-	handler ports.CommandHandler[command.UpdateSubscriptionCommand, subscription.Subscription]
+	handler        ports.CommandHandler[command.UpdateSubscriptionCommand, subscription.Subscription]
+	authentication ports.Authentication
 }
 
-func updateSubscriptionRequestToSubscription(
+func updateSubscriptionRequestToCommand(
 	r dto.UpdateSubscriptionRequest,
-	userId string,
-	subId uuid.UUID) (subscription.Subscription, error) {
-	serviceProviderId, err := uuid.Parse(r.ProviderId)
+	userId types.UserID,
+	subscriptionID types.SubscriptionID) (command.UpdateSubscriptionCommand, error) {
+	providerID, err := types.ParseProviderID(r.ProviderId)
 	if err != nil {
-		return nil, err
+		return command.UpdateSubscriptionCommand{}, err
 	}
-	planId, err := x.ParseOrNilUUID(r.PlanId)
+	owner, err := r.Owner.Owner(userId)
 	if err != nil {
-		return nil, err
+		return command.UpdateSubscriptionCommand{}, err
 	}
-	priceId, err := x.ParseOrNilUUID(r.PriceId)
-	if err != nil {
-		return nil, err
-	}
-	ownerType, err := types.ParseOwnerType(r.Owner.Type)
-	if err != nil {
-		return nil, err
-	}
-	var familyId *uuid.UUID
-	if r.Owner.FamilyId != nil {
-		fid, err := uuid.Parse(*r.Owner.FamilyId)
-		if err != nil {
-			return nil, err
-		}
-		familyId = &fid
-	}
-	owner := types.NewOwner(ownerType, familyId, &userId)
-	updatedAt := x.ValueOrDefault(r.UpdatedAt, time.Now())
 	var payer subscription.Payer
 	if r.Payer != nil {
-		if familyId == nil {
-			return nil, errors.New("missing family_id for adding a payer")
+		if owner.Type() != types.FamilyOwnerType {
+			return command.UpdateSubscriptionCommand{}, errors.New("missing family_id for adding a payer")
 		}
 		payerType, err := subscription.ParsePayerType(r.Payer.Type)
 		if err != nil {
-			return nil, err
+			return command.UpdateSubscriptionCommand{}, err
 		}
-		var memberId *uuid.UUID
-		if r.Payer.MemberId != nil {
-			mbrId, err := uuid.Parse(*r.Payer.MemberId)
-			if err != nil {
-				return nil, err
-			}
-			memberId = &mbrId
+		memberId, err := types.ParseFamilyMemberIDOrNil(r.Payer.MemberId)
+		if err != nil {
+			return command.UpdateSubscriptionCommand{}, err
 		}
-		payer = subscription.NewPayer(payerType, *familyId, memberId)
+		payer = subscription.NewPayer(payerType, owner.FamilyId(), memberId)
+	}
+	var freeTrial subscription.FreeTrial
+	if r.FreeTrial != nil {
+		freeTrial = subscription.NewFreeTrial(r.FreeTrial.StartDate, r.FreeTrial.EndDate)
 	}
 	recurrency, err := subscription.ParseRecurrencyType(r.Recurrency)
 	if err != nil {
-		return nil, err
+		return command.UpdateSubscriptionCommand{}, err
 	}
-	serviceUsers, err := collection.SelectErr(r.ServiceUsers, func(in string) (uuid.UUID, error) {
-		return uuid.Parse(in)
-	})
+	familyUsers, err := herd.SelectErr(r.ServiceUsers, types.ParseFamilyMemberID)
 	if err != nil {
-		return nil, err
+		return command.UpdateSubscriptionCommand{}, err
 	}
-	labels, err := collection.SelectErr(r.Labels, func(in string) (subscription.LabelRef, error) {
-		labelId, err := uuid.Parse(in)
+	labels, err := herd.SelectErr(r.Labels, func(in string) (types.LabelID, error) {
+		labelId, err := types.ParseLabelID(in)
 		if err != nil {
-			return subscription.LabelRef{}, err
+			return types.LabelID{}, err
 		}
-		return subscription.LabelRef{
-			LabelId: labelId,
-			Source:  subscription.LabelSourceSubscription,
-		}, nil
+		return labelId, nil
 	})
 	if err != nil {
-		return nil, err
+		return command.UpdateSubscriptionCommand{}, err
 	}
 	price, err := dto.NewSubscriptionCustomPrice(r.CustomPrice)
 	if err != nil {
-		return nil, err
+		return command.UpdateSubscriptionCommand{}, err
 	}
-
-	return subscription.NewSubscription(
-		subId,
-		r.FriendlyName,
-		dto.NewSubscriptionFreeTrial(r.FreeTrial),
-		serviceProviderId,
-		planId,
-		priceId,
-		price,
-		owner,
-		payer,
-		serviceUsers,
-		labels,
-		r.StartDate,
-		r.EndDate,
-		recurrency,
-		r.CustomRecurrency,
-		updatedAt,
-		updatedAt,
-	), nil
+	return command.UpdateSubscriptionCommand{
+		SubscriptionID:   subscriptionID,
+		FriendlyName:     r.FriendlyName,
+		FreeTrial:        freeTrial,
+		ProviderID:       providerID,
+		Price:            price.Amount(),
+		Owner:            owner,
+		Payer:            payer,
+		FamilyUsers:      familyUsers,
+		Labels:           labels,
+		StartDate:        r.StartDate,
+		EndDate:          r.EndDate,
+		Recurrency:       recurrency,
+		CustomRecurrency: r.CustomRecurrency,
+		UpdatedAt:        option.New(r.UpdatedAt),
+	}, nil
 }
 
 // Handle godoc
@@ -140,39 +110,23 @@ func updateSubscriptionRequestToSubscription(
 //	@Failure		500				{object}	HttpErrorResponse				"Internal Server Error"
 //	@Router			/subscriptions/{subscriptionId} [put]
 func (s UpdateEndpoint) Handle(c *gin.Context) {
-	id, err := uuid.Parse(c.Param("subscriptionId"))
+	subscriptionID, err := types.ParseSubscriptionID(c.Param("subscriptionId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
+		FromError(c, err)
 		return
 	}
 
 	var model dto.UpdateSubscriptionRequest
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
+		FromError(c, err)
 		return
 	}
 
-	userId, ok := auth2.GetUserIdFromContext(c)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, ginx.HttpErrorResponse{
-			Message: "invalid user id",
-		})
-		return
-	}
-
-	sub, err := updateSubscriptionRequestToSubscription(model, userId, id)
+	connectedAccount := s.authentication.MustGetConnectedAccount(c)
+	cmd, err := updateSubscriptionRequestToCommand(model, connectedAccount.UserID(), subscriptionID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
+		FromError(c, err)
 		return
-	}
-	cmd := command.UpdateSubscriptionCommand{
-		Subscription: sub,
 	}
 	r := s.handler.Handle(c, cmd)
 	FromResult(c,
@@ -196,8 +150,9 @@ func (s UpdateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewUpdateEndpoint(handler ports.CommandHandler[command.UpdateSubscriptionCommand, subscription.Subscription]) *UpdateEndpoint {
+func NewUpdateEndpoint(handler ports.CommandHandler[command.UpdateSubscriptionCommand, subscription.Subscription], authentication ports.Authentication) *UpdateEndpoint {
 	return &UpdateEndpoint{
-		handler: handler,
+		handler:        handler,
+		authentication: authentication,
 	}
 }
