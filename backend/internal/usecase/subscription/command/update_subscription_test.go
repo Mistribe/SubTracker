@@ -66,7 +66,7 @@ func TestUpdateSubscriptionCommandHandler_Handle(t *testing.T) {
 			existing.ProviderId(),
 			existing.PlanId(),
 			existing.PriceId(),
-			existing.CustomPrice(),
+			existing.Price(),
 			existing.Owner(),
 			existing.Payer(),
 			existing.ServiceUsers().Values(),

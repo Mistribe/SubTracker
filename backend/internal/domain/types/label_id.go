@@ -7,7 +7,8 @@ import (
 type LabelID uuid.UUID
 
 func (l LabelID) String() string {
-	return l.String()
+	u := uuid.UUID(l)
+	return u.String()
 }
 
 func NewLabelID() LabelID {

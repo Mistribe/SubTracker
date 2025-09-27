@@ -33,7 +33,7 @@ func (e GetEndpoint) Handle(c *gin.Context) {
 	connectedAccount := e.authentication.MustGetConnectedAccount(c)
 
 	q := query.FindUserFamilyQuery{
-		UserId: connectedAccount.UserID(),
+		UserID: connectedAccount.UserID(),
 	}
 
 	r := e.handler.Handle(c, q)

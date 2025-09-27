@@ -66,7 +66,7 @@ func (e SummaryEndpoint) Handle(c *gin.Context) {
 				TopProviders: collection.Select(res.TopProviders,
 					func(topProvider query.SummaryQueryTopProvidersResponse) dto.SubscriptionSummaryTopProviderResponse {
 						return dto.SubscriptionSummaryTopProviderResponse{
-							ProviderId: topProvider.ProviderId.String(),
+							ProviderId: topProvider.ProviderID.String(),
 							Total:      dto.NewAmount(topProvider.Total),
 							Duration:   topProvider.Duration.String(),
 						}
@@ -74,7 +74,7 @@ func (e SummaryEndpoint) Handle(c *gin.Context) {
 				TopLabels: collection.Select(res.TopLabels,
 					func(topLabel query.SummaryQueryLabelResponse) dto.SubscriptionSummaryTopLabelResponse {
 						return dto.SubscriptionSummaryTopLabelResponse{
-							LabelId: topLabel.TagId.String(),
+							LabelId: topLabel.LabelID.String(),
 							Total:   dto.NewAmount(topLabel.Total),
 						}
 					}),

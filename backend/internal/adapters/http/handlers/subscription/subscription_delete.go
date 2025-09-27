@@ -35,7 +35,7 @@ func (s DeleteEndpoint) Handle(c *gin.Context) {
 	}
 
 	cmd := command.DeleteSubscriptionCommand{
-		Id: id,
+		SubscriptionID: id,
 	}
 
 	r := s.handler.Handle(c, cmd)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/mistribe/subtracker/internal/domain/account"
 	"github.com/mistribe/subtracker/internal/domain/billing"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -51,7 +52,7 @@ func (h UpdatePreferredCurrencyCommandHandler) Handle(ctx context.Context,
 
 func (h UpdatePreferredCurrencyCommandHandler) createAccount(
 	ctx context.Context,
-	userID account.UserID,
+	userID types.UserID,
 	cmd UpdatePreferredCurrencyCommand) result.Result[bool] {
 
 	acc := account.New(userID,

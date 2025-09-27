@@ -26,13 +26,11 @@ type Subscription interface {
 	FreeTrial() FreeTrial
 	// ProviderId is the provider of the subscription
 	ProviderId() types.ProviderID
-	// CustomPrice is an override to the price LabelID
-	CustomPrice() CustomPrice
+	Price() Price
 	// Owner is who own the subscription
 	Owner() types.Owner
 	// Payer is who is paying the subscription
 	Payer() Payer
-	// Service users is the member of the family using the service
 	FamilyUsers() *slicesx.Tracked[types.FamilyMemberID]
 	// StartDate is when the subscription as start
 	StartDate() time.Time
@@ -63,7 +61,7 @@ type Subscription interface {
 
 	SetFriendlyName(name *string)
 	SetFreeTrial(trial FreeTrial)
-	SetCustomPrice(price CustomPrice)
+	SetPrice(amount currency.Amount)
 	SetOwner(owner types.Owner)
 	SetPayer(payer Payer)
 	SetFamilyUsers(familyMembers []types.FamilyMemberID)
@@ -82,7 +80,7 @@ type subscription struct {
 	friendlyName     *string
 	freeTrial        FreeTrial
 	providerId       types.ProviderID
-	customPrice      CustomPrice
+	price            Price
 	owner            types.Owner
 	payer            Payer
 	familyUsers      *slicesx.Tracked[types.FamilyMemberID]
@@ -98,7 +96,7 @@ func NewSubscription(
 	friendlyName *string,
 	freeTrial FreeTrial,
 	providerId types.ProviderID,
-	customPrice CustomPrice,
+	customPrice Price,
 	owner types.Owner,
 	payer Payer,
 	familyUsers []types.FamilyMemberID,
@@ -115,7 +113,7 @@ func NewSubscription(
 		friendlyName:     friendlyName,
 		freeTrial:        freeTrial,
 		providerId:       providerId,
-		customPrice:      customPrice,
+		price:            customPrice,
 		owner:            owner,
 		payer:            payer,
 		familyUsers:      slicesx.NewTracked(familyUsers, types.FamilyMemberIdComparer, types.FamilyMemberIdComparer),
@@ -171,7 +169,7 @@ func (s *subscription) IsActive() bool {
 }
 
 func (s *subscription) GetTotalSpent() currency.Amount {
-	if s.customPrice == nil {
+	if s.price == nil {
 		return currency.NewInvalidAmount()
 	}
 
@@ -199,8 +197,8 @@ func (s *subscription) GetTotalSpent() currency.Amount {
 }
 
 func (s *subscription) GetPrice() currency.Amount {
-	if s.customPrice != nil {
-		return currency.NewAmount(s.customPrice.Amount().Value(), s.customPrice.Amount().Currency())
+	if s.price != nil {
+		return currency.NewAmount(s.price.Amount().Value(), s.price.Amount().Currency())
 	}
 
 	return currency.NewInvalidAmount()
@@ -230,22 +228,22 @@ func (s *subscription) getMonths() int {
 func (s *subscription) getMonthlyPrice() currency.Amount {
 	var price float64
 	numberOfMonths := s.getMonths()
-	if s.customPrice != nil {
-		price = s.customPrice.Amount().Value()
+	if s.price != nil {
+		price = s.price.Amount().Value()
 	} else {
 		return currency.NewInvalidAmount()
 	}
 
-	return currency.NewAmount(price/float64(numberOfMonths), s.customPrice.Amount().Currency())
+	return currency.NewAmount(price/float64(numberOfMonths), s.price.Amount().Currency())
 }
 
 func (s *subscription) GetRecurrencyAmount(to RecurrencyType) currency.Amount {
-	if s.customPrice != nil {
+	if s.price != nil {
 		monthlyPrice := s.getMonthlyPrice()
 
 		return currency.NewAmount(
 			monthlyPrice.Value()*float64(to.TotalMonths()),
-			s.customPrice.Amount().Currency(),
+			s.price.Amount().Currency(),
 		)
 	}
 
@@ -323,12 +321,12 @@ func (s *subscription) FriendlyName() *string {
 	return s.friendlyName
 }
 
-func (s *subscription) CustomPrice() CustomPrice {
-	return s.customPrice
+func (s *subscription) Price() Price {
+	return s.price
 }
 
-func (s *subscription) SetCustomPrice(price CustomPrice) {
-	s.customPrice = price
+func (s *subscription) SetPrice(amount currency.Amount) {
+	s.price.SetAmount(amount)
 	s.SetAsDirty()
 }
 
@@ -431,8 +429,8 @@ func (s *subscription) ETagFields() []interface{} {
 		fields = append(fields, *s.customRecurrency)
 	}
 
-	if s.customPrice != nil {
-		fields = append(fields, s.customPrice.ETag())
+	if s.price != nil {
+		fields = append(fields, s.price.ETag())
 	}
 
 	if s.payer != nil {
@@ -473,8 +471,8 @@ func (s *subscription) GetValidationErrors() validation.Errors {
 		}
 	}
 
-	if s.customPrice != nil {
-		if err := s.customPrice.GetValidationErrors(); err != nil {
+	if s.price != nil {
+		if err := s.price.GetValidationErrors(); err != nil {
 			errors = append(errors, err...)
 		}
 	}

@@ -37,11 +37,11 @@ func updateFamilyMemberRequestToCommand(
 	}
 
 	return command.UpdateFamilyMemberCommand{
-		FamilyId:  familyId,
-		Id:        memberId,
-		Name:      m.Name,
-		Type:      memberType,
-		UpdatedAt: updatedAt,
+		FamilyID:       familyId,
+		FamilyMemberID: memberId,
+		Name:           m.Name,
+		Type:           memberType,
+		UpdatedAt:      updatedAt,
 	}, nil
 }
 

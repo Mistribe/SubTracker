@@ -35,7 +35,7 @@ func NewSubscriptionFreeTrial(model *SubscriptionFreeTrialModel) subscription.Fr
 	return subscription.NewFreeTrial(model.StartDate, model.EndDate)
 }
 
-func NewSubscriptionCustomPrice(model *AmountModel) (subscription.CustomPrice, error) {
+func NewSubscriptionCustomPrice(model *AmountModel) (subscription.Price, error) {
 	if model == nil {
 		return nil, nil
 	}
@@ -45,7 +45,7 @@ func NewSubscriptionCustomPrice(model *AmountModel) (subscription.CustomPrice, e
 		return nil, err
 	}
 
-	return subscription.NewCustomPrice(model.Value, cry), nil
+	return subscription.NewPrice(model.Value, cry), nil
 
 }
 
@@ -182,7 +182,7 @@ func NewSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 		CreatedAt:        source.CreatedAt(),
 		UpdatedAt:        source.UpdatedAt(),
 		Etag:             source.ETag(),
-		CustomPrice:      x.P(NewAmount(source.CustomPrice().Amount())),
+		CustomPrice:      x.P(NewAmount(source.Price().Amount())),
 		Price:            newSubscriptionPrice(source),
 	}
 

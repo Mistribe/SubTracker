@@ -4,46 +4,49 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	auth "github.com/mistribe/subtracker/internal/domain/authorization"
+	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/label/command"
+	"github.com/mistribe/subtracker/pkg/langext/option"
 )
 
 func TestCreateLabel(t *testing.T) {
-	userId := "userID-Test"
+	userId := types.UserID("userID-Test")
 
 	t.Run("all working", func(t *testing.T) {
 		labelRepository := ports.NewMockLabelRepository(t)
 		familyRepository := ports.NewMockFamilyRepository(t)
 		authorization := ports.NewMockAuthorization(t)
 		permissionRequest := ports.NewMockPermissionRequest(t)
-		authorization.EXPECT().Can(t.Context(), user.PermissionWrite).Return(permissionRequest)
+		entitlementResolver := ports.NewMockEntitlementResolver(t)
+
+		labelID := types.NewLabelID()
+
+		authorization.EXPECT().Can(t.Context(), auth.PermissionWrite).Return(permissionRequest)
 		permissionRequest.EXPECT().For(mock.Anything).Return(nil)
-		labelRepository.EXPECT().GetById(t.Context(), mock.Anything).Return(nil, nil)
-		authorization.EXPECT().EnsureWithinLimit(t.Context(), user.FeatureCustomLabels, 1).Return(nil)
+		labelRepository.EXPECT().GetById(t.Context(), labelID).Return(nil, nil)
+		entitlementResolver.EXPECT().CheckQuota(t.Context(), billing.FeatureIdCustomLabels, 1).Return(true,
+			billing.EffectiveEntitlement{}, nil)
 		labelRepository.EXPECT().Save(t.Context(), mock.Anything).Return(nil)
-		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization)
+
+		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization, entitlementResolver)
 
 		owner := types.NewPersonalOwner(userId)
 		cmd := command.CreateLabelCommand{
-			Label: label.NewLabel(
-				uuid.Must(uuid.NewV7()),
-				owner,
-				"label test",
-				nil,
-				"#FFFFFF",
-				time.Now(),
-				time.Now(),
-			),
+			LabelID:   option.Some(labelID),
+			Name:      "label test",
+			Color:     "#FFFFFF",
+			Owner:     owner,
+			CreatedAt: option.Some(time.Now()),
 		}
 
 		result := handler.Handle(t.Context(), cmd)
-
 		assert.True(t, result.IsSuccess())
 	})
 
@@ -52,25 +55,22 @@ func TestCreateLabel(t *testing.T) {
 		familyRepository := ports.NewMockFamilyRepository(t)
 		authorization := ports.NewMockAuthorization(t)
 		permissionRequest := ports.NewMockPermissionRequest(t)
-		authorization.EXPECT().Can(t.Context(), user.PermissionWrite).Return(permissionRequest)
-		permissionRequest.EXPECT().For(mock.Anything).Return(user.ErrUnauthorized)
-		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization)
+		entitlementResolver := ports.NewMockEntitlementResolver(t)
+
+		authorization.EXPECT().Can(t.Context(), auth.PermissionWrite).Return(permissionRequest)
+		permissionRequest.EXPECT().For(mock.Anything).Return(auth.ErrUnauthorized)
+
+		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization, entitlementResolver)
 
 		owner := types.NewPersonalOwner(userId)
 		cmd := command.CreateLabelCommand{
-			Label: label.NewLabel(
-				uuid.Must(uuid.NewV7()),
-				owner,
-				"family label test",
-				nil,
-				"#000000",
-				time.Now(),
-				time.Now(),
-			),
+			Name:      "family label test",
+			Color:     "#000000",
+			Owner:     owner,
+			CreatedAt: option.Some(time.Now()),
 		}
 
 		result := handler.Handle(t.Context(), cmd)
-
 		assert.True(t, result.IsFaulted())
 	})
 
@@ -78,32 +78,30 @@ func TestCreateLabel(t *testing.T) {
 		labelRepository := ports.NewMockLabelRepository(t)
 		familyRepository := ports.NewMockFamilyRepository(t)
 		authorization := ports.NewMockAuthorization(t)
-		permissionRequest := ports.NewMockPermissionRequest(t)
-		authorization.EXPECT().Can(t.Context(), user.PermissionWrite).Return(permissionRequest)
-		permissionRequest.EXPECT().For(mock.Anything).Return(nil)
-		lbl := label.NewLabel(
-			uuid.Must(uuid.NewV7()),
-			types.NewPersonalOwner(userId),
+		entitlementResolver := ports.NewMockEntitlementResolver(t)
+
+		owner := types.NewPersonalOwner(userId)
+		labelID := types.NewLabelID()
+		existing := label.NewLabel(
+			labelID,
+			owner,
 			"label test",
 			nil,
 			"#FFFFFF",
 			time.Now(),
 			time.Now(),
 		)
-		labelRepository.EXPECT().GetById(t.Context(), mock.Anything).Return(lbl, nil)
-		authorization.EXPECT().EnsureWithinLimit(t.Context(), user.FeatureCustomLabels, 1).Return(nil)
-		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization)
+
+		labelRepository.EXPECT().GetById(t.Context(), labelID).Return(existing, nil)
+
+		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization, entitlementResolver)
 
 		cmd := command.CreateLabelCommand{
-			Label: label.NewLabel(
-				uuid.Must(uuid.NewV7()),
-				types.NewPersonalOwner(userId),
-				"label test 2",
-				nil,
-				"#FFFFFF",
-				time.Now(),
-				time.Now(),
-			),
+			LabelID:   option.Some(labelID),
+			Name:      "label test 2",
+			Color:     "#FFFFFF",
+			Owner:     owner,
+			CreatedAt: option.Some(time.Now()),
 		}
 
 		result := handler.Handle(t.Context(), cmd)
@@ -114,28 +112,33 @@ func TestCreateLabel(t *testing.T) {
 		labelRepository := ports.NewMockLabelRepository(t)
 		familyRepository := ports.NewMockFamilyRepository(t)
 		authorization := ports.NewMockAuthorization(t)
-		permissionRequest := ports.NewMockPermissionRequest(t)
-		authorization.EXPECT().Can(t.Context(), user.PermissionWrite).Return(permissionRequest)
-		permissionRequest.EXPECT().For(mock.Anything).Return(nil)
-		lbl := label.NewLabel(
-			uuid.Must(uuid.NewV7()),
-			types.NewPersonalOwner(userId),
+		entitlementResolver := ports.NewMockEntitlementResolver(t)
+
+		owner := types.NewPersonalOwner(userId)
+		labelID := types.NewLabelID()
+		existing := label.NewLabel(
+			labelID,
+			owner,
 			"label test",
 			nil,
 			"#FFFFFF",
 			time.Now(),
 			time.Now(),
 		)
-		labelRepository.EXPECT().GetById(t.Context(), mock.Anything).Return(lbl, nil)
-		authorization.EXPECT().EnsureWithinLimit(t.Context(), user.FeatureCustomLabels, 1).Return(nil)
-		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization)
+
+		labelRepository.EXPECT().GetById(t.Context(), labelID).Return(existing, nil)
+
+		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization, entitlementResolver)
 
 		cmd := command.CreateLabelCommand{
-			Label: lbl,
+			LabelID:   option.Some(labelID),
+			Name:      existing.Name(),
+			Color:     existing.Color(),
+			Owner:     owner,
+			CreatedAt: option.Some(time.Now()),
 		}
 
 		result := handler.Handle(t.Context(), cmd)
-		assert.True(t, result.IsSuccess())
+		assert.True(t, result.IsFaulted())
 	})
-
 }

@@ -21,7 +21,7 @@ func BuildPersistenceModule() fx.Option {
 			repositories.NewFamilyRepository,
 			repositories.NewLabelRepository,
 			repositories.NewProviderRepository,
-			repositories.NewUserRepository,
+			repositories.NewAccountRepository,
 			repositories.NewCurrencyRateRepository,
 		),
 	)

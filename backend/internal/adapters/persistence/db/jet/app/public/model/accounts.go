@@ -7,8 +7,14 @@
 
 package model
 
-type Users struct {
+import (
+	"github.com/google/uuid"
+)
+
+type Accounts struct {
 	ID       string `sql:"primary_key"`
 	Currency string
 	Plan     *string
+	FamilyID *uuid.UUID
+	Role     string
 }

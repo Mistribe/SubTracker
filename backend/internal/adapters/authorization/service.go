@@ -62,7 +62,7 @@ func (s service) getFamilyId(ctx context.Context, userId string) (*uuid.UUID, er
 	if ok {
 		return &fromCache, nil
 	}
-	fromDatabase, err := s.familyRepository.GetUserFamily(ctx, userId)
+	fromDatabase, err := s.familyRepository.GetAccountFamily(ctx, userId)
 	if err != nil {
 		return nil, err
 	}

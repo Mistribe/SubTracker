@@ -17,7 +17,7 @@ packages:
       Exchange:
       Authentication:
       EntitlementResolver:
-      UserService:
+      AccountService:
       Cache:
       CurrencyRepository:
       FamilyRepository:

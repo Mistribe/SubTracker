@@ -6,11 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/mistribe/subtracker/internal/domain/user"
+	auth "github.com/mistribe/subtracker/internal/domain/authorization"
 
 	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/internal/domain/types"
@@ -20,12 +19,12 @@ import (
 )
 
 func TestUpdateLabelCommandHandler_Handle(t *testing.T) {
-	id := uuid.Must(uuid.NewV7())
+	id := types.NewLabelID()
 
 	// Common valid existing label used in multiple tests
 	newPersonalLabel := func() label.Label {
 		return label.NewLabel(
-			uuid.Must(uuid.NewV7()),
+			types.NewLabelID(),
 			types.NewPersonalOwner("userID-Test"),
 			"label test",
 			nil,
@@ -80,8 +79,8 @@ func TestUpdateLabelCommandHandler_Handle(t *testing.T) {
 
 		existing := newPersonalLabel()
 		labelRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), user.PermissionWrite).Return(perm)
-		perm.EXPECT().For(mock.Anything).Return(user.ErrUnauthorized)
+		authz.EXPECT().Can(t.Context(), auth.PermissionWrite).Return(perm)
+		perm.EXPECT().For(mock.Anything).Return(auth.ErrUnauthorized)
 
 		h := command.NewUpdateLabelCommandHandler(labelRepo, familyRepo, authz)
 		cmd := command.UpdateLabelCommand{LabelID: id, Name: "n", Color: "#000000", UpdatedAt: option.None[time.Time]()}
@@ -101,7 +100,7 @@ func TestUpdateLabelCommandHandler_Handle(t *testing.T) {
 
 		existing := newPersonalLabel()
 		labelRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), user.PermissionWrite).Return(perm)
+		authz.EXPECT().Can(t.Context(), auth.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
 
 		h := command.NewUpdateLabelCommandHandler(labelRepo, familyRepo, authz)
@@ -123,7 +122,7 @@ func TestUpdateLabelCommandHandler_Handle(t *testing.T) {
 
 		existing := newPersonalLabel()
 		labelRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), user.PermissionWrite).Return(perm)
+		authz.EXPECT().Can(t.Context(), auth.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
 		labelRepo.EXPECT().Save(t.Context(), mock.Anything).Return(errors.New("save failed"))
 
@@ -146,7 +145,7 @@ func TestUpdateLabelCommandHandler_Handle(t *testing.T) {
 
 		existing := newPersonalLabel()
 		labelRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), user.PermissionWrite).Return(perm)
+		authz.EXPECT().Can(t.Context(), auth.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
 
 		captured := make([]label.Label, 0, 1)
@@ -183,7 +182,7 @@ func TestUpdateLabelCommandHandler_Handle(t *testing.T) {
 		existing := newPersonalLabel()
 		before := time.Now()
 		labelRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), user.PermissionWrite).Return(perm)
+		authz.EXPECT().Can(t.Context(), auth.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
 
 		labelRepo.EXPECT().Save(t.Context(), mock.Anything).Return(nil)

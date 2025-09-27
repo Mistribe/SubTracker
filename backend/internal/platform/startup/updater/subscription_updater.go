@@ -110,13 +110,13 @@ func (l subscriptionUpdater) updateDatabase(ctx context.Context, subscriptions [
 			if model.FreeTrial != nil {
 				freeTrial = subscription.NewFreeTrial(model.FreeTrial.StartDate, model.FreeTrial.EndDate)
 			}
-			var customPrice subscription.CustomPrice
+			var customPrice subscription.Price
 			if model.CustomPrice != nil {
 				cry, err := currency.ParseISO(model.CustomPrice.Currency)
 				if err != nil {
 					return err
 				}
-				customPrice = subscription.NewCustomPrice(model.CustomPrice.Amount, cry)
+				customPrice = subscription.NewPrice(model.CustomPrice.Amount, cry)
 			}
 			var familyId *uuid.UUID
 			if model.Owner.FamilyID != nil {

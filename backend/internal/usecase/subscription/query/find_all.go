@@ -4,11 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
-	"github.com/mistribe/subtracker/internal/domain/user"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/shared"
 	"github.com/mistribe/subtracker/pkg/langext/result"
@@ -19,8 +17,8 @@ type FindAllQuery struct {
 	Recurrencies []subscription.RecurrencyType
 	FromDate     *time.Time
 	ToDate       *time.Time
-	Users        []uuid.UUID
-	Providers    []uuid.UUID
+	Users        []types.UserID
+	Providers    []types.ProviderID
 	WithInactive bool
 	Limit        int64
 	Offset       int64
@@ -31,8 +29,8 @@ func NewFindAllQuery(
 	recurrencies []subscription.RecurrencyType,
 	fromDate *time.Time,
 	toDate *time.Time,
-	users []uuid.UUID,
-	providers []uuid.UUID,
+	users []types.UserID,
+	providers []types.ProviderID,
 	withInactive bool,
 	size, page int64) FindAllQuery {
 	return FindAllQuery{
@@ -50,7 +48,7 @@ func NewFindAllQuery(
 
 type FindAllQueryHandler struct {
 	subscriptionRepository ports.SubscriptionRepository
-	userService            ports.UserService
+	userService            ports.AccountService
 	exchange               ports.Exchange
 	authentication         ports.Authentication
 	authorization          ports.Authorization
@@ -58,7 +56,7 @@ type FindAllQueryHandler struct {
 
 func NewFindAllQueryHandler(
 	subscriptionRepository ports.SubscriptionRepository,
-	userService ports.UserService,
+	userService ports.AccountService,
 	exchange ports.Exchange,
 	authService ports.Authentication,
 	authorization ports.Authorization) *FindAllQueryHandler {
@@ -74,7 +72,7 @@ func NewFindAllQueryHandler(
 func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[shared.PaginatedResponse[subscription.Subscription]] {
-	userId := h.authentication.MustGetUserId(ctx)
+	connectedAccount := h.authentication.MustGetConnectedAccount(ctx)
 	parameters := ports.NewSubscriptionQueryParameters(query.SearchText,
 		query.Recurrencies,
 		query.FromDate,
@@ -84,6 +82,7 @@ func (h FindAllQueryHandler) Handle(
 		query.WithInactive,
 		query.Limit,
 		query.Offset)
+	userId := connectedAccount.UserID()
 	subs, count, err := h.subscriptionRepository.GetAllForUser(ctx, userId, parameters)
 	if err != nil {
 		return result.Fail[shared.PaginatedResponse[subscription.Subscription]](err)
@@ -92,24 +91,19 @@ func (h FindAllQueryHandler) Handle(
 	preferredCurrency := h.userService.GetPreferredCurrency(ctx, userId)
 
 	for _, sub := range subs {
-		if sub.CustomPrice() != nil {
+		if sub.Price() != nil {
 			var convertedPrice currency.Amount
 			convertedPrice, err = h.exchange.ToCurrencyAt(ctx,
-				sub.CustomPrice().Amount(),
+				sub.Price().Amount(),
 				preferredCurrency,
 				sub.StartDate())
 			if err != nil {
 				return result.Fail[shared.PaginatedResponse[subscription.Subscription]](err)
 			}
 
-			sub.CustomPrice().SetAmount(convertedPrice)
+			sub.Price().SetAmount(convertedPrice)
 		}
 	}
 
-	limits, err := h.authorization.GetCurrentLimits(ctx, user.CategorySubscription)
-	if err != nil {
-		return result.Fail[shared.PaginatedResponse[subscription.Subscription]](err)
-	}
-
-	return result.Success(shared.NewPaginatedResponse(subs, count, limits))
+	return result.Success(shared.NewPaginatedResponse(subs, count))
 }

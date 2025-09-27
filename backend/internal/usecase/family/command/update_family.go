@@ -4,17 +4,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
-
+	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/family"
-	"github.com/mistribe/subtracker/internal/domain/user"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type UpdateFamilyCommand struct {
-	Id        uuid.UUID
+	FamilyID  types.FamilyID
 	Name      string
 	UpdatedAt option.Option[time.Time]
 }
@@ -34,7 +33,7 @@ func NewUpdateFamilyCommandHandler(
 }
 
 func (h *UpdateFamilyCommandHandler) Handle(ctx context.Context, cmd UpdateFamilyCommand) result.Result[family.Family] {
-	fam, err := h.familyRepository.GetById(ctx, cmd.Id)
+	fam, err := h.familyRepository.GetById(ctx, cmd.FamilyID)
 	if err != nil {
 		return result.Fail[family.Family](err)
 	}
@@ -43,7 +42,7 @@ func (h *UpdateFamilyCommandHandler) Handle(ctx context.Context, cmd UpdateFamil
 
 	}
 
-	if err = h.authorization.Can(ctx, user.PermissionWrite).For(fam); err != nil {
+	if err = h.authorization.Can(ctx, authorization.PermissionWrite).For(fam); err != nil {
 		return result.Fail[family.Family](err)
 	}
 	return h.updateFamily(ctx, cmd, fam)

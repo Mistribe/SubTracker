@@ -3,8 +3,6 @@ package command
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/domain/family"
@@ -51,7 +49,7 @@ func (h CreateFamilyMemberCommandHandler) Handle(
 		return result.Fail[family.Family](err)
 	}
 
-	ok, effectiveEnt, err := h.entitlementResolver.CheckQuota(ctx, billing.FeatureIdFamilyMembersCount, 1)
+	ok, _, err := h.entitlementResolver.CheckQuota(ctx, billing.FeatureIdFamilyMembersCount, 1)
 	if err != nil {
 		return result.Fail[family.Family](err)
 	}

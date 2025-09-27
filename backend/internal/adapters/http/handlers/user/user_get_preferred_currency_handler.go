@@ -10,7 +10,7 @@ import (
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/internal/usecase/user/query"
+	"github.com/mistribe/subtracker/internal/usecase/account/query"
 )
 
 type GetPreferredCurrencyEndpoint struct {

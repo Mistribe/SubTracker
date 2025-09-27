@@ -10,6 +10,7 @@ package table
 // UseSchema sets a new schema name for all generated table SQL builder types. It is recommended to invoke
 // this method only once at the beginning of the program.
 func UseSchema(schema string) {
+	Accounts = Accounts.FromSchema(schema)
 	CurrencyRates = CurrencyRates.FromSchema(schema)
 	Families = Families.FromSchema(schema)
 	FamilyMembers = FamilyMembers.FromSchema(schema)
@@ -21,5 +22,4 @@ func UseSchema(schema string) {
 	SubscriptionLabels = SubscriptionLabels.FromSchema(schema)
 	SubscriptionServiceUsers = SubscriptionServiceUsers.FromSchema(schema)
 	Subscriptions = Subscriptions.FromSchema(schema)
-	Users = Users.FromSchema(schema)
 }

@@ -55,8 +55,8 @@ func (f MemberDeleteEndpoint) Handle(c *gin.Context) {
 	}
 
 	cmd := command.DeleteFamilyMemberCommand{
-		Id:       id,
-		FamilyId: familyId,
+		FamilyMemberID: id,
+		FamilyID:       familyId,
 	}
 
 	r := f.handler.Handle(c, cmd)

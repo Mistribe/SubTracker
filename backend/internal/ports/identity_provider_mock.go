@@ -7,6 +7,7 @@ package ports
 import (
 	"context"
 
+	"github.com/mistribe/subtracker/internal/domain/types"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -38,7 +39,7 @@ func (_m *MockIdentityProvider) EXPECT() *MockIdentityProvider_Expecter {
 }
 
 // DeleteUser provides a mock function for the type MockIdentityProvider
-func (_mock *MockIdentityProvider) DeleteUser(ctx context.Context, userId string) error {
+func (_mock *MockIdentityProvider) DeleteUser(ctx context.Context, userId types.UserID) error {
 	ret := _mock.Called(ctx, userId)
 
 	if len(ret) == 0 {
@@ -46,7 +47,7 @@ func (_mock *MockIdentityProvider) DeleteUser(ctx context.Context, userId string
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID) error); ok {
 		r0 = returnFunc(ctx, userId)
 	} else {
 		r0 = ret.Error(0)
@@ -61,20 +62,20 @@ type MockIdentityProvider_DeleteUser_Call struct {
 
 // DeleteUser is a helper method to define mock.On call
 //   - ctx context.Context
-//   - userId string
+//   - userId types.UserID
 func (_e *MockIdentityProvider_Expecter) DeleteUser(ctx interface{}, userId interface{}) *MockIdentityProvider_DeleteUser_Call {
 	return &MockIdentityProvider_DeleteUser_Call{Call: _e.mock.On("DeleteUser", ctx, userId)}
 }
 
-func (_c *MockIdentityProvider_DeleteUser_Call) Run(run func(ctx context.Context, userId string)) *MockIdentityProvider_DeleteUser_Call {
+func (_c *MockIdentityProvider_DeleteUser_Call) Run(run func(ctx context.Context, userId types.UserID)) *MockIdentityProvider_DeleteUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 types.UserID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(types.UserID)
 		}
 		run(
 			arg0,
@@ -89,7 +90,7 @@ func (_c *MockIdentityProvider_DeleteUser_Call) Return(err error) *MockIdentityP
 	return _c
 }
 
-func (_c *MockIdentityProvider_DeleteUser_Call) RunAndReturn(run func(ctx context.Context, userId string) error) *MockIdentityProvider_DeleteUser_Call {
+func (_c *MockIdentityProvider_DeleteUser_Call) RunAndReturn(run func(ctx context.Context, userId types.UserID) error) *MockIdentityProvider_DeleteUser_Call {
 	_c.Call.Return(run)
 	return _c
 }

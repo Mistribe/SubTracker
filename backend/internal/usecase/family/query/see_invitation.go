@@ -3,23 +3,22 @@ package query
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type SeeInvitationQuery struct {
-	FamilyId       uuid.UUID
-	FamilyMemberId uuid.UUID
+	FamilyId       types.FamilyID
+	FamilyMemberId types.FamilyMemberID
 	InvitationCode string
 }
 
 type SeeInvitationQueryResponse struct {
 	Family            family.Family
-	InvitedInasmuchAs uuid.UUID
-	UserId            string
+	InvitedInasmuchAs types.FamilyMemberID
+	UserId            types.UserID
 }
 
 type SeeInvitationQueryHandler struct {
@@ -61,12 +60,12 @@ func (h SeeInvitationQueryHandler) Handle(
 		return result.Fail[SeeInvitationQueryResponse](family.ErrBadInvitationCode)
 	}
 
-	userId := h.authService.MustGetUserId(ctx)
+	connectedAccount := h.authService.MustGetConnectedAccount(ctx)
 
 	return result.Success(SeeInvitationQueryResponse{
 		Family:            fam,
 		InvitedInasmuchAs: member.Id(),
-		UserId:            userId,
+		UserId:            connectedAccount.UserID(),
 	})
 
 }

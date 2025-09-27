@@ -7,5 +7,10 @@ import (
 type FamilyID uuid.UUID
 
 func (f FamilyID) String() string {
-	return f.String()
+	u := uuid.UUID(f)
+	return u.String()
+}
+
+func NewFamilyID() FamilyID {
+	return FamilyID(uuid.Must(uuid.NewV7()))
 }

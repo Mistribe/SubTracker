@@ -3,16 +3,15 @@ package command
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type DeleteFamilyCommand struct {
-	FamilyId uuid.UUID
+	FamilyId types.FamilyID
 }
 
 type DeleteFamilyCommandHandler struct {

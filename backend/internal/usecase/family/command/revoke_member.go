@@ -3,17 +3,16 @@ package command
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type RevokeMemberCommand struct {
-	FamilyId       uuid.UUID
-	FamilyMemberId uuid.UUID
+	FamilyId       types.FamilyID
+	FamilyMemberId types.FamilyMemberID
 }
 
 type RevokeMemberCommandHandler struct {

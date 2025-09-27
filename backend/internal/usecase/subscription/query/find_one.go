@@ -3,19 +3,18 @@ package query
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type FindOneQuery struct {
-	id uuid.UUID
+	SubscriptionID types.SubscriptionID
 }
 
-func NewFindOneQuery(id uuid.UUID) FindOneQuery {
-	return FindOneQuery{id: id}
+func NewFindOneQuery(subscriptionID types.SubscriptionID) FindOneQuery {
+	return FindOneQuery{SubscriptionID: subscriptionID}
 }
 
 type FindOneQueryHandler struct {
@@ -33,8 +32,8 @@ func NewFindOneQueryHandler(
 }
 
 func (h FindOneQueryHandler) Handle(ctx context.Context, query FindOneQuery) result.Result[subscription.Subscription] {
-	userId := h.authService.MustGetUserId(ctx)
-	sub, err := h.subscriptionRepository.GetByIdForUser(ctx, userId, query.id)
+	connectedAccount := h.authService.MustGetConnectedAccount(ctx)
+	sub, err := h.subscriptionRepository.GetByIdForUser(ctx, connectedAccount.UserID(), query.SubscriptionID)
 	if err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}

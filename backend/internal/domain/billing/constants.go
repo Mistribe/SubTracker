@@ -22,6 +22,17 @@ const (
 	PlanPremiumString = "premium"
 )
 
+func (p PlanID) String() string {
+	switch p {
+	case PlanFree:
+		return PlanFreeString
+	case PlanPremium:
+		return PlanPremiumString
+	default:
+		return PlanUnknownString
+	}
+}
+
 func ParsePlan(input string) (PlanID, error) {
 	switch input {
 	case PlanUnknownString:
@@ -52,8 +63,9 @@ const (
 const (
 	FeatureIdUnknown FeatureID = iota
 	FeatureIdSubscriptions
-	FeatureIdActiveSubscriptions
+	FeatureIdActiveSubscriptionsCount
 	FeatureIdCustomLabels
+	FeatureIdCustomLabelsCount
 	FeatureIdCustomProviders
 	FeatureIdCustomProvidersCount // quota, gated by custom_providers
 	FeatureIdFamily
@@ -67,8 +79,8 @@ var (
 			Type:        FeatureBoolean,
 			Description: "Subscriptions",
 		},
-		FeatureIdActiveSubscriptions: {
-			ID:          FeatureIdActiveSubscriptions,
+		FeatureIdActiveSubscriptionsCount: {
+			ID:          FeatureIdActiveSubscriptionsCount,
 			Type:        FeatureQuota,
 			Description: "Number of active subscriptions",
 		},
@@ -76,6 +88,11 @@ var (
 			ID:          FeatureIdCustomLabels,
 			Type:        FeatureBoolean,
 			Description: "Custom labels",
+		},
+		FeatureIdCustomLabelsCount: {
+			ID:          FeatureIdCustomLabelsCount,
+			Type:        FeatureQuota,
+			Description: "Number of custom labels",
 		},
 		FeatureIdCustomProviders: {
 			ID:          FeatureIdCustomProviders,
@@ -105,18 +122,21 @@ var (
 func init() {
 	Entitlements = map[PlanID]map[FeatureID]PlanEntitlement{
 		PlanFree: {
-			FeatureIdSubscriptions:        newBoolEntitlement(PlanFree, FeatureIdSubscriptions, true),
-			FeatureIdActiveSubscriptions:  newQuotaEntitlement(PlanFree, FeatureIdActiveSubscriptions, 10),
-			FeatureIdCustomLabels:         newBoolEntitlement(PlanFree, FeatureIdCustomLabels, false),
-			FeatureIdCustomProviders:      newBoolEntitlement(PlanFree, FeatureIdCustomProviders, true),
-			FeatureIdCustomProvidersCount: newQuotaEntitlement(PlanFree, FeatureIdCustomProvidersCount, 5),
-			FeatureIdFamily:               newBoolEntitlement(PlanFree, FeatureIdFamily, true),
-			FeatureIdFamilyMembersCount:   newQuotaEntitlement(PlanFree, FeatureIdFamilyMembersCount, 3),
+			FeatureIdSubscriptions:            newBoolEntitlement(PlanFree, FeatureIdSubscriptions, true),
+			FeatureIdActiveSubscriptionsCount: newQuotaEntitlement(PlanFree, FeatureIdActiveSubscriptionsCount, 10),
+			FeatureIdCustomLabels:             newBoolEntitlement(PlanFree, FeatureIdCustomLabels, true),
+			FeatureIdCustomLabelsCount:        newQuotaEntitlement(PlanFree, FeatureIdCustomLabelsCount, 5),
+			FeatureIdCustomProviders:          newBoolEntitlement(PlanFree, FeatureIdCustomProviders, true),
+			FeatureIdCustomProvidersCount:     newQuotaEntitlement(PlanFree, FeatureIdCustomProvidersCount, 5),
+			FeatureIdFamily:                   newBoolEntitlement(PlanFree, FeatureIdFamily, true),
+			FeatureIdFamilyMembersCount:       newQuotaEntitlement(PlanFree, FeatureIdFamilyMembersCount, 3),
 		},
 		PlanPremium: {
-			FeatureIdSubscriptions:        newBoolEntitlement(PlanPremium, FeatureIdSubscriptions, true),
-			FeatureIdActiveSubscriptions:  newQuotaEntitlement(PlanPremium, FeatureIdActiveSubscriptions, 100),
-			FeatureIdCustomLabels:         newBoolEntitlement(PlanPremium, FeatureIdCustomLabels, true),
+			FeatureIdSubscriptions:            newBoolEntitlement(PlanPremium, FeatureIdSubscriptions, true),
+			FeatureIdActiveSubscriptionsCount: newQuotaEntitlement(PlanPremium, FeatureIdActiveSubscriptionsCount, 100),
+			FeatureIdCustomLabels:             newBoolEntitlement(PlanPremium, FeatureIdCustomLabels, true),
+			FeatureIdCustomLabelsCount:        newQuotaEntitlement(PlanFree, FeatureIdCustomLabelsCount, 100),
+
 			FeatureIdCustomProviders:      newBoolEntitlement(PlanPremium, FeatureIdCustomProviders, true),
 			FeatureIdCustomProvidersCount: newQuotaEntitlement(PlanPremium, FeatureIdCustomProvidersCount, 100),
 			FeatureIdFamily:               newBoolEntitlement(PlanPremium, FeatureIdFamily, true),

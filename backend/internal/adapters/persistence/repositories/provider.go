@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db"
 	. "github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/table"
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/models"
@@ -28,7 +26,7 @@ func NewProviderRepository(dbContext *db.Context) ports.ProviderRepository {
 	}
 }
 
-func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (provider.Provider, error) {
+func (r ProviderRepository) GetById(ctx context.Context, providerId types.ProviderID) (provider.Provider, error) {
 	stmt := SELECT(
 		Providers.AllColumns,
 		ProviderPlans.AllColumns,
@@ -61,7 +59,7 @@ func (r ProviderRepository) GetById(ctx context.Context, providerId uuid.UUID) (
 	return providers[0], nil
 }
 
-func (r ProviderRepository) GetByIdForUser(ctx context.Context, userId string, providerId uuid.UUID) (
+func (r ProviderRepository) GetByIdForUser(ctx context.Context, userId types.UserID, providerId types.ProviderID) (
 	provider.Provider,
 	error) {
 	stmt := SELECT(
@@ -83,8 +81,8 @@ func (r ProviderRepository) GetByIdForUser(ctx context.Context, userId string, p
 			Providers.ID.EQ(UUID(providerId)).
 				AND(
 					Providers.OwnerType.EQ(String("system")).
-						OR(Providers.OwnerType.EQ(String("personal")).AND(Providers.OwnerUserID.EQ(String(userId)))).
-						OR(Providers.OwnerType.EQ(String("family")).AND(FamilyMembers.UserID.EQ(String(userId)))),
+						OR(Providers.OwnerType.EQ(String("personal")).AND(Providers.OwnerUserID.EQ(String(userId.String())))).
+						OR(Providers.OwnerType.EQ(String("family")).AND(FamilyMembers.UserID.EQ(String(userId.String())))),
 				),
 		)
 
@@ -195,16 +193,16 @@ func (r ProviderRepository) GetAll(ctx context.Context, parameters ports.Provide
 
 func (r ProviderRepository) GetAllForUser(
 	ctx context.Context,
-	userId string,
+	userId types.UserID,
 	parameters ports.ProviderQueryParameters) ([]provider.Provider, int64, error) {
 
 	// Build base access filter
 	accessFilter := Providers.OwnerType.EQ(String("system")).
-		OR(Providers.OwnerType.EQ(String("personal")).AND(Providers.OwnerUserID.EQ(String(userId)))).
+		OR(Providers.OwnerType.EQ(String("personal")).AND(Providers.OwnerUserID.EQ(String(userId.String())))).
 		OR(Providers.OwnerType.EQ(String("family")).AND(EXISTS(
 			SELECT(FamilyMembers.ID).
 				FROM(FamilyMembers).
-				WHERE(FamilyMembers.FamilyID.EQ(Providers.OwnerFamilyID).AND(FamilyMembers.UserID.EQ(String(userId))))),
+				WHERE(FamilyMembers.FamilyID.EQ(Providers.OwnerFamilyID).AND(FamilyMembers.UserID.EQ(String(userId.String()))))),
 		))
 
 	// Add search filter if provided
@@ -294,7 +292,7 @@ func (r ProviderRepository) Save(ctx context.Context, providers ...provider.Prov
 	return nil
 }
 
-func (r ProviderRepository) Delete(ctx context.Context, providerId uuid.UUID) (bool, error) {
+func (r ProviderRepository) Delete(ctx context.Context, providerId types.ProviderID) (bool, error) {
 	stmt := Providers.DELETE().
 		WHERE(Providers.ID.EQ(UUID(providerId)))
 
@@ -306,31 +304,7 @@ func (r ProviderRepository) Delete(ctx context.Context, providerId uuid.UUID) (b
 	return count > 0, nil
 }
 
-func (r ProviderRepository) DeletePlan(ctx context.Context, planId uuid.UUID) (bool, error) {
-	stmt := ProviderPlans.DELETE().
-		WHERE(ProviderPlans.ID.EQ(UUID(planId)))
-
-	count, err := r.dbContext.Execute(ctx, stmt)
-	if err != nil {
-		return false, err
-	}
-
-	return count > 0, nil
-}
-
-func (r ProviderRepository) DeletePrice(ctx context.Context, priceId uuid.UUID) (bool, error) {
-	stmt := ProviderPrices.DELETE().
-		WHERE(ProviderPrices.ID.EQ(UUID(priceId)))
-
-	count, err := r.dbContext.Execute(ctx, stmt)
-	if err != nil {
-		return false, err
-	}
-
-	return count > 0, nil
-}
-
-func (r ProviderRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
+func (r ProviderRepository) Exists(ctx context.Context, ids ...types.ProviderID) (bool, error) {
 	if len(ids) == 0 {
 		return true, nil
 	}
@@ -384,7 +358,7 @@ func (r ProviderRepository) create(ctx context.Context, providers []provider.Pro
 		switch prov.Owner().Type() {
 		case types.PersonalOwnerType:
 			ownerFamilyID = NULL
-			ownerUserID = String(prov.Owner().UserId())
+			ownerUserID = String(prov.Owner().UserId().String())
 		case types.FamilyOwnerType:
 			ownerFamilyID = UUID(prov.Owner().FamilyId())
 			ownerUserID = NULL
@@ -455,16 +429,16 @@ func (r ProviderRepository) create(ctx context.Context, providers []provider.Pro
 
 	// Insert provider labels
 	allLabels := herd.SelectMany(providers, func(prov provider.Provider) []struct {
-		ProviderID uuid.UUID
-		LabelID    uuid.UUID
+		ProviderID types.ProviderID
+		LabelID    types.LabelID
 	} {
-		return herd.Select(prov.Labels().Values(), func(labelId uuid.UUID) struct {
-			ProviderID uuid.UUID
-			LabelID    uuid.UUID
+		return herd.Select(prov.Labels().Values(), func(labelId types.LabelID) struct {
+			ProviderID types.ProviderID
+			LabelID    types.LabelID
 		} {
 			return struct {
-				ProviderID uuid.UUID
-				LabelID    uuid.UUID
+				ProviderID types.ProviderID
+				LabelID    types.LabelID
 			}{ProviderID: prov.Id(), LabelID: labelId}
 		})
 	})
@@ -487,13 +461,6 @@ func (r ProviderRepository) create(ctx context.Context, providers []provider.Pro
 		}
 	}
 
-	// Insert plans and prices
-	for _, prov := range providers {
-		if err := r.createPlansAndPrices(ctx, prov.Id(), prov.Plans().Values()); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -509,7 +476,7 @@ func (r ProviderRepository) update(ctx context.Context, dirtyProvider provider.P
 	switch dirtyProvider.Owner().Type() {
 	case types.PersonalOwnerType:
 		ownerFamilyID = StringExp(NULL)
-		ownerUserID = String(dirtyProvider.Owner().UserId())
+		ownerUserID = String(dirtyProvider.Owner().UserId().String())
 	case types.FamilyOwnerType:
 		ownerFamilyID = StringExp(UUID(dirtyProvider.Owner().FamilyId()))
 		ownerUserID = StringExp(NULL)
@@ -584,22 +551,14 @@ func (r ProviderRepository) update(ctx context.Context, dirtyProvider provider.P
 		dirtyProvider.Labels().ClearChanges()
 	}
 
-	// Handle plan changes
-	if dirtyProvider.Plans().HasChanges() {
-		if err := r.saveTrackedPlansWithJet(ctx, dirtyProvider.Id(), dirtyProvider.Plans()); err != nil {
-			return err
-		}
-		dirtyProvider.Plans().ClearChanges()
-	}
-
 	return nil
 }
 
 // Helper methods for handling tracked collections with go-jet
 
 func (r ProviderRepository) saveTrackedLabelsWithJet(
-	ctx context.Context, providerId uuid.UUID,
-	labels *slicesx.Tracked[uuid.UUID]) error {
+	ctx context.Context, providerId types.ProviderID,
+	labels *slicesx.Tracked[types.LabelID]) error {
 	// Handle new labels
 	newLabels := labels.Added()
 	if len(newLabels) > 0 {
@@ -633,269 +592,6 @@ func (r ProviderRepository) saveTrackedLabelsWithJet(
 		_, err := r.dbContext.Execute(ctx, stmt)
 		if err != nil {
 			return err
-		}
-	}
-
-	return nil
-}
-
-func (r ProviderRepository) saveTrackedPlansWithJet(
-	ctx context.Context, providerId uuid.UUID,
-	plans *slicesx.Tracked[provider.Plan]) error {
-	// Handle new plans
-	newPlans := plans.Added()
-	if len(newPlans) > 0 {
-		if err := r.createPlansAndPrices(ctx, providerId, newPlans); err != nil {
-			return err
-		}
-	}
-
-	// Handle updated plans
-	updatedPlans := plans.Updated()
-	for _, plan := range updatedPlans {
-		if plan.IsDirty() {
-			var descVal StringExpression
-			if plan.Description() != nil {
-				descVal = String(*plan.Description())
-			} else {
-				descVal = StringExp(NULL)
-			}
-
-			stmt := ProviderPlans.UPDATE().
-				SET(
-					ProviderPlans.Name.SET(String(plan.Name())),
-					ProviderPlans.Description.SET(descVal),
-					ProviderPlans.UpdatedAt.SET(TimestampzT(plan.UpdatedAt())),
-					ProviderPlans.Etag.SET(String(plan.ETag())),
-				).
-				WHERE(ProviderPlans.ID.EQ(UUID(plan.Id())))
-
-			count, err := r.dbContext.Execute(ctx, stmt)
-			if err != nil {
-				return err
-			}
-			if count == 0 {
-				return db.ErrMissMatchAffectRow
-			}
-		}
-
-		if plan.Prices().HasChanges() {
-			if err := r.saveTrackedPricesWithJet(ctx, plan.Id(), plan.Prices()); err != nil {
-				return err
-			}
-		}
-	}
-
-	// Handle deleted plans
-	deletedPlans := plans.Removed()
-	for _, plan := range deletedPlans {
-		stmt := ProviderPlans.DELETE().
-			WHERE(ProviderPlans.ID.EQ(UUID(plan.Id())))
-
-		_, err := r.dbContext.Execute(ctx, stmt)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (r ProviderRepository) saveTrackedPricesWithJet(
-	ctx context.Context, planId uuid.UUID,
-	prices *slicesx.Tracked[provider.Price]) error {
-	// Handle new prices
-	newPrices := prices.Added()
-	if len(newPrices) > 0 {
-		stmt := ProviderPrices.INSERT(
-			ProviderPrices.ID,
-			ProviderPrices.PlanID,
-			ProviderPrices.Currency,
-			ProviderPrices.Amount,
-			ProviderPrices.StartDate,
-			ProviderPrices.EndDate,
-			ProviderPrices.CreatedAt,
-			ProviderPrices.UpdatedAt,
-			ProviderPrices.Etag,
-		)
-
-		for _, price := range newPrices {
-			var endDateVal Expression
-			if price.EndDate() != nil {
-				endDateVal = TimestampzT(*price.EndDate())
-			} else {
-				endDateVal = NULL
-			}
-
-			stmt = stmt.VALUES(
-				UUID(price.Id()),
-				UUID(planId),
-				String(price.Currency().String()),
-				Float(price.Amount()),
-				TimestampzT(price.StartDate()),
-				endDateVal,
-				TimestampzT(price.CreatedAt()),
-				TimestampzT(price.UpdatedAt()),
-				String(price.ETag()),
-			)
-		}
-
-		_, err := r.dbContext.Execute(ctx, stmt)
-		if err != nil {
-			return err
-		}
-	}
-
-	// Handle updated prices
-	updatedPrices := prices.Updated()
-	for _, price := range updatedPrices {
-		if price.IsDirty() {
-			var endDateVal TimestampzExpression
-			if price.EndDate() != nil {
-				endDateVal = TimestampzT(*price.EndDate())
-			} else {
-				endDateVal = TimestampzExp(NULL)
-			}
-
-			stmt := ProviderPrices.UPDATE().
-				SET(
-					ProviderPrices.Currency.SET(String(price.Currency().String())),
-					ProviderPrices.Amount.SET(Float(price.Amount())),
-					ProviderPrices.StartDate.SET(TimestampzT(price.StartDate())),
-					ProviderPrices.EndDate.SET(endDateVal),
-					ProviderPrices.UpdatedAt.SET(TimestampzT(price.UpdatedAt())),
-					ProviderPrices.Etag.SET(String(price.ETag())),
-				).
-				WHERE(ProviderPrices.ID.EQ(UUID(price.Id())))
-
-			count, err := r.dbContext.Execute(ctx, stmt)
-			if err != nil {
-				return err
-			}
-			if count == 0 {
-				return db.ErrMissMatchAffectRow
-			}
-		}
-	}
-
-	// Handle deleted prices
-	deletedPrices := prices.Removed()
-	for _, price := range deletedPrices {
-		stmt := ProviderPrices.DELETE().
-			WHERE(ProviderPrices.ID.EQ(UUID(price.Id())))
-
-		_, err := r.dbContext.Execute(ctx, stmt)
-		if err != nil {
-			return err
-		}
-	}
-
-	prices.ClearChanges()
-	return nil
-}
-
-func (r ProviderRepository) createPlansAndPrices(
-	ctx context.Context, providerId uuid.UUID,
-	plans []provider.Plan) error {
-	if len(plans) == 0 {
-		return nil
-	}
-
-	// Insert plans
-	planStmt := ProviderPlans.INSERT(
-		ProviderPlans.ID,
-		ProviderPlans.ProviderID,
-		ProviderPlans.Name,
-		ProviderPlans.Description,
-		ProviderPlans.CreatedAt,
-		ProviderPlans.UpdatedAt,
-		ProviderPlans.Etag,
-	)
-
-	for _, plan := range plans {
-		var descVal Expression
-		if plan.Description() != nil {
-			descVal = String(*plan.Description())
-		} else {
-			descVal = NULL
-		}
-
-		planStmt = planStmt.VALUES(
-			UUID(plan.Id()),
-			UUID(providerId),
-			String(plan.Name()),
-			descVal,
-			TimestampzT(plan.CreatedAt()),
-			TimestampzT(plan.UpdatedAt()),
-			String(plan.ETag()),
-		)
-	}
-
-	planCount, err := r.dbContext.Execute(ctx, planStmt)
-	if err != nil {
-		return err
-	}
-	if planCount != int64(len(plans)) {
-		return db.ErrMissMatchAffectRow
-	}
-
-	// Insert prices for all plans
-	allPrices := herd.SelectMany(plans, func(plan provider.Plan) []struct {
-		PlanID uuid.UUID
-		Price  provider.Price
-	} {
-		return herd.Select(plan.Prices().Values(), func(price provider.Price) struct {
-			PlanID uuid.UUID
-			Price  provider.Price
-		} {
-			return struct {
-				PlanID uuid.UUID
-				Price  provider.Price
-			}{PlanID: plan.Id(), Price: price}
-		})
-	})
-
-	if len(allPrices) > 0 {
-		priceStmt := ProviderPrices.INSERT(
-			ProviderPrices.ID,
-			ProviderPrices.PlanID,
-			ProviderPrices.Currency,
-			ProviderPrices.Amount,
-			ProviderPrices.StartDate,
-			ProviderPrices.EndDate,
-			ProviderPrices.CreatedAt,
-			ProviderPrices.UpdatedAt,
-			ProviderPrices.Etag,
-		)
-
-		for _, priceData := range allPrices {
-			price := priceData.Price
-			var endDateVal Expression
-			if price.EndDate() != nil {
-				endDateVal = TimestampzT(*price.EndDate())
-			} else {
-				endDateVal = NULL
-			}
-
-			priceStmt = priceStmt.VALUES(
-				UUID(price.Id()),
-				UUID(priceData.PlanID),
-				String(price.Currency().String()),
-				Float(price.Amount()),
-				TimestampzT(price.StartDate()),
-				endDateVal,
-				TimestampzT(price.CreatedAt()),
-				TimestampzT(price.UpdatedAt()),
-				String(price.ETag()),
-			)
-		}
-
-		priceCount, err := r.dbContext.Execute(ctx, priceStmt)
-		if err != nil {
-			return err
-		}
-		if priceCount != int64(len(allPrices)) {
-			return db.ErrMissMatchAffectRow
 		}
 	}
 

@@ -37,10 +37,10 @@ func createSubscriptionFromJet(
 		)
 	}
 
-	var customPrice subscription.CustomPrice
+	var customPrice subscription.Price
 	if jetModel.CustomPriceCurrency != nil && jetModel.CustomPriceAmount != nil {
 		cry := currency.MustParseISO(*jetModel.CustomPriceCurrency)
-		customPrice = subscription.NewCustomPrice(
+		customPrice = subscription.NewPrice(
 			*jetModel.CustomPriceAmount,
 			cry,
 		)

@@ -66,7 +66,7 @@ func TestCreateFamilyCommandHandler_Handle(t *testing.T) {
 	ctx := context.Background()
 	const currentUser = "user-123"
 
-	t.Run("returns ErrFamilyAlreadyExists when provided FamilyId already exists", func(t *testing.T) {
+	t.Run("returns ErrFamilyAlreadyExists when provided FamilyID already exists", func(t *testing.T) {
 		repo := &fakeFamilyRepo{}
 		providedId := uuid.MustParse("00000000-0000-7000-8000-000000000001")
 		repo.getByIdFn = func(ctx context.Context, id uuid.UUID) (family.Family, error) {
@@ -81,7 +81,7 @@ func TestCreateFamilyCommandHandler_Handle(t *testing.T) {
 		}
 	})
 
-	t.Run("propagates repository error from GetById when provided FamilyId", func(t *testing.T) {
+	t.Run("propagates repository error from GetById when provided FamilyID", func(t *testing.T) {
 		repo := &fakeFamilyRepo{}
 		providedId := uuid.MustParse("00000000-0000-7000-8000-000000000002")
 		expectedErr := errors.New("db error")
@@ -95,7 +95,7 @@ func TestCreateFamilyCommandHandler_Handle(t *testing.T) {
 		}
 	})
 
-	t.Run("succeeds when FamilyId is nil (new id generated)", func(t *testing.T) {
+	t.Run("succeeds when FamilyID is nil (new id generated)", func(t *testing.T) {
 		repo := &fakeFamilyRepo{}
 		h := command.NewCreateFamilyCommandHandler(repo, fakeAuth{userId: currentUser})
 		res := h.Handle(ctx, command.CreateFamilyCommand{Name: "My Family", CreatorName: "Owner"})

@@ -1,4 +1,4 @@
-package user
+package account
 
 import (
 	"context"
@@ -28,7 +28,7 @@ func (s service) GetPreferredCurrency(ctx context.Context, userId string) curren
 
 }
 
-func NewService(userRepository ports.AccountRepository) ports.UserService {
+func NewService(userRepository ports.AccountRepository) ports.AccountService {
 	return service{
 		userRepository: userRepository,
 	}

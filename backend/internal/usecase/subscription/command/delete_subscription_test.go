@@ -13,7 +13,6 @@ import (
 	"github.com/mistribe/subtracker/internal/usecase/subscription/command"
 )
 
-
 func TestDeleteSubscriptionCommandHandler_Handle(t *testing.T) {
 	id := uuid.Must(uuid.NewV7())
 
@@ -23,7 +22,7 @@ func TestDeleteSubscriptionCommandHandler_Handle(t *testing.T) {
 		subRepo.EXPECT().GetById(t.Context(), id).Return(nil, errors.New("db error"))
 
 		h := command.NewDeleteSubscriptionCommandHandler(subRepo, authz)
-		cmd := command.DeleteSubscriptionCommand{Id: id}
+		cmd := command.DeleteSubscriptionCommand{SubscriptionID: id}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -35,7 +34,7 @@ func TestDeleteSubscriptionCommandHandler_Handle(t *testing.T) {
 		subRepo.EXPECT().GetById(t.Context(), id).Return(nil, nil)
 
 		h := command.NewDeleteSubscriptionCommandHandler(subRepo, authz)
-		cmd := command.DeleteSubscriptionCommand{Id: id}
+		cmd := command.DeleteSubscriptionCommand{SubscriptionID: id}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -52,7 +51,7 @@ func TestDeleteSubscriptionCommandHandler_Handle(t *testing.T) {
 		perm.EXPECT().For(mock.Anything).Return(user.ErrUnauthorized)
 
 		h := command.NewDeleteSubscriptionCommandHandler(subRepo, authz)
-		cmd := command.DeleteSubscriptionCommand{Id: id}
+		cmd := command.DeleteSubscriptionCommand{SubscriptionID: id}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -70,7 +69,7 @@ func TestDeleteSubscriptionCommandHandler_Handle(t *testing.T) {
 		subRepo.EXPECT().Delete(t.Context(), id).Return(false, errors.New("delete failed"))
 
 		h := command.NewDeleteSubscriptionCommandHandler(subRepo, authz)
-		cmd := command.DeleteSubscriptionCommand{Id: id}
+		cmd := command.DeleteSubscriptionCommand{SubscriptionID: id}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -88,7 +87,7 @@ func TestDeleteSubscriptionCommandHandler_Handle(t *testing.T) {
 		subRepo.EXPECT().Delete(t.Context(), id).Return(true, nil)
 
 		h := command.NewDeleteSubscriptionCommandHandler(subRepo, authz)
-		cmd := command.DeleteSubscriptionCommand{Id: id}
+		cmd := command.DeleteSubscriptionCommand{SubscriptionID: id}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsSuccess())
@@ -106,7 +105,7 @@ func TestDeleteSubscriptionCommandHandler_Handle(t *testing.T) {
 		subRepo.EXPECT().Delete(t.Context(), id).Return(false, nil)
 
 		h := command.NewDeleteSubscriptionCommandHandler(subRepo, authz)
-		cmd := command.DeleteSubscriptionCommand{Id: id}
+		cmd := command.DeleteSubscriptionCommand{SubscriptionID: id}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsSuccess())

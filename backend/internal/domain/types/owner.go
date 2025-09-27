@@ -4,8 +4,6 @@ import (
 	"errors"
 	"slices"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/entity"
 )
 
@@ -70,7 +68,7 @@ type Owner interface {
 	Equal(other Owner) bool
 }
 
-func NewOwner(ownerType OwnerType, familyId *uuid.UUID, userId *string) Owner {
+func NewOwner(ownerType OwnerType, familyId *FamilyID, userId *UserID) Owner {
 	switch ownerType {
 	case PersonalOwnerType:
 		if userId == nil {

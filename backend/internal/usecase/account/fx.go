@@ -1,19 +1,19 @@
-package user
+package account
 
 import (
 	"go.uber.org/fx"
 
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/internal/usecase/user/command"
-	usrQuery "github.com/mistribe/subtracker/internal/usecase/user/query"
+	"github.com/mistribe/subtracker/internal/usecase/account/command"
+	"github.com/mistribe/subtracker/internal/usecase/account/query"
 )
 
 func Module() fx.Option {
-	return fx.Module("app_user",
+	return fx.Module("app_account",
 		fx.Provide(
 			NewService,
-			ports.AsQueryHandler[usrQuery.FindPreferredCurrencyQuery, currency.Unit](usrQuery.NewFindPreferredCurrencyQueryHandler),
+			ports.AsQueryHandler[query.FindPreferredCurrencyQuery, currency.Unit](query.NewFindPreferredCurrencyQueryHandler),
 			ports.AsCommandHandler[command.UpdatePreferredCurrencyCommand, bool](command.NewUpdatePreferredCurrencyCommandHandler),
 			ports.AsCommandHandler[command.DeleteUserCommand, bool](command.NewDeleteUserCommandHandler),
 		),

@@ -4,13 +4,11 @@ type PaginatedResponse[TValue any] interface {
 	Length() int
 	Data() []TValue
 	Total() int64
-	Limits() Limits
 }
 
 type paginatedResponse[TValue any] struct {
-	data   []TValue
-	total  int64
-	limits Limits
+	data  []TValue
+	total int64
 }
 
 func (p paginatedResponse[TValue]) Length() int {
@@ -25,13 +23,8 @@ func (p paginatedResponse[TValue]) Total() int64 {
 	return p.total
 }
 
-func (p paginatedResponse[TValue]) Limits() Limits {
-	return p.limits
-}
-
 func NewPaginatedResponse[TValue any](
 	data []TValue,
-	total int64,
-	limits Limits) PaginatedResponse[TValue] {
-	return paginatedResponse[TValue]{data: data, total: total, limits: limits}
+	total int64) PaginatedResponse[TValue] {
+	return paginatedResponse[TValue]{data: data, total: total}
 }

@@ -41,7 +41,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 
 		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz)
 		cmd := command.CreateProviderCommand{
-			Id:          &id,
+			ProviderID:  &id,
 			Name:        "Test Provider",
 			Labels:      labels,
 			Owner:       owner,
@@ -63,7 +63,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		provRepo.EXPECT().Exists(t.Context(), mock.Anything).Return(true, nil)
 
 		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.CreateProviderCommand{Id: &id, Name: "X", Owner: owner}
+		cmd := command.CreateProviderCommand{ProviderID: &id, Name: "X", Owner: owner}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -83,7 +83,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		provRepo.EXPECT().Exists(t.Context(), mock.Anything).Return(false, existsErr)
 
 		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.CreateProviderCommand{Id: &id, Name: "X", Owner: owner}
+		cmd := command.CreateProviderCommand{ProviderID: &id, Name: "X", Owner: owner}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -112,10 +112,10 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 
 		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz)
 		cmd := command.CreateProviderCommand{
-			Id:     nil,
-			Name:   "Auto LabelID",
-			Labels: labels,
-			Owner:  owner,
+			ProviderID: nil,
+			Name:       "Auto LabelID",
+			Labels:     labels,
+			Owner:      owner,
 		}
 
 		res := h.Handle(t.Context(), cmd)
@@ -135,7 +135,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Exists(t.Context(), mock.Anything).Return(false, nil)
 
 		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.CreateProviderCommand{Id: &id, Name: "X", Labels: labels, Owner: owner}
+		cmd := command.CreateProviderCommand{ProviderID: &id, Name: "X", Labels: labels, Owner: owner}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -154,7 +154,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Exists(t.Context(), mock.Anything).Return(false, existsErr)
 
 		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.CreateProviderCommand{Id: &id, Name: "X", Labels: labels, Owner: owner}
+		cmd := command.CreateProviderCommand{ProviderID: &id, Name: "X", Labels: labels, Owner: owner}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -175,7 +175,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		perm.EXPECT().For(mock.Anything).Return(user.ErrUnauthorized)
 
 		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.CreateProviderCommand{Id: &id, Name: "X", Labels: labels, Owner: owner}
+		cmd := command.CreateProviderCommand{ProviderID: &id, Name: "X", Labels: labels, Owner: owner}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -198,7 +198,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		authz.EXPECT().EnsureWithinLimit(t.Context(), user.FeatureCustomProviders, 1).Return(limitErr)
 
 		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.CreateProviderCommand{Id: &id, Name: "X", Labels: labels, Owner: owner}
+		cmd := command.CreateProviderCommand{ProviderID: &id, Name: "X", Labels: labels, Owner: owner}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -220,7 +220,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		authz.EXPECT().EnsureWithinLimit(t.Context(), user.FeatureCustomProviders, 1).Return(nil)
 
 		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.CreateProviderCommand{Id: &id, Name: "   ", Labels: labels, Owner: owner}
+		cmd := command.CreateProviderCommand{ProviderID: &id, Name: "   ", Labels: labels, Owner: owner}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -244,7 +244,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		provRepo.EXPECT().Save(t.Context(), mock.Anything).Return(saveErr)
 
 		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.CreateProviderCommand{Id: &id, Name: "X", Labels: labels, Owner: owner}
+		cmd := command.CreateProviderCommand{ProviderID: &id, Name: "X", Labels: labels, Owner: owner}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())

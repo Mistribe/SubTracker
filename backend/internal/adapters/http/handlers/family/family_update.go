@@ -25,7 +25,7 @@ type UpdateEndpoint struct {
 
 func updateFamilyRequestToCommand(m dto.UpdateFamilyRequest, familyId uuid.UUID) (command.UpdateFamilyCommand, error) {
 	return command.UpdateFamilyCommand{
-		Id:        familyId,
+		FamilyID:  familyId,
 		Name:      m.Name,
 		UpdatedAt: option.Some[time.Time](x.ValueOrDefault[time.Time](m.UpdatedAt, time.Now())),
 	}, nil

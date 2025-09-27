@@ -6,7 +6,7 @@ import (
 	"github.com/mistribe/subtracker/pkg/x/validation"
 )
 
-type CustomPrice interface {
+type Price interface {
 	entity.ETagEntity
 
 	Amount() currency.Amount
@@ -14,38 +14,36 @@ type CustomPrice interface {
 	GetValidationErrors() validation.Errors
 }
 
-type customSubscriptionPrice struct {
+type price struct {
 	amount currency.Amount
 }
 
-func NewCustomPrice(
-	amount float64,
-	unit currency.Unit) CustomPrice {
-	return &customSubscriptionPrice{
-		amount: currency.NewAmount(amount, unit),
+func NewPrice(amount currency.Amount) Price {
+	return &price{
+		amount: amount,
 	}
 }
 
-func (c *customSubscriptionPrice) Amount() currency.Amount {
+func (c *price) Amount() currency.Amount {
 	return c.amount
 }
 
-func (c *customSubscriptionPrice) SetAmount(amount currency.Amount) {
+func (c *price) SetAmount(amount currency.Amount) {
 	c.amount = amount
 }
 
-func (c *customSubscriptionPrice) ETag() string {
+func (c *price) ETag() string {
 	return entity.CalculateETag(c)
 }
 
-func (c *customSubscriptionPrice) ETagFields() []interface{} {
+func (c *price) ETagFields() []interface{} {
 	return []interface{}{
 		c.amount.Value(),
 		c.amount.Currency().String(),
 	}
 }
 
-func (c *customSubscriptionPrice) GetValidationErrors() validation.Errors {
+func (c *price) GetValidationErrors() validation.Errors {
 	var errors validation.Errors
 
 	if c.Amount().Value() <= 0 {

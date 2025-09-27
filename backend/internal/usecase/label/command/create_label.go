@@ -69,7 +69,7 @@ func (h CreateLabelCommandHandler) Handle(ctx context.Context, command CreateLab
 		return result.Fail[label.Label](err)
 	}
 
-	allowed, _, err := h.entitlement.CheckQuota(ctx, billing.FeatureIdCustomLabels, 1)
+	allowed, _, err := h.entitlement.CheckQuota(ctx, billing.FeatureIdCustomLabelsCount, 1)
 	if err != nil {
 		return result.Fail[label.Label](err)
 	}

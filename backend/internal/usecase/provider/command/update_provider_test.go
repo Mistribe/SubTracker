@@ -52,7 +52,7 @@ func TestUpdateProviderCommandHandler_Handle(t *testing.T) {
 		provRepo.EXPECT().GetById(t.Context(), mock.Anything).Return(nil, getErr)
 
 		h := command.NewUpdateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.UpdateProviderCommand{Id: id, Name: "X"}
+		cmd := command.UpdateProviderCommand{ProviderID: id, Name: "X"}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -70,7 +70,7 @@ func TestUpdateProviderCommandHandler_Handle(t *testing.T) {
 		provRepo.EXPECT().GetById(t.Context(), mock.Anything).Return(nil, nil)
 
 		h := command.NewUpdateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.UpdateProviderCommand{Id: id, Name: "X"}
+		cmd := command.UpdateProviderCommand{ProviderID: id, Name: "X"}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -91,7 +91,7 @@ func TestUpdateProviderCommandHandler_Handle(t *testing.T) {
 		perm.EXPECT().For(mock.Anything).Return(user.ErrUnauthorized)
 
 		h := command.NewUpdateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.UpdateProviderCommand{Id: prov.Id(), Name: "X"}
+		cmd := command.UpdateProviderCommand{ProviderID: prov.Id(), Name: "X"}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -115,7 +115,7 @@ func TestUpdateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Exists(t.Context(), mock.Anything).Return(false, nil)
 
 		h := command.NewUpdateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.UpdateProviderCommand{Id: prov.Id(), Name: "New Name", Labels: labels}
+		cmd := command.UpdateProviderCommand{ProviderID: prov.Id(), Name: "New Name", Labels: labels}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -140,7 +140,7 @@ func TestUpdateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Exists(t.Context(), mock.Anything).Return(false, existsErr)
 
 		h := command.NewUpdateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.UpdateProviderCommand{Id: prov.Id(), Name: "New Name", Labels: labels}
+		cmd := command.UpdateProviderCommand{ProviderID: prov.Id(), Name: "New Name", Labels: labels}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -164,7 +164,7 @@ func TestUpdateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Exists(t.Context(), mock.Anything).Return(true, nil)
 
 		h := command.NewUpdateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.UpdateProviderCommand{Id: prov.Id(), Name: "   ", Labels: labels}
+		cmd := command.UpdateProviderCommand{ProviderID: prov.Id(), Name: "   ", Labels: labels}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -190,7 +190,7 @@ func TestUpdateProviderCommandHandler_Handle(t *testing.T) {
 		provRepo.EXPECT().Save(t.Context(), mock.Anything).Return(saveErr)
 
 		h := command.NewUpdateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.UpdateProviderCommand{Id: prov.Id(), Name: "New Name", Labels: labels}
+		cmd := command.UpdateProviderCommand{ProviderID: prov.Id(), Name: "New Name", Labels: labels}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -226,7 +226,7 @@ func TestUpdateProviderCommandHandler_Handle(t *testing.T) {
 
 		h := command.NewUpdateProviderCommandHandler(provRepo, labelRepo, authz)
 		cmd := command.UpdateProviderCommand{
-			Id:             prov.Id(),
+			ProviderID:     prov.Id(),
 			Name:           "Updated Name",
 			Description:    &desc,
 			IconUrl:        &icon,
@@ -270,7 +270,7 @@ func TestUpdateProviderCommandHandler_Handle(t *testing.T) {
 		}).Return(nil)
 
 		h := command.NewUpdateProviderCommandHandler(provRepo, labelRepo, authz)
-		cmd := command.UpdateProviderCommand{Id: prov.Id(), Name: "N", Labels: labels, UpdatedAt: nil}
+		cmd := command.UpdateProviderCommand{ProviderID: prov.Id(), Name: "N", Labels: labels, UpdatedAt: nil}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsSuccess())

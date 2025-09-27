@@ -4,10 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -16,14 +15,14 @@ type InviteMemberCommand struct {
 	Email          *string
 	Name           *string
 	Type           *family.MemberType
-	FamilyId       uuid.UUID
-	FamilyMemberId uuid.UUID
+	FamilyId       types.FamilyID
+	FamilyMemberId types.FamilyMemberID
 }
 
 type InviteMemberResponse struct {
 	Code           string
-	FamilyId       uuid.UUID
-	FamilyMemberId uuid.UUID
+	FamilyId       types.FamilyID
+	FamilyMemberId types.FamilyMemberID
 }
 
 type InviteMemberCommandHandler struct {
@@ -116,7 +115,8 @@ func (h InviteMemberCommandHandler) inviteNewMember(
 	} else {
 		memberType = family.AdultMemberType
 	}
-	familyMember = family.NewMember(uuid.Must(uuid.NewV7()),
+	familyMember = family.NewMember(
+		types.NewFamilyMemberID(),
 		fam.Id(),
 		memberName,
 		memberType,

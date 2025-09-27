@@ -3,21 +3,20 @@ package command
 import (
 	"context"
 
-	"github.com/google/uuid"
-
+	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/provider"
-	"github.com/mistribe/subtracker/internal/domain/user"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type DeleteProviderCommand struct {
-	ProviderId uuid.UUID
+	ProviderID types.ProviderID
 }
 
-func NewDeleteProviderCommand(providerId uuid.UUID) DeleteProviderCommand {
+func NewDeleteProviderCommand(providerID types.ProviderID) DeleteProviderCommand {
 	return DeleteProviderCommand{
-		ProviderId: providerId,
+		ProviderID: providerID,
 	}
 }
 
@@ -36,7 +35,7 @@ func NewDeleteProviderCommandHandler(
 }
 
 func (h DeleteProviderCommandHandler) Handle(ctx context.Context, cmd DeleteProviderCommand) result.Result[bool] {
-	prov, err := h.providerRepository.GetById(ctx, cmd.ProviderId)
+	prov, err := h.providerRepository.GetById(ctx, cmd.ProviderID)
 	if err != nil {
 		return result.Fail[bool](err)
 	}
@@ -45,11 +44,11 @@ func (h DeleteProviderCommandHandler) Handle(ctx context.Context, cmd DeleteProv
 		return result.Fail[bool](provider.ErrProviderNotFound)
 	}
 
-	if err = h.authorization.Can(ctx, user.PermissionDelete).For(prov); err != nil {
+	if err = h.authorization.Can(ctx, authorization.PermissionDelete).For(prov); err != nil {
 		return result.Fail[bool](err)
 	}
 
-	ok, err := h.providerRepository.Delete(ctx, cmd.ProviderId)
+	ok, err := h.providerRepository.Delete(ctx, cmd.ProviderID)
 	if err != nil {
 		return result.Fail[bool](err)
 	}

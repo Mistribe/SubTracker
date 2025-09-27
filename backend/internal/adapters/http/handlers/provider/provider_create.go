@@ -46,7 +46,7 @@ func createProviderRequestToCommand(r dto.CreateProviderRequest, userId string) 
 	}
 
 	return command.CreateProviderCommand{
-		Id: providerId,
+		ProviderID: providerId,
 
 		Name:           r.Name,
 		Description:    r.Description,

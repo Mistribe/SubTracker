@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/mistribe/subtracker/internal/domain/provider"
-	"github.com/mistribe/subtracker/internal/domain/user"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/shared"
 	"github.com/mistribe/subtracker/pkg/langext/result"
@@ -44,16 +43,12 @@ func NewFindAllQueryHandler(
 func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[shared.PaginatedResponse[provider.Provider]] {
-	userId := h.authentication.MustGetUserId(ctx)
-	providers, count, err := h.providerRepository.GetAllForUser(ctx, userId,
+	connectedAccount := h.authentication.MustGetConnectedAccount(ctx)
+	providers, count, err := h.providerRepository.GetAllForUser(ctx, connectedAccount.UserID(),
 		ports.NewProviderQueryParameters(query.SearchText, query.Limit, query.Offset))
 	if err != nil {
 		return result.Fail[shared.PaginatedResponse[provider.Provider]](err)
 	}
 
-	limits, err := h.authorization.GetCurrentLimits(ctx, user.CategoryProvider)
-	if err != nil {
-		return result.Fail[shared.PaginatedResponse[provider.Provider]](err)
-	}
-	return result.Success(shared.NewPaginatedResponse(providers, count, limits))
+	return result.Success(shared.NewPaginatedResponse(providers, count))
 }

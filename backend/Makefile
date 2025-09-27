@@ -2,7 +2,7 @@
 
 install-deps:
 	go install github.com/swaggo/swag/v2/cmd/swag@latest
-	go install github.com/vektra/mockery/v3@v3.5.3
+	go install github.com/vektra/mockery/v3@v3.5.5
 	go install github.com/pressly/goose/v3/cmd/goose@latest
 	go install github.com/go-jet/jet/v2/cmd/jet@latest
 

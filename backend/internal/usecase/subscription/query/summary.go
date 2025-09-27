@@ -5,11 +5,11 @@ import (
 	"sort"
 	"time"
 
-	"github.com/google/uuid"
 	xcur "golang.org/x/text/currency"
 
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 	"github.com/mistribe/subtracker/pkg/x/herd"
@@ -24,21 +24,21 @@ type SummaryQuery struct {
 }
 
 type SummaryQueryUpcomingRenewalsResponse struct {
-	ProviderId uuid.UUID
+	ProviderId types.ProviderID
 	At         time.Time
 	Total      currency.Amount
 	Source     *currency.Amount
 }
 
 type SummaryQueryTopProvidersResponse struct {
-	ProviderId uuid.UUID
+	ProviderID types.ProviderID
 	Total      currency.Amount
 	Duration   time.Duration
 }
 
 type SummaryQueryLabelResponse struct {
-	TagId uuid.UUID
-	Total currency.Amount
+	LabelID types.LabelID
+	Total   currency.Amount
 }
 
 type SummaryQueryResponse struct {
@@ -55,7 +55,7 @@ type SummaryQueryResponse struct {
 type SummaryQueryHandler struct {
 	subscriptionRepository ports.SubscriptionRepository
 	currencyRepository     ports.CurrencyRepository
-	userRepository         ports.AccountRepository
+	accountRepository      ports.AccountRepository
 	authService            ports.Authentication
 	exchange               ports.Exchange
 }
@@ -63,13 +63,13 @@ type SummaryQueryHandler struct {
 func NewSummaryQueryHandler(
 	subscriptionRepository ports.SubscriptionRepository,
 	currencyRepository ports.CurrencyRepository,
-	userRepository ports.AccountRepository,
+	accountRepository ports.AccountRepository,
 	authService ports.Authentication,
 	exchange ports.Exchange) *SummaryQueryHandler {
 	return &SummaryQueryHandler{
 		subscriptionRepository: subscriptionRepository,
 		currencyRepository:     currencyRepository,
-		userRepository:         userRepository,
+		accountRepository:      accountRepository,
 		authService:            authService,
 		exchange:               exchange,
 	}
@@ -88,8 +88,8 @@ func (h SummaryQueryHandler) convertToCurrency(
 }
 
 func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) result.Result[SummaryQueryResponse] {
-	userId := h.authService.MustGetUserId(ctx)
-	userProfile, err := h.userRepository.GetById(ctx, userId)
+	connectedAccount := h.authService.MustGetConnectedAccount(ctx)
+	currentAccount, err := h.accountRepository.GetById(ctx, connectedAccount.UserID())
 	if err != nil {
 		return result.Fail[SummaryQueryResponse](err)
 	}
@@ -98,14 +98,14 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 		return result.Fail[SummaryQueryResponse](err)
 	}
 	preferredCurrency := currency.USD
-	if userProfile != nil {
-		preferredCurrency = userProfile.Currency()
+	if currentAccount != nil {
+		preferredCurrency = currentAccount.Currency()
 	}
 
 	currencyRates = currencyRates.WithReverse()
 
-	topProviders := make(map[uuid.UUID]SummaryQueryTopProvidersResponse)
-	topLabels := make(map[uuid.UUID]currency.Amount)
+	topProviders := make(map[types.ProviderID]SummaryQueryTopProvidersResponse)
+	topLabels := make(map[types.LabelID]currency.Amount)
 	var upcomingRenewals []SummaryQueryUpcomingRenewalsResponse
 	totalMonthly := 0.0
 	totalYearly := 0.0
@@ -114,7 +114,7 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 	lastMonth := time.Now().AddDate(0, -1, 0)
 	lastYear := time.Now().AddDate(-1, 0, 0)
 	var active uint16
-	for sub := range h.subscriptionRepository.GetAllIt(ctx, userId, "") {
+	for sub := range h.subscriptionRepository.GetAllIt(ctx, connectedAccount.UserID(), "") {
 		if sub.IsActive() {
 			active++
 		}
@@ -192,7 +192,7 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 							topProviders[sub.ProviderId()] = existingTopProvider
 						} else {
 							topProviders[sub.ProviderId()] = SummaryQueryTopProvidersResponse{
-								ProviderId: sub.ProviderId(),
+								ProviderID: sub.ProviderId(),
 								Total:      totalSpent,
 								Duration:   sub.GetTotalDuration(),
 							}
@@ -223,14 +223,14 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 		TotalLastYear:    currency.NewAmount(totalLastYear, preferredCurrency),
 		UpcomingRenewals: upcomingRenewals,
 		TopProviders: herd.MapToArr(topProviders,
-			func(providerId uuid.UUID, res SummaryQueryTopProvidersResponse) SummaryQueryTopProvidersResponse {
+			func(providerId types.ProviderID, res SummaryQueryTopProvidersResponse) SummaryQueryTopProvidersResponse {
 				return res
 			}),
 		TopLabels: herd.MapToArr(topLabels,
-			func(labelId uuid.UUID, res currency.Amount) SummaryQueryLabelResponse {
+			func(labelId types.LabelID, res currency.Amount) SummaryQueryLabelResponse {
 				return SummaryQueryLabelResponse{
-					TagId: labelId,
-					Total: res,
+					LabelID: labelId,
+					Total:   res,
 				}
 			}),
 	}

@@ -43,7 +43,7 @@ func (e DeleteEndpoint) Handle(c *gin.Context) {
 	}
 
 	cmd := command.DeleteProviderCommand{
-		ProviderId: providerId,
+		ProviderID: providerId,
 	}
 
 	r := e.handler.Handle(c, cmd)

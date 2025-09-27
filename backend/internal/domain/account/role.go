@@ -11,6 +11,10 @@ const (
 	RoleUser  Role = "user"
 )
 
+func (r Role) String() string {
+	return string(r)
+}
+
 var (
 	ErrUnknownRole = errors.New("unknown role")
 )

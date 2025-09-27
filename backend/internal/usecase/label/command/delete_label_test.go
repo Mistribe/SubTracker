@@ -5,11 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/mistribe/subtracker/internal/domain/user"
+	auth "github.com/mistribe/subtracker/internal/domain/authorization"
 
 	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/internal/domain/types"
@@ -18,16 +17,15 @@ import (
 )
 
 func TestDeleteLabelCommandHandler_Handle(t *testing.T) {
-	id := uuid.Must(uuid.NewV7())
+	id := types.NewLabelID()
 
 	t.Run("returns fault when repository GetById returns error", func(t *testing.T) {
 		labelRepo := ports.NewMockLabelRepository(t)
-		familyRepo := ports.NewMockFamilyRepository(t)
 		authz := ports.NewMockAuthorization(t)
 
 		labelRepo.EXPECT().GetById(t.Context(), id).Return(nil, errors.New("db error"))
 
-		h := command.NewDeleteLabelCommandHandler(labelRepo, familyRepo, authz)
+		h := command.NewDeleteLabelCommandHandler(labelRepo, nil, authz)
 		cmd := command.DeleteLabelCommand{LabelID: id}
 		res := h.Handle(t.Context(), cmd)
 
@@ -36,12 +34,11 @@ func TestDeleteLabelCommandHandler_Handle(t *testing.T) {
 
 	t.Run("returns fault when label not found", func(t *testing.T) {
 		labelRepo := ports.NewMockLabelRepository(t)
-		familyRepo := ports.NewMockFamilyRepository(t)
 		authz := ports.NewMockAuthorization(t)
 
 		labelRepo.EXPECT().GetById(t.Context(), id).Return(nil, nil)
 
-		h := command.NewDeleteLabelCommandHandler(labelRepo, familyRepo, authz)
+		h := command.NewDeleteLabelCommandHandler(labelRepo, nil, authz)
 		cmd := command.DeleteLabelCommand{LabelID: id}
 		res := h.Handle(t.Context(), cmd)
 
@@ -50,16 +47,15 @@ func TestDeleteLabelCommandHandler_Handle(t *testing.T) {
 
 	t.Run("returns fault when permission denied", func(t *testing.T) {
 		labelRepo := ports.NewMockLabelRepository(t)
-		familyRepo := ports.NewMockFamilyRepository(t)
 		authz := ports.NewMockAuthorization(t)
 		perm := ports.NewMockPermissionRequest(t)
 
 		existing := newPersonalLabel()
 		labelRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), user.PermissionDelete).Return(perm)
-		perm.EXPECT().For(mock.Anything).Return(user.ErrUnauthorized)
+		authz.EXPECT().Can(t.Context(), auth.PermissionDelete).Return(perm)
+		perm.EXPECT().For(mock.Anything).Return(auth.ErrUnauthorized)
 
-		h := command.NewDeleteLabelCommandHandler(labelRepo, familyRepo, authz)
+		h := command.NewDeleteLabelCommandHandler(labelRepo, nil, authz)
 		cmd := command.DeleteLabelCommand{LabelID: id}
 		res := h.Handle(t.Context(), cmd)
 
@@ -68,17 +64,16 @@ func TestDeleteLabelCommandHandler_Handle(t *testing.T) {
 
 	t.Run("returns fault when repository Delete returns error", func(t *testing.T) {
 		labelRepo := ports.NewMockLabelRepository(t)
-		familyRepo := ports.NewMockFamilyRepository(t)
 		authz := ports.NewMockAuthorization(t)
 		perm := ports.NewMockPermissionRequest(t)
 
 		existing := newPersonalLabel()
 		labelRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), user.PermissionDelete).Return(perm)
+		authz.EXPECT().Can(t.Context(), auth.PermissionDelete).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
 		labelRepo.EXPECT().Delete(t.Context(), id).Return(false, errors.New("delete failed"))
 
-		h := command.NewDeleteLabelCommandHandler(labelRepo, familyRepo, authz)
+		h := command.NewDeleteLabelCommandHandler(labelRepo, nil, authz)
 		cmd := command.DeleteLabelCommand{LabelID: id}
 		res := h.Handle(t.Context(), cmd)
 
@@ -87,17 +82,16 @@ func TestDeleteLabelCommandHandler_Handle(t *testing.T) {
 
 	t.Run("returns fault when repository Delete returns false (not found)", func(t *testing.T) {
 		labelRepo := ports.NewMockLabelRepository(t)
-		familyRepo := ports.NewMockFamilyRepository(t)
 		authz := ports.NewMockAuthorization(t)
 		perm := ports.NewMockPermissionRequest(t)
 
 		existing := newPersonalLabel()
 		labelRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), user.PermissionDelete).Return(perm)
+		authz.EXPECT().Can(t.Context(), auth.PermissionDelete).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
 		labelRepo.EXPECT().Delete(t.Context(), id).Return(false, nil)
 
-		h := command.NewDeleteLabelCommandHandler(labelRepo, familyRepo, authz)
+		h := command.NewDeleteLabelCommandHandler(labelRepo, nil, authz)
 		cmd := command.DeleteLabelCommand{LabelID: id}
 		res := h.Handle(t.Context(), cmd)
 
@@ -112,7 +106,7 @@ func TestDeleteLabelCommandHandler_Handle(t *testing.T) {
 
 		existing := newPersonalLabel()
 		labelRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), user.PermissionDelete).Return(perm)
+		authz.EXPECT().Can(t.Context(), auth.PermissionDelete).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
 		labelRepo.EXPECT().Delete(t.Context(), id).Return(true, nil)
 
@@ -126,7 +120,7 @@ func TestDeleteLabelCommandHandler_Handle(t *testing.T) {
 
 func newPersonalLabel() label.Label {
 	return label.NewLabel(
-		uuid.Must(uuid.NewV7()),
+		types.NewLabelID(),
 		types.NewPersonalOwner("userID-Test"),
 		"label test",
 		nil,

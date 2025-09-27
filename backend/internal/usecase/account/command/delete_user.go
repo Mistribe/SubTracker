@@ -32,9 +32,9 @@ func NewDeleteUserCommandHandler(
 }
 
 func (h DeleteUserCommandHandler) Handle(ctx context.Context, cmd DeleteUserCommand) result.Result[bool] {
-	userId := h.authService.MustGetUserId(ctx)
+	connectedAccount := h.authService.MustGetConnectedAccount(ctx)
 
-	if err := h.identityProvider.DeleteUser(ctx, userId); err != nil {
+	if err := h.identityProvider.DeleteUser(ctx, connectedAccount.UserID()); err != nil {
 		return result.Fail[bool](err)
 	}
 

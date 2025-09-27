@@ -34,7 +34,7 @@ func updateProviderRequestToCommand(r dto.UpdateProviderRequest, providerId uuid
 	}
 
 	return command.UpdateProviderCommand{
-		Id:             providerId,
+		ProviderID:     providerId,
 		Name:           r.Name,
 		Description:    r.Description,
 		IconUrl:        r.IconUrl,

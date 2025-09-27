@@ -4,51 +4,54 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
-
-	"github.com/mistribe/subtracker/internal/domain/user"
-
+	user "github.com/mistribe/subtracker/internal/domain/authorization"
+	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/pkg/langext/option"
 	"github.com/mistribe/subtracker/pkg/langext/result"
-	"github.com/mistribe/subtracker/pkg/x"
 )
 
 type CreateProviderCommand struct {
-	Id             *uuid.UUID
+	ProviderID     option.Option[types.ProviderID]
 	Name           string
 	Description    *string
 	IconUrl        *string
 	Url            *string
 	PricingPageUrl *string
-	Labels         []uuid.UUID
+	Labels         []types.LabelID
 	Owner          types.Owner
-	CreatedAt      *time.Time
+	CreatedAt      option.Option[time.Time]
 }
 
 type CreateProviderCommandHandler struct {
 	providerRepository ports.ProviderRepository
 	labelRepository    ports.LabelRepository
 	authorization      ports.Authorization
+	entitlement        ports.EntitlementResolver
 }
 
 func NewCreateProviderCommandHandler(
 	providerRepository ports.ProviderRepository,
 	labelRepository ports.LabelRepository,
-	authorization ports.Authorization) *CreateProviderCommandHandler {
+	authorization ports.Authorization,
+	entitlement ports.EntitlementResolver) *CreateProviderCommandHandler {
 	return &CreateProviderCommandHandler{
 		providerRepository: providerRepository,
 		labelRepository:    labelRepository,
 		authorization:      authorization,
+		entitlement:        entitlement,
 	}
 }
 
 func (h CreateProviderCommandHandler) Handle(
 	ctx context.Context,
 	cmd CreateProviderCommand) result.Result[provider.Provider] {
-	if cmd.Id != nil {
-		exists, err := h.providerRepository.Exists(ctx, *cmd.Id)
+	var providerID types.ProviderID
+	if cmd.ProviderID.IsSome() {
+		providerID = *cmd.ProviderID.Value()
+		exists, err := h.providerRepository.Exists(ctx, providerID)
 		if err != nil {
 			return result.Fail[provider.Provider](err)
 		}
@@ -56,20 +59,16 @@ func (h CreateProviderCommandHandler) Handle(
 			return result.Fail[provider.Provider](provider.ErrProviderAlreadyExists)
 		}
 	} else {
-		newId, err := uuid.NewV7()
-		if err != nil {
-			return result.Fail[provider.Provider](err)
-		}
-		cmd.Id = &newId
+		providerID = types.NewProviderID()
 	}
-	createdAt := x.ValueOrDefault(cmd.CreatedAt, time.Now())
+	createdAt := cmd.CreatedAt.ValueOrDefault(time.Now())
 
 	if err := ensureLabelExists(ctx, h.labelRepository, cmd.Labels); err != nil {
 		return result.Fail[provider.Provider](err)
 	}
 
 	prov := provider.NewProvider(
-		*cmd.Id,
+		providerID,
 		cmd.Name,
 		nil,
 		cmd.Description,
@@ -77,7 +76,6 @@ func (h CreateProviderCommandHandler) Handle(
 		cmd.Url,
 		cmd.PricingPageUrl,
 		cmd.Labels,
-		nil,
 		cmd.Owner,
 		createdAt,
 		createdAt,
@@ -87,15 +85,18 @@ func (h CreateProviderCommandHandler) Handle(
 		return result.Fail[provider.Provider](err)
 	}
 
-	if err := h.authorization.EnsureWithinLimit(ctx, user.FeatureCustomProviders, 1); err != nil {
+	allowed, _, err := h.entitlement.CheckQuota(ctx, billing.FeatureIdCustomProvidersCount, 1)
+	if err != nil {
+		return result.Fail[provider.Provider](err)
+	}
+	if !allowed {
+		return result.Fail[provider.Provider](provider.ErrCustomProviderLimitReached)
+	}
+	if vErr := prov.GetValidationErrors(); vErr != nil {
 		return result.Fail[provider.Provider](err)
 	}
 
-	if err := prov.GetValidationErrors(); err != nil {
-		return result.Fail[provider.Provider](err)
-	}
-
-	if err := h.providerRepository.Save(ctx, prov); err != nil {
+	if sErr := h.providerRepository.Save(ctx, prov); sErr != nil {
 		return result.Fail[provider.Provider](err)
 	}
 
