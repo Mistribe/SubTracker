@@ -1,4 +1,4 @@
-package collection
+package herd
 
 func ToMap[TKey comparable, TOut any, TValue any](
 	source []TValue,

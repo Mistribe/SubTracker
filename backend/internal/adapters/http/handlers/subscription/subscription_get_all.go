@@ -13,7 +13,7 @@ import (
 	"github.com/mistribe/subtracker/internal/shared"
 	"github.com/mistribe/subtracker/internal/usecase/subscription/query"
 	. "github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type GetAllEndpoint struct {
@@ -71,12 +71,12 @@ func (s GetAllEndpoint) Handle(c *gin.Context) {
 
 	recurrencies := subscription.ParseRecurrencyTypesOrDefault(params.Recurrencies, subscription.UnknownRecurrency)
 
-	users, err := collection.SelectErr(params.Users, uuid.Parse)
+	users, err := herd.SelectErr(params.Users, uuid.Parse)
 	if err != nil {
 		FromError(c, err)
 		return
 	}
-	providers, err := collection.SelectErr(params.Providers, uuid.Parse)
+	providers, err := herd.SelectErr(params.Providers, uuid.Parse)
 	if err != nil {
 		FromError(c, err)
 		return

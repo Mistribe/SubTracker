@@ -15,7 +15,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type systemSubscriptionModel struct {
@@ -85,7 +85,7 @@ func (l subscriptionUpdater) getSystemProviders(ctx context.Context) (map[string
 		return nil, err
 	}
 
-	return collection.ToMap(providers, func(prov provider.Provider) string {
+	return herd.ToMap(providers, func(prov provider.Provider) string {
 		return *prov.Key()
 	}, func(prov provider.Provider) uuid.UUID {
 		return prov.Id()

@@ -14,7 +14,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/slicesx"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	. "github.com/go-jet/jet/v2/postgres"
 )
@@ -531,12 +531,12 @@ func (r SubscriptionRepository) create(ctx context.Context, subscriptions []subs
 	}
 
 	// Insert service users
-	allServiceUsers := collection.SelectMany(subscriptions,
+	allServiceUsers := herd.SelectMany(subscriptions,
 		func(sub subscription.Subscription) []struct {
 			SubscriptionID uuid.UUID
 			FamilyMemberID uuid.UUID
 		} {
-			return collection.Select(sub.ServiceUsers().Values(),
+			return herd.Select(sub.ServiceUsers().Values(),
 				func(u uuid.UUID) struct {
 					SubscriptionID uuid.UUID
 					FamilyMemberID uuid.UUID

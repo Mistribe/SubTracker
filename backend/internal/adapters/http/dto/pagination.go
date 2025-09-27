@@ -2,7 +2,7 @@ package dto
 
 import (
 	"github.com/mistribe/subtracker/internal/shared"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 // PaginatedResponseModel
@@ -36,7 +36,7 @@ func NewPaginatedResponseModel[TValue any, TOut any](
 		}
 	}
 	return PaginatedResponseModel[TOut]{
-		Data:   collection.Select(p.Data(), mapper),
+		Data:   herd.Select(p.Data(), mapper),
 		Length: p.Length(),
 		Total:  p.Total(),
 		Limits: limitsDto,

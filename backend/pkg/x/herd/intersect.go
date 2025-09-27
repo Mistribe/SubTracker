@@ -1,4 +1,4 @@
-package collection
+package herd
 
 // Intersect finds the intersection of two slices and returns a new slice containing elements present in both slices.
 // It accepts two input slices of a comparable type and performs the operation in a generic manner.

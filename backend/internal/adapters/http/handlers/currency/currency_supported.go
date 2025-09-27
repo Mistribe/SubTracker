@@ -7,7 +7,7 @@ import (
 	"golang.org/x/text/currency"
 
 	dcurrency "github.com/mistribe/subtracker/internal/domain/currency"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type SupportedEndpoint struct {
@@ -26,7 +26,7 @@ func NewSupportedEndpoint() *SupportedEndpoint {
 //	@Success		200	{array}	string	"currencies"
 //	@Router			/currencies/supported [get]
 func (e SupportedEndpoint) Handle(c *gin.Context) {
-	response := collection.Select(dcurrency.GetSupportedCurrencies(), func(u currency.Unit) string {
+	response := herd.Select(dcurrency.GetSupportedCurrencies(), func(u currency.Unit) string {
 		return u.String()
 	})
 	c.JSON(http.StatusOK, response)
