@@ -57,7 +57,7 @@ func (m AuthenticationMiddleware) Middleware() gin.HandlerFunc {
 
 		// Store claims in context for use in handlers
 		c.Set(authentication.ContextConnectedAccountKey, newConnectedAccountInformation(
-			account.UserID(identity.Id),
+			types.UserID(identity.Id),
 			account.ParseRoleOrDefault(identity.Role, account.RoleUser),
 			billing.ParsePlanOrDefault(identity.Plan, billing.PlanFree),
 		))

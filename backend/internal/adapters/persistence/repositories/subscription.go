@@ -33,12 +33,12 @@ func (r SubscriptionRepository) GetById(ctx context.Context, id types.Subscripti
 	error) {
 	stmt := SELECT(
 		Subscriptions.AllColumns,
-		SubscriptionServiceUsers.FamilyMemberID,
-		SubscriptionServiceUsers.SubscriptionID,
+		SubscriptionFamilyUsers.FamilyMemberID,
+		SubscriptionFamilyUsers.SubscriptionID,
 	).
 		FROM(
 			Subscriptions.
-				LEFT_JOIN(SubscriptionServiceUsers, SubscriptionServiceUsers.SubscriptionID.EQ(Subscriptions.ID)),
+				LEFT_JOIN(SubscriptionFamilyUsers, SubscriptionFamilyUsers.SubscriptionID.EQ(Subscriptions.ID)),
 		).
 		WHERE(Subscriptions.ID.EQ(UUID(id)))
 
@@ -66,13 +66,13 @@ func (r SubscriptionRepository) GetByIdForUser(ctx context.Context, userId types
 
 	stmt := SELECT(
 		Subscriptions.AllColumns,
-		SubscriptionServiceUsers.FamilyMemberID,
-		SubscriptionServiceUsers.SubscriptionID,
+		SubscriptionFamilyUsers.FamilyMemberID,
+		SubscriptionFamilyUsers.SubscriptionID,
 	).
 		FROM(
 			Subscriptions.
-				LEFT_JOIN(SubscriptionServiceUsers, SubscriptionServiceUsers.SubscriptionID.EQ(Subscriptions.ID)).
-				LEFT_JOIN(FamilyMembers, FamilyMembers.ID.EQ(SubscriptionServiceUsers.FamilyMemberID)),
+				LEFT_JOIN(SubscriptionFamilyUsers, SubscriptionFamilyUsers.SubscriptionID.EQ(Subscriptions.ID)).
+				LEFT_JOIN(FamilyMembers, FamilyMembers.ID.EQ(SubscriptionFamilyUsers.FamilyMemberID)),
 		).
 		WHERE(
 			Subscriptions.ID.EQ(UUID(id)).
@@ -116,14 +116,14 @@ func (r SubscriptionRepository) GetAll(
 
 	stmt := SELECT(
 		pagedSubs.AllColumns(),
-		SubscriptionServiceUsers.AllColumns,
+		SubscriptionFamilyUsers.AllColumns,
 		SubscriptionLabels.AllColumns,
 		ProviderLabels.AllColumns,
 	).
 		FROM(
 			pagedSubs.
-				LEFT_JOIN(SubscriptionServiceUsers,
-					SubscriptionServiceUsers.SubscriptionID.EQ(Subscriptions.ID.From(pagedSubs))).
+				LEFT_JOIN(SubscriptionFamilyUsers,
+					SubscriptionFamilyUsers.SubscriptionID.EQ(Subscriptions.ID.From(pagedSubs))).
 				LEFT_JOIN(SubscriptionLabels, SubscriptionLabels.SubscriptionID.EQ(Subscriptions.ID.From(pagedSubs))).
 				LEFT_JOIN(Providers, Providers.ID.From(pagedSubs).EQ(Subscriptions.ProviderID)).
 				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.From(pagedSubs).EQ(Providers.ID)),
@@ -258,13 +258,13 @@ func (r SubscriptionRepository) GetAllForUser(
 	// Final query with service users
 	stmt := SELECT(
 		counted.AllColumns(),
-		SubscriptionServiceUsers.AllColumns,
+		SubscriptionFamilyUsers.AllColumns,
 		SubscriptionLabels.AllColumns,
 		ProviderLabels.AllColumns,
 	).FROM(
 		counted.
-			LEFT_JOIN(SubscriptionServiceUsers,
-				SubscriptionServiceUsers.SubscriptionID.EQ(Subscriptions.ID.From(counted))).
+			LEFT_JOIN(SubscriptionFamilyUsers,
+				SubscriptionFamilyUsers.SubscriptionID.EQ(Subscriptions.ID.From(counted))).
 			LEFT_JOIN(SubscriptionLabels, SubscriptionLabels.SubscriptionID.EQ(Subscriptions.ID.From(counted))).
 			LEFT_JOIN(Providers, Providers.ID.EQ(Subscriptions.ProviderID.From(counted))).
 			LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)),
@@ -396,8 +396,6 @@ func (r SubscriptionRepository) create(ctx context.Context, subscriptions []subs
 		Subscriptions.FreeTrialStartDate,
 		Subscriptions.FreeTrialEndDate,
 		Subscriptions.ProviderID,
-		Subscriptions.PlanID,
-		Subscriptions.PriceID,
 		Subscriptions.CustomPriceCurrency,
 		Subscriptions.CustomPriceAmount,
 		Subscriptions.OwnerType,
@@ -534,9 +532,9 @@ func (r SubscriptionRepository) create(ctx context.Context, subscriptions []subs
 		})
 
 	if len(allServiceUsers) > 0 {
-		serviceUserStmt := SubscriptionServiceUsers.INSERT(
-			SubscriptionServiceUsers.SubscriptionID,
-			SubscriptionServiceUsers.FamilyMemberID,
+		serviceUserStmt := SubscriptionFamilyUsers.INSERT(
+			SubscriptionFamilyUsers.SubscriptionID,
+			SubscriptionFamilyUsers.FamilyMemberID,
 		)
 
 		for _, su := range allServiceUsers {
@@ -673,9 +671,9 @@ func (r SubscriptionRepository) saveTrackedServiceUsersWithJet(
 	// Handle new service users
 	newUsers := serviceUsers.Added()
 	if len(newUsers) > 0 {
-		stmt := SubscriptionServiceUsers.INSERT(
-			SubscriptionServiceUsers.SubscriptionID,
-			SubscriptionServiceUsers.FamilyMemberID,
+		stmt := SubscriptionFamilyUsers.INSERT(
+			SubscriptionFamilyUsers.SubscriptionID,
+			SubscriptionFamilyUsers.FamilyMemberID,
 		)
 
 		for _, userId := range newUsers {
@@ -694,10 +692,10 @@ func (r SubscriptionRepository) saveTrackedServiceUsersWithJet(
 	// Handle deleted service users
 	deletedUsers := serviceUsers.Removed()
 	for _, userId := range deletedUsers {
-		stmt := SubscriptionServiceUsers.DELETE().
+		stmt := SubscriptionFamilyUsers.DELETE().
 			WHERE(
-				SubscriptionServiceUsers.SubscriptionID.EQ(UUID(subscriptionId)).
-					AND(SubscriptionServiceUsers.FamilyMemberID.EQ(UUID(userId))),
+				SubscriptionFamilyUsers.SubscriptionID.EQ(UUID(subscriptionId)).
+					AND(SubscriptionFamilyUsers.FamilyMemberID.EQ(UUID(userId))),
 			)
 
 		_, err := r.dbContext.Execute(ctx, stmt)

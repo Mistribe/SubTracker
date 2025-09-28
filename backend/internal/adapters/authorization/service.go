@@ -4,11 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
-
+	"github.com/mistribe/subtracker/internal/domain/account"
 	user "github.com/mistribe/subtracker/internal/domain/authorization"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/internal/shared"
 )
 
 type service struct {
@@ -18,47 +17,23 @@ type service struct {
 	authentication   ports.Authentication
 }
 
-func (s service) GetCurrentLimits(ctx context.Context, category user.Category) (shared.Limits, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s service) GetCurrentLimit(ctx context.Context, feature user.Feature) (shared.Limit, error) {
-	userId := s.authentication.MustGetUserId(ctx)
-	currentUser, err := s.getUser(ctx, userId)
-	if err != nil {
-		return nil, err
-	}
-
-	if !currentUser.Plan().HasFeature(feature) {
-		return nil, user.NewLimitExceededErr(feature, 0, 0)
-	}
-
-	info := currentUser.Plan().GetFeatureDetail(feature)
-	if info == nil {
-		return nil, user.NewLimitExceededErr(feature, 0, 0)
-	}
-	currentCount := currentUser.Stats().GetCountFromFeature(feature)
-
-	return newLimitInfo(currentCount, info), nil
-}
-
 func (s service) Can(ctx context.Context, permission user.Permission) ports.PermissionRequest {
-	userId := s.authentication.MustGetUserId(ctx)
-	userRole := s.authentication.MustGetUserRole(ctx)
-	familyId, err := s.getFamilyId(ctx, userId)
+	connectedAccount := s.authentication.MustGetConnectedAccount(ctx)
+	userID := connectedAccount.UserID()
+	userRole := connectedAccount.Role()
+	familyId, err := s.getFamilyId(ctx, userID)
 	return &permissionRequest{
 		error:      err,
 		userRole:   userRole,
-		userId:     userId,
+		userId:     userID,
 		permission: permission,
 		userFamily: familyId,
 	}
 }
 
-func (s service) getFamilyId(ctx context.Context, userId string) (*uuid.UUID, error) {
+func (s service) getFamilyId(ctx context.Context, userId types.UserID) (*types.FamilyID, error) {
 	familyUserCacheKey := fmt.Sprintf("family-user-%s", userId)
-	fromCache, ok := s.cache.From(ctx, ports.CacheLevelRequest).Get(familyUserCacheKey).(uuid.UUID)
+	fromCache, ok := s.cache.From(ctx, ports.CacheLevelRequest).Get(familyUserCacheKey).(types.FamilyID)
 	if ok {
 		return &fromCache, nil
 	}
@@ -74,9 +49,9 @@ func (s service) getFamilyId(ctx context.Context, userId string) (*uuid.UUID, er
 	return nil, nil
 }
 
-func (s service) getUser(ctx context.Context, userId string) (user.User, error) {
+func (s service) getUser(ctx context.Context, userId types.UserID) (account.Account, error) {
 	userCacheKey := fmt.Sprintf("user-%s", userId)
-	fromCache, ok := s.cache.From(ctx, ports.CacheLevelRequest).Get(userCacheKey).(user.User)
+	fromCache, ok := s.cache.From(ctx, ports.CacheLevelRequest).Get(userCacheKey).(account.Account)
 	if ok {
 		return fromCache, nil
 	}
@@ -89,35 +64,6 @@ func (s service) getUser(ctx context.Context, userId string) (user.User, error) 
 		return fromDatabase, nil
 	}
 	return nil, nil
-}
-
-func (s service) EnsureWithinLimit(ctx context.Context, feature user.Feature, delta int) error {
-	userId := s.authentication.MustGetUserId(ctx)
-	currentUser, err := s.getUser(ctx, userId)
-	if err != nil {
-		return err
-	}
-
-	if !currentUser.Plan().HasFeature(feature) {
-		return user.NewLimitExceededErr(feature, 0, 0)
-	}
-
-	info := currentUser.Plan().GetFeatureDetail(feature)
-	if info == nil {
-		return user.NewLimitExceededErr(feature, 0, 0)
-	}
-
-	if !info.HasLimit() {
-		return nil
-	}
-
-	currentFeatureCount := currentUser.Stats().GetCountFromFeature(feature)
-	newFeatureCount := currentFeatureCount + int64(delta)
-	if newFeatureCount > *info.Limit() {
-		return user.NewLimitExceededErr(feature, *info.Limit(), currentFeatureCount)
-	}
-
-	return nil
 }
 
 func New(

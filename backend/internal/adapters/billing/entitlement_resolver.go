@@ -9,14 +9,17 @@ import (
 )
 
 type entitlementResolver struct {
-	usage billing.UsageRepository
+	usage          billing.UsageRepository
+	authentication ports.Authentication
 }
 
 // NewEntitlementResolver constructs a Resolver with the given dependencies.
 // periodCalc may be nil to use the default monthly calculator.
-func NewEntitlementResolver(usage billing.UsageRepository) ports.EntitlementResolver {
+func NewEntitlementResolver(usage billing.UsageRepository,
+	authentication ports.Authentication) ports.EntitlementResolver {
 	return &entitlementResolver{
-		usage: usage,
+		usage:          usage,
+		authentication: authentication,
 	}
 }
 
@@ -151,9 +154,8 @@ func (r *entitlementResolver) CheckBoolean(ctx context.Context, account billing.
 	return eff.Enabled, nil
 }
 
-func (r *entitlementResolver) CheckQuota(ctx context.Context, account billing.Account, featureID billing.FeatureID,
-	needed int64) (bool,
-	billing.EffectiveEntitlement, error) {
+func (r *entitlementResolver) CheckQuotaForAccount(ctx context.Context, account billing.Account,
+	featureID billing.FeatureID, needed int64) (bool, billing.EffectiveEntitlement, error) {
 	if needed <= 0 {
 		needed = 1
 	}
@@ -177,4 +179,11 @@ func (r *entitlementResolver) CheckQuota(ctx context.Context, account billing.Ac
 	}
 	allowed := remaining >= needed
 	return allowed, eff, nil
+}
+
+func (r *entitlementResolver) CheckQuota(ctx context.Context, featureID billing.FeatureID,
+	needed int64) (bool,
+	billing.EffectiveEntitlement, error) {
+	connectedAccount := r.authentication.MustGetConnectedAccount(ctx)
+	return r.CheckQuotaForAccount(ctx, connectedAccount, featureID, needed)
 }

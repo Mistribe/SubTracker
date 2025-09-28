@@ -11,6 +11,7 @@ import (
 	"github.com/clerk/clerk-sdk-go/v2/jwks"
 
 	"github.com/mistribe/subtracker/internal/domain/authorization"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/x"
 )
@@ -34,8 +35,8 @@ func NewClerkIdentityProvider(cfg config.Configuration) ports.IdentityProvider {
 	}
 }
 
-func (c *clerkIdentityProvider) DeleteUser(ctx context.Context, userId string) error {
-	_, err := c.userClient.Delete(ctx, userId)
+func (c *clerkIdentityProvider) DeleteUser(ctx context.Context, userId types.UserID) error {
+	_, err := c.userClient.Delete(ctx, userId.String())
 	return err
 }
 

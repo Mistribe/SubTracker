@@ -29,15 +29,11 @@ func NewProviderRepository(dbContext *db.Context) ports.ProviderRepository {
 func (r ProviderRepository) GetById(ctx context.Context, providerId types.ProviderID) (provider.Provider, error) {
 	stmt := SELECT(
 		Providers.AllColumns,
-		ProviderPlans.AllColumns,
-		ProviderPrices.AllColumns,
 		ProviderLabels.LabelID,
 		ProviderLabels.ProviderID,
 	).
 		FROM(
 			Providers.
-				LEFT_JOIN(ProviderPlans, ProviderPlans.ProviderID.EQ(Providers.ID)).
-				LEFT_JOIN(ProviderPrices, ProviderPrices.PlanID.EQ(ProviderPlans.ID)).
 				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)),
 		).
 		WHERE(Providers.ID.EQ(UUID(providerId)))
@@ -64,15 +60,11 @@ func (r ProviderRepository) GetByIdForUser(ctx context.Context, userId types.Use
 	error) {
 	stmt := SELECT(
 		Providers.AllColumns,
-		ProviderPlans.AllColumns,
-		ProviderPrices.AllColumns,
 		ProviderLabels.LabelID,
 		ProviderLabels.ProviderID,
 	).
 		FROM(
 			Providers.
-				LEFT_JOIN(ProviderPlans, ProviderPlans.ProviderID.EQ(Providers.ID)).
-				LEFT_JOIN(ProviderPrices, ProviderPrices.PlanID.EQ(ProviderPlans.ID)).
 				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)).
 				LEFT_JOIN(Families, Families.ID.EQ(Providers.OwnerFamilyID)).
 				LEFT_JOIN(FamilyMembers, FamilyMembers.FamilyID.EQ(Families.ID)),
@@ -106,16 +98,12 @@ func (r ProviderRepository) GetByIdForUser(ctx context.Context, userId types.Use
 func (r ProviderRepository) GetSystemProviders(ctx context.Context) ([]provider.Provider, int64, error) {
 	stmt := SELECT(
 		Providers.AllColumns,
-		ProviderPlans.AllColumns,
-		ProviderPrices.AllColumns,
 		ProviderLabels.LabelID,
 		ProviderLabels.ProviderID,
 		COUNT(STAR).OVER().AS("total_count"),
 	).
 		FROM(
 			Providers.
-				LEFT_JOIN(ProviderPlans, ProviderPlans.ProviderID.EQ(Providers.ID)).
-				LEFT_JOIN(ProviderPrices, ProviderPrices.PlanID.EQ(ProviderPlans.ID)).
 				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)),
 		).
 		WHERE(
@@ -160,15 +148,11 @@ func (r ProviderRepository) GetAll(ctx context.Context, parameters ports.Provide
 
 	stmt := SELECT(
 		pagedProviders.AllColumns(),
-		ProviderPlans.AllColumns,
-		ProviderPrices.AllColumns,
 		ProviderLabels.LabelID,
 		ProviderLabels.ProviderID,
 	).
 		FROM(
 			pagedProviders.
-				LEFT_JOIN(ProviderPlans, ProviderPlans.ProviderID.EQ(Providers.ID.From(pagedProviders))).
-				LEFT_JOIN(ProviderPrices, ProviderPrices.PlanID.EQ(ProviderPlans.ID)).
 				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID.From(pagedProviders))),
 		)
 
@@ -234,8 +218,6 @@ func (r ProviderRepository) GetAllForUser(
 	// Get full provider data with joins
 	stmt := SELECT(
 		Providers.AllColumns,
-		ProviderPlans.AllColumns,
-		ProviderPrices.AllColumns,
 		ProviderLabels.LabelID,
 		ProviderLabels.ProviderID,
 		pagedProviders.AllColumns().Except(Providers.ID),
@@ -243,8 +225,6 @@ func (r ProviderRepository) GetAllForUser(
 		FROM(
 			pagedProviders.
 				INNER_JOIN(Providers, Providers.ID.EQ(Providers.ID.From(pagedProviders))).
-				LEFT_JOIN(ProviderPlans, ProviderPlans.ProviderID.EQ(Providers.ID)).
-				LEFT_JOIN(ProviderPrices, ProviderPrices.PlanID.EQ(ProviderPlans.ID)).
 				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)),
 		)
 

@@ -3,20 +3,19 @@ package models
 import (
 	"fmt"
 
-	"github.com/google/uuid"
-	"golang.org/x/text/currency"
-
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/model"
+	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/domain/types"
+	"github.com/mistribe/subtracker/pkg/x"
 	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type SubscriptionRow struct {
 	model.Subscriptions
-	SubscriptionServiceUsers *model.SubscriptionServiceUsers `json:"subscription_service_users"`
-	SubscriptionLabels       *model.SubscriptionLabels       `json:"subscription_labels"`
-	ProviderLabels           *model.ProviderLabels           `json:"provider_labels"`
+	SubscriptionFamilyUsers *model.SubscriptionFamilyUsers `json:"subscription_family_users"`
+	SubscriptionLabels      *model.SubscriptionLabels      `json:"subscription_labels"`
+	ProviderLabels          *model.ProviderLabels          `json:"provider_labels"`
 }
 
 type SubscriptionRowWithCount struct {
@@ -26,9 +25,9 @@ type SubscriptionRowWithCount struct {
 
 func createSubscriptionFromJet(
 	jetModel model.Subscriptions,
-	serviceUsers []uuid.UUID,
-	subscriptionLabels []uuid.UUID,
-	providerLabels []uuid.UUID) subscription.Subscription {
+	familyUsers []types.FamilyMemberID,
+	subscriptionLabels []types.LabelID,
+	providerLabels []types.LabelID) subscription.Subscription {
 	var freeTrial subscription.FreeTrial
 	if jetModel.FreeTrialEndDate != nil && jetModel.FreeTrialStartDate != nil {
 		freeTrial = subscription.NewFreeTrial(
@@ -40,49 +39,56 @@ func createSubscriptionFromJet(
 	var customPrice subscription.Price
 	if jetModel.CustomPriceCurrency != nil && jetModel.CustomPriceAmount != nil {
 		cry := currency.MustParseISO(*jetModel.CustomPriceCurrency)
-		customPrice = subscription.NewPrice(
-			*jetModel.CustomPriceAmount,
-			cry,
-		)
+		customPrice = subscription.NewPrice(currency.NewAmount(*jetModel.CustomPriceAmount, cry))
 	}
 
 	var payer subscription.Payer
 	if jetModel.PayerType != nil && jetModel.FamilyID != nil {
 		payerType := subscription.MustParsePayerType(*jetModel.PayerType)
-		payer = subscription.NewPayer(payerType, *jetModel.FamilyID, jetModel.PayerMemberID)
+		var memberID *types.FamilyMemberID
+		if jetModel.PayerMemberID != nil {
+			memberID = x.P(types.FamilyMemberID(*jetModel.PayerMemberID))
+		}
+		payer = subscription.NewPayer(payerType, types.FamilyID(*jetModel.FamilyID), memberID)
 	}
 
 	ownerType := types.MustParseOwnerType(jetModel.OwnerType)
-	owner := types.NewOwner(ownerType, jetModel.OwnerFamilyID, jetModel.OwnerUserID)
+	var ownerFamilyID *types.FamilyID
+	var ownerUserID *types.UserID
+	if jetModel.FamilyID != nil {
+		ownerFamilyID = x.P(types.FamilyID(*jetModel.FamilyID))
+	}
+	if jetModel.OwnerUserID != nil {
+		ownerUserID = x.P(types.UserID(*jetModel.OwnerUserID))
+	}
+	owner := types.NewOwner(ownerType, ownerFamilyID, ownerUserID)
 
 	recurrency := subscription.MustParseRecurrencyType(jetModel.Recurrency)
 
 	var labelRefs []subscription.LabelRef
 	for _, subscriptionLabel := range subscriptionLabels {
 		labelRefs = append(labelRefs, subscription.LabelRef{
-			LabelId: subscriptionLabel,
+			LabelId: types.LabelID(subscriptionLabel),
 			Source:  subscription.LabelSourceSubscription,
 		})
 	}
 
 	for _, providerLabel := range providerLabels {
 		labelRefs = append(labelRefs, subscription.LabelRef{
-			LabelId: providerLabel,
+			LabelId: types.LabelID(providerLabel),
 			Source:  subscription.LabelSourceProvider,
 		})
 	}
 
 	sub := subscription.NewSubscription(
-		jetModel.ID,
+		types.SubscriptionID(jetModel.ID),
 		jetModel.FriendlyName,
 		freeTrial,
-		jetModel.ProviderID,
-		jetModel.PlanID,
-		jetModel.PriceID,
+		types.ProviderID(jetModel.ProviderID),
 		customPrice,
 		owner,
 		payer,
-		serviceUsers,
+		familyUsers,
 		labelRefs,
 		jetModel.StartDate,
 		jetModel.EndDate,
@@ -101,51 +107,52 @@ func CreateSubscriptionFromJetRows(rows []SubscriptionRow) []subscription.Subscr
 		return nil
 	}
 
-	subscriptions := make(map[uuid.UUID]model.Subscriptions)
-	orderedIDs := make([]uuid.UUID, 0, len(rows))
-	serviceUserSet := herd.NewSet[string]()
-	subscriptionServiceUsers := make(map[uuid.UUID][]uuid.UUID)
+	subscriptions := herd.NewDictionary[types.SubscriptionID, model.Subscriptions]()
+	orderedIDs := herd.NewList[types.SubscriptionID]()
+	familyUserSet := herd.NewSet[string]()
+	subscriptionFamilyUsers := herd.NewDictionary[types.SubscriptionID, []types.FamilyMemberID]()
 	subscriptionLabelSet := herd.NewSet[string]()
-	subscriptionLabels := make(map[uuid.UUID][]uuid.UUID)
+	subscriptionLabels := herd.NewDictionary[types.SubscriptionID, []types.LabelID]()
 	providerLabelSet := herd.NewSet[string]()
-	providerLabels := make(map[uuid.UUID][]uuid.UUID)
+	providerLabels := herd.NewDictionary[types.SubscriptionID, []types.LabelID]()
 
 	for _, row := range rows {
 		jetSubscription := row.Subscriptions
-		if _, ok := subscriptions[jetSubscription.ID]; !ok {
-			subscriptions[jetSubscription.ID] = jetSubscription
-			orderedIDs = append(orderedIDs, jetSubscription.ID)
+		subscriptionID := types.SubscriptionID(jetSubscription.ID)
+		if _, ok := subscriptions[subscriptionID]; !ok {
+			subscriptions[subscriptionID] = jetSubscription
+			orderedIDs.Add(subscriptionID)
 		}
-		if row.SubscriptionServiceUsers != nil {
-			key := fmt.Sprintf("%s:%s", jetSubscription.ID, *row.SubscriptionServiceUsers)
-			if !serviceUserSet.Contains(key) {
-				serviceUserSet.Add(key)
-				subscriptionServiceUsers[jetSubscription.ID] = append(subscriptionServiceUsers[jetSubscription.ID],
-					row.SubscriptionServiceUsers.FamilyMemberID)
+		if row.SubscriptionFamilyUsers != nil {
+			key := fmt.Sprintf("%s:%s", subscriptionID, *row.SubscriptionFamilyUsers)
+			if !familyUserSet.Contains(key) {
+				familyUserSet.Add(key)
+				subscriptionFamilyUsers[subscriptionID] = append(subscriptionFamilyUsers[subscriptionID],
+					types.FamilyMemberID(row.SubscriptionFamilyUsers.FamilyMemberID))
 			}
 		}
 		if row.SubscriptionLabels != nil {
-			key := fmt.Sprintf("%s:%s", jetSubscription.ID, *row.SubscriptionLabels)
+			key := fmt.Sprintf("%s:%s", subscriptionID, *row.SubscriptionLabels)
 			if !subscriptionLabelSet.Contains(key) {
 				subscriptionLabelSet.Add(key)
-				subscriptionLabels[jetSubscription.ID] = append(subscriptionLabels[jetSubscription.ID],
-					row.SubscriptionLabels.LabelID)
+				subscriptionLabels[subscriptionID] = append(subscriptionLabels[subscriptionID],
+					types.LabelID(row.SubscriptionLabels.LabelID))
 			}
 		}
 		if row.ProviderLabels != nil {
-			key := fmt.Sprintf("%s:%s", jetSubscription.ID, *row.ProviderLabels)
+			key := fmt.Sprintf("%s:%s", subscriptionID, *row.ProviderLabels)
 			if !providerLabelSet.Contains(key) {
 				providerLabelSet.Add(key)
-				providerLabels[jetSubscription.ID] = append(providerLabels[jetSubscription.ID],
-					row.ProviderLabels.LabelID)
+				providerLabels[subscriptionID] = append(providerLabels[subscriptionID],
+					types.LabelID(row.ProviderLabels.LabelID))
 			}
 		}
 	}
 
-	results := make([]subscription.Subscription, 0, len(orderedIDs))
-	for _, subscriptionId := range orderedIDs {
+	results := make([]subscription.Subscription, 0, orderedIDs.Len())
+	for subscriptionId := range orderedIDs.It() {
 		jetSubscription := subscriptions[subscriptionId]
-		jetSubscriptionServiceUsers, _ := subscriptionServiceUsers[subscriptionId]
+		jetSubscriptionServiceUsers, _ := subscriptionFamilyUsers[subscriptionId]
 		jetSubscriptionLabels, _ := subscriptionLabels[subscriptionId]
 		jetProviderLabels, _ := providerLabels[subscriptionId]
 		result := createSubscriptionFromJet(jetSubscription,

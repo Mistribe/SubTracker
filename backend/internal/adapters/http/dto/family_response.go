@@ -12,8 +12,3 @@ type FamilySeeInvitationResponse struct {
 	// Role of the invited member
 	InvitedInasmuchAs string `json:"invited_inasmuch_as" example:"OWNER"`
 }
-
-type UserFamilyResponse struct {
-	Family FamilyModel `json:"family"`
-	Limits []Limit     `json:"limits,omitempty"`
-}

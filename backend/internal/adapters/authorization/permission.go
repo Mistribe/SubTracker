@@ -1,8 +1,6 @@
 package authorization
 
 import (
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/account"
 	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/types"
@@ -10,10 +8,10 @@ import (
 )
 
 type permissionRequest struct {
-	userId     string
+	userId     types.UserID
 	userRole   account.Role
 	permission authorization.Permission
-	userFamily *uuid.UUID
+	userFamily *types.FamilyID
 	error      error
 }
 

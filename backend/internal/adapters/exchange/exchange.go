@@ -9,9 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 )
 
@@ -196,10 +195,7 @@ func (e exchange) saveRateToDatabase(
 	rate float64,
 	at time.Time) error {
 
-	rateId, err := uuid.NewV7()
-	if err != nil {
-		return err
-	}
+	rateId := types.NewRateID()
 	dateOnly := time.Date(at.Year(), at.Month(), at.Day(), 0, 0, 0, 0, at.Location())
 	now := time.Now()
 	r := currency.NewRate(

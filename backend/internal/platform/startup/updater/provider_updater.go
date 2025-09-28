@@ -33,6 +33,20 @@ func (m labelMap) getUuids(keys []string) ([]uuid.UUID, bool) {
 	return results, true
 }
 
+func getUuids(source herd.Dictionary[string, types.LabelID], keys []string) ([]types.LabelID, bool) {
+	var results []types.LabelID
+
+	for _, key := range keys {
+		var id types.LabelID
+		if !source.TryGet(key, &id) {
+			return nil, false
+		}
+		results = append(results, id)
+	}
+
+	return results, true
+}
+
 type systemProviderModel struct {
 	Name        string   `json:"name"`
 	Key         string   `json:"key"`
@@ -112,7 +126,7 @@ func (l providerUpdater) updateDatabase(ctx context.Context, sourceProviders []s
 	for key, prov := range sourceProviderMap {
 		existing, ok := systemProviderMap[key]
 		if ok {
-			labelIds, ok := labels.getUuids(prov.Categories)
+			labelIds, ok := getUuids(labels, prov.Categories)
 			if !ok {
 				l.logger.Warn("missing or invalid labels",
 					slog.Any("expected", prov.Categories),
@@ -134,7 +148,7 @@ func (l providerUpdater) updateDatabase(ctx context.Context, sourceProviders []s
 				}
 			}
 		} else {
-			labelIds, ok := labels.getUuids(prov.Categories)
+			labelIds, ok := getUuids(labels, prov.Categories)
 			if !ok {
 				l.logger.Warn("missing or invalid labels",
 					slog.Any("expected", prov.Categories),
