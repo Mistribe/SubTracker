@@ -56,8 +56,8 @@ func (h AcceptInvitationCommandHandler) Handle(ctx context.Context, cmd AcceptIn
 	if err = fam.UpdateMember(member); err != nil {
 		return result.Fail[bool](err)
 	}
-	if vErr := fam.GetValidationErrors(); vErr != nil {
-		return result.Fail[bool](err)
+	if vErr := fam.GetValidationErrors(); vErr != nil { // return the actual validation error
+		return result.Fail[bool](vErr)
 	}
 	if err = h.familyRepository.Save(ctx, fam); err != nil {
 		return result.Fail[bool](err)

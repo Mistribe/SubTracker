@@ -34,7 +34,8 @@ func NewCreateFamilyCommandHandler(
 
 func (h CreateFamilyCommandHandler) Handle(ctx context.Context, cmd CreateFamilyCommand) result.Result[family.Family] {
 	var familyID types.FamilyID
-	if cmd.FamilyId.IsSome() {
+	// Guard against nil Option (zero-value interface) before calling its methods
+	if cmd.FamilyId != nil && cmd.FamilyId.IsSome() { // provided family id option
 		familyID = *cmd.FamilyId.Value()
 		fam, err := h.familyRepository.GetById(ctx, familyID)
 		if err != nil {
@@ -44,7 +45,7 @@ func (h CreateFamilyCommandHandler) Handle(ctx context.Context, cmd CreateFamily
 		if fam != nil {
 			return result.Fail[family.Family](family.ErrFamilyAlreadyExists)
 		}
-	} else {
+	} else { // no family id provided, generate new one
 		familyID = types.NewFamilyID()
 	}
 	return h.createFamily(ctx, familyID, cmd)

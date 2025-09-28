@@ -9,6 +9,11 @@ pkgname: '{{.SrcPackageName}}'
 recursive: false
 template: testify
 packages:
+  github.com/mistribe/subtracker/internal/domain/account:
+    config:
+      dir: ./internal/domain/account
+    interfaces:
+      ConnectedAccount:
   github.com/mistribe/subtracker/internal/ports:
     config:
       dir: ./internal/ports

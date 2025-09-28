@@ -6,12 +6,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/family/command"
 	"github.com/mistribe/subtracker/pkg/langext/result"
@@ -22,11 +23,11 @@ func TestRevokeMemberCommandHandler(t *testing.T) {
 
 	t.Run("GetById returns error", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
-		auth := stubAuthorization{}
-		h := command.NewRevokeMemberCommandHandler(repo, auth)
+		authz := ports.NewMockAuthorization(t)
+		h := command.NewRevokeMemberCommandHandler(repo, authz)
 
-		famID := uuid.New()
-		cmd := command.RevokeMemberCommand{FamilyId: famID, FamilyMemberId: uuid.New()}
+		famID := types.NewFamilyID()
+		cmd := command.RevokeMemberCommand{FamilyId: famID, FamilyMemberId: types.NewFamilyMemberID()}
 
 		expected := errors.New("db error")
 		repo.EXPECT().GetById(mock.Anything, famID).Return(nil, expected)
@@ -41,11 +42,11 @@ func TestRevokeMemberCommandHandler(t *testing.T) {
 
 	t.Run("Family not found returns ErrFamilyNotFound", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
-		auth := stubAuthorization{}
-		h := command.NewRevokeMemberCommandHandler(repo, auth)
+		authz := ports.NewMockAuthorization(t)
+		h := command.NewRevokeMemberCommandHandler(repo, authz)
 
-		famID := uuid.New()
-		cmd := command.RevokeMemberCommand{FamilyId: famID, FamilyMemberId: uuid.New()}
+		famID := types.NewFamilyID()
+		cmd := command.RevokeMemberCommand{FamilyId: famID, FamilyMemberId: types.NewFamilyMemberID()}
 
 		repo.EXPECT().GetById(mock.Anything, famID).Return(nil, nil)
 
@@ -59,16 +60,17 @@ func TestRevokeMemberCommandHandler(t *testing.T) {
 
 	t.Run("Authorization denies returns error", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
+		authz := ports.NewMockAuthorization(t)
 		permReq := ports.NewMockPermissionRequest(t)
-		auth := stubAuthorization{req: permReq}
-		h := command.NewRevokeMemberCommandHandler(repo, auth)
+		h := command.NewRevokeMemberCommandHandler(repo, authz)
 
-		famID := uuid.New()
-		fam := makeFamilyWithMembers(famID, nil)
-		cmd := command.RevokeMemberCommand{FamilyId: famID, FamilyMemberId: uuid.New()}
+		famID := types.NewFamilyID()
+		fam := helperNewFamilyWithID(famID, types.UserID("owner-1"), "Doe family", nil)
+		cmd := command.RevokeMemberCommand{FamilyId: famID, FamilyMemberId: types.NewFamilyMemberID()}
 
-		expected := errors.New("forbidden")
 		repo.EXPECT().GetById(mock.Anything, famID).Return(fam, nil)
+		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(permReq)
+		expected := errors.New("forbidden")
 		permReq.EXPECT().For(fam).Return(expected)
 
 		res := h.Handle(ctx, cmd)
@@ -81,17 +83,17 @@ func TestRevokeMemberCommandHandler(t *testing.T) {
 
 	t.Run("Member not found returns ErrFamilyMemberNotFound", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
+		authz := ports.NewMockAuthorization(t)
 		permReq := ports.NewMockPermissionRequest(t)
-		auth := stubAuthorization{req: permReq}
-		h := command.NewRevokeMemberCommandHandler(repo, auth)
+		h := command.NewRevokeMemberCommandHandler(repo, authz)
 
-		famID := uuid.New()
-		// family with a different member
-		m := makeMember(famID, "John")
-		fam := makeFamilyWithMembers(famID, []family.Member{m})
-		cmd := command.RevokeMemberCommand{FamilyId: famID, FamilyMemberId: uuid.New()}
+		famID := types.NewFamilyID()
+		m := helperNewMember(famID, "John", family.AdultMemberType)
+		fam := helperNewFamilyWithID(famID, types.UserID("owner-1"), "Doe family", []family.Member{m})
+		cmd := command.RevokeMemberCommand{FamilyId: famID, FamilyMemberId: types.NewFamilyMemberID()}
 
 		repo.EXPECT().GetById(mock.Anything, famID).Return(fam, nil)
+		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(permReq)
 		permReq.EXPECT().For(fam).Return(nil)
 
 		res := h.Handle(ctx, cmd)
@@ -104,16 +106,17 @@ func TestRevokeMemberCommandHandler(t *testing.T) {
 
 	t.Run("Member has no userId -> success true and no Save", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
+		authz := ports.NewMockAuthorization(t)
 		permReq := ports.NewMockPermissionRequest(t)
-		auth := stubAuthorization{req: permReq}
-		h := command.NewRevokeMemberCommandHandler(repo, auth)
+		h := command.NewRevokeMemberCommandHandler(repo, authz)
 
-		famID := uuid.New()
-		m := makeMember(famID, "John") // default UserID == nil
-		fam := makeFamilyWithMembers(famID, []family.Member{m})
+		famID := types.NewFamilyID()
+		m := helperNewMember(famID, "John", family.AdultMemberType)
+		fam := helperNewFamilyWithID(famID, types.UserID("owner-1"), "Doe family", []family.Member{m})
 		cmd := command.RevokeMemberCommand{FamilyId: famID, FamilyMemberId: m.Id()}
 
 		repo.EXPECT().GetById(mock.Anything, famID).Return(fam, nil)
+		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(permReq)
 		permReq.EXPECT().For(fam).Return(nil)
 
 		res := h.Handle(ctx, cmd)
@@ -126,20 +129,19 @@ func TestRevokeMemberCommandHandler(t *testing.T) {
 
 	t.Run("Validation error after clearing userId -> fault and no Save", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
+		authz := ports.NewMockAuthorization(t)
 		permReq := ports.NewMockPermissionRequest(t)
-		auth := stubAuthorization{req: permReq}
-		h := command.NewRevokeMemberCommandHandler(repo, auth)
+		h := command.NewRevokeMemberCommandHandler(repo, authz)
 
-		famID := uuid.New()
-		m := makeMember(famID, "John")
-		// set a userId so that revoke path proceeds to validation
-		uid := "user-1"
+		famID := types.NewFamilyID()
+		m := helperNewMember(famID, "John", family.AdultMemberType)
+		uid := types.UserID("user-1")
 		m.SetUserId(&uid)
-		// create a family with invalid name to trigger validation errors
-		fam := family.NewFamily(famID, "owner-1", "x", []family.Member{m}, time.Now(), time.Now())
+		fam := family.NewFamily(famID, types.UserID("owner-1"), "x", []family.Member{m}, time.Now(), time.Now())
 		cmd := command.RevokeMemberCommand{FamilyId: famID, FamilyMemberId: m.Id()}
 
 		repo.EXPECT().GetById(mock.Anything, famID).Return(fam, nil)
+		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(permReq)
 		permReq.EXPECT().For(fam).Return(nil)
 
 		res := h.Handle(ctx, cmd)
@@ -150,18 +152,19 @@ func TestRevokeMemberCommandHandler(t *testing.T) {
 
 	t.Run("Repository Save error propagates", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
+		authz := ports.NewMockAuthorization(t)
 		permReq := ports.NewMockPermissionRequest(t)
-		auth := stubAuthorization{req: permReq}
-		h := command.NewRevokeMemberCommandHandler(repo, auth)
+		h := command.NewRevokeMemberCommandHandler(repo, authz)
 
-		famID := uuid.New()
-		m := makeMember(famID, "John")
-		uid := "user-1"
+		famID := types.NewFamilyID()
+		m := helperNewMember(famID, "John", family.AdultMemberType)
+		uid := types.UserID("user-1")
 		m.SetUserId(&uid)
-		fam := makeFamilyWithMembers(famID, []family.Member{m})
+		fam := helperNewFamilyWithID(famID, types.UserID("owner-1"), "Doe family", []family.Member{m})
 		cmd := command.RevokeMemberCommand{FamilyId: famID, FamilyMemberId: m.Id()}
 
 		repo.EXPECT().GetById(mock.Anything, famID).Return(fam, nil)
+		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(permReq)
 		permReq.EXPECT().For(fam).Return(nil)
 		repo.EXPECT().Save(mock.Anything, mock.Anything).Return(errors.New("save failed"))
 
@@ -172,18 +175,19 @@ func TestRevokeMemberCommandHandler(t *testing.T) {
 
 	t.Run("Successful revoke clears userId and saves", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
+		authz := ports.NewMockAuthorization(t)
 		permReq := ports.NewMockPermissionRequest(t)
-		auth := stubAuthorization{req: permReq}
-		h := command.NewRevokeMemberCommandHandler(repo, auth)
+		h := command.NewRevokeMemberCommandHandler(repo, authz)
 
-		famID := uuid.New()
-		m := makeMember(famID, "John")
-		uid := "user-1"
+		famID := types.NewFamilyID()
+		m := helperNewMember(famID, "John", family.AdultMemberType)
+		uid := types.UserID("user-1")
 		m.SetUserId(&uid)
-		fam := makeFamilyWithMembers(famID, []family.Member{m})
+		fam := helperNewFamilyWithID(famID, types.UserID("owner-1"), "Doe family", []family.Member{m})
 		cmd := command.RevokeMemberCommand{FamilyId: famID, FamilyMemberId: m.Id()}
 
 		repo.EXPECT().GetById(mock.Anything, famID).Return(fam, nil)
+		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(permReq)
 		permReq.EXPECT().For(fam).Return(nil)
 		repo.EXPECT().Save(mock.Anything, mock.Anything).Return(nil)
 
@@ -192,7 +196,6 @@ func TestRevokeMemberCommandHandler(t *testing.T) {
 		require.True(t, res.IsSuccess())
 		ok := result.Match(res, func(v bool) bool { return v }, func(err error) bool { return false })
 		assert.True(t, ok)
-		// ensure userId cleared
 		updated := fam.GetMember(m.Id())
 		require.NotNil(t, updated)
 		assert.Nil(t, updated.UserId())

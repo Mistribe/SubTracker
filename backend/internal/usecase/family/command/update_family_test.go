@@ -6,12 +6,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
+	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/family/command"
 	"github.com/mistribe/subtracker/pkg/langext/option"
@@ -23,12 +24,13 @@ func TestUpdateFamilyCommandHandler(t *testing.T) {
 
 	t.Run("GetById returns error", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
-		auth := stubAuthorization{}
-		h := command.NewUpdateFamilyCommandHandler(repo, auth)
+		authz := ports.NewMockAuthorization(t)
+		h := command.NewUpdateFamilyCommandHandler(repo, authz)
 
-		famID := uuid.New()
-		cmd := command.UpdateFamilyCommand{FamilyID: famID, Name: "New Name",
-			UpdatedAt: option.None[time.Time]()} // UpdatedAt won't be used
+		famID := types.NewFamilyID()
+		cmd := command.UpdateFamilyCommand{
+			FamilyID: famID, Name: "New Name", UpdatedAt: option.None[time.Time](),
+		} // UpdatedAt won't be used
 
 		expected := errors.New("db error")
 		repo.EXPECT().GetById(mock.Anything, famID).Return(nil, expected)
@@ -43,10 +45,10 @@ func TestUpdateFamilyCommandHandler(t *testing.T) {
 
 	t.Run("Family not found returns ErrFamilyNotFound", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
-		auth := stubAuthorization{}
-		h := command.NewUpdateFamilyCommandHandler(repo, auth)
+		authz := ports.NewMockAuthorization(t)
+		h := command.NewUpdateFamilyCommandHandler(repo, authz)
 
-		famID := uuid.New()
+		famID := types.NewFamilyID()
 		cmd := command.UpdateFamilyCommand{FamilyID: famID, Name: "New Name", UpdatedAt: option.None[time.Time]()}
 
 		repo.EXPECT().GetById(mock.Anything, famID).Return(nil, nil)
@@ -62,15 +64,17 @@ func TestUpdateFamilyCommandHandler(t *testing.T) {
 	t.Run("Authorization denies returns error", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
 		permReq := ports.NewMockPermissionRequest(t)
-		auth := stubAuthorization{req: permReq}
-		h := command.NewUpdateFamilyCommandHandler(repo, auth)
+		authz := ports.NewMockAuthorization(t)
+		h := command.NewUpdateFamilyCommandHandler(repo, authz)
 
-		famID := uuid.New()
-		fam := makeFamilyWithMembers(famID, nil)
+		famID := types.NewFamilyID()
+		m := helperNewMember(famID, "John", family.AdultMemberType)
+		fam := helperNewFamilyWithID(famID, types.UserID("owner-1"), "Doe family", []family.Member{m})
 		cmd := command.UpdateFamilyCommand{FamilyID: famID, Name: "New Name", UpdatedAt: option.None[time.Time]()}
 
 		expected := errors.New("forbidden")
 		repo.EXPECT().GetById(mock.Anything, famID).Return(fam, nil)
+		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(permReq)
 		permReq.EXPECT().For(fam).Return(expected)
 
 		res := h.Handle(ctx, cmd)
@@ -84,16 +88,16 @@ func TestUpdateFamilyCommandHandler(t *testing.T) {
 	t.Run("Validation error after update -> fault and no Save", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
 		permReq := ports.NewMockPermissionRequest(t)
-		auth := stubAuthorization{req: permReq}
-		h := command.NewUpdateFamilyCommandHandler(repo, auth)
+		authz := ports.NewMockAuthorization(t)
+		h := command.NewUpdateFamilyCommandHandler(repo, authz)
 
-		famID := uuid.New()
-		// Start with valid family, then set invalid name (too short) in command
-		m := makeMember(famID, "John")
-		fam := makeFamilyWithMembers(famID, []family.Member{m})
+		famID := types.NewFamilyID()
+		m := helperNewMember(famID, "John", family.AdultMemberType)
+		fam := helperNewFamilyWithID(famID, types.UserID("owner-1"), "Doe family", []family.Member{m})
 		cmd := command.UpdateFamilyCommand{FamilyID: famID, Name: "x", UpdatedAt: option.None[time.Time]()}
 
 		repo.EXPECT().GetById(mock.Anything, famID).Return(fam, nil)
+		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(permReq)
 		permReq.EXPECT().For(fam).Return(nil)
 
 		res := h.Handle(ctx, cmd)
@@ -105,16 +109,17 @@ func TestUpdateFamilyCommandHandler(t *testing.T) {
 	t.Run("Repository Save error propagates", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
 		permReq := ports.NewMockPermissionRequest(t)
-		auth := stubAuthorization{req: permReq}
-		h := command.NewUpdateFamilyCommandHandler(repo, auth)
+		authz := ports.NewMockAuthorization(t)
+		h := command.NewUpdateFamilyCommandHandler(repo, authz)
 
-		famID := uuid.New()
-		m := makeMember(famID, "John")
-		fam := makeFamilyWithMembers(famID, []family.Member{m})
+		famID := types.NewFamilyID()
+		m := helperNewMember(famID, "John", family.AdultMemberType)
+		fam := helperNewFamilyWithID(famID, types.UserID("owner-1"), "Doe family", []family.Member{m})
 		newName := "Updated Family"
 		cmd := command.UpdateFamilyCommand{FamilyID: famID, Name: newName, UpdatedAt: option.Some(time.Now())}
 
 		repo.EXPECT().GetById(mock.Anything, famID).Return(fam, nil)
+		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(permReq)
 		permReq.EXPECT().For(fam).Return(nil)
 		repo.EXPECT().Save(mock.Anything, mock.Anything).Return(errors.New("save failed"))
 
@@ -126,17 +131,18 @@ func TestUpdateFamilyCommandHandler(t *testing.T) {
 	t.Run("Success with UpdatedAt provided (Some) sets exact time and name", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
 		permReq := ports.NewMockPermissionRequest(t)
-		auth := stubAuthorization{req: permReq}
-		h := command.NewUpdateFamilyCommandHandler(repo, auth)
+		authz := ports.NewMockAuthorization(t)
+		h := command.NewUpdateFamilyCommandHandler(repo, authz)
 
-		famID := uuid.New()
-		m := makeMember(famID, "John")
-		fam := makeFamilyWithMembers(famID, []family.Member{m})
+		famID := types.NewFamilyID()
+		m := helperNewMember(famID, "John", family.AdultMemberType)
+		fam := helperNewFamilyWithID(famID, types.UserID("owner-1"), "Doe family", []family.Member{m})
 		newName := "Updated Family"
 		ts := time.Date(2024, 12, 25, 10, 30, 0, 0, time.UTC)
 		cmd := command.UpdateFamilyCommand{FamilyID: famID, Name: newName, UpdatedAt: option.Some(ts)}
 
 		repo.EXPECT().GetById(mock.Anything, famID).Return(fam, nil)
+		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(permReq)
 		permReq.EXPECT().For(fam).Return(nil)
 		repo.EXPECT().Save(mock.Anything, mock.Anything).Return(nil)
 
@@ -153,16 +159,17 @@ func TestUpdateFamilyCommandHandler(t *testing.T) {
 	t.Run("Success with UpdatedAt None sets time to now-ish", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
 		permReq := ports.NewMockPermissionRequest(t)
-		auth := stubAuthorization{req: permReq}
-		h := command.NewUpdateFamilyCommandHandler(repo, auth)
+		authz := ports.NewMockAuthorization(t)
+		h := command.NewUpdateFamilyCommandHandler(repo, authz)
 
-		famID := uuid.New()
-		m := makeMember(famID, "John")
-		fam := makeFamilyWithMembers(famID, []family.Member{m})
+		famID := types.NewFamilyID()
+		m := helperNewMember(famID, "John", family.AdultMemberType)
+		fam := helperNewFamilyWithID(famID, types.UserID("owner-1"), "Doe family", []family.Member{m})
 		newName := "Updated Family"
 		cmd := command.UpdateFamilyCommand{FamilyID: famID, Name: newName, UpdatedAt: option.None[time.Time]()}
 
 		repo.EXPECT().GetById(mock.Anything, famID).Return(fam, nil)
+		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(permReq)
 		permReq.EXPECT().For(fam).Return(nil)
 		repo.EXPECT().Save(mock.Anything, mock.Anything).Return(nil)
 
@@ -175,7 +182,6 @@ func TestUpdateFamilyCommandHandler(t *testing.T) {
 			func(err error) family.Family { t.Fatalf("unexpected error: %v", err); return nil })
 		require.NotNil(t, got)
 		assert.Equal(t, newName, got.Name())
-		// UpdatedAt should be between before and after
 		assert.True(t, !got.UpdatedAt().Before(before) && !got.UpdatedAt().After(after),
 			"updatedAt not within expected window: %v not in [%v, %v]", got.UpdatedAt(), before, after)
 	})

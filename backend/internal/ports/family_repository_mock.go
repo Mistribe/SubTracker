@@ -180,6 +180,74 @@ func (_c *MockFamilyRepository_Exists_Call) RunAndReturn(run func(ctx context.Co
 	return _c
 }
 
+// GetAccountFamily provides a mock function for the type MockFamilyRepository
+func (_mock *MockFamilyRepository) GetAccountFamily(ctx context.Context, userId types.UserID) (family.Family, error) {
+	ret := _mock.Called(ctx, userId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAccountFamily")
+	}
+
+	var r0 family.Family
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID) (family.Family, error)); ok {
+		return returnFunc(ctx, userId)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID) family.Family); ok {
+		r0 = returnFunc(ctx, userId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(family.Family)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.UserID) error); ok {
+		r1 = returnFunc(ctx, userId)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockFamilyRepository_GetAccountFamily_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAccountFamily'
+type MockFamilyRepository_GetAccountFamily_Call struct {
+	*mock.Call
+}
+
+// GetAccountFamily is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userId types.UserID
+func (_e *MockFamilyRepository_Expecter) GetAccountFamily(ctx interface{}, userId interface{}) *MockFamilyRepository_GetAccountFamily_Call {
+	return &MockFamilyRepository_GetAccountFamily_Call{Call: _e.mock.On("GetAccountFamily", ctx, userId)}
+}
+
+func (_c *MockFamilyRepository_GetAccountFamily_Call) Run(run func(ctx context.Context, userId types.UserID)) *MockFamilyRepository_GetAccountFamily_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 types.UserID
+		if args[1] != nil {
+			arg1 = args[1].(types.UserID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockFamilyRepository_GetAccountFamily_Call) Return(family1 family.Family, err error) *MockFamilyRepository_GetAccountFamily_Call {
+	_c.Call.Return(family1, err)
+	return _c
+}
+
+func (_c *MockFamilyRepository_GetAccountFamily_Call) RunAndReturn(run func(ctx context.Context, userId types.UserID) (family.Family, error)) *MockFamilyRepository_GetAccountFamily_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetById provides a mock function for the type MockFamilyRepository
 func (_mock *MockFamilyRepository) GetById(ctx context.Context, entityId types.FamilyID) (family.Family, error) {
 	ret := _mock.Called(ctx, entityId)
@@ -244,74 +312,6 @@ func (_c *MockFamilyRepository_GetById_Call) Return(family1 family.Family, err e
 }
 
 func (_c *MockFamilyRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId types.FamilyID) (family.Family, error)) *MockFamilyRepository_GetById_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetUserFamily provides a mock function for the type MockFamilyRepository
-func (_mock *MockFamilyRepository) GetAccountFamily(ctx context.Context, userId types.UserID) (family.Family, error) {
-	ret := _mock.Called(ctx, userId)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetAccountFamily")
-	}
-
-	var r0 family.Family
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID) (family.Family, error)); ok {
-		return returnFunc(ctx, userId)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID) family.Family); ok {
-		r0 = returnFunc(ctx, userId)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(family.Family)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, types.UserID) error); ok {
-		r1 = returnFunc(ctx, userId)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockFamilyRepository_GetUserFamily_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAccountFamily'
-type MockFamilyRepository_GetUserFamily_Call struct {
-	*mock.Call
-}
-
-// GetUserFamily is a helper method to define mock.On call
-//   - ctx context.Context
-//   - userId types.UserID
-func (_e *MockFamilyRepository_Expecter) GetUserFamily(ctx interface{}, userId interface{}) *MockFamilyRepository_GetUserFamily_Call {
-	return &MockFamilyRepository_GetUserFamily_Call{Call: _e.mock.On("GetAccountFamily", ctx, userId)}
-}
-
-func (_c *MockFamilyRepository_GetUserFamily_Call) Run(run func(ctx context.Context, userId types.UserID)) *MockFamilyRepository_GetUserFamily_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 types.UserID
-		if args[1] != nil {
-			arg1 = args[1].(types.UserID)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockFamilyRepository_GetUserFamily_Call) Return(family1 family.Family, err error) *MockFamilyRepository_GetUserFamily_Call {
-	_c.Call.Return(family1, err)
-	return _c
-}
-
-func (_c *MockFamilyRepository_GetUserFamily_Call) RunAndReturn(run func(ctx context.Context, userId types.UserID) (family.Family, error)) *MockFamilyRepository_GetUserFamily_Call {
 	_c.Call.Return(run)
 	return _c
 }

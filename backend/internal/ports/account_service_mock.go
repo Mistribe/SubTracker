@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -39,7 +40,7 @@ func (_m *MockAccountService) EXPECT() *MockAccountService_Expecter {
 }
 
 // GetPreferredCurrency provides a mock function for the type MockAccountService
-func (_mock *MockAccountService) GetPreferredCurrency(ctx context.Context, userId string) currency.Unit {
+func (_mock *MockAccountService) GetPreferredCurrency(ctx context.Context, userId types.UserID) currency.Unit {
 	ret := _mock.Called(ctx, userId)
 
 	if len(ret) == 0 {
@@ -47,7 +48,7 @@ func (_mock *MockAccountService) GetPreferredCurrency(ctx context.Context, userI
 	}
 
 	var r0 currency.Unit
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) currency.Unit); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID) currency.Unit); ok {
 		r0 = returnFunc(ctx, userId)
 	} else {
 		r0 = ret.Get(0).(currency.Unit)
@@ -62,20 +63,20 @@ type MockAccountService_GetPreferredCurrency_Call struct {
 
 // GetPreferredCurrency is a helper method to define mock.On call
 //   - ctx context.Context
-//   - userId string
+//   - userId types.UserID
 func (_e *MockAccountService_Expecter) GetPreferredCurrency(ctx interface{}, userId interface{}) *MockAccountService_GetPreferredCurrency_Call {
 	return &MockAccountService_GetPreferredCurrency_Call{Call: _e.mock.On("GetPreferredCurrency", ctx, userId)}
 }
 
-func (_c *MockAccountService_GetPreferredCurrency_Call) Run(run func(ctx context.Context, userId string)) *MockAccountService_GetPreferredCurrency_Call {
+func (_c *MockAccountService_GetPreferredCurrency_Call) Run(run func(ctx context.Context, userId types.UserID)) *MockAccountService_GetPreferredCurrency_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 types.UserID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(types.UserID)
 		}
 		run(
 			arg0,
@@ -90,7 +91,7 @@ func (_c *MockAccountService_GetPreferredCurrency_Call) Return(v currency.Unit) 
 	return _c
 }
 
-func (_c *MockAccountService_GetPreferredCurrency_Call) RunAndReturn(run func(ctx context.Context, userId string) currency.Unit) *MockAccountService_GetPreferredCurrency_Call {
+func (_c *MockAccountService_GetPreferredCurrency_Call) RunAndReturn(run func(ctx context.Context, userId types.UserID) currency.Unit) *MockAccountService_GetPreferredCurrency_Call {
 	_c.Call.Return(run)
 	return _c
 }
