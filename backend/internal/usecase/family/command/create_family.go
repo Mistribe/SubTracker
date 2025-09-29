@@ -61,7 +61,13 @@ func (h CreateFamilyCommandHandler) createFamily(
 	// todo check if the user already have a family
 	memberId := types.NewFamilyMemberID()
 
-	createdAt := cmd.CreatedAt.ValueOrDefault(time.Now())
+	// Guard nil option before calling methods
+	var createdAt time.Time
+	if cmd.CreatedAt != nil && cmd.CreatedAt.IsSome() {
+		createdAt = *cmd.CreatedAt.Value()
+	} else {
+		createdAt = time.Now()
+	}
 
 	fam := family.NewFamily(
 		familyID,

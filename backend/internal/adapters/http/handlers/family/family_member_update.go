@@ -47,14 +47,14 @@ func updateFamilyMemberRequestToCommand(
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			familyId	path		string							true	"Family LabelID (UUID format)"
-//	@Param			id			path		string							true	"Family member LabelID (UUID format)"
-//	@Param			member		body		dto.UpdateFamilyMemberRequest	true	"Updated family member data"
-//	@Success		200			{object}	dto.FamilyModel					"Successfully updated family member"
-//	@Failure		400			{object}	HttpErrorResponse				"Bad Request - Invalid input data or LabelID format"
-//	@Failure		401			{object}	HttpErrorResponse				"Unauthorized - Invalid user authentication"
-//	@Failure		404			{object}	HttpErrorResponse				"Family or family member not found"
-//	@Failure		500			{object}	HttpErrorResponse				"Internal Server Error"
+//	@Param			familyId		path		string							true	"Family LabelID (UUID format)"
+//	@Param			familyMemberId	path		string							true	"Family member LabelID (UUID format)"
+//	@Param			member			body		dto.UpdateFamilyMemberRequest	true	"Updated family member data"
+//	@Success		200				{object}	dto.FamilyModel					"Successfully updated family member"
+//	@Failure		400				{object}	HttpErrorResponse				"Bad Request - Invalid input data or LabelID format"
+//	@Failure		401				{object}	HttpErrorResponse				"Unauthorized - Invalid user authentication"
+//	@Failure		404				{object}	HttpErrorResponse				"Family or family member not found"
+//	@Failure		500				{object}	HttpErrorResponse				"Internal Server Error"
 //	@Router			/family/{familyId}/members/{familyMemberId} [put]
 func (e MemberUpdateEndpoint) Handle(c *gin.Context) {
 
@@ -106,7 +106,8 @@ func (e MemberUpdateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewMemberUpdateEndpoint(handler ports.CommandHandler[command.UpdateFamilyMemberCommand, family.Family],
+func NewMemberUpdateEndpoint(
+	handler ports.CommandHandler[command.UpdateFamilyMemberCommand, family.Family],
 	authentication ports.Authentication) *MemberUpdateEndpoint {
 	return &MemberUpdateEndpoint{
 		handler:        handler,

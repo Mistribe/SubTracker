@@ -2,39 +2,40 @@ package billing
 
 import (
 	"time"
+
+	"github.com/mistribe/subtracker/internal/domain/types"
 )
 
 // Strongly-typed identifiers for clarity.
-type (
-	FeatureType uint8
-	PlanID      uint8
-	FeatureID   uint8
-)
 
 // Feature describes a capability your product exposes.
 type Feature struct {
-	ID          FeatureID
-	Type        FeatureType
+	ID          types.FeatureID
+	Type        types.FeatureType
 	Description string
 
 	// GatedBy optionally references another feature that must be enabled
 	// (typically a boolean feature) for this feature to be usable.
 	// When set, the effective Enabled result of this feature is AND-ed with the
 	// effective Enabled of the gating feature.
-	GatedBy *FeatureID
+	GatedBy *types.FeatureID
+}
+
+func (f Feature) IsQuota() bool {
+	return f.Type == FeatureQuota
 }
 
 // PlanEntitlement defines what a plan grants for a feature.
 // For boolean features, Allowed is used.
 // For quota features, Limit is used; nil means "unlimited".
 type PlanEntitlement struct {
-	PlanID    PlanID
-	FeatureID FeatureID
+	PlanID    types.PlanID
+	FeatureID types.FeatureID
 	Allowed   *bool  // only for FeatureBoolean
 	Limit     *int64 // only for FeatureQuota; nil => unlimited
 }
 
-func newBoolEntitlement(planID PlanID, featureID FeatureID, allowed bool) PlanEntitlement {
+func newBoolEntitlement(planID types.PlanID, featureID types.FeatureID, allowed bool) PlanEntitlement {
 	return PlanEntitlement{
 		PlanID:    planID,
 		FeatureID: featureID,
@@ -42,7 +43,7 @@ func newBoolEntitlement(planID PlanID, featureID FeatureID, allowed bool) PlanEn
 	}
 }
 
-func newQuotaEntitlement(planID PlanID, featureID FeatureID, limit int64) PlanEntitlement {
+func newQuotaEntitlement(planID types.PlanID, featureID types.FeatureID, limit int64) PlanEntitlement {
 	return PlanEntitlement{
 		PlanID:    planID,
 		FeatureID: featureID,
@@ -52,15 +53,15 @@ func newQuotaEntitlement(planID PlanID, featureID FeatureID, limit int64) PlanEn
 
 // UsageCounter tracks usage for a feature within a specific period.
 type UsageCounter struct {
-	FeatureID FeatureID
+	FeatureID types.FeatureID
 	Used      int64
 	UpdatedAt time.Time
 }
 
 // EffectiveEntitlement represents the evaluated entitlements for an account.
 type EffectiveEntitlement struct {
-	FeatureID FeatureID
-	Type      FeatureType
+	FeatureID types.FeatureID
+	Type      types.FeatureType
 
 	// Enabled is true when:
 	// - boolean feature -> allowed is true

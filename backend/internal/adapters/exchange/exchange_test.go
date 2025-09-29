@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/mistribe/subtracker/internal/adapters/exchange"
 	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/testx"
 )
@@ -122,7 +122,7 @@ func TestExchange_ToCurrencyAt_SuccessFromRepository(t *testing.T) {
 	at := time.Date(2024, 5, 3, 0, 0, 0, 0, time.UTC)
 	rateVal := 1.25
 	repoRate := currency.NewRate(
-		uuid.New(),
+		types.NewRateID(),
 		currency.USD,
 		currency.EUR,
 		at,

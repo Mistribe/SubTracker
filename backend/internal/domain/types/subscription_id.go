@@ -7,7 +7,9 @@ import (
 type SubscriptionID uuid.UUID
 
 func (id SubscriptionID) String() string {
-	return id.String()
+	// Convert to real uuid.UUID to avoid infinite recursion
+	u := uuid.UUID(id)
+	return u.String()
 }
 
 func NewSubscriptionID() SubscriptionID {

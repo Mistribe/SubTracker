@@ -20,99 +20,105 @@ func TestDeleteLabelCommandHandler_Handle(t *testing.T) {
 	id := types.NewLabelID()
 
 	t.Run("returns fault when repository GetById returns error", func(t *testing.T) {
+		ctx := t.Context()
 		labelRepo := ports.NewMockLabelRepository(t)
 		authz := ports.NewMockAuthorization(t)
 
-		labelRepo.EXPECT().GetById(t.Context(), id).Return(nil, errors.New("db error"))
+		labelRepo.EXPECT().GetById(mock.Anything, id).Return(nil, errors.New("db error"))
 
 		h := command.NewDeleteLabelCommandHandler(labelRepo, nil, authz)
 		cmd := command.DeleteLabelCommand{LabelID: id}
-		res := h.Handle(t.Context(), cmd)
+		res := h.Handle(ctx, cmd)
 
 		assert.True(t, res.IsFaulted())
 	})
 
 	t.Run("returns fault when label not found", func(t *testing.T) {
+		ctx := t.Context()
 		labelRepo := ports.NewMockLabelRepository(t)
 		authz := ports.NewMockAuthorization(t)
 
-		labelRepo.EXPECT().GetById(t.Context(), id).Return(nil, nil)
+		labelRepo.EXPECT().GetById(mock.Anything, id).Return(nil, nil)
 
 		h := command.NewDeleteLabelCommandHandler(labelRepo, nil, authz)
 		cmd := command.DeleteLabelCommand{LabelID: id}
-		res := h.Handle(t.Context(), cmd)
+		res := h.Handle(ctx, cmd)
 
 		assert.True(t, res.IsFaulted())
 	})
 
 	t.Run("returns fault when permission denied", func(t *testing.T) {
+		ctx := t.Context()
 		labelRepo := ports.NewMockLabelRepository(t)
 		authz := ports.NewMockAuthorization(t)
 		perm := ports.NewMockPermissionRequest(t)
 
 		existing := newPersonalLabel()
-		labelRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), auth.PermissionDelete).Return(perm)
+		labelRepo.EXPECT().GetById(mock.Anything, id).Return(existing, nil)
+		authz.EXPECT().Can(mock.Anything, auth.PermissionDelete).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(auth.ErrUnauthorized)
 
 		h := command.NewDeleteLabelCommandHandler(labelRepo, nil, authz)
 		cmd := command.DeleteLabelCommand{LabelID: id}
-		res := h.Handle(t.Context(), cmd)
+		res := h.Handle(ctx, cmd)
 
 		assert.True(t, res.IsFaulted())
 	})
 
 	t.Run("returns fault when repository Delete returns error", func(t *testing.T) {
+		ctx := t.Context()
 		labelRepo := ports.NewMockLabelRepository(t)
 		authz := ports.NewMockAuthorization(t)
 		perm := ports.NewMockPermissionRequest(t)
 
 		existing := newPersonalLabel()
-		labelRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), auth.PermissionDelete).Return(perm)
+		labelRepo.EXPECT().GetById(mock.Anything, id).Return(existing, nil)
+		authz.EXPECT().Can(mock.Anything, auth.PermissionDelete).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
-		labelRepo.EXPECT().Delete(t.Context(), id).Return(false, errors.New("delete failed"))
+		labelRepo.EXPECT().Delete(mock.Anything, id).Return(false, errors.New("delete failed"))
 
 		h := command.NewDeleteLabelCommandHandler(labelRepo, nil, authz)
 		cmd := command.DeleteLabelCommand{LabelID: id}
-		res := h.Handle(t.Context(), cmd)
+		res := h.Handle(ctx, cmd)
 
 		assert.True(t, res.IsFaulted())
 	})
 
 	t.Run("returns fault when repository Delete returns false (not found)", func(t *testing.T) {
+		ctx := t.Context()
 		labelRepo := ports.NewMockLabelRepository(t)
 		authz := ports.NewMockAuthorization(t)
 		perm := ports.NewMockPermissionRequest(t)
 
 		existing := newPersonalLabel()
-		labelRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), auth.PermissionDelete).Return(perm)
+		labelRepo.EXPECT().GetById(mock.Anything, id).Return(existing, nil)
+		authz.EXPECT().Can(mock.Anything, auth.PermissionDelete).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
-		labelRepo.EXPECT().Delete(t.Context(), id).Return(false, nil)
+		labelRepo.EXPECT().Delete(mock.Anything, id).Return(false, nil)
 
 		h := command.NewDeleteLabelCommandHandler(labelRepo, nil, authz)
 		cmd := command.DeleteLabelCommand{LabelID: id}
-		res := h.Handle(t.Context(), cmd)
+		res := h.Handle(ctx, cmd)
 
 		assert.True(t, res.IsFaulted())
 	})
 
 	t.Run("returns success when repository Delete returns true", func(t *testing.T) {
+		ctx := t.Context()
 		labelRepo := ports.NewMockLabelRepository(t)
 		familyRepo := ports.NewMockFamilyRepository(t)
 		authz := ports.NewMockAuthorization(t)
 		perm := ports.NewMockPermissionRequest(t)
 
 		existing := newPersonalLabel()
-		labelRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), auth.PermissionDelete).Return(perm)
+		labelRepo.EXPECT().GetById(mock.Anything, id).Return(existing, nil)
+		authz.EXPECT().Can(mock.Anything, auth.PermissionDelete).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
-		labelRepo.EXPECT().Delete(t.Context(), id).Return(true, nil)
+		labelRepo.EXPECT().Delete(mock.Anything, id).Return(true, nil)
 
 		h := command.NewDeleteLabelCommandHandler(labelRepo, familyRepo, authz)
 		cmd := command.DeleteLabelCommand{LabelID: id}
-		res := h.Handle(t.Context(), cmd)
+		res := h.Handle(ctx, cmd)
 
 		assert.True(t, res.IsSuccess())
 	})

@@ -5,9 +5,10 @@ import (
 )
 
 func Module() fx.Option {
-	return fx.Module("auth_idp",
+	return fx.Module("authentication",
 		fx.Provide(
 			NewClerkIdentityProvider,
+			NewAuthentication,
 		),
 	)
 }

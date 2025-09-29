@@ -71,17 +71,44 @@ func (h UpdateSubscriptionCommandHandler) updateSubscription(
 	cmd UpdateSubscriptionCommand,
 	sub subscription.Subscription) result.Result[subscription.Subscription] {
 
-	sub.SetFriendlyName(cmd.FriendlyName)
-	sub.SetFreeTrial(cmd.FreeTrial)
-	sub.SetPrice(cmd.Price)
-	sub.SetOwner(cmd.Owner)
-	sub.SetPayer(cmd.Payer)
-	sub.SetFamilyUsers(cmd.FamilyUsers)
-	sub.SetStartDate(cmd.StartDate)
-	sub.SetEndDate(cmd.EndDate)
-	sub.SetRecurrency(cmd.Recurrency)
-	sub.SetCustomRecurrency(cmd.CustomRecurrency)
-	sub.SetUpdatedAt(cmd.UpdatedAt.ValueOrDefault(time.Now()))
+	if cmd.FriendlyName != nil {
+		sub.SetFriendlyName(cmd.FriendlyName)
+	}
+	if cmd.FreeTrial != nil {
+		sub.SetFreeTrial(cmd.FreeTrial)
+	}
+	if sub.Price() != nil && cmd.Price != nil {
+		sub.SetPrice(cmd.Price)
+	}
+	if cmd.Owner != nil {
+		sub.SetOwner(cmd.Owner)
+	}
+	if cmd.Payer != nil {
+		sub.SetPayer(cmd.Payer)
+	}
+	if cmd.FamilyUsers != nil {
+		sub.SetFamilyUsers(cmd.FamilyUsers)
+	}
+	if !cmd.StartDate.IsZero() {
+		sub.SetStartDate(cmd.StartDate)
+	}
+	if cmd.EndDate != nil {
+		sub.SetEndDate(cmd.EndDate)
+	}
+	var zeroRecurrency subscription.RecurrencyType
+	if cmd.Recurrency != zeroRecurrency {
+		sub.SetRecurrency(cmd.Recurrency)
+	}
+	if cmd.CustomRecurrency != nil {
+		sub.SetCustomRecurrency(cmd.CustomRecurrency)
+	}
+	var updatedAt time.Time
+	if cmd.UpdatedAt != nil && cmd.UpdatedAt.IsSome() {
+		updatedAt = *cmd.UpdatedAt.Value()
+	} else {
+		updatedAt = time.Now()
+	}
+	sub.SetUpdatedAt(updatedAt)
 
 	if err := ensureRelatedEntityExists(ctx, h.familyRepository, sub); err != nil {
 		return result.Fail[subscription.Subscription](err)

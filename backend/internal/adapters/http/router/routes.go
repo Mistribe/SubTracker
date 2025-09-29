@@ -27,6 +27,7 @@ func BuildRoutesModule() fx.Option {
 			subscription.NewUpdateEndpoint,
 			subscription.NewDeleteEndpoint,
 			subscription.NewSummaryEndpoint,
+			subscription.NewGetQuotaUsageEndpoint,
 			ginfx.AsEndpointGroup(subscription.NewEndpointGroup),
 
 			label.NewGetAllEndpoint,
@@ -34,6 +35,7 @@ func BuildRoutesModule() fx.Option {
 			label.NewCreateEndpoint,
 			label.NewUpdateEndpoint,
 			label.NewDeleteEndpoint,
+			label.NewGetQuotaUsageEndpoint,
 			ginfx.AsEndpointGroup(label.NewEndpointGroup),
 
 			family.NewCreateEndpoint,
@@ -48,6 +50,7 @@ func BuildRoutesModule() fx.Option {
 			family.NewMemberCreateEndpoint,
 			family.NewMemberUpdateEndpoint,
 			family.NewMemberDeleteEndpoint,
+			family.NewGetQuotaUsageEndpoint,
 			ginfx.AsEndpointGroup(family.NewEndpointGroup),
 
 			provider.NewGetEndpoint,
@@ -55,6 +58,7 @@ func BuildRoutesModule() fx.Option {
 			provider.NewCreateEndpoint,
 			provider.NewUpdateEndpoint,
 			provider.NewDeleteEndpoint,
+			provider.NewGetQuotaUsageEndpoint,
 			ginfx.AsEndpointGroup(provider.NewEndpointGroup),
 
 			currency.NewSupportedEndpoint,
@@ -64,6 +68,7 @@ func BuildRoutesModule() fx.Option {
 			account.NewUserGetPreferredCurrencyEndpoint,
 			account.NewUpdatePreferredCurrencyEndpoint,
 			account.NewDeleteEndpoint,
+			account.NewGetQuotaUsageEndpoint,
 			ginfx.AsEndpointGroup(account.NewEndpointGroup),
 
 			ginfx.AsEndpoint(NewHealthCheckLiveEndpoint),

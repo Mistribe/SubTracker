@@ -3,6 +3,7 @@ package subscription
 import (
 	"go.uber.org/fx"
 
+	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/shared"
@@ -16,6 +17,7 @@ func Module() fx.Option {
 			ports.AsQueryHandler[query.SummaryQuery, query.SummaryQueryResponse](query.NewSummaryQueryHandler),
 			ports.AsQueryHandler[query.FindOneQuery, subscription.Subscription](query.NewFindOneQueryHandler),
 			ports.AsQueryHandler[query.FindAllQuery, shared.PaginatedResponse[subscription.Subscription]](query.NewFindAllQueryHandler),
+			ports.AsQueryHandler[query.GetQuotaUsageHandler, billing.EffectiveEntitlement](query.NewGetQuotaUsageHandler),
 
 			ports.AsCommandHandler[command.CreateSubscriptionCommand, subscription.Subscription](command.NewCreateSubscriptionCommandHandler),
 			ports.AsCommandHandler[command.UpdateSubscriptionCommand, subscription.Subscription](command.NewUpdateSubscriptionCommandHandler),

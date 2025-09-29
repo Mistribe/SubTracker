@@ -7,7 +7,9 @@ package ports
 import (
 	"context"
 
+	"github.com/mistribe/subtracker/internal/domain/account"
 	"github.com/mistribe/subtracker/internal/domain/billing"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -39,8 +41,8 @@ func (_m *MockEntitlementResolver) EXPECT() *MockEntitlementResolver_Expecter {
 }
 
 // CheckBoolean provides a mock function for the type MockEntitlementResolver
-func (_mock *MockEntitlementResolver) CheckBoolean(ctx context.Context, account billing.Account, featureID billing.FeatureID) (bool, error) {
-	ret := _mock.Called(ctx, account, featureID)
+func (_mock *MockEntitlementResolver) CheckBoolean(ctx context.Context, account1 account.ConnectedAccount, featureID types.FeatureID) (bool, error) {
+	ret := _mock.Called(ctx, account1, featureID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CheckBoolean")
@@ -48,16 +50,16 @@ func (_mock *MockEntitlementResolver) CheckBoolean(ctx context.Context, account 
 
 	var r0 bool
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, billing.Account, billing.FeatureID) (bool, error)); ok {
-		return returnFunc(ctx, account, featureID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, account.ConnectedAccount, types.FeatureID) (bool, error)); ok {
+		return returnFunc(ctx, account1, featureID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, billing.Account, billing.FeatureID) bool); ok {
-		r0 = returnFunc(ctx, account, featureID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, account.ConnectedAccount, types.FeatureID) bool); ok {
+		r0 = returnFunc(ctx, account1, featureID)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, billing.Account, billing.FeatureID) error); ok {
-		r1 = returnFunc(ctx, account, featureID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, account.ConnectedAccount, types.FeatureID) error); ok {
+		r1 = returnFunc(ctx, account1, featureID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -71,25 +73,25 @@ type MockEntitlementResolver_CheckBoolean_Call struct {
 
 // CheckBoolean is a helper method to define mock.On call
 //   - ctx context.Context
-//   - account billing.Account
-//   - featureID billing.FeatureID
-func (_e *MockEntitlementResolver_Expecter) CheckBoolean(ctx interface{}, account interface{}, featureID interface{}) *MockEntitlementResolver_CheckBoolean_Call {
-	return &MockEntitlementResolver_CheckBoolean_Call{Call: _e.mock.On("CheckBoolean", ctx, account, featureID)}
+//   - account1 account.ConnectedAccount
+//   - featureID types.FeatureID
+func (_e *MockEntitlementResolver_Expecter) CheckBoolean(ctx interface{}, account1 interface{}, featureID interface{}) *MockEntitlementResolver_CheckBoolean_Call {
+	return &MockEntitlementResolver_CheckBoolean_Call{Call: _e.mock.On("CheckBoolean", ctx, account1, featureID)}
 }
 
-func (_c *MockEntitlementResolver_CheckBoolean_Call) Run(run func(ctx context.Context, account billing.Account, featureID billing.FeatureID)) *MockEntitlementResolver_CheckBoolean_Call {
+func (_c *MockEntitlementResolver_CheckBoolean_Call) Run(run func(ctx context.Context, account1 account.ConnectedAccount, featureID types.FeatureID)) *MockEntitlementResolver_CheckBoolean_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 billing.Account
+		var arg1 account.ConnectedAccount
 		if args[1] != nil {
-			arg1 = args[1].(billing.Account)
+			arg1 = args[1].(account.ConnectedAccount)
 		}
-		var arg2 billing.FeatureID
+		var arg2 types.FeatureID
 		if args[2] != nil {
-			arg2 = args[2].(billing.FeatureID)
+			arg2 = args[2].(types.FeatureID)
 		}
 		run(
 			arg0,
@@ -105,13 +107,13 @@ func (_c *MockEntitlementResolver_CheckBoolean_Call) Return(b bool, err error) *
 	return _c
 }
 
-func (_c *MockEntitlementResolver_CheckBoolean_Call) RunAndReturn(run func(ctx context.Context, account billing.Account, featureID billing.FeatureID) (bool, error)) *MockEntitlementResolver_CheckBoolean_Call {
+func (_c *MockEntitlementResolver_CheckBoolean_Call) RunAndReturn(run func(ctx context.Context, account1 account.ConnectedAccount, featureID types.FeatureID) (bool, error)) *MockEntitlementResolver_CheckBoolean_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // CheckQuota provides a mock function for the type MockEntitlementResolver
-func (_mock *MockEntitlementResolver) CheckQuota(ctx context.Context, featureID billing.FeatureID, needed int64) (bool, billing.EffectiveEntitlement, error) {
+func (_mock *MockEntitlementResolver) CheckQuota(ctx context.Context, featureID types.FeatureID, needed int64) (bool, billing.EffectiveEntitlement, error) {
 	ret := _mock.Called(ctx, featureID, needed)
 
 	if len(ret) == 0 {
@@ -121,20 +123,20 @@ func (_mock *MockEntitlementResolver) CheckQuota(ctx context.Context, featureID 
 	var r0 bool
 	var r1 billing.EffectiveEntitlement
 	var r2 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, billing.FeatureID, int64) (bool, billing.EffectiveEntitlement, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.FeatureID, int64) (bool, billing.EffectiveEntitlement, error)); ok {
 		return returnFunc(ctx, featureID, needed)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, billing.FeatureID, int64) bool); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.FeatureID, int64) bool); ok {
 		r0 = returnFunc(ctx, featureID, needed)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, billing.FeatureID, int64) billing.EffectiveEntitlement); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.FeatureID, int64) billing.EffectiveEntitlement); ok {
 		r1 = returnFunc(ctx, featureID, needed)
 	} else {
 		r1 = ret.Get(1).(billing.EffectiveEntitlement)
 	}
-	if returnFunc, ok := ret.Get(2).(func(context.Context, billing.FeatureID, int64) error); ok {
+	if returnFunc, ok := ret.Get(2).(func(context.Context, types.FeatureID, int64) error); ok {
 		r2 = returnFunc(ctx, featureID, needed)
 	} else {
 		r2 = ret.Error(2)
@@ -149,21 +151,21 @@ type MockEntitlementResolver_CheckQuota_Call struct {
 
 // CheckQuota is a helper method to define mock.On call
 //   - ctx context.Context
-//   - featureID billing.FeatureID
+//   - featureID types.FeatureID
 //   - needed int64
 func (_e *MockEntitlementResolver_Expecter) CheckQuota(ctx interface{}, featureID interface{}, needed interface{}) *MockEntitlementResolver_CheckQuota_Call {
 	return &MockEntitlementResolver_CheckQuota_Call{Call: _e.mock.On("CheckQuota", ctx, featureID, needed)}
 }
 
-func (_c *MockEntitlementResolver_CheckQuota_Call) Run(run func(ctx context.Context, featureID billing.FeatureID, needed int64)) *MockEntitlementResolver_CheckQuota_Call {
+func (_c *MockEntitlementResolver_CheckQuota_Call) Run(run func(ctx context.Context, featureID types.FeatureID, needed int64)) *MockEntitlementResolver_CheckQuota_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 billing.FeatureID
+		var arg1 types.FeatureID
 		if args[1] != nil {
-			arg1 = args[1].(billing.FeatureID)
+			arg1 = args[1].(types.FeatureID)
 		}
 		var arg2 int64
 		if args[2] != nil {
@@ -183,14 +185,14 @@ func (_c *MockEntitlementResolver_CheckQuota_Call) Return(allowed bool, eff bill
 	return _c
 }
 
-func (_c *MockEntitlementResolver_CheckQuota_Call) RunAndReturn(run func(ctx context.Context, featureID billing.FeatureID, needed int64) (bool, billing.EffectiveEntitlement, error)) *MockEntitlementResolver_CheckQuota_Call {
+func (_c *MockEntitlementResolver_CheckQuota_Call) RunAndReturn(run func(ctx context.Context, featureID types.FeatureID, needed int64) (bool, billing.EffectiveEntitlement, error)) *MockEntitlementResolver_CheckQuota_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // CheckQuotaForAccount provides a mock function for the type MockEntitlementResolver
-func (_mock *MockEntitlementResolver) CheckQuotaForAccount(ctx context.Context, account billing.Account, featureID billing.FeatureID, needed int64) (bool, billing.EffectiveEntitlement, error) {
-	ret := _mock.Called(ctx, account, featureID, needed)
+func (_mock *MockEntitlementResolver) CheckQuotaForAccount(ctx context.Context, account1 account.ConnectedAccount, featureID types.FeatureID, needed int64) (bool, billing.EffectiveEntitlement, error) {
+	ret := _mock.Called(ctx, account1, featureID, needed)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CheckQuotaForAccount")
@@ -199,21 +201,21 @@ func (_mock *MockEntitlementResolver) CheckQuotaForAccount(ctx context.Context, 
 	var r0 bool
 	var r1 billing.EffectiveEntitlement
 	var r2 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, billing.Account, billing.FeatureID, int64) (bool, billing.EffectiveEntitlement, error)); ok {
-		return returnFunc(ctx, account, featureID, needed)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, account.ConnectedAccount, types.FeatureID, int64) (bool, billing.EffectiveEntitlement, error)); ok {
+		return returnFunc(ctx, account1, featureID, needed)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, billing.Account, billing.FeatureID, int64) bool); ok {
-		r0 = returnFunc(ctx, account, featureID, needed)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, account.ConnectedAccount, types.FeatureID, int64) bool); ok {
+		r0 = returnFunc(ctx, account1, featureID, needed)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, billing.Account, billing.FeatureID, int64) billing.EffectiveEntitlement); ok {
-		r1 = returnFunc(ctx, account, featureID, needed)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, account.ConnectedAccount, types.FeatureID, int64) billing.EffectiveEntitlement); ok {
+		r1 = returnFunc(ctx, account1, featureID, needed)
 	} else {
 		r1 = ret.Get(1).(billing.EffectiveEntitlement)
 	}
-	if returnFunc, ok := ret.Get(2).(func(context.Context, billing.Account, billing.FeatureID, int64) error); ok {
-		r2 = returnFunc(ctx, account, featureID, needed)
+	if returnFunc, ok := ret.Get(2).(func(context.Context, account.ConnectedAccount, types.FeatureID, int64) error); ok {
+		r2 = returnFunc(ctx, account1, featureID, needed)
 	} else {
 		r2 = ret.Error(2)
 	}
@@ -227,26 +229,26 @@ type MockEntitlementResolver_CheckQuotaForAccount_Call struct {
 
 // CheckQuotaForAccount is a helper method to define mock.On call
 //   - ctx context.Context
-//   - account billing.Account
-//   - featureID billing.FeatureID
+//   - account1 account.ConnectedAccount
+//   - featureID types.FeatureID
 //   - needed int64
-func (_e *MockEntitlementResolver_Expecter) CheckQuotaForAccount(ctx interface{}, account interface{}, featureID interface{}, needed interface{}) *MockEntitlementResolver_CheckQuotaForAccount_Call {
-	return &MockEntitlementResolver_CheckQuotaForAccount_Call{Call: _e.mock.On("CheckQuotaForAccount", ctx, account, featureID, needed)}
+func (_e *MockEntitlementResolver_Expecter) CheckQuotaForAccount(ctx interface{}, account1 interface{}, featureID interface{}, needed interface{}) *MockEntitlementResolver_CheckQuotaForAccount_Call {
+	return &MockEntitlementResolver_CheckQuotaForAccount_Call{Call: _e.mock.On("CheckQuotaForAccount", ctx, account1, featureID, needed)}
 }
 
-func (_c *MockEntitlementResolver_CheckQuotaForAccount_Call) Run(run func(ctx context.Context, account billing.Account, featureID billing.FeatureID, needed int64)) *MockEntitlementResolver_CheckQuotaForAccount_Call {
+func (_c *MockEntitlementResolver_CheckQuotaForAccount_Call) Run(run func(ctx context.Context, account1 account.ConnectedAccount, featureID types.FeatureID, needed int64)) *MockEntitlementResolver_CheckQuotaForAccount_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 billing.Account
+		var arg1 account.ConnectedAccount
 		if args[1] != nil {
-			arg1 = args[1].(billing.Account)
+			arg1 = args[1].(account.ConnectedAccount)
 		}
-		var arg2 billing.FeatureID
+		var arg2 types.FeatureID
 		if args[2] != nil {
-			arg2 = args[2].(billing.FeatureID)
+			arg2 = args[2].(types.FeatureID)
 		}
 		var arg3 int64
 		if args[3] != nil {
@@ -267,14 +269,14 @@ func (_c *MockEntitlementResolver_CheckQuotaForAccount_Call) Return(allowed bool
 	return _c
 }
 
-func (_c *MockEntitlementResolver_CheckQuotaForAccount_Call) RunAndReturn(run func(ctx context.Context, account billing.Account, featureID billing.FeatureID, needed int64) (bool, billing.EffectiveEntitlement, error)) *MockEntitlementResolver_CheckQuotaForAccount_Call {
+func (_c *MockEntitlementResolver_CheckQuotaForAccount_Call) RunAndReturn(run func(ctx context.Context, account1 account.ConnectedAccount, featureID types.FeatureID, needed int64) (bool, billing.EffectiveEntitlement, error)) *MockEntitlementResolver_CheckQuotaForAccount_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Resolve provides a mock function for the type MockEntitlementResolver
-func (_mock *MockEntitlementResolver) Resolve(ctx context.Context, account billing.Account, featureID billing.FeatureID) (billing.EffectiveEntitlement, error) {
-	ret := _mock.Called(ctx, account, featureID)
+func (_mock *MockEntitlementResolver) Resolve(ctx context.Context, account1 account.ConnectedAccount, featureID types.FeatureID) (billing.EffectiveEntitlement, error) {
+	ret := _mock.Called(ctx, account1, featureID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Resolve")
@@ -282,16 +284,16 @@ func (_mock *MockEntitlementResolver) Resolve(ctx context.Context, account billi
 
 	var r0 billing.EffectiveEntitlement
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, billing.Account, billing.FeatureID) (billing.EffectiveEntitlement, error)); ok {
-		return returnFunc(ctx, account, featureID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, account.ConnectedAccount, types.FeatureID) (billing.EffectiveEntitlement, error)); ok {
+		return returnFunc(ctx, account1, featureID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, billing.Account, billing.FeatureID) billing.EffectiveEntitlement); ok {
-		r0 = returnFunc(ctx, account, featureID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, account.ConnectedAccount, types.FeatureID) billing.EffectiveEntitlement); ok {
+		r0 = returnFunc(ctx, account1, featureID)
 	} else {
 		r0 = ret.Get(0).(billing.EffectiveEntitlement)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, billing.Account, billing.FeatureID) error); ok {
-		r1 = returnFunc(ctx, account, featureID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, account.ConnectedAccount, types.FeatureID) error); ok {
+		r1 = returnFunc(ctx, account1, featureID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -305,25 +307,25 @@ type MockEntitlementResolver_Resolve_Call struct {
 
 // Resolve is a helper method to define mock.On call
 //   - ctx context.Context
-//   - account billing.Account
-//   - featureID billing.FeatureID
-func (_e *MockEntitlementResolver_Expecter) Resolve(ctx interface{}, account interface{}, featureID interface{}) *MockEntitlementResolver_Resolve_Call {
-	return &MockEntitlementResolver_Resolve_Call{Call: _e.mock.On("Resolve", ctx, account, featureID)}
+//   - account1 account.ConnectedAccount
+//   - featureID types.FeatureID
+func (_e *MockEntitlementResolver_Expecter) Resolve(ctx interface{}, account1 interface{}, featureID interface{}) *MockEntitlementResolver_Resolve_Call {
+	return &MockEntitlementResolver_Resolve_Call{Call: _e.mock.On("Resolve", ctx, account1, featureID)}
 }
 
-func (_c *MockEntitlementResolver_Resolve_Call) Run(run func(ctx context.Context, account billing.Account, featureID billing.FeatureID)) *MockEntitlementResolver_Resolve_Call {
+func (_c *MockEntitlementResolver_Resolve_Call) Run(run func(ctx context.Context, account1 account.ConnectedAccount, featureID types.FeatureID)) *MockEntitlementResolver_Resolve_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 billing.Account
+		var arg1 account.ConnectedAccount
 		if args[1] != nil {
-			arg1 = args[1].(billing.Account)
+			arg1 = args[1].(account.ConnectedAccount)
 		}
-		var arg2 billing.FeatureID
+		var arg2 types.FeatureID
 		if args[2] != nil {
-			arg2 = args[2].(billing.FeatureID)
+			arg2 = args[2].(types.FeatureID)
 		}
 		run(
 			arg0,
@@ -339,7 +341,7 @@ func (_c *MockEntitlementResolver_Resolve_Call) Return(effectiveEntitlement bill
 	return _c
 }
 
-func (_c *MockEntitlementResolver_Resolve_Call) RunAndReturn(run func(ctx context.Context, account billing.Account, featureID billing.FeatureID) (billing.EffectiveEntitlement, error)) *MockEntitlementResolver_Resolve_Call {
+func (_c *MockEntitlementResolver_Resolve_Call) RunAndReturn(run func(ctx context.Context, account1 account.ConnectedAccount, featureID types.FeatureID) (billing.EffectiveEntitlement, error)) *MockEntitlementResolver_Resolve_Call {
 	_c.Call.Return(run)
 	return _c
 }

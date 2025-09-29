@@ -3,6 +3,7 @@ package family
 import (
 	"go.uber.org/fx"
 
+	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/family/command"
@@ -14,6 +15,7 @@ func Module() fx.Option {
 		fx.Provide(
 			ports.AsQueryHandler[query.FindUserFamilyQuery, query.FindUserFamilyQueryResponse](query.NewFindOneQueryHandler),
 			ports.AsQueryHandler[query.SeeInvitationQuery, query.SeeInvitationQueryResponse](query.NewSeeInvitationQueryHandler),
+			ports.AsQueryHandler[query.GetQuotaUsageHandler, billing.EffectiveEntitlement](query.NewGetQuotaUsageHandler),
 
 			ports.AsCommandHandler[command.CreateFamilyCommand, family.Family](command.NewCreateFamilyCommandHandler),
 			ports.AsCommandHandler[command.UpdateFamilyCommand, family.Family](command.NewUpdateFamilyCommandHandler),

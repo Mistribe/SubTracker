@@ -1,15 +1,14 @@
 package account
 
 import (
-	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/domain/types"
 )
 
 type ConnectedAccount interface {
 	UserID() types.UserID
-	PlanID() billing.PlanID
-	Role() Role
+	PlanID() types.PlanID
+	Role() types.Role
 }
 
 type Account interface {
@@ -24,9 +23,9 @@ type Account interface {
 type account struct {
 	userID   types.UserID
 	currency currency.Unit
-	planID   billing.PlanID
+	planID   types.PlanID
 	familyID *types.FamilyID
-	role     Role
+	role     types.Role
 }
 
 func (a *account) Id() string {
@@ -45,7 +44,7 @@ func (a *account) SetCurrency(newCurrency currency.Unit) {
 	a.currency = newCurrency
 }
 
-func (a *account) PlanID() billing.PlanID {
+func (a *account) PlanID() types.PlanID {
 	return a.planID
 }
 
@@ -53,14 +52,14 @@ func (a *account) FamilyID() *types.FamilyID {
 	return a.familyID
 }
 
-func (a *account) Role() Role {
+func (a *account) Role() types.Role {
 	return a.role
 }
 
 func New(userID types.UserID,
 	currency currency.Unit,
-	planID billing.PlanID,
-	role Role,
+	planID types.PlanID,
+	role types.Role,
 	familyID *types.FamilyID) Account {
 	return &account{
 		userID:   userID,

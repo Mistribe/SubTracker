@@ -7,7 +7,8 @@ import (
 type ProviderID uuid.UUID
 
 func (id ProviderID) String() string {
-	return id.String()
+	u := uuid.UUID(id)
+	return u.String()
 }
 
 func NewProviderID() ProviderID {

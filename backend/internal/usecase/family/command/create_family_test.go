@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/mistribe/subtracker/internal/domain/account"
-	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
@@ -21,19 +20,22 @@ import (
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
-// connectedAccountFake implements account.ConnectedAccount without mock expectations
-type connectedAccountFake struct {
-	uid types.UserID
+// simple stub for Authentication to reduce brittleness of mocks
+type stubAuth struct{ user types.UserID }
+
+func (s stubAuth) MustGetConnectedAccount(ctx context.Context) account.ConnectedAccount {
+	return stubAccount{s.user}
 }
 
-func (f connectedAccountFake) UserID() types.UserID   { return f.uid }
-func (f connectedAccountFake) PlanID() billing.PlanID { return billing.PlanFree }
-func (f connectedAccountFake) Role() account.Role     { return account.RoleUser }
+type stubAccount struct{ uid types.UserID }
+
+func (a stubAccount) UserID() types.UserID { return a.uid }
+func (a stubAccount) PlanID() types.PlanID { return types.PlanFree }
+func (a stubAccount) Role() types.Role     { return types.RoleUser }
 
 func TestCreateFamilyCommandHandler_Handle(t *testing.T) {
 	ctx := context.Background()
 	const currentUserStr = "user-123"
-	currentUser := types.UserID(currentUserStr)
 
 	// returns ErrFamilyAlreadyExists when provided FamilyID already exists
 	// (no auth call path)
@@ -78,9 +80,7 @@ func TestCreateFamilyCommandHandler_Handle(t *testing.T) {
 	// succeeds when FamilyID is None (new id generated)
 	t.Run("succeeds when FamilyID is None (new id generated)", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
-		auth := ports.NewMockAuthentication(t)
-		fake := connectedAccountFake{uid: currentUser}
-		auth.On("MustGetConnectedAccount", mock.Anything).Return(fake)
+		auth := stubAuth{user: types.UserID(currentUserStr)}
 		h := command.NewCreateFamilyCommandHandler(repo, auth)
 
 		repo.EXPECT().Save(mock.Anything, mock.Anything).Return(nil)
@@ -92,9 +92,7 @@ func TestCreateFamilyCommandHandler_Handle(t *testing.T) {
 	// fails when name is empty due to validation errors
 	t.Run("fails when name is empty due to validation errors", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
-		auth := ports.NewMockAuthentication(t)
-		fake := connectedAccountFake{uid: currentUser}
-		auth.On("MustGetConnectedAccount", mock.Anything).Return(fake)
+		auth := stubAuth{user: types.UserID(currentUserStr)}
 		h := command.NewCreateFamilyCommandHandler(repo, auth)
 
 		res := h.Handle(ctx, command.CreateFamilyCommand{Name: "", CreatorName: "Owner"})
@@ -105,9 +103,7 @@ func TestCreateFamilyCommandHandler_Handle(t *testing.T) {
 	// propagates repository error from Save
 	t.Run("propagates repository error from Save", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
-		auth := ports.NewMockAuthentication(t)
-		fake := connectedAccountFake{uid: currentUser}
-		auth.On("MustGetConnectedAccount", mock.Anything).Return(fake)
+		auth := stubAuth{user: types.UserID(currentUserStr)}
 		h := command.NewCreateFamilyCommandHandler(repo, auth)
 
 		repo.EXPECT().Save(mock.Anything, mock.Anything).Return(errors.New("save failed"))
@@ -119,9 +115,7 @@ func TestCreateFamilyCommandHandler_Handle(t *testing.T) {
 	// calls repository Save exactly once on success
 	t.Run("calls repository Save exactly once on success", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
-		auth := ports.NewMockAuthentication(t)
-		fake := connectedAccountFake{uid: currentUser}
-		auth.On("MustGetConnectedAccount", mock.Anything).Return(fake)
+		auth := stubAuth{user: types.UserID(currentUserStr)}
 		h := command.NewCreateFamilyCommandHandler(repo, auth)
 
 		repo.EXPECT().Save(mock.Anything, mock.Anything).Return(nil).Once()
@@ -133,9 +127,7 @@ func TestCreateFamilyCommandHandler_Handle(t *testing.T) {
 	// sets owner user id to current user on created family
 	t.Run("sets owner user id to current user on created family", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
-		auth := ports.NewMockAuthentication(t)
-		fake := connectedAccountFake{uid: currentUser}
-		auth.On("MustGetConnectedAccount", mock.Anything).Return(fake)
+		auth := stubAuth{user: types.UserID(currentUserStr)}
 		h := command.NewCreateFamilyCommandHandler(repo, auth)
 
 		repo.EXPECT().Save(mock.Anything, mock.Anything).Return(nil)
@@ -150,9 +142,7 @@ func TestCreateFamilyCommandHandler_Handle(t *testing.T) {
 	// adds exactly one member to the created family
 	t.Run("adds exactly one member to the created family", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
-		auth := ports.NewMockAuthentication(t)
-		fake := connectedAccountFake{uid: currentUser}
-		auth.On("MustGetConnectedAccount", mock.Anything).Return(fake)
+		auth := stubAuth{user: types.UserID(currentUserStr)}
 		h := command.NewCreateFamilyCommandHandler(repo, auth)
 		repo.EXPECT().Save(mock.Anything, mock.Anything).Return(nil)
 
@@ -166,9 +156,7 @@ func TestCreateFamilyCommandHandler_Handle(t *testing.T) {
 	// sets created member type to owner
 	t.Run("sets created member type to owner", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
-		auth := ports.NewMockAuthentication(t)
-		fake := connectedAccountFake{uid: currentUser}
-		auth.On("MustGetConnectedAccount", mock.Anything).Return(fake)
+		auth := stubAuth{user: types.UserID(currentUserStr)}
 		h := command.NewCreateFamilyCommandHandler(repo, auth)
 		repo.EXPECT().Save(mock.Anything, mock.Anything).Return(nil)
 
@@ -186,9 +174,7 @@ func TestCreateFamilyCommandHandler_Handle(t *testing.T) {
 	// sets creator name as member name
 	t.Run("sets creator name as member name", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
-		auth := ports.NewMockAuthentication(t)
-		fake := connectedAccountFake{uid: currentUser}
-		auth.On("MustGetConnectedAccount", mock.Anything).Return(fake)
+		auth := stubAuth{user: types.UserID(currentUserStr)}
 		h := command.NewCreateFamilyCommandHandler(repo, auth)
 		repo.EXPECT().Save(mock.Anything, mock.Anything).Return(nil)
 
@@ -207,9 +193,7 @@ func TestCreateFamilyCommandHandler_Handle(t *testing.T) {
 	// sets member user id to current user
 	t.Run("sets member user id to current user", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
-		auth := ports.NewMockAuthentication(t)
-		fake := connectedAccountFake{uid: currentUser}
-		auth.On("MustGetConnectedAccount", mock.Anything).Return(fake)
+		auth := stubAuth{user: types.UserID(currentUserStr)}
 		h := command.NewCreateFamilyCommandHandler(repo, auth)
 		repo.EXPECT().Save(mock.Anything, mock.Anything).Return(nil)
 
@@ -229,8 +213,9 @@ func TestCreateFamilyCommandHandler_Handle(t *testing.T) {
 	t.Run("uses provided CreatedAt when present", func(t *testing.T) {
 		repo := ports.NewMockFamilyRepository(t)
 		auth := ports.NewMockAuthentication(t)
-		fake := connectedAccountFake{uid: currentUser}
-		auth.On("MustGetConnectedAccount", mock.Anything).Return(fake)
+		fake := account.NewMockConnectedAccount(t)
+		fake.EXPECT().UserID().Return(types.UserID(currentUserStr))
+		auth.EXPECT().MustGetConnectedAccount(mock.Anything).Return(fake)
 		h := command.NewCreateFamilyCommandHandler(repo, auth)
 		customTime := time.Date(2024, 7, 21, 10, 9, 8, 0, time.UTC)
 

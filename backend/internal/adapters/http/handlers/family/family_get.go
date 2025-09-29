@@ -23,11 +23,11 @@ type GetEndpoint struct {
 //	@Description	Retrieve the user's family
 //	@Tags			family
 //	@Produce		json
-//	@Success		200	{object}	dto.FamilyModel	"Successfully retrieved family"
-//	@Failure		400	{object}	HttpErrorResponse		"Bad Request - Invalid LabelID format"
-//	@Failure		401	{object}	HttpErrorResponse		"Unauthorized - Invalid user authentication"
-//	@Failure		404	{object}	HttpErrorResponse		"Family not found"
-//	@Failure		500	{object}	HttpErrorResponse		"Internal Server Error"
+//	@Success		200	{object}	dto.FamilyModel		"Successfully retrieved family"
+//	@Failure		400	{object}	HttpErrorResponse	"Bad Request - Invalid LabelID format"
+//	@Failure		401	{object}	HttpErrorResponse	"Unauthorized - Invalid user authentication"
+//	@Failure		404	{object}	HttpErrorResponse	"Family not found"
+//	@Failure		500	{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/family [get]
 func (e GetEndpoint) Handle(c *gin.Context) {
 	connectedAccount := e.authentication.MustGetConnectedAccount(c)

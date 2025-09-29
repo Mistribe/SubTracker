@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/mistribe/subtracker/internal/domain/authorization"
@@ -70,13 +71,18 @@ func (h CreateFamilyMemberCommandHandler) addFamilyMemberToFamily(
 	command CreateFamilyMemberCommand, fam family.Family) result.Result[family.Family] {
 
 	var familyMemberID types.FamilyMemberID
-	if command.FamilyMemberID.IsSome() {
+	if command.FamilyMemberID != nil && command.FamilyMemberID.IsSome() {
 		familyMemberID = *command.FamilyMemberID.Value()
 	} else {
 		familyMemberID = types.NewFamilyMemberID()
 	}
 
-	createdAt := command.CreatedAt.ValueOrDefault(time.Now())
+	var createdAt time.Time
+	if command.CreatedAt != nil && command.CreatedAt.IsSome() {
+		createdAt = *command.CreatedAt.Value()
+	} else {
+		createdAt = time.Now()
+	}
 	familyMember := family.NewMember(
 		familyMemberID,
 		command.FamilyID,
@@ -88,7 +94,11 @@ func (h CreateFamilyMemberCommandHandler) addFamilyMemberToFamily(
 	)
 
 	if err := fam.AddMember(familyMember); err != nil {
-		return result.Success(fam)
+		// If duplicate or other add error we return success without persisting (idempotent behaviour)
+		if errors.Is(err, family.ErrDuplicateMember) {
+			return result.Success(fam)
+		}
+		return result.Fail[family.Family](err)
 	}
 
 	if err := fam.GetValidationErrors(); err != nil {

@@ -8,21 +8,23 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/mistribe/subtracker/internal/domain/user"
+	"github.com/mistribe/subtracker/internal/domain/authorization"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/subscription/command"
 )
 
 func TestDeleteSubscriptionCommandHandler_Handle(t *testing.T) {
 	id := uuid.Must(uuid.NewV7())
+	subID := types.SubscriptionID(id)
 
 	t.Run("returns fault when repository GetById returns error", func(t *testing.T) {
 		subRepo := ports.NewMockSubscriptionRepository(t)
 		authz := ports.NewMockAuthorization(t)
-		subRepo.EXPECT().GetById(t.Context(), id).Return(nil, errors.New("db error"))
+		subRepo.EXPECT().GetById(t.Context(), subID).Return(nil, errors.New("db error"))
 
 		h := command.NewDeleteSubscriptionCommandHandler(subRepo, authz)
-		cmd := command.DeleteSubscriptionCommand{SubscriptionID: id}
+		cmd := command.DeleteSubscriptionCommand{SubscriptionID: subID}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -31,10 +33,10 @@ func TestDeleteSubscriptionCommandHandler_Handle(t *testing.T) {
 	t.Run("returns fault when subscription not found", func(t *testing.T) {
 		subRepo := ports.NewMockSubscriptionRepository(t)
 		authz := ports.NewMockAuthorization(t)
-		subRepo.EXPECT().GetById(t.Context(), id).Return(nil, nil)
+		subRepo.EXPECT().GetById(t.Context(), subID).Return(nil, nil)
 
 		h := command.NewDeleteSubscriptionCommandHandler(subRepo, authz)
-		cmd := command.DeleteSubscriptionCommand{SubscriptionID: id}
+		cmd := command.DeleteSubscriptionCommand{SubscriptionID: subID}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -46,12 +48,12 @@ func TestDeleteSubscriptionCommandHandler_Handle(t *testing.T) {
 		perm := ports.NewMockPermissionRequest(t)
 
 		existing := newPersonalSubscription()
-		subRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), user.PermissionDelete).Return(perm)
-		perm.EXPECT().For(mock.Anything).Return(user.ErrUnauthorized)
+		subRepo.EXPECT().GetById(t.Context(), subID).Return(existing, nil)
+		authz.EXPECT().Can(t.Context(), authorization.PermissionDelete).Return(perm)
+		perm.EXPECT().For(mock.Anything).Return(authorization.ErrUnauthorized)
 
 		h := command.NewDeleteSubscriptionCommandHandler(subRepo, authz)
-		cmd := command.DeleteSubscriptionCommand{SubscriptionID: id}
+		cmd := command.DeleteSubscriptionCommand{SubscriptionID: subID}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -63,13 +65,13 @@ func TestDeleteSubscriptionCommandHandler_Handle(t *testing.T) {
 		perm := ports.NewMockPermissionRequest(t)
 
 		existing := newPersonalSubscription()
-		subRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), user.PermissionDelete).Return(perm)
+		subRepo.EXPECT().GetById(t.Context(), subID).Return(existing, nil)
+		authz.EXPECT().Can(t.Context(), authorization.PermissionDelete).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
-		subRepo.EXPECT().Delete(t.Context(), id).Return(false, errors.New("delete failed"))
+		subRepo.EXPECT().Delete(t.Context(), subID).Return(false, errors.New("delete failed"))
 
 		h := command.NewDeleteSubscriptionCommandHandler(subRepo, authz)
-		cmd := command.DeleteSubscriptionCommand{SubscriptionID: id}
+		cmd := command.DeleteSubscriptionCommand{SubscriptionID: subID}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -81,13 +83,13 @@ func TestDeleteSubscriptionCommandHandler_Handle(t *testing.T) {
 		perm := ports.NewMockPermissionRequest(t)
 
 		existing := newPersonalSubscription()
-		subRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), user.PermissionDelete).Return(perm)
+		subRepo.EXPECT().GetById(t.Context(), subID).Return(existing, nil)
+		authz.EXPECT().Can(t.Context(), authorization.PermissionDelete).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
-		subRepo.EXPECT().Delete(t.Context(), id).Return(true, nil)
+		subRepo.EXPECT().Delete(t.Context(), subID).Return(true, nil)
 
 		h := command.NewDeleteSubscriptionCommandHandler(subRepo, authz)
-		cmd := command.DeleteSubscriptionCommand{SubscriptionID: id}
+		cmd := command.DeleteSubscriptionCommand{SubscriptionID: subID}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsSuccess())
@@ -99,13 +101,13 @@ func TestDeleteSubscriptionCommandHandler_Handle(t *testing.T) {
 		perm := ports.NewMockPermissionRequest(t)
 
 		existing := newPersonalSubscription()
-		subRepo.EXPECT().GetById(t.Context(), id).Return(existing, nil)
-		authz.EXPECT().Can(t.Context(), user.PermissionDelete).Return(perm)
+		subRepo.EXPECT().GetById(t.Context(), subID).Return(existing, nil)
+		authz.EXPECT().Can(t.Context(), authorization.PermissionDelete).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
-		subRepo.EXPECT().Delete(t.Context(), id).Return(false, nil)
+		subRepo.EXPECT().Delete(t.Context(), subID).Return(false, nil)
 
 		h := command.NewDeleteSubscriptionCommandHandler(subRepo, authz)
-		cmd := command.DeleteSubscriptionCommand{SubscriptionID: id}
+		cmd := command.DeleteSubscriptionCommand{SubscriptionID: subID}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsSuccess())

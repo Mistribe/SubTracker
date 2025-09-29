@@ -5,7 +5,6 @@
 package account
 
 import (
-	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -38,18 +37,18 @@ func (_m *MockConnectedAccount) EXPECT() *MockConnectedAccount_Expecter {
 }
 
 // PlanID provides a mock function for the type MockConnectedAccount
-func (_mock *MockConnectedAccount) PlanID() billing.PlanID {
+func (_mock *MockConnectedAccount) PlanID() types.PlanID {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for PlanID")
 	}
 
-	var r0 billing.PlanID
-	if returnFunc, ok := ret.Get(0).(func() billing.PlanID); ok {
+	var r0 types.PlanID
+	if returnFunc, ok := ret.Get(0).(func() types.PlanID); ok {
 		r0 = returnFunc()
 	} else {
-		r0 = ret.Get(0).(billing.PlanID)
+		r0 = ret.Get(0).(types.PlanID)
 	}
 	return r0
 }
@@ -71,29 +70,29 @@ func (_c *MockConnectedAccount_PlanID_Call) Run(run func()) *MockConnectedAccoun
 	return _c
 }
 
-func (_c *MockConnectedAccount_PlanID_Call) Return(planID billing.PlanID) *MockConnectedAccount_PlanID_Call {
+func (_c *MockConnectedAccount_PlanID_Call) Return(planID types.PlanID) *MockConnectedAccount_PlanID_Call {
 	_c.Call.Return(planID)
 	return _c
 }
 
-func (_c *MockConnectedAccount_PlanID_Call) RunAndReturn(run func() billing.PlanID) *MockConnectedAccount_PlanID_Call {
+func (_c *MockConnectedAccount_PlanID_Call) RunAndReturn(run func() types.PlanID) *MockConnectedAccount_PlanID_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Role provides a mock function for the type MockConnectedAccount
-func (_mock *MockConnectedAccount) Role() Role {
+func (_mock *MockConnectedAccount) Role() types.Role {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for Role")
 	}
 
-	var r0 Role
-	if returnFunc, ok := ret.Get(0).(func() Role); ok {
+	var r0 types.Role
+	if returnFunc, ok := ret.Get(0).(func() types.Role); ok {
 		r0 = returnFunc()
 	} else {
-		r0 = ret.Get(0).(Role)
+		r0 = ret.Get(0).(types.Role)
 	}
 	return r0
 }
@@ -115,12 +114,12 @@ func (_c *MockConnectedAccount_Role_Call) Run(run func()) *MockConnectedAccount_
 	return _c
 }
 
-func (_c *MockConnectedAccount_Role_Call) Return(role Role) *MockConnectedAccount_Role_Call {
+func (_c *MockConnectedAccount_Role_Call) Return(role types.Role) *MockConnectedAccount_Role_Call {
 	_c.Call.Return(role)
 	return _c
 }
 
-func (_c *MockConnectedAccount_Role_Call) RunAndReturn(run func() Role) *MockConnectedAccount_Role_Call {
+func (_c *MockConnectedAccount_Role_Call) RunAndReturn(run func() types.Role) *MockConnectedAccount_Role_Call {
 	_c.Call.Return(run)
 	return _c
 }

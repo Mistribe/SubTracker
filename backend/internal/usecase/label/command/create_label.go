@@ -28,7 +28,8 @@ type CreateLabelCommandHandler struct {
 	entitlement      ports.EntitlementResolver
 }
 
-func NewCreateLabelCommandHandler(labelRepository ports.LabelRepository,
+func NewCreateLabelCommandHandler(
+	labelRepository ports.LabelRepository,
 	familyRepository ports.FamilyRepository,
 	authorization ports.Authorization,
 	entitlement ports.EntitlementResolver) *CreateLabelCommandHandler {
@@ -42,7 +43,7 @@ func NewCreateLabelCommandHandler(labelRepository ports.LabelRepository,
 
 func (h CreateLabelCommandHandler) Handle(ctx context.Context, command CreateLabelCommand) result.Result[label.Label] {
 	var labelID types.LabelID
-	if command.LabelID.IsSome() {
+	if command.LabelID != nil && command.LabelID.IsSome() {
 		labelID = *command.LabelID.Value()
 		existingLabel, err := h.labelRepository.GetById(ctx, labelID)
 		if err != nil {
@@ -54,7 +55,12 @@ func (h CreateLabelCommandHandler) Handle(ctx context.Context, command CreateLab
 	} else {
 		labelID = types.NewLabelID()
 	}
-	createdAt := command.CreatedAt.ValueOrDefault(time.Now())
+	var createdAt time.Time
+	if command.CreatedAt != nil && command.CreatedAt.IsSome() {
+		createdAt = *command.CreatedAt.Value()
+	} else {
+		createdAt = time.Now()
+	}
 
 	newLabel := label.NewLabel(labelID,
 		command.Owner,
@@ -65,7 +71,11 @@ func (h CreateLabelCommandHandler) Handle(ctx context.Context, command CreateLab
 		createdAt,
 	)
 
-	if err := h.authorization.Can(ctx, authorization.PermissionWrite).For(newLabel); err != nil {
+	permReq := h.authorization.Can(ctx, authorization.PermissionWrite)
+	if permReq == nil {
+		return result.Fail[label.Label](authorization.ErrUnauthorized)
+	}
+	if err := permReq.For(newLabel); err != nil {
 		return result.Fail[label.Label](err)
 	}
 

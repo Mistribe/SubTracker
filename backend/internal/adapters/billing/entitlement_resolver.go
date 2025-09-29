@@ -3,19 +3,20 @@ package billing
 import (
 	"context"
 
+	"github.com/mistribe/subtracker/internal/domain/account"
 	"github.com/mistribe/subtracker/internal/domain/billing"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/x"
 )
 
 type entitlementResolver struct {
-	usage          billing.UsageRepository
+	usage          ports.UsageRepository
 	authentication ports.Authentication
 }
 
-// NewEntitlementResolver constructs a Resolver with the given dependencies.
-// periodCalc may be nil to use the default monthly calculator.
-func NewEntitlementResolver(usage billing.UsageRepository,
+func NewEntitlementResolver(
+	usage ports.UsageRepository,
 	authentication ports.Authentication) ports.EntitlementResolver {
 	return &entitlementResolver{
 		usage:          usage,
@@ -23,15 +24,16 @@ func NewEntitlementResolver(usage billing.UsageRepository,
 	}
 }
 
-func (r *entitlementResolver) Resolve(ctx context.Context,
-	account billing.Account,
-	featureID billing.FeatureID) (billing.EffectiveEntitlement, error) {
+func (r *entitlementResolver) Resolve(
+	ctx context.Context,
+	account account.ConnectedAccount,
+	featureID types.FeatureID) (billing.EffectiveEntitlement, error) {
 	if featureID == billing.FeatureIdUnknown {
 		return billing.EffectiveEntitlement{}, billing.ErrFeatureNotFound
 	}
 
 	planID := account.PlanID()
-	if planID == billing.PlanUnknown {
+	if planID == types.PlanUnknown {
 		return billing.EffectiveEntitlement{}, billing.ErrPlanNotFound
 	}
 
@@ -89,7 +91,7 @@ func (r *entitlementResolver) Resolve(ctx context.Context,
 			limit = &zero
 		}
 
-		usage, foundUsage, err := r.usage.Get(ctx, account, feature.ID)
+		usage, foundUsage, err := r.usage.Get(ctx, account.UserID(), feature)
 		if err != nil {
 			return billing.EffectiveEntitlement{}, err
 		}
@@ -125,10 +127,11 @@ func (r *entitlementResolver) Resolve(ctx context.Context,
 	}
 }
 
-func (r *entitlementResolver) gateAllows(account billing.Account, gate billing.FeatureID) (bool,
+func (r *entitlementResolver) gateAllows(account account.ConnectedAccount, gate types.FeatureID) (
+	bool,
 	error) {
 	planID := account.PlanID()
-	if planID == billing.PlanUnknown {
+	if planID == types.PlanUnknown {
 		return false, billing.ErrPlanNotFound
 	}
 	entitlement, hasEntitlement := billing.Entitlements[planID][gate]
@@ -142,8 +145,9 @@ func (r *entitlementResolver) gateAllows(account billing.Account, gate billing.F
 	return enabled, nil
 }
 
-func (r *entitlementResolver) CheckBoolean(ctx context.Context, account billing.Account,
-	featureID billing.FeatureID) (bool, error) {
+func (r *entitlementResolver) CheckBoolean(
+	ctx context.Context, account account.ConnectedAccount,
+	featureID types.FeatureID) (bool, error) {
 	eff, err := r.Resolve(ctx, account, featureID)
 	if err != nil {
 		return false, err
@@ -154,8 +158,9 @@ func (r *entitlementResolver) CheckBoolean(ctx context.Context, account billing.
 	return eff.Enabled, nil
 }
 
-func (r *entitlementResolver) CheckQuotaForAccount(ctx context.Context, account billing.Account,
-	featureID billing.FeatureID, needed int64) (bool, billing.EffectiveEntitlement, error) {
+func (r *entitlementResolver) CheckQuotaForAccount(
+	ctx context.Context, account account.ConnectedAccount,
+	featureID types.FeatureID, needed int64) (bool, billing.EffectiveEntitlement, error) {
 	if needed <= 0 {
 		needed = 1
 	}
@@ -181,8 +186,10 @@ func (r *entitlementResolver) CheckQuotaForAccount(ctx context.Context, account 
 	return allowed, eff, nil
 }
 
-func (r *entitlementResolver) CheckQuota(ctx context.Context, featureID billing.FeatureID,
-	needed int64) (bool,
+func (r *entitlementResolver) CheckQuota(
+	ctx context.Context, featureID types.FeatureID,
+	needed int64) (
+	bool,
 	billing.EffectiveEntitlement, error) {
 	connectedAccount := r.authentication.MustGetConnectedAccount(ctx)
 	return r.CheckQuotaForAccount(ctx, connectedAccount, featureID, needed)

@@ -54,25 +54,33 @@ func NewCreateSubscriptionCommandHandler(
 func (h CreateSubscriptionCommandHandler) Handle(
 	ctx context.Context,
 	cmd CreateSubscriptionCommand) result.Result[subscription.Subscription] {
+	// Prepare subscription ID if provided
 	var subscriptionID types.SubscriptionID
-	if cmd.SubscriptionID.IsSome() {
+	if cmd.SubscriptionID != nil && cmd.SubscriptionID.IsSome() {
 		subscriptionID = *cmd.SubscriptionID.Value()
-		sub, err := h.subscriptionRepository.GetById(ctx, subscriptionID)
-		if err != nil {
-			return result.Fail[subscription.Subscription](err)
-		}
-		if sub != nil {
-			return result.Fail[subscription.Subscription](subscription.ErrSubscriptionAlreadyExists)
-		}
 	}
 
-	createdAt := cmd.CreatedAt.ValueOrDefault(time.Now())
+	// Determine creation timestamp
+	var createdAt time.Time
+	if cmd.CreatedAt != nil && cmd.CreatedAt.IsSome() {
+		createdAt = *cmd.CreatedAt.Value()
+	} else {
+		createdAt = time.Now()
+	}
+
+	// Guard price creation: only create Price aggregate if amount provided (avoid nil amount panic)
+	var price subscription.Price
+	if cmd.Price != nil { // interface can be nil
+		price = subscription.NewPrice(cmd.Price)
+	}
+
+	// Build the subscription aggregate early so authorization can run before repository lookups
 	newSub := subscription.NewSubscription(
 		subscriptionID,
 		cmd.FriendlyName,
 		cmd.FreeTrial,
 		cmd.ProviderID,
-		subscription.NewPrice(cmd.Price),
+		price,
 		cmd.Owner,
 		cmd.Payer,
 		cmd.FamilyUsers,
@@ -85,11 +93,24 @@ func (h CreateSubscriptionCommandHandler) Handle(
 		createdAt,
 	)
 
+	// Authorization first to avoid leaking existence information
 	if err := h.authorization.Can(ctx, authorization.PermissionWrite).For(newSub); err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}
 
-	allowed, _, err := h.entitlement.CheckQuota(ctx, billing.FeatureIdActiveSubscriptionsCount, 1)
+	// Duplication check only after permission granted
+	if cmd.SubscriptionID != nil && cmd.SubscriptionID.IsSome() {
+		sub, err := h.subscriptionRepository.GetById(ctx, subscriptionID)
+		if err != nil {
+			return result.Fail[subscription.Subscription](err)
+		}
+		if sub != nil {
+			return result.Fail[subscription.Subscription](subscription.ErrSubscriptionAlreadyExists)
+		}
+	}
+
+	// Quota check (ensure int64 literal for matcher compatibility)
+	allowed, _, err := h.entitlement.CheckQuota(ctx, billing.FeatureIdActiveSubscriptionsCount, int64(1))
 	if err != nil {
 		return result.Fail[subscription.Subscription](err)
 	}

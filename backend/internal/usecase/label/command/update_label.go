@@ -26,7 +26,8 @@ type UpdateLabelCommandHandler struct {
 	authorization    ports.Authorization
 }
 
-func NewUpdateLabelCommandHandler(labelRepository ports.LabelRepository,
+func NewUpdateLabelCommandHandler(
+	labelRepository ports.LabelRepository,
 	familyRepository ports.FamilyRepository,
 	authorization ports.Authorization) *UpdateLabelCommandHandler {
 	return &UpdateLabelCommandHandler{
@@ -46,8 +47,11 @@ func (h UpdateLabelCommandHandler) Handle(ctx context.Context, command UpdateLab
 		return result.Fail[label.Label](label.ErrLabelNotFound)
 	}
 
-	err = h.authorization.Can(ctx, authorization.PermissionWrite).For(existingLabel)
-	if err != nil {
+	permReq := h.authorization.Can(ctx, authorization.PermissionWrite)
+	if permReq == nil {
+		return result.Fail[label.Label](authorization.ErrUnauthorized)
+	}
+	if err = permReq.For(existingLabel); err != nil {
 		return result.Fail[label.Label](err)
 	}
 

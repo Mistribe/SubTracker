@@ -1,7 +1,6 @@
 package authorization
 
 import (
-	"github.com/mistribe/subtracker/internal/domain/account"
 	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
@@ -9,7 +8,7 @@ import (
 
 type permissionRequest struct {
 	userId     types.UserID
-	userRole   account.Role
+	userRole   types.Role
 	permission authorization.Permission
 	userFamily *types.FamilyID
 	error      error
@@ -21,7 +20,7 @@ func (r permissionRequest) For(entity ports.EntityWithOwnership) error {
 	}
 	owner := entity.Owner()
 
-	if r.userRole == account.RoleAdmin {
+	if r.userRole == types.RoleAdmin {
 		return nil
 	}
 
@@ -40,6 +39,7 @@ func (r permissionRequest) For(entity ports.EntityWithOwnership) error {
 		if owner.UserId() != r.userId {
 			return authorization.ErrUnauthorized
 		}
+		return nil
 	}
 
 	return authorization.ErrUnauthorized

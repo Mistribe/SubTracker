@@ -12,5 +12,6 @@
             ],
             "url": "./data/schemas/familiesSchema.json"
         }
-    ]
+    ],
+    "makefile.configureOnOpen": false
 }

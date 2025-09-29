@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	user "github.com/mistribe/subtracker/internal/domain/authorization"
+	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/domain/types"
@@ -45,7 +45,7 @@ func NewCreateProviderCommandHandler(
 	}
 }
 
-func (h CreateProviderCommandHandler) Handle(
+func (h *CreateProviderCommandHandler) Handle(
 	ctx context.Context,
 	cmd CreateProviderCommand) result.Result[provider.Provider] {
 	var providerID types.ProviderID
@@ -61,8 +61,13 @@ func (h CreateProviderCommandHandler) Handle(
 	} else {
 		providerID = types.NewProviderID()
 	}
-	createdAt := cmd.CreatedAt.ValueOrDefault(time.Now())
-
+	// Handle nil option (zero-value interface) for CreatedAt gracefully
+	var createdAt time.Time
+	if cmd.CreatedAt == nil {
+		createdAt = time.Now()
+	} else {
+		createdAt = cmd.CreatedAt.ValueOrDefault(time.Now())
+	}
 	if err := ensureLabelExists(ctx, h.labelRepository, cmd.Labels); err != nil {
 		return result.Fail[provider.Provider](err)
 	}
@@ -81,23 +86,23 @@ func (h CreateProviderCommandHandler) Handle(
 		createdAt,
 	)
 
-	if err := h.authorization.Can(ctx, user.PermissionWrite).For(prov); err != nil {
+	if err := h.authorization.Can(ctx, authorization.PermissionWrite).For(prov); err != nil {
 		return result.Fail[provider.Provider](err)
 	}
 
-	allowed, _, err := h.entitlement.CheckQuota(ctx, billing.FeatureIdCustomProvidersCount, 1)
-	if err != nil {
-		return result.Fail[provider.Provider](err)
+	allowed, _, qErr := h.entitlement.CheckQuota(ctx, billing.FeatureIdCustomProvidersCount, 1)
+	if qErr != nil {
+		return result.Fail[provider.Provider](qErr)
 	}
 	if !allowed {
 		return result.Fail[provider.Provider](provider.ErrCustomProviderLimitReached)
 	}
 	if vErr := prov.GetValidationErrors(); vErr != nil {
-		return result.Fail[provider.Provider](err)
+		return result.Fail[provider.Provider](vErr)
 	}
 
 	if sErr := h.providerRepository.Save(ctx, prov); sErr != nil {
-		return result.Fail[provider.Provider](err)
+		return result.Fail[provider.Provider](sErr)
 	}
 
 	return result.Success(prov)

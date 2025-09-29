@@ -3,13 +3,8 @@ package billing
 import (
 	"errors"
 
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/pkg/x"
-)
-
-const (
-	PlanUnknown PlanID = iota
-	PlanFree
-	PlanPremium
 )
 
 var (
@@ -17,51 +12,30 @@ var (
 )
 
 const (
-	PlanUnknownString = "unknown"
-	PlanFreeString    = "free"
-	PlanPremiumString = "premium"
-)
-
-func (p PlanID) String() string {
-	switch p {
-	case PlanFree:
-		return PlanFreeString
-	case PlanPremium:
-		return PlanPremiumString
-	default:
-		return PlanUnknownString
-	}
-}
-
-func ParsePlan(input string) (PlanID, error) {
-	switch input {
-	case PlanUnknownString:
-		return PlanUnknown, nil
-	case PlanFreeString:
-		return PlanFree, nil
-	case PlanPremiumString:
-		return PlanPremium, nil
-	}
-
-	return PlanUnknown, ErrInvalidPlan
-}
-
-func ParsePlanOrDefault(input string, defaultValue PlanID) PlanID {
-	p, err := ParsePlan(input)
-	if err != nil {
-		return defaultValue
-	}
-	return p
-}
-
-const (
-	FeatureUnknown FeatureType = iota
+	FeatureUnknown types.FeatureType = iota
 	FeatureBoolean
 	FeatureQuota
 )
 
 const (
-	FeatureIdUnknown FeatureID = iota
+	FeatureUnknownString = "unknown"
+	FeatureBooleanString = "boolean"
+	FeatureQuotaString   = "quota"
+)
+
+func FeatureTypeToString(feature types.FeatureType) string {
+	switch feature {
+	case FeatureBoolean:
+		return FeatureBooleanString
+	case FeatureQuota:
+		return FeatureQuotaString
+	default:
+		return FeatureUnknownString
+	}
+}
+
+const (
+	FeatureIdUnknown types.FeatureID = iota
 	FeatureIdSubscriptions
 	FeatureIdActiveSubscriptionsCount
 	FeatureIdCustomLabels
@@ -72,8 +46,43 @@ const (
 	FeatureIdFamilyMembersCount
 )
 
+const (
+	FeatureIdUnknownString                  = "unknown"
+	FeatureIdSubscriptionsString            = "subscriptions"
+	FeatureIdActiveSubscriptionsCountString = "active_subscriptions_count"
+	FeatureIdCustomLabelsString             = "custom_labels"
+	FeatureIdCustomLabelsCountString        = "custom_labels_count"
+	FeatureIdCustomProvidersString          = "custom_providers"
+	FeatureIdCustomProvidersCountString     = "custom_providers_count"
+	FeatureIdFamilyString                   = "family"
+	FeatureIdFamilyMembersCountString       = "family_members_count"
+)
+
+func FeatureIDToString(feature types.FeatureID) string {
+	switch feature {
+	case FeatureIdSubscriptions:
+		return FeatureIdSubscriptionsString
+	case FeatureIdActiveSubscriptionsCount:
+		return FeatureIdActiveSubscriptionsCountString
+	case FeatureIdCustomLabels:
+		return FeatureIdCustomLabelsString
+	case FeatureIdCustomLabelsCount:
+		return FeatureIdCustomLabelsCountString
+	case FeatureIdCustomProviders:
+		return FeatureIdCustomProvidersString
+	case FeatureIdCustomProvidersCount:
+		return FeatureIdCustomProvidersCountString
+	case FeatureIdFamily:
+		return FeatureIdFamilyString
+	case FeatureIdFamilyMembersCount:
+		return FeatureIdFamilyMembersCountString
+	default:
+		return FeatureIdUnknownString
+	}
+}
+
 var (
-	Features = map[FeatureID]Feature{
+	Features = map[types.FeatureID]Feature{
 		FeatureIdSubscriptions: {
 			ID:          FeatureIdSubscriptions,
 			Type:        FeatureBoolean,
@@ -116,31 +125,40 @@ var (
 			Description: "Family members",
 		},
 	}
-	Entitlements map[PlanID]map[FeatureID]PlanEntitlement
+	Entitlements  map[types.PlanID]map[types.FeatureID]PlanEntitlement
+	QuotaFeatures []types.FeatureID
 )
 
 func init() {
-	Entitlements = map[PlanID]map[FeatureID]PlanEntitlement{
-		PlanFree: {
-			FeatureIdSubscriptions:            newBoolEntitlement(PlanFree, FeatureIdSubscriptions, true),
-			FeatureIdActiveSubscriptionsCount: newQuotaEntitlement(PlanFree, FeatureIdActiveSubscriptionsCount, 10),
-			FeatureIdCustomLabels:             newBoolEntitlement(PlanFree, FeatureIdCustomLabels, true),
-			FeatureIdCustomLabelsCount:        newQuotaEntitlement(PlanFree, FeatureIdCustomLabelsCount, 5),
-			FeatureIdCustomProviders:          newBoolEntitlement(PlanFree, FeatureIdCustomProviders, true),
-			FeatureIdCustomProvidersCount:     newQuotaEntitlement(PlanFree, FeatureIdCustomProvidersCount, 5),
-			FeatureIdFamily:                   newBoolEntitlement(PlanFree, FeatureIdFamily, true),
-			FeatureIdFamilyMembersCount:       newQuotaEntitlement(PlanFree, FeatureIdFamilyMembersCount, 3),
+	Entitlements = map[types.PlanID]map[types.FeatureID]PlanEntitlement{
+		types.PlanFree: {
+			FeatureIdSubscriptions: newBoolEntitlement(types.PlanFree, FeatureIdSubscriptions, true),
+			FeatureIdActiveSubscriptionsCount: newQuotaEntitlement(types.PlanFree, FeatureIdActiveSubscriptionsCount,
+				10),
+			FeatureIdCustomLabels:         newBoolEntitlement(types.PlanFree, FeatureIdCustomLabels, true),
+			FeatureIdCustomLabelsCount:    newQuotaEntitlement(types.PlanFree, FeatureIdCustomLabelsCount, 5),
+			FeatureIdCustomProviders:      newBoolEntitlement(types.PlanFree, FeatureIdCustomProviders, true),
+			FeatureIdCustomProvidersCount: newQuotaEntitlement(types.PlanFree, FeatureIdCustomProvidersCount, 5),
+			FeatureIdFamily:               newBoolEntitlement(types.PlanFree, FeatureIdFamily, true),
+			FeatureIdFamilyMembersCount:   newQuotaEntitlement(types.PlanFree, FeatureIdFamilyMembersCount, 3),
 		},
-		PlanPremium: {
-			FeatureIdSubscriptions:            newBoolEntitlement(PlanPremium, FeatureIdSubscriptions, true),
-			FeatureIdActiveSubscriptionsCount: newQuotaEntitlement(PlanPremium, FeatureIdActiveSubscriptionsCount, 100),
-			FeatureIdCustomLabels:             newBoolEntitlement(PlanPremium, FeatureIdCustomLabels, true),
-			FeatureIdCustomLabelsCount:        newQuotaEntitlement(PlanFree, FeatureIdCustomLabelsCount, 100),
+		types.PlanPremium: {
+			FeatureIdSubscriptions: newBoolEntitlement(types.PlanPremium, FeatureIdSubscriptions, true),
+			FeatureIdActiveSubscriptionsCount: newQuotaEntitlement(types.PlanPremium, FeatureIdActiveSubscriptionsCount,
+				100),
+			FeatureIdCustomLabels:      newBoolEntitlement(types.PlanPremium, FeatureIdCustomLabels, true),
+			FeatureIdCustomLabelsCount: newQuotaEntitlement(types.PlanPremium, FeatureIdCustomLabelsCount, 100),
 
-			FeatureIdCustomProviders:      newBoolEntitlement(PlanPremium, FeatureIdCustomProviders, true),
-			FeatureIdCustomProvidersCount: newQuotaEntitlement(PlanPremium, FeatureIdCustomProvidersCount, 100),
-			FeatureIdFamily:               newBoolEntitlement(PlanPremium, FeatureIdFamily, true),
-			FeatureIdFamilyMembersCount:   newQuotaEntitlement(PlanPremium, FeatureIdFamilyMembersCount, 25),
+			FeatureIdCustomProviders:      newBoolEntitlement(types.PlanPremium, FeatureIdCustomProviders, true),
+			FeatureIdCustomProvidersCount: newQuotaEntitlement(types.PlanPremium, FeatureIdCustomProvidersCount, 100),
+			FeatureIdFamily:               newBoolEntitlement(types.PlanPremium, FeatureIdFamily, true),
+			FeatureIdFamilyMembersCount:   newQuotaEntitlement(types.PlanPremium, FeatureIdFamilyMembersCount, 25),
 		},
+	}
+
+	for _, feature := range Features {
+		if feature.IsQuota() {
+			QuotaFeatures = append(QuotaFeatures, feature.ID)
+		}
 	}
 }

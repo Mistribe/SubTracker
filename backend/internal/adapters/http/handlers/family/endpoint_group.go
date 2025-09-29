@@ -25,6 +25,7 @@ func NewEndpointGroup(
 	familyMemberUpdateEndpoint *MemberUpdateEndpoint,
 	familyMemberDeleteEndpoint *MemberDeleteEndpoint,
 	familyGetEndpoint *GetEndpoint,
+	familyQuotaUsageEndpoint *GetQuotaUsageEndpoint,
 	authenticationMiddleware *middlewares.AuthenticationMiddleware) *EndpointGroup {
 	return &EndpointGroup{
 		routes: []ginfx.Endpoint{
@@ -40,6 +41,7 @@ func NewEndpointGroup(
 			familyMemberUpdateEndpoint,
 			familyMemberDeleteEndpoint,
 			familyGetEndpoint,
+			familyQuotaUsageEndpoint,
 		},
 		middlewares: []gin.HandlerFunc{
 			authenticationMiddleware.Middleware(),

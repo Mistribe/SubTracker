@@ -43,7 +43,7 @@ func updateLabelRequestToCommand(m dto.UpdateLabelRequest, labelID types.LabelID
 //	@Tags			labels
 //	@Accept			json
 //	@Produce		json
-//	@Param			labelId		path		string					true	"Label LabelID (UUID format)"
+//	@Param			labelId	path		string					true	"Label LabelID (UUID format)"
 //	@Param			label	body		dto.UpdateLabelRequest	true	"Updated label data"
 //	@Success		200		{object}	dto.LabelModel			"Successfully updated label"
 //	@Failure		400		{object}	HttpErrorResponse		"Bad Request - Invalid LabelID format or input data"

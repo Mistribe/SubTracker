@@ -7,7 +7,8 @@ import (
 type FamilyMemberID uuid.UUID
 
 func (f FamilyMemberID) String() string {
-	return f.String()
+	u := uuid.UUID(f)
+	return u.String()
 }
 
 func NewFamilyMemberID() FamilyMemberID {

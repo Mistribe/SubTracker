@@ -40,7 +40,7 @@ func NewUpdateProviderCommandHandler(
 	}
 }
 
-func (h UpdateProviderCommandHandler) Handle(
+func (h *UpdateProviderCommandHandler) Handle(
 	ctx context.Context,
 	cmd UpdateProviderCommand) result.Result[provider.Provider] {
 	prov, err := h.providerRepository.GetById(ctx, cmd.ProviderID)
@@ -60,7 +60,7 @@ func (h UpdateProviderCommandHandler) Handle(
 	return h.update(ctx, cmd, prov)
 }
 
-func (h UpdateProviderCommandHandler) update(
+func (h *UpdateProviderCommandHandler) update(
 	ctx context.Context,
 	cmd UpdateProviderCommand,
 	prov provider.Provider) result.Result[provider.Provider] {
@@ -68,7 +68,12 @@ func (h UpdateProviderCommandHandler) update(
 	if err := ensureLabelExists(ctx, h.labelRepository, cmd.Labels); err != nil {
 		return result.Fail[provider.Provider](err)
 	}
-	updatedAt := cmd.UpdatedAt.ValueOrDefault(time.Now())
+	var updatedAt time.Time
+	if cmd.UpdatedAt == nil {
+		updatedAt = time.Now()
+	} else {
+		updatedAt = cmd.UpdatedAt.ValueOrDefault(time.Now())
+	}
 
 	prov.SetName(cmd.Name)
 	prov.SetDescription(cmd.Description)

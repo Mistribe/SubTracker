@@ -22,10 +22,10 @@ type DeleteEndpoint struct {
 //	@Description	Permanently delete a label by its unique identifier
 //	@Tags			labels
 //	@Param			labelId	path	string	true	"Label LabelID (UUID format)"
-//	@Success		204	"No Content - Label successfully deleted"
-//	@Failure		400	{object}	HttpErrorResponse	"Bad Request - Invalid LabelID format"
-//	@Failure		404	{object}	HttpErrorResponse	"Label not found"
-//	@Failure		500	{object}	HttpErrorResponse	"Internal Server Error"
+//	@Success		204		"No Content - Label successfully deleted"
+//	@Failure		400		{object}	HttpErrorResponse	"Bad Request - Invalid LabelID format"
+//	@Failure		404		{object}	HttpErrorResponse	"Label not found"
+//	@Failure		500		{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/labels/{labelId} [delete]
 func (l DeleteEndpoint) Handle(c *gin.Context) {
 	labelID, err := types.ParseLabelID(c.Param("labelId"))

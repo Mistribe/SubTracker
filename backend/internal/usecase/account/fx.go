@@ -3,6 +3,7 @@ package account
 import (
 	"go.uber.org/fx"
 
+	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/account/command"
@@ -14,6 +15,8 @@ func Module() fx.Option {
 		fx.Provide(
 			NewService,
 			ports.AsQueryHandler[query.FindPreferredCurrencyQuery, currency.Unit](query.NewFindPreferredCurrencyQueryHandler),
+			ports.AsQueryHandler[query.GetQuotaUsageHandler, []billing.EffectiveEntitlement](query.NewGetQuotaUsageHandler),
+
 			ports.AsCommandHandler[command.UpdatePreferredCurrencyCommand, bool](command.NewUpdatePreferredCurrencyCommandHandler),
 			ports.AsCommandHandler[command.DeleteAccountCommand, bool](command.NewDeleteUserCommandHandler),
 		),

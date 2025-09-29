@@ -21,12 +21,12 @@ type MemberDeleteEndpoint struct {
 //	@Summary		Delete family member by LabelID
 //	@Description	Permanently delete a family member from a family
 //	@Tags			family
-//	@Param			familyId	path	string	true	"Family LabelID (UUID format)"
-//	@Param			id			path	string	true	"Family member LabelID (UUID format)"
-//	@Success		204			"No Content - Family member successfully deleted"
-//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid LabelID format"
-//	@Failure		404			{object}	HttpErrorResponse	"Family or family member not found"
-//	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
+//	@Param			familyId		path	string	true	"Family LabelID (UUID format)"
+//	@Param			familyMemberId	path	string	true	"Family member LabelID (UUID format)"
+//	@Success		204				"No Content - Family member successfully deleted"
+//	@Failure		400				{object}	HttpErrorResponse	"Bad Request - Invalid LabelID format"
+//	@Failure		404				{object}	HttpErrorResponse	"Family or family member not found"
+//	@Failure		500				{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/family/{familyId}/members/{familyMemberId} [delete]
 func (f MemberDeleteEndpoint) Handle(c *gin.Context) {
 

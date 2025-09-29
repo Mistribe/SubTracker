@@ -21,7 +21,8 @@ type DeleteLabelCommandHandler struct {
 	authorization    ports.Authorization
 }
 
-func NewDeleteLabelCommandHandler(labelRepository ports.LabelRepository,
+func NewDeleteLabelCommandHandler(
+	labelRepository ports.LabelRepository,
 	familyRepository ports.FamilyRepository,
 	authorization ports.Authorization) *DeleteLabelCommandHandler {
 	return &DeleteLabelCommandHandler{
@@ -40,8 +41,11 @@ func (h DeleteLabelCommandHandler) Handle(ctx context.Context, command DeleteLab
 		return result.Fail[bool](label.ErrLabelNotFound)
 	}
 
-	err = h.authorization.Can(ctx, authorization.PermissionDelete).For(existingLabel)
-	if err != nil {
+	permReq := h.authorization.Can(ctx, authorization.PermissionDelete)
+	if permReq == nil {
+		return result.Fail[bool](authorization.ErrUnauthorized)
+	}
+	if err = permReq.For(existingLabel); err != nil {
 		return result.Fail[bool](err)
 	}
 

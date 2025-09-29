@@ -31,6 +31,7 @@ func NewEndpointGroup(
 	updateEndpoint *UpdateEndpoint,
 	deleteEndpoint *DeleteEndpoint,
 	summaryEndpoint *SummaryEndpoint,
+	subscriptionQuotaUsageEndpoint *GetQuotaUsageEndpoint,
 	authenticationMiddleware *middlewares.AuthenticationMiddleware) *EndpointGroup {
 	return &EndpointGroup{
 		routes: []ginfx.Endpoint{
@@ -40,6 +41,7 @@ func NewEndpointGroup(
 			createEndpoint,
 			updateEndpoint,
 			deleteEndpoint,
+			subscriptionQuotaUsageEndpoint,
 		},
 		middlewares: []gin.HandlerFunc{
 			authenticationMiddleware.Middleware(),

@@ -1,8 +1,6 @@
-package account
+package types
 
-import (
-	"errors"
-)
+import "errors"
 
 type Role string
 

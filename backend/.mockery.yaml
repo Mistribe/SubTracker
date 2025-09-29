@@ -1,11 +1,11 @@
 all: false
-dir: '{{.InterfaceDir}}'
+dir: "{{.InterfaceDir}}"
 filename: "{{.InterfaceName | snakecase}}_mock.go"
 force-file-write: true
 formatter: goimports
 log-level: info
-structname: '{{.Mock}}{{.InterfaceName}}'
-pkgname: '{{.SrcPackageName}}'
+structname: "{{.Mock}}{{.InterfaceName}}"
+pkgname: "{{.SrcPackageName}}"
 recursive: false
 template: testify
 packages:
@@ -24,6 +24,7 @@ packages:
       EntitlementResolver:
       AccountService:
       Cache:
+      CacheLeveled:
       CurrencyRepository:
       FamilyRepository:
       LabelRepository:
@@ -32,3 +33,5 @@ packages:
       Authorization:
       PermissionRequest:
       AccountRepository:
+      QuotaService:
+      UsageRepository:

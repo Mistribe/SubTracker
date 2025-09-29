@@ -18,5 +18,6 @@ var (
 	ErrInvalidFeatureType = errors.New("invalid feature type")
 
 	// ErrQuotaExceeded is returned when a quota operation would exceed the allowed limit.
-	ErrQuotaExceeded = errors.New("quota exceeded")
+	ErrQuotaExceeded           = errors.New("quota exceeded")
+	ErrCannotGetQuotaOnFeature = errors.New("cannot get quota on feature")
 )

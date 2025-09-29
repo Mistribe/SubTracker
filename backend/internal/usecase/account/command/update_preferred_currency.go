@@ -6,7 +6,6 @@ import (
 	"golang.org/x/text/currency"
 
 	"github.com/mistribe/subtracker/internal/domain/account"
-	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
@@ -57,8 +56,8 @@ func (h UpdatePreferredCurrencyCommandHandler) createAccount(
 
 	acc := account.New(userID,
 		cmd.Currency,
-		billing.PlanFree,
-		account.RoleUser,
+		types.PlanFree,
+		types.RoleUser,
 		nil,
 	)
 
