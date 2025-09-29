@@ -20,13 +20,6 @@ import {
     DtoOwnerModelToJSON,
     DtoOwnerModelToJSONTyped,
 } from './DtoOwnerModel';
-import type { DtoPlanModel } from './DtoPlanModel';
-import {
-    DtoPlanModelFromJSON,
-    DtoPlanModelFromJSONTyped,
-    DtoPlanModelToJSON,
-    DtoPlanModelToJSONTyped,
-} from './DtoPlanModel';
 
 /**
  * Provider object containing information about a subscription service provider and their available plans
@@ -89,12 +82,6 @@ export interface DtoProviderModel {
      */
     owner: DtoOwnerModel;
     /**
-     * @Description List of subscription plans offered by this provider
-     * @type {Array<DtoPlanModel>}
-     * @memberof DtoProviderModel
-     */
-    plans: Array<DtoPlanModel>;
-    /**
      * @Description Optional URL to the provider's pricing information page
      * @type {string}
      * @memberof DtoProviderModel
@@ -124,7 +111,6 @@ export function instanceOfDtoProviderModel(value: object): value is DtoProviderM
     if (!('labels' in value) || value['labels'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('owner' in value) || value['owner'] === undefined) return false;
-    if (!('plans' in value) || value['plans'] === undefined) return false;
     if (!('updatedAt' in value) || value['updatedAt'] === undefined) return false;
     return true;
 }
@@ -148,7 +134,6 @@ export function DtoProviderModelFromJSONTyped(json: any, ignoreDiscriminator: bo
         'labels': json['labels'],
         'name': json['name'],
         'owner': DtoOwnerModelFromJSON(json['owner']),
-        'plans': ((json['plans'] as Array<any>).map(DtoPlanModelFromJSON)),
         'pricingPageUrl': json['pricing_page_url'] == null ? undefined : json['pricing_page_url'],
         'updatedAt': (new Date(json['updated_at'])),
         'url': json['url'] == null ? undefined : json['url'],
@@ -175,7 +160,6 @@ export function DtoProviderModelToJSONTyped(value?: DtoProviderModel | null, ign
         'labels': value['labels'],
         'name': value['name'],
         'owner': DtoOwnerModelToJSON(value['owner']),
-        'plans': ((value['plans'] as Array<any>).map(DtoPlanModelToJSON)),
         'pricing_page_url': value['pricingPageUrl'],
         'updated_at': value['updatedAt'].toISOString(),
         'url': value['url'],

@@ -31,8 +31,8 @@ export const useLabelMutations = () => {
   // Update label mutation
   const updateLabelMutation = useMutation({
     mutationFn: async ({ id, name, color }: { id: string, name: string, color: string }) => {
-      return apiClient?.labels.labelsIdPut({
-        id,
+      return apiClient?.labels.labelsLabelIdPut({
+        labelId: id,
         dtoUpdateLabelRequest: {
           name,
           color,
@@ -47,7 +47,7 @@ export const useLabelMutations = () => {
   // Delete label mutation
   const deleteLabelMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiClient?.labels.labelsIdDelete({ id });
+      return apiClient?.labels.labelsLabelIdDelete({ labelId: id });
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['labels'] });

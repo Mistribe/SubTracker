@@ -1,9 +1,13 @@
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
 import {FamilyMemberType} from "@/models/familyMemberType.ts";
-import type { DtoCreateFamilyMemberRequest as CreateFamilyMemberModel, DtoCreateFamilyRequest as CreateFamilyModel, DtoUpdateFamilyMemberRequest as UpdateFamilyMemberModel } from "@/api/models";
-import { DtoEditableOwnerModelTypeEnum } from "@/api/models/DtoEditableOwnerModel";
-import { useFamilyQuery } from "@/hooks/families/useFamilyQuery.ts";
+import type {
+    DtoCreateFamilyMemberRequest as CreateFamilyMemberModel,
+    DtoCreateFamilyRequest as CreateFamilyModel,
+    DtoUpdateFamilyMemberRequest as UpdateFamilyMemberModel
+} from "@/api/models";
+import {DtoEditableOwnerModelTypeEnum} from "@/api/models/DtoEditableOwnerModel";
+import {useFamilyQuery} from "@/hooks/families/useFamilyQuery.ts";
 
 export const useFamiliesMutations = () => {
     const {apiClient} = useApiClient();
@@ -18,7 +22,7 @@ export const useFamiliesMutations = () => {
                 creatorName: familyData.creatorName
             };
 
-            return apiClient?.families.familyPost({ dtoCreateFamilyRequest: payload });
+            return apiClient?.families.familyPost({dtoCreateFamilyRequest: payload});
         },
         onSuccess: async () => {
             // Invalidate and refetch
@@ -34,7 +38,7 @@ export const useFamiliesMutations = () => {
                 type: isKid ? FamilyMemberType.Kid : FamilyMemberType.Adult
             };
 
-            return apiClient?.families.familyFamilyIdMembersPost({ familyId, dtoCreateFamilyMemberRequest: payload });
+            return apiClient?.families.familyFamilyIdMembersPost({familyId, dtoCreateFamilyMemberRequest: payload});
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({queryKey: ['families']});
@@ -44,7 +48,7 @@ export const useFamiliesMutations = () => {
     // Delete family mutation
     const deleteFamilyMutation = useMutation({
         mutationFn: async (familyId: string) => {
-            return apiClient?.families.familyFamilyIdDelete({ familyId });
+            return apiClient?.families.familyFamilyIdDelete({familyId});
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({queryKey: ['families']});
@@ -54,7 +58,7 @@ export const useFamiliesMutations = () => {
     // Remove family member mutation
     const removeFamilyMemberMutation = useMutation({
         mutationFn: async ({familyId, memberId}: { familyId: string, memberId: string }) => {
-            return apiClient?.families.familyFamilyIdMembersIdDelete({ familyId, id: memberId });
+            return apiClient?.families.familyFamilyIdMembersFamilyMemberIdDelete({familyId, familyMemberId: memberId});
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({queryKey: ['families']});
@@ -72,7 +76,7 @@ export const useFamiliesMutations = () => {
                     familyId: familyId,
                 },
             };
-            return apiClient?.labels.labelsPost({ dtoCreateLabelRequest: payload });
+            return apiClient?.labels.labelsPost({dtoCreateLabelRequest: payload});
         },
         onSuccess: async () => {
             // Invalidate both families and labels queries
@@ -94,7 +98,11 @@ export const useFamiliesMutations = () => {
                 type: isKid ? FamilyMemberType.Kid : FamilyMemberType.Adult
             };
 
-            return apiClient?.families.familyFamilyIdMembersIdPut({ familyId, id: memberId, dtoUpdateFamilyMemberRequest: payload as UpdateFamilyMemberModel });
+            return apiClient?.families.familyFamilyIdMembersFamilyMemberIdPut({
+                familyId,
+                familyMemberId: memberId,
+                dtoUpdateFamilyMemberRequest: payload as UpdateFamilyMemberModel
+            });
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({queryKey: ['families']});
@@ -103,7 +111,11 @@ export const useFamiliesMutations = () => {
 
     // Invite family member mutation (email or link generation)
     const inviteFamilyMemberMutation = useMutation({
-        mutationFn: async ({ familyId, familyMemberId, email }: { familyId: string, familyMemberId: string, email?: string }) => {
+        mutationFn: async ({familyId, familyMemberId, email}: {
+            familyId: string,
+            familyMemberId: string,
+            email?: string
+        }) => {
             return apiClient?.families.familyFamilyIdInvitePost({
                 familyId,
                 dtoFamilyInviteRequest: {
@@ -114,23 +126,31 @@ export const useFamiliesMutations = () => {
         },
         onSuccess: async () => {
             // Invitation does not change members list immediately; optional invalidate
-            await queryClient.invalidateQueries({ queryKey: ['families'] });
+            await queryClient.invalidateQueries({queryKey: ['families']});
         }
     });
 
     // Revoke (unlink) linked account for a family member
     const revokeFamilyMemberMutation = useMutation({
-        mutationFn: async ({ familyId, memberId }: { familyId: string, memberId: string }) => {
-            return apiClient?.families.familyFamilyIdMembersFamilyMemberIdRevokePost({ familyId, familyMemberId: memberId, body: {} });
+        mutationFn: async ({familyId, memberId}: { familyId: string, memberId: string }) => {
+            return apiClient?.families.familyFamilyIdMembersFamilyMemberIdRevokePost({
+                familyId,
+                familyMemberId: memberId,
+                body: {}
+            });
         },
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ['families'] });
+            await queryClient.invalidateQueries({queryKey: ['families']});
         }
     });
 
     // Accept family invitation mutation
     const acceptFamilyInvitationMutation = useMutation({
-        mutationFn: async ({ familyId, invitationCode, familyMemberId }: { familyId: string, invitationCode: string, familyMemberId?: string }) => {
+        mutationFn: async ({familyId, invitationCode, familyMemberId}: {
+            familyId: string,
+            invitationCode: string,
+            familyMemberId?: string
+        }) => {
             return apiClient?.families.familyFamilyIdAcceptPost({
                 familyId,
                 dtoFamilyAcceptInvitationRequest: {
@@ -140,7 +160,7 @@ export const useFamiliesMutations = () => {
             });
         },
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ['families'] });
+            await queryClient.invalidateQueries({queryKey: ['families']});
         }
     });
 
@@ -154,13 +174,16 @@ export const useFamiliesMutations = () => {
             if (!you) throw new Error("Could not determine your member entry");
 
             if (currentFamily.isOwner && currentFamily.members.length === 1) {
-                return apiClient.families.familyFamilyIdDelete({ familyId: currentFamily.id });
+                return apiClient.families.familyFamilyIdDelete({familyId: currentFamily.id});
             }
 
-            return apiClient.families.familyFamilyIdMembersIdDelete({ familyId: currentFamily.id, id: you.id });
+            return apiClient.families.familyFamilyIdMembersFamilyMemberIdDelete({
+                familyId: currentFamily.id,
+                familyMemberId: you.id
+            });
         },
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ['families'] });
+            await queryClient.invalidateQueries({queryKey: ['families']});
         }
     });
 

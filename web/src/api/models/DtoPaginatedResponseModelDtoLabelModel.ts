@@ -13,13 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { DtoLimit } from './DtoLimit';
-import {
-    DtoLimitFromJSON,
-    DtoLimitFromJSONTyped,
-    DtoLimitToJSON,
-    DtoLimitToJSONTyped,
-} from './DtoLimit';
 import type { DtoLabelModel } from './DtoLabelModel';
 import {
     DtoLabelModelFromJSON,
@@ -46,12 +39,6 @@ export interface DtoPaginatedResponseModelDtoLabelModel {
      * @memberof DtoPaginatedResponseModelDtoLabelModel
      */
     length: number;
-    /**
-     * 
-     * @type {Array<DtoLimit>}
-     * @memberof DtoPaginatedResponseModelDtoLabelModel
-     */
-    limit?: Array<DtoLimit>;
     /**
      * Total represents the total number of items available
      * @type {number}
@@ -82,7 +69,6 @@ export function DtoPaginatedResponseModelDtoLabelModelFromJSONTyped(json: any, i
         
         'data': ((json['data'] as Array<any>).map(DtoLabelModelFromJSON)),
         'length': json['length'],
-        'limit': json['limit'] == null ? undefined : ((json['limit'] as Array<any>).map(DtoLimitFromJSON)),
         'total': json['total'],
     };
 }
@@ -100,7 +86,6 @@ export function DtoPaginatedResponseModelDtoLabelModelToJSONTyped(value?: DtoPag
         
         'data': ((value['data'] as Array<any>).map(DtoLabelModelToJSON)),
         'length': value['length'],
-        'limit': value['limit'] == null ? undefined : ((value['limit'] as Array<any>).map(DtoLimitToJSON)),
         'total': value['total'],
     };
 }

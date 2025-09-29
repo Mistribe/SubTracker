@@ -18,6 +18,10 @@ import {
 } from "@/components/subscriptions/ui/SubscriptionsFilters";
 import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
 import {useFamilyQuery} from "@/hooks/families/useFamilyQuery.ts";
+import {useSubscriptionsQuotaQuery} from "@/hooks/subscriptions/useSubscriptionsQuotaQuery.ts";
+import {QuotaUsage} from "@/components/quotas/QuotaUsage";
+import {QuotaUsageSkeleton} from "@/components/quotas/QuotaUsageSkeleton";
+import {FeatureId} from "@/models/billing.ts";
 
 const SubscriptionsPage = () => {
     const navigate = useNavigate();
@@ -120,6 +124,10 @@ const SubscriptionsPage = () => {
         withInactive: withInactive,
     });
 
+    // Fetch quota for subscriptions (active subscriptions count, etc.)
+    const { data: subsQuotaData, isLoading: isSubsQuotaLoading, error: subsQuotaError } = useSubscriptionsQuotaQuery();
+    const activeSubscriptionsQuota = subsQuotaData?.find(q => q.feature === FeatureId.ActiveSubscriptionsCount);
+
     // Flatten all subscriptions from all pages
     const allSubscriptions = data?.pages.flatMap(page => page.subscriptions) || [];
 
@@ -173,6 +181,21 @@ const SubscriptionsPage = () => {
         setIsFilterOpen(true);
     };
 
+    const quotaSection = (
+        <div className="mt-4 max-w-xs">
+            {isSubsQuotaLoading && <QuotaUsageSkeleton />}
+            {!isSubsQuotaLoading && activeSubscriptionsQuota && (
+                <QuotaUsage quota={activeSubscriptionsQuota} label="Active Subscriptions" />
+            )}
+            {!isSubsQuotaLoading && !activeSubscriptionsQuota && !subsQuotaError && (
+                <div className="text-xs text-muted-foreground border rounded-md p-3">No quota data available.</div>
+            )}
+            {subsQuotaError && (
+                <div className="text-xs text-destructive border border-destructive/30 rounded-md p-3">Failed to load quota.</div>
+            )}
+        </div>
+    );
+
     return (
         <div className="container mx-auto py-6">
             <PageHeader
@@ -188,6 +211,7 @@ const SubscriptionsPage = () => {
                 }
                 onFilter={openFilter}
             />
+            {quotaSection}
 
             {isLoading ? (
                 <SubscriptionsTableSkeleton/>
@@ -248,3 +272,4 @@ const SubscriptionsPage = () => {
 };
 
 export default SubscriptionsPage;
+

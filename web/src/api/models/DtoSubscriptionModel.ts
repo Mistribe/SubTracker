@@ -135,7 +135,7 @@ export interface DtoSubscriptionModel {
      */
     payer?: DtoSubscriptionPayerModel;
     /**
-     * @Description ID of the specific plan being subscribed to
+     * @Description LabelID of the specific plan being subscribed to
      * @type {string}
      * @memberof DtoSubscriptionModel
      */
@@ -147,13 +147,13 @@ export interface DtoSubscriptionModel {
      */
     price?: DtoSubscriptionPriceModel;
     /**
-     * @Description ID of the pricing tier for this subscription
+     * @Description LabelID of the pricing tier for this subscription
      * @type {string}
      * @memberof DtoSubscriptionModel
      */
     priceId?: string;
     /**
-     * @Description ID of the service provider offering this subscription
+     * @Description LabelID of the service provider offering this subscription
      * @type {string}
      * @memberof DtoSubscriptionModel
      */

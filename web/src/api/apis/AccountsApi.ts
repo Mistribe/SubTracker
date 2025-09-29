@@ -15,11 +15,14 @@
 
 import * as runtime from '../runtime';
 import type {
+  DtoQuotaUsageModel,
   DtoUpdatePreferredCurrencyRequest,
   DtoUserPreferredCurrencyModel,
   GinxHttpErrorResponse,
 } from '../models/index';
 import {
+    DtoQuotaUsageModelFromJSON,
+    DtoQuotaUsageModelToJSON,
     DtoUpdatePreferredCurrencyRequestFromJSON,
     DtoUpdatePreferredCurrencyRequestToJSON,
     DtoUserPreferredCurrencyModelFromJSON,
@@ -36,19 +39,19 @@ export interface UsersPreferredCurrencyPutRequest {
 /**
  * 
  */
-export class UsersApi extends runtime.BaseAPI {
+export class AccountsApi extends runtime.BaseAPI {
 
     /**
      * Deletes the authenticated user\'s account
      * Delete user
      */
-    async usersDeleteRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async accountsDeleteRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
 
-        let urlPath = `/users`;
+        let urlPath = `/accounts`;
 
         const response = await this.request({
             path: urlPath,
@@ -64,21 +67,21 @@ export class UsersApi extends runtime.BaseAPI {
      * Deletes the authenticated user\'s account
      * Delete user
      */
-    async usersDelete(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.usersDeleteRaw(initOverrides);
+    async accountsDelete(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.accountsDeleteRaw(initOverrides);
     }
 
     /**
-     * Returns the preferred currency for the authenticated user
+     * Returns the preferred currency for the authenticated account
      * Get user preferred currency
      */
-    async usersPreferredCurrencyGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtoUserPreferredCurrencyModel>> {
+    async accountsPreferredCurrencyGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtoUserPreferredCurrencyModel>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
 
-        let urlPath = `/users/preferred/currency`;
+        let urlPath = `/accounts/preferred/currency`;
 
         const response = await this.request({
             path: urlPath,
@@ -91,16 +94,47 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Returns the preferred currency for the authenticated user
+     * Returns the preferred currency for the authenticated account
      * Get user preferred currency
      */
-    async usersPreferredCurrencyGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoUserPreferredCurrencyModel> {
-        const response = await this.usersPreferredCurrencyGetRaw(initOverrides);
+    async accountsPreferredCurrencyGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoUserPreferredCurrencyModel> {
+        const response = await this.accountsPreferredCurrencyGetRaw(initOverrides);
         return await response.value();
     }
 
     /**
-     * Updates the preferred currency for the authenticated user
+     * Retrieve the current quota usage and limits for the authenticated user
+     * Get quota usage
+     */
+    async accountsQuotaUsageGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DtoQuotaUsageModel>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/accounts/quota/usage`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DtoQuotaUsageModelFromJSON));
+    }
+
+    /**
+     * Retrieve the current quota usage and limits for the authenticated user
+     * Get quota usage
+     */
+    async accountsQuotaUsageGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DtoQuotaUsageModel>> {
+        const response = await this.accountsQuotaUsageGetRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Updates the preferred currency for the authenticated account
      * Update user preferred currency
      */
     async usersPreferredCurrencyPutRaw(requestParameters: UsersPreferredCurrencyPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
@@ -143,7 +177,7 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Updates the preferred currency for the authenticated user
+     * Updates the preferred currency for the authenticated account
      * Update user preferred currency
      */
     async usersPreferredCurrencyPut(requestParameters: UsersPreferredCurrencyPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {

@@ -32,7 +32,7 @@ export interface DtoFamilyMemberModel {
      */
     etag: string;
     /**
-     * @Description ID of the family this member belongs to
+     * @Description LabelID of the family this member belongs to
      * @type {string}
      * @memberof DtoFamilyMemberModel
      */

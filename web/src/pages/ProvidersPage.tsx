@@ -10,6 +10,10 @@ import {PageHeader} from "@/components/ui/page-header";
 import {Button} from "@/components/ui/button";
 import Provider from "@/models/provider";
 import {PlusIcon} from "lucide-react";
+import {useProvidersQuotaQuery} from "@/hooks/providers/useProvidersQuotaQuery.ts";
+import {QuotaUsage} from "@/components/quotas/QuotaUsage";
+import {QuotaUsageSkeleton} from "@/components/quotas/QuotaUsageSkeleton";
+import {FeatureId} from "@/models/billing.ts";
 
 const ProvidersPage = () => {
     const [isAddingProvider, setIsAddingProvider] = useState(false);
@@ -24,6 +28,10 @@ const ProvidersPage = () => {
         hasNextPage,
         isFetchingNextPage,
     } = useAllProvidersQuery({ search: searchText });
+
+    // Fetch quota for providers
+    const { data: providersQuotaData, isLoading: isProvidersQuotaLoading, error: providersQuotaError } = useProvidersQuotaQuery();
+    const providersCountQuota = providersQuotaData?.find(q => q.feature === FeatureId.CustomProvidersCount);
 
     // Flatten all providers from all pages
     const allProviders = data?.pages.flatMap(page => page.providers) || [];
@@ -43,6 +51,21 @@ const ProvidersPage = () => {
         return () => observer.disconnect();
     }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
+    const quotaSection = (
+        <div className="mt-4 max-w-xs">
+            {isProvidersQuotaLoading && <QuotaUsageSkeleton />}
+            {!isProvidersQuotaLoading && providersCountQuota && (
+                <QuotaUsage quota={providersCountQuota} label="Providers Used" />
+            )}
+            {!isProvidersQuotaLoading && !providersCountQuota && !providersQuotaError && (
+                <div className="text-xs text-muted-foreground border rounded-md p-3">No quota data available.</div>
+            )}
+            {providersQuotaError && (
+                <div className="text-xs text-destructive border border-destructive/30 rounded-md p-3">Failed to load quota.</div>
+            )}
+        </div>
+    );
+
     return (
         <div className="container mx-auto py-6">
             <PageHeader
@@ -57,6 +80,7 @@ const ProvidersPage = () => {
                     </Button>
                 }
             />
+            {quotaSection}
 
             {isLoading ? (
                 <ProviderCardSkeletonGrid/>

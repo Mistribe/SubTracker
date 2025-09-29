@@ -1,11 +1,11 @@
 .openapi-generator-ignore
+apis/AccountsApi.ts
 apis/CurrenciesApi.ts
 apis/FamilyApi.ts
 apis/HealthApi.ts
 apis/LabelsApi.ts
 apis/ProvidersApi.ts
 apis/SubscriptionsApi.ts
-apis/UsersApi.ts
 apis/index.ts
 index.ts
 models/DtoAmountModel.ts
@@ -27,14 +27,12 @@ models/DtoFamilyModel.ts
 models/DtoFamilySeeInvitationResponse.ts
 models/DtoLabelModel.ts
 models/DtoLabelRefModel.ts
-models/DtoLimit.ts
 models/DtoOwnerModel.ts
 models/DtoPaginatedResponseModelDtoLabelModel.ts
 models/DtoPaginatedResponseModelProviderModel.ts
 models/DtoPaginatedResponseModelSubscriptionModel.ts
-models/DtoPlanModel.ts
-models/DtoPriceModel.ts
 models/DtoProviderModel.ts
+models/DtoQuotaUsageModel.ts
 models/DtoSubscriptionFreeTrialModel.ts
 models/DtoSubscriptionModel.ts
 models/DtoSubscriptionPayerModel.ts
@@ -49,7 +47,6 @@ models/DtoUpdateLabelRequest.ts
 models/DtoUpdatePreferredCurrencyRequest.ts
 models/DtoUpdateProviderRequest.ts
 models/DtoUpdateSubscriptionRequest.ts
-models/DtoUserFamilyResponse.ts
 models/DtoUserPreferredCurrencyModel.ts
 models/GinxHttpErrorResponse.ts
 models/index.ts

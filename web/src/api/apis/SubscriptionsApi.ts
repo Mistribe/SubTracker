@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   DtoCreateSubscriptionRequest,
   DtoPaginatedResponseModelSubscriptionModel,
+  DtoQuotaUsageModel,
   DtoSubscriptionModel,
   DtoSubscriptionSummaryResponse,
   DtoUpdateSubscriptionRequest,
@@ -27,6 +28,8 @@ import {
     DtoCreateSubscriptionRequestToJSON,
     DtoPaginatedResponseModelSubscriptionModelFromJSON,
     DtoPaginatedResponseModelSubscriptionModelToJSON,
+    DtoQuotaUsageModelFromJSON,
+    DtoQuotaUsageModelToJSON,
     DtoSubscriptionModelFromJSON,
     DtoSubscriptionModelToJSON,
     DtoSubscriptionSummaryResponseFromJSON,
@@ -188,8 +191,39 @@ export class SubscriptionsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Retrieve the current quota usage and limits for the authenticated user
+     * Get quota usage
+     */
+    async subscriptionsQuotaUsageGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DtoQuotaUsageModel>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/subscriptions/quota/usage`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DtoQuotaUsageModelFromJSON));
+    }
+
+    /**
+     * Retrieve the current quota usage and limits for the authenticated user
+     * Get quota usage
+     */
+    async subscriptionsQuotaUsageGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DtoQuotaUsageModel>> {
+        const response = await this.subscriptionsQuotaUsageGetRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Permanently delete an existing subscription
-     * Delete subscription by ID
+     * Delete subscription by LabelID
      */
     async subscriptionsSubscriptionIdDeleteRaw(requestParameters: SubscriptionsSubscriptionIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         if (requestParameters['subscriptionId'] == null) {
@@ -219,7 +253,7 @@ export class SubscriptionsApi extends runtime.BaseAPI {
 
     /**
      * Permanently delete an existing subscription
-     * Delete subscription by ID
+     * Delete subscription by LabelID
      */
     async subscriptionsSubscriptionIdDelete(requestParameters: SubscriptionsSubscriptionIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.subscriptionsSubscriptionIdDeleteRaw(requestParameters, initOverrides);
@@ -227,7 +261,7 @@ export class SubscriptionsApi extends runtime.BaseAPI {
 
     /**
      * Retrieve a single subscription with all its details including provider, plan, and pricing information
-     * Get subscription by ID
+     * Get subscription by LabelID
      */
     async subscriptionsSubscriptionIdGetRaw(requestParameters: SubscriptionsSubscriptionIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtoSubscriptionModel>> {
         if (requestParameters['subscriptionId'] == null) {
@@ -257,7 +291,7 @@ export class SubscriptionsApi extends runtime.BaseAPI {
 
     /**
      * Retrieve a single subscription with all its details including provider, plan, and pricing information
-     * Get subscription by ID
+     * Get subscription by LabelID
      */
     async subscriptionsSubscriptionIdGet(requestParameters: SubscriptionsSubscriptionIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoSubscriptionModel> {
         const response = await this.subscriptionsSubscriptionIdGetRaw(requestParameters, initOverrides);
@@ -266,7 +300,7 @@ export class SubscriptionsApi extends runtime.BaseAPI {
 
     /**
      * Update an existing subscription\'s details including provider, plan, pricing, and payment information
-     * Update subscription by ID
+     * Update subscription by LabelID
      */
     async subscriptionsSubscriptionIdPutRaw(requestParameters: SubscriptionsSubscriptionIdPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtoSubscriptionModel>> {
         if (requestParameters['subscriptionId'] == null) {
@@ -306,7 +340,7 @@ export class SubscriptionsApi extends runtime.BaseAPI {
 
     /**
      * Update an existing subscription\'s details including provider, plan, pricing, and payment information
-     * Update subscription by ID
+     * Update subscription by LabelID
      */
     async subscriptionsSubscriptionIdPut(requestParameters: SubscriptionsSubscriptionIdPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoSubscriptionModel> {
         const response = await this.subscriptionsSubscriptionIdPutRaw(requestParameters, initOverrides);

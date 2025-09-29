@@ -1,8 +1,8 @@
 import { useRef } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { requireEnv } from '@/lib/env';
-import { Configuration } from '@/api';
-import { CurrenciesApi, FamilyApi, LabelsApi, ProvidersApi, SubscriptionsApi, UsersApi } from '@/api/apis';
+import {AccountsApi, Configuration} from '@/api';
+import { CurrenciesApi, FamilyApi, LabelsApi, ProvidersApi, SubscriptionsApi } from '@/api/apis';
 import type { ApiClient } from '@/lib/api-client';
 
 export function useApiClient() {
@@ -36,7 +36,7 @@ export function useApiClient() {
       labels: new LabelsApi(configuration),
       providers: new ProvidersApi(configuration),
       subscriptions: new SubscriptionsApi(configuration),
-      users: new UsersApi(configuration),
+      accounts: new AccountsApi(configuration),
     };
   }
 

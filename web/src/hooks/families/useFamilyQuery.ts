@@ -1,8 +1,7 @@
 import {useQuery} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
 import Family from "@/models/family";
-import type { DtoUserFamilyResponse } from "@/api/models/DtoUserFamilyResponse";
-
+import type {DtoFamilyModel} from "@/api";
 
 export const useFamilyQuery = () => {
     const {apiClient} = useApiClient();
@@ -16,8 +15,7 @@ export const useFamilyQuery = () => {
 
             try {
                 // Fetch the current user's family response; backend now returns a wrapper with optional family
-                const result: DtoUserFamilyResponse = await apiClient.families.familyGet();
-                const family = result.family;
+                const family: DtoFamilyModel = await apiClient.families.familyGet();
                 if (family) {
                    return Family.fromModel(family);
                 }

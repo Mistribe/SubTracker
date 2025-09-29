@@ -20,13 +20,13 @@ import { mapValues } from '../runtime';
  */
 export interface DtoEditableSubscriptionPayerModel {
     /**
-     * @Description ID of the family associated with this payer
+     * @Description LabelID of the family associated with this payer
      * @type {string}
      * @memberof DtoEditableSubscriptionPayerModel
      */
     familyId: string;
     /**
-     * @Description ID of the specific family member who pays (required when type is family_member)
+     * @Description LabelID of the specific family member who pays (required when type is family_member)
      * @type {string}
      * @memberof DtoEditableSubscriptionPayerModel
      */

@@ -23,9 +23,9 @@ import type {
   DtoFamilyInviteResponse,
   DtoFamilyModel,
   DtoFamilySeeInvitationResponse,
+  DtoQuotaUsageModel,
   DtoUpdateFamilyMemberRequest,
   DtoUpdateFamilyRequest,
-  DtoUserFamilyResponse,
   GinxHttpErrorResponse,
 } from '../models/index';
 import {
@@ -45,12 +45,12 @@ import {
     DtoFamilyModelToJSON,
     DtoFamilySeeInvitationResponseFromJSON,
     DtoFamilySeeInvitationResponseToJSON,
+    DtoQuotaUsageModelFromJSON,
+    DtoQuotaUsageModelToJSON,
     DtoUpdateFamilyMemberRequestFromJSON,
     DtoUpdateFamilyMemberRequestToJSON,
     DtoUpdateFamilyRequestFromJSON,
     DtoUpdateFamilyRequestToJSON,
-    DtoUserFamilyResponseFromJSON,
-    DtoUserFamilyResponseToJSON,
     GinxHttpErrorResponseFromJSON,
     GinxHttpErrorResponseToJSON,
 } from '../models/index';
@@ -80,21 +80,21 @@ export interface FamilyFamilyIdInvitePostRequest {
     dtoFamilyInviteRequest: DtoFamilyInviteRequest;
 }
 
+export interface FamilyFamilyIdMembersFamilyMemberIdDeleteRequest {
+    familyId: string;
+    familyMemberId: string;
+}
+
+export interface FamilyFamilyIdMembersFamilyMemberIdPutRequest {
+    familyId: string;
+    familyMemberId: string;
+    dtoUpdateFamilyMemberRequest: DtoUpdateFamilyMemberRequest;
+}
+
 export interface FamilyFamilyIdMembersFamilyMemberIdRevokePostRequest {
     familyId: string;
     familyMemberId: string;
     body?: object;
-}
-
-export interface FamilyFamilyIdMembersIdDeleteRequest {
-    familyId: string;
-    id: string;
-}
-
-export interface FamilyFamilyIdMembersIdPutRequest {
-    familyId: string;
-    id: string;
-    dtoUpdateFamilyMemberRequest: DtoUpdateFamilyMemberRequest;
 }
 
 export interface FamilyFamilyIdMembersPostRequest {
@@ -214,7 +214,7 @@ export class FamilyApi extends runtime.BaseAPI {
 
     /**
      * Permanently delete a family and all its members
-     * Delete family by ID
+     * Delete family by LabelID
      */
     async familyFamilyIdDeleteRaw(requestParameters: FamilyFamilyIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         if (requestParameters['familyId'] == null) {
@@ -244,7 +244,7 @@ export class FamilyApi extends runtime.BaseAPI {
 
     /**
      * Permanently delete a family and all its members
-     * Delete family by ID
+     * Delete family by LabelID
      */
     async familyFamilyIdDelete(requestParameters: FamilyFamilyIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.familyFamilyIdDeleteRaw(requestParameters, initOverrides);
@@ -361,6 +361,109 @@ export class FamilyApi extends runtime.BaseAPI {
     }
 
     /**
+     * Permanently delete a family member from a family
+     * Delete family member by LabelID
+     */
+    async familyFamilyIdMembersFamilyMemberIdDeleteRaw(requestParameters: FamilyFamilyIdMembersFamilyMemberIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['familyId'] == null) {
+            throw new runtime.RequiredError(
+                'familyId',
+                'Required parameter "familyId" was null or undefined when calling familyFamilyIdMembersFamilyMemberIdDelete().'
+            );
+        }
+
+        if (requestParameters['familyMemberId'] == null) {
+            throw new runtime.RequiredError(
+                'familyMemberId',
+                'Required parameter "familyMemberId" was null or undefined when calling familyFamilyIdMembersFamilyMemberIdDelete().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/family/{familyId}/members/{familyMemberId}`;
+        urlPath = urlPath.replace(`{${"familyId"}}`, encodeURIComponent(String(requestParameters['familyId'])));
+        urlPath = urlPath.replace(`{${"familyMemberId"}}`, encodeURIComponent(String(requestParameters['familyMemberId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Permanently delete a family member from a family
+     * Delete family member by LabelID
+     */
+    async familyFamilyIdMembersFamilyMemberIdDelete(requestParameters: FamilyFamilyIdMembersFamilyMemberIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.familyFamilyIdMembersFamilyMemberIdDeleteRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Update an existing family member\'s information such as name and kid status
+     * Update family member by LabelID
+     */
+    async familyFamilyIdMembersFamilyMemberIdPutRaw(requestParameters: FamilyFamilyIdMembersFamilyMemberIdPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtoFamilyModel>> {
+        if (requestParameters['familyId'] == null) {
+            throw new runtime.RequiredError(
+                'familyId',
+                'Required parameter "familyId" was null or undefined when calling familyFamilyIdMembersFamilyMemberIdPut().'
+            );
+        }
+
+        if (requestParameters['familyMemberId'] == null) {
+            throw new runtime.RequiredError(
+                'familyMemberId',
+                'Required parameter "familyMemberId" was null or undefined when calling familyFamilyIdMembersFamilyMemberIdPut().'
+            );
+        }
+
+        if (requestParameters['dtoUpdateFamilyMemberRequest'] == null) {
+            throw new runtime.RequiredError(
+                'dtoUpdateFamilyMemberRequest',
+                'Required parameter "dtoUpdateFamilyMemberRequest" was null or undefined when calling familyFamilyIdMembersFamilyMemberIdPut().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/family/{familyId}/members/{familyMemberId}`;
+        urlPath = urlPath.replace(`{${"familyId"}}`, encodeURIComponent(String(requestParameters['familyId'])));
+        urlPath = urlPath.replace(`{${"familyMemberId"}}`, encodeURIComponent(String(requestParameters['familyMemberId'])));
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DtoUpdateFamilyMemberRequestToJSON(requestParameters['dtoUpdateFamilyMemberRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DtoFamilyModelFromJSON(jsonValue));
+    }
+
+    /**
+     * Update an existing family member\'s information such as name and kid status
+     * Update family member by LabelID
+     */
+    async familyFamilyIdMembersFamilyMemberIdPut(requestParameters: FamilyFamilyIdMembersFamilyMemberIdPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoFamilyModel> {
+        const response = await this.familyFamilyIdMembersFamilyMemberIdPutRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Revokes a member from the family
      * Revoke family member
      */
@@ -407,109 +510,6 @@ export class FamilyApi extends runtime.BaseAPI {
      */
     async familyFamilyIdMembersFamilyMemberIdRevokePost(requestParameters: FamilyFamilyIdMembersFamilyMemberIdRevokePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.familyFamilyIdMembersFamilyMemberIdRevokePostRaw(requestParameters, initOverrides);
-    }
-
-    /**
-     * Permanently delete a family member from a family
-     * Delete family member by ID
-     */
-    async familyFamilyIdMembersIdDeleteRaw(requestParameters: FamilyFamilyIdMembersIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['familyId'] == null) {
-            throw new runtime.RequiredError(
-                'familyId',
-                'Required parameter "familyId" was null or undefined when calling familyFamilyIdMembersIdDelete().'
-            );
-        }
-
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling familyFamilyIdMembersIdDelete().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-
-        let urlPath = `/family/{familyId}/members/{id}`;
-        urlPath = urlPath.replace(`{${"familyId"}}`, encodeURIComponent(String(requestParameters['familyId'])));
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'DELETE',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * Permanently delete a family member from a family
-     * Delete family member by ID
-     */
-    async familyFamilyIdMembersIdDelete(requestParameters: FamilyFamilyIdMembersIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.familyFamilyIdMembersIdDeleteRaw(requestParameters, initOverrides);
-    }
-
-    /**
-     * Update an existing family member\'s information such as name and kid status
-     * Update family member by ID
-     */
-    async familyFamilyIdMembersIdPutRaw(requestParameters: FamilyFamilyIdMembersIdPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtoFamilyModel>> {
-        if (requestParameters['familyId'] == null) {
-            throw new runtime.RequiredError(
-                'familyId',
-                'Required parameter "familyId" was null or undefined when calling familyFamilyIdMembersIdPut().'
-            );
-        }
-
-        if (requestParameters['id'] == null) {
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling familyFamilyIdMembersIdPut().'
-            );
-        }
-
-        if (requestParameters['dtoUpdateFamilyMemberRequest'] == null) {
-            throw new runtime.RequiredError(
-                'dtoUpdateFamilyMemberRequest',
-                'Required parameter "dtoUpdateFamilyMemberRequest" was null or undefined when calling familyFamilyIdMembersIdPut().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-
-        let urlPath = `/family/{familyId}/members/{id}`;
-        urlPath = urlPath.replace(`{${"familyId"}}`, encodeURIComponent(String(requestParameters['familyId'])));
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'PUT',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DtoUpdateFamilyMemberRequestToJSON(requestParameters['dtoUpdateFamilyMemberRequest']),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DtoFamilyModelFromJSON(jsonValue));
-    }
-
-    /**
-     * Update an existing family member\'s information such as name and kid status
-     * Update family member by ID
-     */
-    async familyFamilyIdMembersIdPut(requestParameters: FamilyFamilyIdMembersIdPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoFamilyModel> {
-        const response = await this.familyFamilyIdMembersIdPutRaw(requestParameters, initOverrides);
-        return await response.value();
     }
 
     /**
@@ -614,7 +614,7 @@ export class FamilyApi extends runtime.BaseAPI {
      * Retrieve the user\'s family
      * Get user\'s family
      */
-    async familyGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtoUserFamilyResponse>> {
+    async familyGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtoFamilyModel>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -629,14 +629,14 @@ export class FamilyApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DtoUserFamilyResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => DtoFamilyModelFromJSON(jsonValue));
     }
 
     /**
      * Retrieve the user\'s family
      * Get user\'s family
      */
-    async familyGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoUserFamilyResponse> {
+    async familyGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoFamilyModel> {
         const response = await this.familyGetRaw(initOverrides);
         return await response.value();
     }
@@ -679,6 +679,37 @@ export class FamilyApi extends runtime.BaseAPI {
      */
     async familyPost(requestParameters: FamilyPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoFamilyModel> {
         const response = await this.familyPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve the current quota usage and limits for the authenticated user
+     * Get quota usage
+     */
+    async familyQuotaUsageGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DtoQuotaUsageModel>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/family/quota/usage`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DtoQuotaUsageModelFromJSON));
+    }
+
+    /**
+     * Retrieve the current quota usage and limits for the authenticated user
+     * Get quota usage
+     */
+    async familyQuotaUsageGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DtoQuotaUsageModel>> {
+        const response = await this.familyQuotaUsageGetRaw(initOverrides);
         return await response.value();
     }
 

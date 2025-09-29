@@ -18,6 +18,7 @@ import type {
   DtoCreateProviderRequest,
   DtoPaginatedResponseModelProviderModel,
   DtoProviderModel,
+  DtoQuotaUsageModel,
   DtoUpdateProviderRequest,
   GinxHttpErrorResponse,
 } from '../models/index';
@@ -28,6 +29,8 @@ import {
     DtoPaginatedResponseModelProviderModelToJSON,
     DtoProviderModelFromJSON,
     DtoProviderModelToJSON,
+    DtoQuotaUsageModelFromJSON,
+    DtoQuotaUsageModelToJSON,
     DtoUpdateProviderRequestFromJSON,
     DtoUpdateProviderRequestToJSON,
     GinxHttpErrorResponseFromJSON,
@@ -148,7 +151,7 @@ export class ProvidersApi extends runtime.BaseAPI {
 
     /**
      * Permanently delete a provider and all its associated plans and prices
-     * Delete provider by ID
+     * Delete provider by LabelID
      */
     async providersProviderIdDeleteRaw(requestParameters: ProvidersProviderIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         if (requestParameters['providerId'] == null) {
@@ -178,15 +181,15 @@ export class ProvidersApi extends runtime.BaseAPI {
 
     /**
      * Permanently delete a provider and all its associated plans and prices
-     * Delete provider by ID
+     * Delete provider by LabelID
      */
     async providersProviderIdDelete(requestParameters: ProvidersProviderIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.providersProviderIdDeleteRaw(requestParameters, initOverrides);
     }
 
     /**
-     * Retrieve a single provider with all its plans and prices by ID
-     * Get provider by ID
+     * Retrieve a single provider with all its plans and prices by LabelID
+     * Get provider by LabelID
      */
     async providersProviderIdGetRaw(requestParameters: ProvidersProviderIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtoProviderModel>> {
         if (requestParameters['providerId'] == null) {
@@ -215,8 +218,8 @@ export class ProvidersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Retrieve a single provider with all its plans and prices by ID
-     * Get provider by ID
+     * Retrieve a single provider with all its plans and prices by LabelID
+     * Get provider by LabelID
      */
     async providersProviderIdGet(requestParameters: ProvidersProviderIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoProviderModel> {
         const response = await this.providersProviderIdGetRaw(requestParameters, initOverrides);
@@ -225,7 +228,7 @@ export class ProvidersApi extends runtime.BaseAPI {
 
     /**
      * Update an existing provider\'s basic information
-     * Update provider by ID
+     * Update provider by LabelID
      */
     async providersProviderIdPutRaw(requestParameters: ProvidersProviderIdPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtoProviderModel>> {
         if (requestParameters['providerId'] == null) {
@@ -265,10 +268,41 @@ export class ProvidersApi extends runtime.BaseAPI {
 
     /**
      * Update an existing provider\'s basic information
-     * Update provider by ID
+     * Update provider by LabelID
      */
     async providersProviderIdPut(requestParameters: ProvidersProviderIdPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoProviderModel> {
         const response = await this.providersProviderIdPutRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve the current quota usage and limits for the authenticated user
+     * Get quota usage
+     */
+    async providersQuotaUsageGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DtoQuotaUsageModel>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/providers/quota/usage`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DtoQuotaUsageModelFromJSON));
+    }
+
+    /**
+     * Retrieve the current quota usage and limits for the authenticated user
+     * Get quota usage
+     */
+    async providersQuotaUsageGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DtoQuotaUsageModel>> {
+        const response = await this.providersQuotaUsageGetRaw(initOverrides);
         return await response.value();
     }
 

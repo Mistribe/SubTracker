@@ -26,7 +26,7 @@ export interface DtoOwnerModel {
      */
     etag: string;
     /**
-     * @Description Family ID when an ownership type is family (required for family ownership)
+     * @Description Family LabelID when an ownership type is family (required for family ownership)
      * @type {string}
      * @memberof DtoOwnerModel
      */
@@ -38,7 +38,7 @@ export interface DtoOwnerModel {
      */
     type: DtoOwnerModelTypeEnum;
     /**
-     * @Description UserProfile ID when an ownership type is personal (required for personal ownership)
+     * @Description UserProfile LabelID when an ownership type is personal (required for personal ownership)
      * @type {string}
      * @memberof DtoOwnerModel
      */

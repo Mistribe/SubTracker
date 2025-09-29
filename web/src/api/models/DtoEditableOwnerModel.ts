@@ -20,7 +20,7 @@ import { mapValues } from '../runtime';
  */
 export interface DtoEditableOwnerModel {
     /**
-     * @Description Family ID when an ownership type is family (required for family ownership)
+     * @Description Family LabelID when an ownership type is family (required for family ownership)
      * @type {string}
      * @memberof DtoEditableOwnerModel
      */

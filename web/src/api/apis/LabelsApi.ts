@@ -18,6 +18,7 @@ import type {
   DtoCreateLabelRequest,
   DtoLabelModel,
   DtoPaginatedResponseModelDtoLabelModel,
+  DtoQuotaUsageModel,
   DtoUpdateLabelRequest,
   GinxHttpErrorResponse,
 } from '../models/index';
@@ -28,6 +29,8 @@ import {
     DtoLabelModelToJSON,
     DtoPaginatedResponseModelDtoLabelModelFromJSON,
     DtoPaginatedResponseModelDtoLabelModelToJSON,
+    DtoQuotaUsageModelFromJSON,
+    DtoQuotaUsageModelToJSON,
     DtoUpdateLabelRequestFromJSON,
     DtoUpdateLabelRequestToJSON,
     GinxHttpErrorResponseFromJSON,
@@ -40,16 +43,16 @@ export interface LabelsGetRequest {
     offset?: number;
 }
 
-export interface LabelsIdDeleteRequest {
-    id: string;
+export interface LabelsLabelIdDeleteRequest {
+    labelId: string;
 }
 
-export interface LabelsIdGetRequest {
-    id: string;
+export interface LabelsLabelIdGetRequest {
+    labelId: string;
 }
 
-export interface LabelsIdPutRequest {
-    id: string;
+export interface LabelsLabelIdPutRequest {
+    labelId: string;
     dtoUpdateLabelRequest: DtoUpdateLabelRequest;
 }
 
@@ -107,13 +110,13 @@ export class LabelsApi extends runtime.BaseAPI {
 
     /**
      * Permanently delete a label by its unique identifier
-     * Delete label by ID
+     * Delete label by LabelID
      */
-    async labelsIdDeleteRaw(requestParameters: LabelsIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['id'] == null) {
+    async labelsLabelIdDeleteRaw(requestParameters: LabelsLabelIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['labelId'] == null) {
             throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling labelsIdDelete().'
+                'labelId',
+                'Required parameter "labelId" was null or undefined when calling labelsLabelIdDelete().'
             );
         }
 
@@ -122,8 +125,8 @@ export class LabelsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
 
-        let urlPath = `/labels/{id}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+        let urlPath = `/labels/{labelId}`;
+        urlPath = urlPath.replace(`{${"labelId"}}`, encodeURIComponent(String(requestParameters['labelId'])));
 
         const response = await this.request({
             path: urlPath,
@@ -137,21 +140,21 @@ export class LabelsApi extends runtime.BaseAPI {
 
     /**
      * Permanently delete a label by its unique identifier
-     * Delete label by ID
+     * Delete label by LabelID
      */
-    async labelsIdDelete(requestParameters: LabelsIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.labelsIdDeleteRaw(requestParameters, initOverrides);
+    async labelsLabelIdDelete(requestParameters: LabelsLabelIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.labelsLabelIdDeleteRaw(requestParameters, initOverrides);
     }
 
     /**
      * Retrieve a single label by its unique identifier
-     * Get label by ID
+     * Get label by LabelID
      */
-    async labelsIdGetRaw(requestParameters: LabelsIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtoLabelModel>> {
-        if (requestParameters['id'] == null) {
+    async labelsLabelIdGetRaw(requestParameters: LabelsLabelIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtoLabelModel>> {
+        if (requestParameters['labelId'] == null) {
             throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling labelsIdGet().'
+                'labelId',
+                'Required parameter "labelId" was null or undefined when calling labelsLabelIdGet().'
             );
         }
 
@@ -160,8 +163,8 @@ export class LabelsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
 
-        let urlPath = `/labels/{id}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+        let urlPath = `/labels/{labelId}`;
+        urlPath = urlPath.replace(`{${"labelId"}}`, encodeURIComponent(String(requestParameters['labelId'])));
 
         const response = await this.request({
             path: urlPath,
@@ -175,29 +178,29 @@ export class LabelsApi extends runtime.BaseAPI {
 
     /**
      * Retrieve a single label by its unique identifier
-     * Get label by ID
+     * Get label by LabelID
      */
-    async labelsIdGet(requestParameters: LabelsIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoLabelModel> {
-        const response = await this.labelsIdGetRaw(requestParameters, initOverrides);
+    async labelsLabelIdGet(requestParameters: LabelsLabelIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoLabelModel> {
+        const response = await this.labelsLabelIdGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
      * Update an existing label\'s name and color by its unique identifier
-     * Update label by ID
+     * Update label by LabelID
      */
-    async labelsIdPutRaw(requestParameters: LabelsIdPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtoLabelModel>> {
-        if (requestParameters['id'] == null) {
+    async labelsLabelIdPutRaw(requestParameters: LabelsLabelIdPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtoLabelModel>> {
+        if (requestParameters['labelId'] == null) {
             throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling labelsIdPut().'
+                'labelId',
+                'Required parameter "labelId" was null or undefined when calling labelsLabelIdPut().'
             );
         }
 
         if (requestParameters['dtoUpdateLabelRequest'] == null) {
             throw new runtime.RequiredError(
                 'dtoUpdateLabelRequest',
-                'Required parameter "dtoUpdateLabelRequest" was null or undefined when calling labelsIdPut().'
+                'Required parameter "dtoUpdateLabelRequest" was null or undefined when calling labelsLabelIdPut().'
             );
         }
 
@@ -208,8 +211,8 @@ export class LabelsApi extends runtime.BaseAPI {
         headerParameters['Content-Type'] = 'application/json';
 
 
-        let urlPath = `/labels/{id}`;
-        urlPath = urlPath.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id'])));
+        let urlPath = `/labels/{labelId}`;
+        urlPath = urlPath.replace(`{${"labelId"}}`, encodeURIComponent(String(requestParameters['labelId'])));
 
         const response = await this.request({
             path: urlPath,
@@ -224,10 +227,10 @@ export class LabelsApi extends runtime.BaseAPI {
 
     /**
      * Update an existing label\'s name and color by its unique identifier
-     * Update label by ID
+     * Update label by LabelID
      */
-    async labelsIdPut(requestParameters: LabelsIdPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoLabelModel> {
-        const response = await this.labelsIdPutRaw(requestParameters, initOverrides);
+    async labelsLabelIdPut(requestParameters: LabelsLabelIdPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoLabelModel> {
+        const response = await this.labelsLabelIdPutRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -269,6 +272,37 @@ export class LabelsApi extends runtime.BaseAPI {
      */
     async labelsPost(requestParameters: LabelsPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtoLabelModel> {
         const response = await this.labelsPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve the current quota usage and limits for the authenticated user
+     * Get quota usage
+     */
+    async labelsQuotaUsageGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DtoQuotaUsageModel>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/labels/quota/usage`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(DtoQuotaUsageModelFromJSON));
+    }
+
+    /**
+     * Retrieve the current quota usage and limits for the authenticated user
+     * Get quota usage
+     */
+    async labelsQuotaUsageGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DtoQuotaUsageModel>> {
+        const response = await this.labelsQuotaUsageGetRaw(initOverrides);
         return await response.value();
     }
 

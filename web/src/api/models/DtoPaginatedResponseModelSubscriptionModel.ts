@@ -20,13 +20,6 @@ import {
     DtoSubscriptionModelToJSON,
     DtoSubscriptionModelToJSONTyped,
 } from './DtoSubscriptionModel';
-import type { DtoLimit } from './DtoLimit';
-import {
-    DtoLimitFromJSON,
-    DtoLimitFromJSONTyped,
-    DtoLimitToJSON,
-    DtoLimitToJSONTyped,
-} from './DtoLimit';
 
 /**
  * 
@@ -46,12 +39,6 @@ export interface DtoPaginatedResponseModelSubscriptionModel {
      * @memberof DtoPaginatedResponseModelSubscriptionModel
      */
     length: number;
-    /**
-     * 
-     * @type {Array<DtoLimit>}
-     * @memberof DtoPaginatedResponseModelSubscriptionModel
-     */
-    limit?: Array<DtoLimit>;
     /**
      * Total represents the total number of items available
      * @type {number}
@@ -82,7 +69,6 @@ export function DtoPaginatedResponseModelSubscriptionModelFromJSONTyped(json: an
         
         'data': ((json['data'] as Array<any>).map(DtoSubscriptionModelFromJSON)),
         'length': json['length'],
-        'limit': json['limit'] == null ? undefined : ((json['limit'] as Array<any>).map(DtoLimitFromJSON)),
         'total': json['total'],
     };
 }
@@ -100,7 +86,6 @@ export function DtoPaginatedResponseModelSubscriptionModelToJSONTyped(value?: Dt
         
         'data': ((value['data'] as Array<any>).map(DtoSubscriptionModelToJSON)),
         'length': value['length'],
-        'limit': value['limit'] == null ? undefined : ((value['limit'] as Array<any>).map(DtoLimitToJSON)),
         'total': value['total'],
     };
 }

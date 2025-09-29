@@ -33,7 +33,7 @@ export const useSubscriptionsMutations = () => {
                 familyId?: string,
                 memberId?: string
             },
-            serviceUsers?: string[],
+            familyUsers?: string[],
             customPrice?: {
                 amount: number,
                 currency: string
@@ -55,13 +55,11 @@ export const useSubscriptionsMutations = () => {
             const payload: CreateSubscriptionModel = {
                 friendlyName: subscriptionData.friendlyName,
                 providerId: subscriptionData.providerId,
-                planId: subscriptionData.planId,
-                priceId: subscriptionData.priceId,
                 recurrency: subscriptionData.recurrency as unknown as string,
                 customRecurrency: subscriptionData.customRecurrency,
                 startDate: subscriptionData.startDate,
                 endDate: subscriptionData.endDate,
-                serviceUsers: subscriptionData.serviceUsers,
+                familyUsers: subscriptionData.familyUsers,
                 owner,
             };
 

@@ -43,7 +43,7 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
             }
 
             try {
-                return await apiClient.users.usersPreferredCurrencyGet();
+                return await apiClient.accounts.accountsPreferredCurrencyGet();
             } catch (error) {
                 console.error('Error fetching preferred currency:', error);
                 throw error;
@@ -113,7 +113,7 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
                     currency,
                 };
 
-                return await apiClient.users.usersPreferredCurrencyPut({ authorization: 'Bearer', dtoUpdatePreferredCurrencyRequest: payload });
+                return await apiClient.accounts.usersPreferredCurrencyPut({ authorization: 'Bearer', dtoUpdatePreferredCurrencyRequest: payload });
             } catch (error) {
                 console.error('Error updating preferred currency:', error);
                 throw error;

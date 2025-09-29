@@ -3,7 +3,7 @@ import type { FamilyApi } from '@/api/apis/FamilyApi';
 import type { LabelsApi } from '@/api/apis/LabelsApi';
 import type { ProvidersApi } from '@/api/apis/ProvidersApi';
 import type { SubscriptionsApi } from '@/api/apis/SubscriptionsApi';
-import type { UsersApi } from '@/api/apis/UsersApi';
+import type { AccountsApi } from '@/api/apis/AccountsApi';
 
 export interface ApiClient {
   currencies: CurrenciesApi;
@@ -11,5 +11,5 @@ export interface ApiClient {
   labels: LabelsApi;
   providers: ProvidersApi;
   subscriptions: SubscriptionsApi;
-  users: UsersApi;
+  accounts: AccountsApi;
 }

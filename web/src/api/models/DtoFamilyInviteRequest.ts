@@ -26,7 +26,7 @@ export interface DtoFamilyInviteRequest {
      */
     email?: string;
     /**
-     * ID of the family member to be invited
+     * LabelID of the family member to be invited
      * @type {string}
      * @memberof DtoFamilyInviteRequest
      */

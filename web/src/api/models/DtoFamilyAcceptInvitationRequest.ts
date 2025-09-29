@@ -20,7 +20,7 @@ import { mapValues } from '../runtime';
  */
 export interface DtoFamilyAcceptInvitationRequest {
     /**
-     * ID of the family member accepting the invitation
+     * LabelID of the family member accepting the invitation
      * @type {string}
      * @memberof DtoFamilyAcceptInvitationRequest
      */

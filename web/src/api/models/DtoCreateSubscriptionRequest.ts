@@ -74,6 +74,12 @@ export interface DtoCreateSubscriptionRequest {
     endDate?: Date;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof DtoCreateSubscriptionRequest
+     */
+    familyUsers?: Array<string>;
+    /**
+     * 
      * @type {DtoSubscriptionFreeTrialModel}
      * @memberof DtoCreateSubscriptionRequest
      */
@@ -113,18 +119,6 @@ export interface DtoCreateSubscriptionRequest {
      * @type {string}
      * @memberof DtoCreateSubscriptionRequest
      */
-    planId?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DtoCreateSubscriptionRequest
-     */
-    priceId?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DtoCreateSubscriptionRequest
-     */
     providerId: string;
     /**
      * 
@@ -132,12 +126,6 @@ export interface DtoCreateSubscriptionRequest {
      * @memberof DtoCreateSubscriptionRequest
      */
     recurrency: string;
-    /**
-     * 
-     * @type {Array<string>}
-     * @memberof DtoCreateSubscriptionRequest
-     */
-    serviceUsers?: Array<string>;
     /**
      * 
      * @type {Date}
@@ -171,17 +159,15 @@ export function DtoCreateSubscriptionRequestFromJSONTyped(json: any, ignoreDiscr
         'customPrice': json['custom_price'] == null ? undefined : DtoAmountModelFromJSON(json['custom_price']),
         'customRecurrency': json['custom_recurrency'] == null ? undefined : json['custom_recurrency'],
         'endDate': json['end_date'] == null ? undefined : (new Date(json['end_date'])),
+        'familyUsers': json['family_users'] == null ? undefined : json['family_users'],
         'freeTrial': json['free_trial'] == null ? undefined : DtoSubscriptionFreeTrialModelFromJSON(json['free_trial']),
         'friendlyName': json['friendly_name'] == null ? undefined : json['friendly_name'],
         'id': json['id'] == null ? undefined : json['id'],
         'labels': json['labels'] == null ? undefined : json['labels'],
         'owner': DtoEditableOwnerModelFromJSON(json['owner']),
         'payer': json['payer'] == null ? undefined : DtoEditableSubscriptionPayerModelFromJSON(json['payer']),
-        'planId': json['plan_id'] == null ? undefined : json['plan_id'],
-        'priceId': json['price_id'] == null ? undefined : json['price_id'],
         'providerId': json['provider_id'],
         'recurrency': json['recurrency'],
-        'serviceUsers': json['service_users'] == null ? undefined : json['service_users'],
         'startDate': (new Date(json['start_date'])),
     };
 }
@@ -201,17 +187,15 @@ export function DtoCreateSubscriptionRequestToJSONTyped(value?: DtoCreateSubscri
         'custom_price': DtoAmountModelToJSON(value['customPrice']),
         'custom_recurrency': value['customRecurrency'],
         'end_date': value['endDate'] == null ? value['endDate'] : value['endDate'].toISOString(),
+        'family_users': value['familyUsers'],
         'free_trial': DtoSubscriptionFreeTrialModelToJSON(value['freeTrial']),
         'friendly_name': value['friendlyName'],
         'id': value['id'],
         'labels': value['labels'],
         'owner': DtoEditableOwnerModelToJSON(value['owner']),
         'payer': DtoEditableSubscriptionPayerModelToJSON(value['payer']),
-        'plan_id': value['planId'],
-        'price_id': value['priceId'],
         'provider_id': value['providerId'],
         'recurrency': value['recurrency'],
-        'service_users': value['serviceUsers'],
         'start_date': value['startDate'].toISOString(),
     };
 }
