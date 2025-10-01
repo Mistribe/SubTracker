@@ -58,11 +58,12 @@ build:
 test:
 	go test -v ./...
 
+integration-test:
+	go test -v -tags=integration ./integration/...
+
 run:
 	go run ./cmd/api/main.go
 
 clean:
 	go clean
 	rm -f ./tmp/*
-
-
