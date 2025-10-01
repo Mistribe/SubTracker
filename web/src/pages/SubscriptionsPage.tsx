@@ -1,27 +1,33 @@
-import {useEffect, useMemo, useRef, useState} from "react";
-import {useNavigate} from "react-router-dom";
-import {useSubscriptionsQuery} from "@/hooks/subscriptions/useSubscriptionsQuery.ts";
-import {useProvidersByIds} from "@/hooks/providers/useProvidersByIds";
-import {useSubscriptionsMutations} from "@/hooks/subscriptions/useSubscriptionsMutations";
-import {PageHeader} from "@/components/ui/page-header";
-import {Button} from "@/components/ui/button";
-import {PlusIcon} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSubscriptionsQuery } from "@/hooks/subscriptions/useSubscriptionsQuery.ts";
+import { useProvidersByIds } from "@/hooks/providers/useProvidersByIds";
+import { useSubscriptionsMutations } from "@/hooks/subscriptions/useSubscriptionsMutations";
+import { PageHeader } from "@/components/ui/page-header";
+import { Button } from "@/components/ui/button";
+import { PlusIcon } from "lucide-react";
 import Subscription from "@/models/subscription";
-import {DeleteSubscriptionDialog} from "@/components/subscriptions/DeleteSubscriptionDialog";
-import {SubscriptionsTable} from "@/components/subscriptions/ui/SubscriptionsTable";
-import {SubscriptionsTableSkeleton} from "@/components/subscriptions/ui/SubscriptionsTableSkeleton";
-import {SubscriptionsErrorState} from "@/components/subscriptions/ui/SubscriptionsErrorState";
-import {SubscriptionsEmptyState} from "@/components/subscriptions/ui/SubscriptionsEmptyState";
+import { DeleteSubscriptionDialog } from "@/components/subscriptions/DeleteSubscriptionDialog";
+import { SubscriptionsTable } from "@/components/subscriptions/ui/SubscriptionsTable";
+import { SubscriptionsTableSkeleton } from "@/components/subscriptions/ui/SubscriptionsTableSkeleton";
+import { SubscriptionsErrorState } from "@/components/subscriptions/ui/SubscriptionsErrorState";
+import { SubscriptionsEmptyState } from "@/components/subscriptions/ui/SubscriptionsEmptyState";
 import {
     SubscriptionsFilters,
     type SubscriptionsFiltersValues
 } from "@/components/subscriptions/ui/SubscriptionsFilters";
-import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
-import {useFamilyQuery} from "@/hooks/families/useFamilyQuery.ts";
-import {useSubscriptionsQuotaQuery} from "@/hooks/subscriptions/useSubscriptionsQuotaQuery.ts";
-import {QuotaUsage} from "@/components/quotas/QuotaUsage";
-import {QuotaUsageSkeleton} from "@/components/quotas/QuotaUsageSkeleton";
-import {FeatureId} from "@/models/billing.ts";
+import { SubscriptionRecurrency } from "@/models/subscriptionRecurrency.ts";
+import { useFamilyQuery } from "@/hooks/families/useFamilyQuery.ts";
+import { useSubscriptionsQuotaQuery } from "@/hooks/subscriptions/useSubscriptionsQuotaQuery.ts";
+import { QuotaButton } from "@/components/quotas/QuotaButton";
+import { FeatureId } from "@/models/billing.ts";
+import { useQuotaLimit, getQuotaTooltip } from "@/hooks/quotas/useFeature";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const SubscriptionsPage = () => {
     const navigate = useNavigate();
@@ -32,8 +38,8 @@ const SubscriptionsPage = () => {
 
     // Filters state for drawer (draft values)
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [fromDate, setFromDate] = useState<Date|undefined>(undefined);
-    const [toDate, setToDate] = useState<Date|undefined>(undefined);
+    const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
+    const [toDate, setToDate] = useState<Date | undefined>(undefined);
     const [providersFilter, setProvidersFilter] = useState<string[]>([]);
     const [recurrenciesFilter, setRecurrenciesFilter] = useState<SubscriptionRecurrency[]>([]);
     const [users, setUsers] = useState<string[]>([]);
@@ -41,6 +47,16 @@ const SubscriptionsPage = () => {
 
     // Family and family members for users multi-select (single family context)
     const { data: familyData } = useFamilyQuery();
+
+    // Check subscriptions quota
+    const { data: subscriptionsQuota } = useSubscriptionsQuotaQuery();
+    const { enabled: subsEnabled, canAdd: canAddSubs, used: subsUsed, limit: subsLimit } = useQuotaLimit(
+        subscriptionsQuota,
+        FeatureId.ActiveSubscriptionsCount
+    );
+    const isAddDisabled = !subsEnabled || !canAddSubs;
+    const addSubTooltip = getQuotaTooltip(subsEnabled, canAddSubs, "subscriptions");
+
     const usersOptions = useMemo(() => {
         const members = familyData?.members ?? [];
         const labelByName = new Map<string, string>();
@@ -76,7 +92,7 @@ const SubscriptionsPage = () => {
 
     const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-    const {deleteSubscriptionMutation} = useSubscriptionsMutations();
+    const { deleteSubscriptionMutation } = useSubscriptionsMutations();
 
     // Handler to open the delete dialog
     const handleDeleteClick = (subscription: Subscription) => {
@@ -124,10 +140,6 @@ const SubscriptionsPage = () => {
         withInactive: withInactive,
     });
 
-    // Fetch quota for subscriptions (active subscriptions count, etc.)
-    const { data: subsQuotaData, isLoading: isSubsQuotaLoading, error: subsQuotaError } = useSubscriptionsQuotaQuery();
-    const activeSubscriptionsQuota = subsQuotaData?.find(q => q.feature === FeatureId.ActiveSubscriptionsCount);
-
     // Flatten all subscriptions from all pages
     const allSubscriptions = data?.pages.flatMap(page => page.subscriptions) || [];
 
@@ -141,7 +153,7 @@ const SubscriptionsPage = () => {
     }, [allSubscriptions]);
 
     // Fetch providers individually and build a map (cached by React Query)
-    const {providerMap} = useProvidersByIds(providerIds);
+    const { providerMap } = useProvidersByIds(providerIds);
 
 
     // Infinite scroll: observe sentinel and fetch next page when visible
@@ -156,7 +168,7 @@ const SubscriptionsPage = () => {
                     fetchNextPage();
                 }
             },
-            {root: null, rootMargin: '400px', threshold: 0}
+            { root: null, rootMargin: '400px', threshold: 0 }
         );
 
         observer.observe(el);
@@ -181,21 +193,6 @@ const SubscriptionsPage = () => {
         setIsFilterOpen(true);
     };
 
-    const quotaSection = (
-        <div className="mt-4 max-w-xs">
-            {isSubsQuotaLoading && <QuotaUsageSkeleton />}
-            {!isSubsQuotaLoading && activeSubscriptionsQuota && (
-                <QuotaUsage quota={activeSubscriptionsQuota} label="Active Subscriptions" />
-            )}
-            {!isSubsQuotaLoading && !activeSubscriptionsQuota && !subsQuotaError && (
-                <div className="text-xs text-muted-foreground border rounded-md p-3">No quota data available.</div>
-            )}
-            {subsQuotaError && (
-                <div className="text-xs text-destructive border border-destructive/30 rounded-md p-3">Failed to load quota.</div>
-            )}
-        </div>
-    );
-
     return (
         <div className="container mx-auto py-6">
             <PageHeader
@@ -203,20 +200,49 @@ const SubscriptionsPage = () => {
                 description="Manage your subscriptions"
                 searchText={searchText}
                 onSearchChange={setSearchText}
+                quotaButton={
+                    <QuotaButton
+                        useQuotaQuery={useSubscriptionsQuotaQuery}
+                        featureIds={[FeatureId.ActiveSubscriptionsCount]}
+                        featureLabels={{
+                            [FeatureId.ActiveSubscriptionsCount]: "Active Subscriptions"
+                        }}
+                    />
+                }
                 actionButton={
-                    <Button onClick={() => navigate("/subscriptions/create")}>
-                        <PlusIcon className="mr-2 h-4 w-4"/>
-                        Add Subscription
-                    </Button>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span>
+                                    <Button
+                                        onClick={() => navigate("/subscriptions/create")}
+                                        disabled={isAddDisabled}
+                                    >
+                                        <PlusIcon className="mr-2 h-4 w-4" />
+                                        Add Subscription
+                                        {subsEnabled && subsLimit !== undefined && (
+                                            <span className="ml-2 text-xs opacity-70">
+                                                ({subsUsed}/{subsLimit})
+                                            </span>
+                                        )}
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            {addSubTooltip && (
+                                <TooltipContent>
+                                    <p>{addSubTooltip}</p>
+                                </TooltipContent>
+                            )}
+                        </Tooltip>
+                    </TooltipProvider>
                 }
                 onFilter={openFilter}
             />
-            {quotaSection}
 
             {isLoading ? (
-                <SubscriptionsTableSkeleton/>
+                <SubscriptionsTableSkeleton />
             ) : isError ? (
-                <SubscriptionsErrorState/>
+                <SubscriptionsErrorState />
             ) : (
                 <>
                     {allSubscriptions.length > 0 ? (
@@ -233,13 +259,13 @@ const SubscriptionsPage = () => {
                             <p className="text-muted-foreground">No subscriptions match your search criteria.</p>
                         </div>
                     ) : (
-                        <SubscriptionsEmptyState/>
+                        <SubscriptionsEmptyState />
                     )}
                 </>
             )}
 
             {hasNextPage && (
-                <div ref={sentinelRef} className="h-1" aria-hidden/>
+                <div ref={sentinelRef} className="h-1" aria-hidden />
             )}
 
             <SubscriptionsFilters

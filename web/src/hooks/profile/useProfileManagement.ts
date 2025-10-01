@@ -1,5 +1,5 @@
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {useApiClient} from "@/hooks/use-api-client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useApiClient } from "@/hooks/use-api-client";
 import currencyCodes from "currency-codes";
 import getSymbolFromCurrency from "currency-symbol-map";
 import type { DtoUpdatePreferredCurrencyRequest as UpdatePreferredCurrencyModel } from "@/api/models/DtoUpdatePreferredCurrencyRequest";
@@ -30,8 +30,8 @@ const fallbackCurrencyCodes = ["USD", "EUR"]
  * @returns Object containing profile data, loading states, and update functions
  */
 export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
-    const {enabled = true} = options;
-    const {apiClient} = useApiClient();
+    const { enabled = true } = options;
+    const { apiClient } = useApiClient();
     const queryClient = useQueryClient();
 
     // Query to fetch preferred currency from the backend
@@ -113,7 +113,7 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
                     currency,
                 };
 
-                return await apiClient.accounts.usersPreferredCurrencyPut({ authorization: 'Bearer', dtoUpdatePreferredCurrencyRequest: payload });
+                return await apiClient.accounts.accountsPreferredCurrencyPut({ authorization: 'Bearer', dtoUpdatePreferredCurrencyRequest: payload });
             } catch (error) {
                 console.error('Error updating preferred currency:', error);
                 throw error;

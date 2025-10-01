@@ -1,24 +1,40 @@
-import {useEffect, useRef, useState} from "react";
-import {useAllProvidersQuery} from "@/hooks/providers/useAllProvidersQuery";
-import {AddProviderForm} from "@/components/providers/AddProviderForm";
-import {EditProviderForm} from "@/components/providers/EditProviderForm";
-import {ProviderCard} from "@/components/providers/ui/ProviderCard";
-import {ProviderCardSkeletonGrid} from "@/components/providers/ui/ProviderCardSkeleton";
-import {ErrorState} from "@/components/providers/ui/ErrorState";
-import {NoProviders} from "@/components/providers/ui/EmptyStates";
-import {PageHeader} from "@/components/ui/page-header";
-import {Button} from "@/components/ui/button";
+import { useEffect, useRef, useState } from "react";
+import { useAllProvidersQuery } from "@/hooks/providers/useAllProvidersQuery";
+import { AddProviderForm } from "@/components/providers/AddProviderForm";
+import { EditProviderForm } from "@/components/providers/EditProviderForm";
+import { ProviderCard } from "@/components/providers/ui/ProviderCard";
+import { ProviderCardSkeletonGrid } from "@/components/providers/ui/ProviderCardSkeleton";
+import { ErrorState } from "@/components/providers/ui/ErrorState";
+import { NoProviders } from "@/components/providers/ui/EmptyStates";
+import { PageHeader } from "@/components/ui/page-header";
+import { Button } from "@/components/ui/button";
 import Provider from "@/models/provider";
-import {PlusIcon} from "lucide-react";
-import {useProvidersQuotaQuery} from "@/hooks/providers/useProvidersQuotaQuery.ts";
-import {QuotaUsage} from "@/components/quotas/QuotaUsage";
-import {QuotaUsageSkeleton} from "@/components/quotas/QuotaUsageSkeleton";
-import {FeatureId} from "@/models/billing.ts";
+import { PlusIcon } from "lucide-react";
+import { useProvidersQuotaQuery } from "@/hooks/providers/useProvidersQuotaQuery.ts";
+import { QuotaButton } from "@/components/quotas/QuotaButton";
+import { FeatureId } from "@/models/billing.ts";
+import { useQuotaLimit, getQuotaTooltip } from "@/hooks/quotas/useFeature";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const ProvidersPage = () => {
     const [isAddingProvider, setIsAddingProvider] = useState(false);
     const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
     const [searchText, setSearchText] = useState("");
+
+    // Check providers quota
+    const { data: providersQuota } = useProvidersQuotaQuery();
+    const { enabled: providersEnabled, canAdd: canAddProviders, used: providersUsed, limit: providersLimit } = useQuotaLimit(
+        providersQuota,
+        FeatureId.CustomProvidersCount
+    );
+    const isDisabled = !providersEnabled || !canAddProviders;
+    const tooltipMessage = getQuotaTooltip(providersEnabled, canAddProviders, "custom providers");
+
     // Query all providers using the dedicated hook
     const {
         data,
@@ -28,10 +44,6 @@ const ProvidersPage = () => {
         hasNextPage,
         isFetchingNextPage,
     } = useAllProvidersQuery({ search: searchText });
-
-    // Fetch quota for providers
-    const { data: providersQuotaData, isLoading: isProvidersQuotaLoading, error: providersQuotaError } = useProvidersQuotaQuery();
-    const providersCountQuota = providersQuotaData?.find(q => q.feature === FeatureId.CustomProvidersCount);
 
     // Flatten all providers from all pages
     const allProviders = data?.pages.flatMap(page => page.providers) || [];
@@ -51,21 +63,6 @@ const ProvidersPage = () => {
         return () => observer.disconnect();
     }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-    const quotaSection = (
-        <div className="mt-4 max-w-xs">
-            {isProvidersQuotaLoading && <QuotaUsageSkeleton />}
-            {!isProvidersQuotaLoading && providersCountQuota && (
-                <QuotaUsage quota={providersCountQuota} label="Providers Used" />
-            )}
-            {!isProvidersQuotaLoading && !providersCountQuota && !providersQuotaError && (
-                <div className="text-xs text-muted-foreground border rounded-md p-3">No quota data available.</div>
-            )}
-            {providersQuotaError && (
-                <div className="text-xs text-destructive border border-destructive/30 rounded-md p-3">Failed to load quota.</div>
-            )}
-        </div>
-    );
-
     return (
         <div className="container mx-auto py-6">
             <PageHeader
@@ -73,19 +70,48 @@ const ProvidersPage = () => {
                 description="Manage your providers"
                 searchText={searchText}
                 onSearchChange={setSearchText}
+                quotaButton={
+                    <QuotaButton
+                        useQuotaQuery={useProvidersQuotaQuery}
+                        featureIds={[FeatureId.CustomProvidersCount]}
+                        featureLabels={{
+                            [FeatureId.CustomProvidersCount]: "Providers Used"
+                        }}
+                    />
+                }
                 actionButton={
-                    <Button onClick={() => setIsAddingProvider(true)}>
-                        <PlusIcon className="mr-2 h-4 w-4"/>
-                        Add Provider
-                    </Button>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span>
+                                    <Button
+                                        onClick={() => setIsAddingProvider(true)}
+                                        disabled={isDisabled}
+                                    >
+                                        <PlusIcon className="mr-2 h-4 w-4" />
+                                        Add Provider
+                                        {providersEnabled && providersLimit !== undefined && (
+                                            <span className="ml-2 text-xs opacity-70">
+                                                ({providersUsed}/{providersLimit})
+                                            </span>
+                                        )}
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            {tooltipMessage && (
+                                <TooltipContent>
+                                    <p>{tooltipMessage}</p>
+                                </TooltipContent>
+                            )}
+                        </Tooltip>
+                    </TooltipProvider>
                 }
             />
-            {quotaSection}
 
             {isLoading ? (
-                <ProviderCardSkeletonGrid/>
+                <ProviderCardSkeletonGrid />
             ) : isError ? (
-                <ErrorState/>
+                <ErrorState />
             ) : (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

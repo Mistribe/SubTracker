@@ -31,7 +31,7 @@ import {
     GinxHttpErrorResponseToJSON,
 } from '../models/index';
 
-export interface UsersPreferredCurrencyPutRequest {
+export interface AccountsPreferredCurrencyPutRequest {
     authorization: string;
     dtoUpdatePreferredCurrencyRequest: DtoUpdatePreferredCurrencyRequest;
 }
@@ -103,6 +103,57 @@ export class AccountsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Updates the preferred currency for the authenticated account
+     * Update user preferred currency
+     */
+    async accountsPreferredCurrencyPutRaw(requestParameters: AccountsPreferredCurrencyPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters['authorization'] == null) {
+            throw new runtime.RequiredError(
+                'authorization',
+                'Required parameter "authorization" was null or undefined when calling accountsPreferredCurrencyPut().'
+            );
+        }
+
+        if (requestParameters['dtoUpdatePreferredCurrencyRequest'] == null) {
+            throw new runtime.RequiredError(
+                'dtoUpdatePreferredCurrencyRequest',
+                'Required parameter "dtoUpdatePreferredCurrencyRequest" was null or undefined when calling accountsPreferredCurrencyPut().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        }
+
+
+        let urlPath = `/accounts/preferred/currency`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DtoUpdatePreferredCurrencyRequestToJSON(requestParameters['dtoUpdatePreferredCurrencyRequest']),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Updates the preferred currency for the authenticated account
+     * Update user preferred currency
+     */
+    async accountsPreferredCurrencyPut(requestParameters: AccountsPreferredCurrencyPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.accountsPreferredCurrencyPutRaw(requestParameters, initOverrides);
+    }
+
+    /**
      * Retrieve the current quota usage and limits for the authenticated user
      * Get quota usage
      */
@@ -131,57 +182,6 @@ export class AccountsApi extends runtime.BaseAPI {
     async accountsQuotaUsageGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DtoQuotaUsageModel>> {
         const response = await this.accountsQuotaUsageGetRaw(initOverrides);
         return await response.value();
-    }
-
-    /**
-     * Updates the preferred currency for the authenticated account
-     * Update user preferred currency
-     */
-    async usersPreferredCurrencyPutRaw(requestParameters: UsersPreferredCurrencyPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling usersPreferredCurrencyPut().'
-            );
-        }
-
-        if (requestParameters['dtoUpdatePreferredCurrencyRequest'] == null) {
-            throw new runtime.RequiredError(
-                'dtoUpdatePreferredCurrencyRequest',
-                'Required parameter "dtoUpdatePreferredCurrencyRequest" was null or undefined when calling usersPreferredCurrencyPut().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
-        }
-
-
-        let urlPath = `/users/preferred/currency`;
-
-        const response = await this.request({
-            path: urlPath,
-            method: 'PUT',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DtoUpdatePreferredCurrencyRequestToJSON(requestParameters['dtoUpdatePreferredCurrencyRequest']),
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * Updates the preferred currency for the authenticated account
-     * Update user preferred currency
-     */
-    async usersPreferredCurrencyPut(requestParameters: UsersPreferredCurrencyPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.usersPreferredCurrencyPutRaw(requestParameters, initOverrides);
     }
 
 }

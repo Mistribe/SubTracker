@@ -1,20 +1,19 @@
-import {useEffect, useState} from "react";
-import {hexToArgb} from "@/components/ui/utils/color-utils";
-import {useLabelMutations} from "@/hooks/labels/useLabelMutations";
-import {useFamiliesMutations} from "@/hooks/families/useFamiliesMutations";
-import {PageHeader} from "@/components/ui/page-header";
-import {useAllLabelsQuery} from "@/hooks/labels/useAllLabelsQuery";
-import {useFamilyQuery} from "@/hooks/families/useFamilyQuery.ts";
-import {LabelItem} from "@/components/labels/LabelItem";
-import {EditableLabelItem} from "@/components/labels/EditableLabelItem";
-import {AddLabelDialog} from "@/components/labels/AddLabelDialog";
+import { useEffect, useState } from "react";
+import { hexToArgb } from "@/components/ui/utils/color-utils";
+import { useLabelMutations } from "@/hooks/labels/useLabelMutations";
+import { useFamiliesMutations } from "@/hooks/families/useFamiliesMutations";
+import { PageHeader } from "@/components/ui/page-header";
+import { useAllLabelsQuery } from "@/hooks/labels/useAllLabelsQuery";
+import { useFamilyQuery } from "@/hooks/families/useFamilyQuery.ts";
+import { LabelItem } from "@/components/labels/LabelItem";
+import { EditableLabelItem } from "@/components/labels/EditableLabelItem";
+import { AddLabelDialog } from "@/components/labels/AddLabelDialog";
 import Label from "@/models/label";
-import {OwnerType} from "@/models/ownerType";
-import {Loader2} from "lucide-react";
-import {useLabelsQuotaQuery} from "@/hooks/labels/useLabelsQuotaQuery.ts";
-import {QuotaUsage} from "@/components/quotas/QuotaUsage";
-import {QuotaUsageSkeleton} from "@/components/quotas/QuotaUsageSkeleton";
-import {FeatureId} from "@/models/billing.ts";
+import { OwnerType } from "@/models/ownerType";
+import { Loader2 } from "lucide-react";
+import { useLabelsQuotaQuery } from "@/hooks/labels/useLabelsQuotaQuery.ts";
+import { QuotaButton } from "@/components/quotas/QuotaButton";
+import { FeatureId } from "@/models/billing.ts";
 
 const LabelsPage = () => {
 
@@ -52,10 +51,6 @@ const LabelsPage = () => {
         limit: 10,
         search: searchText,
     });
-
-    // Fetch quota for labels
-    const { data: labelsQuotaData, isLoading: isLabelsQuotaLoading, error: labelsQuotaError } = useLabelsQuotaQuery();
-    const labelsCountQuota = labelsQuotaData?.find(q => q.feature === FeatureId.CustomLabelsCount);
 
     // Keep requesting next pages until every label is fetched
     useEffect(() => {
@@ -149,21 +144,6 @@ const LabelsPage = () => {
     // Create a map of family IDs to family objects for easy lookup
     const familyMap = new Map(families.map(family => [family.id, family]));
 
-    const quotaSection = (
-        <div className="mt-4 max-w-xs">
-            {isLabelsQuotaLoading && <QuotaUsageSkeleton />}
-            {!isLabelsQuotaLoading && labelsCountQuota && (
-                <QuotaUsage quota={labelsCountQuota} label="Labels Used" />
-            )}
-            {!isLabelsQuotaLoading && !labelsCountQuota && !labelsQuotaError && (
-                <div className="text-xs text-muted-foreground border rounded-md p-3">No quota data available.</div>
-            )}
-            {labelsQuotaError && (
-                <div className="text-xs text-destructive border border-destructive/30 rounded-md p-3">Failed to load quota.</div>
-            )}
-        </div>
-    );
-
     if (isLoading) {
         return (
             <div className="container mx-auto py-6">
@@ -172,6 +152,15 @@ const LabelsPage = () => {
                     searchText={searchText}
                     onSearchChange={setSearchText}
                     searchPlaceholder="Search labels..."
+                    quotaButton={
+                        <QuotaButton
+                            useQuotaQuery={useLabelsQuotaQuery}
+                            featureIds={[FeatureId.CustomLabelsCount]}
+                            featureLabels={{
+                                [FeatureId.CustomLabelsCount]: "Labels Used"
+                            }}
+                        />
+                    }
                     actionButton={
                         <AddLabelDialog
                             onAddLabel={handleAddLabel}
@@ -180,9 +169,8 @@ const LabelsPage = () => {
                         />
                     }
                 />
-                {quotaSection}
                 <div className="flex flex-col items-center justify-center h-64">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary mb-4"/>
+                    <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
                     <p className="text-muted-foreground">Loading labels...</p>
                 </div>
             </div>
@@ -197,6 +185,15 @@ const LabelsPage = () => {
                     searchText={searchText}
                     onSearchChange={setSearchText}
                     searchPlaceholder="Search labels..."
+                    quotaButton={
+                        <QuotaButton
+                            useQuotaQuery={useLabelsQuotaQuery}
+                            featureIds={[FeatureId.CustomLabelsCount]}
+                            featureLabels={{
+                                [FeatureId.CustomLabelsCount]: "Labels Used"
+                            }}
+                        />
+                    }
                     actionButton={
                         <AddLabelDialog
                             onAddLabel={handleAddLabel}
@@ -205,7 +202,6 @@ const LabelsPage = () => {
                         />
                     }
                 />
-                {quotaSection}
                 <div className="p-6 border rounded-md bg-destructive/10 mt-8">
                     <p className="text-destructive text-center">Error loading labels</p>
                 </div>
@@ -220,6 +216,15 @@ const LabelsPage = () => {
                 searchText={searchText}
                 onSearchChange={setSearchText}
                 searchPlaceholder="Search labels..."
+                quotaButton={
+                    <QuotaButton
+                        useQuotaQuery={useLabelsQuotaQuery}
+                        featureIds={[FeatureId.CustomLabelsCount]}
+                        featureLabels={{
+                            [FeatureId.CustomLabelsCount]: "Labels Used"
+                        }}
+                    />
+                }
                 actionButton={
                     <AddLabelDialog
                         onAddLabel={handleAddLabel}
@@ -228,7 +233,6 @@ const LabelsPage = () => {
                     />
                 }
             />
-            {quotaSection}
             <div className="mt-8">
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                     {allLabels.length === 0 ? (

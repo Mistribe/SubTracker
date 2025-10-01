@@ -62,6 +62,7 @@ export interface DtoQuotaUsageModel {
  * @export
  */
 export const DtoQuotaUsageModelFeatureEnum = {
+    Unknown: 'unknown',
     Subscriptions: 'subscriptions',
     ActiveSubscriptionsCount: 'active_subscriptions_count',
     CustomLabels: 'custom_labels',

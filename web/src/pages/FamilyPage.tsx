@@ -5,9 +5,9 @@ import { FamiliesLoadingError } from "@/components/families/FamiliesLoadingError
 import { useFamilyQuery } from "@/hooks/families/useFamilyQuery.ts";
 import { PageHeader } from "@/components/ui/page-header";
 import { useFamilyQuotaQuery } from "@/hooks/families/useFamilyQuotaQuery.ts";
-import { QuotaUsage } from "@/components/quotas/QuotaUsage";
-import { QuotaUsageSkeleton } from "@/components/quotas/QuotaUsageSkeleton";
+import { QuotaButton } from "@/components/quotas/QuotaButton";
 import { FeatureId } from "@/models/billing.ts";
+import { AddFamilyMemberDialog } from "@/components/families/AddFamilyMemberDialog";
 
 const FamilyPage = () => {
   const { data: family, isLoading, error } = useFamilyQuery();
@@ -15,32 +15,28 @@ const FamilyPage = () => {
   // Determine if user has a family first
   const hasFamily = !!family;
 
-  // Fetch family quota only if a family exists
-  const { data: familyQuotaData, isLoading: isFamilyQuotaLoading, error: familyQuotaError } = useFamilyQuotaQuery(hasFamily);
-  const membersCountQuota = hasFamily ? familyQuotaData?.find(q => q.feature === FeatureId.FamilyMembersCount) : undefined;
-
-  const quotaSection = hasFamily && (
-    <div className="mt-4 max-w-xs">
-      {isFamilyQuotaLoading && <QuotaUsageSkeleton />}
-      {!isFamilyQuotaLoading && membersCountQuota && (
-        <QuotaUsage quota={membersCountQuota} label="Family Members" />
-      )}
-      {!isFamilyQuotaLoading && !membersCountQuota && !familyQuotaError && (
-        <div className="text-xs text-muted-foreground border rounded-md p-3">No quota data available.</div>
-      )}
-      {familyQuotaError && (
-        <div className="text-xs text-destructive border border-destructive/30 rounded-md p-3">Failed to load quota.</div>
-      )}
-    </div>
-  );
-
   return (
     <div className="container mx-auto py-6">
       <PageHeader
         title="Family"
         description="Manage your family"
+        quotaButton={
+          hasFamily ? (
+            <QuotaButton
+              useQuotaQuery={() => useFamilyQuotaQuery(hasFamily)}
+              featureIds={[FeatureId.FamilyMembersCount]}
+              featureLabels={{
+                [FeatureId.FamilyMembersCount]: "Family Members"
+              }}
+            />
+          ) : undefined
+        }
+        actionButton={
+          hasFamily ? (
+            <AddFamilyMemberDialog familyId={family!.id} />
+          ) : undefined
+        }
       />
-      {quotaSection}
       {isLoading || error ? (
         <FamiliesLoadingError isLoading={isLoading} error={error} />
       ) : !hasFamily ? (

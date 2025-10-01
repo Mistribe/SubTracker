@@ -6,7 +6,6 @@ import { CheckIcon, Loader2, XIcon } from "lucide-react";
 import Family from "@/models/family.ts";
 import { useApiClient } from "@/hooks/use-api-client.ts";
 import { useQueryClient } from "@tanstack/react-query";
-import { AddFamilyMemberDialog } from "./AddFamilyMemberDialog.tsx";
 
 interface FamilyHeaderProps {
   family: Family;
@@ -15,7 +14,7 @@ interface FamilyHeaderProps {
 export const FamilyHeader = ({ family }: FamilyHeaderProps) => {
   const { apiClient } = useApiClient();
   const queryClient = useQueryClient();
-  
+
   const [editingFamilyId, setEditingFamilyId] = useState<string | null>(null);
   const [editedName, setEditedName] = useState<string>("");
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
@@ -115,16 +114,13 @@ export const FamilyHeader = ({ family }: FamilyHeaderProps) => {
             </Button>
           </>
         ) : (
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => startEditing(family)}
-            >
-              Edit
-            </Button>
-            <AddFamilyMemberDialog familyId={family.id} />
-          </>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => startEditing(family)}
+          >
+            Edit
+          </Button>
         )}
       </div>
     </div>
