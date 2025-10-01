@@ -60,6 +60,18 @@ func (r AccountRepository) GetById(ctx context.Context, userId types.UserID) (ac
 }
 
 func (r AccountRepository) Save(ctx context.Context, acc account.Account) error {
+	if !acc.IsDirty() {
+		return nil
+	}
+
+	if acc.IsExists() {
+		return r.update(ctx, acc)
+	}
+
+	return r.create(ctx, acc)
+}
+
+func (r AccountRepository) create(ctx context.Context, acc account.Account) error {
 	stmt := Accounts.
 		INSERT(
 			Accounts.ID,
@@ -67,10 +79,18 @@ func (r AccountRepository) Save(ctx context.Context, acc account.Account) error 
 			Accounts.Plan,
 			Accounts.Role,
 			Accounts.FamilyID,
+			Accounts.Etag,
 		).
 		VALUES(
 			String(acc.Id()),
-			String(acc.Currency().String()),
+			x.TernaryFunc(acc.Currency() != nil && acc.Currency().IsSome(),
+				func() Expression {
+					return String(acc.Currency().Value().String())
+				},
+				func() Expression {
+					return NULL
+				},
+			),
 			String(acc.PlanID().String()),
 			String(acc.Role().String()),
 			x.TernaryFunc(
@@ -79,9 +99,48 @@ func (r AccountRepository) Save(ctx context.Context, acc account.Account) error 
 					return NULL
 				},
 				func() Expression {
-					return String(acc.FamilyID().String())
+					return UUID(acc.FamilyID())
 				}),
+			acc.ETag(),
 		)
+
+	_, err := r.dbContext.Execute(ctx, stmt)
+	return err
+}
+
+func (r AccountRepository) update(ctx context.Context, acc account.Account) error {
+	stmt := Accounts.
+		UPDATE(
+			Accounts.Currency,
+			Accounts.Plan,
+			Accounts.Role,
+			Accounts.FamilyID,
+			Accounts.UpdatedAt,
+			Accounts.Etag,
+		).
+		SET(
+			x.TernaryFunc(acc.Currency() != nil && acc.Currency().IsSome(),
+				func() Expression {
+					return String(acc.Currency().Value().String())
+				},
+				func() Expression {
+					return NULL
+				},
+			),
+			String(acc.PlanID().String()),
+			String(acc.Role().String()),
+			x.TernaryFunc(
+				acc.FamilyID() == nil,
+				func() Expression {
+					return NULL
+				},
+				func() Expression {
+					return UUID(acc.FamilyID())
+				}),
+			acc.UpdatedAt(),
+			acc.ETag(),
+		).
+		WHERE(Accounts.ID.EQ(String(acc.Id())))
 
 	_, err := r.dbContext.Execute(ctx, stmt)
 	return err

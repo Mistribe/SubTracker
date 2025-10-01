@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/mistribe/subtracker/internal/domain/billing"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -27,11 +28,14 @@ func NewGetQuotaUsageHandler(
 
 func (h GetQuotaUsageHandler) Handle(
 	ctx context.Context,
-	_ GetQuotaUsage) result.Result[billing.EffectiveEntitlement] {
+	_ GetQuotaUsage) result.Result[[]billing.EffectiveEntitlement] {
 	connectedAccount := h.authentication.MustGetConnectedAccount(ctx)
-	eff, err := h.entitlement.Resolve(ctx, connectedAccount, billing.FeatureIdCustomLabelsCount)
+	eff, err := h.entitlement.Resolves(ctx, connectedAccount, []types.FeatureID{
+		billing.FeatureIdCustomLabels,
+		billing.FeatureIdCustomLabelsCount,
+	})
 	if err != nil {
-		return result.Fail[billing.EffectiveEntitlement](err)
+		return result.Fail[[]billing.EffectiveEntitlement](err)
 	}
 	return result.Success(eff)
 }

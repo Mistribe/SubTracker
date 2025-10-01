@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"time"
 
 	"golang.org/x/text/currency"
 
@@ -26,7 +27,8 @@ type UpdatePreferredCurrencyCommandHandler struct {
 	authentication    ports.Authentication
 }
 
-func NewUpdatePreferredCurrencyCommandHandler(accountRepository ports.AccountRepository,
+func NewUpdatePreferredCurrencyCommandHandler(
+	accountRepository ports.AccountRepository,
 	authentication ports.Authentication) *UpdatePreferredCurrencyCommandHandler {
 	return &UpdatePreferredCurrencyCommandHandler{
 		accountRepository: accountRepository,
@@ -34,7 +36,8 @@ func NewUpdatePreferredCurrencyCommandHandler(accountRepository ports.AccountRep
 	}
 }
 
-func (h UpdatePreferredCurrencyCommandHandler) Handle(ctx context.Context,
+func (h UpdatePreferredCurrencyCommandHandler) Handle(
+	ctx context.Context,
 	cmd UpdatePreferredCurrencyCommand) result.Result[bool] {
 	connectedAccount := h.authentication.MustGetConnectedAccount(ctx)
 	acc, err := h.accountRepository.GetById(ctx, connectedAccount.UserID())
@@ -55,10 +58,12 @@ func (h UpdatePreferredCurrencyCommandHandler) createAccount(
 	cmd UpdatePreferredCurrencyCommand) result.Result[bool] {
 
 	acc := account.New(userID,
-		cmd.Currency,
+		&cmd.Currency,
 		types.PlanFree,
 		types.RoleUser,
 		nil,
+		time.Now(),
+		time.Now(),
 	)
 
 	if err := h.accountRepository.Save(ctx, acc); err != nil {

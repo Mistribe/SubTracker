@@ -17,11 +17,14 @@ type accountsTable struct {
 	postgres.Table
 
 	// Columns
-	ID       postgres.ColumnString
-	Currency postgres.ColumnString
-	Plan     postgres.ColumnString
-	FamilyID postgres.ColumnString
-	Role     postgres.ColumnString
+	ID        postgres.ColumnString
+	Currency  postgres.ColumnString
+	Plan      postgres.ColumnString
+	FamilyID  postgres.ColumnString
+	Role      postgres.ColumnString
+	CreatedAt postgres.ColumnTimestamp
+	UpdatedAt postgres.ColumnTimestamp
+	Etag      postgres.ColumnString
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -63,25 +66,31 @@ func newAccountsTable(schemaName, tableName, alias string) *AccountsTable {
 
 func newAccountsTableImpl(schemaName, tableName, alias string) accountsTable {
 	var (
-		IDColumn       = postgres.StringColumn("id")
-		CurrencyColumn = postgres.StringColumn("currency")
-		PlanColumn     = postgres.StringColumn("plan")
-		FamilyIDColumn = postgres.StringColumn("family_id")
-		RoleColumn     = postgres.StringColumn("role")
-		allColumns     = postgres.ColumnList{IDColumn, CurrencyColumn, PlanColumn, FamilyIDColumn, RoleColumn}
-		mutableColumns = postgres.ColumnList{CurrencyColumn, PlanColumn, FamilyIDColumn, RoleColumn}
-		defaultColumns = postgres.ColumnList{RoleColumn}
+		IDColumn        = postgres.StringColumn("id")
+		CurrencyColumn  = postgres.StringColumn("currency")
+		PlanColumn      = postgres.StringColumn("plan")
+		FamilyIDColumn  = postgres.StringColumn("family_id")
+		RoleColumn      = postgres.StringColumn("role")
+		CreatedAtColumn = postgres.TimestampColumn("created_at")
+		UpdatedAtColumn = postgres.TimestampColumn("updated_at")
+		EtagColumn      = postgres.StringColumn("etag")
+		allColumns      = postgres.ColumnList{IDColumn, CurrencyColumn, PlanColumn, FamilyIDColumn, RoleColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
+		mutableColumns  = postgres.ColumnList{CurrencyColumn, PlanColumn, FamilyIDColumn, RoleColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
+		defaultColumns  = postgres.ColumnList{RoleColumn, CreatedAtColumn, UpdatedAtColumn, EtagColumn}
 	)
 
 	return accountsTable{
 		Table: postgres.NewTable(schemaName, tableName, alias, allColumns...),
 
 		//Columns
-		ID:       IDColumn,
-		Currency: CurrencyColumn,
-		Plan:     PlanColumn,
-		FamilyID: FamilyIDColumn,
-		Role:     RoleColumn,
+		ID:        IDColumn,
+		Currency:  CurrencyColumn,
+		Plan:      PlanColumn,
+		FamilyID:  FamilyIDColumn,
+		Role:      RoleColumn,
+		CreatedAt: CreatedAtColumn,
+		UpdatedAt: UpdatedAtColumn,
+		Etag:      EtagColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

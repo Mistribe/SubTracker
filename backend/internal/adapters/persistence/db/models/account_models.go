@@ -14,9 +14,15 @@ type AccountRow struct {
 
 func CreateAccountFromJetRow(row AccountRow) (account.Account, error) {
 	id := row.ID
-	userCurrency, err := currency.ParseISO(row.Currency)
-	if err != nil {
-		return nil, err
+	var userCurrency *currency.Unit
+	if row.Currency == nil {
+		userCurrency = nil
+	} else {
+		parsedCurrency, err := currency.ParseISO(*row.Currency)
+		if err != nil {
+			return nil, err
+		}
+		userCurrency = &parsedCurrency
 	}
 	var plan types.PlanID
 	if row.Plan != nil {
@@ -34,9 +40,14 @@ func CreateAccountFromJetRow(row AccountRow) (account.Account, error) {
 	}
 	role := types.ParseRoleOrDefault(row.Role, types.RoleUser)
 
-	return account.New(types.UserID(id),
+	acc := account.New(types.UserID(id),
 		userCurrency,
 		plan,
 		role,
-		familyID), nil
+		familyID,
+		row.CreatedAt,
+		row.UpdatedAt)
+
+	acc.Clean()
+	return acc, nil
 }

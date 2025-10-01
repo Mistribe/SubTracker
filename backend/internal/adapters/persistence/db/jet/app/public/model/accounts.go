@@ -9,12 +9,16 @@ package model
 
 import (
 	"github.com/google/uuid"
+	"time"
 )
 
 type Accounts struct {
-	ID       string `sql:"primary_key"`
-	Currency string
-	Plan     *string
-	FamilyID *uuid.UUID
-	Role     string
+	ID        string `sql:"primary_key"`
+	Currency  *string
+	Plan      *string
+	FamilyID  *uuid.UUID
+	Role      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Etag      string
 }

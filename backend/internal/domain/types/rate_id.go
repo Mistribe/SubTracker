@@ -7,7 +7,8 @@ import (
 type RateID uuid.UUID
 
 func (r RateID) String() string {
-	return r.String()
+	u := uuid.UUID(r)
+	return u.String()
 }
 
 func NewRateID() RateID {

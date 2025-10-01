@@ -15,7 +15,7 @@ func Module() fx.Option {
 		fx.Provide(
 			ports.AsQueryHandler[query.FindUserFamilyQuery, query.FindUserFamilyQueryResponse](query.NewFindOneQueryHandler),
 			ports.AsQueryHandler[query.SeeInvitationQuery, query.SeeInvitationQueryResponse](query.NewSeeInvitationQueryHandler),
-			ports.AsQueryHandler[query.GetQuotaUsageHandler, billing.EffectiveEntitlement](query.NewGetQuotaUsageHandler),
+			ports.AsQueryHandler[query.GetQuotaUsage, []billing.EffectiveEntitlement](query.NewGetQuotaUsageHandler),
 
 			ports.AsCommandHandler[command.CreateFamilyCommand, family.Family](command.NewCreateFamilyCommandHandler),
 			ports.AsCommandHandler[command.UpdateFamilyCommand, family.Family](command.NewUpdateFamilyCommandHandler),

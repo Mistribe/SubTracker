@@ -125,8 +125,10 @@ var (
 			Description: "Family members",
 		},
 	}
-	Entitlements  map[types.PlanID]map[types.FeatureID]PlanEntitlement
-	QuotaFeatures []types.FeatureID
+	Entitlements    map[types.PlanID]map[types.FeatureID]PlanEntitlement
+	AllFeatures     []types.FeatureID
+	QuotaFeatures   []types.FeatureID
+	BooleanFeatures []types.FeatureID
 )
 
 func init() {
@@ -160,5 +162,9 @@ func init() {
 		if feature.IsQuota() {
 			QuotaFeatures = append(QuotaFeatures, feature.ID)
 		}
+		if feature.IsBoolean() {
+			BooleanFeatures = append(BooleanFeatures, feature.ID)
+		}
+		AllFeatures = append(AllFeatures, feature.ID)
 	}
 }

@@ -74,7 +74,7 @@ func (r *entitlementResolver) Resolve(
 			return billing.EffectiveEntitlement{
 				FeatureID: feature.ID,
 				Type:      feature.Type,
-				Enabled:   false,
+				Enabled:   true,
 				Limit:     nil,
 				Used:      nil,
 				Remaining: nil,
@@ -125,6 +125,127 @@ func (r *entitlementResolver) Resolve(
 	default:
 		return billing.EffectiveEntitlement{}, billing.ErrInvalidFeatureType
 	}
+}
+
+func (r *entitlementResolver) Resolves(
+	ctx context.Context,
+	account account.ConnectedAccount,
+	featureIDs []types.FeatureID) ([]billing.EffectiveEntitlement, error) {
+	// If any feature is unknown upfront, fail early (mirrors Resolve behavior).
+	for _, fid := range featureIDs {
+		if fid == billing.FeatureIdUnknown {
+			return nil, billing.ErrFeatureNotFound
+		}
+	}
+
+	planID := account.PlanID()
+	if planID == types.PlanUnknown {
+		return nil, billing.ErrPlanNotFound
+	}
+
+	// Determine whether we need usage (any quota feature requested).
+	needUsage := false
+	for _, fid := range featureIDs {
+		if ent, ok := billing.Entitlements[planID][fid]; ok { // mimic Resolve path using entitlement->feature lookup
+			if feature, ok2 := billing.Features[ent.FeatureID]; ok2 && feature.IsQuota() {
+				needUsage = true
+				break
+			}
+		}
+	}
+
+	usageMap := make(map[types.FeatureID]billing.UsageCounter)
+	if needUsage {
+		counters, err := r.usage.GetAll(ctx, account.UserID())
+		if err != nil {
+			return nil, err
+		}
+		for _, c := range counters {
+			usageMap[c.FeatureID] = c
+		}
+	}
+
+	results := make([]billing.EffectiveEntitlement, 0, len(featureIDs))
+	for _, fid := range featureIDs {
+		entitlement, hasEntitlement := billing.Entitlements[planID][fid]
+		feature, hasFeature := billing.Features[entitlement.FeatureID]
+		if !hasFeature {
+			return nil, billing.ErrFeatureNotFound
+		}
+
+		gateAllowed := true
+		if feature.GatedBy != nil {
+			allowed, err := r.gateAllows(account, *feature.GatedBy)
+			if err != nil {
+				return nil, err
+			}
+			gateAllowed = allowed
+		}
+
+		switch feature.Type {
+		case billing.FeatureBoolean:
+			enabled := false
+			if hasEntitlement && entitlement.Allowed != nil {
+				enabled = *entitlement.Allowed
+			}
+			enabled = enabled && gateAllowed
+			results = append(results, billing.EffectiveEntitlement{
+				FeatureID: feature.ID,
+				Type:      feature.Type,
+				Enabled:   enabled,
+				Limit:     nil,
+				Used:      nil,
+				Remaining: nil,
+			})
+		case billing.FeatureQuota:
+			if !gateAllowed {
+				results = append(results, billing.EffectiveEntitlement{
+					FeatureID: feature.ID,
+					Type:      feature.Type,
+					Enabled:   true,
+					Limit:     nil,
+					Used:      nil,
+					Remaining: nil,
+				})
+				continue
+			}
+			var limit *int64
+			if hasEntitlement {
+				limit = entitlement.Limit
+			} else {
+				zero := int64(0)
+				limit = &zero
+			}
+			used := int64(0)
+			if uc, ok := usageMap[fid]; ok {
+				used = uc.Used
+			}
+			var remaining *int64
+			var enabled bool
+			if limit == nil { // unlimited
+				remaining = nil
+				enabled = true
+			} else {
+				rv := *limit - used
+				if rv < 0 {
+					rv = 0
+				}
+				remaining = x.P(rv)
+				enabled = rv > 0
+			}
+			results = append(results, billing.EffectiveEntitlement{
+				FeatureID: feature.ID,
+				Type:      feature.Type,
+				Enabled:   enabled,
+				Limit:     limit,
+				Used:      x.P(used),
+				Remaining: remaining,
+			})
+		default:
+			return nil, billing.ErrInvalidFeatureType
+		}
+	}
+	return results, nil
 }
 
 func (r *entitlementResolver) gateAllows(account account.ConnectedAccount, gate types.FeatureID) (

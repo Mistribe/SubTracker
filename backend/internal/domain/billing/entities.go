@@ -25,6 +25,10 @@ func (f Feature) IsQuota() bool {
 	return f.Type == FeatureQuota
 }
 
+func (f Feature) IsBoolean() bool {
+	return f.Type == FeatureBoolean
+}
+
 // PlanEntitlement defines what a plan grants for a feature.
 // For boolean features, Allowed is used.
 // For quota features, Limit is used; nil means "unlimited".

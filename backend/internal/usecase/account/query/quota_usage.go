@@ -29,7 +29,7 @@ func (h GetQuotaUsageHandler) Handle(
 	ctx context.Context,
 	_ GetQuotaUsage) result.Result[[]billing.EffectiveEntitlement] {
 	connectedAccount := h.authentication.MustGetConnectedAccount(ctx)
-	effs, err := h.entitlement.Resolves(ctx, connectedAccount, billing.QuotaFeatures)
+	effs, err := h.entitlement.Resolves(ctx, connectedAccount, billing.AllFeatures)
 	if err != nil {
 		return result.Fail[[]billing.EffectiveEntitlement](err)
 	}

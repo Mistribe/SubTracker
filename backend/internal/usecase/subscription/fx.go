@@ -17,7 +17,7 @@ func Module() fx.Option {
 			ports.AsQueryHandler[query.SummaryQuery, query.SummaryQueryResponse](query.NewSummaryQueryHandler),
 			ports.AsQueryHandler[query.FindOneQuery, subscription.Subscription](query.NewFindOneQueryHandler),
 			ports.AsQueryHandler[query.FindAllQuery, shared.PaginatedResponse[subscription.Subscription]](query.NewFindAllQueryHandler),
-			ports.AsQueryHandler[query.GetQuotaUsageHandler, billing.EffectiveEntitlement](query.NewGetQuotaUsageHandler),
+			ports.AsQueryHandler[query.GetQuotaUsage, []billing.EffectiveEntitlement](query.NewGetQuotaUsageHandler),
 
 			ports.AsCommandHandler[command.CreateSubscriptionCommand, subscription.Subscription](command.NewCreateSubscriptionCommandHandler),
 			ports.AsCommandHandler[command.UpdateSubscriptionCommand, subscription.Subscription](command.NewUpdateSubscriptionCommandHandler),

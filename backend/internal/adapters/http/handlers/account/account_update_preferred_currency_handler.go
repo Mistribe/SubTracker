@@ -36,7 +36,7 @@ func NewUpdatePreferredCurrencyEndpoint(handler ports.CommandHandler[command.Upd
 //	@Success		204
 //	@Failure		400	{object}	HttpErrorResponse
 //	@Failure		401	{object}	HttpErrorResponse
-//	@Router			/users/preferred/currency [put]
+//	@Router			/accounts/preferred/currency [put]
 func (e UpdatePreferredCurrencyEndpoint) Handle(c *gin.Context) {
 	var model dto.UpdatePreferredCurrencyRequest
 	if err := c.ShouldBindJSON(&model); err != nil {

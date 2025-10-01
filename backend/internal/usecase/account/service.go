@@ -2,6 +2,7 @@ package account
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/domain/types"
@@ -11,13 +12,13 @@ import (
 
 type service struct {
 	userRepository ports.AccountRepository
+	logger         *slog.Logger
 }
 
 func (s service) GetPreferredCurrency(ctx context.Context, userId types.UserID) currency.Unit {
 	profile, err := s.userRepository.GetById(ctx, userId)
 	if err != nil {
-		// todo better err
-		panic(err)
+		s.logger.Error("cannot retrieve user profile", "err", err, "user_id", userId, "ctx", ctx)
 	}
 
 	if profile == nil {
@@ -25,12 +26,15 @@ func (s service) GetPreferredCurrency(ctx context.Context, userId types.UserID) 
 		return info.MostPreferred().PreferredCurrency()
 	}
 
-	return profile.Currency()
+	return profile.Currency().ValueOrDefault(currency.USD)
 
 }
 
-func NewService(userRepository ports.AccountRepository) ports.AccountService {
+func NewService(
+	userRepository ports.AccountRepository,
+	logger *slog.Logger) ports.AccountService {
 	return service{
 		userRepository: userRepository,
+		logger:         logger,
 	}
 }

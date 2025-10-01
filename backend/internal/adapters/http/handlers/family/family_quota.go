@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	. "github.com/mistribe/subtracker/pkg/ginx"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/domain/billing"
@@ -14,7 +15,7 @@ import (
 )
 
 type GetQuotaUsageEndpoint struct {
-	handler ports.QueryHandler[query.GetQuotaUsage, billing.EffectiveEntitlement]
+	handler ports.QueryHandler[query.GetQuotaUsage, []billing.EffectiveEntitlement]
 }
 
 // Handle godoc
@@ -33,10 +34,10 @@ func (e GetQuotaUsageEndpoint) Handle(c *gin.Context) {
 	r := e.handler.Handle(c, q)
 	FromResult(c,
 		r,
-		WithMapping[billing.EffectiveEntitlement](func(r billing.EffectiveEntitlement) any {
-			return []dto.QuotaUsageModel{
-				dto.NewQuotaUsageModel(r),
-			}
+		WithMapping[[]billing.EffectiveEntitlement](func(r []billing.EffectiveEntitlement) any {
+			return herd.Select(r, func(in billing.EffectiveEntitlement) dto.QuotaUsageModel {
+				return dto.NewQuotaUsageModel(in)
+			})
 		}))
 }
 
@@ -54,6 +55,6 @@ func (e GetQuotaUsageEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewGetQuotaUsageEndpoint(handler ports.QueryHandler[query.GetQuotaUsage, billing.EffectiveEntitlement]) *GetQuotaUsageEndpoint {
+func NewGetQuotaUsageEndpoint(handler ports.QueryHandler[query.GetQuotaUsage, []billing.EffectiveEntitlement]) *GetQuotaUsageEndpoint {
 	return &GetQuotaUsageEndpoint{handler: handler}
 }

@@ -3,17 +3,28 @@ package authentication
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
+	"golang.org/x/text/currency"
+
 	"github.com/mistribe/subtracker/internal/domain/account"
 	"github.com/mistribe/subtracker/internal/domain/types"
-	"golang.org/x/text/currency"
 )
 
 // helper to build a minimal connected account
 func newTestAccount() account.Account {
-	return account.New(types.UserID("user-123"), currency.USD, types.PlanFree, types.RoleUser, nil)
+	cur := currency.USD
+	return account.New(
+		"user-123",
+		&cur,
+		types.PlanFree,
+		types.RoleUser,
+		nil,
+		time.Now(),
+		time.Now(),
+	)
 }
 
 func TestGetAccountFromContext(t *testing.T) {

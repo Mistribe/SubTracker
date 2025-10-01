@@ -38,6 +38,15 @@ func NewContext(
 	}
 }
 
+// NewContextFromDSN creates a new db context from a raw DSN (used mainly for integration tests)
+func NewContextFromDSN(dsn string, logger *slog.Logger) *Context {
+	pgxConfig, err := pgx.ParseConfig(dsn)
+	if err != nil {
+		panic(err)
+	}
+	return &Context{pgxConfig: pgxConfig, logger: logger}
+}
+
 func (r *Context) logDebugSql(ctx context.Context, stmt postgres.Statement) {
 	if r.logger.Enabled(ctx, slog.LevelDebug) {
 		debugSql := stmt.DebugSql()

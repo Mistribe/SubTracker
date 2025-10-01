@@ -17,7 +17,7 @@ func Module() fx.Option {
 			ports.AsQueryHandler[query.FindAllQuery, shared.PaginatedResponse[label.Label]](query.NewFindAllQueryHandler),
 			ports.AsQueryHandler[query.FindOneQuery, label.Label](query.NewFindOneQueryHandler),
 			ports.AsQueryHandler[query.DefaultLabelQuery, []label.Label](query.NewDefaultLabelQueryHandler),
-			ports.AsQueryHandler[query.GetQuotaUsageHandler, billing.EffectiveEntitlement](query.NewGetQuotaUsageHandler),
+			ports.AsQueryHandler[query.GetQuotaUsage, []billing.EffectiveEntitlement](query.NewGetQuotaUsageHandler),
 
 			ports.AsCommandHandler[command.CreateLabelCommand, label.Label](command.NewCreateLabelCommandHandler),
 			ports.AsCommandHandler[command.UpdateLabelCommand, label.Label](command.NewUpdateLabelCommandHandler),

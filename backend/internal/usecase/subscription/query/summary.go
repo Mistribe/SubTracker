@@ -55,7 +55,7 @@ type SummaryQueryResponse struct {
 type SummaryQueryHandler struct {
 	subscriptionRepository ports.SubscriptionRepository
 	currencyRepository     ports.CurrencyRepository
-	accountRepository      ports.AccountRepository
+	accountService         ports.AccountService
 	authService            ports.Authentication
 	exchange               ports.Exchange
 }
@@ -63,13 +63,13 @@ type SummaryQueryHandler struct {
 func NewSummaryQueryHandler(
 	subscriptionRepository ports.SubscriptionRepository,
 	currencyRepository ports.CurrencyRepository,
-	accountRepository ports.AccountRepository,
+	accountService ports.AccountService,
 	authService ports.Authentication,
 	exchange ports.Exchange) *SummaryQueryHandler {
 	return &SummaryQueryHandler{
 		subscriptionRepository: subscriptionRepository,
 		currencyRepository:     currencyRepository,
-		accountRepository:      accountRepository,
+		accountService:         accountService,
 		authService:            authService,
 		exchange:               exchange,
 	}
@@ -89,17 +89,10 @@ func (h SummaryQueryHandler) convertToCurrency(
 
 func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) result.Result[SummaryQueryResponse] {
 	connectedAccount := h.authService.MustGetConnectedAccount(ctx)
-	currentAccount, err := h.accountRepository.GetById(ctx, connectedAccount.UserID())
-	if err != nil {
-		return result.Fail[SummaryQueryResponse](err)
-	}
+	preferredCurrency := h.accountService.GetPreferredCurrency(ctx, connectedAccount.UserID())
 	currencyRates, err := h.currencyRepository.GetRatesByDate(ctx, time.Now())
 	if err != nil {
 		return result.Fail[SummaryQueryResponse](err)
-	}
-	preferredCurrency := currency.USD
-	if currentAccount != nil {
-		preferredCurrency = currentAccount.Currency()
 	}
 
 	currencyRates = currencyRates.WithReverse()

@@ -1,7 +1,7 @@
 package query_test
 
 import (
-	"errors"
+	"context"
 	"testing"
 	"time"
 
@@ -18,7 +18,14 @@ import (
 )
 
 // build subscription with given params
-func buildSub(amount float64, cur currency.Unit, start time.Time, rec subscription.RecurrencyType, months int, labels []subscription.LabelRef, provider types.ProviderID) subscription.Subscription {
+func buildSub(
+	amount float64,
+	cur currency.Unit,
+	start time.Time,
+	rec subscription.RecurrencyType,
+	months int,
+	labels []subscription.LabelRef,
+	provider types.ProviderID) subscription.Subscription {
 	name := "Sub"
 	price := subscription.NewPrice(currency.NewAmount(amount, cur))
 	var custom *int32
@@ -34,6 +41,7 @@ func buildSub(amount float64, cur currency.Unit, start time.Time, rec subscripti
 }
 
 func TestSummaryQueryHandler_Handle(t *testing.T) {
+	ctx := context.Background()
 	userID := types.UserID("user-1")
 	newMockConnectedAccount := func(userID types.UserID) *account.MockConnectedAccount {
 		acc := account.NewMockConnectedAccount(t)
@@ -41,51 +49,37 @@ func TestSummaryQueryHandler_Handle(t *testing.T) {
 		return acc
 	}
 
-	t.Run("returns fault when account repository errors", func(t *testing.T) {
-		subRepo := ports.NewMockSubscriptionRepository(t)
-		curRepo := ports.NewMockCurrencyRepository(t)
-		acctRepo := ports.NewMockAccountRepository(t)
-		auth := ports.NewMockAuthentication(t)
-		exch := ports.NewMockExchange(t)
-
-		acc := newMockConnectedAccount(userID)
-		auth.EXPECT().MustGetConnectedAccount(t.Context()).Return(acc)
-		acctRepo.EXPECT().GetById(t.Context(), userID).Return(nil, errors.New("db"))
-
-		h := query.NewSummaryQueryHandler(subRepo, curRepo, acctRepo, auth, exch)
-		res := h.Handle(t.Context(), query.SummaryQuery{})
-		assert.True(t, res.IsFaulted())
-	})
-
+	// currency repository error scenario
 	t.Run("returns fault when currency repository errors", func(t *testing.T) {
 		subRepo := ports.NewMockSubscriptionRepository(t)
 		curRepo := ports.NewMockCurrencyRepository(t)
-		acctRepo := ports.NewMockAccountRepository(t)
+		acctService := ports.NewMockAccountService(t)
 		auth := ports.NewMockAuthentication(t)
 		exch := ports.NewMockExchange(t)
 
 		acc := newMockConnectedAccount(userID)
-		auth.EXPECT().MustGetConnectedAccount(t.Context()).Return(acc)
-		acctRepo.EXPECT().GetById(t.Context(), userID).Return(nil, nil)
-		curRepo.EXPECT().GetRatesByDate(t.Context(), mock.Anything).Return(currency.Rates{}, errors.New("db"))
+		auth.EXPECT().MustGetConnectedAccount(mock.Anything).Return(acc)
+		acctService.EXPECT().GetPreferredCurrency(mock.Anything, userID).Return(currency.USD)
+		curRepo.EXPECT().GetRatesByDate(mock.Anything, mock.Anything).Return(currency.Rates{}, assert.AnError)
 
-		h := query.NewSummaryQueryHandler(subRepo, curRepo, acctRepo, auth, exch)
-		res := h.Handle(t.Context(), query.SummaryQuery{})
+		h := query.NewSummaryQueryHandler(subRepo, curRepo, acctService, auth, exch)
+		res := h.Handle(ctx, query.SummaryQuery{})
 		assert.True(t, res.IsFaulted())
 	})
 
+	// main computation scenario
 	t.Run("computes totals and rankings", func(t *testing.T) {
 		subRepo := ports.NewMockSubscriptionRepository(t)
 		curRepo := ports.NewMockCurrencyRepository(t)
-		acctRepo := ports.NewMockAccountRepository(t)
+		acctService := ports.NewMockAccountService(t)
 		auth := ports.NewMockAuthentication(t)
 		exch := ports.NewMockExchange(t)
 
 		acc := newMockConnectedAccount(userID)
-		auth.EXPECT().MustGetConnectedAccount(t.Context()).Return(acc)
-		acctRepo.EXPECT().GetById(t.Context(), userID).Return(nil, nil)
+		auth.EXPECT().MustGetConnectedAccount(mock.Anything).Return(acc)
+		acctService.EXPECT().GetPreferredCurrency(mock.Anything, userID).Return(currency.USD)
 		// rates
-		curRepo.EXPECT().GetRatesByDate(t.Context(), mock.Anything).Return(currency.Rates{}, nil)
+		curRepo.EXPECT().GetRatesByDate(mock.Anything, mock.Anything).Return(currency.Rates{}, nil)
 
 		// Build subscriptions
 		start := time.Now().AddDate(0, -2, 0)
@@ -94,23 +88,28 @@ func TestSummaryQueryHandler_Handle(t *testing.T) {
 		lab1 := subscription.LabelRef{LabelId: types.LabelID(uuid.Must(uuid.NewV7()))}
 		lab2 := subscription.LabelRef{LabelId: types.LabelID(uuid.Must(uuid.NewV7()))}
 		s1 := buildSub(30, currency.USD, start, subscription.MonthlyRecurrency, 0, []subscription.LabelRef{lab1}, prov1)
-		s2 := buildSub(120, currency.USD, start, subscription.YearlyRecurrency, 0, []subscription.LabelRef{lab1, lab2}, prov2)
-		// iterator mock via channel
-		ch := make(chan subscription.Subscription, 2)
-		ch <- s1
-		ch <- s2
-		close(ch)
-		subRepo.EXPECT().GetAllIt(t.Context(), userID, "").Return(func(yield func(subscription.Subscription) bool) {
-			for sub := range ch {
-				yield(sub)
-			}
-		})
-		// conversions - we call convert for recurrency amounts; simplify by returning same amount
-		exch.EXPECT().ToCurrencyAt(t.Context(), mock.Anything, mock.Anything, mock.Anything).Return(currency.NewAmount(30, currency.USD), nil).Maybe()
-		exch.EXPECT().ToCurrencyAt(t.Context(), mock.Anything, mock.Anything, mock.Anything).Return(currency.NewAmount(120, currency.USD), nil).Maybe()
+		s2 := buildSub(120, currency.USD, start, subscription.YearlyRecurrency, 0, []subscription.LabelRef{lab1, lab2},
+			prov2)
+		seq := func(yield func(subscription.Subscription) bool) { yield(s1); yield(s2) }
+		subRepo.EXPECT().GetAllIt(mock.Anything, userID, "").Return(seq)
+		// pass-through exchange
+		exch.EXPECT().ToCurrencyAt(mock.Anything, mock.Anything, mock.Anything, mock.Anything).
+			RunAndReturn(func(
+				_ context.Context,
+				initial currency.Amount,
+				_ currency.Unit,
+				_ time.Time) (currency.Amount, error) {
+				return initial, nil
+			}).Maybe()
 
-		h := query.NewSummaryQueryHandler(subRepo, curRepo, acctRepo, auth, exch)
-		res := h.Handle(t.Context(), query.SummaryQuery{TopProviders: 2, TopLabels: 2, UpcomingRenewals: 2, TotalMonthly: true, TotalYearly: true})
+		h := query.NewSummaryQueryHandler(subRepo, curRepo, acctService, auth, exch)
+		res := h.Handle(ctx, query.SummaryQuery{
+			TopProviders:     2,
+			TopLabels:        2,
+			UpcomingRenewals: 2,
+			TotalMonthly:     true,
+			TotalYearly:      true,
+		})
 		assert.True(t, res.IsSuccess())
 		var out query.SummaryQueryResponse
 		res.IfSuccess(func(r query.SummaryQueryResponse) { out = r })

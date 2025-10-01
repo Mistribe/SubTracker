@@ -16,7 +16,7 @@ func Module() fx.Option {
 		fx.Provide(
 			ports.AsQueryHandler[query.FindOneQuery, provider.Provider](query.NewFindOneQueryHandler),
 			ports.AsQueryHandler[query.FindAllQuery, shared.PaginatedResponse[provider.Provider]](query.NewFindAllQueryHandler),
-			ports.AsQueryHandler[query.GetQuotaUsageHandler, billing.EffectiveEntitlement](query.NewGetQuotaUsageHandler),
+			ports.AsQueryHandler[query.GetQuotaUsage, []billing.EffectiveEntitlement](query.NewGetQuotaUsageHandler),
 
 			ports.AsCommandHandler[command.CreateProviderCommand, provider.Provider](command.NewCreateProviderCommandHandler),
 			ports.AsCommandHandler[command.UpdateProviderCommand, provider.Provider](command.NewUpdateProviderCommandHandler),

@@ -614,6 +614,7 @@ components:
           type: boolean
         feature:
           enum:
+          - unknown
           - subscriptions
           - active_subscriptions_count
           - custom_labels
@@ -1060,6 +1061,40 @@ paths:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Unauthorized
       summary: Get user preferred currency
+      tags:
+      - accounts
+    put:
+      description: Updates the preferred currency for the authenticated account
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dto.UpdatePreferredCurrencyRequest'
+        description: Profile update parameters
+        required: true
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Unauthorized
+      summary: Update user preferred currency
       tags:
       - accounts
   /accounts/quota/usage:
@@ -2471,41 +2506,6 @@ paths:
       summary: Get subscription summary
       tags:
       - subscriptions
-  /users/preferred/currency:
-    put:
-      description: Updates the preferred currency for the authenticated account
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/dto.UpdatePreferredCurrencyRequest'
-        description: Profile update parameters
-        required: true
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Unauthorized
-      summary: Update user preferred currency
-      tags:
-      - accounts
 servers:
 - description: Production server
   url: https://api.subtracker.mistribe.com

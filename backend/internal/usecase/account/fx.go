@@ -15,7 +15,7 @@ func Module() fx.Option {
 		fx.Provide(
 			NewService,
 			ports.AsQueryHandler[query.FindPreferredCurrencyQuery, currency.Unit](query.NewFindPreferredCurrencyQueryHandler),
-			ports.AsQueryHandler[query.GetQuotaUsageHandler, []billing.EffectiveEntitlement](query.NewGetQuotaUsageHandler),
+			ports.AsQueryHandler[query.GetQuotaUsage, []billing.EffectiveEntitlement](query.NewGetQuotaUsageHandler),
 
 			ports.AsCommandHandler[command.UpdatePreferredCurrencyCommand, bool](command.NewUpdatePreferredCurrencyCommandHandler),
 			ports.AsCommandHandler[command.DeleteAccountCommand, bool](command.NewDeleteUserCommandHandler),

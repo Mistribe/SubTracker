@@ -1,8 +1,12 @@
 package account
 
 import (
+	"time"
+
 	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/entity"
 	"github.com/mistribe/subtracker/internal/domain/types"
+	"github.com/mistribe/subtracker/pkg/langext/option"
 )
 
 type ConnectedAccount interface {
@@ -13,35 +17,34 @@ type ConnectedAccount interface {
 
 type Account interface {
 	ConnectedAccount
+	entity.Entity[string]
+	entity.ETagEntity
 
-	Id() string
-	Currency() currency.Unit
+	Currency() option.Option[currency.Unit]
 	SetCurrency(newCurrency currency.Unit)
 	FamilyID() *types.FamilyID
 }
 
 type account struct {
-	userID   types.UserID
-	currency currency.Unit
+	*entity.Base[string]
+
+	currency *currency.Unit
 	planID   types.PlanID
 	familyID *types.FamilyID
 	role     types.Role
 }
 
-func (a *account) Id() string {
-	return a.userID.String()
-}
-
 func (a *account) UserID() types.UserID {
-	return a.userID
+	return types.UserID(a.Base.Id())
 }
 
-func (a *account) Currency() currency.Unit {
-	return a.currency
+func (a *account) Currency() option.Option[currency.Unit] {
+	return option.New(a.currency)
 }
 
 func (a *account) SetCurrency(newCurrency currency.Unit) {
-	a.currency = newCurrency
+	a.currency = &newCurrency
+	a.SetAsDirty()
 }
 
 func (a *account) PlanID() types.PlanID {
@@ -56,13 +59,44 @@ func (a *account) Role() types.Role {
 	return a.role
 }
 
-func New(userID types.UserID,
-	currency currency.Unit,
+func (a *account) Equal(other Account) bool {
+	if other == nil {
+		return false
+	}
+
+	return a.ETag() == other.ETag()
+}
+
+func (a *account) ETagFields() []interface{} {
+	fields := []interface{}{
+		a.PlanID().String(),
+		a.Role().String(),
+	}
+
+	a.Currency().IfSome(func(c currency.Unit) {
+		fields = append(fields, c.String())
+	})
+
+	if a.FamilyID() != nil {
+		fields = append(fields, a.FamilyID().String())
+	}
+
+	return fields
+}
+func (a *account) ETag() string {
+	return entity.CalculateETag(a)
+}
+
+func New(
+	userID types.UserID,
+	currency *currency.Unit,
 	planID types.PlanID,
 	role types.Role,
-	familyID *types.FamilyID) Account {
+	familyID *types.FamilyID,
+	createdAt time.Time,
+	updatedAt time.Time) Account {
 	return &account{
-		userID:   userID,
+		Base:     entity.NewBase[string](userID.String(), createdAt, updatedAt, true, false),
 		currency: currency,
 		planID:   planID,
 		familyID: familyID,

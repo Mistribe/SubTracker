@@ -19,6 +19,14 @@ DROP TABLE provider_prices;
 DROP TABLE provider_plans;
 ALTER TABLE subscription_service_users
     RENAME TO subscription_family_users;
+alter table accounts
+    alter column currency drop not null;
+alter table accounts
+    add created_at timestamp default now() not null;
+alter table accounts
+    add updated_at timestamp default now() not null;
+alter table accounts
+    add etag varchar(100) default md5(random()::text) not null;
 
 CREATE OR REPLACE FUNCTION update_account_family_id()
     RETURNS TRIGGER AS
@@ -31,8 +39,8 @@ BEGIN
         RETURN NEW;
     END IF;
     IF NOT EXISTS (SELECT 1 FROM accounts a WHERE a.id = NEW.user_id) THEN
-        INSERT INTO accounts (id, family_id, role, plan, currency)
-        VALUES (NEW.user_id, NEW.family_id, 'user', 'free', '');
+        INSERT INTO accounts (id, family_id, role, plan)
+        VALUES (NEW.user_id, NEW.family_id, 'user', 'free');
     ELSE
         UPDATE accounts
         SET family_id = NEW.family_id
@@ -75,49 +83,4 @@ EXECUTE FUNCTION remove_account_family_id();
 
 -- +goose Down
 -- +goose StatementBegin
-ALTER TABLE accounts
-    DROP CONSTRAINT accounts_families_id_fk;
-
-ALTER TABLE accounts
-    DROP COLUMN family_id;
-
-ALTER TABLE accounts
-    RENAME TO users;
-
-ALTER INDEX accounts_pk RENAME TO users_pk;
-
-ALTER TABLE accounts
-    DROP COLUMN role;
-
-CREATE TABLE provider_plans
-(
-    id          uuid PRIMARY KEY,
-    provider_id varchar(255) NOT NULL,
-    name        varchar(255) NOT NULL,
-    description text,
-    created_at  timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE provider_prices
-(
-    id         uuid PRIMARY KEY,
-    plan_id    uuid         NOT NULL REFERENCES provider_plans (id),
-    price_id   varchar(255) NOT NULL,
-    amount     decimal      NOT NULL,
-    currency   varchar(3)   NOT NULL,
-    interval   varchar(10)  NOT NULL,
-    created_at timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp    NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-ALTER TABLE subscriptions
-    ADD COLUMN plan_id  uuid REFERENCES provider_plans (id),
-    ADD COLUMN price_id uuid REFERENCES provider_prices (id);
-
-ALTER TABLE subscription_family_users
-    RENAME TO subscription_service_users;
-
-DROP TRIGGER IF EXISTS set_account_family_id_on_member_add ON family_members;
-DROP FUNCTION IF EXISTS update_account_family_id();
 -- +goose StatementEnd

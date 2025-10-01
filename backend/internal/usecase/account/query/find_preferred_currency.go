@@ -17,15 +17,16 @@ func NewFindPreferredCurrencyQuery() FindPreferredCurrencyQuery {
 }
 
 type FindPreferredCurrencyQueryHandler struct {
-	accountRepository ports.AccountRepository
-	authentication    ports.Authentication
+	accountService ports.AccountService
+	authentication ports.Authentication
 }
 
-func NewFindPreferredCurrencyQueryHandler(accountRepository ports.AccountRepository,
+func NewFindPreferredCurrencyQueryHandler(
+	accountService ports.AccountService,
 	authentication ports.Authentication) *FindPreferredCurrencyQueryHandler {
 	return &FindPreferredCurrencyQueryHandler{
-		accountRepository: accountRepository,
-		authentication:    authentication,
+		accountService: accountService,
+		authentication: authentication,
 	}
 }
 
@@ -33,9 +34,6 @@ func (h FindPreferredCurrencyQueryHandler) Handle(
 	ctx context.Context,
 	_ FindPreferredCurrencyQuery) result.Result[currency.Unit] {
 	connectedAccount := h.authentication.MustGetConnectedAccount(ctx)
-	account, err := h.accountRepository.GetById(ctx, connectedAccount.UserID())
-	if err != nil {
-		return result.Fail[currency.Unit](err)
-	}
-	return result.Success(account.Currency())
+	preferredCurrency := h.accountService.GetPreferredCurrency(ctx, connectedAccount.UserID())
+	return result.Success(preferredCurrency)
 }

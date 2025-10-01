@@ -40,8 +40,8 @@ func (_m *MockUsageRepository) EXPECT() *MockUsageRepository_Expecter {
 }
 
 // Get provides a mock function for the type MockUsageRepository
-func (_mock *MockUsageRepository) Get(ctx context.Context, userID types.UserID, featureID types.FeatureID) (billing.UsageCounter, bool, error) {
-	ret := _mock.Called(ctx, userID, featureID)
+func (_mock *MockUsageRepository) Get(ctx context.Context, userID types.UserID, feature billing.Feature) (billing.UsageCounter, bool, error) {
+	ret := _mock.Called(ctx, userID, feature)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Get")
@@ -50,21 +50,21 @@ func (_mock *MockUsageRepository) Get(ctx context.Context, userID types.UserID, 
 	var r0 billing.UsageCounter
 	var r1 bool
 	var r2 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, types.FeatureID) (billing.UsageCounter, bool, error)); ok {
-		return returnFunc(ctx, userID, featureID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, billing.Feature) (billing.UsageCounter, bool, error)); ok {
+		return returnFunc(ctx, userID, feature)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, types.FeatureID) billing.UsageCounter); ok {
-		r0 = returnFunc(ctx, userID, featureID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, billing.Feature) billing.UsageCounter); ok {
+		r0 = returnFunc(ctx, userID, feature)
 	} else {
 		r0 = ret.Get(0).(billing.UsageCounter)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, types.UserID, types.FeatureID) bool); ok {
-		r1 = returnFunc(ctx, userID, featureID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.UserID, billing.Feature) bool); ok {
+		r1 = returnFunc(ctx, userID, feature)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
-	if returnFunc, ok := ret.Get(2).(func(context.Context, types.UserID, types.FeatureID) error); ok {
-		r2 = returnFunc(ctx, userID, featureID)
+	if returnFunc, ok := ret.Get(2).(func(context.Context, types.UserID, billing.Feature) error); ok {
+		r2 = returnFunc(ctx, userID, feature)
 	} else {
 		r2 = ret.Error(2)
 	}
@@ -79,12 +79,12 @@ type MockUsageRepository_Get_Call struct {
 // Get is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userID types.UserID
-//   - featureID types.FeatureID
-func (_e *MockUsageRepository_Expecter) Get(ctx interface{}, userID interface{}, featureID interface{}) *MockUsageRepository_Get_Call {
-	return &MockUsageRepository_Get_Call{Call: _e.mock.On("Get", ctx, userID, featureID)}
+//   - feature billing.Feature
+func (_e *MockUsageRepository_Expecter) Get(ctx interface{}, userID interface{}, feature interface{}) *MockUsageRepository_Get_Call {
+	return &MockUsageRepository_Get_Call{Call: _e.mock.On("Get", ctx, userID, feature)}
 }
 
-func (_c *MockUsageRepository_Get_Call) Run(run func(ctx context.Context, userID types.UserID, featureID types.FeatureID)) *MockUsageRepository_Get_Call {
+func (_c *MockUsageRepository_Get_Call) Run(run func(ctx context.Context, userID types.UserID, feature billing.Feature)) *MockUsageRepository_Get_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -94,9 +94,9 @@ func (_c *MockUsageRepository_Get_Call) Run(run func(ctx context.Context, userID
 		if args[1] != nil {
 			arg1 = args[1].(types.UserID)
 		}
-		var arg2 types.FeatureID
+		var arg2 billing.Feature
 		if args[2] != nil {
-			arg2 = args[2].(types.FeatureID)
+			arg2 = args[2].(billing.Feature)
 		}
 		run(
 			arg0,
@@ -112,7 +112,75 @@ func (_c *MockUsageRepository_Get_Call) Return(usageCounter billing.UsageCounter
 	return _c
 }
 
-func (_c *MockUsageRepository_Get_Call) RunAndReturn(run func(ctx context.Context, userID types.UserID, featureID types.FeatureID) (billing.UsageCounter, bool, error)) *MockUsageRepository_Get_Call {
+func (_c *MockUsageRepository_Get_Call) RunAndReturn(run func(ctx context.Context, userID types.UserID, feature billing.Feature) (billing.UsageCounter, bool, error)) *MockUsageRepository_Get_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetAll provides a mock function for the type MockUsageRepository
+func (_mock *MockUsageRepository) GetAll(ctx context.Context, userID types.UserID) ([]billing.UsageCounter, error) {
+	ret := _mock.Called(ctx, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAll")
+	}
+
+	var r0 []billing.UsageCounter
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID) ([]billing.UsageCounter, error)); ok {
+		return returnFunc(ctx, userID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID) []billing.UsageCounter); ok {
+		r0 = returnFunc(ctx, userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]billing.UsageCounter)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.UserID) error); ok {
+		r1 = returnFunc(ctx, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUsageRepository_GetAll_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAll'
+type MockUsageRepository_GetAll_Call struct {
+	*mock.Call
+}
+
+// GetAll is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID types.UserID
+func (_e *MockUsageRepository_Expecter) GetAll(ctx interface{}, userID interface{}) *MockUsageRepository_GetAll_Call {
+	return &MockUsageRepository_GetAll_Call{Call: _e.mock.On("GetAll", ctx, userID)}
+}
+
+func (_c *MockUsageRepository_GetAll_Call) Run(run func(ctx context.Context, userID types.UserID)) *MockUsageRepository_GetAll_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 types.UserID
+		if args[1] != nil {
+			arg1 = args[1].(types.UserID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUsageRepository_GetAll_Call) Return(usageCounters []billing.UsageCounter, err error) *MockUsageRepository_GetAll_Call {
+	_c.Call.Return(usageCounters, err)
+	return _c
+}
+
+func (_c *MockUsageRepository_GetAll_Call) RunAndReturn(run func(ctx context.Context, userID types.UserID) ([]billing.UsageCounter, error)) *MockUsageRepository_GetAll_Call {
 	_c.Call.Return(run)
 	return _c
 }
