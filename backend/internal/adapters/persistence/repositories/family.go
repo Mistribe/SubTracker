@@ -366,6 +366,12 @@ func (r FamilyRepository) saveTrackedSliceWithJet(
 }
 
 func (r FamilyRepository) Delete(ctx context.Context, familyId types.FamilyID) (bool, error) {
+	// Delete dependent members first to satisfy FK constraint fk_families_members
+	_, err := r.dbContext.Execute(ctx, FamilyMembers.DELETE().WHERE(FamilyMembers.FamilyID.EQ(UUID(familyId))))
+	if err != nil {
+		return false, err
+	}
+
 	stmt := Families.DELETE().
 		WHERE(Families.ID.EQ(UUID(familyId)))
 
@@ -377,7 +383,8 @@ func (r FamilyRepository) Delete(ctx context.Context, familyId types.FamilyID) (
 	return count > 0, nil
 }
 
-func (r FamilyRepository) MemberExists(ctx context.Context, familyId types.FamilyID,
+func (r FamilyRepository) MemberExists(
+	ctx context.Context, familyId types.FamilyID,
 	members ...types.FamilyMemberID) (bool, error) {
 	if len(members) == 0 {
 		return true, nil
@@ -431,7 +438,8 @@ func (r FamilyRepository) Exists(ctx context.Context, ids ...types.FamilyID) (bo
 	return row.Count == len(ids), nil
 }
 
-func (r FamilyRepository) IsUserMemberOfFamily(ctx context.Context, familyId types.FamilyID,
+func (r FamilyRepository) IsUserMemberOfFamily(
+	ctx context.Context, familyId types.FamilyID,
 	userId types.UserID) (bool, error) {
 	stmt := SELECT(COUNT(FamilyMembers.ID).AS("count")).
 		FROM(FamilyMembers).

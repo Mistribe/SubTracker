@@ -29,7 +29,8 @@ func NewSubscriptionRepository(repository *db.Context) ports.SubscriptionReposit
 	}
 }
 
-func (r SubscriptionRepository) GetById(ctx context.Context, id types.SubscriptionID) (subscription.Subscription,
+func (r SubscriptionRepository) GetById(ctx context.Context, id types.SubscriptionID) (
+	subscription.Subscription,
 	error) {
 	stmt := SELECT(
 		Subscriptions.AllColumns,
@@ -125,8 +126,8 @@ func (r SubscriptionRepository) GetAll(
 				LEFT_JOIN(SubscriptionFamilyUsers,
 					SubscriptionFamilyUsers.SubscriptionID.EQ(Subscriptions.ID.From(pagedSubs))).
 				LEFT_JOIN(SubscriptionLabels, SubscriptionLabels.SubscriptionID.EQ(Subscriptions.ID.From(pagedSubs))).
-				LEFT_JOIN(Providers, Providers.ID.From(pagedSubs).EQ(Subscriptions.ProviderID)).
-				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.From(pagedSubs).EQ(Providers.ID)),
+				LEFT_JOIN(Providers, Providers.ID.EQ(Subscriptions.ProviderID.From(pagedSubs))).
+				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)),
 		)
 
 	var rows []models.SubscriptionRowWithCount

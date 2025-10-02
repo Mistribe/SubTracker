@@ -5,6 +5,7 @@ package integration
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -15,7 +16,6 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
-	"github.com/testcontainers/testcontainers-go/wait"
 
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db"
 	"github.com/mistribe/subtracker/pkg/testx"
@@ -37,6 +37,34 @@ func resolveMigrationsDir() string {
 	return filepath.Join(root, "database")
 }
 
+// waitForDB attempts to connect & ping until success or timeout.
+func waitForDB(dsn string, timeout time.Duration) error {
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		conn, err := sql.Open("pgx", dsn)
+		if err == nil {
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+			err = conn.PingContext(ctx)
+			cancel()
+			_ = conn.Close()
+			if err == nil {
+				return nil
+			}
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	return fmt.Errorf("timeout waiting for database to become ready")
+}
+
+// ensureSchema creates the given schema if it doesn't already exist.
+func ensureSchema(conn *sql.DB, schema string) error {
+	stmt := fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS %s", schema)
+	if _, err := conn.Exec(stmt); err != nil {
+		return fmt.Errorf("failed creating schema %s: %w", schema, err)
+	}
+	return nil
+}
+
 // TestMain sets up a single Postgres container (shared across all integration tests)
 func TestMain(m *testing.M) {
 	ctx := context.Background()
@@ -49,7 +77,6 @@ func TestMain(m *testing.M) {
 		postgres.WithUsername("postgres"),
 		postgres.WithPassword("postgres"),
 		postgres.WithInitScripts(), // none but keeps pattern consistent
-		postgres.WithWaitStrategy(wait.ForListeningPort("5432/tcp").WithStartupTimeout(60*time.Second)),
 	)
 	if err != nil {
 		log.Fatalf("failed to start postgres container: %v", err)
@@ -61,11 +88,20 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to get connection string: %v", err)
 	}
 
+	if err := waitForDB(dsn, 60*time.Second); err != nil {
+		log.Fatalf("database not ready in time: %v", err)
+	}
+
 	dbConn, err := sql.Open("pgx", dsn)
 	if err != nil {
 		log.Fatalf("failed to open db: %v", err)
 	}
 	defer dbConn.Close()
+
+	// Ensure the goose schema exists before goose touches goose.migrations
+	if err := ensureSchema(dbConn, "goose"); err != nil {
+		log.Fatalf("error ensuring goose schema: %v", err)
+	}
 
 	migrationsDir := resolveMigrationsDir()
 	if err := goose.Up(dbConn, migrationsDir); err != nil {

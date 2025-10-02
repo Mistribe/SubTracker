@@ -3,6 +3,8 @@ import {BrowserRouter, Routes, Route} from "react-router-dom"
 import {ProtectedRoute} from "@/contexts/ProtectedRoute"
 import {AppLayout} from "@/layouts/AppLayout"
 import HomePage from "@/pages/HomePage"
+import SignInPage from "@/pages/SignInPage"
+import SignUpPage from "@/pages/SignUpPage"
 import DashboardPage from "@/pages/DashboardPage"
 import PreferencePage from "@/pages/PreferencePage.tsx"
 import FamilyPage from "@/pages/FamilyPage"
@@ -26,6 +28,8 @@ function App() {
                         <Routes>
                             {/* Public Routes */}
                             <Route path="/" element={<HomePage/>}/>
+                            <Route path="/sign-in" element={<SignInPage/>}/>
+                            <Route path="/sign-up" element={<SignUpPage/>}/>
 
                             {/* Protected Routes */}
                             <Route

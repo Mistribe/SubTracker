@@ -96,24 +96,39 @@ func (r ProviderRepository) GetByIdForUser(ctx context.Context, userId types.Use
 }
 
 func (r ProviderRepository) GetSystemProviders(ctx context.Context) ([]provider.Provider, int64, error) {
+	// Use a subselect to compute total once based on distinct providers, then join labels
+	base := SELECT(
+		Providers.ID,
+		Providers.OwnerType,
+		Providers.OwnerFamilyID,
+		Providers.OwnerUserID,
+		Providers.Name,
+		Providers.Key,
+		Providers.Description,
+		Providers.IconURL,
+		Providers.URL,
+		Providers.PricingPageURL,
+		Providers.CreatedAt,
+		Providers.UpdatedAt,
+		Providers.Etag,
+		COUNT(Providers.ID).OVER().AS("total_count"),
+	).
+		FROM(Providers).
+		WHERE(Providers.OwnerType.EQ(String("system"))).
+		AsTable("bp")
+
 	stmt := SELECT(
-		Providers.AllColumns,
+		base.AllColumns(),
 		ProviderLabels.LabelID,
 		ProviderLabels.ProviderID,
-		COUNT(STAR).OVER().AS("total_count"),
 	).
 		FROM(
-			Providers.
-				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)),
+			base.
+				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID.From(base))),
 		).
-		WHERE(
-			Providers.OwnerType.EQ(String("system")).
-				AND(Providers.OwnerUserID.IS_NULL()).
-				AND(Providers.OwnerFamilyID.IS_NULL()),
-		)
+		ORDER_BY(Providers.ID.From(base).ASC())
 
 	var rows []models.ProviderRowWithCount
-
 	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
 		return nil, 0, err
 	}
@@ -121,13 +136,15 @@ func (r ProviderRepository) GetSystemProviders(ctx context.Context) ([]provider.
 		return nil, 0, nil
 	}
 
-	totalCount := rows[0].TotalCount
 	providers := models.CreateProviderFromJetRowsWithCount(rows)
-
 	if len(providers) == 0 {
 		return nil, 0, nil
 	}
 
+	totalCount := rows[0].TotalCount
+	if totalCount == 0 && len(providers) > 0 {
+		totalCount = int64(len(providers))
+	}
 	return providers, totalCount, nil
 }
 

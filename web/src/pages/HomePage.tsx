@@ -1,6 +1,6 @@
 import {ModeToggle} from "@/components/mode-toggle";
 import {Link} from "react-router-dom";
-import { SignedIn, SignedOut, SignInButton } from "@clerk/clerk-react";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import {Button} from "@/components/ui/button.tsx";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {CalendarIcon, CreditCardIcon, DollarSignIcon, TagIcon, TrendingUpIcon, UsersIcon} from "lucide-react";
@@ -25,7 +25,7 @@ const HomePage = () => {
                     </p>
                     <div className="flex gap-4 justify-center">
                         <SignedOut>
-                            <SignInButton mode="modal">
+                            <Link to="/sign-in">
                                 <Button
                                     type="button"
                                     size="lg"
@@ -33,7 +33,7 @@ const HomePage = () => {
                                 >
                                     Get Started Now
                                 </Button>
-                            </SignInButton>
+                            </Link>
                         </SignedOut>
                         <SignedIn>
                             <Link to="/dashboard">
@@ -177,7 +177,7 @@ const HomePage = () => {
                     </p>
                     <div>
                         <SignedOut>
-                            <SignInButton mode="modal">
+                            <Link to="/sign-in">
                                 <Button
                                     type="button"
                                     size="lg"
@@ -185,7 +185,7 @@ const HomePage = () => {
                                 >
                                     Start Managing Your Subscriptions
                                 </Button>
-                            </SignInButton>
+                            </Link>
                         </SignedOut>
                         <SignedIn>
                             <Link to="/dashboard">
