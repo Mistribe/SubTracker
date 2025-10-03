@@ -121,13 +121,29 @@ export class TestDataGenerators {
   private static readonly providerCategories = ['Streaming', 'Software', 'Cloud Storage', 'Productivity', 'Entertainment', 'Security', 'Communication'];
 
   /**
+   * Generate a cryptographically secure random integer between min and max, inclusive
+   */
+  private static getCryptoRandomInt(min: number, max: number): number {
+    // Inclusive of min and max
+    const range = max - min + 1;
+    if (range <= 0) throw new Error('Invalid random range');
+    const maxUint32 = 0xFFFFFFFF;
+    const buckets = Math.floor(maxUint32 / range);
+    const limit = buckets * range;
+    let rand;
+    do {
+      rand = randomBytes(4).readUInt32BE(0);
+    } while (rand >= limit);
+    return min + (rand % range);
+  }
+  /**
    * Generate realistic subscription test data
    */
   static generateSubscription(overrides?: Partial<SubscriptionData>): SubscriptionData {
     const baseData: SubscriptionData = {
       name: TestIdGenerator.generateName('Subscription'),
       providerId: TestIdGenerator.generate('provider'),
-      amount: Math.floor(Math.random() * 100) + 5, // $5-$105
+      amount: TestDataGenerators.getCryptoRandomInt(5, 105), // $5-$105
       currency: this.getRandomItem(this.currencies),
       billingCycle: this.getRandomItem(this.billingCycles),
       nextBillingDate: this.generateFutureDate(1, 365), // 1-365 days from now
@@ -136,11 +152,13 @@ export class TestDataGenerators {
     };
 
     // Add optional fields randomly
-    if (Math.random() > 0.7) {
+    // random true with probability ~0.3
+    if (TestDataGenerators.getCryptoRandomInt(1, 100) > 70) {
       baseData.labels = [TestIdGenerator.generate('label'), TestIdGenerator.generate('label')];
     }
 
-    if (Math.random() > 0.8) {
+    // random true with probability ~0.2
+    if (TestDataGenerators.getCryptoRandomInt(1, 100) > 80) {
       baseData.freeTrialEndDate = this.generateFutureDate(7, 30);
     }
 
@@ -304,7 +322,7 @@ export class TestDataGenerators {
    * Utility method to get random item from array
    */
   private static getRandomItem<T>(array: T[]): T {
-    return array[Math.floor(Math.random() * array.length)];
+    return array[TestDataGenerators.getCryptoRandomInt(0, array.length - 1)];
   }
 
   /**
@@ -312,7 +330,7 @@ export class TestDataGenerators {
    */
   private static generateFutureDate(minDays: number, maxDays: number): string {
     const today = new Date();
-    const daysToAdd = Math.floor(Math.random() * (maxDays - minDays + 1)) + minDays;
+    const daysToAdd = TestDataGenerators.getCryptoRandomInt(minDays, maxDays);
     const futureDate = new Date(today.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
     return futureDate.toISOString().split('T')[0]; // Return YYYY-MM-DD format
   }
@@ -322,7 +340,7 @@ export class TestDataGenerators {
    */
   private static generatePastDate(minDays: number, maxDays: number): string {
     const today = new Date();
-    const daysToSubtract = Math.floor(Math.random() * (maxDays - minDays + 1)) + minDays;
+    const daysToSubtract = TestDataGenerators.getCryptoRandomInt(minDays, maxDays);
     const pastDate = new Date(today.getTime() - daysToSubtract * 24 * 60 * 60 * 1000);
     return pastDate.toISOString().split('T')[0]; // Return YYYY-MM-DD format
   }
