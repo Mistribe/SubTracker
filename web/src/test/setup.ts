@@ -1,12 +1,28 @@
 import '@testing-library/jest-dom'
+import { vi } from 'vitest'
 import React from 'react'
+
+// Mock window.matchMedia for tests
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+})
 
 // Mock Clerk hooks for testing
 vi.mock('@clerk/clerk-react', () => ({
   useUser: vi.fn(),
   useAuth: vi.fn(),
-  SignIn: vi.fn(({ children }) => React.createElement('div', { 'data-testid': 'clerk-sign-in' }, children)),
-  SignUp: vi.fn(({ children }) => React.createElement('div', { 'data-testid': 'clerk-sign-up' }, children)),
+  SignIn: vi.fn(({ children }: { children?: React.ReactNode }) => React.createElement('div', { 'data-testid': 'clerk-sign-in' }, children)),
+  SignUp: vi.fn(({ children }: { children?: React.ReactNode }) => React.createElement('div', { 'data-testid': 'clerk-sign-up' }, children)),
   SignedIn: vi.fn(),
   SignedOut: vi.fn(),
 }))
@@ -18,7 +34,7 @@ vi.mock('react-router-dom', async () => {
     ...actual,
     useNavigate: vi.fn(),
     Navigate: vi.fn(),
-    Link: vi.fn(({ children, to, ...props }) => 
+    Link: vi.fn(({ children, to, ...props }: { children?: React.ReactNode; to: string; [key: string]: any }) => 
       React.createElement('a', { href: to, ...props, 'data-testid': 'router-link' }, children)
     ),
   }

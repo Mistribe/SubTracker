@@ -28,7 +28,7 @@ describe('ProtectedRoute', () => {
     // Default mock implementations
     mockSignedIn.mockImplementation(({ children }) => <>{children}</>)
     mockSignedOut.mockImplementation(({ children }) => <>{children}</>)
-    mockNavigate.mockImplementation(() => <div data-testid="navigate-component" />)
+    mockNavigate.mockImplementation(() => null)
   })
 
   it('renders children when user is signed in', () => {
@@ -58,7 +58,6 @@ describe('ProtectedRoute', () => {
     )
 
     expect(screen.queryByTestId('protected-content')).not.toBeInTheDocument()
-    expect(screen.getByTestId('navigate-component')).toBeInTheDocument()
     
     // Verify Navigate is called with correct props
     expect(mockNavigate).toHaveBeenCalledWith({ to: '/sign-in', replace: true }, undefined)

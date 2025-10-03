@@ -77,7 +77,7 @@ describe('SignUpPage', () => {
   it('redirects authenticated users to dashboard', () => {
     mockUseUser.mockReturnValue({
       isSignedIn: true,
-      user: { id: 'user_123' },
+      user: { id: 'user_123' } as any,
       isLoaded: true,
     })
 
@@ -89,7 +89,7 @@ describe('SignUpPage', () => {
   it('returns null for authenticated users', () => {
     mockUseUser.mockReturnValue({
       isSignedIn: true,
-      user: { id: 'user_123' },
+      user: { id: 'user_123' } as any,
       isLoaded: true,
     })
 
