@@ -2,6 +2,7 @@ package authentication
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/Oleexo/config-go"
 	"github.com/clerk/clerk-sdk-go/v2/jwt"
@@ -19,19 +20,22 @@ import (
 type clerkIdentityProvider struct {
 	jwksClient *jwks.Client
 	userClient *user.Client
+	logger     *slog.Logger
 }
 
 type publicUserMetadata struct {
 	Role string `json:"role"`
 }
 
-func NewClerkIdentityProvider(cfg config.Configuration) ports.IdentityProvider {
+func NewClerkIdentityProvider(cfg config.Configuration,
+	logger *slog.Logger) ports.IdentityProvider {
 	secret := cfg.GetString("CLERK_SECRET_KEY")
 	clerkConfig := &clerk.ClientConfig{}
 	clerkConfig.Key = x.P(secret)
 	return &clerkIdentityProvider{
 		jwksClient: jwks.NewClient(clerkConfig),
 		userClient: user.NewClient(clerkConfig),
+		logger:     logger,
 	}
 }
 
@@ -46,6 +50,7 @@ func (c *clerkIdentityProvider) ReadSessionToken(ctx context.Context, sessionTok
 		Token: sessionToken,
 	})
 	if err != nil {
+		c.logger.Debug("invalid session token", "token", sessionToken)
 		return ports.NewInvalidIdentity(), err
 	}
 
@@ -55,6 +60,7 @@ func (c *clerkIdentityProvider) ReadSessionToken(ctx context.Context, sessionTok
 		JWKSClient: c.jwksClient,
 	})
 	if err != nil {
+		c.logger.Debug("failed to get JSON Web Key", "error", err)
 		return ports.NewInvalidIdentity(), authorization.ErrUnauthorized
 	}
 
@@ -64,6 +70,7 @@ func (c *clerkIdentityProvider) ReadSessionToken(ctx context.Context, sessionTok
 		JWK:   jwk,
 	})
 	if err != nil {
+		c.logger.Debug("failed to verify session token", "error", err)
 		return ports.NewInvalidIdentity(), authorization.ErrUnauthorized
 	}
 

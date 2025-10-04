@@ -51,3 +51,67 @@ jobs:
         run: npm run build
       - name: Test
         run: npm test
+
+  e2e-tests:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    name: E2E Tests (web)
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "web/package-lock.json"
+
+      - name: Install dependencies
+        working-directory: web
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Install Playwright Browsers
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+
+      - name: Start services with Docker Compose
+        run: docker compose up --build -d
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for backend to be ready..."
+          timeout 60 bash -c 'until curl -f http://localhost:8080/health 2>/dev/null; do sleep 2; done' || true
+          echo "Waiting for frontend to be ready..."
+          timeout 60 bash -c 'until curl -f http://localhost:5173 2>/dev/null; do sleep 2; done' || true
+          sleep 5
+
+      - name: Run E2E tests
+        working-directory: web
+        run: npm run test:e2e
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:5173
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            web/test-results/
+            web/playwright-report/
+          retention-days: 30
+
+      - name: Stop services
+        if: always()
+        run: docker compose down -v
