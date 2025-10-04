@@ -1,4 +1,6 @@
 name: Web Build and Test
+permissions:
+  contents: read
 
 on:
   push:
