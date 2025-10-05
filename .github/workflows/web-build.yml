@@ -90,9 +90,9 @@ jobs:
       - name: Setup config
         run: |
           echo "VITE_CLERK_PUBLISHABLE_KEY=${{secrets.TEST_CLERK_PUBLISHABLE_KEY}}" >> .env.web
-          echo "VITE_CLERK_PUBLISHABLE_KEY=${{secrets.TEST_CLERK_PUBLISHABLE_KEY}}" >> .env.test
-          echo "TEST_USER_EMAIL=${{secrets.TEST_USER_EMAIL}}" >> .env.test
-          echo "TEST_USER_PASSWORD=${{secrets.TEST_USER_PASSWORD}}" >> .env.test
+          echo "VITE_CLERK_PUBLISHABLE_KEY=${{secrets.TEST_CLERK_PUBLISHABLE_KEY}}" >> ./web/.env.test
+          echo "TEST_USER_EMAIL=${{secrets.TEST_USER_EMAIL}}" >> ./web/.env.test
+          echo "TEST_USER_PASSWORD=${{secrets.TEST_USER_PASSWORD}}" >> ./web/.env.test
           echo "CLERK_SECRET_KEY=${{secrets.TEST_CLERK_SECRET_KEY}}" >> .env.backend
 
       - name: Start services with Docker Compose
