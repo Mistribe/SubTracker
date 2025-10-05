@@ -1,6 +1,8 @@
 name: Web Build and Test
 permissions:
   contents: read
+  pull-requests: write
+  issues: write
 
 on:
   push:
@@ -123,6 +125,78 @@ jobs:
             web/test-results/
             web/playwright-report/
           retention-days: 30
+
+      - name: Comment PR with test results
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Import our custom formatter
+            const { formatTestResults } = require('./.github/scripts/format-test-results.js');
+            
+            try {
+              const testResultsPath = './web/test-results/test-results.json';
+              const junitPath = './web/test-results/junit-report.xml';
+              
+              // Check if test results exist
+              if (!fs.existsSync(testResultsPath)) {
+                console.log('Test results file not found, skipping PR comment');
+                return;
+              }
+              
+              // Format the test results
+              let commentBody = formatTestResults(testResultsPath, junitPath);
+              
+              // Replace placeholders with actual values
+              commentBody = commentBody.replace(/GITHUB_RUN_ID/g, context.runId);
+              
+              // Get existing comments to check if we already commented
+              const comments = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+              });
+              
+              // Look for existing E2E test results comment
+              const existingComment = comments.data.find(comment => 
+                comment.user.login === 'github-actions[bot]' && 
+                comment.body.includes('🎭 E2E Test Results')
+              );
+              
+              if (existingComment) {
+                // Update existing comment
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existingComment.id,
+                  body: commentBody
+                });
+                console.log('Updated existing PR comment with test results');
+              } else {
+                // Create new comment
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: commentBody
+                });
+                console.log('Created new PR comment with test results');
+              }
+            } catch (error) {
+              console.error('Error commenting on PR:', error);
+              
+              // Create a fallback comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `## 🎭 E2E Test Results ❌ Error\n\nFailed to process test results: ${error.message}\n\n[View Workflow Run](../../actions/runs/${context.runId})`
+              });
+            }
 
       - name: Stop services
         if: always()
