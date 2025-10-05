@@ -112,6 +112,7 @@ jobs:
         run: npm run test:e2e
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:9080
+          NODE_ENV: test
 
       - name: Upload test results
         if: always()

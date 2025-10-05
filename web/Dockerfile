@@ -45,8 +45,10 @@ RUN rm -f /etc/nginx/conf.d/default.conf && \
     > /etc/nginx/conf.d/default.conf
 
 # Copy runtime env injection entrypoint and make it executable
+RUN apk add --no-cache dos2unix
 COPY scripts/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
+RUN dos2unix /docker-entrypoint.sh
 
 EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD wget -qO- http://localhost/ >/dev/null 2>&1 || exit 1
