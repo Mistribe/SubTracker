@@ -3,31 +3,30 @@ package query
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type FindOneQuery struct {
-	ID uuid.UUID
+	LabelID types.LabelID
 }
 
-func NewFindOneQuery(id uuid.UUID) FindOneQuery {
+func NewFindOneQuery(labelID types.LabelID) FindOneQuery {
 	return FindOneQuery{
-		ID: id,
+		LabelID: labelID,
 	}
 }
 
 type FindOneQueryHandler struct {
 	labelRepository ports.LabelRepository
-	authService     ports.AuthService
+	authService     ports.Authentication
 }
 
 func NewFindOneQueryHandler(
 	labelRepository ports.LabelRepository,
-	authService ports.AuthService) *FindOneQueryHandler {
+	authService ports.Authentication) *FindOneQueryHandler {
 	return &FindOneQueryHandler{
 		labelRepository: labelRepository,
 		authService:     authService,
@@ -35,8 +34,8 @@ func NewFindOneQueryHandler(
 }
 
 func (h FindOneQueryHandler) Handle(ctx context.Context, query FindOneQuery) result.Result[label.Label] {
-	userId := h.authService.MustGetUserId(ctx)
-	lbl, err := h.labelRepository.GetByIdForUser(ctx, userId, query.ID)
+	connectedAccount := h.authService.MustGetConnectedAccount(ctx)
+	lbl, err := h.labelRepository.GetByIdForUser(ctx, connectedAccount.UserID(), query.LabelID)
 	if err != nil {
 		return result.Fail[label.Label](err)
 	}

@@ -3,9 +3,8 @@ package command
 import (
 	"context"
 
-	"github.com/google/uuid"
-
-	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/authorization"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 
 	"github.com/mistribe/subtracker/internal/domain/label"
@@ -13,27 +12,28 @@ import (
 )
 
 type DeleteLabelCommand struct {
-	Id uuid.UUID
+	LabelID types.LabelID
 }
 
 type DeleteLabelCommandHandler struct {
 	labelRepository  ports.LabelRepository
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authorization    ports.Authorization
 }
 
-func NewDeleteLabelCommandHandler(labelRepository ports.LabelRepository,
+func NewDeleteLabelCommandHandler(
+	labelRepository ports.LabelRepository,
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *DeleteLabelCommandHandler {
+	authorization ports.Authorization) *DeleteLabelCommandHandler {
 	return &DeleteLabelCommandHandler{
 		labelRepository:  labelRepository,
 		familyRepository: familyRepository,
-		authService:      authService,
+		authorization:    authorization,
 	}
 }
 
 func (h DeleteLabelCommandHandler) Handle(ctx context.Context, command DeleteLabelCommand) result.Result[bool] {
-	existingLabel, err := h.labelRepository.GetById(ctx, command.Id)
+	existingLabel, err := h.labelRepository.GetById(ctx, command.LabelID)
 	if err != nil {
 		return result.Fail[bool](err)
 	}
@@ -41,15 +41,15 @@ func (h DeleteLabelCommandHandler) Handle(ctx context.Context, command DeleteLab
 		return result.Fail[bool](label.ErrLabelNotFound)
 	}
 
-	ok, err := h.authService.IsOwner(ctx, existingLabel.Owner())
-	if err != nil {
+	permReq := h.authorization.Can(ctx, authorization.PermissionDelete)
+	if permReq == nil {
+		return result.Fail[bool](authorization.ErrUnauthorized)
+	}
+	if err = permReq.For(existingLabel); err != nil {
 		return result.Fail[bool](err)
 	}
-	if !ok {
-		return result.Fail[bool](family.ErrFamilyNotFound)
-	}
 
-	ok, err = h.labelRepository.Delete(ctx, command.Id)
+	ok, err := h.labelRepository.Delete(ctx, command.LabelID)
 	if err != nil {
 		return result.Fail[bool](err)
 	}

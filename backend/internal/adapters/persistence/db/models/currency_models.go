@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/model"
 	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/types"
 )
 
 func CreateCurrencyRateFromModel(source model.CurrencyRates) (currency.Rate, error) {
@@ -16,7 +17,7 @@ func CreateCurrencyRateFromModel(source model.CurrencyRates) (currency.Rate, err
 	}
 
 	return currency.NewRate(
-		source.ID,
+		types.RateID(source.ID),
 		fromCurrency,
 		toCurrency,
 		source.RateDate,

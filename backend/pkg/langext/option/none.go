@@ -30,7 +30,7 @@ func (n none[TValue]) Value() *TValue {
 	return nil
 }
 
-func (n none[TValue]) ValueWithDefault(value TValue) TValue {
+func (n none[TValue]) ValueOrDefault(value TValue) TValue {
 	return value
 }
 

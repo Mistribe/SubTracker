@@ -1,7 +1,8 @@
 package subscription
 
 import (
-	"github.com/google/uuid"
+	"github.com/mistribe/subtracker/internal/domain/types"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type LabelSource string
@@ -16,7 +17,7 @@ func (l LabelSource) String() string {
 }
 
 type LabelRef struct {
-	LabelId uuid.UUID
+	LabelId types.LabelID
 	Source  LabelSource
 }
 
@@ -26,4 +27,13 @@ func LabelRefUniqueComparer(a LabelRef, b LabelRef) bool {
 
 func LabelRefComparer(a LabelRef, b LabelRef) bool {
 	return a.LabelId == b.LabelId && a.Source == b.Source
+}
+
+func NewSubscriptionLabelRefs(labelIDs []types.LabelID) []LabelRef {
+	return herd.Select(labelIDs, func(ID types.LabelID) LabelRef {
+		return LabelRef{
+			LabelId: ID,
+			Source:  LabelSourceSubscription,
+		}
+	})
 }

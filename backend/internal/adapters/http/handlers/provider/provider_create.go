@@ -2,73 +2,60 @@ package provider
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/langext/option"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/internal/usecase/provider/command"
 	"github.com/mistribe/subtracker/pkg/ginx"
 )
 
-type ProviderCreateEndpoint struct {
-	handler ports.CommandHandler[command.CreateProviderCommand, provider.Provider]
+type CreateEndpoint struct {
+	handler        ports.CommandHandler[command.CreateProviderCommand, provider.Provider]
+	authentication ports.Authentication
 }
 
-func NewProviderCreateEndpoint(handler ports.CommandHandler[command.CreateProviderCommand, provider.Provider]) *ProviderCreateEndpoint {
-	return &ProviderCreateEndpoint{handler: handler}
-}
-
-type createProviderModel struct {
-	Id             *string                `json:"id,omitempty"`
-	Name           string                 `json:"name" binding:"required"`
-	Description    *string                `json:"description,omitempty"`
-	IconUrl        *string                `json:"icon_url,omitempty"`
-	Url            *string                `json:"url,omitempty"`
-	PricingPageUrl *string                `json:"pricing_page_url,omitempty"`
-	Labels         []string               `json:"labels" binding:"required"`
-	Owner          dto.EditableOwnerModel `json:"owner" binding:"required"`
-	CreatedAt      *time.Time             `json:"created_at,omitempty" format:"date-time"`
-}
-
-func (m createProviderModel) Command(userId string) (command.CreateProviderCommand, error) {
-	var providerId *uuid.UUID
-	if m.Id != nil {
-		id, err := uuid.Parse(*m.Id)
-		if err != nil {
-			return command.CreateProviderCommand{}, err
-		}
-
-		providerId = &id
+func NewCreateEndpoint(handler ports.CommandHandler[command.CreateProviderCommand, provider.Provider],
+	authentication ports.Authentication) *CreateEndpoint {
+	return &CreateEndpoint{
+		handler:        handler,
+		authentication: authentication,
 	}
-	labels, err := collection.SelectErr(m.Labels, uuid.Parse)
+}
+
+func createProviderRequestToCommand(r dto.CreateProviderRequest,
+	userId types.UserID) (command.CreateProviderCommand, error) {
+	providerID, err := types.ParseProviderIDOrNil(r.Id)
+	if err != nil {
+		return command.CreateProviderCommand{}, err
+	}
+	labels, err := herd.SelectErr(r.Labels, types.ParseLabelID)
 	if err != nil {
 		return command.CreateProviderCommand{}, err
 	}
 
-	owner, err := m.Owner.Owner(userId)
+	owner, err := r.Owner.Owner(userId)
 	if err != nil {
 		return command.CreateProviderCommand{}, err
 	}
 
 	return command.CreateProviderCommand{
-		Id: providerId,
-
-		Name:           m.Name,
-		Description:    m.Description,
-		IconUrl:        m.IconUrl,
-		Url:            m.Url,
-		PricingPageUrl: m.PricingPageUrl,
+		ProviderID:     option.New(providerID),
+		Name:           r.Name,
+		Description:    r.Description,
+		IconUrl:        r.IconUrl,
+		Url:            r.Url,
+		PricingPageUrl: r.PricingPageUrl,
 		Labels:         labels,
 		Owner:          owner,
-		CreatedAt:      m.CreatedAt,
+		CreatedAt:      option.New(r.CreatedAt),
 	}, nil
 }
 
@@ -79,30 +66,22 @@ func (m createProviderModel) Command(userId string) (command.CreateProviderComma
 //	@Tags			providers
 //	@Accept			json
 //	@Produce		json
-//	@Param			provider	body		createProviderModel	true	"Provider creation data"
-//	@Success		201			{object}	ProviderModel		"Successfully created provider"
-//	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid input data"
-//	@Failure		401			{object}	HttpErrorResponse	"Unauthorized - Invalid user authentication"
-//	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
+//	@Param			provider	body		dto.CreateProviderRequest	true	"Provider creation data"
+//	@Success		201			{object}	dto.ProviderModel			"Successfully created provider"
+//	@Failure		400			{object}	HttpErrorResponse			"Bad Request - Invalid input data"
+//	@Failure		401			{object}	HttpErrorResponse			"Unauthorized - Invalid user authentication"
+//	@Failure		500			{object}	HttpErrorResponse			"Internal Server Error"
 //	@Router			/providers [post]
-func (e ProviderCreateEndpoint) Handle(c *gin.Context) {
-	var model createProviderModel
+func (e CreateEndpoint) Handle(c *gin.Context) {
+	var model dto.CreateProviderRequest
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
+		FromError(c, err)
 		return
 	}
 
-	userId, ok := auth.GetUserIdFromContext(c)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, ginx.HttpErrorResponse{
-			Message: "invalid user id",
-		})
-		return
-	}
+	connectedAccount := e.authentication.MustGetConnectedAccount(c)
 
-	cmd, err := model.Command(userId)
+	cmd, err := createProviderRequestToCommand(model, connectedAccount.UserID())
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
 			Message: err.Error(),
@@ -116,20 +95,20 @@ func (e ProviderCreateEndpoint) Handle(c *gin.Context) {
 		r,
 		WithStatus[provider.Provider](http.StatusCreated),
 		WithMapping[provider.Provider](func(prov provider.Provider) any {
-			return newProviderModel(prov)
+			return dto.NewProviderModel(prov)
 		}))
 }
 
-func (e ProviderCreateEndpoint) Pattern() []string {
+func (e CreateEndpoint) Pattern() []string {
 	return []string{
 		"",
 	}
 }
 
-func (e ProviderCreateEndpoint) Method() string {
+func (e CreateEndpoint) Method() string {
 	return http.MethodPost
 }
 
-func (e ProviderCreateEndpoint) Middlewares() []gin.HandlerFunc {
+func (e CreateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

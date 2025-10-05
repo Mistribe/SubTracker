@@ -25,23 +25,26 @@ func NewFindAllQuery(searchText string, limit, offset int64) FindAllQuery {
 
 type FindAllQueryHandler struct {
 	providerRepository ports.ProviderRepository
-	authService        ports.AuthService
+	authentication     ports.Authentication
+	authorization      ports.Authorization
 }
 
 func NewFindAllQueryHandler(
 	providerRepository ports.ProviderRepository,
-	authService ports.AuthService) *FindAllQueryHandler {
+	authentication ports.Authentication,
+	authorization ports.Authorization) *FindAllQueryHandler {
 	return &FindAllQueryHandler{
 		providerRepository: providerRepository,
-		authService:        authService,
+		authentication:     authentication,
+		authorization:      authorization,
 	}
 }
 
 func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[shared.PaginatedResponse[provider.Provider]] {
-	userId := h.authService.MustGetUserId(ctx)
-	providers, count, err := h.providerRepository.GetAllForUser(ctx, userId,
+	connectedAccount := h.authentication.MustGetConnectedAccount(ctx)
+	providers, count, err := h.providerRepository.GetAllForUser(ctx, connectedAccount.UserID(),
 		ports.NewProviderQueryParameters(query.SearchText, query.Limit, query.Offset))
 	if err != nil {
 		return result.Fail[shared.PaginatedResponse[provider.Provider]](err)

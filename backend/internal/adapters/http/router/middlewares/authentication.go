@@ -6,8 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/mistribe/subtracker/internal/adapters/authentication"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/pkg/ginx"
 )
 
@@ -53,9 +54,39 @@ func (m AuthenticationMiddleware) Middleware() gin.HandlerFunc {
 		}
 
 		// Store claims in context for use in handlers
-		c.Set(auth.ContextIdentityKey, identity)
-		c.Set(auth.ContextUserIdKey, identity.Id)
+		c.Set(authentication.ContextConnectedAccountKey, newConnectedAccountInformation(
+			types.UserID(identity.Id),
+			types.ParseRoleOrDefault(identity.Role, types.RoleUser),
+			types.ParsePlanOrDefault(identity.Plan, types.PlanFree),
+		))
 
 		c.Next()
 	}
+}
+
+type connectedAccountInformation struct {
+	userId types.UserID
+	role   types.Role
+	planID types.PlanID
+}
+
+func newConnectedAccountInformation(userId types.UserID, role types.Role,
+	planID types.PlanID) connectedAccountInformation {
+	return connectedAccountInformation{
+		userId: userId,
+		role:   role,
+		planID: planID,
+	}
+}
+
+func (c connectedAccountInformation) UserID() types.UserID {
+	return c.userId
+}
+
+func (c connectedAccountInformation) PlanID() types.PlanID {
+	return c.planID
+}
+
+func (c connectedAccountInformation) Role() types.Role {
+	return c.role
 }

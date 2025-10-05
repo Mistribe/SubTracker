@@ -5,14 +5,14 @@ import (
 	"sort"
 	"time"
 
-	"github.com/google/uuid"
 	xcur "golang.org/x/text/currency"
 
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type SummaryQuery struct {
@@ -24,21 +24,21 @@ type SummaryQuery struct {
 }
 
 type SummaryQueryUpcomingRenewalsResponse struct {
-	ProviderId uuid.UUID
+	ProviderId types.ProviderID
 	At         time.Time
 	Total      currency.Amount
 	Source     *currency.Amount
 }
 
 type SummaryQueryTopProvidersResponse struct {
-	ProviderId uuid.UUID
+	ProviderID types.ProviderID
 	Total      currency.Amount
 	Duration   time.Duration
 }
 
 type SummaryQueryLabelResponse struct {
-	TagId uuid.UUID
-	Total currency.Amount
+	LabelID types.LabelID
+	Total   currency.Amount
 }
 
 type SummaryQueryResponse struct {
@@ -55,21 +55,21 @@ type SummaryQueryResponse struct {
 type SummaryQueryHandler struct {
 	subscriptionRepository ports.SubscriptionRepository
 	currencyRepository     ports.CurrencyRepository
-	userRepository         ports.UserRepository
-	authService            ports.AuthService
+	accountService         ports.AccountService
+	authService            ports.Authentication
 	exchange               ports.Exchange
 }
 
 func NewSummaryQueryHandler(
 	subscriptionRepository ports.SubscriptionRepository,
 	currencyRepository ports.CurrencyRepository,
-	userRepository ports.UserRepository,
-	authService ports.AuthService,
+	accountService ports.AccountService,
+	authService ports.Authentication,
 	exchange ports.Exchange) *SummaryQueryHandler {
 	return &SummaryQueryHandler{
 		subscriptionRepository: subscriptionRepository,
 		currencyRepository:     currencyRepository,
-		userRepository:         userRepository,
+		accountService:         accountService,
 		authService:            authService,
 		exchange:               exchange,
 	}
@@ -88,24 +88,17 @@ func (h SummaryQueryHandler) convertToCurrency(
 }
 
 func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) result.Result[SummaryQueryResponse] {
-	userId := h.authService.MustGetUserId(ctx)
-	userProfile, err := h.userRepository.GetUserProfile(ctx, userId)
-	if err != nil {
-		return result.Fail[SummaryQueryResponse](err)
-	}
+	connectedAccount := h.authService.MustGetConnectedAccount(ctx)
+	preferredCurrency := h.accountService.GetPreferredCurrency(ctx, connectedAccount.UserID())
 	currencyRates, err := h.currencyRepository.GetRatesByDate(ctx, time.Now())
 	if err != nil {
 		return result.Fail[SummaryQueryResponse](err)
 	}
-	preferredCurrency := currency.USD
-	if userProfile != nil {
-		preferredCurrency = userProfile.Currency()
-	}
 
 	currencyRates = currencyRates.WithReverse()
 
-	topProviders := make(map[uuid.UUID]SummaryQueryTopProvidersResponse)
-	topLabels := make(map[uuid.UUID]currency.Amount)
+	topProviders := make(map[types.ProviderID]SummaryQueryTopProvidersResponse)
+	topLabels := make(map[types.LabelID]currency.Amount)
 	var upcomingRenewals []SummaryQueryUpcomingRenewalsResponse
 	totalMonthly := 0.0
 	totalYearly := 0.0
@@ -114,7 +107,7 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 	lastMonth := time.Now().AddDate(0, -1, 0)
 	lastYear := time.Now().AddDate(-1, 0, 0)
 	var active uint16
-	for sub := range h.subscriptionRepository.GetAllIt(ctx, userId, "") {
+	for sub := range h.subscriptionRepository.GetAllIt(ctx, connectedAccount.UserID(), "") {
 		if sub.IsActive() {
 			active++
 		}
@@ -192,7 +185,7 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 							topProviders[sub.ProviderId()] = existingTopProvider
 						} else {
 							topProviders[sub.ProviderId()] = SummaryQueryTopProvidersResponse{
-								ProviderId: sub.ProviderId(),
+								ProviderID: sub.ProviderId(),
 								Total:      totalSpent,
 								Duration:   sub.GetTotalDuration(),
 							}
@@ -222,29 +215,29 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 		TotalLastMonth:   currency.NewAmount(totalLastMonth, preferredCurrency),
 		TotalLastYear:    currency.NewAmount(totalLastYear, preferredCurrency),
 		UpcomingRenewals: upcomingRenewals,
-		TopProviders: collection.MapToArr(topProviders,
-			func(providerId uuid.UUID, res SummaryQueryTopProvidersResponse) SummaryQueryTopProvidersResponse {
+		TopProviders: herd.MapToArr(topProviders,
+			func(providerId types.ProviderID, res SummaryQueryTopProvidersResponse) SummaryQueryTopProvidersResponse {
 				return res
 			}),
-		TopLabels: collection.MapToArr(topLabels,
-			func(labelId uuid.UUID, res currency.Amount) SummaryQueryLabelResponse {
+		TopLabels: herd.MapToArr(topLabels,
+			func(labelId types.LabelID, res currency.Amount) SummaryQueryLabelResponse {
 				return SummaryQueryLabelResponse{
-					TagId: labelId,
-					Total: res,
+					LabelID: labelId,
+					Total:   res,
 				}
 			}),
 	}
 	sort.Slice(response.UpcomingRenewals, func(i, j int) bool {
 		return response.UpcomingRenewals[i].At.Before(response.UpcomingRenewals[j].At)
 	})
-	response.UpcomingRenewals = collection.Take(response.UpcomingRenewals, int(query.UpcomingRenewals))
+	response.UpcomingRenewals = herd.Take(response.UpcomingRenewals, int(query.UpcomingRenewals))
 	sort.Slice(response.TopProviders, func(i, j int) bool {
 		return response.TopProviders[i].Total.IsGreaterThan(response.TopProviders[j].Total)
 	})
-	response.TopProviders = collection.Take(response.TopProviders, int(query.TopProviders))
+	response.TopProviders = herd.Take(response.TopProviders, int(query.TopProviders))
 	sort.Slice(response.TopLabels, func(i, j int) bool {
 		return response.TopLabels[i].Total.IsGreaterThan(response.TopLabels[j].Total)
 	})
-	response.TopLabels = collection.Take(response.TopLabels, int(query.TopLabels))
+	response.TopLabels = herd.Take(response.TopLabels, int(query.TopLabels))
 	return result.Success(response)
 }

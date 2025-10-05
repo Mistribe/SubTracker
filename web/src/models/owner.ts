@@ -1,5 +1,5 @@
 import {isValidOwnerType, OwnerType} from "@/models/ownerType.ts";
-import type {OwnerModel} from "@/api/models/dto";
+import type { DtoOwnerModel as OwnerModel } from "@/api/models/DtoOwnerModel";
 
 export default class Owner {
     constructor(type: OwnerType,

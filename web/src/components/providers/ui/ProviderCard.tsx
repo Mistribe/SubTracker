@@ -3,11 +3,9 @@ import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} f
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import Provider from "@/models/provider";
-import Plan from "@/models/plan";
 import {getBadgeText, getBadgeVariant} from "../utils/badgeUtils";
-import {Edit, MoreVertical, Plus, Trash2} from "lucide-react";
+import {Edit, MoreVertical, Trash2} from "lucide-react";
 import {useProvidersMutations} from "@/hooks/providers/useProvidersMutations";
-import {AddPlanDialog} from "../AddPlanDialog";
 import { useNavigate } from "react-router-dom";
 import {
     DropdownMenu,
@@ -26,7 +24,6 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {PlanDetailsDialog} from "@/components/providers/plan-details";
 import {argbToRgba} from "@/components/ui/utils/color-utils.ts";
 import { useLabelQuery } from "@/hooks/labels/useLabelQuery";
 
@@ -50,8 +47,6 @@ const LabelPill = ({ labelId }: LabelPillProps) => {
 };
 
 export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
-    const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-    const [isAddingPlan, setIsAddingPlan] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const {canModifyProvider, canDeleteProvider, deleteProviderMutation} = useProvidersMutations();
     const isEditable = canModifyProvider(provider);
@@ -102,10 +97,6 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
                                         <Edit className="h-4 w-4 mr-2"/>
                                         Edit Provider
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setIsAddingPlan(true)}>
-                                        <Plus className="h-4 w-4 mr-2"/>
-                                        Add Plan
-                                    </DropdownMenuItem>
                                     {isDeletable && (
                                         <>
                                             <DropdownMenuSeparator/>
@@ -152,46 +143,7 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
                     )}
                 </div>
 
-                {provider.plans.length > 0 && (
-                    <div className="flex flex-wrap gap-1 w-full">
-                        {provider.plans.map((plan) => {
-                            // Count active prices
-                            const activePricesCount = plan.prices.filter(price => price.isActive).length;
-
-                            return (
-                                <Badge
-                                    key={plan.id}
-                                    variant="secondary"
-                                    className="cursor-pointer hover:bg-secondary/80 text-xs py-0.5 px-2"
-                                    onClick={() => setSelectedPlan(plan)}
-                                >
-                                    {plan.name} {activePricesCount > 0 &&
-                                    <span className="ml-1 font-bold">{activePricesCount}</span>}
-                                </Badge>
-                            );
-                        })}
-                    </div>
-                )}
             </CardFooter>
-
-            {/* Plan Details Dialog */}
-            {selectedPlan && (
-                <PlanDetailsDialog
-                    isOpen={!!selectedPlan}
-                    onClose={() => setSelectedPlan(null)}
-                    plan={selectedPlan}
-                    providerId={provider.id}
-                />
-            )}
-
-            {/* Add Plan Dialog */}
-            {isAddingPlan && (
-                <AddPlanDialog
-                    isOpen={isAddingPlan}
-                    onClose={() => setIsAddingPlan(false)}
-                    providerId={provider.id}
-                />
-            )}
 
             {/* Delete Provider Confirmation Dialog */}
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

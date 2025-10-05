@@ -40,38 +40,36 @@ const DashboardPage = () => {
                 title="Dashboard"
             />
 
+            <SummaryCards
+                totalMonthly={summaryMonthly}
+                totalYearly={summaryYearly}
+                totalLastMonth={summaryLastMonth}
+                totalLastYear={summaryLastYear}
+                activeSubscriptionsCount={summaryActiveSubscriptions}
+                isLoading={ isLoadingSummary}
+            />
+
             { !isLoadingSummary && (summaryActiveSubscriptions ?? 0) === 0 ? (
                 <EmptySubscriptionsState />
             ) : (
-                <>
-                    <SummaryCards
-                        totalMonthly={summaryMonthly}
-                        totalYearly={summaryYearly}
-                        totalLastMonth={summaryLastMonth}
-                        totalLastYear={summaryLastYear}
-                        activeSubscriptionsCount={summaryActiveSubscriptions}
-                        isLoading={ isLoadingSummary}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <UpcomingRenewals
+                        summaryUpcomingRenewals={summaryUpcomingRenewals}
+                        providerMap={providerMap}
+                        isLoading={isLoadingSummary}
                     />
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                        <UpcomingRenewals
-                            summaryUpcomingRenewals={summaryUpcomingRenewals}
-                            providerMap={providerMap}
-                            isLoading={isLoadingSummary}
-                        />
+                    <TopProviders
+                        providers={summaryTopProviders}
+                        providerMap={providerMap}
+                        isLoading={isLoadingProvidersByIds || isLoadingSummary}
+                    />
 
-                        <TopProviders
-                            providers={summaryTopProviders}
-                            providerMap={providerMap}
-                            isLoading={isLoadingProvidersByIds || isLoadingSummary}
-                        />
-
-                        <TopLabels
-                            labels={summaryTopLabels ?? []}
-                            isLoading={isLoadingSummary}
-                        />
-                    </div>
-                </>
+                    <TopLabels
+                        labels={summaryTopLabels ?? []}
+                        isLoading={isLoadingSummary}
+                    />
+                </div>
             )}
         </div>
     );

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import { Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
@@ -14,11 +15,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         {children}
       </SignedIn>
       <SignedOut>
-        <div className="flex h-[60vh] items-center justify-center text-muted-foreground">
-          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-          Redirecting to sign in...
-        </div>
-        <RedirectToSignIn />
+        <Navigate to="/sign-in" replace />
       </SignedOut>
     </>
   );

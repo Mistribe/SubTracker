@@ -1,4 +1,4 @@
-import {type SubscriptionModel_recurrency, SubscriptionModel_recurrencyObject} from "@/api/models/subscription";
+import { DtoSubscriptionModelRecurrencyEnum } from "@/api/models/DtoSubscriptionModel";
 
 export const SubscriptionRecurrency = {
     Unknown: 'unknown',
@@ -12,22 +12,22 @@ export const SubscriptionRecurrency = {
 
 export type SubscriptionRecurrency = (typeof SubscriptionRecurrency)[keyof typeof SubscriptionRecurrency];
 
-export function fromHttpApi(recurrency: SubscriptionModel_recurrency | null | undefined): SubscriptionRecurrency {
+export function fromHttpApi(recurrency: DtoSubscriptionModelRecurrencyEnum | null | undefined): SubscriptionRecurrency {
     if (!recurrency) {
         return SubscriptionRecurrency.Unknown;
     }
     switch (recurrency) {
-        case SubscriptionModel_recurrencyObject.Unknown:
+        case DtoSubscriptionModelRecurrencyEnum.Unknown:
             return SubscriptionRecurrency.Unknown;
-        case SubscriptionModel_recurrencyObject.One_time:
+        case DtoSubscriptionModelRecurrencyEnum.OneTime:
             return SubscriptionRecurrency.OneTime;
-        case SubscriptionModel_recurrencyObject.Monthly:
+        case DtoSubscriptionModelRecurrencyEnum.Monthly:
             return SubscriptionRecurrency.Monthly;
-        case SubscriptionModel_recurrencyObject.Quarterly:
+        case DtoSubscriptionModelRecurrencyEnum.Quarterly:
             return SubscriptionRecurrency.Quarterly;
-        case SubscriptionModel_recurrencyObject.Half_yearly:
+        case DtoSubscriptionModelRecurrencyEnum.HalfYearly:
             return SubscriptionRecurrency.HalfYearly;
-        case SubscriptionModel_recurrencyObject.Yearly:
+        case DtoSubscriptionModelRecurrencyEnum.Yearly:
             return SubscriptionRecurrency.Yearly;
         default:
             return SubscriptionRecurrency.Custom;

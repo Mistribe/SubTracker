@@ -1,8 +1,8 @@
-import type {ReactNode} from "react";
-import {useEffect, useRef, useState} from "react";
-import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button.tsx";
-import {SlidersHorizontalIcon} from "lucide-react";
+import type { ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button.tsx";
+import { SlidersHorizontalIcon } from "lucide-react";
 
 export interface PageHeaderProps {
     /**
@@ -37,6 +37,11 @@ export interface PageHeaderProps {
     actionButton?: ReactNode;
 
     /**
+     * Optional quota button to display quota information
+     */
+    quotaButton?: ReactNode;
+
+    /**
      * Search placeholder text
      */
     searchPlaceholder?: string;
@@ -49,15 +54,16 @@ export interface PageHeaderProps {
 }
 
 export const PageHeader = ({
-                               title,
-                               description,
-                               searchText = "",
-                               onSearchChange,
-                               actionButton,
-                               onFilter,
-                               searchPlaceholder = "Search...",
-                               searchDebounceMs = 300,
-                           }: PageHeaderProps) => {
+    title,
+    description,
+    searchText = "",
+    onSearchChange,
+    actionButton,
+    quotaButton,
+    onFilter,
+    searchPlaceholder = "Search...",
+    searchDebounceMs = 300,
+}: PageHeaderProps) => {
     // Local input state for instant UI feedback
     const [localValue, setLocalValue] = useState<string>(searchText ?? "");
 
@@ -114,14 +120,19 @@ export const PageHeader = ({
                         />
                         {onFilter && (
                             <Button size="icon" onClick={onFilter}>
-                                <SlidersHorizontalIcon/>
+                                <SlidersHorizontalIcon />
                             </Button>
                         )}
                     </div>
                 )}
 
-                {/* Action button */}
-                {actionButton && actionButton}
+                {/* Action buttons container */}
+                {(actionButton || quotaButton) && (
+                    <div className="flex items-center gap-2">
+                        {quotaButton}
+                        {actionButton}
+                    </div>
+                )}
             </div>
 
         </div>

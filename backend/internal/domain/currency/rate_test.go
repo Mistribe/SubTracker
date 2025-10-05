@@ -4,15 +4,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	xcur "golang.org/x/text/currency"
 
 	dc "github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/types"
 )
 
 func makeRateAt(
-	id uuid.UUID,
+	id types.RateID,
 	from, to xcur.Unit,
 	rateDate time.Time,
 	exchange float64,
@@ -22,7 +22,7 @@ func makeRateAt(
 }
 
 func TestNewRate(t *testing.T) {
-	id := uuid.New()
+	id := types.NewRateID()
 	from := xcur.EUR
 	to := xcur.USD
 	rateDate := time.Date(2024, 12, 25, 10, 9, 8, 7, time.UTC)
@@ -58,15 +58,15 @@ func TestNewRate(t *testing.T) {
 }
 
 func TestRate_Equal_NilOtherReturnsFalse(t *testing.T) {
-	r := makeRateAt(uuid.New(), xcur.EUR, xcur.USD, time.Now(), 1.1, time.Now(), time.Now())
+	r := makeRateAt(types.NewRateID(), xcur.EUR, xcur.USD, time.Now(), 1.1, time.Now(), time.Now())
 	assert.False(t, r.Equal(nil))
 }
 
 func TestRate_Equal_SameFieldsReturnsTrue(t *testing.T) {
 	rateDate := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
-	r1 := makeRateAt(uuid.New(), xcur.GBP, xcur.USD, rateDate, 1.5, time.Now(), time.Now())
+	r1 := makeRateAt(types.NewRateID(), xcur.GBP, xcur.USD, rateDate, 1.5, time.Now(), time.Now())
 	// Different id and timestamps but same fields used in ETag
-	r2 := makeRateAt(uuid.New(), xcur.GBP, xcur.USD, rateDate, 1.5, time.Now().Add(1*time.Hour),
+	r2 := makeRateAt(types.NewRateID(), xcur.GBP, xcur.USD, rateDate, 1.5, time.Now().Add(1*time.Hour),
 		time.Now().Add(2*time.Hour))
 
 	assert.True(t, r1.Equal(r2))
@@ -74,14 +74,14 @@ func TestRate_Equal_SameFieldsReturnsTrue(t *testing.T) {
 
 func TestRate_Equal_DifferentExchangeRateReturnsFalse(t *testing.T) {
 	rateDate := time.Date(2024, 1, 2, 0, 0, 0, 0, time.UTC)
-	r1 := makeRateAt(uuid.New(), xcur.GBP, xcur.USD, rateDate, 1.5, time.Now(), time.Now())
-	r2 := makeRateAt(uuid.New(), xcur.GBP, xcur.USD, rateDate, 1.6, time.Now(), time.Now())
+	r1 := makeRateAt(types.NewRateID(), xcur.GBP, xcur.USD, rateDate, 1.5, time.Now(), time.Now())
+	r2 := makeRateAt(types.NewRateID(), xcur.GBP, xcur.USD, rateDate, 1.6, time.Now(), time.Now())
 
 	assert.False(t, r1.Equal(r2))
 }
 
 func TestRates_FindExchangeRate_FoundReturnsValueAndTrue(t *testing.T) {
-	rate := makeRateAt(uuid.New(), xcur.EUR, xcur.USD, time.Now(), 1.2, time.Now(), time.Now())
+	rate := makeRateAt(types.NewRateID(), xcur.EUR, xcur.USD, time.Now(), 1.2, time.Now(), time.Now())
 	rates := dc.Rates{rate}
 
 	value, ok := rates.FindExchangeRate(xcur.EUR, xcur.USD)
@@ -91,7 +91,7 @@ func TestRates_FindExchangeRate_FoundReturnsValueAndTrue(t *testing.T) {
 }
 
 func TestRates_FindExchangeRate_NotFoundReturnsZeroAndFalse(t *testing.T) {
-	rate := makeRateAt(uuid.New(), xcur.GBP, xcur.USD, time.Now(), 1.3, time.Now(), time.Now())
+	rate := makeRateAt(types.NewRateID(), xcur.GBP, xcur.USD, time.Now(), 1.3, time.Now(), time.Now())
 	rates := dc.Rates{rate}
 
 	value, ok := rates.FindExchangeRate(xcur.EUR, xcur.USD)
@@ -101,7 +101,7 @@ func TestRates_FindExchangeRate_NotFoundReturnsZeroAndFalse(t *testing.T) {
 }
 
 func TestRates_WithReverse(t *testing.T) {
-	id := uuid.New()
+	id := types.NewRateID()
 	rateDate := time.Date(2024, 5, 6, 7, 8, 9, 0, time.UTC)
 	createdAt := time.Date(2023, 3, 3, 3, 3, 3, 0, time.UTC)
 	updatedAt := time.Date(2023, 4, 4, 4, 4, 4, 0, time.UTC)
@@ -128,7 +128,7 @@ func TestRates_WithReverse(t *testing.T) {
 		assert.Equal(t, original.UpdatedAt(), rev.UpdatedAt())
 	})
 
-	t.Run("reverse has different ID from original", func(t *testing.T) {
+	t.Run("reverse has different LabelID from original", func(t *testing.T) {
 		rev := withReverse[1]
 		assert.NotEqual(t, original.Id(), rev.Id())
 	})

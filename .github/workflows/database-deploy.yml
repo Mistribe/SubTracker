@@ -1,4 +1,6 @@
 name: Deploy database schema update
+permissions:
+  contents: read
 on:
   push:
     branches:

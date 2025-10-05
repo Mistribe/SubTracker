@@ -10,10 +10,10 @@ import (
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/model"
 	. "github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/table"
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/models"
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	. "github.com/go-jet/jet/v2/postgres"
 )
@@ -28,7 +28,7 @@ func NewLabelRepository(dbContext *db.Context) ports.LabelRepository {
 	}
 }
 
-func (r LabelRepository) GetById(ctx context.Context, labelId uuid.UUID) (label.Label, error) {
+func (r LabelRepository) GetById(ctx context.Context, labelId types.LabelID) (label.Label, error) {
 	stmt := SELECT(Labels.AllColumns).
 		FROM(Labels).
 		WHERE(Labels.ID.EQ(UUID(labelId)))
@@ -46,7 +46,8 @@ func (r LabelRepository) GetById(ctx context.Context, labelId uuid.UUID) (label.
 	return lbl, nil
 }
 
-func (r LabelRepository) GetByIdForUser(ctx context.Context, userId string, labelId uuid.UUID) (label.Label, error) {
+func (r LabelRepository) GetByIdForUser(ctx context.Context, userId types.UserID, labelId types.LabelID) (label.Label,
+	error) {
 	stmt := SELECT(Labels.AllColumns).
 		FROM(
 			Labels.
@@ -57,8 +58,8 @@ func (r LabelRepository) GetByIdForUser(ctx context.Context, userId string, labe
 			Labels.ID.EQ(UUID(labelId)).
 				AND(
 					Labels.OwnerType.EQ(String("system")).
-						OR(Labels.OwnerType.EQ(String("personal")).AND(Labels.OwnerUserID.EQ(String(userId)))).
-						OR(Labels.OwnerType.EQ(String("family")).AND(FamilyMembers.UserID.EQ(String(userId)))),
+						OR(Labels.OwnerType.EQ(String("personal")).AND(Labels.OwnerUserID.EQ(String(userId.String())))).
+						OR(Labels.OwnerType.EQ(String("family")).AND(FamilyMembers.UserID.EQ(String(userId.String())))),
 				),
 		)
 
@@ -75,7 +76,7 @@ func (r LabelRepository) GetByIdForUser(ctx context.Context, userId string, labe
 	return lbl, nil
 }
 
-func (r LabelRepository) GetAll(ctx context.Context, userId string, parameters ports.LabelQueryParameters) (
+func (r LabelRepository) GetAll(ctx context.Context, userId types.UserID, parameters ports.LabelQueryParameters) (
 	[]label.Label,
 	int64,
 	error) {
@@ -91,8 +92,8 @@ func (r LabelRepository) GetAll(ctx context.Context, userId string, parameters p
 		).
 		WHERE(
 			Labels.OwnerType.EQ(String("system")).
-				OR(Labels.OwnerType.EQ(String("personal")).AND(Labels.OwnerUserID.EQ(String(userId)))).
-				OR(Labels.OwnerType.EQ(String("family")).AND(FamilyMembers.UserID.EQ(String(userId)))),
+				OR(Labels.OwnerType.EQ(String("personal")).AND(Labels.OwnerUserID.EQ(String(userId.String())))).
+				OR(Labels.OwnerType.EQ(String("family")).AND(FamilyMembers.UserID.EQ(String(userId.String())))),
 		)
 
 	if parameters.SearchText != "" {
@@ -116,10 +117,11 @@ func (r LabelRepository) GetAll(ctx context.Context, userId string, parameters p
 	}
 
 	totalCount := rows[0].TotalCount
-	labels := collection.Select(rows, func(row struct {
-		Labels     model.Labels `json:"labels"`
-		TotalCount int64        `json:"total_count"`
-	}) label.Label {
+	labels := herd.Select(rows, func(
+		row struct {
+			Labels     model.Labels `json:"labels"`
+			TotalCount int64        `json:"total_count"`
+		}) label.Label {
 		return models.CreateLabelFromModel(row.Labels)
 	})
 
@@ -140,7 +142,7 @@ func (r LabelRepository) GetSystemLabels(ctx context.Context) ([]label.Label, er
 		return nil, err
 	}
 
-	labels := collection.Select(rows, func(row model.Labels) label.Label {
+	labels := herd.Select(rows, func(row model.Labels) label.Label {
 		return models.CreateLabelFromModel(row)
 	})
 	return labels, nil
@@ -193,10 +195,10 @@ func (r LabelRepository) create(ctx context.Context, labels []label.Label) error
 		var ownerUserID Expression
 
 		switch lbl.Owner().Type() {
-		case auth.PersonalOwnerType:
+		case types.PersonalOwnerType:
 			ownerFamilyID = NULL
-			ownerUserID = String(lbl.Owner().UserId())
-		case auth.FamilyOwnerType:
+			ownerUserID = String(lbl.Owner().UserId().String())
+		case types.FamilyOwnerType:
 			ownerFamilyID = UUID(lbl.Owner().FamilyId())
 			ownerUserID = NULL
 		default:
@@ -243,10 +245,10 @@ func (r LabelRepository) update(ctx context.Context, lbl label.Label) error {
 	var ownerUserID StringExpression
 
 	switch lbl.Owner().Type() {
-	case auth.PersonalOwnerType:
+	case types.PersonalOwnerType:
 		ownerFamilyID = StringExp(NULL)
-		ownerUserID = String(lbl.Owner().UserId())
-	case auth.FamilyOwnerType:
+		ownerUserID = String(lbl.Owner().UserId().String())
+	case types.FamilyOwnerType:
 		ownerFamilyID = StringExp(UUID(lbl.Owner().FamilyId()))
 		ownerUserID = StringExp(NULL)
 	default:
@@ -284,7 +286,7 @@ func (r LabelRepository) update(ctx context.Context, lbl label.Label) error {
 	return nil
 }
 
-func (r LabelRepository) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
+func (r LabelRepository) Delete(ctx context.Context, id types.LabelID) (bool, error) {
 	stmt := Labels.DELETE().
 		WHERE(Labels.ID.EQ(UUID(id)))
 
@@ -296,7 +298,7 @@ func (r LabelRepository) Delete(ctx context.Context, id uuid.UUID) (bool, error)
 	return count > 0, nil
 }
 
-func (r LabelRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
+func (r LabelRepository) Exists(ctx context.Context, ids ...types.LabelID) (bool, error) {
 	if len(ids) == 0 {
 		return true, nil
 	}

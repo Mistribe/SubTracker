@@ -1,4 +1,5 @@
-import {type SubscriptionPayerModel, SubscriptionPayerModel_typeObject} from "@/api/models/subscription";
+import type { DtoSubscriptionPayerModel as SubscriptionPayerModel } from "@/api/models/DtoSubscriptionPayerModel";
+import { DtoSubscriptionPayerModelTypeEnum } from "@/api/models/DtoSubscriptionPayerModel";
 import {PayerType} from "@/models/payerType.ts";
 
 export class SubscriptionPayer {
@@ -38,10 +39,10 @@ export class SubscriptionPayer {
     static fromModel(model: SubscriptionPayerModel): SubscriptionPayer {
         let payerType: PayerType;
         switch (model.type) {
-            case SubscriptionPayerModel_typeObject.Family:
+            case DtoSubscriptionPayerModelTypeEnum.Family:
                 payerType = PayerType.Family;
                 break;
-            case SubscriptionPayerModel_typeObject.Family_member:
+            case DtoSubscriptionPayerModelTypeEnum.FamilyMember:
                 payerType = PayerType.FamilyMember;
                 break;
             default:

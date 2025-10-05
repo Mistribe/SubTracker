@@ -3,10 +3,10 @@ package currency
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 
 	"github.com/mistribe/subtracker/internal/domain/entity"
+	"github.com/mistribe/subtracker/internal/domain/types"
 )
 
 type Rates []Rate
@@ -27,7 +27,7 @@ func (r Rates) WithReverse() Rates {
 
 	for _, element := range r {
 		reverseRate := NewRate(
-			uuid.New(),
+			types.NewRateID(),
 			element.ToCurrency(),
 			element.FromCurrency(),
 			element.RateDate(),
@@ -42,7 +42,7 @@ func (r Rates) WithReverse() Rates {
 }
 
 type Rate interface {
-	entity.Entity
+	entity.Entity[types.RateID]
 	entity.ETagEntity
 
 	FromCurrency() currency.Unit
@@ -54,7 +54,7 @@ type Rate interface {
 
 // Rate represents a currency exchange rate at a specific date
 type rate struct {
-	*entity.Base
+	*entity.Base[types.RateID]
 
 	fromCurrency currency.Unit
 	toCurrency   currency.Unit
@@ -64,7 +64,7 @@ type rate struct {
 
 // NewRate creates a new currency rate
 func NewRate(
-	id uuid.UUID,
+	id types.RateID,
 	fromCurrency currency.Unit,
 	toCurrency currency.Unit,
 	rateDate time.Time,
@@ -72,7 +72,7 @@ func NewRate(
 	createdAt time.Time,
 	updatedAt time.Time) Rate {
 	return &rate{
-		Base:         entity.NewBase(id, createdAt, updatedAt, true, false),
+		Base:         entity.NewBase[types.RateID](id, createdAt, updatedAt, true, false),
 		fromCurrency: fromCurrency,
 		toCurrency:   toCurrency,
 		rateDate:     rateDate,

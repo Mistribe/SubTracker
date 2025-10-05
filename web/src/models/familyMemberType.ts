@@ -1,4 +1,4 @@
-import {type FamilyMemberModel_type, FamilyMemberModel_typeObject} from "@/api/models/family";
+import { DtoFamilyMemberModelTypeEnum } from "@/api/models/DtoFamilyMemberModel";
 
 export const FamilyMemberType = {
     Owner: 'owner',
@@ -8,11 +8,11 @@ export const FamilyMemberType = {
 
 export type FamilyMemberType = (typeof FamilyMemberType)[keyof typeof FamilyMemberType];
 
-export function fromHttpApi(memberType: FamilyMemberModel_type | null | undefined): FamilyMemberType {
+export function fromHttpApi(memberType: DtoFamilyMemberModelTypeEnum | null | undefined): FamilyMemberType {
     switch (memberType) {
-        case FamilyMemberModel_typeObject.Owner:
+        case DtoFamilyMemberModelTypeEnum.Owner:
             return FamilyMemberType.Owner;
-        case FamilyMemberModel_typeObject.Adult:
+        case DtoFamilyMemberModelTypeEnum.Adult:
             return FamilyMemberType.Adult;
         default:
             return FamilyMemberType.Kid;

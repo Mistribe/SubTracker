@@ -8,8 +8,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -41,7 +41,7 @@ func (_m *MockCurrencyRepository) EXPECT() *MockCurrencyRepository_Expecter {
 }
 
 // Delete provides a mock function for the type MockCurrencyRepository
-func (_mock *MockCurrencyRepository) Delete(ctx context.Context, entityId uuid.UUID) (bool, error) {
+func (_mock *MockCurrencyRepository) Delete(ctx context.Context, entityId types.RateID) (bool, error) {
 	ret := _mock.Called(ctx, entityId)
 
 	if len(ret) == 0 {
@@ -50,15 +50,15 @@ func (_mock *MockCurrencyRepository) Delete(ctx context.Context, entityId uuid.U
 
 	var r0 bool
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (bool, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.RateID) (bool, error)); ok {
 		return returnFunc(ctx, entityId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) bool); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.RateID) bool); ok {
 		r0 = returnFunc(ctx, entityId)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.RateID) error); ok {
 		r1 = returnFunc(ctx, entityId)
 	} else {
 		r1 = ret.Error(1)
@@ -73,20 +73,20 @@ type MockCurrencyRepository_Delete_Call struct {
 
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
-//   - entityId uuid.UUID
+//   - entityId types.RateID
 func (_e *MockCurrencyRepository_Expecter) Delete(ctx interface{}, entityId interface{}) *MockCurrencyRepository_Delete_Call {
 	return &MockCurrencyRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, entityId)}
 }
 
-func (_c *MockCurrencyRepository_Delete_Call) Run(run func(ctx context.Context, entityId uuid.UUID)) *MockCurrencyRepository_Delete_Call {
+func (_c *MockCurrencyRepository_Delete_Call) Run(run func(ctx context.Context, entityId types.RateID)) *MockCurrencyRepository_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 uuid.UUID
+		var arg1 types.RateID
 		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
+			arg1 = args[1].(types.RateID)
 		}
 		run(
 			arg0,
@@ -101,13 +101,13 @@ func (_c *MockCurrencyRepository_Delete_Call) Return(b bool, err error) *MockCur
 	return _c
 }
 
-func (_c *MockCurrencyRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, entityId uuid.UUID) (bool, error)) *MockCurrencyRepository_Delete_Call {
+func (_c *MockCurrencyRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, entityId types.RateID) (bool, error)) *MockCurrencyRepository_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Exists provides a mock function for the type MockCurrencyRepository
-func (_mock *MockCurrencyRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
+func (_mock *MockCurrencyRepository) Exists(ctx context.Context, ids ...types.RateID) (bool, error) {
 	var tmpRet mock.Arguments
 	if len(ids) > 0 {
 		tmpRet = _mock.Called(ctx, ids)
@@ -122,15 +122,15 @@ func (_mock *MockCurrencyRepository) Exists(ctx context.Context, ids ...uuid.UUI
 
 	var r0 bool
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, ...uuid.UUID) (bool, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...types.RateID) (bool, error)); ok {
 		return returnFunc(ctx, ids...)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, ...uuid.UUID) bool); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...types.RateID) bool); ok {
 		r0 = returnFunc(ctx, ids...)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, ...uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ...types.RateID) error); ok {
 		r1 = returnFunc(ctx, ids...)
 	} else {
 		r1 = ret.Error(1)
@@ -145,22 +145,22 @@ type MockCurrencyRepository_Exists_Call struct {
 
 // Exists is a helper method to define mock.On call
 //   - ctx context.Context
-//   - ids ...uuid.UUID
+//   - ids ...types.RateID
 func (_e *MockCurrencyRepository_Expecter) Exists(ctx interface{}, ids ...interface{}) *MockCurrencyRepository_Exists_Call {
 	return &MockCurrencyRepository_Exists_Call{Call: _e.mock.On("Exists",
 		append([]interface{}{ctx}, ids...)...)}
 }
 
-func (_c *MockCurrencyRepository_Exists_Call) Run(run func(ctx context.Context, ids ...uuid.UUID)) *MockCurrencyRepository_Exists_Call {
+func (_c *MockCurrencyRepository_Exists_Call) Run(run func(ctx context.Context, ids ...types.RateID)) *MockCurrencyRepository_Exists_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 []uuid.UUID
-		var variadicArgs []uuid.UUID
+		var arg1 []types.RateID
+		var variadicArgs []types.RateID
 		if len(args) > 1 {
-			variadicArgs = args[1].([]uuid.UUID)
+			variadicArgs = args[1].([]types.RateID)
 		}
 		arg1 = variadicArgs
 		run(
@@ -176,13 +176,13 @@ func (_c *MockCurrencyRepository_Exists_Call) Return(b bool, err error) *MockCur
 	return _c
 }
 
-func (_c *MockCurrencyRepository_Exists_Call) RunAndReturn(run func(ctx context.Context, ids ...uuid.UUID) (bool, error)) *MockCurrencyRepository_Exists_Call {
+func (_c *MockCurrencyRepository_Exists_Call) RunAndReturn(run func(ctx context.Context, ids ...types.RateID) (bool, error)) *MockCurrencyRepository_Exists_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetById provides a mock function for the type MockCurrencyRepository
-func (_mock *MockCurrencyRepository) GetById(ctx context.Context, entityId uuid.UUID) (currency.Rate, error) {
+func (_mock *MockCurrencyRepository) GetById(ctx context.Context, entityId types.RateID) (currency.Rate, error) {
 	ret := _mock.Called(ctx, entityId)
 
 	if len(ret) == 0 {
@@ -191,17 +191,17 @@ func (_mock *MockCurrencyRepository) GetById(ctx context.Context, entityId uuid.
 
 	var r0 currency.Rate
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (currency.Rate, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.RateID) (currency.Rate, error)); ok {
 		return returnFunc(ctx, entityId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) currency.Rate); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.RateID) currency.Rate); ok {
 		r0 = returnFunc(ctx, entityId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(currency.Rate)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.RateID) error); ok {
 		r1 = returnFunc(ctx, entityId)
 	} else {
 		r1 = ret.Error(1)
@@ -216,20 +216,20 @@ type MockCurrencyRepository_GetById_Call struct {
 
 // GetById is a helper method to define mock.On call
 //   - ctx context.Context
-//   - entityId uuid.UUID
+//   - entityId types.RateID
 func (_e *MockCurrencyRepository_Expecter) GetById(ctx interface{}, entityId interface{}) *MockCurrencyRepository_GetById_Call {
 	return &MockCurrencyRepository_GetById_Call{Call: _e.mock.On("GetById", ctx, entityId)}
 }
 
-func (_c *MockCurrencyRepository_GetById_Call) Run(run func(ctx context.Context, entityId uuid.UUID)) *MockCurrencyRepository_GetById_Call {
+func (_c *MockCurrencyRepository_GetById_Call) Run(run func(ctx context.Context, entityId types.RateID)) *MockCurrencyRepository_GetById_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 uuid.UUID
+		var arg1 types.RateID
 		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
+			arg1 = args[1].(types.RateID)
 		}
 		run(
 			arg0,
@@ -244,7 +244,7 @@ func (_c *MockCurrencyRepository_GetById_Call) Return(rate currency.Rate, err er
 	return _c
 }
 
-func (_c *MockCurrencyRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId uuid.UUID) (currency.Rate, error)) *MockCurrencyRepository_GetById_Call {
+func (_c *MockCurrencyRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId types.RateID) (currency.Rate, error)) *MockCurrencyRepository_GetById_Call {
 	_c.Call.Return(run)
 	return _c
 }

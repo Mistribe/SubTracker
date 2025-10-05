@@ -5,9 +5,8 @@ import (
 	"iter"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/types"
 )
 
 type SubscriptionQueryParameters struct {
@@ -17,8 +16,8 @@ type SubscriptionQueryParameters struct {
 	Recurrencies []subscription.RecurrencyType
 	FromDate     *time.Time
 	ToDate       *time.Time
-	Users        []uuid.UUID
-	Providers    []uuid.UUID
+	Users        []types.UserID
+	Providers    []types.ProviderID
 	WithInactive bool
 }
 
@@ -27,8 +26,8 @@ func NewSubscriptionQueryParameters(
 	recurrencies []subscription.RecurrencyType,
 	fromDate *time.Time,
 	toDate *time.Time,
-	users []uuid.UUID,
-	providers []uuid.UUID,
+	users []types.UserID,
+	providers []types.ProviderID,
 	withInactive bool,
 	limit, offset int64) SubscriptionQueryParameters {
 	return SubscriptionQueryParameters{
@@ -47,11 +46,11 @@ func NewSubscriptionQueryParameters(
 }
 
 type SubscriptionRepository interface {
-	Repository[subscription.Subscription]
+	Repository[types.SubscriptionID, subscription.Subscription]
 
-	GetByIdForUser(ctx context.Context, userId string, id uuid.UUID) (subscription.Subscription, error)
+	GetByIdForUser(ctx context.Context, userId types.UserID, id types.SubscriptionID) (subscription.Subscription, error)
 	GetAll(ctx context.Context, parameters SubscriptionQueryParameters) ([]subscription.Subscription, int64, error)
-	GetAllForUser(ctx context.Context, userId string,
+	GetAllForUser(ctx context.Context, userId types.UserID,
 		parameters SubscriptionQueryParameters) ([]subscription.Subscription, int64, error)
-	GetAllIt(ctx context.Context, userId, searchText string) iter.Seq[subscription.Subscription]
+	GetAllIt(ctx context.Context, userId types.UserID, searchText string) iter.Seq[subscription.Subscription]
 }

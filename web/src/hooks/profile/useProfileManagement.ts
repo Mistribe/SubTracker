@@ -1,8 +1,8 @@
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {useApiClient} from "@/hooks/use-api-client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useApiClient } from "@/hooks/use-api-client";
 import currencyCodes from "currency-codes";
 import getSymbolFromCurrency from "currency-symbol-map";
-import type {UpdatePreferredCurrencyModel} from "@/api/models/user";
+import type { DtoUpdatePreferredCurrencyRequest as UpdatePreferredCurrencyModel } from "@/api/models/DtoUpdatePreferredCurrencyRequest";
 
 interface ProfileQueryOptions {
     /**
@@ -30,8 +30,8 @@ const fallbackCurrencyCodes = ["USD", "EUR"]
  * @returns Object containing profile data, loading states, and update functions
  */
 export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
-    const {enabled = true} = options;
-    const {apiClient} = useApiClient();
+    const { enabled = true } = options;
+    const { apiClient } = useApiClient();
     const queryClient = useQueryClient();
 
     // Query to fetch preferred currency from the backend
@@ -43,7 +43,7 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
             }
 
             try {
-                return await apiClient.users.preferred.currency.get();
+                return await apiClient.accounts.accountsPreferredCurrencyGet();
             } catch (error) {
                 console.error('Error fetching preferred currency:', error);
                 throw error;
@@ -63,7 +63,7 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
 
             try {
                 // Get currency codes from the API
-                let response = await apiClient.currencies.supported.get();
+                let response = await apiClient.currencies.currenciesSupportedGet();
 
                 if (!response || response.length === 0) {
                     console.warn('No supported currencies found');
@@ -111,10 +111,9 @@ export const useProfileManagement = (options: ProfileQueryOptions = {}) => {
             try {
                 const payload: UpdatePreferredCurrencyModel = {
                     currency,
-                    additionalData: {}
                 };
 
-                return await apiClient.users.preferred.currency.put(payload);
+                return await apiClient.accounts.accountsPreferredCurrencyPut({ authorization: 'Bearer', dtoUpdatePreferredCurrencyRequest: payload });
             } catch (error) {
                 console.error('Error updating preferred currency:', error);
                 throw error;

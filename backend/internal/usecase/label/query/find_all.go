@@ -27,24 +27,27 @@ func NewFindAllQuery(
 
 type FindAllQueryHandler struct {
 	labelRepository ports.LabelRepository
-	authService     ports.AuthService
+	authentication  ports.Authentication
+	authorization   ports.Authorization
 }
 
 func NewFindAllQueryHandler(
 	labelRepository ports.LabelRepository,
-	authService ports.AuthService) *FindAllQueryHandler {
+	authentication ports.Authentication,
+	authorization ports.Authorization) *FindAllQueryHandler {
 	return &FindAllQueryHandler{
 		labelRepository: labelRepository,
-		authService:     authService,
+		authentication:  authentication,
+		authorization:   authorization,
 	}
 }
 
 func (h FindAllQueryHandler) Handle(
 	ctx context.Context,
 	query FindAllQuery) result.Result[shared.PaginatedResponse[label.Label]] {
-	userId := h.authService.MustGetUserId(ctx)
+	connectedAccount := h.authentication.MustGetConnectedAccount(ctx)
 	params := ports.NewLabelQueryParameters(query.SearchText, query.Limit, query.Offset)
-	lbs, count, err := h.labelRepository.GetAll(ctx, userId, params)
+	lbs, count, err := h.labelRepository.GetAll(ctx, connectedAccount.UserID(), params)
 	if err != nil {
 		return result.Fail[shared.PaginatedResponse[label.Label]](err)
 	}

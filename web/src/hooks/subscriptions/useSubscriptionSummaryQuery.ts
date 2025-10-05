@@ -1,7 +1,6 @@
 import {useQuery} from "@tanstack/react-query";
 import {useApiClient} from "@/hooks/use-api-client";
 import {type Amount, zeroAmount} from "@/models/amount.ts";
-import type {SummaryRequestBuilderGetQueryParameters} from "@/api/subscriptions/summary";
 import type Summary from "@/models/summary.ts";
 
 export interface UseSubscriptionSummaryQueryOptions {
@@ -51,14 +50,13 @@ export function useSubscriptionSummaryQuery(options: UseSubscriptionSummaryQuery
         queryFn: async () => {
             if (!apiClient) throw new Error("API client not initialized");
 
-            const queryParameters: SummaryRequestBuilderGetQueryParameters = {
+            const response = await apiClient.subscriptions.subscriptionsSummaryGet({
                 topProviders,
                 totalMonthly,
                 totalYearly,
                 upcomingRenewals,
-                topLabels
-            };
-            const response = await apiClient.subscriptions.summary.get({queryParameters});
+                topLabels,
+            });
 
             return {
                 activeSubscriptions: response?.active ?? 0,

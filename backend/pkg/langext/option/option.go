@@ -10,7 +10,7 @@ type Option[TValue any] interface {
 	IfNone(action func())
 
 	Value() *TValue
-	ValueWithDefault(defaultValue TValue) TValue
+	ValueOrDefault(defaultValue TValue) TValue
 	Transform(func(TValue) TValue) Option[TValue]
 	Equal(Option[TValue]) bool
 }

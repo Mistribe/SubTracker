@@ -9,9 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 )
 
@@ -24,7 +23,7 @@ type externalSourceModel struct {
 	To   map[string]float64 `json:"to"`
 }
 type exchange struct {
-	cache      ports.LocalCache
+	cache      ports.Cache
 	repository ports.CurrencyRepository
 	logger     *slog.Logger
 }
@@ -33,8 +32,8 @@ func getCacheKey(from, to currency.Unit, at time.Time) string {
 	return fmt.Sprintf("%s-%s-%s", from, to, at.Format("2006-01-02"))
 }
 
-func (e exchange) getRateFromCache(key string) float64 {
-	rate, ok := e.cache.Get(key).(float64)
+func (e exchange) getRateFromCache(ctx context.Context, key string) float64 {
+	rate, ok := e.cache.From(ctx, ports.CacheLevelServer).Get(key).(float64)
 	if rate == 0 || !ok {
 		return 0
 	}
@@ -81,7 +80,7 @@ func (e exchange) getRateFromExternalSource(from, to currency.Unit, at time.Time
 		return 0, err
 	}
 
-	// The external source contains only USD to currencies
+	// The external source contains only USD currencies
 	usdTo := source.To
 	fromCode := from.String()
 	toCode := to.String()
@@ -125,7 +124,7 @@ func (e exchange) getRateFromExternalSource(from, to currency.Unit, at time.Time
 
 func (e exchange) getRateAt(ctx context.Context, from, to currency.Unit, at time.Time) (float64, error) {
 	key := getCacheKey(from, to, at)
-	rate := e.getRateFromCache(key)
+	rate := e.getRateFromCache(ctx, key)
 	if rate == 0 {
 		var err error
 		rate, err = e.getRateFromDatabase(ctx, from, to, at)
@@ -156,7 +155,7 @@ func (e exchange) getRateAt(ctx context.Context, from, to currency.Unit, at time
 	}
 
 	if rate > 0 {
-		e.cache.Set(key, rate, ports.WithDuration(time.Hour*24))
+		e.cache.From(ctx, ports.CacheLevelServer).Set(key, rate, ports.WithDuration(time.Hour*24))
 		return rate, nil
 	}
 
@@ -196,10 +195,7 @@ func (e exchange) saveRateToDatabase(
 	rate float64,
 	at time.Time) error {
 
-	rateId, err := uuid.NewV7()
-	if err != nil {
-		return err
-	}
+	rateId := types.NewRateID()
 	dateOnly := time.Date(at.Year(), at.Month(), at.Day(), 0, 0, 0, 0, at.Location())
 	now := time.Now()
 	r := currency.NewRate(
@@ -216,7 +212,7 @@ func (e exchange) saveRateToDatabase(
 }
 
 func New(
-	cache ports.LocalCache,
+	cache ports.Cache,
 	repository ports.CurrencyRepository,
 	logger *slog.Logger) ports.Exchange {
 	return exchange{

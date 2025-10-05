@@ -3,14 +3,11 @@ package subscription
 import (
 	"time"
 
-	"github.com/google/uuid"
-
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/domain/entity"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/pkg/slicesx"
-	"github.com/mistribe/subtracker/pkg/x"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 	"github.com/mistribe/subtracker/pkg/x/validation"
 )
 
@@ -20,7 +17,7 @@ const (
 )
 
 type Subscription interface {
-	entity.Entity
+	entity.Entity[types.SubscriptionID]
 	entity.ETagEntity
 
 	// FriendlyName is an override name to the provider name
@@ -28,19 +25,13 @@ type Subscription interface {
 	//FreeTrial is the configuration of the free trial for the subscription
 	FreeTrial() FreeTrial
 	// ProviderId is the provider of the subscription
-	ProviderId() uuid.UUID
-	// PlanId reserved not used for now
-	PlanId() *uuid.UUID
-	// PriceId reserved not used for now
-	PriceId() *uuid.UUID
-	// CustomPrice is an override to the price Id
-	CustomPrice() CustomPrice
+	ProviderId() types.ProviderID
+	Price() Price
 	// Owner is who own the subscription
-	Owner() auth.Owner
+	Owner() types.Owner
 	// Payer is who is paying the subscription
 	Payer() Payer
-	// Service users is the member of the family using the service
-	ServiceUsers() *slicesx.Tracked[uuid.UUID]
+	FamilyUsers() *slicesx.Tracked[types.FamilyMemberID]
 	// StartDate is when the subscription as start
 	StartDate() time.Time
 	// EndDate is when the subscription as stop
@@ -55,7 +46,7 @@ type Subscription interface {
 	GetRecurrencyAmount(to RecurrencyType) currency.Amount
 	// GetNextRenewalDate returns the next renewal date of the subscription
 	GetNextRenewalDate() *time.Time
-	// GetPrice returns the price of the subscription from custom or price Id
+	// GetPrice returns the price of the subscription from custom or price LabelID
 	GetPrice() currency.Amount
 	// GetTotalSpent returns the total spent of the subscription
 	GetTotalSpent() currency.Amount
@@ -70,10 +61,10 @@ type Subscription interface {
 
 	SetFriendlyName(name *string)
 	SetFreeTrial(trial FreeTrial)
-	SetCustomPrice(price CustomPrice)
-	SetOwner(owner auth.Owner)
+	SetPrice(amount currency.Amount)
+	SetOwner(owner types.Owner)
 	SetPayer(payer Payer)
-	SetServiceUsers(familyMembers []uuid.UUID)
+	SetFamilyUsers(familyMembers []types.FamilyMemberID)
 	SetStartDate(startDate time.Time)
 	SetEndDate(endDate *time.Time)
 	SetRecurrency(recurrency RecurrencyType)
@@ -84,17 +75,15 @@ type Subscription interface {
 }
 
 type subscription struct {
-	*entity.Base
+	*entity.Base[types.SubscriptionID]
 
 	friendlyName     *string
 	freeTrial        FreeTrial
-	providerId       uuid.UUID
-	planId           *uuid.UUID
-	priceId          *uuid.UUID
-	customPrice      CustomPrice
-	owner            auth.Owner
+	providerId       types.ProviderID
+	price            Price
+	owner            types.Owner
 	payer            Payer
-	serviceUsers     *slicesx.Tracked[uuid.UUID]
+	familyUsers      *slicesx.Tracked[types.FamilyMemberID]
 	labels           *slicesx.Tracked[LabelRef]
 	startDate        time.Time
 	endDate          *time.Time
@@ -103,16 +92,14 @@ type subscription struct {
 }
 
 func NewSubscription(
-	id uuid.UUID,
+	id types.SubscriptionID,
 	friendlyName *string,
 	freeTrial FreeTrial,
-	providerId uuid.UUID,
-	planId *uuid.UUID,
-	priceId *uuid.UUID,
-	customPrice CustomPrice,
-	owner auth.Owner,
+	providerId types.ProviderID,
+	customPrice Price,
+	owner types.Owner,
 	payer Payer,
-	serviceUsers []uuid.UUID,
+	familyUsers []types.FamilyMemberID,
 	labels []LabelRef,
 	startDate time.Time,
 	endDate *time.Time,
@@ -122,16 +109,14 @@ func NewSubscription(
 	updatedAt time.Time,
 ) Subscription {
 	return &subscription{
-		Base:             entity.NewBase(id, createdAt, updatedAt, true, false),
+		Base:             entity.NewBase[types.SubscriptionID](id, createdAt, updatedAt, true, false),
 		friendlyName:     friendlyName,
 		freeTrial:        freeTrial,
 		providerId:       providerId,
-		planId:           planId,
-		priceId:          priceId,
-		customPrice:      customPrice,
+		price:            customPrice,
 		owner:            owner,
 		payer:            payer,
-		serviceUsers:     slicesx.NewTracked(serviceUsers, x.UuidUniqueComparer, x.UuidComparer),
+		familyUsers:      slicesx.NewTracked(familyUsers, types.FamilyMemberIdComparer, types.FamilyMemberIdComparer),
 		labels:           slicesx.NewTracked(labels, LabelRefUniqueComparer, LabelRefComparer),
 		startDate:        startDate,
 		endDate:          endDate,
@@ -184,7 +169,7 @@ func (s *subscription) IsActive() bool {
 }
 
 func (s *subscription) GetTotalSpent() currency.Amount {
-	if s.customPrice == nil && s.priceId == nil {
+	if s.price == nil {
 		return currency.NewInvalidAmount()
 	}
 
@@ -212,12 +197,8 @@ func (s *subscription) GetTotalSpent() currency.Amount {
 }
 
 func (s *subscription) GetPrice() currency.Amount {
-	if s.customPrice != nil {
-		return currency.NewAmount(s.customPrice.Amount().Value(), s.customPrice.Amount().Currency())
-	}
-
-	if s.priceId != nil {
-		panic("not implemented yet")
+	if s.price != nil {
+		return currency.NewAmount(s.price.Amount().Value(), s.price.Amount().Currency())
 	}
 
 	return currency.NewInvalidAmount()
@@ -247,27 +228,23 @@ func (s *subscription) getMonths() int {
 func (s *subscription) getMonthlyPrice() currency.Amount {
 	var price float64
 	numberOfMonths := s.getMonths()
-	if s.customPrice != nil {
-		price = s.customPrice.Amount().Value()
-	} else if s.priceId != nil {
-		panic("not implemented yet")
+	if s.price != nil {
+		price = s.price.Amount().Value()
+	} else {
+		return currency.NewInvalidAmount()
 	}
 
-	return currency.NewAmount(price/float64(numberOfMonths), s.customPrice.Amount().Currency())
+	return currency.NewAmount(price/float64(numberOfMonths), s.price.Amount().Currency())
 }
 
 func (s *subscription) GetRecurrencyAmount(to RecurrencyType) currency.Amount {
-	if s.customPrice != nil {
+	if s.price != nil {
 		monthlyPrice := s.getMonthlyPrice()
 
 		return currency.NewAmount(
 			monthlyPrice.Value()*float64(to.TotalMonths()),
-			s.customPrice.Amount().Currency(),
+			s.price.Amount().Currency(),
 		)
-	}
-
-	if s.priceId != nil {
-		panic("not implemented yet")
 	}
 
 	return currency.NewInvalidAmount()
@@ -344,12 +321,12 @@ func (s *subscription) FriendlyName() *string {
 	return s.friendlyName
 }
 
-func (s *subscription) CustomPrice() CustomPrice {
-	return s.customPrice
+func (s *subscription) Price() Price {
+	return s.price
 }
 
-func (s *subscription) SetCustomPrice(price CustomPrice) {
-	s.customPrice = price
+func (s *subscription) SetPrice(amount currency.Amount) {
+	s.price.SetAmount(amount)
 	s.SetAsDirty()
 }
 
@@ -357,19 +334,11 @@ func (s *subscription) FreeTrial() FreeTrial {
 	return s.freeTrial
 }
 
-func (s *subscription) ProviderId() uuid.UUID {
+func (s *subscription) ProviderId() types.ProviderID {
 	return s.providerId
 }
 
-func (s *subscription) PlanId() *uuid.UUID {
-	return s.planId
-}
-
-func (s *subscription) PriceId() *uuid.UUID {
-	return s.priceId
-}
-
-func (s *subscription) Owner() auth.Owner {
+func (s *subscription) Owner() types.Owner {
 	return s.owner
 }
 
@@ -377,8 +346,8 @@ func (s *subscription) Payer() Payer {
 	return s.payer
 }
 
-func (s *subscription) ServiceUsers() *slicesx.Tracked[uuid.UUID] {
-	return s.serviceUsers
+func (s *subscription) FamilyUsers() *slicesx.Tracked[types.FamilyMemberID] {
+	return s.familyUsers
 }
 
 func (s *subscription) StartDate() time.Time {
@@ -407,7 +376,7 @@ func (s *subscription) SetFreeTrial(trial FreeTrial) {
 	s.SetAsDirty()
 }
 
-func (s *subscription) SetOwner(owner auth.Owner) {
+func (s *subscription) SetOwner(owner types.Owner) {
 	s.owner = owner
 	s.SetAsDirty()
 }
@@ -417,8 +386,8 @@ func (s *subscription) SetPayer(payer Payer) {
 	s.SetAsDirty()
 }
 
-func (s *subscription) SetServiceUsers(familyMembers []uuid.UUID) {
-	s.serviceUsers = slicesx.NewTracked(familyMembers, x.UuidUniqueComparer, x.UuidComparer)
+func (s *subscription) SetFamilyUsers(familyMembers []types.FamilyMemberID) {
+	s.familyUsers = slicesx.NewTracked(familyMembers, types.FamilyMemberIdComparer, types.FamilyMemberIdComparer)
 	s.SetAsDirty()
 }
 
@@ -446,8 +415,6 @@ func (s *subscription) ETagFields() []interface{} {
 	fields := []interface{}{
 		s.friendlyName,
 		s.providerId,
-		s.planId,
-		s.priceId,
 		s.owner.ETag(),
 		s.startDate,
 		s.endDate,
@@ -462,16 +429,16 @@ func (s *subscription) ETagFields() []interface{} {
 		fields = append(fields, *s.customRecurrency)
 	}
 
-	if s.customPrice != nil {
-		fields = append(fields, s.customPrice.ETag())
+	if s.price != nil {
+		fields = append(fields, s.price.ETag())
 	}
 
 	if s.payer != nil {
 		fields = append(fields, s.payer.ETag())
 	}
 
-	if s.serviceUsers != nil && s.serviceUsers.Len() > 0 {
-		fields = append(fields, collection.Select(s.serviceUsers.Values(), func(su uuid.UUID) string {
+	if s.familyUsers != nil && s.familyUsers.Len() > 0 {
+		fields = append(fields, herd.Select(s.familyUsers.Values(), func(su types.FamilyMemberID) string {
 			return su.String()
 		}))
 	}
@@ -504,14 +471,14 @@ func (s *subscription) GetValidationErrors() validation.Errors {
 		}
 	}
 
-	if s.customPrice != nil {
-		if err := s.customPrice.GetValidationErrors(); err != nil {
+	if s.price != nil {
+		if err := s.price.GetValidationErrors(); err != nil {
 			errors = append(errors, err...)
 		}
 	}
 
-	if s.serviceUsers != nil && s.serviceUsers.Len() > MaxFamilyMemberPerSubscriptionCount {
-		errors = append(errors, validation.NewError("serviceUsers", "Number of service users cannot exceed 10"))
+	if s.familyUsers != nil && s.familyUsers.Len() > MaxFamilyMemberPerSubscriptionCount {
+		errors = append(errors, validation.NewError("familyUsers", "Number of service users cannot exceed 10"))
 	}
 
 	if s.recurrency == CustomRecurrency && s.customRecurrency == nil {

@@ -4,7 +4,7 @@ import (
 	"iter"
 	"sort"
 
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type Tracked[T comparable] struct {
@@ -136,10 +136,10 @@ func (d *Tracked[T]) Set(values []T) {
 		}
 	}
 
-	addedElements := collection.Except(values, d._values)
+	addedElements := herd.Except(values, d._values)
 	d._added = append(d._added, addedElements...)
 	newValues = append(newValues, addedElements...)
-	deletedElements := collection.Except(d._values, values)
+	deletedElements := herd.Except(d._values, values)
 	d._removed = append(d._removed, deletedElements...)
 	d._values = newValues
 }

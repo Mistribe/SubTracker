@@ -1,29 +1,5 @@
 components:
   schemas:
-    currency.CurrencyRateModel:
-      properties:
-        currency:
-          type: string
-        rate:
-          type: number
-      required:
-      - currency
-      - rate
-      type: object
-    currency.CurrencyRatesModel:
-      properties:
-        rates:
-          items:
-            $ref: '#/components/schemas/currency.CurrencyRateModel'
-          type: array
-          uniqueItems: false
-        timestamp:
-          format: date-time
-          type: string
-      required:
-      - rates
-      - timestamp
-      type: object
     dto.AmountModel:
       description: '@Description Custom price for this subscription'
       properties:
@@ -39,184 +15,7 @@ components:
       - currency
       - value
       type: object
-    dto.EditableOwnerModel:
-      properties:
-        family_id:
-          description: '@Description Family ID when an ownership type is family (required
-            for family ownership)'
-          type: string
-        type:
-          description: '@Description Type of ownership (personal, family or system)'
-          enum:
-          - personal
-          - family
-          - system
-          example: personal
-          type: string
-      required:
-      - type
-      type: object
-    dto.OwnerModel:
-      description: '@Description Ownership information specifying whether this subscription
-        belongs to a user or family'
-      properties:
-        etag:
-          description: '@Description Entity tag for optimistic concurrency control'
-          example: W/"123456789"
-          type: string
-        family_id:
-          description: '@Description Family ID when an ownership type is family (required
-            for family ownership)'
-          example: 123e4567-e89b-12d3-a456-426614174000
-          type: string
-        type:
-          description: '@Description Type of ownership (personal, family or system)'
-          enum:
-          - personal
-          - family
-          - system
-          example: personal
-          type: string
-        userId:
-          description: '@Description UserProfile ID when an ownership type is personal
-            (required for personal ownership)'
-          example: 123e4567-e89b-12d3-a456-426614174001
-          type: string
-      required:
-      - etag
-      - type
-      type: object
-    dto.PaginatedResponseModel-label_labelModel:
-      properties:
-        data:
-          description: Data contains the list of items for the current page
-          items:
-            $ref: '#/components/schemas/label.labelModel'
-          type: array
-          uniqueItems: false
-        length:
-          description: Length represents the number of items in the current page
-          type: integer
-        total:
-          description: Total represents the total number of items available
-          type: integer
-      required:
-      - data
-      - length
-      - total
-      type: object
-    dto.PaginatedResponseModel-provider_ProviderModel:
-      properties:
-        data:
-          description: Data contains the list of items for the current page
-          items:
-            $ref: '#/components/schemas/provider.ProviderModel'
-          type: array
-          uniqueItems: false
-        length:
-          description: Length represents the number of items in the current page
-          type: integer
-        total:
-          description: Total represents the total number of items available
-          type: integer
-      required:
-      - data
-      - length
-      - total
-      type: object
-    dto.PaginatedResponseModel-subscription_SubscriptionModel:
-      properties:
-        data:
-          description: Data contains the list of items for the current page
-          items:
-            $ref: '#/components/schemas/subscription.SubscriptionModel'
-          type: array
-          uniqueItems: false
-        length:
-          description: Length represents the number of items in the current page
-          type: integer
-        total:
-          description: Total represents the total number of items available
-          type: integer
-      required:
-      - data
-      - length
-      - total
-      type: object
-    family.FamilyAcceptInvitationRequest:
-      properties:
-        family_member_id:
-          description: ID of the family member accepting the invitation
-          example: 123e4567-e89b-12d3-a456-426614174000
-          type: string
-        invitation_code:
-          description: Code received in the invitation
-          example: "123456"
-          type: string
-      required:
-      - family_member_id
-      - invitation_code
-      type: object
-    family.FamilyDeclineInvitationRequest:
-      properties:
-        family_member_id:
-          description: ID of the family member accepting the invitation
-          example: 123e4567-e89b-12d3-a456-426614174000
-          type: string
-        invitation_code:
-          description: Code received in the invitation
-          example: "123456"
-          type: string
-      required:
-      - family_member_id
-      - invitation_code
-      type: object
-    family.FamilyInviteRequest:
-      properties:
-        email:
-          description: Email of the invited member
-          type: string
-        family_member_id:
-          description: ID of the family member to be invited
-          type: string
-        name:
-          description: Name of the invited member
-          type: string
-        type:
-          description: Type of the member (adult or kid)
-          enum:
-          - adult
-          - kid
-          type: string
-      required:
-      - family_member_id
-      type: object
-    family.FamilyInviteResponse:
-      properties:
-        code:
-          example: "123456"
-          type: string
-        family_id:
-          example: 123e4567-e89b-12d3-a456-426614174000
-          type: string
-        family_member_id:
-          example: 123e4567-e89b-12d3-a456-426614174001
-          type: string
-      required:
-      - code
-      - family_id
-      - family_member_id
-      type: object
-    family.FamilySeeInvitationResponse:
-      properties:
-        family:
-          $ref: '#/components/schemas/family.familyModel'
-        invited_inasmuch_as:
-          description: Role of the invited member
-          example: OWNER
-          type: string
-      type: object
-    family.createFamilyMemberModel:
+    dto.CreateFamilyMemberRequest:
       properties:
         created_at:
           format: date-time
@@ -235,7 +34,7 @@ components:
       - name
       - type
       type: object
-    family.createFamilyModel:
+    dto.CreateFamilyRequest:
       properties:
         created_at:
           format: date-time
@@ -250,7 +49,226 @@ components:
       - creator_name
       - name
       type: object
-    family.familyMemberModel:
+    dto.CreateLabelRequest:
+      properties:
+        color:
+          type: string
+        created_at:
+          format: date-time
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        owner:
+          $ref: '#/components/schemas/dto.EditableOwnerModel'
+      required:
+      - color
+      - name
+      - owner
+      type: object
+    dto.CreateProviderRequest:
+      properties:
+        created_at:
+          format: date-time
+          type: string
+        description:
+          type: string
+        icon_url:
+          type: string
+        id:
+          type: string
+        labels:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        name:
+          type: string
+        owner:
+          $ref: '#/components/schemas/dto.EditableOwnerModel'
+        pricing_page_url:
+          type: string
+        url:
+          type: string
+      required:
+      - labels
+      - name
+      - owner
+      type: object
+    dto.CreateSubscriptionRequest:
+      properties:
+        created_at:
+          type: string
+        custom_price:
+          $ref: '#/components/schemas/dto.AmountModel'
+        custom_recurrency:
+          type: integer
+        end_date:
+          format: date-time
+          type: string
+        family_users:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        free_trial:
+          $ref: '#/components/schemas/dto.SubscriptionFreeTrialModel'
+        friendly_name:
+          type: string
+        id:
+          type: string
+        labels:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        owner:
+          $ref: '#/components/schemas/dto.EditableOwnerModel'
+        payer:
+          $ref: '#/components/schemas/dto.EditableSubscriptionPayerModel'
+        provider_id:
+          type: string
+        recurrency:
+          type: string
+        start_date:
+          format: date-time
+          type: string
+      required:
+      - owner
+      - provider_id
+      - recurrency
+      - start_date
+      type: object
+    dto.CurrencyRateModel:
+      properties:
+        currency:
+          type: string
+        rate:
+          type: number
+      required:
+      - currency
+      - rate
+      type: object
+    dto.CurrencyRatesModel:
+      properties:
+        rates:
+          items:
+            $ref: '#/components/schemas/dto.CurrencyRateModel'
+          type: array
+          uniqueItems: false
+        timestamp:
+          format: date-time
+          type: string
+      required:
+      - rates
+      - timestamp
+      type: object
+    dto.EditableOwnerModel:
+      properties:
+        family_id:
+          description: '@Description Family LabelID when an ownership type is family
+            (required for family ownership)'
+          type: string
+        type:
+          description: '@Description Type of ownership (personal, family or system)'
+          enum:
+          - personal
+          - family
+          - system
+          example: personal
+          type: string
+      required:
+      - type
+      type: object
+    dto.EditableSubscriptionPayerModel:
+      description: Subscription payer object used for updating who pays for a subscription
+      properties:
+        family_id:
+          description: '@Description LabelID of the family associated with this payer'
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        memberId:
+          description: '@Description LabelID of the specific family member who pays
+            (required when type is family_member)'
+          example: 123e4567-e89b-12d3-a456-426614174001
+          type: string
+        type:
+          description: '@Description Type of payer (family or family member)'
+          enum:
+          - family
+          - family_member
+          example: family_member
+          type: string
+      required:
+      - family_id
+      - type
+      type: object
+    dto.FamilyAcceptInvitationRequest:
+      properties:
+        family_member_id:
+          description: LabelID of the family member accepting the invitation
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        invitation_code:
+          description: Code received in the invitation
+          example: "123456"
+          type: string
+      required:
+      - family_member_id
+      - invitation_code
+      type: object
+    dto.FamilyDeclineInvitationRequest:
+      properties:
+        family_member_id:
+          description: LabelID of the family member accepting the invitation
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        invitation_code:
+          description: Code received in the invitation
+          example: "123456"
+          type: string
+      required:
+      - family_member_id
+      - invitation_code
+      type: object
+    dto.FamilyInviteRequest:
+      properties:
+        email:
+          description: Email of the invited member
+          type: string
+        family_member_id:
+          description: LabelID of the family member to be invited
+          type: string
+        name:
+          description: Name of the invited member
+          type: string
+        type:
+          description: Type of the member (adult or kid)
+          enum:
+          - adult
+          - kid
+          type: string
+      required:
+      - family_member_id
+      type: object
+    dto.FamilyInviteResponse:
+      properties:
+        code:
+          example: "123456"
+          type: string
+        family_id:
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        family_member_id:
+          example: 123e4567-e89b-12d3-a456-426614174001
+          type: string
+      required:
+      - code
+      - family_id
+      - family_member_id
+      type: object
+    dto.FamilyMemberModel:
       description: Family member object containing member information
       properties:
         created_at:
@@ -262,7 +280,7 @@ components:
           example: W/"123456789"
           type: string
         family_id:
-          description: '@Description ID of the family this member belongs to'
+          description: '@Description LabelID of the family this member belongs to'
           example: 123e4567-e89b-12d3-a456-426614174000
           type: string
         has_account:
@@ -306,7 +324,7 @@ components:
       - type
       - updated_at
       type: object
-    family.familyModel:
+    dto.FamilyModel:
       description: Family details
       properties:
         created_at:
@@ -333,7 +351,7 @@ components:
           description: '@Description Complete list of all members belonging to this
             family'
           items:
-            $ref: '#/components/schemas/family.familyMemberModel'
+            $ref: '#/components/schemas/dto.FamilyMemberModel'
           type: array
           uniqueItems: false
         name:
@@ -357,108 +375,16 @@ components:
       - name
       - updated_at
       type: object
-    family.patchFamilyMemberModel:
-      description: Model for updating family member details
+    dto.FamilySeeInvitationResponse:
       properties:
-        id:
-          description: Optional member ID. If not provided, new member will be created
+        family:
+          $ref: '#/components/schemas/dto.FamilyModel'
+        invited_inasmuch_as:
+          description: Role of the invited member
+          example: OWNER
           type: string
-        name:
-          description: member's name
-          type: string
-        type:
-          description: Indicates if the member is a kid
-          enum:
-          - owner
-          - adult
-          - kid
-          type: string
-        updated_at:
-          description: Optional timestamp of the last update
-          format: date-time
-          type: string
-      required:
-      - name
-      - type
       type: object
-    family.patchFamilyModel:
-      description: Model for updating family details
-      properties:
-        id:
-          description: Family ID
-          type: string
-        members:
-          description: List of family members
-          items:
-            $ref: '#/components/schemas/family.patchFamilyMemberModel'
-          type: array
-          uniqueItems: false
-        name:
-          description: Family name
-          type: string
-        updated_at:
-          description: Optional timestamp of the last update
-          format: date-time
-          type: string
-      required:
-      - id
-      - name
-      type: object
-    family.updateFamilyMemberModel:
-      properties:
-        name:
-          type: string
-        type:
-          enum:
-          - owner
-          - adult
-          - kid
-          type: string
-        updated_at:
-          format: date-time
-          type: string
-      required:
-      - name
-      - type
-      type: object
-    family.updateFamilyModel:
-      properties:
-        name:
-          type: string
-        updated_at:
-          format: date-time
-          type: string
-      required:
-      - name
-      type: object
-    ginx.HttpErrorResponse:
-      properties:
-        message:
-          type: string
-      required:
-      - message
-      type: object
-    label.createLabelModel:
-      properties:
-        color:
-          type: string
-        created_at:
-          format: date-time
-          type: string
-        id:
-          type: string
-        name:
-          type: string
-        owner:
-          $ref: '#/components/schemas/dto.EditableOwnerModel'
-      required:
-      - color
-      - name
-      - owner
-      type: object
-    label.labelModel:
-      description: Label object used for categorizing and organizing subscriptions
-        with customizable colors
+    dto.LabelModel:
       properties:
         color:
           description: '@Description Hexadecimal color code for visual representation
@@ -506,126 +432,109 @@ components:
       - owner
       - updated_at
       type: object
-    label.updateLabelModel:
+    dto.LabelRefModel:
       properties:
-        color:
-          type: string
-        name:
-          type: string
-        updated_at:
-          format: date-time
-          type: string
-      required:
-      - color
-      - name
-      type: object
-    provider.PlanModel:
-      description: Plan object defining a specific subscription tier with associated
-        pricing options
-      properties:
-        created_at:
-          description: '@Description ISO 8601 timestamp when the plan was originally
-            created'
-          example: "2023-01-15T10:30:00Z"
-          format: date-time
-          type: string
-        description:
-          description: '@Description Optional detailed description of the plan features
-            and benefits'
-          example: Access to all premium features with unlimited usage
-          type: string
-        etag:
-          description: '@Description Entity tag used for optimistic concurrency control
-            to prevent conflicting updates'
-          example: W/"123456789"
-          type: string
-        id:
-          description: '@Description Unique identifier for the plan (UUID format)'
+        label_id:
           example: 123e4567-e89b-12d3-a456-426614174000
           type: string
-        name:
-          description: '@Description Display name of the subscription plan'
-          example: Premium Plan
-          maxLength: 255
-          minLength: 1
+        source:
+          enum:
+          - subscription
+          - provider
+          example: subscription
           type: string
-        prices:
-          description: '@Description List of pricing options available for this plan
-            (different currencies, time periods, etc.)'
+      required:
+      - label_id
+      - source
+      type: object
+    dto.OwnerModel:
+      description: '@Description Ownership information specifying whether this subscription
+        belongs to a user or family'
+      properties:
+        etag:
+          description: '@Description Entity tag for optimistic concurrency control'
+          example: W/"123456789"
+          type: string
+        family_id:
+          description: '@Description Family LabelID when an ownership type is family
+            (required for family ownership)'
+          example: 123e4567-e89b-12d3-a456-426614174000
+          type: string
+        type:
+          description: '@Description Type of ownership (personal, family or system)'
+          enum:
+          - personal
+          - family
+          - system
+          example: personal
+          type: string
+        userId:
+          description: '@Description UserProfile LabelID when an ownership type is
+            personal (required for personal ownership)'
+          example: 123e4567-e89b-12d3-a456-426614174001
+          type: string
+      required:
+      - etag
+      - type
+      type: object
+    dto.PaginatedResponseModel-ProviderModel:
+      properties:
+        data:
+          description: Data contains the list of items for the current page
           items:
-            $ref: '#/components/schemas/provider.PriceModel'
+            $ref: '#/components/schemas/dto.ProviderModel'
           type: array
           uniqueItems: false
-        updated_at:
-          description: '@Description ISO 8601 timestamp when the plan was last modified'
-          example: "2023-01-20T14:45:30Z"
-          format: date-time
-          type: string
+        length:
+          description: Length represents the number of items in the current page
+          type: integer
+        total:
+          description: Total represents the total number of items available
+          type: integer
       required:
-      - created_at
-      - etag
-      - id
-      - name
-      - prices
-      - updated_at
+      - data
+      - length
+      - total
       type: object
-    provider.PriceModel:
-      description: Price object defining the cost of a subscription plan with currency
-        and time validity
+    dto.PaginatedResponseModel-SubscriptionModel:
       properties:
-        amount:
-          description: '@Description Price amount in the specified currency (supports
-            decimal values)'
-          example: 9.99
-          minimum: 0
-          type: number
-        created_at:
-          description: '@Description ISO 8601 timestamp when the price was originally
-            created'
-          example: "2023-01-15T10:30:00Z"
-          format: date-time
-          type: string
-        currency:
-          description: '@Description ISO 4217 currency code for the price'
-          example: USD
-          maxLength: 3
-          minLength: 3
-          type: string
-        end_date:
-          description: '@Description ISO 8601 timestamp when this price expires (null
-            means indefinite)'
-          example: "2023-12-31T23:59:59Z"
-          format: date-time
-          type: string
-        etag:
-          description: '@Description Entity tag used for optimistic concurrency control
-            to prevent conflicting updates'
-          example: W/"123456789"
-          type: string
-        id:
-          description: '@Description Unique identifier for the price (UUID format)'
-          example: 123e4567-e89b-12d3-a456-426614174000
-          type: string
-        start_date:
-          description: '@Description ISO 8601 timestamp when this price becomes effective'
-          example: "2023-01-01T00:00:00Z"
-          format: date-time
-          type: string
-        updated_at:
-          description: '@Description ISO 8601 timestamp when the price was last modified'
-          example: "2023-01-20T14:45:30Z"
-          format: date-time
-          type: string
+        data:
+          description: Data contains the list of items for the current page
+          items:
+            $ref: '#/components/schemas/dto.SubscriptionModel'
+          type: array
+          uniqueItems: false
+        length:
+          description: Length represents the number of items in the current page
+          type: integer
+        total:
+          description: Total represents the total number of items available
+          type: integer
       required:
-      - amount
-      - created_at
-      - currency
-      - etag
-      - id
-      - start_date
-      - updated_at
+      - data
+      - length
+      - total
       type: object
-    provider.ProviderModel:
+    dto.PaginatedResponseModel-dto_LabelModel:
+      properties:
+        data:
+          description: Data contains the list of items for the current page
+          items:
+            $ref: '#/components/schemas/dto.LabelModel'
+          type: array
+          uniqueItems: false
+        length:
+          description: Length represents the number of items in the current page
+          type: integer
+        total:
+          description: Total represents the total number of items available
+          type: integer
+      required:
+      - data
+      - length
+      - total
+      type: object
+    dto.ProviderModel:
       description: Provider object containing information about a subscription service
         provider and their available plans
       properties:
@@ -674,12 +583,6 @@ components:
           type: string
         owner:
           $ref: '#/components/schemas/dto.OwnerModel'
-        plans:
-          description: '@Description List of subscription plans offered by this provider'
-          items:
-            $ref: '#/components/schemas/provider.PlanModel'
-          type: array
-          uniqueItems: false
         pricing_page_url:
           description: '@Description Optional URL to the provider''s pricing information
             page'
@@ -702,264 +605,39 @@ components:
       - labels
       - name
       - owner
-      - plans
       - updated_at
       type: object
-    provider.createPlanModel:
+    dto.QuotaUsageModel:
       properties:
-        created_at:
-          format: date-time
-          type: string
-        description:
-          type: string
-        id:
-          type: string
-        name:
-          type: string
-      required:
-      - name
-      type: object
-    provider.createPriceModel:
-      description: Price information for a plan
-      properties:
-        amount:
-          type: number
-        created_at:
-          format: date-time
-          type: string
-        currency:
-          type: string
-        end_date:
-          format: date-time
-          type: string
-        id:
-          type: string
-        start_date:
-          format: date-time
-          type: string
-      required:
-      - amount
-      - currency
-      - start_date
-      type: object
-    provider.createProviderModel:
-      properties:
-        created_at:
-          format: date-time
-          type: string
-        description:
-          type: string
-        icon_url:
-          type: string
-        id:
-          type: string
-        labels:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        name:
-          type: string
-        owner:
-          $ref: '#/components/schemas/dto.EditableOwnerModel'
-        pricing_page_url:
-          type: string
-        url:
-          type: string
-      required:
-      - labels
-      - name
-      - owner
-      type: object
-    provider.updatePlanModel:
-      properties:
-        description:
-          type: string
-        name:
-          type: string
-        updateAt:
-          type: string
-      type: object
-    provider.updatePriceModel:
-      properties:
-        amount:
-          type: number
-        created_at:
-          format: date-time
-          type: string
-        currency:
-          type: string
-        end_date:
-          format: date-time
-          type: string
-        start_date:
-          format: date-time
-          type: string
-      required:
-      - amount
-      - currency
-      - start_date
-      type: object
-    provider.updateProviderModel:
-      properties:
-        description:
-          type: string
-        icon_url:
-          type: string
-        labels:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        name:
-          type: string
-        pricing_page_url:
-          type: string
-        updated_at:
-          format: date-time
-          type: string
-        url:
-          type: string
-      required:
-      - labels
-      - name
-      type: object
-    subscription.CreateSubscriptionModel:
-      properties:
-        created_at:
-          type: string
-        custom_price:
-          $ref: '#/components/schemas/dto.AmountModel'
-        custom_recurrency:
-          type: integer
-        end_date:
-          format: date-time
-          type: string
-        free_trial:
-          $ref: '#/components/schemas/subscription.SubscriptionFreeTrialModel'
-        friendly_name:
-          type: string
-        id:
-          type: string
-        labels:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        owner:
-          $ref: '#/components/schemas/dto.EditableOwnerModel'
-        payer:
-          $ref: '#/components/schemas/subscription.EditableSubscriptionPayerModel'
-        plan_id:
-          type: string
-        price_id:
-          type: string
-        provider_id:
-          type: string
-        recurrency:
-          type: string
-        service_users:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        start_date:
-          format: date-time
-          type: string
-      required:
-      - owner
-      - provider_id
-      - recurrency
-      - start_date
-      type: object
-    subscription.EditableSubscriptionPayerModel:
-      description: Subscription payer object used for updating who pays for a subscription
-      properties:
-        family_id:
-          description: '@Description ID of the family associated with this payer'
-          example: 123e4567-e89b-12d3-a456-426614174000
-          type: string
-        memberId:
-          description: '@Description ID of the specific family member who pays (required
-            when type is family_member)'
-          example: 123e4567-e89b-12d3-a456-426614174001
-          type: string
-        type:
-          description: '@Description Type of payer (family or family member)'
+        enabled:
+          example: true
+          type: boolean
+        feature:
           enum:
+          - unknown
+          - subscriptions
+          - active_subscriptions_count
+          - custom_labels
+          - custom_labels_count
+          - custom_providers
+          - custom_providers_count
           - family
-          - family_member
-          example: family_member
+          - family_members_count
           type: string
-      required:
-      - family_id
-      - type
-      type: object
-    subscription.LabelRefModel:
-      properties:
-        label_id:
-          example: 123e4567-e89b-12d3-a456-426614174000
-          type: string
-        source:
-          enum:
-          - subscription
-          - provider
-          example: subscription
-          type: string
-      required:
-      - label_id
-      - source
-      type: object
-    subscription.PatchSubscriptionModel:
-      properties:
-        custom_price:
-          $ref: '#/components/schemas/dto.AmountModel'
-        custom_recurrency:
+        limit:
           type: integer
-        end_date:
-          format: date-time
+        remaining:
+          type: integer
+        type:
+          enum:
+          - boolean
+          - quota
+          - unknown
           type: string
-        free_trial:
-          $ref: '#/components/schemas/subscription.SubscriptionFreeTrialModel'
-        friendly_name:
-          type: string
-        id:
-          type: string
-        labels:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        owner:
-          $ref: '#/components/schemas/dto.EditableOwnerModel'
-        payer:
-          $ref: '#/components/schemas/subscription.EditableSubscriptionPayerModel'
-        plan_id:
-          type: string
-        price_id:
-          type: string
-        provider_id:
-          type: string
-        recurrency:
-          type: string
-        service_users:
-          items:
-            type: string
-          type: array
-          uniqueItems: false
-        start_date:
-          format: date-time
-          type: string
-        updated_at:
-          format: date-time
-          type: string
-      required:
-      - owner
-      - provider_id
-      - recurrency
-      - start_date
+        used:
+          type: integer
       type: object
-    subscription.SubscriptionFreeTrialModel:
+    dto.SubscriptionFreeTrialModel:
       description: '@Description Number of free trial days remaining (null if no trial
         or trial expired)'
       properties:
@@ -969,8 +647,11 @@ components:
         start_date:
           format: date-time
           type: string
+      required:
+      - end_date
+      - start_date
       type: object
-    subscription.SubscriptionModel:
+    dto.SubscriptionModel:
       description: Subscription object containing all information about an active
         subscription including billing and usage details
       properties:
@@ -1001,7 +682,7 @@ components:
           example: W/"123456789"
           type: string
         free_trial:
-          $ref: '#/components/schemas/subscription.SubscriptionFreeTrialModel'
+          $ref: '#/components/schemas/dto.SubscriptionFreeTrialModel'
         friendly_name:
           description: '@Description Optional custom name for easy identification
             of the subscription'
@@ -1021,25 +702,27 @@ components:
         label_refs:
           description: '@Description List of labels associated with this subscription'
           items:
-            $ref: '#/components/schemas/subscription.LabelRefModel'
+            $ref: '#/components/schemas/dto.LabelRefModel'
           type: array
           uniqueItems: false
         owner:
           $ref: '#/components/schemas/dto.OwnerModel'
         payer:
-          $ref: '#/components/schemas/subscription.SubscriptionPayerModel'
+          $ref: '#/components/schemas/dto.SubscriptionPayerModel'
         plan_id:
-          description: '@Description ID of the specific plan being subscribed to'
+          description: '@Description LabelID of the specific plan being subscribed
+            to'
           example: 123e4567-e89b-12d3-a456-426614174003
           type: string
         price:
-          $ref: '#/components/schemas/subscription.SubscriptionPriceModel'
+          $ref: '#/components/schemas/dto.SubscriptionPriceModel'
         price_id:
-          description: '@Description ID of the pricing tier for this subscription'
+          description: '@Description LabelID of the pricing tier for this subscription'
           example: 123e4567-e89b-12d3-a456-426614174004
           type: string
         provider_id:
-          description: '@Description ID of the service provider offering this subscription'
+          description: '@Description LabelID of the service provider offering this
+            subscription'
           example: 123e4567-e89b-12d3-a456-426614174002
           type: string
         recurrency:
@@ -1088,7 +771,7 @@ components:
       - start_date
       - updated_at
       type: object
-    subscription.SubscriptionPayerModel:
+    dto.SubscriptionPayerModel:
       description: '@Description Information about who pays for this subscription
         within the family'
       properties:
@@ -1098,12 +781,12 @@ components:
           example: W/"123456789"
           type: string
         family_id:
-          description: '@Description ID of the family associated with this payer'
+          description: '@Description LabelID of the family associated with this payer'
           example: 123e4567-e89b-12d3-a456-426614174000
           type: string
         memberId:
-          description: '@Description ID of the specific family member who pays (required
-            when type is family_member)'
+          description: '@Description LabelID of the specific family member who pays
+            (required when type is family_member)'
           example: 123e4567-e89b-12d3-a456-426614174001
           type: string
         type:
@@ -1118,7 +801,7 @@ components:
       - family_id
       - type
       type: object
-    subscription.SubscriptionPriceModel:
+    dto.SubscriptionPriceModel:
       description: '@Description Price details for this subscription'
       properties:
         monthly:
@@ -1129,20 +812,19 @@ components:
       - monthly
       - yearly
       type: object
-    subscription.SubscriptionSummaryResponse:
-      description: Response containing subscription summary information
+    dto.SubscriptionSummaryResponse:
       properties:
         active:
           example: 10
           type: integer
         top_labels:
           items:
-            $ref: '#/components/schemas/subscription.SubscriptionSummaryTopLabelResponse'
+            $ref: '#/components/schemas/dto.SubscriptionSummaryTopLabelResponse'
           type: array
           uniqueItems: false
         top_providers:
           items:
-            $ref: '#/components/schemas/subscription.SubscriptionSummaryTopProviderResponse'
+            $ref: '#/components/schemas/dto.SubscriptionSummaryTopProviderResponse'
           type: array
           uniqueItems: false
         total_last_month:
@@ -1155,11 +837,11 @@ components:
           $ref: '#/components/schemas/dto.AmountModel'
         upcoming_renewals:
           items:
-            $ref: '#/components/schemas/subscription.SubscriptionSummaryUpcomingRenewalResponse'
+            $ref: '#/components/schemas/dto.SubscriptionSummaryUpcomingRenewalResponse'
           type: array
           uniqueItems: false
       type: object
-    subscription.SubscriptionSummaryTopLabelResponse:
+    dto.SubscriptionSummaryTopLabelResponse:
       properties:
         label_id:
           type: string
@@ -1168,7 +850,7 @@ components:
       required:
       - label_id
       type: object
-    subscription.SubscriptionSummaryTopProviderResponse:
+    dto.SubscriptionSummaryTopProviderResponse:
       properties:
         duration:
           type: string
@@ -1179,7 +861,7 @@ components:
       required:
       - provider_id
       type: object
-    subscription.SubscriptionSummaryUpcomingRenewalResponse:
+    dto.SubscriptionSummaryUpcomingRenewalResponse:
       properties:
         at:
           format: date-time
@@ -1194,7 +876,78 @@ components:
       - at
       - provider_id
       type: object
-    subscription.UpdateSubscriptionModel:
+    dto.UpdateFamilyMemberRequest:
+      properties:
+        name:
+          type: string
+        type:
+          enum:
+          - owner
+          - adult
+          - kid
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+      - name
+      - type
+      type: object
+    dto.UpdateFamilyRequest:
+      properties:
+        name:
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+      - name
+      type: object
+    dto.UpdateLabelRequest:
+      properties:
+        color:
+          type: string
+        name:
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+      - color
+      - name
+      type: object
+    dto.UpdatePreferredCurrencyRequest:
+      properties:
+        currency:
+          type: string
+      required:
+      - currency
+      type: object
+    dto.UpdateProviderRequest:
+      properties:
+        description:
+          type: string
+        icon_url:
+          type: string
+        labels:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+        name:
+          type: string
+        pricing_page_url:
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+        url:
+          type: string
+      required:
+      - labels
+      - name
+      type: object
+    dto.UpdateSubscriptionRequest:
       properties:
         custom_price:
           $ref: '#/components/schemas/dto.AmountModel'
@@ -1204,7 +957,7 @@ components:
           format: date-time
           type: string
         free_trial:
-          $ref: '#/components/schemas/subscription.SubscriptionFreeTrialModel'
+          $ref: '#/components/schemas/dto.SubscriptionFreeTrialModel'
         friendly_name:
           type: string
         labels:
@@ -1215,7 +968,7 @@ components:
         owner:
           $ref: '#/components/schemas/dto.EditableOwnerModel'
         payer:
-          $ref: '#/components/schemas/subscription.EditableSubscriptionPayerModel'
+          $ref: '#/components/schemas/dto.EditableSubscriptionPayerModel'
         plan_id:
           type: string
         price_id:
@@ -1241,17 +994,17 @@ components:
       - recurrency
       - start_date
       type: object
-    user.UserPreferredCurrencyModel:
+    dto.UserPreferredCurrencyModel:
       properties:
         currency:
           type: string
       type: object
-    user.updatePreferredCurrencyModel:
+    ginx.HttpErrorResponse:
       properties:
-        currency:
+        message:
           type: string
       required:
-      - currency
+      - message
       type: object
 externalDocs:
   description: ""
@@ -1270,6 +1023,108 @@ info:
   version: "1.0"
 openapi: 3.1.0
 paths:
+  /accounts:
+    delete:
+      description: Deletes the authenticated user's account
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Delete user
+      tags:
+      - accounts
+  /accounts/preferred/currency:
+    get:
+      description: Returns the preferred currency for the authenticated account
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.UserPreferredCurrencyModel'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Unauthorized
+      summary: Get user preferred currency
+      tags:
+      - accounts
+    put:
+      description: Updates the preferred currency for the authenticated account
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dto.UpdatePreferredCurrencyRequest'
+        description: Profile update parameters
+        required: true
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Unauthorized
+      summary: Update user preferred currency
+      tags:
+      - accounts
+  /accounts/quota/usage:
+    get:
+      description: Retrieve the current quota usage and limits for the authenticated
+        user
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/dto.QuotaUsageModel'
+                type: array
+          description: Successfully retrieved quota usage
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Unauthorized - Invalid user authentication
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Get quota usage
+      tags:
+      - accounts
   /currencies/rates:
     get:
       description: Get exchange rates for all currencies at a specific date
@@ -1284,7 +1139,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/currency.CurrencyRatesModel'
+                $ref: '#/components/schemas/dto.CurrencyRatesModel'
           description: OK
         "400":
           content:
@@ -1316,30 +1171,22 @@ paths:
       summary: Get Supported Currencies
       tags:
       - currencies
-  /families:
-    patch:
-      description: Update or create a family with specified members. If family doesn't
-        exist, it will be created.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/family.patchFamilyModel'
-        description: Family update data with members
-        required: true
+  /family:
+    get:
+      description: Retrieve the user's family
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/family.familyModel'
-          description: Successfully updated family
+                $ref: '#/components/schemas/dto.FamilyModel'
+          description: Successfully retrieved family
         "400":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid input data
+          description: Bad Request - Invalid LabelID format
         "401":
           content:
             application/json:
@@ -1358,7 +1205,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
-      summary: Patch family with members
+      summary: Get user's family
       tags:
       - family
     post:
@@ -1368,7 +1215,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/family.createFamilyModel'
+              $ref: '#/components/schemas/dto.CreateFamilyRequest'
         description: Family creation data
         required: true
       responses:
@@ -1376,7 +1223,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/family.familyModel'
+                $ref: '#/components/schemas/dto.FamilyModel'
           description: Successfully created family
         "400":
           content:
@@ -1399,11 +1246,11 @@ paths:
       summary: Create a new family
       tags:
       - family
-  /families/{familyId}:
+  /family/{familyId}:
     delete:
       description: Permanently delete a family and all its members
       parameters:
-      - description: Family ID (UUID format)
+      - description: Family LabelID (UUID format)
         in: path
         name: familyId
         required: true
@@ -1417,7 +1264,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid family ID format
+          description: Bad Request - Invalid family LabelID format
         "404":
           content:
             application/json:
@@ -1430,13 +1277,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
-      summary: Delete family by ID
+      summary: Delete family by LabelID
       tags:
       - family
     put:
       description: Update family information such as name and other details
       parameters:
-      - description: Family ID (UUID format)
+      - description: Family LabelID (UUID format)
         in: path
         name: familyId
         required: true
@@ -1446,7 +1293,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/family.updateFamilyModel'
+              $ref: '#/components/schemas/dto.UpdateFamilyRequest'
         description: Updated family data
         required: true
       responses:
@@ -1454,14 +1301,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/family.familyModel'
+                $ref: '#/components/schemas/dto.FamilyModel'
           description: Successfully updated family
         "400":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid input data or family ID
+          description: Bad Request - Invalid input data or family LabelID
         "401":
           content:
             application/json:
@@ -1483,12 +1330,12 @@ paths:
       summary: Update a family
       tags:
       - family
-  /families/{familyId}/accept:
+  /family/{familyId}/accept:
     post:
       description: Accepts an invitation to join a family using the provided invitation
         code
       parameters:
-      - description: Family ID (UUID format)
+      - description: Family LabelID (UUID format)
         in: path
         name: familyId
         required: true
@@ -1498,7 +1345,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/family.FamilyAcceptInvitationRequest'
+              $ref: '#/components/schemas/dto.FamilyAcceptInvitationRequest'
         description: Invitation acceptance details
         required: true
       responses:
@@ -1533,11 +1380,11 @@ paths:
       summary: Accept a family invitation
       tags:
       - family
-  /families/{familyId}/decline:
+  /family/{familyId}/decline:
     post:
       description: Endpoint to decline an invitation to join a family
       parameters:
-      - description: Family ID
+      - description: Family LabelID
         in: path
         name: familyId
         required: true
@@ -1547,7 +1394,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/family.FamilyDeclineInvitationRequest'
+              $ref: '#/components/schemas/dto.FamilyDeclineInvitationRequest'
         description: Decline invitation request
         required: true
       responses:
@@ -1562,11 +1409,11 @@ paths:
       summary: Decline family invitation
       tags:
       - family
-  /families/{familyId}/invitation:
+  /family/{familyId}/invitation:
     get:
       description: Get information about a family invitation using invitation code
       parameters:
-      - description: Family ID
+      - description: Family LabelID
         in: path
         name: familyId
         required: true
@@ -1578,7 +1425,7 @@ paths:
         required: true
         schema:
           type: string
-      - description: Family member ID
+      - description: Family member LabelID
         in: query
         name: family_member_id
         required: true
@@ -1589,7 +1436,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/family.FamilySeeInvitationResponse'
+                $ref: '#/components/schemas/dto.FamilySeeInvitationResponse'
           description: OK
         "400":
           content:
@@ -1600,11 +1447,11 @@ paths:
       summary: View family invitation details
       tags:
       - family
-  /families/{familyId}/invite:
+  /family/{familyId}/invite:
     post:
       description: Creates an invitation for a new member to join the family
       parameters:
-      - description: Family ID (UUID format)
+      - description: Family LabelID (UUID format)
         in: path
         name: familyId
         required: true
@@ -1614,16 +1461,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/family.FamilyInviteRequest'
-        description: Invitation details including email, name, member ID and type
-          (adult/kid)
+              $ref: '#/components/schemas/dto.FamilyInviteRequest'
+        description: Invitation details including email, name, member LabelID and
+          type (adult/kid)
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/family.FamilyInviteResponse'
+                $ref: '#/components/schemas/dto.FamilyInviteResponse'
           description: Successfully created invitation with code and IDs
         "400":
           content:
@@ -1652,11 +1499,11 @@ paths:
       summary: Invite a new member to the family
       tags:
       - family
-  /families/{familyId}/members:
+  /family/{familyId}/members:
     post:
       description: Add a new member to an existing family
       parameters:
-      - description: Family ID (UUID format)
+      - description: Family LabelID (UUID format)
         in: path
         name: familyId
         required: true
@@ -1666,7 +1513,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/family.createFamilyMemberModel'
+              $ref: '#/components/schemas/dto.CreateFamilyMemberRequest'
         description: Family member creation data
         required: true
       responses:
@@ -1674,14 +1521,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/family.familyModel'
+                $ref: '#/components/schemas/dto.FamilyModel'
           description: Successfully added family member
         "400":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid input data or family ID
+          description: Bad Request - Invalid input data or family LabelID
         "401":
           content:
             application/json:
@@ -1703,17 +1550,114 @@ paths:
       summary: Add a new family member
       tags:
       - family
-  /families/{familyId}/members/{familyMemberId}/revoke:
-    post:
-      description: Revokes a member from the family
+  /family/{familyId}/members/{familyMemberId}:
+    delete:
+      description: Permanently delete a family member from a family
       parameters:
-      - description: Family ID (UUID format)
+      - description: Family LabelID (UUID format)
         in: path
         name: familyId
         required: true
         schema:
           type: string
-      - description: Family Member ID (UUID format)
+      - description: Family member LabelID (UUID format)
+        in: path
+        name: familyMemberId
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content - Family member successfully deleted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Bad Request - Invalid LabelID format
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Family or family member not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Delete family member by LabelID
+      tags:
+      - family
+    put:
+      description: Update an existing family member's information such as name and
+        kid status
+      parameters:
+      - description: Family LabelID (UUID format)
+        in: path
+        name: familyId
+        required: true
+        schema:
+          type: string
+      - description: Family member LabelID (UUID format)
+        in: path
+        name: familyMemberId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/dto.UpdateFamilyMemberRequest'
+        description: Updated family member data
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/dto.FamilyModel'
+          description: Successfully updated family member
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Bad Request - Invalid input data or LabelID format
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Unauthorized - Invalid user authentication
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Family or family member not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Update family member by LabelID
+      tags:
+      - family
+  /family/{familyId}/members/{familyMemberId}/revoke:
+    post:
+      description: Revokes a member from the family
+      parameters:
+      - description: Family LabelID (UUID format)
+        in: path
+        name: familyId
+        required: true
+        schema:
+          type: string
+      - description: Family Member LabelID (UUID format)
         in: path
         name: familyMemberId
         required: true
@@ -1756,138 +1700,32 @@ paths:
       summary: Revoke family member
       tags:
       - family
-  /families/{familyId}/members/{id}:
-    delete:
-      description: Permanently delete a family member from a family
-      parameters:
-      - description: Family ID (UUID format)
-        in: path
-        name: familyId
-        required: true
-        schema:
-          type: string
-      - description: Family member ID (UUID format)
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-      responses:
-        "204":
-          description: No Content - Family member successfully deleted
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid ID format
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Family or family member not found
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Internal Server Error
-      summary: Delete family member by ID
-      tags:
-      - family
-    put:
-      description: Update an existing family member's information such as name and
-        kid status
-      parameters:
-      - description: Family ID (UUID format)
-        in: path
-        name: familyId
-        required: true
-        schema:
-          type: string
-      - description: Family member ID (UUID format)
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/family.updateFamilyMemberModel'
-        description: Updated family member data
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/family.familyModel'
-          description: Successfully updated family member
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid input data or ID format
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Unauthorized - Invalid user authentication
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Family or family member not found
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Internal Server Error
-      summary: Update family member by ID
-      tags:
-      - family
-  /families/me:
+  /family/quota/usage:
     get:
-      description: Retrieve the user's family
+      description: Retrieve the current quota usage and limits for the authenticated
+        user
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/family.familyModel'
-          description: Successfully retrieved family
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid ID format
+                items:
+                  $ref: '#/components/schemas/dto.QuotaUsageModel'
+                type: array
+          description: Successfully retrieved quota usage
         "401":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Unauthorized - Invalid user authentication
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Family not found
         "500":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
-      summary: Get user's family
+      summary: Get quota usage
       tags:
       - family
   /healthz/live:
@@ -1930,7 +1768,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/dto.PaginatedResponseModel-label_labelModel'
+                $ref: '#/components/schemas/dto.PaginatedResponseModel-dto_LabelModel'
           description: Paginated list of labels
         "400":
           content:
@@ -1953,7 +1791,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/label.createLabelModel'
+              $ref: '#/components/schemas/dto.CreateLabelRequest'
         description: Label creation data
         required: true
       responses:
@@ -1961,7 +1799,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/label.labelModel'
+                $ref: '#/components/schemas/dto.LabelModel'
           description: Successfully created label
         "400":
           content:
@@ -1984,13 +1822,13 @@ paths:
       summary: Create a new label
       tags:
       - labels
-  /labels/{id}:
+  /labels/{labelId}:
     delete:
       description: Permanently delete a label by its unique identifier
       parameters:
-      - description: Label ID (UUID format)
+      - description: Label LabelID (UUID format)
         in: path
-        name: id
+        name: labelId
         required: true
         schema:
           type: string
@@ -2002,7 +1840,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid ID format
+          description: Bad Request - Invalid LabelID format
         "404":
           content:
             application/json:
@@ -2015,15 +1853,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
-      summary: Delete label by ID
+      summary: Delete label by LabelID
       tags:
       - labels
     get:
       description: Retrieve a single label by its unique identifier
       parameters:
-      - description: Label ID (UUID format)
+      - description: Label LabelID (UUID format)
         in: path
-        name: id
+        name: labelId
         required: true
         schema:
           type: string
@@ -2032,14 +1870,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/label.labelModel'
+                $ref: '#/components/schemas/dto.LabelModel'
           description: OK
         "400":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid ID format
+          description: Bad Request - Invalid LabelID format
         "404":
           content:
             application/json:
@@ -2052,15 +1890,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
-      summary: Get label by ID
+      summary: Get label by LabelID
       tags:
       - labels
     put:
       description: Update an existing label's name and color by its unique identifier
       parameters:
-      - description: Label ID (UUID format)
+      - description: Label LabelID (UUID format)
         in: path
-        name: id
+        name: labelId
         required: true
         schema:
           type: string
@@ -2068,7 +1906,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/label.updateLabelModel'
+              $ref: '#/components/schemas/dto.UpdateLabelRequest'
         description: Updated label data
         required: true
       responses:
@@ -2076,14 +1914,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/label.labelModel'
+                $ref: '#/components/schemas/dto.LabelModel'
           description: Successfully updated label
         "400":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid ID format or input data
+          description: Bad Request - Invalid LabelID format or input data
         "404":
           content:
             application/json:
@@ -2096,28 +1934,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
-      summary: Update label by ID
+      summary: Update label by LabelID
       tags:
       - labels
-  /labels/default:
+  /labels/quota/usage:
     get:
-      description: Retrieves a list of default system labels available to all users
+      description: Retrieve the current quota usage and limits for the authenticated
+        user
       responses:
         "200":
           content:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/label.labelModel'
+                  $ref: '#/components/schemas/dto.QuotaUsageModel'
                 type: array
-          description: List of default labels
+          description: Successfully retrieved quota usage
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Unauthorized - Invalid user authentication
         "500":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
-      summary: Get default labels
+      summary: Get quota usage
       tags:
       - labels
   /providers:
@@ -2145,7 +1990,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/dto.PaginatedResponseModel-provider_ProviderModel'
+                $ref: '#/components/schemas/dto.PaginatedResponseModel-ProviderModel'
           description: Paginated list of providers
         "400":
           content:
@@ -2168,7 +2013,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/provider.createProviderModel'
+              $ref: '#/components/schemas/dto.CreateProviderRequest'
         description: Provider creation data
         required: true
       responses:
@@ -2176,7 +2021,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/provider.ProviderModel'
+                $ref: '#/components/schemas/dto.ProviderModel'
           description: Successfully created provider
         "400":
           content:
@@ -2204,7 +2049,7 @@ paths:
       description: Permanently delete a provider and all its associated plans and
         prices
       parameters:
-      - description: Provider ID (UUID format)
+      - description: Provider LabelID (UUID format)
         in: path
         name: providerId
         required: true
@@ -2218,7 +2063,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid provider ID format
+          description: Bad Request - Invalid provider LabelID format
         "404":
           content:
             application/json:
@@ -2231,13 +2076,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
-      summary: Delete provider by ID
+      summary: Delete provider by LabelID
       tags:
       - providers
     get:
-      description: Retrieve a single provider with all its plans and prices by ID
+      description: Retrieve a single provider with all its plans and prices by LabelID
       parameters:
-      - description: Provider ID (UUID format)
+      - description: Provider LabelID (UUID format)
         in: path
         name: providerId
         required: true
@@ -2248,14 +2093,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/provider.ProviderModel'
+                $ref: '#/components/schemas/dto.ProviderModel'
           description: Successfully retrieved provider
         "400":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid provider ID format
+          description: Bad Request - Invalid provider LabelID format
         "404":
           content:
             application/json:
@@ -2268,13 +2113,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
-      summary: Get provider by ID
+      summary: Get provider by LabelID
       tags:
       - providers
     put:
       description: Update an existing provider's basic information
       parameters:
-      - description: Provider ID (UUID format)
+      - description: Provider LabelID (UUID format)
         in: path
         name: providerId
         required: true
@@ -2284,7 +2129,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/provider.updateProviderModel'
+              $ref: '#/components/schemas/dto.UpdateProviderRequest'
         description: Updated provider data
         required: true
       responses:
@@ -2292,14 +2137,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/provider.ProviderModel'
+                $ref: '#/components/schemas/dto.ProviderModel'
           description: Successfully updated provider
         "400":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid input data or provider ID
+          description: Bad Request - Invalid input data or provider LabelID
         "404":
           content:
             application/json:
@@ -2312,295 +2157,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
-      summary: Update provider by ID
+      summary: Update provider by LabelID
       tags:
       - providers
-  /providers/{providerId}/plans:
-    post:
-      description: Create a new subscription plan for an existing provider
-      parameters:
-      - description: Provider ID (UUID format)
-        in: path
-        name: providerId
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/provider.createPlanModel'
-        description: Plan creation data
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/provider.PlanModel'
-          description: Successfully created plan
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid input data or provider ID
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Provider not found
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Internal Server Error
-      summary: Create a new provider plan
-      tags:
-      - providers
-  /providers/{providerId}/plans/{planId}:
-    delete:
-      description: Permanently delete a provider plan and all its associated prices
-      parameters:
-      - description: Provider ID (UUID format)
-        in: path
-        name: providerId
-        required: true
-        schema:
-          type: string
-      - description: Plan ID (UUID format)
-        in: path
-        name: planId
-        required: true
-        schema:
-          type: string
-      responses:
-        "204":
-          description: No Content - Plan successfully deleted
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid ID format
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Provider or plan not found
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Internal Server Error
-      summary: Delete provider plan by ID
-      tags:
-      - providers
-    put:
-      description: Update an existing provider plan's information
-      parameters:
-      - description: Provider ID (UUID format)
-        in: path
-        name: providerId
-        required: true
-        schema:
-          type: string
-      - description: Plan ID (UUID format)
-        in: path
-        name: planId
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/provider.updatePlanModel'
-        description: Updated plan data
-        required: true
+  /providers/quota/usage:
+    get:
+      description: Retrieve the current quota usage and limits for the authenticated
+        user
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/provider.PlanModel'
-          description: Successfully updated plan
-        "400":
+                items:
+                  $ref: '#/components/schemas/dto.QuotaUsageModel'
+                type: array
+          description: Successfully retrieved quota usage
+        "401":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid input data or IDs
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Provider or plan not found
+          description: Unauthorized - Invalid user authentication
         "500":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
-      summary: Update provider plan by ID
-      tags:
-      - providers
-  /providers/{providerId}/plans/{planId}/prices:
-    post:
-      description: Create a new pricing option for a specific provider plan
-      parameters:
-      - description: Provider ID (UUID format)
-        in: path
-        name: providerId
-        required: true
-        schema:
-          type: string
-      - description: Plan ID (UUID format)
-        in: path
-        name: planId
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/provider.createPriceModel'
-        description: Price creation data
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/provider.PriceModel'
-          description: Successfully created price
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid input data or IDs
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Provider or plan not found
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Internal Server Error
-      summary: Create a new provider price
-      tags:
-      - providers
-  /providers/{providerId}/plans/{planId}/prices/{priceId}:
-    delete:
-      description: Permanently delete a specific price from a provider plan
-      parameters:
-      - description: Provider ID (UUID format)
-        in: path
-        name: providerId
-        required: true
-        schema:
-          type: string
-      - description: Plan ID (UUID format)
-        in: path
-        name: planId
-        required: true
-        schema:
-          type: string
-      - description: Price ID (UUID format)
-        in: path
-        name: priceId
-        required: true
-        schema:
-          type: string
-      responses:
-        "204":
-          description: No Content - Price successfully deleted
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid ID format
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Provider, plan, or price not found
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Internal Server Error
-      summary: Delete provider price by ID
-      tags:
-      - providers
-    put:
-      description: Update an existing price for a specific provider plan
-      parameters:
-      - description: Provider ID (UUID format)
-        in: path
-        name: providerId
-        required: true
-        schema:
-          type: string
-      - description: Plan ID (UUID format)
-        in: path
-        name: planId
-        required: true
-        schema:
-          type: string
-      - description: Price ID (UUID format)
-        in: path
-        name: priceId
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/provider.updatePriceModel'
-        description: Updated price data
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/provider.PriceModel'
-          description: Successfully updated price
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid input data or IDs
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Provider, plan, or price not found
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Internal Server Error
-      summary: Update provider price by ID
+      summary: Get quota usage
       tags:
       - providers
   /subscriptions:
@@ -2664,7 +2249,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/dto.PaginatedResponseModel-subscription_SubscriptionModel'
+                $ref: '#/components/schemas/dto.PaginatedResponseModel-SubscriptionModel'
           description: Paginated list of subscriptions
         "400":
           content:
@@ -2681,50 +2266,6 @@ paths:
       summary: Get all subscriptions
       tags:
       - subscriptions
-    patch:
-      description: Update or create a subscription with complete details. If subscription
-        doesn't exist, it will be created.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/subscription.PatchSubscriptionModel'
-        description: Complete subscription data
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/subscription.SubscriptionModel'
-          description: Successfully updated subscription
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid input data
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Unauthorized - Invalid user authentication
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Subscription not found
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Internal Server Error
-      summary: Patch subscription
-      tags:
-      - subscriptions
     post:
       description: Create a new subscription with provider, plan, pricing, and payment
         information
@@ -2732,7 +2273,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/subscription.CreateSubscriptionModel'
+              $ref: '#/components/schemas/dto.CreateSubscriptionRequest'
         description: Subscription creation data
         required: true
       responses:
@@ -2740,7 +2281,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/subscription.SubscriptionModel'
+                $ref: '#/components/schemas/dto.SubscriptionModel'
           description: Successfully created subscription
         "400":
           content:
@@ -2767,7 +2308,7 @@ paths:
     delete:
       description: Permanently delete an existing subscription
       parameters:
-      - description: Subscription ID (UUID format)
+      - description: Subscription LabelID (UUID format)
         in: path
         name: subscriptionId
         required: true
@@ -2781,7 +2322,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid subscription ID format
+          description: Bad Request - Invalid subscription LabelID format
         "404":
           content:
             application/json:
@@ -2794,14 +2335,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
-      summary: Delete subscription by ID
+      summary: Delete subscription by LabelID
       tags:
       - subscriptions
     get:
       description: Retrieve a single subscription with all its details including provider,
         plan, and pricing information
       parameters:
-      - description: Subscription ID (UUID format)
+      - description: Subscription LabelID (UUID format)
         in: path
         name: subscriptionId
         required: true
@@ -2812,14 +2353,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/subscription.SubscriptionModel'
+                $ref: '#/components/schemas/dto.SubscriptionModel'
           description: Successfully retrieved subscription
         "400":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid subscription ID format
+          description: Bad Request - Invalid subscription LabelID format
         "404":
           content:
             application/json:
@@ -2832,14 +2373,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
-      summary: Get subscription by ID
+      summary: Get subscription by LabelID
       tags:
       - subscriptions
     put:
       description: Update an existing subscription's details including provider, plan,
         pricing, and payment information
       parameters:
-      - description: Subscription ID (UUID format)
+      - description: Subscription LabelID (UUID format)
         in: path
         name: subscriptionId
         required: true
@@ -2849,7 +2390,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/subscription.UpdateSubscriptionModel'
+              $ref: '#/components/schemas/dto.UpdateSubscriptionRequest'
         description: Updated subscription data
         required: true
       responses:
@@ -2857,14 +2398,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/subscription.SubscriptionModel'
+                $ref: '#/components/schemas/dto.SubscriptionModel'
           description: Successfully updated subscription
         "400":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request - Invalid input data or subscription ID
+          description: Bad Request - Invalid input data or subscription LabelID
         "401":
           content:
             application/json:
@@ -2883,7 +2424,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
-      summary: Update subscription by ID
+      summary: Update subscription by LabelID
+      tags:
+      - subscriptions
+  /subscriptions/quota/usage:
+    get:
+      description: Retrieve the current quota usage and limits for the authenticated
+        user
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/dto.QuotaUsageModel'
+                type: array
+          description: Successfully retrieved quota usage
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Unauthorized - Invalid user authentication
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Get quota usage
       tags:
       - subscriptions
   /subscriptions/summary:
@@ -2926,7 +2495,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/subscription.SubscriptionSummaryResponse'
+                $ref: '#/components/schemas/dto.SubscriptionSummaryResponse'
           description: OK
         "400":
           content:
@@ -2937,80 +2506,6 @@ paths:
       summary: Get subscription summary
       tags:
       - subscriptions
-  /users:
-    delete:
-      description: Deletes the authenticated user's account
-      responses:
-        "204":
-          description: No Content
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Unauthorized
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Internal Server Error
-      summary: Delete user
-      tags:
-      - users
-  /users/preferred/currency:
-    get:
-      description: Returns the preferred currency for the authenticated user
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/user.UserPreferredCurrencyModel'
-          description: OK
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Unauthorized
-      summary: Get user preferred currency
-      tags:
-      - users
-    put:
-      description: Updates the preferred currency for the authenticated user
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/user.updatePreferredCurrencyModel'
-        description: Profile update parameters
-        required: true
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Bad Request
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ginx.HttpErrorResponse'
-          description: Unauthorized
-      summary: Update user preferred currency
-      tags:
-      - users
 servers:
 - description: Production server
   url: https://api.subtracker.mistribe.com

@@ -3,39 +3,40 @@ package query
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type SeeInvitationQuery struct {
-	FamilyId       uuid.UUID
-	FamilyMemberId uuid.UUID
+	FamilyId       types.FamilyID
+	FamilyMemberId types.FamilyMemberID
 	InvitationCode string
 }
 
 type SeeInvitationQueryResponse struct {
 	Family            family.Family
-	InvitedInasmuchAs uuid.UUID
-	UserId            string
+	InvitedInasmuchAs types.FamilyMemberID
+	UserId            types.UserID
 }
 
 type SeeInvitationQueryHandler struct {
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authService      ports.Authentication
 }
 
-func NewSeeInvitationQueryHandler(familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *SeeInvitationQueryHandler {
+func NewSeeInvitationQueryHandler(
+	familyRepository ports.FamilyRepository,
+	authService ports.Authentication) *SeeInvitationQueryHandler {
 	return &SeeInvitationQueryHandler{
 		familyRepository: familyRepository,
 		authService:      authService,
 	}
 }
 
-func (h SeeInvitationQueryHandler) Handle(ctx context.Context,
+func (h SeeInvitationQueryHandler) Handle(
+	ctx context.Context,
 	query SeeInvitationQuery) result.Result[SeeInvitationQueryResponse] {
 	fam, err := h.familyRepository.GetById(ctx, query.FamilyId)
 	if err != nil {
@@ -59,12 +60,12 @@ func (h SeeInvitationQueryHandler) Handle(ctx context.Context,
 		return result.Fail[SeeInvitationQueryResponse](family.ErrBadInvitationCode)
 	}
 
-	userId := h.authService.MustGetUserId(ctx)
+	connectedAccount := h.authService.MustGetConnectedAccount(ctx)
 
 	return result.Success(SeeInvitationQueryResponse{
 		Family:            fam,
 		InvitedInasmuchAs: member.Id(),
-		UserId:            userId,
+		UserId:            connectedAccount.UserID(),
 	})
 
 }

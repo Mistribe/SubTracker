@@ -4,19 +4,20 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/family/query"
 )
 
-type FamilySeeInvitationEndpoint struct {
+type SeeInvitationEndpoint struct {
 	handler ports.QueryHandler[query.SeeInvitationQuery, query.SeeInvitationQueryResponse]
 }
 
-type FamilySeeInvitationRequest struct {
+type SeeInvitationRequest struct {
 	// Family unique identifier
 	FamilyId string `uri:"familyId" binding:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 	// Invitation code to verify
@@ -25,15 +26,8 @@ type FamilySeeInvitationRequest struct {
 	FamilyMemberId string `form:"family_member_id" binding:"required" example:"550e8400-e29b-41d4-a716-446655440000"`
 }
 
-type FamilySeeInvitationResponse struct {
-	// Family details
-	Family familyModel `json:"family"`
-	// Role of the invited member
-	InvitedInasmuchAs string `json:"invited_inasmuch_as" example:"OWNER"`
-}
-
-func NewFamilySeeInvitationEndpoint(handler ports.QueryHandler[query.SeeInvitationQuery, query.SeeInvitationQueryResponse]) *FamilySeeInvitationEndpoint {
-	return &FamilySeeInvitationEndpoint{
+func NewSeeInvitationEndpoint(handler ports.QueryHandler[query.SeeInvitationQuery, query.SeeInvitationQueryResponse]) *SeeInvitationEndpoint {
+	return &SeeInvitationEndpoint{
 		handler: handler,
 	}
 }
@@ -44,26 +38,26 @@ func NewFamilySeeInvitationEndpoint(handler ports.QueryHandler[query.SeeInvitati
 //	@Description	Get information about a family invitation using invitation code
 //	@Tags			family
 //	@Produce		json
-//	@Param			familyId			path		string	true	"Family ID"
+//	@Param			familyId			path		string	true	"Family LabelID"
 //	@Param			code				query		string	true	"Invitation code"
-//	@Param			family_member_id	query		string	true	"Family member ID"
-//	@Success		200					{object}	FamilySeeInvitationResponse
+//	@Param			family_member_id	query		string	true	"Family member LabelID"
+//	@Success		200					{object}	dto.FamilySeeInvitationResponse
 //	@Failure		400					{object}	HttpErrorResponse
-//	@Router			/families/{familyId}/invitation [get]
-func (e FamilySeeInvitationEndpoint) Handle(c *gin.Context) {
-	var req FamilySeeInvitationRequest
+//	@Router			/family/{familyId}/invitation [get]
+func (e SeeInvitationEndpoint) Handle(c *gin.Context) {
+	var req SeeInvitationRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		FromError(c, err)
 		return
 	}
 
-	familyId, err := uuid.Parse(req.FamilyId)
+	familyId, err := types.ParseFamilyID(req.FamilyId)
 	if err != nil {
 		FromError(c, err)
 		return
 	}
 
-	familyMemberId, err := uuid.Parse(req.FamilyMemberId)
+	familyMemberId, err := types.ParseFamilyMemberID(req.FamilyMemberId)
 	if err != nil {
 		FromError(c, err)
 		return
@@ -76,23 +70,23 @@ func (e FamilySeeInvitationEndpoint) Handle(c *gin.Context) {
 	})
 	FromResult(c, r,
 		WithMapping[query.SeeInvitationQueryResponse](func(res query.SeeInvitationQueryResponse) any {
-			return FamilySeeInvitationResponse{
-				Family:            newFamilyModel(res.UserId, res.Family),
+			return dto.FamilySeeInvitationResponse{
+				Family:            dto.NewFamilyModel(res.UserId, res.Family),
 				InvitedInasmuchAs: res.InvitedInasmuchAs.String(),
 			}
 		}))
 }
 
-func (e FamilySeeInvitationEndpoint) Pattern() []string {
+func (e SeeInvitationEndpoint) Pattern() []string {
 	return []string{
 		"/:familyId/invitation",
 	}
 }
 
-func (e FamilySeeInvitationEndpoint) Method() string {
+func (e SeeInvitationEndpoint) Method() string {
 	return http.MethodGet
 }
 
-func (e FamilySeeInvitationEndpoint) Middlewares() []gin.HandlerFunc {
+func (e SeeInvitationEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

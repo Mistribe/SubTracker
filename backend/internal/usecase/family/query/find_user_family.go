@@ -4,32 +4,47 @@ import (
 	"context"
 
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/internal/shared"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type FindUserFamilyQuery struct {
-	UserId string
+	UserID types.UserID
+}
+
+type FindUserFamilyQueryResponse struct {
+	Family family.Family
+	Limits shared.Limits
 }
 
 type FindUserFamilyQueryHandler struct {
 	familyRepository ports.FamilyRepository
+	authorization    ports.Authorization
 }
 
-func NewFindOneQueryHandler(familyRepository ports.FamilyRepository) *FindUserFamilyQueryHandler {
-	return &FindUserFamilyQueryHandler{familyRepository: familyRepository}
+func NewFindOneQueryHandler(
+	familyRepository ports.FamilyRepository,
+	authorization ports.Authorization) *FindUserFamilyQueryHandler {
+	return &FindUserFamilyQueryHandler{
+		familyRepository: familyRepository,
+		authorization:    authorization,
+	}
 }
 
 func (h FindUserFamilyQueryHandler) Handle(
 	ctx context.Context,
-	query FindUserFamilyQuery) result.Result[family.Family] {
-	member, err := h.familyRepository.GetUserFamily(ctx, query.UserId)
+	query FindUserFamilyQuery) result.Result[FindUserFamilyQueryResponse] {
+	fam, err := h.familyRepository.GetAccountFamily(ctx, query.UserID)
 	if err != nil {
-		return result.Fail[family.Family](err)
+		return result.Fail[FindUserFamilyQueryResponse](err)
 	}
 
-	if member == nil {
-		return result.Fail[family.Family](family.ErrFamilyNotFound)
+	if fam == nil {
+		return result.Fail[FindUserFamilyQueryResponse](family.ErrFamilyNotFound)
 	}
-	return result.Success(member)
+	return result.Success(FindUserFamilyQueryResponse{
+		Family: fam,
+	})
 }

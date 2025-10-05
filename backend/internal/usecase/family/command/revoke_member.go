@@ -3,27 +3,30 @@ package command
 import (
 	"context"
 
-	"github.com/google/uuid"
-
+	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type RevokeMemberCommand struct {
-	FamilyId       uuid.UUID
-	FamilyMemberId uuid.UUID
+	FamilyId       types.FamilyID
+	FamilyMemberId types.FamilyMemberID
 }
 
 type RevokeMemberCommandHandler struct {
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authorization    ports.Authorization
 }
 
 func NewRevokeMemberCommandHandler(
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *RevokeMemberCommandHandler {
-	return &RevokeMemberCommandHandler{familyRepository: familyRepository, authService: authService}
+	authorization ports.Authorization) *RevokeMemberCommandHandler {
+	return &RevokeMemberCommandHandler{
+		familyRepository: familyRepository,
+		authorization:    authorization,
+	}
 }
 
 func (h RevokeMemberCommandHandler) Handle(ctx context.Context, cmd RevokeMemberCommand) result.Result[bool] {
@@ -36,9 +39,8 @@ func (h RevokeMemberCommandHandler) Handle(ctx context.Context, cmd RevokeMember
 		return result.Fail[bool](family.ErrFamilyNotFound)
 	}
 
-	userId := h.authService.MustGetUserId(ctx)
-	if fam.OwnerId() != userId {
-		return result.Fail[bool](family.ErrOnlyOwnerCanEditFamily)
+	if err = h.authorization.Can(ctx, authorization.PermissionWrite).For(fam); err != nil {
+		return result.Fail[bool](err)
 	}
 
 	member := fam.GetMember(cmd.FamilyMemberId)

@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
-
+	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -15,27 +15,27 @@ type InviteMemberCommand struct {
 	Email          *string
 	Name           *string
 	Type           *family.MemberType
-	FamilyId       uuid.UUID
-	FamilyMemberId uuid.UUID
+	FamilyId       types.FamilyID
+	FamilyMemberId types.FamilyMemberID
 }
 
 type InviteMemberResponse struct {
 	Code           string
-	FamilyId       uuid.UUID
-	FamilyMemberId uuid.UUID
+	FamilyId       types.FamilyID
+	FamilyMemberId types.FamilyMemberID
 }
 
 type InviteMemberCommandHandler struct {
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authorization    ports.Authorization
 }
 
 func NewInviteMemberCommandHandler(
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *InviteMemberCommandHandler {
+	authorization ports.Authorization) *InviteMemberCommandHandler {
 	return &InviteMemberCommandHandler{
 		familyRepository: familyRepository,
-		authService:      authService,
+		authorization:    authorization,
 	}
 }
 
@@ -49,9 +49,8 @@ func (h InviteMemberCommandHandler) Handle(
 	if fam == nil {
 		return result.Fail[InviteMemberResponse](family.ErrFamilyNotFound)
 	}
-	userId := h.authService.MustGetUserId(ctx)
-	if fam.OwnerId() != userId {
-		return result.Fail[InviteMemberResponse](family.ErrOnlyOwnerCanEditFamily)
+	if err = h.authorization.Can(ctx, authorization.PermissionWrite).For(fam); err != nil {
+		return result.Fail[InviteMemberResponse](err)
 	}
 
 	code, err := family.NewGenerateInvitationCode(fam.Id())
@@ -116,7 +115,8 @@ func (h InviteMemberCommandHandler) inviteNewMember(
 	} else {
 		memberType = family.AdultMemberType
 	}
-	familyMember = family.NewMember(uuid.Must(uuid.NewV7()),
+	familyMember = family.NewMember(
+		types.NewFamilyMemberID(),
 		fam.Id(),
 		memberName,
 		memberType,

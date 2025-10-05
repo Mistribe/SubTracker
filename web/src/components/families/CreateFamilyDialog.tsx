@@ -1,7 +1,7 @@
-import {useState} from "react";
-import {useForm} from "react-hook-form";
-import {z} from "zod";
-import {zodResolver} from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
     Dialog,
@@ -21,11 +21,20 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form.tsx";
-import {Input} from "@/components/ui/input.tsx";
-import {Button} from "@/components/ui/button.tsx";
-import {Loader2, PlusIcon} from "lucide-react";
-import {useFamiliesMutations} from "@/hooks/families/useFamiliesMutations";
+import { Input } from "@/components/ui/input.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Loader2, PlusIcon } from "lucide-react";
+import { useFamiliesMutations } from "@/hooks/families/useFamiliesMutations";
 import { useUser } from "@clerk/clerk-react";
+import { useAccountQuotaQuery } from "@/hooks/profile/useAccountQuotaQuery";
+import { useFeature, getQuotaTooltip } from "@/hooks/quotas/useFeature";
+import { FeatureId } from "@/models/billing";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Define the form schema
 const formSchema = z.object({
@@ -39,10 +48,16 @@ interface CreateFamilyDialogProps {
     onSuccess?: () => void;
 }
 
-export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
-    const {createFamilyMutation} = useFamiliesMutations();
+export function CreateFamilyDialog({ onSuccess }: CreateFamilyDialogProps) {
+    const { createFamilyMutation } = useFamiliesMutations();
     const { user } = useUser();
     const [open, setOpen] = useState(false);
+
+    // Check if the user has the Family feature enabled
+    const { data: accountQuotas } = useAccountQuotaQuery();
+    const { enabled: familyFeatureEnabled } = useFeature(accountQuotas, FeatureId.Family);
+    const isDisabled = !familyFeatureEnabled;
+    const tooltipMessage = getQuotaTooltip(familyFeatureEnabled, familyFeatureEnabled, "a family");
 
     let defaultCreatorName = ""
     if (user && user.firstName) {
@@ -81,12 +96,25 @@ export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button>
-                    <PlusIcon className="h-4 w-4 mr-2"/>
-                    Add Family
-                </Button>
-            </DialogTrigger>
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span>
+                            <DialogTrigger asChild>
+                                <Button disabled={isDisabled}>
+                                    <PlusIcon className="h-4 w-4 mr-2" />
+                                    Add Family
+                                </Button>
+                            </DialogTrigger>
+                        </span>
+                    </TooltipTrigger>
+                    {tooltipMessage && (
+                        <TooltipContent>
+                            <p>{tooltipMessage}</p>
+                        </TooltipContent>
+                    )}
+                </Tooltip>
+            </TooltipProvider>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Create a new family</DialogTitle>
@@ -99,7 +127,7 @@ export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
                         <FormField
                             control={form.control}
                             name="name"
-                            render={({field}) => (
+                            render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Family Name</FormLabel>
                                     <FormControl>
@@ -108,14 +136,14 @@ export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
                                     <FormDescription>
                                         This is the name of your family.
                                     </FormDescription>
-                                    <FormMessage/>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
                         <FormField
                             control={form.control}
                             name="creatorName"
-                            render={({field}) => (
+                            render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Creator Name</FormLabel>
                                     <FormControl>
@@ -124,7 +152,7 @@ export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
                                     <FormDescription>
                                         Your name as the creator of this family.
                                     </FormDescription>
-                                    <FormMessage/>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
@@ -132,7 +160,7 @@ export function CreateFamilyDialog({onSuccess}: CreateFamilyDialogProps) {
                             <Button type="submit" disabled={createFamilyMutation.isPending}>
                                 {createFamilyMutation.isPending ? (
                                     <>
-                                        <Loader2 className="h-4 w-4 mr-2 animate-spin"/>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                                         Creating...
                                     </>
                                 ) : (

@@ -5,16 +5,14 @@ import (
 	"fmt"
 	"iter"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db"
 	. "github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/table"
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/models"
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/slicesx"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	. "github.com/go-jet/jet/v2/postgres"
 )
@@ -31,15 +29,17 @@ func NewSubscriptionRepository(repository *db.Context) ports.SubscriptionReposit
 	}
 }
 
-func (r SubscriptionRepository) GetById(ctx context.Context, id uuid.UUID) (subscription.Subscription, error) {
+func (r SubscriptionRepository) GetById(ctx context.Context, id types.SubscriptionID) (
+	subscription.Subscription,
+	error) {
 	stmt := SELECT(
 		Subscriptions.AllColumns,
-		SubscriptionServiceUsers.FamilyMemberID,
-		SubscriptionServiceUsers.SubscriptionID,
+		SubscriptionFamilyUsers.FamilyMemberID,
+		SubscriptionFamilyUsers.SubscriptionID,
 	).
 		FROM(
 			Subscriptions.
-				LEFT_JOIN(SubscriptionServiceUsers, SubscriptionServiceUsers.SubscriptionID.EQ(Subscriptions.ID)),
+				LEFT_JOIN(SubscriptionFamilyUsers, SubscriptionFamilyUsers.SubscriptionID.EQ(Subscriptions.ID)),
 		).
 		WHERE(Subscriptions.ID.EQ(UUID(id)))
 
@@ -61,25 +61,25 @@ func (r SubscriptionRepository) GetById(ctx context.Context, id uuid.UUID) (subs
 	return subscriptions[0], nil
 }
 
-func (r SubscriptionRepository) GetByIdForUser(ctx context.Context, userId string, id uuid.UUID) (
+func (r SubscriptionRepository) GetByIdForUser(ctx context.Context, userId types.UserID, id types.SubscriptionID) (
 	subscription.Subscription,
 	error) {
 
 	stmt := SELECT(
 		Subscriptions.AllColumns,
-		SubscriptionServiceUsers.FamilyMemberID,
-		SubscriptionServiceUsers.SubscriptionID,
+		SubscriptionFamilyUsers.FamilyMemberID,
+		SubscriptionFamilyUsers.SubscriptionID,
 	).
 		FROM(
 			Subscriptions.
-				LEFT_JOIN(SubscriptionServiceUsers, SubscriptionServiceUsers.SubscriptionID.EQ(Subscriptions.ID)).
-				LEFT_JOIN(FamilyMembers, FamilyMembers.ID.EQ(SubscriptionServiceUsers.FamilyMemberID)),
+				LEFT_JOIN(SubscriptionFamilyUsers, SubscriptionFamilyUsers.SubscriptionID.EQ(Subscriptions.ID)).
+				LEFT_JOIN(FamilyMembers, FamilyMembers.ID.EQ(SubscriptionFamilyUsers.FamilyMemberID)),
 		).
 		WHERE(
 			Subscriptions.ID.EQ(UUID(id)).
 				AND(
-					Subscriptions.OwnerType.EQ(String("family")).AND(FamilyMembers.UserID.EQ(String(userId))).
-						OR(Subscriptions.OwnerType.EQ(String("personal")).AND(Subscriptions.OwnerUserID.EQ(String(userId)))),
+					Subscriptions.OwnerType.EQ(String("family")).AND(FamilyMembers.UserID.EQ(String(userId.String()))).
+						OR(Subscriptions.OwnerType.EQ(String("personal")).AND(Subscriptions.OwnerUserID.EQ(String(userId.String())))),
 				),
 		)
 
@@ -117,17 +117,17 @@ func (r SubscriptionRepository) GetAll(
 
 	stmt := SELECT(
 		pagedSubs.AllColumns(),
-		SubscriptionServiceUsers.AllColumns,
+		SubscriptionFamilyUsers.AllColumns,
 		SubscriptionLabels.AllColumns,
 		ProviderLabels.AllColumns,
 	).
 		FROM(
 			pagedSubs.
-				LEFT_JOIN(SubscriptionServiceUsers,
-					SubscriptionServiceUsers.SubscriptionID.EQ(Subscriptions.ID.From(pagedSubs))).
+				LEFT_JOIN(SubscriptionFamilyUsers,
+					SubscriptionFamilyUsers.SubscriptionID.EQ(Subscriptions.ID.From(pagedSubs))).
 				LEFT_JOIN(SubscriptionLabels, SubscriptionLabels.SubscriptionID.EQ(Subscriptions.ID.From(pagedSubs))).
-				LEFT_JOIN(Providers, Providers.ID.From(pagedSubs).EQ(Subscriptions.ProviderID)).
-				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.From(pagedSubs).EQ(Providers.ID)),
+				LEFT_JOIN(Providers, Providers.ID.EQ(Subscriptions.ProviderID.From(pagedSubs))).
+				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)),
 		)
 
 	var rows []models.SubscriptionRowWithCount
@@ -151,7 +151,7 @@ func (r SubscriptionRepository) GetAll(
 
 func (r SubscriptionRepository) GetAllForUser(
 	ctx context.Context,
-	userId string,
+	userId types.UserID,
 	parameters ports.SubscriptionQueryParameters) ([]subscription.Subscription, int64, error) {
 
 	// Build accessible providers CTE
@@ -161,21 +161,21 @@ func (r SubscriptionRepository) GetAllForUser(
 	).FROM(Providers).
 		WHERE(
 			Providers.OwnerType.EQ(String("system")).
-				OR(Providers.OwnerType.EQ(String("personal")).AND(Providers.OwnerUserID.EQ(String(userId)))).
+				OR(Providers.OwnerType.EQ(String("personal")).AND(Providers.OwnerUserID.EQ(String(userId.String())))).
 				OR(Providers.OwnerType.EQ(String("family")).AND(EXISTS(
 					SELECT(FamilyMembers.ID).
 						FROM(FamilyMembers).
-						WHERE(FamilyMembers.FamilyID.EQ(Providers.OwnerFamilyID).AND(FamilyMembers.UserID.EQ(String(userId))))),
+						WHERE(FamilyMembers.FamilyID.EQ(Providers.OwnerFamilyID).AND(FamilyMembers.UserID.EQ(String(userId.String()))))),
 				)),
 		).AsTable("providers")
 
 	// Build access filter
 	accessFilter := Subscriptions.OwnerType.EQ(String("system")).
-		OR(Subscriptions.OwnerType.EQ(String("personal")).AND(Subscriptions.OwnerUserID.EQ(String(userId)))).
+		OR(Subscriptions.OwnerType.EQ(String("personal")).AND(Subscriptions.OwnerUserID.EQ(String(userId.String())))).
 		OR(Subscriptions.OwnerType.EQ(String("family")).AND(EXISTS(
 			SELECT(FamilyMembers.ID).
 				FROM(FamilyMembers).
-				WHERE(FamilyMembers.FamilyID.EQ(Subscriptions.OwnerFamilyID).AND(FamilyMembers.UserID.EQ(String(userId))))),
+				WHERE(FamilyMembers.FamilyID.EQ(Subscriptions.OwnerFamilyID).AND(FamilyMembers.UserID.EQ(String(userId.String()))))),
 		))
 
 	// Add search filter if provided
@@ -259,13 +259,13 @@ func (r SubscriptionRepository) GetAllForUser(
 	// Final query with service users
 	stmt := SELECT(
 		counted.AllColumns(),
-		SubscriptionServiceUsers.AllColumns,
+		SubscriptionFamilyUsers.AllColumns,
 		SubscriptionLabels.AllColumns,
 		ProviderLabels.AllColumns,
 	).FROM(
 		counted.
-			LEFT_JOIN(SubscriptionServiceUsers,
-				SubscriptionServiceUsers.SubscriptionID.EQ(Subscriptions.ID.From(counted))).
+			LEFT_JOIN(SubscriptionFamilyUsers,
+				SubscriptionFamilyUsers.SubscriptionID.EQ(Subscriptions.ID.From(counted))).
 			LEFT_JOIN(SubscriptionLabels, SubscriptionLabels.SubscriptionID.EQ(Subscriptions.ID.From(counted))).
 			LEFT_JOIN(Providers, Providers.ID.EQ(Subscriptions.ProviderID.From(counted))).
 			LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)),
@@ -293,7 +293,7 @@ func (r SubscriptionRepository) GetAllForUser(
 
 func (r SubscriptionRepository) GetAllIt(
 	ctx context.Context,
-	userId, searchText string) iter.Seq[subscription.Subscription] {
+	userId types.UserID, searchText string) iter.Seq[subscription.Subscription] {
 	return func(yield func(subscription.Subscription) bool) {
 		offset := int64(0)
 		for {
@@ -348,7 +348,7 @@ func (r SubscriptionRepository) Save(ctx context.Context, subscriptions ...subsc
 	return nil
 }
 
-func (r SubscriptionRepository) Delete(ctx context.Context, subscriptionId uuid.UUID) (bool, error) {
+func (r SubscriptionRepository) Delete(ctx context.Context, subscriptionId types.SubscriptionID) (bool, error) {
 	stmt := Subscriptions.DELETE().
 		WHERE(Subscriptions.ID.EQ(UUID(subscriptionId)))
 
@@ -360,7 +360,7 @@ func (r SubscriptionRepository) Delete(ctx context.Context, subscriptionId uuid.
 	return count > 0, nil
 }
 
-func (r SubscriptionRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
+func (r SubscriptionRepository) Exists(ctx context.Context, ids ...types.SubscriptionID) (bool, error) {
 	if len(ids) == 0 {
 		return true, nil
 	}
@@ -397,8 +397,6 @@ func (r SubscriptionRepository) create(ctx context.Context, subscriptions []subs
 		Subscriptions.FreeTrialStartDate,
 		Subscriptions.FreeTrialEndDate,
 		Subscriptions.ProviderID,
-		Subscriptions.PlanID,
-		Subscriptions.PriceID,
 		Subscriptions.CustomPriceCurrency,
 		Subscriptions.CustomPriceAmount,
 		Subscriptions.OwnerType,
@@ -433,22 +431,10 @@ func (r SubscriptionRepository) create(ctx context.Context, subscriptions []subs
 			freeTrialEndVal = NULL
 		}
 
-		var planIdVal, priceIdVal Expression
-		if sub.PlanId() != nil {
-			planIdVal = UUID(*sub.PlanId())
-		} else {
-			planIdVal = NULL
-		}
-		if sub.PriceId() != nil {
-			priceIdVal = UUID(*sub.PriceId())
-		} else {
-			priceIdVal = NULL
-		}
-
 		var customPriceCurrencyVal, customPriceAmountVal Expression
-		if sub.CustomPrice() != nil {
-			customPriceCurrencyVal = String(sub.CustomPrice().Amount().Currency().String())
-			customPriceAmountVal = Float(sub.CustomPrice().Amount().Value())
+		if sub.Price() != nil {
+			customPriceCurrencyVal = String(sub.Price().Amount().Currency().String())
+			customPriceAmountVal = Float(sub.Price().Amount().Value())
 		} else {
 			customPriceCurrencyVal = NULL
 			customPriceAmountVal = NULL
@@ -456,10 +442,10 @@ func (r SubscriptionRepository) create(ctx context.Context, subscriptions []subs
 
 		var ownerFamilyIdVal, ownerUserIdVal Expression
 		switch sub.Owner().Type() {
-		case auth.PersonalOwnerType:
+		case types.PersonalOwnerType:
 			ownerFamilyIdVal = NULL
-			ownerUserIdVal = String(sub.Owner().UserId())
-		case auth.FamilyOwnerType:
+			ownerUserIdVal = String(sub.Owner().UserId().String())
+		case types.FamilyOwnerType:
 			ownerFamilyIdVal = UUID(sub.Owner().FamilyId())
 			ownerUserIdVal = NULL
 		default:
@@ -502,8 +488,6 @@ func (r SubscriptionRepository) create(ctx context.Context, subscriptions []subs
 			freeTrialStartVal,
 			freeTrialEndVal,
 			UUID(sub.ProviderId()),
-			planIdVal,
-			priceIdVal,
 			customPriceCurrencyVal,
 			customPriceAmountVal,
 			String(sub.Owner().Type().String()),
@@ -531,27 +515,27 @@ func (r SubscriptionRepository) create(ctx context.Context, subscriptions []subs
 	}
 
 	// Insert service users
-	allServiceUsers := collection.SelectMany(subscriptions,
+	allServiceUsers := herd.SelectMany(subscriptions,
 		func(sub subscription.Subscription) []struct {
-			SubscriptionID uuid.UUID
-			FamilyMemberID uuid.UUID
+			SubscriptionID types.SubscriptionID
+			FamilyMemberID types.FamilyMemberID
 		} {
-			return collection.Select(sub.ServiceUsers().Values(),
-				func(u uuid.UUID) struct {
-					SubscriptionID uuid.UUID
-					FamilyMemberID uuid.UUID
+			return herd.Select(sub.FamilyUsers().Values(),
+				func(u types.FamilyMemberID) struct {
+					SubscriptionID types.SubscriptionID
+					FamilyMemberID types.FamilyMemberID
 				} {
 					return struct {
-						SubscriptionID uuid.UUID
-						FamilyMemberID uuid.UUID
+						SubscriptionID types.SubscriptionID
+						FamilyMemberID types.FamilyMemberID
 					}{SubscriptionID: sub.Id(), FamilyMemberID: u}
 				})
 		})
 
 	if len(allServiceUsers) > 0 {
-		serviceUserStmt := SubscriptionServiceUsers.INSERT(
-			SubscriptionServiceUsers.SubscriptionID,
-			SubscriptionServiceUsers.FamilyMemberID,
+		serviceUserStmt := SubscriptionFamilyUsers.INSERT(
+			SubscriptionFamilyUsers.SubscriptionID,
+			SubscriptionFamilyUsers.FamilyMemberID,
 		)
 
 		for _, su := range allServiceUsers {
@@ -588,23 +572,11 @@ func (r SubscriptionRepository) update(ctx context.Context, sub subscription.Sub
 			freeTrialEndVal = TimestampzExp(NULL)
 		}
 
-		var planIdVal, priceIdVal StringExpression
-		if sub.PlanId() != nil {
-			planIdVal = StringExp(UUID(*sub.PlanId()))
-		} else {
-			planIdVal = StringExp(NULL)
-		}
-		if sub.PriceId() != nil {
-			priceIdVal = StringExp(UUID(*sub.PriceId()))
-		} else {
-			priceIdVal = StringExp(NULL)
-		}
-
 		var customPriceCurrencyVal StringExpression
 		var customPriceAmountVal FloatExpression
-		if sub.CustomPrice() != nil {
-			customPriceCurrencyVal = String(sub.CustomPrice().Amount().Currency().String())
-			customPriceAmountVal = Float(sub.CustomPrice().Amount().Value())
+		if sub.Price() != nil {
+			customPriceCurrencyVal = String(sub.Price().Amount().Currency().String())
+			customPriceAmountVal = Float(sub.Price().Amount().Value())
 		} else {
 			customPriceCurrencyVal = StringExp(NULL)
 			customPriceAmountVal = FloatExp(NULL)
@@ -612,10 +584,10 @@ func (r SubscriptionRepository) update(ctx context.Context, sub subscription.Sub
 
 		var ownerFamilyIdVal, ownerUserIdVal StringExpression
 		switch sub.Owner().Type() {
-		case auth.PersonalOwnerType:
+		case types.PersonalOwnerType:
 			ownerFamilyIdVal = StringExp(NULL)
-			ownerUserIdVal = String(sub.Owner().UserId())
-		case auth.FamilyOwnerType:
+			ownerUserIdVal = String(sub.Owner().UserId().String())
+		case types.FamilyOwnerType:
 			ownerFamilyIdVal = StringExp(UUID(sub.Owner().FamilyId()))
 			ownerUserIdVal = StringExp(NULL)
 		default:
@@ -658,8 +630,6 @@ func (r SubscriptionRepository) update(ctx context.Context, sub subscription.Sub
 				Subscriptions.FreeTrialStartDate.SET(freeTrialStartVal),
 				Subscriptions.FreeTrialEndDate.SET(freeTrialEndVal),
 				Subscriptions.ProviderID.SET(UUID(sub.ProviderId())),
-				Subscriptions.PlanID.SET(planIdVal),
-				Subscriptions.PriceID.SET(priceIdVal),
 				Subscriptions.CustomPriceCurrency.SET(customPriceCurrencyVal),
 				Subscriptions.CustomPriceAmount.SET(customPriceAmountVal),
 				Subscriptions.OwnerType.SET(String(sub.Owner().Type().String())),
@@ -687,24 +657,24 @@ func (r SubscriptionRepository) update(ctx context.Context, sub subscription.Sub
 	}
 
 	// Handle tracked changes for service users (additions & deletions, no updates required).
-	if err := r.saveTrackedServiceUsersWithJet(ctx, sub.Id(), sub.ServiceUsers()); err != nil {
+	if err := r.saveTrackedServiceUsersWithJet(ctx, sub.Id(), sub.FamilyUsers()); err != nil {
 		return err
 	}
 
 	// Clear change tracking on successful persistence.
-	sub.ServiceUsers().ClearChanges()
+	sub.FamilyUsers().ClearChanges()
 	return nil
 }
 
 func (r SubscriptionRepository) saveTrackedServiceUsersWithJet(
-	ctx context.Context, subscriptionId uuid.UUID,
-	serviceUsers *slicesx.Tracked[uuid.UUID]) error {
+	ctx context.Context, subscriptionId types.SubscriptionID,
+	serviceUsers *slicesx.Tracked[types.FamilyMemberID]) error {
 	// Handle new service users
 	newUsers := serviceUsers.Added()
 	if len(newUsers) > 0 {
-		stmt := SubscriptionServiceUsers.INSERT(
-			SubscriptionServiceUsers.SubscriptionID,
-			SubscriptionServiceUsers.FamilyMemberID,
+		stmt := SubscriptionFamilyUsers.INSERT(
+			SubscriptionFamilyUsers.SubscriptionID,
+			SubscriptionFamilyUsers.FamilyMemberID,
 		)
 
 		for _, userId := range newUsers {
@@ -723,10 +693,10 @@ func (r SubscriptionRepository) saveTrackedServiceUsersWithJet(
 	// Handle deleted service users
 	deletedUsers := serviceUsers.Removed()
 	for _, userId := range deletedUsers {
-		stmt := SubscriptionServiceUsers.DELETE().
+		stmt := SubscriptionFamilyUsers.DELETE().
 			WHERE(
-				SubscriptionServiceUsers.SubscriptionID.EQ(UUID(subscriptionId)).
-					AND(SubscriptionServiceUsers.FamilyMemberID.EQ(UUID(userId))),
+				SubscriptionFamilyUsers.SubscriptionID.EQ(UUID(subscriptionId)).
+					AND(SubscriptionFamilyUsers.FamilyMemberID.EQ(UUID(userId))),
 			)
 
 		_, err := r.dbContext.Execute(ctx, stmt)

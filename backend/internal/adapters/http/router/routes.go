@@ -4,12 +4,12 @@ import (
 	"go.uber.org/fx"
 
 	. "github.com/mistribe/subtracker/internal/adapters/http/handlers"
+	"github.com/mistribe/subtracker/internal/adapters/http/handlers/account"
 	"github.com/mistribe/subtracker/internal/adapters/http/handlers/currency"
 	"github.com/mistribe/subtracker/internal/adapters/http/handlers/family"
 	"github.com/mistribe/subtracker/internal/adapters/http/handlers/label"
 	"github.com/mistribe/subtracker/internal/adapters/http/handlers/provider"
 	"github.com/mistribe/subtracker/internal/adapters/http/handlers/subscription"
-	"github.com/mistribe/subtracker/internal/adapters/http/handlers/user"
 	"github.com/mistribe/subtracker/internal/adapters/http/router/ginfx"
 	"github.com/mistribe/subtracker/internal/adapters/http/router/middlewares"
 )
@@ -19,61 +19,57 @@ func BuildRoutesModule() fx.Option {
 		fx.Provide(
 			middlewares.NewAuthenticationMiddleware,
 			middlewares.NewLanguageMiddleware,
+			middlewares.NewCacheMiddleware,
 
-			subscription.NewSubscriptionGetEndpoint,
-			subscription.NewSubscriptionGetAllEndpoint,
-			subscription.NewSubscriptionCreateEndpoint,
-			subscription.NewSubscriptionUpdateEndpoint,
-			subscription.NewSubscriptionDeleteEndpoint,
-			subscription.NewSubscriptionPatchEndpoint,
-			subscription.NewSubscriptionSummaryEndpoint,
+			subscription.NewGetEndpoint,
+			subscription.NewGetAllEndpoint,
+			subscription.NewCreateEndpoint,
+			subscription.NewUpdateEndpoint,
+			subscription.NewDeleteEndpoint,
+			subscription.NewSummaryEndpoint,
+			subscription.NewGetQuotaUsageEndpoint,
 			ginfx.AsEndpointGroup(subscription.NewEndpointGroup),
 
-			label.NewLabelGetAllEndpoint,
-			label.NewLabelGetEndpoint,
-			label.NewLabelCreateEndpoint,
-			label.NewLabelUpdateEndpoint,
-			label.NewLabelDeleteEndpoint,
-			label.NewDefaultLabelEndpoint,
+			label.NewGetAllEndpoint,
+			label.NewGetEndpoint,
+			label.NewCreateEndpoint,
+			label.NewUpdateEndpoint,
+			label.NewDeleteEndpoint,
+			label.NewGetQuotaUsageEndpoint,
 			ginfx.AsEndpointGroup(label.NewEndpointGroup),
 
-			family.NewFamilyCreateEndpoint,
-			family.NewFamilyUpdateEndpoint,
-			family.NewFamilyPatchEndpoint,
-			family.NewFamilyDeleteEndpoint,
-			family.NewFamilyInviteEndpoint,
-			family.NewFamilyAcceptInvitationEndpoint,
-			family.NewFamilyDeclineEndpoint,
-			family.NewFamilyRevokeEndpoint,
-			family.NewFamilySeeInvitationEndpoint,
-			family.NewFamilyMemberGetEndpoint,
-			family.NewFamilyMemberCreateEndpoint,
-			family.NewFamilyMemberUpdateEndpoint,
-			family.NewFamilyMemberDeleteEndpoint,
+			family.NewCreateEndpoint,
+			family.NewUpdateEndpoint,
+			family.NewDeleteEndpoint,
+			family.NewInviteEndpoint,
+			family.NewAcceptInvitationEndpoint,
+			family.NewDeclineEndpoint,
+			family.NewRevokeEndpoint,
+			family.NewSeeInvitationEndpoint,
+			family.NewGetEndpoint,
+			family.NewMemberCreateEndpoint,
+			family.NewMemberUpdateEndpoint,
+			family.NewMemberDeleteEndpoint,
+			family.NewGetQuotaUsageEndpoint,
 			ginfx.AsEndpointGroup(family.NewEndpointGroup),
 
-			provider.NewProviderGetEndpoint,
-			provider.NewProviderGetAllEndpoint,
-			provider.NewProviderCreateEndpoint,
-			provider.NewProviderPlanCreateEndpoint,
-			provider.NewProviderPriceCreateEndpoint,
-			provider.NewProviderUpdateEndpoint,
-			provider.NewProviderPlanUpdateEndpoint,
-			provider.NewProviderPriceUpdateEndpoint,
-			provider.NewProviderDeleteEndpoint,
-			provider.NewProviderPlanDeleteEndpoint,
-			provider.NewProviderPriceDeleteEndpoint,
-			provider.NewProviderPatchEndpoint,
+			provider.NewGetEndpoint,
+			provider.NewGetAllEndpoint,
+			provider.NewCreateEndpoint,
+			provider.NewUpdateEndpoint,
+			provider.NewDeleteEndpoint,
+			provider.NewGetQuotaUsageEndpoint,
 			ginfx.AsEndpointGroup(provider.NewEndpointGroup),
 
-			currency.NewCurrencySupportedEndpoint,
-			currency.NewCurrencyGetRateEndpoint,
+			currency.NewSupportedEndpoint,
+			currency.NewGetRateEndpoint,
 			ginfx.AsEndpointGroup(currency.NewEndpointGroup),
 
-			user.NewUserGetPreferredCurrencyEndpoint,
-			user.NewUserUpdatePreferredCurrencyEndpoint,
-			user.NewUserDeleteEndpoint,
-			ginfx.AsEndpointGroup(user.NewEndpointGroup),
+			account.NewUserGetPreferredCurrencyEndpoint,
+			account.NewUpdatePreferredCurrencyEndpoint,
+			account.NewDeleteEndpoint,
+			account.NewGetQuotaUsageEndpoint,
+			ginfx.AsEndpointGroup(account.NewEndpointGroup),
 
 			ginfx.AsEndpoint(NewHealthCheckLiveEndpoint),
 		),

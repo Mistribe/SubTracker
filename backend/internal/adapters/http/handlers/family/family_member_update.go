@@ -1,38 +1,30 @@
 package family
 
 import (
-	"errors"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/internal/usecase/family/command"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 )
 
-type FamilyMemberUpdateEndpoint struct {
-	handler ports.CommandHandler[command.UpdateFamilyMemberCommand, family.Family]
+type MemberUpdateEndpoint struct {
+	handler        ports.CommandHandler[command.UpdateFamilyMemberCommand, family.Family]
+	authentication ports.Authentication
 }
 
-type updateFamilyMemberModel struct {
-	Name      string     `json:"name" binding:"required"`
-	Type      string     `json:"type" binding:"required" enums:"owner,adult,kid"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty" format:"date-time"`
-}
+func updateFamilyMemberRequestToCommand(
+	m dto.UpdateFamilyMemberRequest,
+	familyID types.FamilyID, familyMemberID types.FamilyMemberID) (command.UpdateFamilyMemberCommand, error) {
 
-func (m updateFamilyMemberModel) Command(familyId, memberId uuid.UUID) (command.UpdateFamilyMemberCommand, error) {
-
-	updatedAt := option.None[time.Time]()
-	if m.UpdatedAt != nil {
-		updatedAt = option.Some(*m.UpdatedAt)
-	}
+	updatedAt := option.New(m.UpdatedAt)
 
 	memberType, err := family.ParseMemberType(m.Type)
 	if err != nil {
@@ -40,91 +32,85 @@ func (m updateFamilyMemberModel) Command(familyId, memberId uuid.UUID) (command.
 	}
 
 	return command.UpdateFamilyMemberCommand{
-		FamilyId:  familyId,
-		Id:        memberId,
-		Name:      m.Name,
-		Type:      memberType,
-		UpdatedAt: updatedAt,
+		FamilyID:       familyID,
+		FamilyMemberID: familyMemberID,
+		Name:           m.Name,
+		Type:           memberType,
+		UpdatedAt:      updatedAt,
 	}, nil
 }
 
 // Handle godoc
 //
-//	@Summary		Update family member by ID
+//	@Summary		Update family member by LabelID
 //	@Description	Update an existing family member's information such as name and kid status
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			familyId	path		string					true	"Family ID (UUID format)"
-//	@Param			id			path		string					true	"Family member ID (UUID format)"
-//	@Param			member		body		updateFamilyMemberModel	true	"Updated family member data"
-//	@Success		200			{object}	familyModel				"Successfully updated family member"
-//	@Failure		400			{object}	HttpErrorResponse		"Bad Request - Invalid input data or ID format"
-//	@Failure		401			{object}	HttpErrorResponse		"Unauthorized - Invalid user authentication"
-//	@Failure		404			{object}	HttpErrorResponse		"Family or family member not found"
-//	@Failure		500			{object}	HttpErrorResponse		"Internal Server Error"
-//	@Router			/families/{familyId}/members/{id} [put]
-func (f FamilyMemberUpdateEndpoint) Handle(c *gin.Context) {
-	idParam := c.Param("id")
-	if idParam == "" {
-		FromError(c, errors.New("id parameter is required"))
-		return
-	}
+//	@Param			familyId		path		string							true	"Family LabelID (UUID format)"
+//	@Param			familyMemberId	path		string							true	"Family member LabelID (UUID format)"
+//	@Param			member			body		dto.UpdateFamilyMemberRequest	true	"Updated family member data"
+//	@Success		200				{object}	dto.FamilyModel					"Successfully updated family member"
+//	@Failure		400				{object}	HttpErrorResponse				"Bad Request - Invalid input data or LabelID format"
+//	@Failure		401				{object}	HttpErrorResponse				"Unauthorized - Invalid user authentication"
+//	@Failure		404				{object}	HttpErrorResponse				"Family or family member not found"
+//	@Failure		500				{object}	HttpErrorResponse				"Internal Server Error"
+//	@Router			/family/{familyId}/members/{familyMemberId} [put]
+func (e MemberUpdateEndpoint) Handle(c *gin.Context) {
 
-	id, err := uuid.Parse(idParam)
+	familyMemberID, err := types.ParseFamilyMemberID(c.Param("familyMemberId"))
 	if err != nil {
 		FromError(c, err)
 		return
 	}
 
-	familyId, err := uuid.Parse(c.Param("familyId"))
+	familyID, err := types.ParseFamilyID(c.Param("familyId"))
 	if err != nil {
 		FromError(c, err)
 		return
 	}
 
-	userId, ok := auth.GetUserIdFromContext(c)
-	if !ok {
-		FromError(c, errors.New("invalid user id"))
-		return
-	}
+	connectedAccount := e.authentication.MustGetConnectedAccount(c)
 
-	var model updateFamilyMemberModel
+	var model dto.UpdateFamilyMemberRequest
 	if err = c.ShouldBindJSON(&model); err != nil {
 		FromError(c, err)
 		return
 	}
 
-	cmd, err := model.Command(familyId, id)
+	cmd, err := updateFamilyMemberRequestToCommand(model, familyID, familyMemberID)
 	if err != nil {
 		FromError(c, err)
 		return
 	}
 
-	r := f.handler.Handle(c, cmd)
+	r := e.handler.Handle(c, cmd)
 	FromResult(c,
 		r,
 		WithMapping[family.Family](func(mbr family.Family) any {
-			return newFamilyModel(userId, mbr)
+			return dto.NewFamilyModel(connectedAccount.UserID(), mbr)
 		}))
 }
 
-func (f FamilyMemberUpdateEndpoint) Pattern() []string {
+func (e MemberUpdateEndpoint) Pattern() []string {
 	return []string{
-		"/:familyId/members/:id",
+		"/:familyId/members/:familyMemberId",
 	}
 }
 
-func (f FamilyMemberUpdateEndpoint) Method() string {
+func (e MemberUpdateEndpoint) Method() string {
 	return http.MethodPut
 }
 
-func (f FamilyMemberUpdateEndpoint) Middlewares() []gin.HandlerFunc {
+func (e MemberUpdateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewFamilyMemberUpdateEndpoint(handler ports.CommandHandler[command.UpdateFamilyMemberCommand, family.Family]) *FamilyMemberUpdateEndpoint {
-	return &FamilyMemberUpdateEndpoint{
-		handler: handler,
+func NewMemberUpdateEndpoint(
+	handler ports.CommandHandler[command.UpdateFamilyMemberCommand, family.Family],
+	authentication ports.Authentication) *MemberUpdateEndpoint {
+	return &MemberUpdateEndpoint{
+		handler:        handler,
+		authentication: authentication,
 	}
 }

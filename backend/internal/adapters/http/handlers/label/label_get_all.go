@@ -14,12 +14,12 @@ import (
 	. "github.com/mistribe/subtracker/pkg/ginx"
 )
 
-type LabelGetAllEndpoint struct {
+type GetAllEndpoint struct {
 	handler ports.QueryHandler[query.FindAllQuery, shared.PaginatedResponse[label.Label]]
 }
 
-func NewLabelGetAllEndpoint(handler ports.QueryHandler[query.FindAllQuery, shared.PaginatedResponse[label.Label]]) *LabelGetAllEndpoint {
-	return &LabelGetAllEndpoint{handler: handler}
+func NewGetAllEndpoint(handler ports.QueryHandler[query.FindAllQuery, shared.PaginatedResponse[label.Label]]) *GetAllEndpoint {
+	return &GetAllEndpoint{handler: handler}
 }
 
 // Handle godoc
@@ -28,14 +28,14 @@ func NewLabelGetAllEndpoint(handler ports.QueryHandler[query.FindAllQuery, share
 //	@Description	Retrieve a paginated list of labels with optional filtering by owner type and search text
 //	@Tags			labels
 //	@Produce		json
-//	@Param			search	query		string									false	"Search text to filter labels by name"
-//	@Param			limit	query		integer									false	"Maximum number of items to return (default: 10)"
-//	@Param			offset	query		integer									false	"Number of items to skip for pagination (default: 0)"
-//	@Success		200		{object}	dto.PaginatedResponseModel[labelModel]	"Paginated list of labels"
-//	@Failure		400		{object}	HttpErrorResponse						"Bad Request - Invalid query parameters"
-//	@Failure		500		{object}	HttpErrorResponse						"Internal Server Error"
+//	@Param			search	query		string										false	"Search text to filter labels by name"
+//	@Param			limit	query		integer										false	"Maximum number of items to return (default: 10)"
+//	@Param			offset	query		integer										false	"Number of items to skip for pagination (default: 0)"
+//	@Success		200		{object}	dto.PaginatedResponseModel[dto.LabelModel]	"Paginated list of labels"
+//	@Failure		400		{object}	HttpErrorResponse							"Bad Request - Invalid query parameters"
+//	@Failure		500		{object}	HttpErrorResponse							"Internal Server Error"
 //	@Router			/labels [get]
-func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
+func (e GetAllEndpoint) Handle(c *gin.Context) {
 	searchText := c.DefaultQuery("search", "")
 
 	limit, err := strconv.ParseInt(c.DefaultQuery("limit", "10"), 10, 64)
@@ -52,20 +52,20 @@ func (e LabelGetAllEndpoint) Handle(c *gin.Context) {
 	FromResult(c,
 		r,
 		WithMapping[shared.PaginatedResponse[label.Label]](func(paginatedResult shared.PaginatedResponse[label.Label]) any {
-			return dto.NewPaginatedResponseModel(paginatedResult, newLabelModel)
+			return dto.NewPaginatedResponseModel(paginatedResult, dto.NewLabelModel)
 		}))
 }
 
-func (e LabelGetAllEndpoint) Pattern() []string {
+func (e GetAllEndpoint) Pattern() []string {
 	return []string{
 		"",
 	}
 }
 
-func (e LabelGetAllEndpoint) Method() string {
+func (e GetAllEndpoint) Method() string {
 	return http.MethodGet
 }
 
-func (e LabelGetAllEndpoint) Middlewares() []gin.HandlerFunc {
+func (e GetAllEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

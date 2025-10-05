@@ -4,38 +4,40 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/pkg/langext/option"
 	"github.com/mistribe/subtracker/pkg/langext/result"
-	"github.com/mistribe/subtracker/pkg/x"
 )
 
 type CreateFamilyCommand struct {
-	FamilyId    *uuid.UUID
+	FamilyId    option.Option[types.FamilyID]
 	Name        string
 	CreatorName string
-	CreatedAt   *time.Time
+	CreatedAt   option.Option[time.Time]
 }
 
 type CreateFamilyCommandHandler struct {
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authentication   ports.Authentication
 }
 
 func NewCreateFamilyCommandHandler(
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *CreateFamilyCommandHandler {
+	authService ports.Authentication) *CreateFamilyCommandHandler {
 	return &CreateFamilyCommandHandler{
 		familyRepository: familyRepository,
-		authService:      authService,
+		authentication:   authService,
 	}
 }
 
 func (h CreateFamilyCommandHandler) Handle(ctx context.Context, cmd CreateFamilyCommand) result.Result[family.Family] {
-	if cmd.FamilyId != nil {
-		fam, err := h.familyRepository.GetById(ctx, *cmd.FamilyId)
+	var familyID types.FamilyID
+	// Guard against nil Option (zero-value interface) before calling its methods
+	if cmd.FamilyId != nil && cmd.FamilyId.IsSome() { // provided family id option
+		familyID = *cmd.FamilyId.Value()
+		fam, err := h.familyRepository.GetById(ctx, familyID)
 		if err != nil {
 			return result.Fail[family.Family](err)
 		}
@@ -43,31 +45,33 @@ func (h CreateFamilyCommandHandler) Handle(ctx context.Context, cmd CreateFamily
 		if fam != nil {
 			return result.Fail[family.Family](family.ErrFamilyAlreadyExists)
 		}
-	} else {
-		newId, err := uuid.NewV7()
-		if err != nil {
-			return result.Fail[family.Family](err)
-		}
-		cmd.FamilyId = &newId
+	} else { // no family id provided, generate new one
+		familyID = types.NewFamilyID()
 	}
-	return h.createFamily(ctx, cmd)
+	return h.createFamily(ctx, familyID, cmd)
 }
 
 func (h CreateFamilyCommandHandler) createFamily(
 	ctx context.Context,
+	familyID types.FamilyID,
 	cmd CreateFamilyCommand) result.Result[family.Family] {
 
-	userId := h.authService.MustGetUserId(ctx)
-	memberId, err := uuid.NewV7()
-	if err != nil {
-		return result.Fail[family.Family](err)
+	connectedAccount := h.authentication.MustGetConnectedAccount(ctx)
+	userID := connectedAccount.UserID()
+	// todo check if the user already have a family
+	memberId := types.NewFamilyMemberID()
+
+	// Guard nil option before calling methods
+	var createdAt time.Time
+	if cmd.CreatedAt != nil && cmd.CreatedAt.IsSome() {
+		createdAt = *cmd.CreatedAt.Value()
+	} else {
+		createdAt = time.Now()
 	}
 
-	createdAt := x.ValueOrDefault(cmd.CreatedAt, time.Now())
-
 	fam := family.NewFamily(
-		*cmd.FamilyId,
-		userId,
+		familyID,
+		userID,
 		cmd.Name,
 		[]family.Member{},
 		createdAt,
@@ -76,14 +80,14 @@ func (h CreateFamilyCommandHandler) createFamily(
 
 	creator := family.NewMember(
 		memberId,
-		*cmd.FamilyId,
+		familyID,
 		cmd.CreatorName,
 		family.OwnerMemberType,
 		nil,
 		createdAt,
 		createdAt,
 	)
-	creator.SetUserId(&userId)
+	creator.SetUserId(&userID)
 
 	if err := fam.AddMember(creator); err != nil {
 		return result.Fail[family.Family](err)

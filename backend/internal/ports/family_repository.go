@@ -3,16 +3,14 @@ package ports
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 )
 
 type FamilyRepository interface {
-	Repository[family.Family]
+	Repository[types.FamilyID, family.Family]
 
-	GetUserFamily(ctx context.Context, userId string) (family.Family, error)
-	// MemberExists checks if all provided member UUIDs exist within a specified family UUID context. Returns true if they exist.
-	MemberExists(ctx context.Context, familyId uuid.UUID, members ...uuid.UUID) (bool, error)
-	IsUserMemberOfFamily(ctx context.Context, familyId uuid.UUID, userId string) (bool, error)
+	GetAccountFamily(ctx context.Context, userId types.UserID) (family.Family, error)
+	MemberExists(ctx context.Context, familyId types.FamilyID, members ...types.FamilyMemberID) (bool, error)
+	IsUserMemberOfFamily(ctx context.Context, familyId types.FamilyID, userId types.UserID) (bool, error)
 }

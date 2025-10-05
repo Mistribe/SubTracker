@@ -4,20 +4,19 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db"
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/model"
 	. "github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/table"
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/models"
 	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	. "github.com/go-jet/jet/v2/postgres"
 )
 
-// CurrencyRateRepository implements the currency.UserRepository interface
+// CurrencyRateRepository implements the currency.AccountRepository interface
 type CurrencyRateRepository struct {
 	dbContext *db.Context
 }
@@ -45,10 +44,10 @@ func (r CurrencyRateRepository) GetLatestUpdateDate(ctx context.Context) (time.T
 	return *row.LatestUpdateDate, nil
 }
 
-func (r CurrencyRateRepository) GetById(ctx context.Context, entityId uuid.UUID) (currency.Rate, error) {
+func (r CurrencyRateRepository) GetById(ctx context.Context, rateID types.RateID) (currency.Rate, error) {
 	stmt := SELECT(CurrencyRates.AllColumns).
 		FROM(CurrencyRates).
-		WHERE(CurrencyRates.ID.EQ(UUID(entityId)))
+		WHERE(CurrencyRates.ID.EQ(UUID(rateID)))
 	var row model.CurrencyRates
 	if err := r.dbContext.Query(ctx, stmt, &row); err != nil {
 		return nil, err
@@ -71,7 +70,7 @@ func (r CurrencyRateRepository) GetRatesByDate(ctx context.Context, date time.Ti
 		return nil, nil
 	}
 
-	return collection.SelectErr(rows, func(in model.CurrencyRates) (currency.Rate, error) {
+	return herd.SelectErr(rows, func(in model.CurrencyRates) (currency.Rate, error) {
 		return models.CreateCurrencyRateFromModel(in)
 	})
 }
@@ -192,11 +191,11 @@ func (r CurrencyRateRepository) update(ctx context.Context, rate currency.Rate) 
 	return nil
 }
 
-// Delete deletes a currency rate by its ID
-func (r CurrencyRateRepository) Delete(ctx context.Context, id uuid.UUID) (bool, error) {
+// Delete deletes a currency rate by its LabelID
+func (r CurrencyRateRepository) Delete(ctx context.Context, rateID types.RateID) (bool, error) {
 	stmt := CurrencyRates.
 		DELETE().
-		WHERE(CurrencyRates.ID.EQ(UUID(id)))
+		WHERE(CurrencyRates.ID.EQ(UUID(rateID)))
 
 	count, err := r.dbContext.Execute(ctx, stmt)
 	if err != nil {
@@ -211,7 +210,7 @@ func (r CurrencyRateRepository) Delete(ctx context.Context, id uuid.UUID) (bool,
 }
 
 // Exists checks if currency rates with the given IDs exist
-func (r CurrencyRateRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
+func (r CurrencyRateRepository) Exists(ctx context.Context, ids ...types.RateID) (bool, error) {
 	if len(ids) == 0 {
 		return true, nil
 	}

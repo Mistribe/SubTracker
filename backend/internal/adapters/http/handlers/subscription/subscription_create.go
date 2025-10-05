@@ -3,155 +3,104 @@ package subscription
 import (
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/x"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/langext/option"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
-	"github.com/mistribe/subtracker/internal/domain/auth"
-	"github.com/mistribe/subtracker/internal/ports"
-	auth2 "github.com/mistribe/subtracker/internal/usecase/auth"
-	"github.com/mistribe/subtracker/internal/usecase/subscription/command"
-	"github.com/mistribe/subtracker/pkg/ginx"
-
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/internal/usecase/subscription/command"
 )
 
-type SubscriptionCreateEndpoint struct {
-	handler ports.CommandHandler[command.CreateSubscriptionCommand, subscription.Subscription]
+type CreateEndpoint struct {
+	handler        ports.CommandHandler[command.CreateSubscriptionCommand, subscription.Subscription]
+	authentication ports.Authentication
 }
 
-func NewSubscriptionCreateEndpoint(handler ports.CommandHandler[command.CreateSubscriptionCommand, subscription.Subscription]) *SubscriptionCreateEndpoint {
-	return &SubscriptionCreateEndpoint{handler: handler}
+func NewCreateEndpoint(handler ports.CommandHandler[command.CreateSubscriptionCommand, subscription.Subscription],
+	authentication ports.Authentication) *CreateEndpoint {
+	return &CreateEndpoint{
+		handler:        handler,
+		authentication: authentication,
+	}
 }
 
-type CreateSubscriptionModel struct {
-	Id               *string                         `json:"id,omitempty"`
-	FriendlyName     *string                         `json:"friendly_name,omitempty"`
-	FreeTrial        *SubscriptionFreeTrialModel     `json:"free_trial,omitempty"`
-	ProviderId       string                          `json:"provider_id" binding:"required"`
-	PlanId           *string                         `json:"plan_id,omitempty"`
-	PriceId          *string                         `json:"price_id,omitempty"`
-	CustomPrice      *dto.AmountModel                `json:"custom_price,omitempty"`
-	ServiceUsers     []string                        `json:"service_users,omitempty"`
-	Labels           []string                        `json:"labels,omitempty"`
-	StartDate        time.Time                       `json:"start_date" binding:"required" format:"date-time"`
-	EndDate          *time.Time                      `json:"end_date,omitempty" format:"date-time"`
-	Recurrency       string                          `json:"recurrency" binding:"required"`
-	CustomRecurrency *int32                          `json:"custom_recurrency,omitempty"`
-	Payer            *EditableSubscriptionPayerModel `json:"payer,omitempty"`
-	Owner            dto.EditableOwnerModel          `json:"owner" binding:"required"`
-	CreatedAt        *time.Time                      `json:"created_at,omitempty"`
-}
-
-func (m CreateSubscriptionModel) Subscription(userId string) (subscription.Subscription, error) {
-	id, err := x.ParseOrNewUUID(m.Id)
+func createSubscriptionRequestToCommand(r dto.CreateSubscriptionRequest,
+	userId types.UserID) (command.CreateSubscriptionCommand, error) {
+	subscriptionID, err := types.ParseSubscriptionIDOrNil(r.Id)
 	if err != nil {
-		return nil, err
+		return command.CreateSubscriptionCommand{}, err
 	}
-	serviceProviderId, err := uuid.Parse(m.ProviderId)
+	providerID, err := types.ParseProviderID(r.ProviderId)
 	if err != nil {
-		return nil, err
+		return command.CreateSubscriptionCommand{}, err
 	}
-	planId, err := x.ParseOrNilUUID(m.PlanId)
+	owner, err := r.Owner.Owner(userId)
 	if err != nil {
-		return nil, err
+		return command.CreateSubscriptionCommand{}, err
 	}
-	priceId, err := x.ParseOrNilUUID(m.PriceId)
-	if err != nil {
-		return nil, err
-	}
-	ownerType, err := auth.ParseOwnerType(m.Owner.Type)
-	if err != nil {
-		return nil, err
-	}
-	var familyId *uuid.UUID
-	if m.Owner.FamilyId != nil {
-		fid, err := uuid.Parse(*m.Owner.FamilyId)
-		if err != nil {
-			return nil, err
-		}
-		familyId = &fid
-	}
-	owner := auth.NewOwner(ownerType, familyId, &userId)
-	createdAt := x.ValueOrDefault(m.CreatedAt, time.Now())
 	var payer subscription.Payer
-	if m.Payer != nil {
-		if familyId == nil {
-			return nil, errors.New("missing family_id for adding a payer")
+	if r.Payer != nil {
+		if owner.Type() != types.FamilyOwnerType {
+			return command.CreateSubscriptionCommand{}, errors.New("missing family_id for adding a payer")
 		}
-		payerType, err := subscription.ParsePayerType(m.Payer.Type)
+		payerType, err := subscription.ParsePayerType(r.Payer.Type)
 		if err != nil {
-			return nil, err
+			return command.CreateSubscriptionCommand{}, err
 		}
-		var memberId *uuid.UUID
-		if m.Payer.MemberId != nil {
-			mbrId, err := uuid.Parse(*m.Payer.MemberId)
-			if err != nil {
-				return nil, err
-			}
-			memberId = &mbrId
-		}
-		payer = subscription.NewPayer(payerType, *familyId, memberId)
-	}
-	recurrency, err := subscription.ParseRecurrencyType(m.Recurrency)
-	if err != nil {
-		return nil, err
-	}
-	serviceUsers, err := collection.SelectErr(m.ServiceUsers, uuid.Parse)
-	if err != nil {
-		return nil, err
-	}
-	labels, err := collection.SelectErr(m.Labels, func(in string) (subscription.LabelRef, error) {
-		labelId, err := uuid.Parse(in)
+
+		memberId, err := types.ParseFamilyMemberIDOrNil(r.Payer.MemberId)
 		if err != nil {
-			return subscription.LabelRef{}, err
+			return command.CreateSubscriptionCommand{}, err
 		}
-		return subscription.LabelRef{
-			LabelId: labelId,
-			Source:  subscription.LabelSourceSubscription,
-		}, nil
+		payer = subscription.NewPayer(payerType, owner.FamilyId(), memberId)
+	}
+	var freeTrial subscription.FreeTrial
+	if r.FreeTrial != nil {
+		freeTrial = subscription.NewFreeTrial(r.FreeTrial.StartDate, r.FreeTrial.EndDate)
+	}
+	recurrency, err := subscription.ParseRecurrencyType(r.Recurrency)
+	if err != nil {
+		return command.CreateSubscriptionCommand{}, err
+	}
+	familyUsers, err := herd.SelectErr(r.FamilyUsers, types.ParseFamilyMemberID)
+	if err != nil {
+		return command.CreateSubscriptionCommand{}, err
+	}
+	labels, err := herd.SelectErr(r.Labels, func(in string) (types.LabelID, error) {
+		labelId, err := types.ParseLabelID(in)
+		if err != nil {
+			return types.LabelID{}, err
+		}
+		return labelId, nil
 	})
 	if err != nil {
-		return nil, err
+		return command.CreateSubscriptionCommand{}, err
 	}
-	price, err := newSubscriptionCustomPrice(m.CustomPrice)
-	if err != nil {
-		return nil, err
-	}
-	return subscription.NewSubscription(
-		id,
-		m.FriendlyName,
-		newSubscriptionFreeTrial(m.FreeTrial),
-		serviceProviderId,
-		planId,
-		priceId,
-		price,
-		owner,
-		payer,
-		serviceUsers,
-		labels,
-		m.StartDate,
-		m.EndDate,
-		recurrency,
-		m.CustomRecurrency,
-		createdAt,
-		createdAt,
-	), nil
-}
-
-func (m CreateSubscriptionModel) Command(userId string) (command.CreateSubscriptionCommand, error) {
-	sub, err := m.Subscription(userId)
+	price, err := dto.NewSubscriptionCustomPrice(r.CustomPrice)
 	if err != nil {
 		return command.CreateSubscriptionCommand{}, err
 	}
 	return command.CreateSubscriptionCommand{
-		Subscription: sub,
+		SubscriptionID:   option.New(subscriptionID),
+		FriendlyName:     r.FriendlyName,
+		FreeTrial:        freeTrial,
+		ProviderID:       providerID,
+		Price:            price.Amount(),
+		Owner:            owner,
+		Payer:            payer,
+		FamilyUsers:      familyUsers,
+		Labels:           labels,
+		StartDate:        r.StartDate,
+		EndDate:          r.EndDate,
+		Recurrency:       recurrency,
+		CustomRecurrency: r.CustomRecurrency,
+		CreatedAt:        option.New(r.CreatedAt),
 	}, nil
 }
 
@@ -162,35 +111,24 @@ func (m CreateSubscriptionModel) Command(userId string) (command.CreateSubscript
 //	@Tags			subscriptions
 //	@Accept			json
 //	@Produce		json
-//	@Param			subscription	body		CreateSubscriptionModel	true	"Subscription creation data"
-//	@Success		201				{object}	SubscriptionModel		"Successfully created subscription"
-//	@Failure		400				{object}	HttpErrorResponse		"Bad Request - Invalid input data"
-//	@Failure		401				{object}	HttpErrorResponse		"Unauthorized - Invalid user authentication"
-//	@Failure		500				{object}	HttpErrorResponse		"Internal Server Error"
+//	@Param			subscription	body		dto.CreateSubscriptionRequest	true	"Subscription creation data"
+//	@Success		201				{object}	dto.SubscriptionModel			"Successfully created subscription"
+//	@Failure		400				{object}	HttpErrorResponse				"Bad Request - Invalid input data"
+//	@Failure		401				{object}	HttpErrorResponse				"Unauthorized - Invalid user authentication"
+//	@Failure		500				{object}	HttpErrorResponse				"Internal Server Error"
 //	@Router			/subscriptions [post]
-func (s SubscriptionCreateEndpoint) Handle(c *gin.Context) {
-	var model CreateSubscriptionModel
+func (s CreateEndpoint) Handle(c *gin.Context) {
+	var model dto.CreateSubscriptionRequest
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
+		FromError(c, err)
 		return
 	}
 
-	userId, ok := auth2.GetUserIdFromContext(c)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, ginx.HttpErrorResponse{
-			Message: "invalid user id",
-		})
-		return
-	}
+	connectedAccount := s.authentication.MustGetConnectedAccount(c)
 
-	cmd, err := model.Command(userId)
+	cmd, err := createSubscriptionRequestToCommand(model, connectedAccount.UserID())
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
-		c.Abort()
+		FromError(c, err)
 		return
 	}
 	r := s.handler.Handle(c, cmd)
@@ -198,21 +136,21 @@ func (s SubscriptionCreateEndpoint) Handle(c *gin.Context) {
 		r,
 		WithStatus[subscription.Subscription](http.StatusCreated),
 		WithMapping[subscription.Subscription](func(sub subscription.Subscription) any {
-			return newSubscriptionModel(sub)
+			return dto.NewSubscriptionModel(sub)
 		}))
 
 }
 
-func (s SubscriptionCreateEndpoint) Pattern() []string {
+func (s CreateEndpoint) Pattern() []string {
 	return []string{
 		"",
 	}
 }
 
-func (s SubscriptionCreateEndpoint) Method() string {
+func (s CreateEndpoint) Method() string {
 	return http.MethodPost
 }
 
-func (s SubscriptionCreateEndpoint) Middlewares() []gin.HandlerFunc {
+func (s CreateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

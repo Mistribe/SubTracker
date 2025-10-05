@@ -2,66 +2,97 @@ package command
 
 import (
 	"context"
+	"time"
 
-	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/authorization"
+	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/domain/label"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/pkg/langext/option"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type CreateLabelCommand struct {
-	Label label.Label
+	LabelID   option.Option[types.LabelID]
+	Name      string
+	Color     string
+	Owner     types.Owner
+	CreatedAt option.Option[time.Time]
 }
 
 type CreateLabelCommandHandler struct {
 	labelRepository  ports.LabelRepository
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authorization    ports.Authorization
+	entitlement      ports.EntitlementResolver
 }
 
-func NewCreateLabelCommandHandler(labelRepository ports.LabelRepository,
+func NewCreateLabelCommandHandler(
+	labelRepository ports.LabelRepository,
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *CreateLabelCommandHandler {
+	authorization ports.Authorization,
+	entitlement ports.EntitlementResolver) *CreateLabelCommandHandler {
 	return &CreateLabelCommandHandler{
 		labelRepository:  labelRepository,
 		familyRepository: familyRepository,
-		authService:      authService,
+		authorization:    authorization,
+		entitlement:      entitlement,
 	}
 }
 
 func (h CreateLabelCommandHandler) Handle(ctx context.Context, command CreateLabelCommand) result.Result[label.Label] {
-	existingLabel, err := h.labelRepository.GetById(ctx, command.Label.Id())
-	if err != nil {
-		return result.Fail[label.Label](err)
-	}
-
-	ok, err := h.authService.IsOwner(ctx, command.Label.Owner())
-	if err != nil {
-		return result.Fail[label.Label](err)
-	}
-	if !ok {
-		return result.Fail[label.Label](family.ErrFamilyNotFound)
-	}
-	if existingLabel != nil {
-		if existingLabel.Equal(command.Label) {
-			return result.Success(command.Label)
+	var labelID types.LabelID
+	if command.LabelID != nil && command.LabelID.IsSome() {
+		labelID = *command.LabelID.Value()
+		existingLabel, err := h.labelRepository.GetById(ctx, labelID)
+		if err != nil {
+			return result.Fail[label.Label](err)
 		}
-		return result.Fail[label.Label](label.ErrLabelAlreadyExists)
+		if existingLabel != nil {
+			return result.Fail[label.Label](label.ErrLabelAlreadyExists)
+		}
+	} else {
+		labelID = types.NewLabelID()
+	}
+	var createdAt time.Time
+	if command.CreatedAt != nil && command.CreatedAt.IsSome() {
+		createdAt = *command.CreatedAt.Value()
+	} else {
+		createdAt = time.Now()
 	}
 
-	return h.createLabel(ctx, command)
+	newLabel := label.NewLabel(labelID,
+		command.Owner,
+		command.Name,
+		nil,
+		command.Color,
+		createdAt,
+		createdAt,
+	)
+
+	permReq := h.authorization.Can(ctx, authorization.PermissionWrite)
+	if permReq == nil {
+		return result.Fail[label.Label](authorization.ErrUnauthorized)
+	}
+	if err := permReq.For(newLabel); err != nil {
+		return result.Fail[label.Label](err)
+	}
+
+	allowed, _, err := h.entitlement.CheckQuota(ctx, billing.FeatureIdCustomLabelsCount, 1)
+	if err != nil {
+		return result.Fail[label.Label](err)
+	}
+	if !allowed {
+		return result.Fail[label.Label](label.ErrCustomLabelLimitReached)
+	}
+
+	return h.createLabel(ctx, newLabel)
 }
 
 func (h CreateLabelCommandHandler) createLabel(
-	ctx context.Context, command CreateLabelCommand) result.Result[label.Label] {
-	lbl := label.NewLabel(command.Label.Id(),
-		command.Label.Owner(),
-		command.Label.Name(),
-		nil,
-		command.Label.Color(),
-		command.Label.CreatedAt(),
-		command.Label.CreatedAt(),
-	)
+	ctx context.Context,
+	lbl label.Label) result.Result[label.Label] {
 
 	if err := lbl.GetValidationErrors(); err != nil {
 		return result.Fail[label.Label](err)

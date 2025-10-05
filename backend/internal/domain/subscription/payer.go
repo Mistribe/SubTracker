@@ -1,9 +1,8 @@
 package subscription
 
 import (
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/entity"
+	"github.com/mistribe/subtracker/internal/domain/types"
 )
 
 type PayerType string
@@ -41,16 +40,16 @@ type Payer interface {
 	entity.ETagEntity
 
 	Type() PayerType
-	FamilyId() uuid.UUID
-	MemberId() uuid.UUID
+	FamilyId() types.FamilyID
+	MemberId() types.FamilyMemberID
 
 	Equal(other Payer) bool
 }
 
 func NewPayer(
 	payerType PayerType,
-	familyId uuid.UUID,
-	memberId *uuid.UUID) Payer {
+	familyId types.FamilyID,
+	memberId *types.FamilyMemberID) Payer {
 	switch payerType {
 	case FamilyPayer:
 		return NewFamilyPayer(familyId)
@@ -65,11 +64,11 @@ func NewPayer(
 }
 
 type familyPayer struct {
-	familyId uuid.UUID
+	familyId types.FamilyID
 }
 
 func NewFamilyPayer(
-	familyId uuid.UUID) Payer {
+	familyId types.FamilyID) Payer {
 	return familyPayer{
 		familyId: familyId,
 	}
@@ -79,11 +78,11 @@ func (f familyPayer) Type() PayerType {
 	return FamilyPayer
 }
 
-func (f familyPayer) FamilyId() uuid.UUID {
+func (f familyPayer) FamilyId() types.FamilyID {
 	return f.familyId
 }
 
-func (f familyPayer) MemberId() uuid.UUID {
+func (f familyPayer) MemberId() types.FamilyMemberID {
 	panic("family payer cannot have member id")
 }
 
@@ -107,26 +106,24 @@ func (f familyPayer) Equal(other Payer) bool {
 }
 
 type familyMemberPayer struct {
-	*entity.Base
-
-	familyId uuid.UUID
-	memberId uuid.UUID
+	familyId types.FamilyID
+	memberId types.FamilyMemberID
 }
 
 func NewFamilyMemberPayer(
-	familyId uuid.UUID,
-	memberId uuid.UUID) Payer {
+	familyId types.FamilyID,
+	memberId types.FamilyMemberID) Payer {
 	return familyMemberPayer{
 		familyId: familyId,
 		memberId: memberId,
 	}
 }
 
-func (f familyMemberPayer) FamilyId() uuid.UUID {
+func (f familyMemberPayer) FamilyId() types.FamilyID {
 	return f.familyId
 }
 
-func (f familyMemberPayer) MemberId() uuid.UUID {
+func (f familyMemberPayer) MemberId() types.FamilyMemberID {
 	return f.memberId
 }
 

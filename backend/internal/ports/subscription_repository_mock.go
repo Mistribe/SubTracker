@@ -8,8 +8,8 @@ import (
 	"context"
 	"iter"
 
-	"github.com/google/uuid"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -41,7 +41,7 @@ func (_m *MockSubscriptionRepository) EXPECT() *MockSubscriptionRepository_Expec
 }
 
 // Delete provides a mock function for the type MockSubscriptionRepository
-func (_mock *MockSubscriptionRepository) Delete(ctx context.Context, entityId uuid.UUID) (bool, error) {
+func (_mock *MockSubscriptionRepository) Delete(ctx context.Context, entityId types.SubscriptionID) (bool, error) {
 	ret := _mock.Called(ctx, entityId)
 
 	if len(ret) == 0 {
@@ -50,15 +50,15 @@ func (_mock *MockSubscriptionRepository) Delete(ctx context.Context, entityId uu
 
 	var r0 bool
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (bool, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.SubscriptionID) (bool, error)); ok {
 		return returnFunc(ctx, entityId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) bool); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.SubscriptionID) bool); ok {
 		r0 = returnFunc(ctx, entityId)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.SubscriptionID) error); ok {
 		r1 = returnFunc(ctx, entityId)
 	} else {
 		r1 = ret.Error(1)
@@ -73,20 +73,20 @@ type MockSubscriptionRepository_Delete_Call struct {
 
 // Delete is a helper method to define mock.On call
 //   - ctx context.Context
-//   - entityId uuid.UUID
+//   - entityId types.SubscriptionID
 func (_e *MockSubscriptionRepository_Expecter) Delete(ctx interface{}, entityId interface{}) *MockSubscriptionRepository_Delete_Call {
 	return &MockSubscriptionRepository_Delete_Call{Call: _e.mock.On("Delete", ctx, entityId)}
 }
 
-func (_c *MockSubscriptionRepository_Delete_Call) Run(run func(ctx context.Context, entityId uuid.UUID)) *MockSubscriptionRepository_Delete_Call {
+func (_c *MockSubscriptionRepository_Delete_Call) Run(run func(ctx context.Context, entityId types.SubscriptionID)) *MockSubscriptionRepository_Delete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 uuid.UUID
+		var arg1 types.SubscriptionID
 		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
+			arg1 = args[1].(types.SubscriptionID)
 		}
 		run(
 			arg0,
@@ -101,13 +101,13 @@ func (_c *MockSubscriptionRepository_Delete_Call) Return(b bool, err error) *Moc
 	return _c
 }
 
-func (_c *MockSubscriptionRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, entityId uuid.UUID) (bool, error)) *MockSubscriptionRepository_Delete_Call {
+func (_c *MockSubscriptionRepository_Delete_Call) RunAndReturn(run func(ctx context.Context, entityId types.SubscriptionID) (bool, error)) *MockSubscriptionRepository_Delete_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Exists provides a mock function for the type MockSubscriptionRepository
-func (_mock *MockSubscriptionRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
+func (_mock *MockSubscriptionRepository) Exists(ctx context.Context, ids ...types.SubscriptionID) (bool, error) {
 	var tmpRet mock.Arguments
 	if len(ids) > 0 {
 		tmpRet = _mock.Called(ctx, ids)
@@ -122,15 +122,15 @@ func (_mock *MockSubscriptionRepository) Exists(ctx context.Context, ids ...uuid
 
 	var r0 bool
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, ...uuid.UUID) (bool, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...types.SubscriptionID) (bool, error)); ok {
 		return returnFunc(ctx, ids...)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, ...uuid.UUID) bool); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...types.SubscriptionID) bool); ok {
 		r0 = returnFunc(ctx, ids...)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, ...uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ...types.SubscriptionID) error); ok {
 		r1 = returnFunc(ctx, ids...)
 	} else {
 		r1 = ret.Error(1)
@@ -145,22 +145,22 @@ type MockSubscriptionRepository_Exists_Call struct {
 
 // Exists is a helper method to define mock.On call
 //   - ctx context.Context
-//   - ids ...uuid.UUID
+//   - ids ...types.SubscriptionID
 func (_e *MockSubscriptionRepository_Expecter) Exists(ctx interface{}, ids ...interface{}) *MockSubscriptionRepository_Exists_Call {
 	return &MockSubscriptionRepository_Exists_Call{Call: _e.mock.On("Exists",
 		append([]interface{}{ctx}, ids...)...)}
 }
 
-func (_c *MockSubscriptionRepository_Exists_Call) Run(run func(ctx context.Context, ids ...uuid.UUID)) *MockSubscriptionRepository_Exists_Call {
+func (_c *MockSubscriptionRepository_Exists_Call) Run(run func(ctx context.Context, ids ...types.SubscriptionID)) *MockSubscriptionRepository_Exists_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 []uuid.UUID
-		var variadicArgs []uuid.UUID
+		var arg1 []types.SubscriptionID
+		var variadicArgs []types.SubscriptionID
 		if len(args) > 1 {
-			variadicArgs = args[1].([]uuid.UUID)
+			variadicArgs = args[1].([]types.SubscriptionID)
 		}
 		arg1 = variadicArgs
 		run(
@@ -176,7 +176,7 @@ func (_c *MockSubscriptionRepository_Exists_Call) Return(b bool, err error) *Moc
 	return _c
 }
 
-func (_c *MockSubscriptionRepository_Exists_Call) RunAndReturn(run func(ctx context.Context, ids ...uuid.UUID) (bool, error)) *MockSubscriptionRepository_Exists_Call {
+func (_c *MockSubscriptionRepository_Exists_Call) RunAndReturn(run func(ctx context.Context, ids ...types.SubscriptionID) (bool, error)) *MockSubscriptionRepository_Exists_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -256,7 +256,7 @@ func (_c *MockSubscriptionRepository_GetAll_Call) RunAndReturn(run func(ctx cont
 }
 
 // GetAllForUser provides a mock function for the type MockSubscriptionRepository
-func (_mock *MockSubscriptionRepository) GetAllForUser(ctx context.Context, userId string, parameters SubscriptionQueryParameters) ([]subscription.Subscription, int64, error) {
+func (_mock *MockSubscriptionRepository) GetAllForUser(ctx context.Context, userId types.UserID, parameters SubscriptionQueryParameters) ([]subscription.Subscription, int64, error) {
 	ret := _mock.Called(ctx, userId, parameters)
 
 	if len(ret) == 0 {
@@ -266,22 +266,22 @@ func (_mock *MockSubscriptionRepository) GetAllForUser(ctx context.Context, user
 	var r0 []subscription.Subscription
 	var r1 int64
 	var r2 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, SubscriptionQueryParameters) ([]subscription.Subscription, int64, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, SubscriptionQueryParameters) ([]subscription.Subscription, int64, error)); ok {
 		return returnFunc(ctx, userId, parameters)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, SubscriptionQueryParameters) []subscription.Subscription); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, SubscriptionQueryParameters) []subscription.Subscription); ok {
 		r0 = returnFunc(ctx, userId, parameters)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]subscription.Subscription)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, SubscriptionQueryParameters) int64); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.UserID, SubscriptionQueryParameters) int64); ok {
 		r1 = returnFunc(ctx, userId, parameters)
 	} else {
 		r1 = ret.Get(1).(int64)
 	}
-	if returnFunc, ok := ret.Get(2).(func(context.Context, string, SubscriptionQueryParameters) error); ok {
+	if returnFunc, ok := ret.Get(2).(func(context.Context, types.UserID, SubscriptionQueryParameters) error); ok {
 		r2 = returnFunc(ctx, userId, parameters)
 	} else {
 		r2 = ret.Error(2)
@@ -296,21 +296,21 @@ type MockSubscriptionRepository_GetAllForUser_Call struct {
 
 // GetAllForUser is a helper method to define mock.On call
 //   - ctx context.Context
-//   - userId string
+//   - userId types.UserID
 //   - parameters SubscriptionQueryParameters
 func (_e *MockSubscriptionRepository_Expecter) GetAllForUser(ctx interface{}, userId interface{}, parameters interface{}) *MockSubscriptionRepository_GetAllForUser_Call {
 	return &MockSubscriptionRepository_GetAllForUser_Call{Call: _e.mock.On("GetAllForUser", ctx, userId, parameters)}
 }
 
-func (_c *MockSubscriptionRepository_GetAllForUser_Call) Run(run func(ctx context.Context, userId string, parameters SubscriptionQueryParameters)) *MockSubscriptionRepository_GetAllForUser_Call {
+func (_c *MockSubscriptionRepository_GetAllForUser_Call) Run(run func(ctx context.Context, userId types.UserID, parameters SubscriptionQueryParameters)) *MockSubscriptionRepository_GetAllForUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 types.UserID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(types.UserID)
 		}
 		var arg2 SubscriptionQueryParameters
 		if args[2] != nil {
@@ -330,13 +330,13 @@ func (_c *MockSubscriptionRepository_GetAllForUser_Call) Return(subscriptions []
 	return _c
 }
 
-func (_c *MockSubscriptionRepository_GetAllForUser_Call) RunAndReturn(run func(ctx context.Context, userId string, parameters SubscriptionQueryParameters) ([]subscription.Subscription, int64, error)) *MockSubscriptionRepository_GetAllForUser_Call {
+func (_c *MockSubscriptionRepository_GetAllForUser_Call) RunAndReturn(run func(ctx context.Context, userId types.UserID, parameters SubscriptionQueryParameters) ([]subscription.Subscription, int64, error)) *MockSubscriptionRepository_GetAllForUser_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetAllIt provides a mock function for the type MockSubscriptionRepository
-func (_mock *MockSubscriptionRepository) GetAllIt(ctx context.Context, userId string, searchText string) iter.Seq[subscription.Subscription] {
+func (_mock *MockSubscriptionRepository) GetAllIt(ctx context.Context, userId types.UserID, searchText string) iter.Seq[subscription.Subscription] {
 	ret := _mock.Called(ctx, userId, searchText)
 
 	if len(ret) == 0 {
@@ -344,7 +344,7 @@ func (_mock *MockSubscriptionRepository) GetAllIt(ctx context.Context, userId st
 	}
 
 	var r0 iter.Seq[subscription.Subscription]
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) iter.Seq[subscription.Subscription]); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, string) iter.Seq[subscription.Subscription]); ok {
 		r0 = returnFunc(ctx, userId, searchText)
 	} else {
 		if ret.Get(0) != nil {
@@ -361,21 +361,21 @@ type MockSubscriptionRepository_GetAllIt_Call struct {
 
 // GetAllIt is a helper method to define mock.On call
 //   - ctx context.Context
-//   - userId string
+//   - userId types.UserID
 //   - searchText string
 func (_e *MockSubscriptionRepository_Expecter) GetAllIt(ctx interface{}, userId interface{}, searchText interface{}) *MockSubscriptionRepository_GetAllIt_Call {
 	return &MockSubscriptionRepository_GetAllIt_Call{Call: _e.mock.On("GetAllIt", ctx, userId, searchText)}
 }
 
-func (_c *MockSubscriptionRepository_GetAllIt_Call) Run(run func(ctx context.Context, userId string, searchText string)) *MockSubscriptionRepository_GetAllIt_Call {
+func (_c *MockSubscriptionRepository_GetAllIt_Call) Run(run func(ctx context.Context, userId types.UserID, searchText string)) *MockSubscriptionRepository_GetAllIt_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 types.UserID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(types.UserID)
 		}
 		var arg2 string
 		if args[2] != nil {
@@ -395,13 +395,13 @@ func (_c *MockSubscriptionRepository_GetAllIt_Call) Return(seq iter.Seq[subscrip
 	return _c
 }
 
-func (_c *MockSubscriptionRepository_GetAllIt_Call) RunAndReturn(run func(ctx context.Context, userId string, searchText string) iter.Seq[subscription.Subscription]) *MockSubscriptionRepository_GetAllIt_Call {
+func (_c *MockSubscriptionRepository_GetAllIt_Call) RunAndReturn(run func(ctx context.Context, userId types.UserID, searchText string) iter.Seq[subscription.Subscription]) *MockSubscriptionRepository_GetAllIt_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetById provides a mock function for the type MockSubscriptionRepository
-func (_mock *MockSubscriptionRepository) GetById(ctx context.Context, entityId uuid.UUID) (subscription.Subscription, error) {
+func (_mock *MockSubscriptionRepository) GetById(ctx context.Context, entityId types.SubscriptionID) (subscription.Subscription, error) {
 	ret := _mock.Called(ctx, entityId)
 
 	if len(ret) == 0 {
@@ -410,17 +410,17 @@ func (_mock *MockSubscriptionRepository) GetById(ctx context.Context, entityId u
 
 	var r0 subscription.Subscription
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (subscription.Subscription, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.SubscriptionID) (subscription.Subscription, error)); ok {
 		return returnFunc(ctx, entityId)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) subscription.Subscription); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.SubscriptionID) subscription.Subscription); ok {
 		r0 = returnFunc(ctx, entityId)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(subscription.Subscription)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.SubscriptionID) error); ok {
 		r1 = returnFunc(ctx, entityId)
 	} else {
 		r1 = ret.Error(1)
@@ -435,20 +435,20 @@ type MockSubscriptionRepository_GetById_Call struct {
 
 // GetById is a helper method to define mock.On call
 //   - ctx context.Context
-//   - entityId uuid.UUID
+//   - entityId types.SubscriptionID
 func (_e *MockSubscriptionRepository_Expecter) GetById(ctx interface{}, entityId interface{}) *MockSubscriptionRepository_GetById_Call {
 	return &MockSubscriptionRepository_GetById_Call{Call: _e.mock.On("GetById", ctx, entityId)}
 }
 
-func (_c *MockSubscriptionRepository_GetById_Call) Run(run func(ctx context.Context, entityId uuid.UUID)) *MockSubscriptionRepository_GetById_Call {
+func (_c *MockSubscriptionRepository_GetById_Call) Run(run func(ctx context.Context, entityId types.SubscriptionID)) *MockSubscriptionRepository_GetById_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 uuid.UUID
+		var arg1 types.SubscriptionID
 		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
+			arg1 = args[1].(types.SubscriptionID)
 		}
 		run(
 			arg0,
@@ -463,13 +463,13 @@ func (_c *MockSubscriptionRepository_GetById_Call) Return(subscription1 subscrip
 	return _c
 }
 
-func (_c *MockSubscriptionRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId uuid.UUID) (subscription.Subscription, error)) *MockSubscriptionRepository_GetById_Call {
+func (_c *MockSubscriptionRepository_GetById_Call) RunAndReturn(run func(ctx context.Context, entityId types.SubscriptionID) (subscription.Subscription, error)) *MockSubscriptionRepository_GetById_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetByIdForUser provides a mock function for the type MockSubscriptionRepository
-func (_mock *MockSubscriptionRepository) GetByIdForUser(ctx context.Context, userId string, id uuid.UUID) (subscription.Subscription, error) {
+func (_mock *MockSubscriptionRepository) GetByIdForUser(ctx context.Context, userId types.UserID, id types.SubscriptionID) (subscription.Subscription, error) {
 	ret := _mock.Called(ctx, userId, id)
 
 	if len(ret) == 0 {
@@ -478,17 +478,17 @@ func (_mock *MockSubscriptionRepository) GetByIdForUser(ctx context.Context, use
 
 	var r0 subscription.Subscription
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) (subscription.Subscription, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, types.SubscriptionID) (subscription.Subscription, error)); ok {
 		return returnFunc(ctx, userId, id)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID) subscription.Subscription); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, types.SubscriptionID) subscription.Subscription); ok {
 		r0 = returnFunc(ctx, userId, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(subscription.Subscription)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.UserID, types.SubscriptionID) error); ok {
 		r1 = returnFunc(ctx, userId, id)
 	} else {
 		r1 = ret.Error(1)
@@ -503,25 +503,25 @@ type MockSubscriptionRepository_GetByIdForUser_Call struct {
 
 // GetByIdForUser is a helper method to define mock.On call
 //   - ctx context.Context
-//   - userId string
-//   - id uuid.UUID
+//   - userId types.UserID
+//   - id types.SubscriptionID
 func (_e *MockSubscriptionRepository_Expecter) GetByIdForUser(ctx interface{}, userId interface{}, id interface{}) *MockSubscriptionRepository_GetByIdForUser_Call {
 	return &MockSubscriptionRepository_GetByIdForUser_Call{Call: _e.mock.On("GetByIdForUser", ctx, userId, id)}
 }
 
-func (_c *MockSubscriptionRepository_GetByIdForUser_Call) Run(run func(ctx context.Context, userId string, id uuid.UUID)) *MockSubscriptionRepository_GetByIdForUser_Call {
+func (_c *MockSubscriptionRepository_GetByIdForUser_Call) Run(run func(ctx context.Context, userId types.UserID, id types.SubscriptionID)) *MockSubscriptionRepository_GetByIdForUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 types.UserID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(types.UserID)
 		}
-		var arg2 uuid.UUID
+		var arg2 types.SubscriptionID
 		if args[2] != nil {
-			arg2 = args[2].(uuid.UUID)
+			arg2 = args[2].(types.SubscriptionID)
 		}
 		run(
 			arg0,
@@ -537,7 +537,7 @@ func (_c *MockSubscriptionRepository_GetByIdForUser_Call) Return(subscription1 s
 	return _c
 }
 
-func (_c *MockSubscriptionRepository_GetByIdForUser_Call) RunAndReturn(run func(ctx context.Context, userId string, id uuid.UUID) (subscription.Subscription, error)) *MockSubscriptionRepository_GetByIdForUser_Call {
+func (_c *MockSubscriptionRepository_GetByIdForUser_Call) RunAndReturn(run func(ctx context.Context, userId types.UserID, id types.SubscriptionID) (subscription.Subscription, error)) *MockSubscriptionRepository_GetByIdForUser_Call {
 	_c.Call.Return(run)
 	return _c
 }

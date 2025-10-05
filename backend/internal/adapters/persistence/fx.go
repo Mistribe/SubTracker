@@ -7,12 +7,6 @@ import (
 	"github.com/mistribe/subtracker/internal/adapters/persistence/repositories"
 )
 
-func AsRepository[TRepository any](f any) any {
-	return fx.Annotate(f,
-		fx.As(new(TRepository)),
-	)
-}
-
 func BuildPersistenceModule() fx.Option {
 	return fx.Module("persistence",
 		fx.Provide(
@@ -21,8 +15,9 @@ func BuildPersistenceModule() fx.Option {
 			repositories.NewFamilyRepository,
 			repositories.NewLabelRepository,
 			repositories.NewProviderRepository,
-			repositories.NewUserRepository,
+			repositories.NewAccountRepository,
 			repositories.NewCurrencyRateRepository,
+			repositories.NewUsageRepository,
 		),
 	)
 }

@@ -19,7 +19,7 @@ export const useProvidersByIds = (ids?: (string | null | undefined)[]) => {
       refetchOnWindowFocus: false,
       queryFn: async () => {
         if (!apiClient) throw new Error("API client not initialized");
-        const model = await apiClient.providers.byProviderId(id).get();
+        const model = await apiClient.providers.providersProviderIdGet({ providerId: id });
         return model ? Provider.fromModel(model) : undefined;
       },
     })),

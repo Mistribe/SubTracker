@@ -1,12 +1,12 @@
-import {useState} from "react";
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {ColorPicker} from "@/components/ui/color-picker";
-import {argbToRgba} from "@/components/ui/utils/color-utils";
-import {Loader2, PlusIcon} from "lucide-react";
-import {OwnerType} from "@/models/ownerType";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ColorPicker } from "@/components/ui/color-picker";
+import { argbToRgba } from "@/components/ui/utils/color-utils";
+import { Loader2, PlusIcon } from "lucide-react";
+import { OwnerType } from "@/models/ownerType";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Family from "@/models/family";
 import {
     Dialog,
@@ -17,6 +17,15 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { useLabelsQuotaQuery } from "@/hooks/labels/useLabelsQuotaQuery";
+import { useQuotaLimit, getQuotaTooltip } from "@/hooks/quotas/useFeature";
+import { FeatureId } from "@/models/billing";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface AddLabelDialogProps {
     onAddLabel: (name: string, color: string, ownerType?: OwnerType, familyId?: string) => void;
@@ -39,6 +48,15 @@ export function AddLabelDialog({
         families.length > 0 ? families[0].id : ""
     );
 
+    // Check labels quota
+    const { data: labelsQuota } = useLabelsQuotaQuery();
+    const { enabled: labelsEnabled, canAdd: canAddLabels, used: labelsUsed, limit: labelsLimit } = useQuotaLimit(
+        labelsQuota,
+        FeatureId.CustomLabelsCount
+    );
+    const isDisabled = !labelsEnabled || !canAddLabels;
+    const tooltipMessage = getQuotaTooltip(labelsEnabled, canAddLabels, "custom labels");
+
     const handleAddLabel = () => {
         if (newLabel.trim()) {
             if (labelType === "personal") {
@@ -46,20 +64,20 @@ export function AddLabelDialog({
             } else if (labelType === "family" && selectedFamilyId) {
                 onAddLabel(newLabel, newLabelColor, OwnerType.Family, selectedFamilyId);
             }
-            
+
             // Reset form and close dialog
             resetForm();
             setOpen(false);
         }
     };
-    
+
     const resetForm = () => {
         setNewLabel("");
         setNewLabelColor("#FF000000");
         setLabelType("personal");
         setSelectedFamilyId(families.length > 0 ? families[0].id : "");
     };
-    
+
     const handleOpenChange = (newOpen: boolean) => {
         if (!newOpen) {
             resetForm();
@@ -69,14 +87,32 @@ export function AddLabelDialog({
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogTrigger asChild>
-                {trigger || (
-                    <Button>
-                        <PlusIcon className="h-4 w-4 mr-2"/>
-                        Add Label
-                    </Button>
-                )}
-            </DialogTrigger>
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span>
+                            <DialogTrigger asChild>
+                                {trigger || (
+                                    <Button disabled={isDisabled}>
+                                        <PlusIcon className="h-4 w-4 mr-2" />
+                                        Add Label
+                                        {labelsEnabled && labelsLimit !== undefined && (
+                                            <span className="ml-2 text-xs opacity-70">
+                                                ({labelsUsed}/{labelsLimit})
+                                            </span>
+                                        )}
+                                    </Button>
+                                )}
+                            </DialogTrigger>
+                        </span>
+                    </TooltipTrigger>
+                    {tooltipMessage && (
+                        <TooltipContent>
+                            <p>{tooltipMessage}</p>
+                        </TooltipContent>
+                    )}
+                </Tooltip>
+            </TooltipProvider>
             <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>Add New Label</DialogTitle>
@@ -84,7 +120,7 @@ export function AddLabelDialog({
                         Create a new label to organize your subscriptions.
                     </DialogDescription>
                 </DialogHeader>
-                
+
                 <div className="space-y-4 py-4">
                     {/* Owner type selector */}
                     <div className="space-y-2">
@@ -102,7 +138,7 @@ export function AddLabelDialog({
                             </SelectContent>
                         </Select>
                     </div>
-                    
+
                     {/* Family selector - only shown when family type is selected */}
                     {labelType === "family" && families.length > 0 && (
                         <div className="space-y-2">
@@ -124,14 +160,14 @@ export function AddLabelDialog({
                             </Select>
                         </div>
                     )}
-                    
+
                     {/* Label name input */}
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Label Name</label>
                         <div className="flex items-center gap-2">
                             <div
                                 className="w-4 h-4 rounded-full flex-shrink-0"
-                                style={{backgroundColor: argbToRgba(newLabelColor)}}
+                                style={{ backgroundColor: argbToRgba(newLabelColor) }}
                             />
                             <Input
                                 placeholder="Enter label name"
@@ -140,7 +176,7 @@ export function AddLabelDialog({
                             />
                         </div>
                     </div>
-                    
+
                     {/* Color picker */}
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Label Color</label>
@@ -149,7 +185,7 @@ export function AddLabelDialog({
                                 <Button variant="outline" className="w-full justify-start">
                                     <div
                                         className="w-4 h-4 rounded-md mr-2"
-                                        style={{backgroundColor: argbToRgba(newLabelColor)}}
+                                        style={{ backgroundColor: argbToRgba(newLabelColor) }}
                                     />
                                     {argbToRgba(newLabelColor)}
                                 </Button>
@@ -163,15 +199,15 @@ export function AddLabelDialog({
                         </Popover>
                     </div>
                 </div>
-                
+
                 <DialogFooter>
-                    <Button 
-                        onClick={handleAddLabel} 
+                    <Button
+                        onClick={handleAddLabel}
                         disabled={isAdding || !newLabel.trim()}
                     >
                         {isAdding ? (
                             <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin"/>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                                 Adding...
                             </>
                         ) : (

@@ -9,3 +9,11 @@ func P[T any](value T) *T {
 func Pointer[T any](value T) *T {
 	return P(value)
 }
+
+func Int64Pointer(value int64) *int64 {
+	return &value
+}
+
+func Int64P(value int64) *int64 {
+	return Int64Pointer(value)
+}

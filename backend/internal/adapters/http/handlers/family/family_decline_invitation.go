@@ -4,27 +4,21 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/family/command"
 )
 
-type FamilyDeclineInvitationEndpoint struct {
+type DeclineInvitationEndpoint struct {
 	handler ports.CommandHandler[command.DeclineInvitationCommand, bool]
 }
 
-func NewFamilyDeclineEndpoint(handler ports.CommandHandler[command.DeclineInvitationCommand, bool]) *FamilyDeclineInvitationEndpoint {
-	return &FamilyDeclineInvitationEndpoint{handler: handler}
-}
-
-type FamilyDeclineInvitationRequest struct {
-	// Code received in the invitation
-	InvitationCode string `json:"invitation_code" binding:"required" example:"123456"`
-	// ID of the family member accepting the invitation
-	FamilyMemberId string `json:"family_member_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
+func NewDeclineEndpoint(handler ports.CommandHandler[command.DeclineInvitationCommand, bool]) *DeclineInvitationEndpoint {
+	return &DeclineInvitationEndpoint{handler: handler}
 }
 
 // Handle godoc
@@ -34,25 +28,25 @@ type FamilyDeclineInvitationRequest struct {
 //	@Tags			family
 //	@Accept			json
 //	@Produce		json
-//	@Param			familyId	path	string							true	"Family ID"
-//	@Param			request		body	FamilyDeclineInvitationRequest	true	"Decline invitation request"
+//	@Param			familyId	path	string								true	"Family LabelID"
+//	@Param			request		body	dto.FamilyDeclineInvitationRequest	true	"Decline invitation request"
 //	@Success		204			"No Content"
 //	@Failure		400			{object}	HttpErrorResponse	"Bad Request"
-//	@Router			/families/{familyId}/decline [post]
-func (e FamilyDeclineInvitationEndpoint) Handle(c *gin.Context) {
-	familyId, err := uuid.Parse(c.Param("familyId"))
+//	@Router			/family/{familyId}/decline [post]
+func (e DeclineInvitationEndpoint) Handle(c *gin.Context) {
+	familyId, err := types.ParseFamilyID(c.Param("familyId"))
 	if err != nil {
 		FromError(c, err)
 		return
 	}
 
-	var request FamilyDeclineInvitationRequest
+	var request dto.FamilyDeclineInvitationRequest
 	if err = c.ShouldBindJSON(&request); err != nil {
 		FromError(c, err)
 		return
 	}
 
-	familyMemberId, err := uuid.Parse(request.FamilyMemberId)
+	familyMemberId, err := types.ParseFamilyMemberID(request.FamilyMemberId)
 	if err != nil {
 		FromError(c, err)
 		return
@@ -67,16 +61,16 @@ func (e FamilyDeclineInvitationEndpoint) Handle(c *gin.Context) {
 	FromResult(c, r, WithNoContent[bool]())
 }
 
-func (e FamilyDeclineInvitationEndpoint) Pattern() []string {
+func (e DeclineInvitationEndpoint) Pattern() []string {
 	return []string{
 		"/:familyId/decline",
 	}
 }
 
-func (e FamilyDeclineInvitationEndpoint) Method() string {
+func (e DeclineInvitationEndpoint) Method() string {
 	return http.MethodPost
 }
 
-func (e FamilyDeclineInvitationEndpoint) Middlewares() []gin.HandlerFunc {
+func (e DeclineInvitationEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

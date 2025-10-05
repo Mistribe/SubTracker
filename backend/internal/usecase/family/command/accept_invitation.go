@@ -3,27 +3,26 @@ package command
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
 
 type AcceptInvitationCommand struct {
 	InvitationCode string
-	FamilyId       uuid.UUID
-	FamilyMemberId uuid.UUID
+	FamilyId       types.FamilyID
+	FamilyMemberId types.FamilyMemberID
 }
 
 type AcceptInvitationCommandHandler struct {
 	familyRepository ports.FamilyRepository
-	authService      ports.AuthService
+	authService      ports.Authentication
 }
 
 func NewAcceptInvitationCommandHandler(
 	familyRepository ports.FamilyRepository,
-	authService ports.AuthService) *AcceptInvitationCommandHandler {
+	authService ports.Authentication) *AcceptInvitationCommandHandler {
 	return &AcceptInvitationCommandHandler{familyRepository: familyRepository, authService: authService}
 }
 
@@ -50,14 +49,15 @@ func (h AcceptInvitationCommandHandler) Handle(ctx context.Context, cmd AcceptIn
 		return result.Fail[bool](family.ErrBadInvitationCode)
 	}
 
-	userId := h.authService.MustGetUserId(ctx)
-	member.SetUserId(&userId)
+	connectedAccount := h.authService.MustGetConnectedAccount(ctx)
+	userID := connectedAccount.UserID()
+	member.SetUserId(&userID)
 
 	if err = fam.UpdateMember(member); err != nil {
 		return result.Fail[bool](err)
 	}
-	if vErr := fam.GetValidationErrors(); vErr != nil {
-		return result.Fail[bool](err)
+	if vErr := fam.GetValidationErrors(); vErr != nil { // return the actual validation error
+		return result.Fail[bool](vErr)
 	}
 	if err = h.familyRepository.Save(ctx, fam); err != nil {
 		return result.Fail[bool](err)

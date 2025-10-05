@@ -4,49 +4,28 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"golang.org/x/text/currency"
 
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/model"
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/provider"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/internal/domain/types"
+	"github.com/mistribe/subtracker/pkg/x"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
-func createProviderPriceFromJet(jetModel model.ProviderPrices) provider.Price {
-	p := provider.NewPrice(
-		jetModel.ID,
-		jetModel.StartDate,
-		jetModel.EndDate,
-		currency.MustParseISO(jetModel.Currency),
-		jetModel.Amount,
-		jetModel.CreatedAt,
-		jetModel.UpdatedAt,
-	)
-
-	p.Clean()
-	return p
-}
-
-func createProviderPlanFromJet(jetPlan model.ProviderPlans, prices []provider.Price) provider.Plan {
-	p := provider.NewPlan(
-		jetPlan.ID,
-		jetPlan.Name,
-		jetPlan.Description,
-		prices,
-		jetPlan.CreatedAt,
-		jetPlan.UpdatedAt,
-	)
-
-	p.Clean()
-	return p
-}
-
-func createProviderFromJet(jetModel model.Providers, plans []provider.Plan, labels []uuid.UUID) provider.Provider {
-	ownerType := auth.MustParseOwnerType(jetModel.OwnerType)
-	owner := auth.NewOwner(ownerType, jetModel.OwnerFamilyID, jetModel.OwnerUserID)
+func createProviderFromJet(jetModel model.Providers, labels []types.LabelID) provider.Provider {
+	ownerType := types.MustParseOwnerType(jetModel.OwnerType)
+	var ownerFamilyID *types.FamilyID
+	var ownerUserID *types.UserID
+	if jetModel.OwnerFamilyID != nil {
+		ownerFamilyID = x.P(types.FamilyID(*jetModel.OwnerFamilyID))
+	}
+	if jetModel.OwnerUserID != nil {
+		ownerUserID = x.P(types.UserID(*jetModel.OwnerUserID))
+	}
+	owner := types.NewOwner(ownerType, ownerFamilyID, ownerUserID)
 
 	p := provider.NewProvider(
-		jetModel.ID,
+		types.ProviderID(jetModel.ID),
 		jetModel.Name,
 		jetModel.Key,
 		jetModel.Description,
@@ -54,7 +33,6 @@ func createProviderFromJet(jetModel model.Providers, plans []provider.Plan, labe
 		jetModel.URL,
 		jetModel.PricingPageURL,
 		labels,
-		plans,
 		owner,
 		jetModel.CreatedAt,
 		jetModel.UpdatedAt,
@@ -66,8 +44,6 @@ func createProviderFromJet(jetModel model.Providers, plans []provider.Plan, labe
 
 type ProviderRow struct {
 	Providers      model.Providers       `json:"providers"`
-	ProviderPlans  *model.ProviderPlans  `json:"provider_plans"`
-	ProviderPrices *model.ProviderPrices `json:"provider_prices"`
 	ProviderLabels *model.ProviderLabels `json:"provider_labels"`
 }
 
@@ -82,41 +58,23 @@ func CreateProviderFromJetRows(rows []ProviderRow) []provider.Provider {
 		return nil
 	}
 
-	providers := make(map[uuid.UUID]model.Providers)
-	planSet := make(map[uuid.UUID]struct{})
-	providerPlans := make(map[uuid.UUID][]model.ProviderPlans)
-	priceSet := make(map[uuid.UUID]struct{})
-	planPrices := make(map[uuid.UUID][]model.ProviderPrices)
-	labelSet := make(map[string]struct{})
-	providerLabels := make(map[uuid.UUID][]uuid.UUID)
+	providers := herd.NewDictionary[types.ProviderID, model.Providers]()
+	labelSet := herd.NewSet[string]()
+	providerLabels := herd.NewDictionary[types.ProviderID, []types.LabelID]()
 
 	for _, row := range rows {
 		jetProvider := row.Providers
-		if _, ok := providers[jetProvider.ID]; !ok {
-			providers[jetProvider.ID] = jetProvider
-		}
-
-		if row.ProviderPlans != nil && row.ProviderPlans.ID != uuid.Nil {
-			if _, ok := planSet[row.ProviderPlans.ID]; !ok {
-				planSet[row.ProviderPlans.ID] = struct{}{}
-				providerPlans[row.ProviderPlans.ProviderID] = append(providerPlans[row.ProviderPlans.ProviderID],
-					*row.ProviderPlans)
-			}
-		}
-
-		if row.ProviderPrices != nil && row.ProviderPrices.ID != uuid.Nil {
-			if _, ok := priceSet[row.ProviderPrices.ID]; !ok {
-				priceSet[row.ProviderPrices.ID] = struct{}{}
-				planPrices[row.ProviderPrices.PlanID] = append(planPrices[row.ProviderPrices.PlanID],
-					*row.ProviderPrices)
-			}
+		providerID := types.ProviderID(jetProvider.ID)
+		if _, ok := providers[providerID]; !ok {
+			providers[providerID] = jetProvider
 		}
 
 		if row.ProviderLabels != nil && row.ProviderLabels.LabelID != uuid.Nil {
 			key := fmt.Sprintf("%s:%s", jetProvider.ID, row.ProviderLabels.LabelID)
 			if _, ok := labelSet[key]; !ok {
 				labelSet[key] = struct{}{}
-				providerLabels[jetProvider.ID] = append(providerLabels[jetProvider.ID], row.ProviderLabels.LabelID)
+				providerLabels[providerID] = append(providerLabels[providerID],
+					types.LabelID(row.ProviderLabels.LabelID))
 			}
 		}
 	}
@@ -124,24 +82,9 @@ func CreateProviderFromJetRows(rows []ProviderRow) []provider.Provider {
 	results := make([]provider.Provider, len(providers))
 	count := 0
 	for providerId, jetProvider := range providers {
-		var plans []provider.Plan
-		jetPlans, planExists := providerPlans[providerId]
-		if planExists {
-			plans = collection.Select(jetPlans, func(jetPlan model.ProviderPlans) provider.Plan {
-				var prices []provider.Price
-				jetPrices, priceExists := planPrices[jetPlan.ID]
-				if priceExists {
-					prices = collection.Select(jetPrices, func(jetPrice model.ProviderPrices) provider.Price {
-						return createProviderPriceFromJet(jetPrice)
-					})
-				}
-
-				return createProviderPlanFromJet(jetPlan, prices)
-			})
-		}
 
 		jetLabels, _ := providerLabels[providerId]
-		results[count] = createProviderFromJet(jetProvider, plans, jetLabels)
+		results[count] = createProviderFromJet(jetProvider, jetLabels)
 		count++
 	}
 
@@ -149,12 +92,9 @@ func CreateProviderFromJetRows(rows []ProviderRow) []provider.Provider {
 }
 
 func CreateProviderFromJetRowsWithCount(rows []ProviderRowWithCount) []provider.Provider {
-	// Convert to the simpler row structure
-	simpleRows := collection.Select(rows, func(row ProviderRowWithCount) ProviderRow {
+	simpleRows := herd.Select(rows, func(row ProviderRowWithCount) ProviderRow {
 		return ProviderRow{
 			Providers:      row.Providers,
-			ProviderPlans:  row.ProviderPlans,
-			ProviderPrices: row.ProviderPrices,
 			ProviderLabels: row.ProviderLabels,
 		}
 	})

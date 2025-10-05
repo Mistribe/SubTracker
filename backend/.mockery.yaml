@@ -1,26 +1,37 @@
 all: false
-dir: '{{.InterfaceDir}}'
+dir: "{{.InterfaceDir}}"
 filename: "{{.InterfaceName | snakecase}}_mock.go"
 force-file-write: true
 formatter: goimports
 log-level: info
-structname: '{{.Mock}}{{.InterfaceName}}'
-pkgname: '{{.SrcPackageName}}'
+structname: "{{.Mock}}{{.InterfaceName}}"
+pkgname: "{{.SrcPackageName}}"
 recursive: false
 template: testify
 packages:
+  github.com/mistribe/subtracker/internal/domain/account:
+    config:
+      dir: ./internal/domain/account
+    interfaces:
+      ConnectedAccount:
   github.com/mistribe/subtracker/internal/ports:
     config:
       dir: ./internal/ports
     interfaces:
       IdentityProvider:
       Exchange:
-      AuthService:
-      UserService:
-      LocalCache:
+      Authentication:
+      EntitlementResolver:
+      AccountService:
+      Cache:
+      CacheLeveled:
       CurrencyRepository:
       FamilyRepository:
       LabelRepository:
       ProviderRepository:
       SubscriptionRepository:
-      UserRepository:
+      Authorization:
+      PermissionRequest:
+      AccountRepository:
+      QuotaService:
+      UsageRepository:

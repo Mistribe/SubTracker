@@ -1,19 +1,43 @@
-import { type ApiClient, createApiClient } from '../api/apiClient';
-import { FetchRequestAdapter } from '@microsoft/kiota-http-fetchlibrary';
 import { useRef } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { AuthTokenProvider } from '@/lib/AuthTokenProvider';
 import { requireEnv } from '@/lib/env';
+import {AccountsApi, Configuration} from '@/api';
+import { CurrenciesApi, FamilyApi, LabelsApi, ProvidersApi, SubscriptionsApi } from '@/api/apis';
+import type { ApiClient } from '@/lib/api-client';
 
 export function useApiClient() {
   const { getToken } = useAuth();
   const clientRef = useRef<ApiClient | null>(null);
 
   if (clientRef.current === null) {
-    const tokenProvider = new AuthTokenProvider(async () => await getToken());
-    const adapter = new FetchRequestAdapter(tokenProvider);
-    adapter.baseUrl = requireEnv('VITE_BACKEND_URL');
-    clientRef.current = createApiClient(adapter);
+    const basePath = requireEnv('VITE_BACKEND_URL');
+
+    const authMiddleware = {
+      pre: async ({ url, init }: { url: string; init: RequestInit }) => {
+        const token = await getToken();
+        const headers: Record<string, string> = {
+          ...(init.headers as Record<string, string> | undefined),
+        };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        return { url, init: { ...init, headers } };
+      },
+    };
+
+    const configuration = new Configuration({
+      basePath,
+      middleware: [authMiddleware],
+    });
+
+    clientRef.current = {
+      currencies: new CurrenciesApi(configuration),
+      families: new FamilyApi(configuration),
+      labels: new LabelsApi(configuration),
+      providers: new ProvidersApi(configuration),
+      subscriptions: new SubscriptionsApi(configuration),
+      accounts: new AccountsApi(configuration),
+    };
   }
 
   return { apiClient: clientRef.current };

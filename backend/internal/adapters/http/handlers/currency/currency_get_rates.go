@@ -6,29 +6,24 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/domain/currency"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/currency/query"
 	. "github.com/mistribe/subtracker/pkg/ginx"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
-// CurrencyGetRateResponse represents the response body for currency conversion
-type CurrencyGetRateResponse struct {
-	Timestamp time.Time          `json:"timestamp"`
-	Rates     map[string]float64 `json:"rates"`
-}
-
-// CurrencyGetRateEndpoint handles currency conversion requests
-type CurrencyGetRateEndpoint struct {
+// GetRateEndpoint handles currency conversion requests
+type GetRateEndpoint struct {
 	convertHandler ports.QueryHandler[query.CurrencyRateQuery, query.CurrencyRateResponse]
 }
 
-// NewCurrencyGetRateEndpoint creates a new CurrencyGetRateEndpoint
-func NewCurrencyGetRateEndpoint(
+// NewGetRateEndpoint creates a new GetRateEndpoint
+func NewGetRateEndpoint(
 	convertHandler ports.QueryHandler[query.CurrencyRateQuery, query.CurrencyRateResponse],
-) *CurrencyGetRateEndpoint {
-	return &CurrencyGetRateEndpoint{
+) *GetRateEndpoint {
+	return &GetRateEndpoint{
 		convertHandler: convertHandler,
 	}
 }
@@ -40,11 +35,11 @@ func NewCurrencyGetRateEndpoint(
 //	@Tags			currencies
 //	@Produce		json
 //	@Param			date	query		string	false	"Conversion date in RFC3339 format (default: current time)"
-//	@Success		200		{object}	CurrencyRatesModel
+//	@Success		200		{object}	dto.CurrencyRatesModel
 //	@Failure		400		{object}	HttpErrorResponse
 //	@Failure		500		{object}	HttpErrorResponse
 //	@Router			/currencies/rates [get]
-func (e CurrencyGetRateEndpoint) Handle(c *gin.Context) {
+func (e GetRateEndpoint) Handle(c *gin.Context) {
 	conversionDateParam := c.DefaultQuery("date", time.Now().Format(time.RFC3339))
 	conversionDate, err := time.Parse(time.RFC3339, conversionDateParam)
 	if err != nil {
@@ -61,11 +56,11 @@ func (e CurrencyGetRateEndpoint) Handle(c *gin.Context) {
 	FromResult(c,
 		r,
 		WithMapping[query.CurrencyRateResponse](func(c query.CurrencyRateResponse) any {
-			return CurrencyRatesModel{
+			return dto.CurrencyRatesModel{
 				Timestamp: c.Timestamp,
-				Rates: collection.Select(c.Rates,
-					func(key currency.Rate) CurrencyRateModel {
-						return CurrencyRateModel{
+				Rates: herd.Select(c.Rates,
+					func(key currency.Rate) dto.CurrencyRateModel {
+						return dto.CurrencyRateModel{
 							Rate:     key.ExchangeRate(),
 							Currency: key.ToCurrency().String(),
 						}
@@ -75,16 +70,16 @@ func (e CurrencyGetRateEndpoint) Handle(c *gin.Context) {
 		}))
 }
 
-func (e CurrencyGetRateEndpoint) Pattern() []string {
+func (e GetRateEndpoint) Pattern() []string {
 	return []string{
 		"/rates",
 	}
 }
 
-func (e CurrencyGetRateEndpoint) Method() string {
+func (e GetRateEndpoint) Method() string {
 	return http.MethodGet
 }
 
-func (e CurrencyGetRateEndpoint) Middlewares() []gin.HandlerFunc {
+func (e GetRateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }

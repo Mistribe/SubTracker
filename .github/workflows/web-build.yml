@@ -1,18 +1,22 @@
 name: Web Build and Test
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'web/**'
-      - '.github/workflows/web-build.yml'
+      - "web/**"
+      - ".github/workflows/web-build.yml"
   pull_request:
     branches:
       - main
     paths:
-      - 'web/**'
-      - '.github/workflows/web-build.yml'
+      - "web/**"
+      - ".github/workflows/web-build.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -35,9 +39,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: 'web/package-lock.json'
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "web/package-lock.json"
 
       - name: Install dependencies
         run: |
@@ -49,6 +53,151 @@ jobs:
 
       - name: Build
         run: npm run build
-# Enable when we have tests
-#      - name: Test
-#        run: npm test
+      - name: Test
+        run: npm test
+
+  e2e-tests:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    name: E2E Tests (web)
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "web/package-lock.json"
+
+      - name: Install dependencies
+        working-directory: web
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Install Playwright Browsers
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+
+      - name: Setup config
+        run: |
+          echo "VITE_CLERK_PUBLISHABLE_KEY=${{secrets.TEST_CLERK_PUBLISHABLE_KEY}}" >> .env.web
+          echo "VITE_CLERK_PUBLISHABLE_KEY=${{secrets.TEST_CLERK_PUBLISHABLE_KEY}}" >> ./web/.env.test
+          echo "TEST_USER_EMAIL=${{secrets.TEST_USER_EMAIL}}" >> ./web/.env.test
+          echo "TEST_USER_PASSWORD=${{secrets.TEST_USER_PASSWORD}}" >> ./web/.env.test
+          echo "CLERK_SECRET_KEY=${{secrets.TEST_CLERK_SECRET_KEY}}" >> .env.backend
+
+      - name: Start services with Docker Compose
+        run: docker compose up --build -d
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for backend to be ready..."
+          timeout 60 bash -c 'until curl -f http://localhost:8080/health 2>/dev/null; do sleep 2; done' || true
+          echo "Waiting for frontend to be ready..."
+          timeout 60 bash -c 'until curl -f http://localhost:9080 2>/dev/null; do sleep 2; done' || true
+          sleep 5
+          docker ps
+
+      - name: Run E2E tests
+        working-directory: web
+        run: npm run test:e2e
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:9080
+          NODE_ENV: test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            web/test-results/
+            web/playwright-report/
+          retention-days: 30
+
+      - name: Comment PR with test results
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Import our custom formatter
+            const { formatTestResults } = require('./.github/scripts/format-test-results.js');
+            
+            try {
+              const testResultsPath = './web/test-results/test-results.json';
+              const junitPath = './web/test-results/junit-report.xml';
+              
+              // Check if test results exist
+              if (!fs.existsSync(testResultsPath)) {
+                console.log('Test results file not found, skipping PR comment');
+                return;
+              }
+              
+              // Format the test results
+              let commentBody = formatTestResults(testResultsPath, junitPath);
+              
+              // Replace placeholders with actual values
+              commentBody = commentBody.replace(/GITHUB_RUN_ID/g, context.runId);
+              
+              // Get existing comments to check if we already commented
+              const comments = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+              });
+              
+              // Look for existing E2E test results comment
+              const existingComment = comments.data.find(comment => 
+                comment.user.login === 'github-actions[bot]' && 
+                comment.body.includes('🎭 E2E Test Results')
+              );
+              
+              if (existingComment) {
+                // Update existing comment
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existingComment.id,
+                  body: commentBody
+                });
+                console.log('Updated existing PR comment with test results');
+              } else {
+                // Create new comment
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: commentBody
+                });
+                console.log('Created new PR comment with test results');
+              }
+            } catch (error) {
+              console.error('Error commenting on PR:', error);
+              
+              // Create a fallback comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `## 🎭 E2E Test Results ❌ Error\n\nFailed to process test results: ${error.message}\n\n[View Workflow Run](../../actions/runs/${context.runId})`
+              });
+            }
+
+      - name: Stop services
+        if: always()
+        run: docker compose down -v

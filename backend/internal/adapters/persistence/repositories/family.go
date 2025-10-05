@@ -10,8 +10,8 @@ import (
 	. "github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/table"
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db/models"
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/internal/usecase/auth"
 	"github.com/mistribe/subtracker/pkg/slicesx"
 
 	. "github.com/go-jet/jet/v2/postgres"
@@ -27,7 +27,7 @@ func NewFamilyRepository(repository *db.Context) ports.FamilyRepository {
 	}
 }
 
-func (r FamilyRepository) GetUserFamily(ctx context.Context, userId string) (family.Family, error) {
+func (r FamilyRepository) GetAccountFamily(ctx context.Context, userId types.UserID) (family.Family, error) {
 	userFamilies := SELECT(
 		Families.AllColumns,
 	).
@@ -36,7 +36,7 @@ func (r FamilyRepository) GetUserFamily(ctx context.Context, userId string) (fam
 				INNER_JOIN(FamilyMembers, FamilyMembers.FamilyID.EQ(Families.ID)),
 		).
 		WHERE(
-			FamilyMembers.UserID.EQ(String(userId)),
+			FamilyMembers.UserID.EQ(String(userId.String())),
 		).
 		ORDER_BY(Families.ID).
 		LIMIT(1).
@@ -81,10 +81,10 @@ func (r FamilyRepository) GetUserFamily(ctx context.Context, userId string) (fam
 
 }
 
-func (r FamilyRepository) GetById(ctx context.Context, id uuid.UUID) (family.Family, error) {
+func (r FamilyRepository) GetById(ctx context.Context, familyID types.FamilyID) (family.Family, error) {
 	stmt := SELECT(Families.AllColumns, FamilyMembers.AllColumns).
 		FROM(Families.LEFT_JOIN(FamilyMembers, FamilyMembers.FamilyID.EQ(Families.ID))).
-		WHERE(Families.ID.EQ(UUID(id)))
+		WHERE(Families.ID.EQ(UUID(familyID)))
 
 	var rows []struct {
 		Family        model.Families       `json:"families"`
@@ -111,85 +111,6 @@ func (r FamilyRepository) GetById(ctx context.Context, id uuid.UUID) (family.Fam
 	}
 
 	return models.CreateFamilyWithMembersFromModel(familyData)
-}
-
-func (r FamilyRepository) GetAll(ctx context.Context, parameters ports.QueryParameters) (
-	[]family.Family, int64,
-	error) {
-	userId, ok := auth.GetUserIdFromContext(ctx)
-	if !ok {
-		return []family.Family{}, 0, nil
-	}
-
-	userFamilies := SELECT(
-		Families.AllColumns,
-		COUNT(STAR).OVER().AS("total_count"),
-	).
-		FROM(
-			Families.
-				INNER_JOIN(FamilyMembers, FamilyMembers.FamilyID.EQ(Families.ID)),
-		).
-		WHERE(
-			FamilyMembers.UserID.EQ(String(userId)),
-		).
-		ORDER_BY(Families.ID).
-		LIMIT(parameters.Limit).
-		OFFSET(parameters.Offset).
-		AsTable("uf")
-
-	rFamilyId := Families.ID.From(userFamilies)
-
-	stmt := SELECT(
-		userFamilies.AllColumns(),
-		FamilyMembers.AllColumns,
-	).
-		FROM(
-			userFamilies.
-				LEFT_JOIN(FamilyMembers, FamilyMembers.FamilyID.EQ(rFamilyId)),
-		)
-
-	var rows []struct {
-		Family        model.Families       `json:"families"`
-		FamilyMembers *model.FamilyMembers `json:"family_members"`
-		TotalCount    int64                `json:"total_count"`
-	}
-
-	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
-		return nil, 0, err
-	}
-	if len(rows) == 0 {
-		return nil, 0, nil
-	}
-
-	totalCount := rows[0].TotalCount
-
-	// Group by family ID
-	familyMap := make(map[uuid.UUID]models.FamilyWithMembers)
-	for _, row := range rows {
-		if _, exists := familyMap[row.Family.ID]; !exists {
-			familyMap[row.Family.ID] = models.FamilyWithMembers{
-				Families:      row.Family,
-				FamilyMembers: make([]model.FamilyMembers, 0),
-			}
-		}
-		if row.FamilyMembers != nil && row.FamilyMembers.ID != uuid.Nil {
-			fam := familyMap[row.Family.ID]
-			fam.FamilyMembers = append(fam.FamilyMembers, *row.FamilyMembers)
-			familyMap[row.Family.ID] = fam
-		}
-	}
-
-	// Convert to domain families
-	families := make([]family.Family, 0, len(familyMap))
-	for _, familyData := range familyMap {
-		domainFamily, err := models.CreateFamilyWithMembersFromModel(familyData)
-		if err != nil {
-			return nil, 0, err
-		}
-		families = append(families, domainFamily)
-	}
-
-	return families, totalCount, nil
 }
 
 func (r FamilyRepository) Save(ctx context.Context, families ...family.Family) error {
@@ -238,7 +159,7 @@ func (r FamilyRepository) create(ctx context.Context, families []family.Family) 
 		stmt = stmt.VALUES(
 			UUID(fam.Id()),
 			String(fam.Name()),
-			String(fam.OwnerId()),
+			String(fam.Owner().UserId().String()),
 			TimestampzT(fam.CreatedAt()),
 			TimestampzT(fam.UpdatedAt()),
 			String(fam.ETag()),
@@ -276,7 +197,7 @@ func (r FamilyRepository) create(ctx context.Context, families []family.Family) 
 		for _, member := range allMembers {
 			var userID Expression
 			if member.UserId() != nil {
-				userID = String(*member.UserId())
+				userID = String((*member.UserId()).String())
 			} else {
 				userID = NULL
 			}
@@ -314,7 +235,7 @@ func (r FamilyRepository) update(ctx context.Context, fam family.Family) error {
 	stmt := Families.UPDATE().
 		SET(
 			Families.Name.SET(String(fam.Name())),
-			Families.OwnerID.SET(String(fam.OwnerId())),
+			Families.OwnerID.SET(String(fam.Owner().UserId().String())),
 			Families.UpdatedAt.SET(TimestampzT(fam.UpdatedAt())),
 			Families.Etag.SET(String(fam.ETag())),
 		).
@@ -341,7 +262,7 @@ func (r FamilyRepository) update(ctx context.Context, fam family.Family) error {
 // saveTrackedSliceWithJet handles member operations using go-jet
 func (r FamilyRepository) saveTrackedSliceWithJet(
 	ctx context.Context, members *slicesx.Tracked[family.Member],
-	familyId uuid.UUID) error {
+	familyId types.FamilyID) error {
 	// Handle new members
 	newMembers := members.Added()
 	if len(newMembers) > 0 {
@@ -360,7 +281,7 @@ func (r FamilyRepository) saveTrackedSliceWithJet(
 		for _, member := range newMembers {
 			var userID Expression
 			if member.UserId() != nil {
-				userID = String(*member.UserId())
+				userID = String((*member.UserId()).String())
 			} else {
 				userID = NULL
 			}
@@ -396,7 +317,7 @@ func (r FamilyRepository) saveTrackedSliceWithJet(
 		if member.IsDirty() {
 			var userID StringExpression
 			if member.UserId() != nil {
-				userID = String(*member.UserId())
+				userID = String((*member.UserId()).String())
 			} else {
 				userID = StringExp(NULL)
 			}
@@ -444,7 +365,13 @@ func (r FamilyRepository) saveTrackedSliceWithJet(
 	return nil
 }
 
-func (r FamilyRepository) Delete(ctx context.Context, familyId uuid.UUID) (bool, error) {
+func (r FamilyRepository) Delete(ctx context.Context, familyId types.FamilyID) (bool, error) {
+	// Delete dependent members first to satisfy FK constraint fk_families_members
+	_, err := r.dbContext.Execute(ctx, FamilyMembers.DELETE().WHERE(FamilyMembers.FamilyID.EQ(UUID(familyId))))
+	if err != nil {
+		return false, err
+	}
+
 	stmt := Families.DELETE().
 		WHERE(Families.ID.EQ(UUID(familyId)))
 
@@ -456,7 +383,9 @@ func (r FamilyRepository) Delete(ctx context.Context, familyId uuid.UUID) (bool,
 	return count > 0, nil
 }
 
-func (r FamilyRepository) MemberExists(ctx context.Context, familyId uuid.UUID, members ...uuid.UUID) (bool, error) {
+func (r FamilyRepository) MemberExists(
+	ctx context.Context, familyId types.FamilyID,
+	members ...types.FamilyMemberID) (bool, error) {
 	if len(members) == 0 {
 		return true, nil
 	}
@@ -484,7 +413,7 @@ func (r FamilyRepository) MemberExists(ctx context.Context, familyId uuid.UUID, 
 	return row.Count == len(members), nil
 }
 
-func (r FamilyRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, error) {
+func (r FamilyRepository) Exists(ctx context.Context, ids ...types.FamilyID) (bool, error) {
 	if len(ids) == 0 {
 		return true, nil
 	}
@@ -509,12 +438,14 @@ func (r FamilyRepository) Exists(ctx context.Context, ids ...uuid.UUID) (bool, e
 	return row.Count == len(ids), nil
 }
 
-func (r FamilyRepository) IsUserMemberOfFamily(ctx context.Context, familyId uuid.UUID, userId string) (bool, error) {
+func (r FamilyRepository) IsUserMemberOfFamily(
+	ctx context.Context, familyId types.FamilyID,
+	userId types.UserID) (bool, error) {
 	stmt := SELECT(COUNT(FamilyMembers.ID).AS("count")).
 		FROM(FamilyMembers).
 		WHERE(
 			FamilyMembers.FamilyID.EQ(UUID(familyId)).
-				AND(FamilyMembers.UserID.EQ(String(userId))),
+				AND(FamilyMembers.UserID.EQ(String(userId.String()))),
 		)
 
 	var row struct {

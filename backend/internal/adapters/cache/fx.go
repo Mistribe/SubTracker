@@ -7,7 +7,10 @@ import (
 func FxModule() fx.Option {
 	return fx.Module("cache",
 		fx.Provide(
+			New,
+			NewRequest,
 			NewLocal,
+			NewDistributed,
 		),
 	)
 }

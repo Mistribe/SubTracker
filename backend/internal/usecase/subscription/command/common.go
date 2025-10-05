@@ -3,11 +3,9 @@ package command
 import (
 	"context"
 
-	"github.com/google/uuid"
-
-	"github.com/mistribe/subtracker/internal/domain/auth"
 	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 )
 
@@ -16,12 +14,12 @@ func ensureRelatedEntityExists(
 	familyRepository ports.FamilyRepository,
 	newSubscription subscription.Subscription,
 ) error {
-	if newSubscription.Owner().Type() == auth.FamilyOwnerType {
+	if newSubscription.Owner().Type() == types.FamilyOwnerType {
 		familyId := newSubscription.Owner().FamilyId()
 
-		var members []uuid.UUID
-		if newSubscription.ServiceUsers() != nil && newSubscription.ServiceUsers().Len() > 0 {
-			members = newSubscription.ServiceUsers().Values()
+		var members []types.FamilyMemberID
+		if newSubscription.FamilyUsers() != nil && newSubscription.FamilyUsers().Len() > 0 {
+			members = newSubscription.FamilyUsers().Values()
 		}
 		if newSubscription.Payer() != nil && newSubscription.Payer().Type() == subscription.FamilyMemberPayer {
 			members = append(members, newSubscription.Payer().MemberId())
@@ -37,8 +35,8 @@ func ensureRelatedEntityExists(
 func ensureFamilyMemberExists(
 	ctx context.Context,
 	familyRepository ports.FamilyRepository,
-	familyId uuid.UUID,
-	members []uuid.UUID) error {
+	familyId types.FamilyID,
+	members []types.FamilyMemberID) error {
 	if len(members) == 0 {
 		return nil
 	}

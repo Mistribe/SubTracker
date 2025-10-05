@@ -1,22 +1,30 @@
 package shared
 
-type PaginatedResponse[TValue any] struct {
+type PaginatedResponse[TValue any] interface {
+	Length() int
+	Data() []TValue
+	Total() int64
+}
+
+type paginatedResponse[TValue any] struct {
 	data  []TValue
 	total int64
 }
 
-func (p PaginatedResponse[TValue]) Length() int {
+func (p paginatedResponse[TValue]) Length() int {
 	return len(p.data)
 }
 
-func (p PaginatedResponse[TValue]) Data() []TValue {
+func (p paginatedResponse[TValue]) Data() []TValue {
 	return p.data
 }
 
-func (p PaginatedResponse[TValue]) Total() int64 {
+func (p paginatedResponse[TValue]) Total() int64 {
 	return p.total
 }
 
-func NewPaginatedResponse[TValue any](data []TValue, total int64) PaginatedResponse[TValue] {
-	return PaginatedResponse[TValue]{data: data, total: total}
+func NewPaginatedResponse[TValue any](
+	data []TValue,
+	total int64) PaginatedResponse[TValue] {
+	return paginatedResponse[TValue]{data: data, total: total}
 }

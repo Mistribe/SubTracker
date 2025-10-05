@@ -7,11 +7,12 @@ import (
 	"time"
 
 	"github.com/Oleexo/config-go"
-	"github.com/google/uuid"
 
 	"github.com/mistribe/subtracker/internal/domain/family"
+	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
-	"github.com/mistribe/subtracker/pkg/x/collection"
+	"github.com/mistribe/subtracker/pkg/x"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type systemMemberModel struct {
@@ -69,15 +70,15 @@ func (l familyUpdater) Update(ctx context.Context) error {
 
 func (l familyUpdater) updateDatabase(ctx context.Context, families []systemFamilyModel) error {
 	for _, model := range families {
-		id := uuid.MustParse(model.Id)
+		id := types.MustParseFamilyID(model.Id)
 		fam, err := l.familyRepository.GetById(ctx, id)
 		if err != nil {
 			return err
 		}
 		if fam == nil {
-			members := collection.Select(model.Members, func(memberModel systemMemberModel) family.Member {
+			members := herd.Select(model.Members, func(memberModel systemMemberModel) family.Member {
 				mbr := family.NewMember(
-					uuid.MustParse(memberModel.Id),
+					types.MustParseFamilyMemberID(memberModel.Id),
 					id,
 					memberModel.Name,
 					family.MustParseMemberType(memberModel.Type),
@@ -87,13 +88,13 @@ func (l familyUpdater) updateDatabase(ctx context.Context, families []systemFami
 				)
 
 				if memberModel.UserId != nil {
-					mbr.SetUserId(memberModel.UserId)
+					mbr.SetUserId(x.P(types.UserID(*memberModel.UserId)))
 				}
 				return mbr
 			})
 			fam = family.NewFamily(
 				id,
-				model.OwnerId,
+				types.UserID(model.OwnerId),
 				model.Name,
 				nil,
 				time.Now(),
