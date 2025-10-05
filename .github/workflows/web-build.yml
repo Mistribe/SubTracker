@@ -105,6 +105,7 @@ jobs:
           echo "Waiting for frontend to be ready..."
           timeout 60 bash -c 'until curl -f http://localhost:9080 2>/dev/null; do sleep 2; done' || true
           sleep 5
+          docker ps
 
       - name: Run E2E tests
         working-directory: web
