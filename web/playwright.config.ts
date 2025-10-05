@@ -173,20 +173,4 @@ export default defineConfig({
       },
     ],
   }),
-
-  // CI-specific overrides
-  ...(process.env.CI && {
-    // CI environment specific settings
-    workers: 2, // Limit workers in CI
-    retries: 3, // More retries in CI due to potential flakiness
-    
-    use: {
-      screenshot: 'only-on-failure',
-      video: 'retain-on-failure',
-      trace: 'retain-on-failure',
-    },
-    
-    // Disable dev server in CI (assume app is already running)
-    webServer: undefined,
-  }),
 });
