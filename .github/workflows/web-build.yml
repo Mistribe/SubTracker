@@ -87,13 +87,13 @@ jobs:
         working-directory: web
         run: npx playwright install --with-deps chromium
 
-      - name: Start services with Docker Compose
-        run: docker compose up --build -d
-
       - name: Setup config
         run: |
           echo "VITE_CLERK_PUBLISHABLE_KEY=${{secrets.TEST_CLERK_PUBLISHABLE_KEY}}" >> .env.web
           echo "CLERK_SECRET_KEY=${{secrets.TEST_CLERK_SECRET_KEY}}" >> .env.backend
+
+      - name: Start services with Docker Compose
+        run: docker compose up --build -d
 
       - name: Wait for services to be ready
         run: |
