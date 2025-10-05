@@ -21,19 +21,19 @@ export class DashboardPage extends BasePage {
 
   // Summary Cards Selectors and Methods
   private get summaryCardsContainer(): Locator {
-    return this.page.locator('.grid.grid-cols-1.md\\:grid-cols-3.gap-6').first();
+    return this.page.locator('[data-testid="summary-cards"]').first();
   }
 
   private get monthlyExpensesCard(): Locator {
-    return this.summaryCardsContainer.locator('.border-l-blue-500');
+    return this.summaryCardsContainer.locator('[data-testid="summary-card-monthly"]');
   }
 
   private get yearlyExpensesCard(): Locator {
-    return this.summaryCardsContainer.locator('.border-l-purple-500');
+    return this.summaryCardsContainer.locator('[data-testid="summary-card-yearly"]');
   }
 
   private get activeSubscriptionsCard(): Locator {
-    return this.summaryCardsContainer.locator('.border-l-green-500');
+    return this.summaryCardsContainer.locator('[data-testid=\"summary-card-active\"]');
   }
 
   /**
