@@ -90,6 +90,11 @@ jobs:
       - name: Start services with Docker Compose
         run: docker compose up --build -d
 
+      - name: Setup config
+        run: |
+          echo "VITE_CLERK_PUBLISHABLE_KEY=${{secrets.TEST_CLERK_PUBLISHABLE_KEY}}" >> .env.web
+          echo "CLERK_SECRET_KEY=${{secrets.TEST_CLERK_SECRET_KEY}}" >> .env.backend
+
       - name: Wait for services to be ready
         run: |
           echo "Waiting for backend to be ready..."
