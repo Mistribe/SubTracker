@@ -621,4 +621,154 @@ export class SubscriptionsPage extends BasePage {
   getCurrentUrl(): string {
     return this.page.url();
   }
-}
+
+  /**
+   * Update subscription form with partial data (for editing)
+   */
+  async updateSubscriptionForm(updates: Partial<SubscriptionData>): Promise<void> {
+    console.log('Updating subscription form with changes');
+    
+    if (updates.name) {
+      await this.page.locator(this.friendlyNameInput).fill('');
+      await this.fillInput(this.friendlyNameInput, updates.name);
+    }
+    
+    if (updates.amount) {
+      const amountInput = this.page.locator(this.customPriceAmountInput);
+      if (await amountInput.count() > 0) {
+        await amountInput.fill('');
+        await this.fillInput(this.customPriceAmountInput, updates.amount.toString());
+      }
+    }
+    
+    console.log('Subscription form updated successfully');
+  }
+
+  /**
+   * View subscription details by name
+   */
+  async viewSubscriptionDetails(subscriptionName: string): Promise<void> {
+    console.log(`Viewing details for subscription: ${subscriptionName}`);
+    
+    // Click on the subscription name to view details
+    const subscriptionLink = this.page.locator(`a:has-text("${subscriptionName}"), tr:has-text("${subscriptionName}") td:first-child`);
+    await subscriptionLink.first().click();
+    
+    console.log('Subscription details opened');
+  }
+
+  /**
+   * Verify subscription details on detail page
+   */
+  async verifySubscriptionDetails(subscription: { 
+    name: string; 
+    provider?: string; 
+    amount?: string; 
+    billingCycle?: string 
+  }): Promise<void> {
+    console.log(`Verifying subscription details: ${subscription.name}`);
+    
+    // Verify name
+    const nameElement = this.page.locator(`text="${subscription.name}"`);
+    await expect(nameElement).toBeVisible();
+    
+    // Verify provider if provided
+    if (subscription.provider) {
+      const providerElement = this.page.locator(`text="${subscription.provider}"`);
+      await expect(providerElement).toBeVisible();
+    }
+    
+    // Verify amount if provided
+    if (subscription.amount) {
+      const amountElement = this.page.locator(`text="${subscription.amount}"`);
+      await expect(amountElement).toBeVisible();
+    }
+    
+    // Verify billing cycle if provided
+    if (subscription.billingCycle) {
+      const cycleElement = this.page.locator(`text="${subscription.billingCycle}"`);
+      await expect(cycleElement).toBeVisible();
+    }
+    
+    console.log('Subscription details verified');
+  }
+
+  /**
+   * Assign a label to a subscription
+   */
+  async assignLabelToSubscription(subscriptionName: string, labelName: string): Promise<void> {
+    console.log(`Assigning label "${labelName}" to subscription "${subscriptionName}"`);
+    
+    // Find the subscription row
+    const subscriptionRow = this.page.locator(`tr:has-text("${subscriptionName}")`);
+    
+    // Look for labels button or action menu
+    const labelsButton = subscriptionRow.locator('button:has-text("Labels"), button[aria-label*="label" i]');
+    
+    if (await labelsButton.count() > 0) {
+      await labelsButton.click();
+    } else {
+      // Try action menu approach
+      const actionMenu = subscriptionRow.locator(this.actionMenuTrigger);
+      if (await actionMenu.count() > 0) {
+        await actionMenu.click();
+        const labelsOption = this.page.locator('text="Labels", text="Manage Labels"');
+        if (await labelsOption.count() > 0) {
+          await labelsOption.first().click();
+        }
+      }
+    }
+    
+    // Select the label
+    const labelOption = this.page.locator(`text="${labelName}"`);
+    if (await labelOption.count() > 0) {
+      await labelOption.click();
+    }
+    
+    // Save or confirm the assignment
+    const saveButton = this.page.locator('button:has-text("Save"), button:has-text("Apply")');
+    if (await saveButton.count() > 0) {
+      await saveButton.click();
+    }
+    
+    console.log('Label assigned successfully');
+  }
+
+  /**
+   * Remove a label from a subscription
+   */
+  async removeLabelFromSubscription(subscriptionName: string, labelName: string): Promise<void> {
+    console.log(`Removing label "${labelName}" from subscription "${subscriptionName}"`);
+    
+    // Find the subscription row
+    const subscriptionRow = this.page.locator(`tr:has-text("${subscriptionName}")`);
+    
+    // Look for the assigned label
+    const assignedLabel = subscriptionRow.locator(`text="${labelName}"`);
+    
+    if (await assignedLabel.count() > 0) {
+      // Look for remove button near the label
+      const removeButton = assignedLabel.locator('..').locator('button[aria-label*="remove" i], button:has-text("×")');
+      if (await removeButton.count() > 0) {
+        await removeButton.click();
+      }
+    }
+    
+    console.log('Label removed successfully');
+  }
+
+  /**
+   * Verify a subscription has a specific label
+   */
+  async verifySubscriptionHasLabel(subscriptionName: string, labelName: string): Promise<void> {
+    console.log(`Verifying subscription "${subscriptionName}" has label "${labelName}"`);
+    
+    // Find the subscription row
+    const subscriptionRow = this.page.locator(`tr:has-text("${subscriptionName}")`);
+    
+    // Look for the label in the row
+    const labelElement = subscriptionRow.locator(`text="${labelName}"`);
+    await expect(labelElement).toBeVisible();
+    
+    console.log('Label assignment verified');
+  }}

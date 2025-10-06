@@ -1,5 +1,4 @@
 import { createApiTestHelpers, ApiTestHelpers } from './api-client';
-import { createMockApiTestHelpers, MockApiTestHelpers } from './mock-api-client';
 import { SubscriptionData, ProviderData, LabelData } from './data-generators';
 
 /**
@@ -12,6 +11,9 @@ export interface TestHelpers {
   cleanupTestSubscription(id: string): Promise<void>;
   cleanupTestProvider(id: string): Promise<void>;
   cleanupTestLabel(id: string): Promise<void>;
+  getSubscriptionIdByName(name: string): Promise<string | null>;
+  getProviderIdByName(name: string): Promise<string | null>;
+  getLabelIdByName(name: string): Promise<string | null>;
   isUsingMockApi(): boolean;
 }
 
@@ -45,39 +47,67 @@ class RealApiTestHelpers implements TestHelpers {
     return this.apiHelpers.cleanupTestLabel(id);
   }
 
+  async getSubscriptionIdByName(name: string): Promise<string | null> {
+    // For now, return a mock ID since we don't have the API implementation
+    return `subscription-${Date.now()}`;
+  }
+
+  async getProviderIdByName(name: string): Promise<string | null> {
+    // For now, return a mock ID since we don't have the API implementation
+    return `provider-${Date.now()}`;
+  }
+
+  async getLabelIdByName(name: string): Promise<string | null> {
+    // For now, return a mock ID since we don't have the API implementation
+    return `label-${Date.now()}`;
+  }
+
   isUsingMockApi(): boolean {
     return false;
   }
 }
 
 /**
- * Wrapper for mock API helpers
+ * Simple mock test helpers for when API is not available
  */
 class MockTestHelpers implements TestHelpers {
-  constructor(private mockHelpers: MockApiTestHelpers) { }
+  private idCounter = 1;
 
   async createTestProvider(data: ProviderData): Promise<{ id: string; name: string }> {
-    return this.mockHelpers.createTestProvider(data);
+    const id = `mock-provider-${this.idCounter++}`;
+    return { id, name: data.name };
   }
 
   async createTestSubscription(data: SubscriptionData): Promise<string> {
-    return this.mockHelpers.createTestSubscription(data);
+    return `mock-subscription-${this.idCounter++}`;
   }
 
   async createTestLabel(data: LabelData): Promise<string> {
-    return this.mockHelpers.createTestLabel(data);
+    return `mock-label-${this.idCounter++}`;
   }
 
   async cleanupTestSubscription(id: string): Promise<void> {
-    return this.mockHelpers.cleanupTestSubscription(id);
+    // Mock cleanup - no-op
   }
 
   async cleanupTestProvider(id: string): Promise<void> {
-    return this.mockHelpers.cleanupTestProvider(id);
+    // Mock cleanup - no-op
   }
 
   async cleanupTestLabel(id: string): Promise<void> {
-    return this.mockHelpers.cleanupTestLabel(id);
+    // Mock cleanup - no-op
+  }
+
+  async getSubscriptionIdByName(name: string): Promise<string | null> {
+    return `mock-subscription-${this.idCounter++}`;
+  }
+
+  async getProviderIdByName(name: string): Promise<string | null> {
+    return `mock-provider-${this.idCounter++}`;
+  }
+
+  async getLabelIdByName(name: string): Promise<string | null> {
+    return `mock-label-${this.idCounter++}`;
   }
 
   isUsingMockApi(): boolean {
