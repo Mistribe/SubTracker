@@ -10,7 +10,6 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/label/command"
-	"github.com/mistribe/subtracker/pkg/ginx"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 )
@@ -54,9 +53,7 @@ func createLabelRequestToCommand(m dto.CreateLabelRequest, userId types.UserID) 
 func (l CreateEndpoint) Handle(c *gin.Context) {
 	var model dto.CreateLabelRequest
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
+		FromError(c, err)
 		return
 	}
 
@@ -64,10 +61,7 @@ func (l CreateEndpoint) Handle(c *gin.Context) {
 
 	cmd, err := createLabelRequestToCommand(model, connectedAccount.UserID())
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
-		c.Abort()
+		FromError(c, err)
 		return
 	}
 	r := l.handler.Handle(c, cmd)

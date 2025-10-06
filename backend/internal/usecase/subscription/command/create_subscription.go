@@ -58,6 +58,8 @@ func (h CreateSubscriptionCommandHandler) Handle(
 	var subscriptionID types.SubscriptionID
 	if cmd.SubscriptionID != nil && cmd.SubscriptionID.IsSome() {
 		subscriptionID = *cmd.SubscriptionID.Value()
+	} else {
+		subscriptionID = types.NewSubscriptionID()
 	}
 
 	// Determine creation timestamp

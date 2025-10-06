@@ -18,7 +18,7 @@ type CreateSubscriptionRequest struct {
 	FriendlyName     *string                         `json:"friendly_name,omitempty"`
 	FreeTrial        *SubscriptionFreeTrialModel     `json:"free_trial,omitempty"`
 	ProviderId       string                          `json:"provider_id" binding:"required"`
-	CustomPrice      *AmountModel                    `json:"custom_price,omitempty"`
+	CustomPrice      AmountModel                     `json:"custom_price"`
 	FamilyUsers      []string                        `json:"family_users,omitempty"`
 	Labels           []string                        `json:"labels,omitempty"`
 	StartDate        time.Time                       `json:"start_date" binding:"required" format:"date-time"`
@@ -36,7 +36,7 @@ type UpdateSubscriptionRequest struct {
 	ProviderId       string                          `json:"provider_id" binding:"required"`
 	PlanId           *string                         `json:"plan_id,omitempty"`
 	PriceId          *string                         `json:"price_id,omitempty"`
-	CustomPrice      *AmountModel                    `json:"custom_price,omitempty"`
+	CustomPrice      AmountModel                     `json:"custom_price"`
 	ServiceUsers     []string                        `json:"service_users,omitempty"`
 	Labels           []string                        `json:"labels,omitempty"`
 	StartDate        time.Time                       `json:"start_date" binding:"required" format:"date-time"`

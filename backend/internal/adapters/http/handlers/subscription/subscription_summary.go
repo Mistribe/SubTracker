@@ -11,7 +11,6 @@ import (
 	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/subscription/query"
-	"github.com/mistribe/subtracker/pkg/ginx"
 )
 
 type SummaryEndpoint struct {
@@ -39,9 +38,7 @@ func NewSummaryEndpoint(handler ports.QueryHandler[query.SummaryQuery, query.Sum
 func (e SummaryEndpoint) Handle(c *gin.Context) {
 	var model dto.SubscriptionSummaryRequest
 	if err := c.ShouldBindQuery(&model); err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
+		FromError(c, err)
 		return
 	}
 

@@ -14,7 +14,6 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/provider/command"
-	"github.com/mistribe/subtracker/pkg/ginx"
 )
 
 type CreateEndpoint struct {
@@ -22,7 +21,8 @@ type CreateEndpoint struct {
 	authentication ports.Authentication
 }
 
-func NewCreateEndpoint(handler ports.CommandHandler[command.CreateProviderCommand, provider.Provider],
+func NewCreateEndpoint(
+	handler ports.CommandHandler[command.CreateProviderCommand, provider.Provider],
 	authentication ports.Authentication) *CreateEndpoint {
 	return &CreateEndpoint{
 		handler:        handler,
@@ -30,7 +30,8 @@ func NewCreateEndpoint(handler ports.CommandHandler[command.CreateProviderComman
 	}
 }
 
-func createProviderRequestToCommand(r dto.CreateProviderRequest,
+func createProviderRequestToCommand(
+	r dto.CreateProviderRequest,
 	userId types.UserID) (command.CreateProviderCommand, error) {
 	providerID, err := types.ParseProviderIDOrNil(r.Id)
 	if err != nil {
@@ -41,9 +42,15 @@ func createProviderRequestToCommand(r dto.CreateProviderRequest,
 		return command.CreateProviderCommand{}, err
 	}
 
-	owner, err := r.Owner.Owner(userId)
-	if err != nil {
-		return command.CreateProviderCommand{}, err
+	var owner types.Owner
+	if r.Owner == nil {
+		owner = types.NewPersonalOwner(userId)
+	} else {
+		owner, err = r.Owner.Owner(userId)
+		if err != nil {
+			return command.CreateProviderCommand{}, err
+		}
+
 	}
 
 	return command.CreateProviderCommand{
@@ -83,10 +90,7 @@ func (e CreateEndpoint) Handle(c *gin.Context) {
 
 	cmd, err := createProviderRequestToCommand(model, connectedAccount.UserID())
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
-		c.Abort()
+		FromError(c, err)
 		return
 	}
 

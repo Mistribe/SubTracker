@@ -8,7 +8,6 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/label/command"
-	"github.com/mistribe/subtracker/pkg/ginx"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 )
 
@@ -30,9 +29,7 @@ type DeleteEndpoint struct {
 func (l DeleteEndpoint) Handle(c *gin.Context) {
 	labelID, err := types.ParseLabelID(c.Param("labelId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: "invalid labelID format",
-		})
+		FromError(c, err)
 		return
 	}
 
