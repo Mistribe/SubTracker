@@ -15,7 +15,7 @@ services:
     environment:
       - DATABASE_DSN=host=database user=postgres password=postgres dbname=app port=5432
       - LOGGER_MOD=plain
-      - CORS_ALLOWED_ORIGINS=http://localhost:9080
+      - CORS_ALLOWED_ORIGINS=http://localhost:9080,http://localhost:5173
       - UPDATER_AT_START=true
       - DATA_LABEL=https://raw.githubusercontent.com/Mistribe/SubTracker-Data/refs/heads/main/labels.json
       - DATA_PROVIDER=https://raw.githubusercontent.com/Mistribe/SubTracker-Data/refs/heads/main/providers.json

@@ -21,7 +21,7 @@ export const formSchema = z.object({
     customPrice: z.object({
         amount: z.number().positive("Amount must be positive"),
         currency: z.string().min(1, "Currency is required")
-    }).optional(),
+    }),
     hasFreeTrialPeriod: z.boolean(),
     freeTrialStartDate: z.date().optional(),
     freeTrialEndDate: z.date().optional(),

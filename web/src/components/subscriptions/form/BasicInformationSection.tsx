@@ -19,7 +19,7 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
 
     // Derive values directly
     const selectedProvider = providers.find(provider => provider.id === providerId);
-    const hasCustomPrice = customPrice !== undefined;
+    // customPrice is now always required, so we always show the input
 
     // Prepare values for combobox components
     const providerValue = providerId || "";
@@ -39,7 +39,10 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
         form.setValue("planId", "", {shouldValidate: true});
         form.setValue("priceId", "", {shouldValidate: true});
 
-        form.setValue("customPrice", {amount: 0, currency: "USD"}, {shouldValidate: true});
+        // Ensure customPrice has a valid default value since it's now required
+        if (!form.getValues("customPrice") || form.getValues("customPrice.amount") <= 0) {
+            form.setValue("customPrice", {amount: 10, currency: "USD"}, {shouldValidate: true});
+        }
     };
 
     const handleCurrencyInputChange = (value: { amount: number, currency: string }) => {
@@ -90,21 +93,20 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
                         )}
                     </div>
 
-                    {/* Custom price input - show when toggle is enabled or provider has no plans, but only if a provider is selected */}
-                    {selectedProvider && hasCustomPrice && (
-                        <div className="mt-4">
-                            <Label htmlFor="customPrice" className="text-base mb-2 block">How much does it cost?</Label>
-                            <CurrencyInput
-                                value={currencyInputValue}
-                                onChange={handleCurrencyInputChange}
-                                error={{
-                                    amount: form.formState.errors.customPrice?.amount?.message,
-                                    currency: form.formState.errors.customPrice?.currency?.message
-                                }}
-                                className="h-12"
-                            />
-                        </div>
-                    )}
+                    {/* Custom price input - now always required */}
+                    <div className="mt-4">
+                        <Label htmlFor="customPrice" className="text-base mb-2 block">How much does it cost? *</Label>
+                        <CurrencyInput
+                            value={currencyInputValue}
+                            onChange={handleCurrencyInputChange}
+                            error={{
+                                amount: form.formState.errors.customPrice?.amount?.message,
+                                currency: form.formState.errors.customPrice?.currency?.message
+                            }}
+                            className="h-12"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">Enter the subscription price</p>
+                    </div>
                 </div>
             </div>
         </div>
