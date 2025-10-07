@@ -1,12 +1,10 @@
 import { APIRequestContext, request } from '@playwright/test';
-import { 
-  SubscriptionData, 
-  ProviderData, 
-  LabelData, 
-  FamilyData, 
-  FamilyMemberData,
-  UserProfileData,
-  TestUser 
+import {
+  SubscriptionData,
+  ProviderData,
+  LabelData,
+  FamilyData,
+  UserProfileData
 } from './data-generators';
 
 /**
@@ -54,7 +52,7 @@ export class TestApiClient {
     if (this.context) {
       await this.context.dispose();
     }
-    
+
     this.context = await request.newContext({
       baseURL: this.config.baseUrl,
       timeout: this.config.timeout,
@@ -112,15 +110,36 @@ export class TestApiClient {
         },
       });
 
-      const responseData = response.ok() ? await response.json().catch(() => null) : null;
+      let responseData = null;
+      let errorDetails = '';
+
+      try {
+        responseData = await response.json();
+      } catch {
+        // If JSON parsing fails, try to get text
+        try {
+          errorDetails = await response.text();
+        } catch {
+          errorDetails = 'Unable to parse response';
+        }
+      }
+
+      if (!response.ok()) {
+        // Log detailed error information
+        console.log(`❌ API Error - ${method} ${endpoint}`);
+        console.log(`📊 Status: ${response.status()} ${response.statusText()}`);
+        console.log(`📝 Response data:`, responseData);
+        console.log(`📝 Error details:`, errorDetails);
+      }
 
       return {
         success: response.ok(),
-        data: responseData,
+        data: response.ok() ? responseData : null,
         status: response.status(),
-        error: response.ok() ? undefined : `HTTP ${response.status()}: ${response.statusText()}`,
+        error: response.ok() ? undefined : `HTTP ${response.status()}: ${response.statusText()}${errorDetails ? ` - ${errorDetails}` : ''}`,
       };
     } catch (error) {
+      console.log(`❌ Request Exception - ${method} ${endpoint}:`, error);
       return {
         success: false,
         status: 0,
@@ -131,7 +150,38 @@ export class TestApiClient {
 
   // Subscription API methods
   async createSubscription(data: SubscriptionData): Promise<ApiResponse<{ id: string }>> {
-    return this.makeRequest<{ id: string }>('POST', '/subscriptions', data);
+    // Transform the data to match the API expected format (snake_case)
+    const apiData = {
+      friendly_name: data.name,
+      provider_id: data.providerId,
+      recurrency: data.billingCycle,
+      // Note: custom_recurrency would be used if billingCycle was 'custom', but it's not in the current type
+      start_date: new Date().toISOString(),
+      end_date: data.nextBillingDate ? new Date(data.nextBillingDate).toISOString() : undefined,
+      custom_price: {
+        value: data.amount,
+        currency: data.currency
+      },
+      owner: {
+        type: 'personal' // Default to personal ownership for tests
+      },
+      labels: data.labels || [], // These should be label IDs, not names
+      family_users: [],
+      free_trial: data.freeTrialEndDate ? {
+        start_date: new Date().toISOString(),
+        end_date: new Date(data.freeTrialEndDate).toISOString()
+      } : undefined
+    };
+
+    console.log('🔍 Creating subscription with data:', JSON.stringify(apiData, null, 2));
+    const response = await this.makeRequest<{ id: string }>('POST', '/subscriptions', apiData);
+
+    if (!response.success) {
+      console.log('❌ Subscription creation failed:', response.error);
+      console.log('📊 Response status:', response.status);
+    }
+
+    return response;
   }
 
   async getSubscription(id: string): Promise<ApiResponse<SubscriptionData>> {
@@ -146,10 +196,10 @@ export class TestApiClient {
     return this.makeRequest<void>('DELETE', `/subscriptions/${id}`);
   }
 
-  async getSubscriptions(params?: { 
-    page?: number; 
-    limit?: number; 
-    search?: string; 
+  async getSubscriptions(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
     labels?: string[];
     providerId?: string;
   }): Promise<ApiResponse<{ subscriptions: SubscriptionData[]; total: number }>> {
@@ -166,7 +216,20 @@ export class TestApiClient {
 
   // Provider API methods
   async createProvider(data: ProviderData): Promise<ApiResponse<{ id: string }>> {
-    return this.makeRequest<{ id: string }>('POST', '/providers', data);
+    // Transform the data to match the API expected format (snake_case)
+    const apiData = {
+      name: data.name,
+      description: data.description,
+      url: data.website, // Map website to url
+      icon_url: data.logoUrl,
+      labels: [],
+      owner: {
+        type: data.ownerType || 'personal',
+        ...(data.ownerType === 'family' && data.familyId ? { family_id: data.familyId } : {}),
+      },
+    };
+
+    return this.makeRequest<{ id: string }>('POST', '/providers', apiData);
   }
 
   async getProvider(id: string): Promise<ApiResponse<ProviderData>> {
@@ -181,10 +244,10 @@ export class TestApiClient {
     return this.makeRequest<void>('DELETE', `/providers/${id}`);
   }
 
-  async getProviders(params?: { 
-    page?: number; 
-    limit?: number; 
-    search?: string; 
+  async getProviders(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
   }): Promise<ApiResponse<{ providers: ProviderData[]; total: number }>> {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
@@ -273,7 +336,7 @@ export class TestApiClient {
   async healthCheck(): Promise<ApiResponse<{ status: string }>> {
     // Try multiple health check endpoints
     const endpoints = ['/healthz/live', '/health', '/api/health', '/healthcheck'];
-    
+
     for (const endpoint of endpoints) {
       try {
         const response = await this.makeRequest<{ status: string }>('GET', endpoint);
@@ -284,7 +347,7 @@ export class TestApiClient {
         continue;
       }
     }
-    
+
     // If all health checks fail, return a generic error
     return {
       success: false,
@@ -310,7 +373,7 @@ export class ApiTestHelpers {
    */
   async createTestSubscription(data: SubscriptionData, testId?: string): Promise<string> {
     const response = await this.apiClient.createSubscription(data);
-    
+
     if (!response.success || !response.data?.id) {
       throw new Error(`Failed to create test subscription: ${response.error}`);
     }
@@ -327,7 +390,7 @@ export class ApiTestHelpers {
    */
   async createTestProvider(data: ProviderData, testId?: string): Promise<{ id: string; name: string }> {
     const response = await this.apiClient.createProvider(data);
-    
+
     if (!response.success || !response.data?.id) {
       throw new Error(`Failed to create test provider: ${response.error}`);
     }
@@ -346,7 +409,7 @@ export class ApiTestHelpers {
    */
   async createTestLabel(data: LabelData, testId?: string): Promise<string> {
     const response = await this.apiClient.createLabel(data);
-    
+
     if (!response.success || !response.data?.id) {
       throw new Error(`Failed to create test label: ${response.error}`);
     }
@@ -363,7 +426,7 @@ export class ApiTestHelpers {
    */
   async createTestFamily(data: FamilyData, testId?: string): Promise<string> {
     const response = await this.apiClient.createFamily(data);
-    
+
     if (!response.success || !response.data?.id) {
       throw new Error(`Failed to create test family: ${response.error}`);
     }
@@ -402,7 +465,7 @@ export class ApiTestHelpers {
       }, testId),
     ]);
 
-    // Create subscription with provider and labels
+    // Create subscription with provider and labels (using label IDs)
     const subscriptionId = await this.createTestSubscription({
       name: `Test Subscription ${testId}`,
       providerId: provider.id,
@@ -410,7 +473,7 @@ export class ApiTestHelpers {
       currency: 'USD',
       billingCycle: 'monthly',
       nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      labels: labelIds,
+      labels: labelIds, // These are already label IDs from createTestLabel
     }, testId);
 
     return {
@@ -462,7 +525,7 @@ export class ApiTestHelpers {
     // Parse entities and create cleanup promises
     entities.forEach(entity => {
       const [type, id] = entity.split(':');
-      
+
       switch (type) {
         case 'subscriptions':
           cleanupPromises.push(this.apiClient.deleteSubscription(id));
@@ -481,7 +544,7 @@ export class ApiTestHelpers {
 
     // Execute all cleanup operations
     await Promise.allSettled(cleanupPromises);
-    
+
     // Remove from tracking
     this.createdEntities.delete(testId);
   }
@@ -491,7 +554,7 @@ export class ApiTestHelpers {
    */
   async cleanupAllTestData(): Promise<void> {
     const testIds = Array.from(this.createdEntities.keys());
-    
+
     await Promise.allSettled(
       testIds.map(testId => this.cleanupTestData(testId))
     );
@@ -504,7 +567,7 @@ export class ApiTestHelpers {
     if (!this.createdEntities.has(testId)) {
       this.createdEntities.set(testId, []);
     }
-    
+
     this.createdEntities.get(testId)!.push(`${type}:${id}`);
   }
 
@@ -554,6 +617,54 @@ export class ApiTestHelpers {
   async cleanupTestFamily(id: string): Promise<void> {
     await this.apiClient.deleteFamily(id);
   }
+
+  /**
+   * Get label ID by name
+   */
+  async getLabelIdByName(name: string): Promise<string | null> {
+    try {
+      const response = await this.apiClient.getLabels();
+      if (response.success && response.data) {
+        const label = response.data.find(l => l.name === name);
+        return label ? (label as any).id : null;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Get provider ID by name
+   */
+  async getProviderIdByName(name: string): Promise<string | null> {
+    try {
+      const response = await this.apiClient.getProviders();
+      if (response.success && response.data) {
+        const provider = response.data.providers.find(p => p.name === name);
+        return provider ? (provider as any).id : null;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Get subscription ID by name
+   */
+  async getSubscriptionIdByName(name: string): Promise<string | null> {
+    try {
+      const response = await this.apiClient.getSubscriptions();
+      if (response.success && response.data) {
+        const subscription = response.data.subscriptions.find(s => s.name === name);
+        return subscription ? (subscription as any).id : null;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
 }
 
 /**
@@ -573,27 +684,27 @@ export function createTestApiClient(config?: Partial<ApiClientConfig>): TestApiC
  */
 export async function createApiTestHelpers(config?: Partial<ApiClientConfig>, authToken?: string): Promise<ApiTestHelpers> {
   const apiClient = createTestApiClient(config);
-  
+
   try {
     // Set auth token before initializing if provided
     if (authToken) {
       apiClient.setAuthToken(authToken);
     }
-    
+
     await apiClient.initialize();
-    
+
     // Test if API is available
     const testResponse = await apiClient.healthCheck();
     if (!testResponse.success) {
       throw new Error(`API health check failed: ${testResponse.error}`);
     }
-    
+
     // Verify the response indicates healthy status (be more flexible with status values)
     const validStatuses = ['HEALTHY', 'ok', 'OK', 'healthy', 'up', 'UP'];
     if (testResponse.data?.status && !validStatuses.includes(testResponse.data.status)) {
       throw new Error(`API is not healthy: ${testResponse.data?.status}`);
     }
-    
+
     return new ApiTestHelpers(apiClient);
   } catch (error) {
     // If API is not available, dispose the client and throw

@@ -125,7 +125,7 @@ const ProvidersPage = () => {
                     </div>
 
                     {searchText.trim() && allProviders.length === 0 && (
-                        <div className="text-center mt-1">
+                        <div className="text-center mt-8">
                             <p className="text-muted-foreground">No providers match your search criteria.</p>
                         </div>
                     )}
@@ -135,21 +135,23 @@ const ProvidersPage = () => {
                         onAddProvider={() => setIsAddingProvider(true)}
                     />
 
-                    {/* Infinite scroll sentinel */}
-                    <div ref={loadMoreRef} className="flex justify-center items-center py-4">
-                        {isFetchingNextPage && (
-                            <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                                </svg>
-                                Loading more providers...
-                            </div>
-                        )}
-                        {!hasNextPage && allProviders.length > 0 && (
-                            <div className="text-xs text-muted-foreground">You have reached the end.</div>
-                        )}
-                    </div>
+                    {/* Infinite scroll sentinel - only show when there are results */}
+                    {allProviders.length > 0 && (
+                        <div ref={loadMoreRef} className="flex justify-center items-center py-4">
+                            {isFetchingNextPage && (
+                                <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                    </svg>
+                                    Loading more providers...
+                                </div>
+                            )}
+                            {!hasNextPage && (
+                                <div className="text-xs text-muted-foreground">You have reached the end.</div>
+                            )}
+                        </div>
+                    )}
                 </>
             )}
 

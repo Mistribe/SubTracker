@@ -1,12 +1,14 @@
-import {useState} from "react";
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
-import {Badge} from "@/components/ui/badge";
-import {Button} from "@/components/ui/button";
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import Provider from "@/models/provider";
-import {getBadgeText, getBadgeVariant} from "../utils/badgeUtils";
-import {Edit, MoreVertical, Trash2} from "lucide-react";
-import {useProvidersMutations} from "@/hooks/providers/useProvidersMutations";
+import { getBadgeText, getBadgeVariant } from "../utils/badgeUtils";
+import { Edit, MoreVertical, Trash2 } from "lucide-react";
+import { useProvidersMutations } from "@/hooks/providers/useProvidersMutations";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { ResponseError } from "@/api/runtime";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,7 +26,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {argbToRgba} from "@/components/ui/utils/color-utils.ts";
+import { argbToRgba } from "@/components/ui/utils/color-utils.ts";
 import { useLabelQuery } from "@/hooks/labels/useLabelQuery";
 
 interface ProviderCardProps {
@@ -46,9 +48,9 @@ const LabelPill = ({ labelId }: LabelPillProps) => {
     );
 };
 
-export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
+export const ProviderCard = ({ provider, onEdit }: ProviderCardProps) => {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const {canModifyProvider, canDeleteProvider, deleteProviderMutation} = useProvidersMutations();
+    const { canModifyProvider, canDeleteProvider, deleteProviderMutation } = useProvidersMutations();
     const isEditable = canModifyProvider(provider);
     const isDeletable = canDeleteProvider(provider);
     const navigate = useNavigate();
@@ -57,8 +59,29 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
         try {
             await deleteProviderMutation.mutateAsync(provider.id);
             setIsDeleteDialogOpen(false);
+            toast.success("Provider deleted successfully");
         } catch (error) {
             console.error("Failed to delete provider:", error);
+
+            // Check if it's a ResponseError with the "provider is in use" message
+            if (error instanceof ResponseError) {
+                try {
+                    const errorData = await error.response.json();
+                    if (errorData.detail === "provider is in use") {
+                        toast.error("Cannot delete provider", {
+                            description: "This provider is currently being used by one or more subscriptions. Please remove or reassign those subscriptions before deleting the provider.",
+                        });
+                        return;
+                    }
+                } catch (jsonError) {
+                    // If we can't parse the JSON, fall through to generic error
+                }
+            }
+
+            // Generic error message for other errors
+            toast.error("Failed to delete provider", {
+                description: "An unexpected error occurred. Please try again.",
+            });
         }
     };
 
@@ -89,22 +112,28 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
                                         className="h-8 w-8 p-0"
                                         onClick={(e) => e.stopPropagation()}
                                     >
-                                        <MoreVertical className="h-4 w-4"/>
+                                        <MoreVertical className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => onEdit(provider)}>
-                                        <Edit className="h-4 w-4 mr-2"/>
+                                    <DropdownMenuItem onClick={(e) => {
+                                        e.stopPropagation();
+                                        onEdit(provider);
+                                    }}>
+                                        <Edit className="h-4 w-4 mr-2" />
                                         Edit Provider
                                     </DropdownMenuItem>
                                     {isDeletable && (
                                         <>
-                                            <DropdownMenuSeparator/>
+                                            <DropdownMenuSeparator />
                                             <DropdownMenuItem
-                                                onClick={() => setIsDeleteDialogOpen(true)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setIsDeleteDialogOpen(true);
+                                                }}
                                                 className="text-destructive focus:text-destructive"
                                             >
-                                                <Trash2 className="h-4 w-4 mr-2"/>
+                                                <Trash2 className="h-4 w-4 mr-2" />
                                                 Remove Provider
                                             </DropdownMenuItem>
                                         </>
@@ -117,8 +146,8 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
                 {provider.url && (
                     <CardDescription>
                         <a href={provider.url} target="_blank" rel="noopener noreferrer"
-                           className="text-blue-500 hover:underline"
-                           onClick={(e) => e.stopPropagation()}>
+                            className="text-blue-500 hover:underline"
+                            onClick={(e) => e.stopPropagation()}>
                             {provider.url}
                         </a>
                     </CardDescription>
@@ -147,7 +176,7 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
 
             {/* Delete Provider Confirmation Dialog */}
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogContent>
+                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -157,9 +186,12 @@ export const ProviderCard = ({provider, onEdit}: ProviderCardProps) => {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                            onClick={handleDeleteProvider}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteProvider();
+                            }}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
                             Delete

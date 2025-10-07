@@ -69,7 +69,7 @@ describe('SignInPage', () => {
     // Check navigation link to sign-up
     expect(screen.getByText("Don't have an account?")).toBeInTheDocument()
     expect(screen.getByText('Sign up')).toBeInTheDocument()
-    
+
     const signUpLink = screen.getByTestId('router-link')
     expect(signUpLink).toHaveAttribute('href', '/sign-up')
   })

@@ -9,32 +9,15 @@ import { ProviderData } from '../utils/data-generators';
 export class ProvidersPage extends BasePage {
   // Main page selectors
   private readonly pageTitle = 'h1:has-text("Providers")';
-  private readonly searchInput = 'input[placeholder*="Search"], input[type="search"]';
+  private readonly searchInput = 'input[placeholder="Search..."]';
   private readonly addProviderButton = 'button:has-text("Add Provider"), button:has-text("Create Provider")';
 
-  // Provider list selectors
-  private readonly providersList = '[data-testid="providers-list"], .providers-list, .grid';
-  private readonly providerCards = '[data-testid="provider-card"], .provider-card, .card';
-  private readonly loadingIndicator = 'text="Loading", .loading, .spinner';
-  private readonly emptyState = 'text="No providers found", text="No providers match"';
-
   // Provider form selectors (for creation/editing)
-  private readonly providerForm = 'form';
-  private readonly nameInput = '[name="name"], input[placeholder*="name" i]';
-  private readonly descriptionInput = '[name="description"], textarea[placeholder*="description" i]';
-  private readonly websiteInput = '[name="website"], input[placeholder*="website" i], input[type="url"]';
-  private readonly submitButton = 'button[type="submit"], button:has-text("Create"), button:has-text("Save")';
-
-  // Action menu selectors
-  private readonly actionMenuTrigger = 'button[aria-label*="menu" i], button[aria-label*="action" i]';
-  private readonly editMenuItem = 'text="Edit"';
-  private readonly deleteMenuItem = 'text="Delete"';
-  private readonly viewMenuItem = 'text="View"';
-
-  // Delete confirmation dialog selectors
-  private readonly deleteDialog = '[role="dialog"]:has-text("Delete"), [role="dialog"]:has-text("Remove")';
-  private readonly confirmDeleteButton = 'button:has-text("Delete"), button:has-text("Remove")';
-  private readonly cancelDeleteButton = 'button:has-text("Cancel")';
+  private readonly providerForm = '[role="dialog"] form, [role="dialog"] #provider-form';
+  private readonly nameInput = '[role="dialog"] input[id="name"]';
+  private readonly descriptionInput = '[role="dialog"] textarea[id="description"]';
+  private readonly websiteInput = '[role="dialog"] input[id="url"]';
+  private readonly submitButton = '[role="dialog"] button:has-text("Create Provider"), [role="dialog"] button:has-text("Update Provider"), [role="dialog"] button:has-text("Save")';
 
   constructor(page: Page) {
     super(page);
@@ -78,19 +61,14 @@ export class ProvidersPage extends BasePage {
   }
 
   /**
-   * Click the Add Provider button to navigate to creation form
+   * Click the Add Provider button to open creation modal
    */
   async clickAddProvider(): Promise<void> {
     const addButton = this.page.locator(this.addProviderButton);
     if (await addButton.count() > 0) {
       await this.clickElement(this.addProviderButton);
-      // Wait for navigation to create page or modal to open
-      try {
-        await this.page.waitForURL('**/providers/create', { timeout: 5000 });
-      } catch {
-        // Might be a modal instead of navigation
-        await this.waitForElement('[role="dialog"]');
-      }
+      // Wait for modal to open
+      await this.waitForElement('[role="dialog"]');
     }
   }
 
@@ -166,28 +144,75 @@ export class ProvidersPage extends BasePage {
   async editProviderByName(providerName: string): Promise<void> {
     console.log(`Editing provider: ${providerName}`);
     
-    // Find the provider card or row
-    const providerElement = this.page.locator(`text="${providerName}"`).first();
+    // Wait for page to be ready and providers to load
+    await this.waitForPageReady();
+    await this.page.waitForTimeout(2000); // Give time for providers to load
     
-    // Look for edit button near the provider
-    const editButton = providerElement.locator('..').locator('button:has-text("Edit"), button[aria-label*="edit" i]');
+    // Use search to find the provider more reliably
+    await this.searchProviders(providerName);
+    await this.page.waitForTimeout(1000);
     
-    if (await editButton.count() > 0) {
-      await editButton.click();
-    } else {
-      // Try clicking on the provider name itself
-      await providerElement.click();
-      
-      // Look for edit option in action menu or on detail page
-      const editOption = this.page.locator('button:has-text("Edit"), a:has-text("Edit")');
-      if (await editOption.count() > 0) {
-        await editOption.first().click();
-      }
+    // Find the provider card containing the name - use the actual Card component structure
+    const providerCard = this.page.locator('[data-slot="card"]').filter({ hasText: providerName });
+    await expect(providerCard).toBeVisible();
+    
+    // Look for the dropdown menu button (MoreVertical icon button)
+    const dropdownButton = providerCard.locator('button:has(svg)').last(); // The MoreVertical button is typically the last button
+    
+    // Check if dropdown button exists (provider might not be editable)
+    const dropdownCount = await dropdownButton.count();
+    if (dropdownCount === 0) {
+      console.log('No dropdown button found - provider might not be editable');
+      throw new Error(`Provider "${providerName}" does not have an edit dropdown menu - it might not be editable`);
     }
     
-    // Wait for edit form to load
-    await this.waitForElement(this.providerForm);
-    console.log('Provider edit form opened');
+    await expect(dropdownButton).toBeVisible();
+    
+    // Click the dropdown button
+    await dropdownButton.click();
+    console.log('Clicked dropdown button');
+    
+    // Wait for dropdown menu to appear and click Edit option
+    await this.page.waitForTimeout(1000);
+    const editOption = this.page.locator('text="Edit Provider"');
+    
+    // Check if edit option is available
+    const editOptionCount = await editOption.count();
+    if (editOptionCount === 0) {
+      console.log('Edit Provider option not found in dropdown menu');
+      // Try to find any dropdown menu items for debugging
+      const allMenuItems = this.page.locator('[role="menuitem"]');
+      const menuItemCount = await allMenuItems.count();
+      console.log(`Found ${menuItemCount} menu items in dropdown`);
+      
+      for (let i = 0; i < menuItemCount; i++) {
+        const itemText = await allMenuItems.nth(i).textContent();
+        console.log(`Menu item ${i}: "${itemText}"`);
+      }
+      
+      throw new Error(`Edit Provider option not found in dropdown menu for provider "${providerName}"`);
+    }
+    
+    await expect(editOption).toBeVisible();
+    await editOption.click();
+    console.log('Clicked Edit Provider option');
+    
+    // Wait for edit dialog to open - this is where the backend issue occurs
+    await this.page.waitForTimeout(2000);
+    const editDialog = this.page.locator('[role="dialog"]:has-text("Edit Provider")');
+    
+    try {
+      await expect(editDialog).toBeVisible({ timeout: 10000 });
+      console.log('Provider edit dialog opened');
+      
+      // Wait for the form inside the dialog
+      const formInDialog = editDialog.locator('form, #provider-form');
+      await expect(formInDialog).toBeVisible({ timeout: 5000 });
+      console.log('Provider edit form loaded');
+    } catch (error) {
+      console.log('⚠️ Edit dialog failed to open - this is a known backend issue');
+      throw new Error(`Edit dialog failed to open for provider "${providerName}" - backend issue`);
+    }
   }
 
   /**
@@ -196,26 +221,48 @@ export class ProvidersPage extends BasePage {
   async deleteProviderByName(providerName: string): Promise<void> {
     console.log(`Deleting provider: ${providerName}`);
     
-    // Find the provider card or row
-    const providerElement = this.page.locator(`text="${providerName}"`).first();
+    // Wait for page to be ready and providers to load
+    await this.waitForPageReady();
+    await this.page.waitForTimeout(2000); // Give time for providers to load
     
-    // Look for delete button near the provider
-    const deleteButton = providerElement.locator('..').locator('button:has-text("Delete"), button[aria-label*="delete" i]');
+    // Use search to find the provider more reliably
+    await this.searchProviders(providerName);
+    await this.page.waitForTimeout(1000);
     
-    if (await deleteButton.count() > 0) {
-      await deleteButton.click();
-    } else {
-      // Try action menu approach
-      const actionMenu = providerElement.locator('..').locator(this.actionMenuTrigger);
-      if (await actionMenu.count() > 0) {
-        await actionMenu.click();
-        await this.clickElement(this.deleteMenuItem);
-      }
+    // Find the provider card containing the name - use the actual Card component structure
+    const providerCard = this.page.locator('[data-slot="card"]').filter({ hasText: providerName });
+    await expect(providerCard).toBeVisible();
+    
+    // Look for the dropdown menu button (MoreVertical icon button)
+    const dropdownButton = providerCard.locator('button:has(svg)').last(); // The MoreVertical button is typically the last button
+    
+    // Check if dropdown button exists (provider might not be deletable)
+    const dropdownCount = await dropdownButton.count();
+    if (dropdownCount === 0) {
+      console.log('No dropdown button found - provider might not be deletable');
+      throw new Error(`Provider "${providerName}" does not have a delete dropdown menu - it might not be deletable`);
     }
     
-    // Confirm deletion
-    await this.waitForElement(this.deleteDialog);
-    await this.clickElement(this.confirmDeleteButton);
+    await expect(dropdownButton).toBeVisible();
+    
+    // Click the dropdown button
+    await dropdownButton.click();
+    
+    // Wait for dropdown menu to appear and click Remove option
+    await this.page.waitForTimeout(1000);
+    const deleteOption = this.page.locator('text="Remove Provider"');
+    await expect(deleteOption).toBeVisible();
+    await deleteOption.click();
+    
+    // Wait for confirmation dialog to appear
+    await this.page.waitForTimeout(1000);
+    const confirmDialog = this.page.locator('[role="alertdialog"]');
+    await expect(confirmDialog).toBeVisible();
+    
+    // Click the Delete button to confirm
+    const deleteButton = confirmDialog.locator('button:has-text("Delete")');
+    await expect(deleteButton).toBeVisible();
+    await deleteButton.click();
     
     // Wait for deletion to complete
     await this.page.waitForTimeout(2000);
@@ -228,9 +275,18 @@ export class ProvidersPage extends BasePage {
   async viewProviderDetails(providerName: string): Promise<void> {
     console.log(`Viewing details for provider: ${providerName}`);
     
-    // Click on the provider name to view details
-    const providerElement = this.page.locator(`text="${providerName}"`).first();
-    await providerElement.click();
+    // Use search to find the provider more reliably
+    await this.searchProviders(providerName);
+    await this.page.waitForTimeout(1000);
+    
+    // Find the provider card and click on it (but not on the dropdown button)
+    const providerCard = this.page.locator('[data-slot="card"]').filter({ hasText: providerName });
+    await expect(providerCard).toBeVisible();
+    
+    // Click on the card title area to navigate to details
+    const cardTitle = providerCard.locator('[data-slot="card-title"]').first();
+    await expect(cardTitle).toBeVisible();
+    await cardTitle.click();
     
     console.log('Provider details opened');
   }
@@ -241,13 +297,39 @@ export class ProvidersPage extends BasePage {
   async verifyProviderInList(provider: { name: string; description?: string }): Promise<void> {
     console.log(`Verifying provider in list: ${provider.name}`);
     
-    const providerElement = this.page.locator(`text="${provider.name}"`);
-    await expect(providerElement).toBeVisible();
+    // Wait for providers to load
+    await this.waitForPageReady();
+    await this.page.waitForTimeout(2000);
+    
+    // Try using search to find the provider more reliably
+    console.log('Using search to find the provider...');
+    await this.searchProviders(provider.name);
+    
+    // Now try to find the provider by name in the card structure
+    const providerCard = this.page.locator('[data-slot="card"]').filter({ hasText: provider.name });
+    
+    // If not found with search, try refreshing and searching again
+    if (await providerCard.count() === 0) {
+      console.log('Provider not found with search, refreshing page...');
+      await this.page.reload();
+      await this.waitForPageLoad();
+      await this.page.waitForTimeout(3000);
+      
+      // Search again after refresh
+      await this.searchProviders(provider.name);
+      await this.page.waitForTimeout(2000);
+    }
+    
+    // Now verify the provider is visible
+    await expect(providerCard).toBeVisible({ timeout: 15000 });
     
     if (provider.description) {
-      const descriptionElement = this.page.locator(`text="${provider.description}"`);
+      const descriptionElement = providerCard.locator(`text="${provider.description}"`);
       await expect(descriptionElement).toBeVisible();
     }
+    
+    // Clear search after verification
+    await this.clearSearch();
     
     console.log('Provider verified in list');
   }
@@ -271,19 +353,19 @@ export class ProvidersPage extends BasePage {
     console.log(`Verifying provider details: ${provider.name}`);
     
     // Verify name
-    const nameElement = this.page.locator(`text="${provider.name}"`);
+    const nameElement = this.page.locator(`h2:has-text("${provider.name}")`);
     await expect(nameElement).toBeVisible();
     
     // Verify description if provided
     if (provider.description) {
-      const descElement = this.page.locator(`text="${provider.description}"`);
+      const descElement = this.page.locator(`p:has-text("${provider.description}")`);
       await expect(descElement).toBeVisible();
     }
     
-    // Verify website if provided
+    // Verify website if provided (it's shown as a "Website" button)
     if (provider.website) {
-      const websiteElement = this.page.locator(`text="${provider.website}"`);
-      await expect(websiteElement).toBeVisible();
+      const websiteButton = this.page.locator('button:has-text("Website")');
+      await expect(websiteButton).toBeVisible();
     }
     
     console.log('Provider details verified');
@@ -295,27 +377,20 @@ export class ProvidersPage extends BasePage {
   async getAllProviderNames(): Promise<string[]> {
     // Wait for providers to load
     await this.waitForPageReady();
+    await this.page.waitForTimeout(1000); // Give time for providers to render
     
-    // Try different selectors for provider names
-    const nameSelectors = [
-      '[data-testid="provider-name"]',
-      '.provider-name',
-      'h3',
-      'h2',
-      '.card h3',
-      '.card h2'
-    ];
+    // Get provider names from card titles using the actual Card component structure
+    const cardTitles = this.page.locator('[data-slot="card-title"]');
+    const count = await cardTitles.count();
     
-    for (const selector of nameSelectors) {
-      const elements = this.page.locator(selector);
-      if (await elements.count() > 0) {
-        const names = await elements.allTextContents();
-        return names.filter(name => name.trim().length > 0);
+    const names: string[] = [];
+    for (let i = 0; i < count; i++) {
+      const text = await cardTitles.nth(i).textContent();
+      if (text && text.trim().length > 0) {
+        names.push(text.trim());
       }
     }
     
-    // Fallback: get all text content and filter
-    const allText = await this.page.locator(this.providersList).textContent();
-    return allText ? [allText.trim()] : [];
+    return names;
   }
 }

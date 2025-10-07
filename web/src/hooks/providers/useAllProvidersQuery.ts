@@ -1,7 +1,7 @@
-import {useInfiniteQuery} from "@tanstack/react-query";
-import {useApiClient} from "@/hooks/use-api-client";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useApiClient } from "@/hooks/use-api-client";
 import Provider from "@/models/provider";
-import {OwnerType} from "@/models/ownerType";
+import { OwnerType } from "@/models/ownerType";
 import type { DtoProviderModel as ProviderModel } from "@/api/models/DtoProviderModel";
 
 interface AllProvidersQueryOptions {
@@ -21,7 +21,7 @@ export const useAllProvidersQuery = (options: AllProvidersQueryOptions = {}) => 
         search,
     } = options;
 
-    const {apiClient} = useApiClient();
+    const { apiClient } = useApiClient();
 
     const trimmedSearch = (search ?? '').trim();
 
@@ -31,7 +31,7 @@ export const useAllProvidersQuery = (options: AllProvidersQueryOptions = {}) => 
         staleTime: 5 * 60 * 1000, // 5 minutes
         refetchOnWindowFocus: true,
         initialPageParam: 0,
-        queryFn: async ({pageParam = 0}) => {
+        queryFn: async ({ pageParam = 0 }) => {
             if (!apiClient) {
                 throw new Error('API client not initialized');
             }
@@ -48,7 +48,8 @@ export const useAllProvidersQuery = (options: AllProvidersQueryOptions = {}) => 
             try {
                 const result = await apiClient.providers.providersGet(queryParameters);
 
-                if (result && result.data) {
+                // Handle null or empty data array
+                if (result && result.data && Array.isArray(result.data)) {
                     return {
                         providers: result.data.map((model: ProviderModel) => Provider.fromModel(model)),
                         length: result.data.length,
@@ -57,7 +58,8 @@ export const useAllProvidersQuery = (options: AllProvidersQueryOptions = {}) => 
                     };
                 }
 
-                return {providers: [], length: 0, total: 0, nextOffset: pageParam};
+                // Backend returned no data (null or empty) - this is a valid empty result, not an error
+                return { providers: [], length: 0, total: 0, nextOffset: pageParam };
             } catch (error) {
                 console.error('Failed to fetch providers:', error);
                 throw error;
