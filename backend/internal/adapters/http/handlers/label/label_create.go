@@ -87,8 +87,11 @@ func (l CreateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewCreateEndpoint(handler ports.CommandHandler[command.CreateLabelCommand, label.Label]) *CreateEndpoint {
+func NewCreateEndpoint(
+	handler ports.CommandHandler[command.CreateLabelCommand, label.Label],
+	authentication ports.Authentication) *CreateEndpoint {
 	return &CreateEndpoint{
-		handler: handler,
+		handler:        handler,
+		authentication: authentication,
 	}
 }

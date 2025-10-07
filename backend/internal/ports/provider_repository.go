@@ -30,8 +30,10 @@ type ProviderRepository interface {
 
 	GetByIdForUser(ctx context.Context, userId types.UserID, providerId types.ProviderID) (provider.Provider, error)
 	GetAll(ctx context.Context, parameters ProviderQueryParameters) ([]provider.Provider, int64, error)
-	GetAllForUser(ctx context.Context, userId types.UserID, parameters ProviderQueryParameters) ([]provider.Provider,
+	GetAllForUser(ctx context.Context, userId types.UserID, parameters ProviderQueryParameters) (
+		[]provider.Provider,
 		int64,
 		error)
 	GetSystemProviders(ctx context.Context) ([]provider.Provider, int64, error)
+	IsInUsed(ctx context.Context, providerID types.ProviderID) (bool, error)
 }
