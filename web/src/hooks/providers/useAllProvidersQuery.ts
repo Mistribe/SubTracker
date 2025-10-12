@@ -1,8 +1,16 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, type InfiniteData } from "@tanstack/react-query";
 import { useApiClient } from "@/hooks/use-api-client";
 import Provider from "@/models/provider";
 import { OwnerType } from "@/models/ownerType";
 import type { DtoProviderModel as ProviderModel } from "@/api/models/DtoProviderModel";
+
+// Types for the infinite query pages
+type ProvidersPage = {
+    providers: Provider[];
+    length: number;
+    total: number;
+    nextOffset: number;
+};
 
 interface AllProvidersQueryOptions {
     ownerTypes?: OwnerType[];
@@ -25,12 +33,15 @@ export const useAllProvidersQuery = (options: AllProvidersQueryOptions = {}) => 
 
     const trimmedSearch = (search ?? '').trim();
 
-    return useInfiniteQuery({
+    return useInfiniteQuery<ProvidersPage, Error, InfiniteData<ProvidersPage>, ['providers', 'all', number, string], number>({
         queryKey: ['providers', 'all', limit, trimmedSearch],
         enabled: !!apiClient,
         staleTime: 5 * 60 * 1000, // 5 minutes
         refetchOnWindowFocus: true,
         initialPageParam: 0,
+        // Keep showing the previous list while a new search is loading to avoid empty UI flashes
+        // This stabilizes e2e flows that search immediately after edits
+        placeholderData: (prev) => prev as any,
         queryFn: async ({ pageParam = 0 }) => {
             if (!apiClient) {
                 throw new Error('API client not initialized');
