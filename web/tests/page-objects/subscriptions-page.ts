@@ -90,12 +90,17 @@ export class SubscriptionsPage extends BasePage {
     try {
       const searchInput = this.page.locator(this.searchInput);
       await searchInput.waitFor({ state: 'visible', timeout: 5000 });
+
+      // Fill the search input
       await searchInput.fill(query);
-      // Wait for search results to load
-      await this.page.waitForTimeout(1000);
-      await this.waitForPageReady();
+
+      // Small wait for React Query to process the search parameter change
+      await this.page.waitForTimeout(300);
+
+      // Wait for subscriptions to load with the new search results
+      await this.waitForSubscriptionsToLoad();
     } catch (error) {
-      throw new Error(`Failed to fill search input: ${error}`);
+      throw new Error(`Failed to search subscriptions: ${error}`);
     }
   }
 
@@ -103,8 +108,14 @@ export class SubscriptionsPage extends BasePage {
    * Clear the search input
    */
   async clearSearch(): Promise<void> {
+    // Clear the search input
     await this.fillInput(this.searchInput, '');
-    await this.waitForPageReady();
+
+    // Small wait for React Query to process the search parameter change
+    await this.page.waitForTimeout(300);
+
+    // Wait for subscriptions to load with the cleared search
+    await this.waitForSubscriptionsToLoad();
   }
 
   /**
@@ -285,13 +296,13 @@ export class SubscriptionsPage extends BasePage {
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.log(`❌ Attempt ${attempt} failed: ${errorMessage}`);
-        
+
         // If page is closed or context is destroyed, stop trying
         if (errorMessage.includes('closed') || errorMessage.includes('Target page, context or browser has been closed')) {
           console.log('❌ Page/context closed, stopping search');
           throw new Error(`Page closed during subscription search for "${name}"`);
         }
-        
+
         if (attempt < retries) {
           console.log(`⏳ Waiting 2 seconds before retry...`);
           try {
@@ -741,12 +752,12 @@ export class SubscriptionsPage extends BasePage {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.log(`❌ Subscription "${name}" does not exist: ${errorMessage}`);
-      
+
       // If the page/context is closed, we can assume the deletion was successful
       if (errorMessage.includes('closed') || errorMessage.includes('Target page, context or browser has been closed')) {
         throw error; // Re-throw so the caller can handle it appropriately
       }
-      
+
       return false;
     }
   }
@@ -806,19 +817,28 @@ export class SubscriptionsPage extends BasePage {
    */
   async waitForSubscriptionsToLoad(): Promise<void> {
     try {
+      // First, wait for any loading indicator to appear and disappear
+      const loadingIndicator = this.page.locator(this.loadingIndicator);
+      try {
+        // Check if loading indicator appears
+        await loadingIndicator.waitFor({ state: 'visible', timeout: 1000 });
+        // Then wait for it to disappear
+        await loadingIndicator.waitFor({ state: 'hidden', timeout: 10000 });
+      } catch {
+        // Loading indicator might not appear if data is cached
+      }
+
       // Wait for either subscriptions to appear or empty state
       const tableRows = this.page.locator(this.tableRows).first();
       const emptyState = this.page.locator(this.emptyState);
 
       await Promise.race([
-        tableRows.waitFor({ state: 'visible', timeout: 3000 }),
-        emptyState.waitFor({ state: 'visible', timeout: 3000 })
+        tableRows.waitFor({ state: 'visible', timeout: 5000 }),
+        emptyState.waitFor({ state: 'visible', timeout: 5000 })
       ]);
 
-      // Wait for loading indicator to disappear if present
-      if (await this.isElementVisible(this.loadingIndicator)) {
-        await this.waitForElementToDisappear(this.loadingIndicator);
-      }
+      // Additional small wait to ensure DOM is stable
+      await this.page.waitForTimeout(100);
     } catch {
       // If neither is found, just wait for the page to be ready
       await this.waitForPageReady();
@@ -1024,14 +1044,14 @@ export class SubscriptionsPage extends BasePage {
       const currentUrl = this.page.url();
       if (!currentUrl.includes('/subscriptions/create')) {
         console.log(`✅ Form submission completed - redirected to: ${currentUrl}`);
-        
+
         // If we're not on the subscriptions page, navigate there
         if (!currentUrl.includes('/subscriptions') || currentUrl.includes('/create')) {
           console.log('🔄 Navigating to subscriptions page to verify creation');
           await this.page.goto('/subscriptions');
           await this.waitForPageLoad();
         }
-        
+
         return;
       }
 
@@ -1082,15 +1102,15 @@ export class SubscriptionsPage extends BasePage {
         try {
           const button = this.page.locator(selector);
           const count = await button.count();
-          
+
           if (count > 0) {
             const isVisible = await button.first().isVisible({ timeout: 1000 });
             const isEnabled = await button.first().isEnabled({ timeout: 1000 });
-            
+
             if (isVisible && isEnabled) {
               const buttonText = await button.first().textContent();
               console.log(`🔄 Step ${currentStep}: Found final submit button "${buttonText}" with selector: ${selector}`);
-              
+
               await button.first().click();
               finalButtonFound = true;
 
@@ -1100,20 +1120,20 @@ export class SubscriptionsPage extends BasePage {
                 await this.page.waitForURL(url => !url.includes('/subscriptions/create'), { timeout: 8000 });
                 const currentUrl = this.page.url();
                 console.log(`✅ Successfully navigated away from form to: ${currentUrl}`);
-                
+
                 // If we're not on the subscriptions page, navigate there
                 if (!currentUrl.includes('/subscriptions') || currentUrl.includes('/create')) {
                   console.log('🔄 Navigating to subscriptions page to verify creation');
                   await this.page.goto('/subscriptions');
                   await this.waitForPageLoad();
                 }
-                
+
                 return;
               } catch (error) {
                 console.log('⚠️ Navigation timeout after final submit, checking if we need to continue');
                 // Don't return here, continue to check for more steps
               }
-              
+
               break;
             }
           }
@@ -1130,11 +1150,11 @@ export class SubscriptionsPage extends BasePage {
 
       // If we get here, no suitable button was found - provide detailed debugging
       console.log(`🔍 Step ${currentStep}: Debugging button detection`);
-      
+
       // Get all buttons with their attributes for debugging
       const allButtons = await this.page.locator('button').all();
       const buttonDetails = [];
-      
+
       for (const button of allButtons) {
         try {
           const text = await button.textContent();
@@ -1143,7 +1163,7 @@ export class SubscriptionsPage extends BasePage {
           const testId = await button.getAttribute('data-testid');
           const isVisible = await button.isVisible();
           const isEnabled = await button.isEnabled();
-          
+
           buttonDetails.push({
             text: text?.trim(),
             type,
@@ -1156,16 +1176,16 @@ export class SubscriptionsPage extends BasePage {
           // Skip buttons that can't be inspected
         }
       }
-      
+
       console.log(`🔍 All buttons on page: ${JSON.stringify(buttonDetails, null, 2)}`);
-      
+
       // Check if we're actually on the right page
       console.log(`🔍 Current URL: ${currentUrl}`);
-      
+
       // Check if there are any forms on the page
       const formCount = await this.page.locator('form').count();
       console.log(`🔍 Forms on page: ${formCount}`);
-      
+
       throw new Error(`No suitable button found at step ${currentStep}. See debug info above.`);
     }
 
@@ -1214,7 +1234,7 @@ export class SubscriptionsPage extends BasePage {
     await this.clickAddSubscription();
     await this.fillSubscriptionForm(data);
     await this.submitSubscriptionForm();
-    
+
     // Note: We don't wait for the subscription to appear here to avoid timeouts
     // The calling test should handle waiting/retrying as needed
   }

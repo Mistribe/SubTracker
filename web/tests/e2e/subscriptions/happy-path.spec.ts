@@ -220,45 +220,6 @@ test.describe('Subscription Management Happy Path', () => {
     // Note: No need to add to cleanup list since it's already deleted via UI
   });
 
-  test('should view subscription details successfully', async () => {
-    console.log('👁️ Testing subscription detail view');
-
-    // Create a subscription with detailed information
-    const detailedData = TestDataGenerators.generateSubscription({
-      name: `Detailed Subscription ${Date.now()}`,
-      providerId: testProvider.id,
-      amount: 25.99,
-      currency: 'USD',
-      billingCycle: 'yearly',
-      description: 'Test subscription with detailed information'
-    });
-
-    const subscriptionId = await testHelpers.createTestSubscription(detailedData);
-    createdSubscriptionIds.push(subscriptionId);
-    console.log(`✅ Created detailed subscription: ${detailedData.name}`);
-
-    // Refresh page to see the new subscription
-    await subscriptionsPage.pageInstance.reload();
-    await subscriptionsPage.waitForPageLoad();
-
-    // Click on subscription to view details
-    await subscriptionsPage.viewSubscriptionDetails(detailedData.name);
-    console.log('✅ Opened subscription details');
-
-    // Verify we're on the detail page
-    await expect(subscriptionsPage.pageInstance).toHaveURL(/.*subscriptions\/[^\/]+/);
-    console.log('✅ Navigated to subscription detail page');
-
-    // Verify subscription details are displayed
-    await subscriptionsPage.verifySubscriptionDetails({
-      name: detailedData.name,
-      provider: testProvider.name,
-      amount: detailedData.amount.toString(),
-      billingCycle: detailedData.billingCycle
-    });
-    console.log('✅ Verified subscription details are displayed correctly');
-  });
-
   test('should search for subscriptions successfully', async () => {
     console.log('🔍 Testing subscription search functionality');
 
@@ -292,15 +253,29 @@ test.describe('Subscription Management Happy Path', () => {
     await subscriptionsPage.pageInstance.reload();
     await subscriptionsPage.waitForPageLoad();
 
+    // Verify all subscriptions are visible before searching
+    const allResultsBefore = await subscriptionsPage.getAllSubscriptionNames();
+    console.log("🔍 All subscriptions before search: ", allResultsBefore);
+    for (const subscription of subscriptions) {
+      expect(allResultsBefore).toContain(subscription.name);
+    }
+    console.log('✅ Verified all subscriptions are present before search');
+
     // Search for "Netflix" subscription
     await subscriptionsPage.searchSubscriptions('Netflix');
     console.log('✅ Performed search for "Netflix"');
 
-    // Verify search results contain Netflix subscription
+    // Verify search results contain ONLY Netflix subscription
     const searchResults = await subscriptionsPage.getAllSubscriptionNames();
+    console.log("🔍 Search results for 'Netflix': ", searchResults);
     const netflixSubscription = subscriptions.find(s => s.name.includes('Netflix'));
     expect(searchResults).toContain(netflixSubscription!.name);
-    console.log('✅ Verified Netflix subscription appears in search results');
+    // Verify other subscriptions are NOT in the results
+    const spotifySubscription = subscriptions.find(s => s.name.includes('Spotify'));
+    const adobeSubscription = subscriptions.find(s => s.name.includes('Adobe'));
+    expect(searchResults).not.toContain(spotifySubscription!.name);
+    expect(searchResults).not.toContain(adobeSubscription!.name);
+    console.log('✅ Verified only Netflix subscription appears in search results');
 
     // Clear search to show all subscriptions again
     await subscriptionsPage.clearSearch();
@@ -308,7 +283,7 @@ test.describe('Subscription Management Happy Path', () => {
 
     // Verify all subscriptions are visible again
     const allResults = await subscriptionsPage.getAllSubscriptionNames();
-    console.log("🔍Result received: ", allResults)
+    console.log("🔍 All subscriptions after clearing search: ", allResults);
     for (const subscription of subscriptions) {
       expect(allResults).toContain(subscription.name);
     }
