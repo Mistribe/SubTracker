@@ -19,6 +19,8 @@ import (
 	"github.com/mistribe/subtracker/internal/usecase"
 )
 
+var version = "dev"
+
 // @title					SubTracker API
 // @version				1.0
 // @description			This api provide HTTPRest endpoints for the application SubTracker.
@@ -50,7 +52,7 @@ func main() {
 		authorization.Module(),
 		billing.Module(),
 		fx.Provide(
-
+			fx.Annotate(func() string { return version }, fx.ResultTags(`name:"appVersion"`)),
 			exchange.New,
 		),
 	}

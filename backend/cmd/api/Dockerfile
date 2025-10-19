@@ -14,8 +14,9 @@ COPY ["cmd/", "cmd/"]
 COPY ["pkg/", "pkg/"]
 COPY ["internal/", "internal/"]
 
+ARG VERSION=dev
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
-    go build -ldflags="-s -w -extldflags '-static'" -trimpath -o ./app/main ./cmd/api/
+    go build -ldflags="-s -w -extldflags '-static' -X main.version=${VERSION}" -trimpath -o ./app/main ./cmd/api/
 
 FROM scratch
 ARG APPUSER=appuser
