@@ -195,13 +195,17 @@ jobs:
           set -euo pipefail
           VERSION='${{ needs.meta.outputs.version }}'
           IMAGE_ACR='${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api'
+          echo "Create docker manifest for version: ${VERSION}"
           docker manifest create "${IMAGE_ACR}:${VERSION}" \
             --amend "${IMAGE_ACR}@${AMD64_DIGEST}" \
             --amend "${IMAGE_ACR}@${ARM64_DIGEST}"
+          echo "Push docker manifest for version: ${VERSION}"
           docker manifest push "${IMAGE_ACR}:${VERSION}"
+          echo "Create docker manifest for latest tag"
           docker manifest create "${IMAGE_ACR}:latest" \
             --amend "${IMAGE_ACR}@${AMD64_DIGEST}" \
             --amend "${IMAGE_ACR}@${ARM64_DIGEST}"
+          echo "Push docker manifest for latest tag"
           docker manifest push "${IMAGE_ACR}:latest"
 
       - name: Create and push multi-arch manifests (GHCR)
