@@ -125,6 +125,8 @@ jobs:
 
   manifest:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: [build-amd64, build-arm64]
     outputs:
       version: ${{ needs.build-amd64.outputs.version }}
