@@ -194,6 +194,7 @@ jobs:
           CONTAINER_NAME: ${{ secrets.AZURE_CONTAINER_NAME || 'backend-api' }}
         with:
           inlineScript: |
+            echo "Deploying version: ${IMAGE_TAG}"
             echo "Updating Container App $CONTAINER_APP_NAME in $RESOURCE_GROUP to image ${ACR_LOGIN_SERVER}/mistribe/subtracker/backend-api:${IMAGE_TAG}"
             az containerapp update \
               --name "$CONTAINER_APP_NAME" \
