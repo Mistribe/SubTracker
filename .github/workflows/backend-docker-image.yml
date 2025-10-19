@@ -197,14 +197,14 @@ jobs:
           IMAGE_ACR='${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api'
           echo "Create docker manifest for version: ${VERSION}"
           docker manifest create "${IMAGE_ACR}:${VERSION}" \
-            --amend "${IMAGE_ACR}:${VERSION}-amd64@${AMD64_DIGEST}" \
-            --amend "${IMAGE_ACR}:${VERSION}-arm64@${ARM64_DIGEST}"
+            --amend --os linux --arch amd64 "${IMAGE_ACR}@${AMD64_DIGEST}" \
+            --amend --os linux --arch arm64 "${IMAGE_ACR}@${ARM64_DIGEST}"
           echo "Push docker manifest for version: ${VERSION}"
           docker manifest push "${IMAGE_ACR}:${VERSION}"
           echo "Create docker manifest for latest tag"
           docker manifest create "${IMAGE_ACR}:latest" \
-            --amend "${IMAGE_ACR}:${VERSION}-amd64@${AMD64_DIGEST}" \
-            --amend "${IMAGE_ACR}:${VERSION}-arm64@${ARM64_DIGEST}"
+            --amend --os linux --arch amd64 "${IMAGE_ACR}@${AMD64_DIGEST}" \
+            --amend --os linux --arch arm64 "${IMAGE_ACR}@${ARM64_DIGEST}"
           echo "Push docker manifest for latest tag"
           docker manifest push "${IMAGE_ACR}:latest"
 
@@ -217,12 +217,12 @@ jobs:
           VERSION='${{ needs.meta.outputs.version }}'
           IMAGE_GHCR='ghcr.io/mistribe/subtracker/backend-api'
           docker manifest create "${IMAGE_GHCR}:${VERSION}" \
-            --amend "${IMAGE_GHCR}:${VERSION}-amd64@${AMD64_DIGEST}" \
-            --amend "${IMAGE_GHCR}:${VERSION}-arm64@${ARM64_DIGEST}"
+            --amend --os linux --arch amd64 "${IMAGE_GHCR}@${AMD64_DIGEST}" \
+            --amend --os linux --arch arm64 "${IMAGE_GHCR}@${ARM64_DIGEST}"
           docker manifest push "${IMAGE_GHCR}:${VERSION}"
           docker manifest create "${IMAGE_GHCR}:latest" \
-            --amend "${IMAGE_GHCR}:${VERSION}-amd64@${AMD64_DIGEST}" \
-            --amend "${IMAGE_GHCR}:${VERSION}-arm64@${ARM64_DIGEST}"
+            --amend --os linux --arch amd64 "${IMAGE_GHCR}@${AMD64_DIGEST}" \
+            --amend --os linux --arch arm64 "${IMAGE_GHCR}@${ARM64_DIGEST}"
           docker manifest push "${IMAGE_GHCR}:latest"
 
 
