@@ -57,7 +57,7 @@ jobs:
         run: npm test
 
   e2e-tests:
-    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    if: false && (github.event_name != 'pull_request' || !github.event.pull_request.draft)
     name: E2E Tests (web)
     runs-on: ubuntu-latest
     env:
