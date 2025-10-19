@@ -72,6 +72,7 @@ func BuildRoutesModule() fx.Option {
 			ginfx.AsEndpointGroup(account.NewEndpointGroup),
 
 			ginfx.AsEndpoint(NewHealthCheckLiveEndpoint),
+			ginfx.AsEndpoint(NewVersionEndpoint),
 		),
 	)
 }

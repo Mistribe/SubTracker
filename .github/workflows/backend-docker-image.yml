@@ -4,25 +4,48 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
     paths:
       - 'backend/**'
       - '.github/workflows/backend-docker-image.yml'
 
 jobs:
-  docker:
+  build-push:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+      image_label: ${{ steps.meta.outputs.image_label }}
+      version: ${{ steps.meta.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Prepare image metadata outputs
+        id: meta
+        shell: bash
+        run: |
+          # Derive VERSION from tag 'v*' when present, else short SHA
+          if git describe --tags --exact-match >/dev/null 2>&1; then
+            RAW_TAG="$(git describe --tags --exact-match)"
+            VERSION="${RAW_TAG#v}"
+          else
+            VERSION="$(echo "${GITHUB_SHA}" | cut -c1-12)"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "image_label=org.opencontainers.image.revision=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -38,15 +61,65 @@ jobs:
           username: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_USR }}
           password: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_PWD }}
 
-      - name: Build and push to GitHub Container Registry
+      - name: Build and push to registries
         uses: docker/build-push-action@v5
         with:
           context: ./backend
           file: ./backend/cmd/api/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+          labels: |
+            org.opencontainers.image.title=subtracker-backend-api
+            org.opencontainers.image.source=${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.run_id }}
+            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
+            com.mistribe.subtracker.version=${{ steps.meta.outputs.version }}
+            com.mistribe.subtracker.git-sha=${{ github.sha }}
           tags: |
             ghcr.io/mistribe/subtracker/backend-api:latest
-            ghcr.io/mistribe/subtracker/backend-api:${{ github.sha }}
+            ghcr.io/mistribe/subtracker/backend-api:${{ steps.meta.outputs.image_tag }}
             ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api:latest
-            ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api:${{ github.sha }}
+            ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api:${{ steps.meta.outputs.image_tag }}
+
+  deploy:
+    name: Deploy to Azure Container Apps
+    needs: build-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Update Azure Container App to new image (create new revision)
+        uses: azure/cli@v2
+        env:
+          ACR_LOGIN_SERVER: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}
+          IMAGE_TAG: ${{ needs.build-push.outputs.image_tag }}
+          IMAGE_REV_LABEL: ${{ needs.build-push.outputs.version }}
+          CONTAINER_APP_NAME: ${{ secrets.AZURE_CONTAINER_APP_NAME }}
+          RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          CONTAINER_NAME: ${{ secrets.AZURE_CONTAINER_NAME || 'backend-api' }}
+        with:
+          inlineScript: |
+            echo "Updating Container App $CONTAINER_APP_NAME in $RESOURCE_GROUP to image ${ACR_LOGIN_SERVER}/mistribe/subtracker/backend-api:${IMAGE_TAG}"
+            az containerapp update \
+              --name "$CONTAINER_APP_NAME" \
+              --resource-group "$RESOURCE_GROUP" \
+              --image "${ACR_LOGIN_SERVER}/mistribe/subtracker/backend-api:${IMAGE_TAG}" \
+              --container-name "$CONTAINER_NAME" \
+              --set-env-vars "VERSION=${IMAGE_TAG}" "GIT_SHA=${{ github.sha }}" \
+              --annotations "com.mistribe.subtracker.version=${IMAGE_REV_LABEL}" "org.opencontainers.image.version=${IMAGE_REV_LABEL}" "org.opencontainers.image.revision=${{ github.sha }}"
+            echo "Forcing new revision activation"
+            az containerapp revision copy \
+              --name "$CONTAINER_APP_NAME" \
+              --resource-group "$RESOURCE_GROUP" \
+              --latest
