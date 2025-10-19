@@ -24,7 +24,7 @@ describe('ProtectedRoute', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // Default mock implementations
     mockSignedIn.mockImplementation(({ children }) => <>{children}</>)
     mockSignedOut.mockImplementation(({ children }) => <>{children}</>)
@@ -58,7 +58,7 @@ describe('ProtectedRoute', () => {
     )
 
     expect(screen.queryByTestId('protected-content')).not.toBeInTheDocument()
-    
+
     // Verify Navigate is called with correct props
     expect(mockNavigate).toHaveBeenCalledWith({ to: '/sign-in', replace: true }, undefined)
   })

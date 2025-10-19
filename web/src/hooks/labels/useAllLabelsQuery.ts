@@ -1,7 +1,7 @@
-import {useInfiniteQuery} from "@tanstack/react-query";
-import {useApiClient} from "@/hooks/use-api-client";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useApiClient } from "@/hooks/use-api-client";
 import Label from "@/models/label";
-import {OwnerType} from "@/models/ownerType";
+import { OwnerType } from "@/models/ownerType";
 import type { DtoLabelModel as LabelModel } from "@/api/models/DtoLabelModel";
 
 interface AllLabelsQueryOptions {
@@ -21,14 +21,14 @@ export const useAllLabelsQuery = (options: AllLabelsQueryOptions = {}) => {
         search,
     } = options;
 
-    const {apiClient} = useApiClient();
+    const { apiClient } = useApiClient();
 
     return useInfiniteQuery({
         queryKey: ['labels', 'all', limit, (search ?? '').trim()],
         enabled: !!apiClient,
         staleTime: 5 * 60 * 1000,
         initialPageParam: 0,
-        queryFn: async ({pageParam = 0}) => {
+        queryFn: async ({ pageParam = 0 }) => {
             if (!apiClient) {
                 throw new Error('API client not initialized');
             }
@@ -47,7 +47,8 @@ export const useAllLabelsQuery = (options: AllLabelsQueryOptions = {}) => {
             try {
                 const result = await apiClient.labels.labelsGet(queryParameters);
 
-                if (result && result.data) {
+                // Handle null or empty data array
+                if (result && result.data && Array.isArray(result.data)) {
                     return {
                         labels: result.data.map((model: LabelModel) => Label.fromModel(model)),
                         length: result.data.length,
@@ -56,7 +57,8 @@ export const useAllLabelsQuery = (options: AllLabelsQueryOptions = {}) => {
                     };
                 }
 
-                return {labels: [], length: 0, total: 0, nextOffset: pageParam};
+                // Backend returned no data (null or empty) - this is a valid empty result, not an error
+                return { labels: [], length: 0, total: 0, nextOffset: pageParam };
             } catch (error) {
                 console.error('Failed to fetch labels:', error);
                 throw error;

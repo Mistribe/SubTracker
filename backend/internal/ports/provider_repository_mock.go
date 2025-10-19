@@ -544,6 +544,72 @@ func (_c *MockProviderRepository_GetSystemProviders_Call) RunAndReturn(run func(
 	return _c
 }
 
+// IsInUsed provides a mock function for the type MockProviderRepository
+func (_mock *MockProviderRepository) IsInUsed(ctx context.Context, providerID types.ProviderID) (bool, error) {
+	ret := _mock.Called(ctx, providerID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for IsInUsed")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.ProviderID) (bool, error)); ok {
+		return returnFunc(ctx, providerID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.ProviderID) bool); ok {
+		r0 = returnFunc(ctx, providerID)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.ProviderID) error); ok {
+		r1 = returnFunc(ctx, providerID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockProviderRepository_IsInUsed_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IsInUsed'
+type MockProviderRepository_IsInUsed_Call struct {
+	*mock.Call
+}
+
+// IsInUsed is a helper method to define mock.On call
+//   - ctx context.Context
+//   - providerID types.ProviderID
+func (_e *MockProviderRepository_Expecter) IsInUsed(ctx interface{}, providerID interface{}) *MockProviderRepository_IsInUsed_Call {
+	return &MockProviderRepository_IsInUsed_Call{Call: _e.mock.On("IsInUsed", ctx, providerID)}
+}
+
+func (_c *MockProviderRepository_IsInUsed_Call) Run(run func(ctx context.Context, providerID types.ProviderID)) *MockProviderRepository_IsInUsed_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 types.ProviderID
+		if args[1] != nil {
+			arg1 = args[1].(types.ProviderID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockProviderRepository_IsInUsed_Call) Return(b bool, err error) *MockProviderRepository_IsInUsed_Call {
+	_c.Call.Return(b, err)
+	return _c
+}
+
+func (_c *MockProviderRepository_IsInUsed_Call) RunAndReturn(run func(ctx context.Context, providerID types.ProviderID) (bool, error)) *MockProviderRepository_IsInUsed_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Save provides a mock function for the type MockProviderRepository
 func (_mock *MockProviderRepository) Save(ctx context.Context, entities ...provider.Provider) error {
 	var tmpRet mock.Arguments

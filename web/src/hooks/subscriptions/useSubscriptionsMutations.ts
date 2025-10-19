@@ -110,9 +110,9 @@ export const useSubscriptionsMutations = () => {
 
             return apiClient.subscriptions.subscriptionsPost({ dtoCreateSubscriptionRequest: payload });
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             // Invalidate and refetch
-            queryClient.invalidateQueries({queryKey: ['subscriptions']});
+            await queryClient.invalidateQueries({queryKey: ['subscriptions']});
         }
     });
 
@@ -122,9 +122,9 @@ export const useSubscriptionsMutations = () => {
             if (!apiClient) throw new Error("API client not initialized");
             return apiClient.subscriptions.subscriptionsSubscriptionIdDelete({ subscriptionId });
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             // Invalidate and refetch
-            queryClient.invalidateQueries({queryKey: ['subscriptions']});
+            await queryClient.invalidateQueries({queryKey: ['subscriptions']});
         }
     });
 

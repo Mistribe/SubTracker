@@ -61,7 +61,7 @@ const SubscriptionFormPage = () => {
             customPrice: {
                 amount: 10,
                 currency: "USD"
-            },
+            }, // customPrice is now required
             endDate: undefined,
             familyId: undefined,
             freeTrialEndDate: new Date(),
@@ -252,8 +252,18 @@ const SubscriptionFormPage = () => {
                         // Set the current step to the section with errors
                         setCurrentStep(earliestSectionWithError);
 
-                        // Set a general error message
-                        setError("Please correct the errors in the form before submitting.");
+                        // Create a detailed error message showing which fields have errors
+                        const fieldErrorMessages = errorFields.map(field => {
+                            const error = errors[field as keyof typeof errors];
+                            const fieldName = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                            return `${fieldName}: ${error?.message || 'Invalid value'}`;
+                        });
+
+                        const detailedErrorMessage = fieldErrorMessages.length > 0 
+                            ? `Please correct the following errors: ${fieldErrorMessages.join(', ')}`
+                            : "Please correct the errors in the form before submitting.";
+                        
+                        setError(detailedErrorMessage);
                     })} className="space-y-6">
                         {/* Step Indicator */}
                         <div className="mb-6">

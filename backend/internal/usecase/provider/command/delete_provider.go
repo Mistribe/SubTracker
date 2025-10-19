@@ -48,6 +48,14 @@ func (h DeleteProviderCommandHandler) Handle(ctx context.Context, cmd DeleteProv
 		return result.Fail[bool](err)
 	}
 
+	inUsed, err := h.providerRepository.IsInUsed(ctx, cmd.ProviderID)
+	if err != nil {
+		return result.Fail[bool](err)
+	}
+	if inUsed {
+		return result.Fail[bool](provider.ErrProviderIsInUsed)
+	}
+
 	ok, err := h.providerRepository.Delete(ctx, cmd.ProviderID)
 	if err != nil {
 		return result.Fail[bool](err)

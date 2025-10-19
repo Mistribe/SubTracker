@@ -92,9 +92,7 @@ components:
         url:
           type: string
       required:
-      - labels
       - name
-      - owner
       type: object
     dto.CreateSubscriptionRequest:
       properties:
@@ -1000,11 +998,23 @@ components:
           type: string
       type: object
     ginx.HttpErrorResponse:
+      description: RFC7807 Problem Details error response
       properties:
-        message:
+        detail:
+          example: Missing required field 'name'
           type: string
-      required:
-      - message
+        instance:
+          example: /api/resource/123
+          type: string
+        status:
+          example: 400
+          type: integer
+        title:
+          example: Bad Request
+          type: string
+        type:
+          example: about:blank
+          type: string
       type: object
 externalDocs:
   description: ""

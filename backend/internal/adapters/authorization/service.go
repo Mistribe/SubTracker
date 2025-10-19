@@ -68,9 +68,13 @@ func (s service) getUser(ctx context.Context, userId types.UserID) (account.Acco
 
 func New(
 	userRepository ports.AccountRepository,
-	cache ports.Cache) ports.Authorization {
+	familyRepository ports.FamilyRepository,
+	cache ports.Cache,
+	authentication ports.Authentication) ports.Authorization {
 	return &service{
-		userRepository: userRepository,
-		cache:          cache,
+		userRepository:   userRepository,
+		cache:            cache,
+		familyRepository: familyRepository,
+		authentication:   authentication,
 	}
 }

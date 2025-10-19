@@ -12,7 +12,6 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/label/command"
-	"github.com/mistribe/subtracker/pkg/ginx"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 )
@@ -51,7 +50,7 @@ func updateLabelRequestToCommand(m dto.UpdateLabelRequest, labelID types.LabelID
 //	@Failure		500		{object}	HttpErrorResponse		"Internal Server Error"
 //	@Router			/labels/{labelId} [put]
 func (l UpdateEndpoint) Handle(c *gin.Context) {
-	labelID, err := types.ParseLabelID(c.Param("id"))
+	labelID, err := types.ParseLabelID(c.Param("labelId"))
 	if err != nil {
 		FromError(c, err)
 		return
@@ -60,13 +59,11 @@ func (l UpdateEndpoint) Handle(c *gin.Context) {
 	var model dto.UpdateLabelRequest
 	if err := c.ShouldBindJSON(&model); err != nil {
 		FromError(c, err)
+		return
 	}
 	cmd, err := updateLabelRequestToCommand(model, labelID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-			Message: err.Error(),
-		})
-		c.Abort()
+		FromError(c, err)
 		return
 	}
 	r := l.handler.Handle(c, cmd)

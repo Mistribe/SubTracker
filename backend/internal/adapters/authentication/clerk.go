@@ -27,7 +27,8 @@ type publicUserMetadata struct {
 	Role string `json:"role"`
 }
 
-func NewClerkIdentityProvider(cfg config.Configuration,
+func NewClerkIdentityProvider(
+	cfg config.Configuration,
 	logger *slog.Logger) ports.IdentityProvider {
 	secret := cfg.GetString("CLERK_SECRET_KEY")
 	clerkConfig := &clerk.ClientConfig{}
@@ -74,9 +75,18 @@ func (c *clerkIdentityProvider) ReadSessionToken(ctx context.Context, sessionTok
 		return ports.NewInvalidIdentity(), authorization.ErrUnauthorized
 	}
 
-	// todo extract metadata from public metadata
+	role, roleExists := unsafeClaims.Extra["role"].(string)
+	if !roleExists {
+		role = ""
+	}
+	plan, planExists := unsafeClaims.Extra["plan"].(string)
+	if !planExists {
+		plan = ""
+	}
 	return ports.Identity{
-		Id:      claims.Subject,
 		IsValid: true,
+		Id:      claims.Subject,
+		Role:    role,
+		Plan:    plan,
 	}, nil
 }

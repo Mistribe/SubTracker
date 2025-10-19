@@ -1,7 +1,7 @@
-import {ThemeProvider} from "@/components/theme-provider"
-import {BrowserRouter, Routes, Route} from "react-router-dom"
-import {ProtectedRoute} from "@/contexts/ProtectedRoute"
-import {AppLayout} from "@/layouts/AppLayout"
+import { ThemeProvider } from "@/components/theme-provider"
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { ProtectedRoute } from "@/contexts/ProtectedRoute"
+import { AppLayout } from "@/layouts/AppLayout"
 import HomePage from "@/pages/HomePage"
 import SignInPage from "@/pages/SignInPage"
 import SignUpPage from "@/pages/SignUpPage"
@@ -14,8 +14,9 @@ import SubscriptionsPage from "@/pages/SubscriptionsPage"
 import SubscriptionFormPage from "@/pages/SubscriptionFormPage"
 import ProviderDetailPage from "@/pages/ProviderDetailPage";
 import AcceptInvitationPage from "@/pages/AcceptInvitationPage";
-import {ApiClientProvider} from "@/contexts/ApiClientContext.tsx";
-import {QueryClientProvider, QueryClient} from "@tanstack/react-query";
+import { ApiClientProvider } from "@/contexts/ApiClientContext.tsx";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/sonner";
 
 const queryClient = new QueryClient()
 
@@ -25,11 +26,12 @@ function App() {
             <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
                 <ApiClientProvider>
                     <QueryClientProvider client={queryClient}>
+                        <Toaster />
                         <Routes>
                             {/* Public Routes */}
-                            <Route path="/" element={<HomePage/>}/>
-                            <Route path="/sign-in" element={<SignInPage/>}/>
-                            <Route path="/sign-up" element={<SignUpPage/>}/>
+                            <Route path="/" element={<HomePage />} />
+                            <Route path="/sign-in" element={<SignInPage />} />
+                            <Route path="/sign-up" element={<SignUpPage />} />
 
                             {/* Protected Routes */}
                             <Route
@@ -37,7 +39,7 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <AppLayout>
-                                            <DashboardPage/>
+                                            <DashboardPage />
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
@@ -47,7 +49,7 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <AppLayout>
-                                            <FamilyPage/>
+                                            <FamilyPage />
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
@@ -57,7 +59,7 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <AppLayout>
-                                            <LabelsPage/>
+                                            <LabelsPage />
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
@@ -67,7 +69,7 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <AppLayout>
-                                            <PreferencePage/>
+                                            <PreferencePage />
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
@@ -77,7 +79,7 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <AppLayout>
-                                            <ProvidersPage/>
+                                            <ProvidersPage />
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
@@ -87,7 +89,7 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <AppLayout>
-                                            <ProviderDetailPage/>
+                                            <ProviderDetailPage />
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
@@ -97,7 +99,7 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <AppLayout>
-                                            <SubscriptionsPage/>
+                                            <SubscriptionsPage />
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
@@ -107,7 +109,7 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <AppLayout>
-                                            <SubscriptionFormPage/>
+                                            <SubscriptionFormPage />
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
@@ -117,7 +119,7 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <AppLayout>
-                                            <SubscriptionFormPage/>
+                                            <SubscriptionFormPage />
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
@@ -127,14 +129,14 @@ function App() {
                                 element={
                                     <ProtectedRoute>
                                         <AppLayout>
-                                            <AcceptInvitationPage/>
+                                            <AcceptInvitationPage />
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
                             />
 
                             {/* Fallback Route */}
-                            <Route path="*" element={<HomePage/>}/>
+                            <Route path="*" element={<HomePage />} />
                         </Routes>
                     </QueryClientProvider>
                 </ApiClientProvider>

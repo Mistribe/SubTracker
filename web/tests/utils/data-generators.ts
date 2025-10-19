@@ -8,9 +8,9 @@ export interface SubscriptionData {
   providerId: string;
   amount: number;
   currency: string;
-  billingCycle: 'monthly' | 'yearly' | 'weekly' | 'daily';
+  billingCycle: 'monthly' | 'yearly' | 'quarterly' | 'half_yearly' | 'one_time';
   nextBillingDate: string;
-  labels?: string[];
+  labels?: string[]; // Array of label IDs, not label names
   payerId?: string;
   description?: string;
   isActive?: boolean;
@@ -24,6 +24,8 @@ export interface ProviderData {
   logoUrl?: string;
   category?: string;
   isActive?: boolean;
+  ownerType?: 'personal' | 'family' | 'system';
+  familyId?: string;
 }
 
 export interface LabelData {
@@ -116,7 +118,7 @@ export class TestIdGenerator {
  */
 export class TestDataGenerators {
   private static readonly currencies = ['USD', 'EUR', 'GBP', 'CAD', 'AUD'];
-  private static readonly billingCycles: Array<'monthly' | 'yearly' | 'weekly' | 'daily'> = ['monthly', 'yearly', 'weekly', 'daily'];
+  private static readonly billingCycles: Array<'monthly' | 'yearly' | 'quarterly' | 'half_yearly' | 'one_time'> = ['monthly', 'yearly', 'quarterly'];
   private static readonly colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'];
   private static readonly providerCategories = ['Streaming', 'Software', 'Cloud Storage', 'Productivity', 'Entertainment', 'Security', 'Communication'];
 
@@ -152,10 +154,8 @@ export class TestDataGenerators {
     };
 
     // Add optional fields randomly
-    // random true with probability ~0.3
-    if (TestDataGenerators.getCryptoRandomInt(1, 100) > 70) {
-      baseData.labels = [TestIdGenerator.generate('label'), TestIdGenerator.generate('label')];
-    }
+    // Note: labels should be added separately after creating actual labels and getting their IDs
+    // Labels are not generated here since they need to be real label IDs from the API
 
     // random true with probability ~0.2
     if (TestDataGenerators.getCryptoRandomInt(1, 100) > 80) {
@@ -175,6 +175,7 @@ export class TestDataGenerators {
       website: `https://${TestIdGenerator.generate()}.example.com`,
       category: this.getRandomItem(this.providerCategories),
       isActive: true,
+      ownerType: 'personal', // Default to personal so they can be edited
     };
 
     return { ...baseData, ...overrides };
@@ -302,6 +303,8 @@ export class TestDataGenerators {
 
   /**
    * Generate subscription with related entities (provider, labels)
+   * Note: This generates the data structures but doesn't create actual API entities
+   * Use ApiTestHelpers.setupTestScenario() for creating actual entities with proper IDs
    */
   static generateSubscriptionWithRelations(): {
     subscription: SubscriptionData;
@@ -311,8 +314,8 @@ export class TestDataGenerators {
     const provider = this.generateProvider();
     const labels = this.generateLabels(2);
     const subscription = this.generateSubscription({
-      providerId: provider.name, // Use provider name as ID for testing
-      labels: labels.map(label => label.name),
+      providerId: provider.name, // This will need to be replaced with actual provider ID
+      // labels are not set here - they need to be actual label IDs from the API
     });
 
     return { subscription, provider, labels };
@@ -463,7 +466,7 @@ export class TestDataValidator {
   }
 
   private static readonly currencies = ['USD', 'EUR', 'GBP', 'CAD', 'AUD'];
-  private static readonly billingCycles = ['monthly', 'yearly', 'weekly', 'daily'];
+  private static readonly billingCycles = ['monthly', 'yearly'];
 }
 
 /**

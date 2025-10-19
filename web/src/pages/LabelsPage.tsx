@@ -8,6 +8,7 @@ import { useFamilyQuery } from "@/hooks/families/useFamilyQuery.ts";
 import { LabelItem } from "@/components/labels/LabelItem";
 import { EditableLabelItem } from "@/components/labels/EditableLabelItem";
 import { AddLabelDialog } from "@/components/labels/AddLabelDialog";
+import { DeleteLabelDialog } from "@/components/labels/DeleteLabelDialog";
 import Label from "@/models/label";
 import { OwnerType } from "@/models/ownerType";
 import { Loader2 } from "lucide-react";
@@ -33,6 +34,8 @@ const LabelsPage = () => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState("");
     const [editingColor, setEditingColor] = useState("");
+    const [labelToDelete, setLabelToDelete] = useState<Label | null>(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     // Fetch the single family and adapt to an array for UI components expecting arrays
     const { data: familyData } = useFamilyQuery();
@@ -113,7 +116,22 @@ const LabelsPage = () => {
             return;
         }
 
-        deleteLabelMutation.mutate(id);
+        // Open the confirmation dialog
+        if (label) {
+            setLabelToDelete(label);
+            setIsDeleteDialogOpen(true);
+        }
+    };
+
+    const handleConfirmDelete = () => {
+        if (labelToDelete) {
+            deleteLabelMutation.mutate(labelToDelete.id, {
+                onSettled: () => {
+                    setIsDeleteDialogOpen(false);
+                    setLabelToDelete(null);
+                }
+            });
+        }
     };
 
     const handleAddLabel = (name: string, color: string, ownerType?: OwnerType, familyId?: string) => {
@@ -278,6 +296,14 @@ const LabelsPage = () => {
                     )}
                 </div>
             </div>
+
+            <DeleteLabelDialog
+                label={labelToDelete}
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+                onConfirm={handleConfirmDelete}
+                isDeleting={deleteLabelMutation.isPending}
+            />
         </div>
     );
 };

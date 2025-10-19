@@ -2,9 +2,12 @@ package ginx
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 
 	"github.com/mistribe/subtracker/pkg/langext/result"
 	"github.com/mistribe/subtracker/pkg/x/exception"
@@ -34,13 +37,12 @@ func WithStatus[TValue any](status int) HandleResponseOptionFunc[TValue] {
 
 func WithNoContent[TValue any]() HandleResponseOptionFunc[TValue] {
 	return func(opt *HandleResponseOptions[TValue]) {
-		opt.Mapper = func(value TValue) any {
-			return nil
-		}
+		opt.Mapper = func(value TValue) any { return nil }
 		opt.Status = http.StatusNoContent
 	}
 }
 
+// httpStatusFromException maps domain exception codes to HTTP status codes.
 func httpStatusFromException(code exception.Code) int {
 	switch code {
 	case exception.Unknown:
@@ -72,25 +74,45 @@ func httpStatusFromException(code exception.Code) int {
 	}
 }
 
-func errorResponseFromException(ex exception.Exception) (HttpErrorResponse, int) {
-	status := httpStatusFromException(ex.Code())
-
-	return HttpErrorResponse{
-		Message: ex.Error(),
-	}, status
+// buildProblem constructs a Problem Details object (RFC7807) for the given status & detail.
+func buildProblem(c *gin.Context, status int, detail string) HttpErrorResponse {
+	instance := c.FullPath()
+	if instance == "" && c.Request != nil && c.Request.URL != nil {
+		instance = c.Request.URL.Path
+	}
+	return NewProblem(ProblemTypeAboutBlank, http.StatusText(status), status, detail, instance)
 }
 
+// errorResponseFromException converts a domain exception into a Problem Details response.
+func errorResponseFromException(c *gin.Context, ex exception.Exception) (HttpErrorResponse, int) {
+	status := httpStatusFromException(ex.Code())
+	return buildProblem(c, status, ex.Error()), status
+}
+
+// FromError writes a Problem Details response based on a generic error or domain exception.
 func FromError(c *gin.Context, err error) {
 	var ex exception.Exception
 	if ok := errors.As(err, &ex); ok {
-		response, status := errorResponseFromException(ex)
+		response, status := errorResponseFromException(c, ex)
 		c.AbortWithStatusJSON(status, response)
 		return
 	}
 
-	c.AbortWithStatusJSON(http.StatusInternalServerError, HttpErrorResponse{Message: err.Error()})
+	var ve validator.ValidationErrors
+	if errors.As(err, &ve) {
+		problems := make([]string, 0, len(ve))
+		for _, fe := range ve {
+			problems = append(problems, fmt.Sprintf("%s: %s", fe.Field(), fe.ActualTag()))
+		}
+		detail := strings.Join(problems, ", ")
+		c.AbortWithStatusJSON(http.StatusBadRequest, buildProblem(c, http.StatusBadRequest, detail))
+		return
+	}
+
+	c.AbortWithStatusJSON(http.StatusInternalServerError, buildProblem(c, http.StatusInternalServerError, err.Error()))
 }
 
+// FromResult writes either a success response (mapped if provided) or a Problem Details error.
 func FromResult[TValue any](
 	c *gin.Context,
 	r result.Result[TValue],

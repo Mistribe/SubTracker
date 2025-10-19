@@ -12,5 +12,6 @@ var (
 	ErrPlanAlreadyExists          = ex.NewAlreadyExists("plan already exists")
 	ErrPriceAlreadyExists         = ex.NewAlreadyExists("price already exists")
 	ErrPriceNotFound              = ex.NewNotFound("price not found")
-	ErrCustomProviderLimitReached = ex.NewInvalidValue("custom provider limit reached")
+	ErrCustomProviderLimitReached = ex.NewInvalidOperation("custom provider limit reached")
+	ErrProviderIsInUsed           = ex.NewInvalidOperation("provider is in use")
 )

@@ -67,11 +67,35 @@ export const useProvidersMutations = () => {
                 updatedAt: new Date(),
             };
             
+            // Note: Generated API does not expose If-Match header; backend update is optimistic here.
             return apiClient.providers.providersProviderIdPut({ providerId: providerData.id, dtoUpdateProviderRequest: payload });
         },
-        onSuccess: async () => {
-            // Invalidate and refetch
-            await queryClient.invalidateQueries({queryKey: ['providers']});
+        onSuccess: async (updated) => {
+            // Optimistically update any cached infinite providers lists so UI reflects changes immediately
+            // Match all queries that start with ['providers', 'all'] (any limit/search)
+            queryClient.setQueriesData({ queryKey: ['providers', 'all'] }, (oldData: any) => {
+                if (!oldData || !oldData.pages) return oldData;
+                const updatedId = updated?.id;
+                const updatedName = updated?.name;
+                const updatedDesc = updated?.description;
+                const updatedUrl = updated?.url;
+                const updatedIcon = updated?.iconUrl;
+                const updatedPricingUrl = updated?.pricingPageUrl;
+                return {
+                    ...oldData,
+                    pages: oldData.pages.map((page: any) => ({
+                        ...page,
+                        providers: page.providers.map((p: any) =>
+                            p.id === updatedId
+                                ? { ...p, name: updatedName, description: updatedDesc, url: updatedUrl, iconUrl: updatedIcon, pricingPageUrl: updatedPricingUrl }
+                                : p
+                        ),
+                    })),
+                };
+            });
+
+            // Invalidate queries but avoid refetching active ones immediately to keep UI stable for e2e flows
+            await queryClient.invalidateQueries({ queryKey: ['providers'], refetchType: 'inactive' as any });
         }
     });
 

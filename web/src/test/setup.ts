@@ -34,7 +34,7 @@ vi.mock('react-router-dom', async () => {
     ...actual,
     useNavigate: vi.fn(),
     Navigate: vi.fn(),
-    Link: vi.fn(({ children, to, ...props }: { children?: React.ReactNode; to: string; [key: string]: any }) => 
+    Link: vi.fn(({ children, to, ...props }: { children?: React.ReactNode; to: string;[key: string]: any }) =>
       React.createElement('a', { href: to, ...props, 'data-testid': 'router-link' }, children)
     ),
   }

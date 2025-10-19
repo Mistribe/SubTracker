@@ -18,12 +18,23 @@ type PaginatedResponseModel[TValue any] struct {
 	Total int64 `json:"total" binding:"required"`
 }
 
+// ensureNotNilSlice returns an empty slice instead of nil so it serializes as [] in JSON.
+func ensureNotNilSlice[T any](in []T) []T {
+	if in == nil {
+		return []T{}
+	}
+	return in
+}
+
 func NewPaginatedResponseModel[TValue any, TOut any](
 	p shared.PaginatedResponse[TValue],
 	mapper func(TValue) TOut) PaginatedResponseModel[TOut] {
 
+	data := herd.Select(p.Data(), mapper)
+	data = ensureNotNilSlice(data)
+
 	return PaginatedResponseModel[TOut]{
-		Data:   herd.Select(p.Data(), mapper),
+		Data:   data,
 		Length: p.Length(),
 		Total:  p.Total(),
 	}

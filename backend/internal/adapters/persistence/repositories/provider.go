@@ -594,3 +594,19 @@ func (r ProviderRepository) saveTrackedLabelsWithJet(
 
 	return nil
 }
+
+func (r ProviderRepository) IsInUsed(ctx context.Context, providerID types.ProviderID) (bool, error) {
+	stmt := SELECT(COUNT(Subscriptions.ID).AS("count")).
+		FROM(Subscriptions).
+		WHERE(Subscriptions.ProviderID.EQ(UUID(providerID)))
+
+	var row struct {
+		Count int64
+	}
+
+	if err := r.dbContext.Query(ctx, stmt, &row); err != nil {
+		return false, err
+	}
+
+	return row.Count > 0, nil
+}

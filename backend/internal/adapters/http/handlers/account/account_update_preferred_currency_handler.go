@@ -11,7 +11,6 @@ import (
 
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/account/command"
-	"github.com/mistribe/subtracker/pkg/ginx"
 )
 
 type UpdatePreferredCurrencyEndpoint struct {
@@ -40,13 +39,13 @@ func NewUpdatePreferredCurrencyEndpoint(handler ports.CommandHandler[command.Upd
 func (e UpdatePreferredCurrencyEndpoint) Handle(c *gin.Context) {
 	var model dto.UpdatePreferredCurrencyRequest
 	if err := c.ShouldBindJSON(&model); err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{Message: err.Error()})
+		FromError(c, err)
 		return
 	}
 
 	newCurrency, err := currency.ParseISO(model.Currency)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{Message: err.Error()})
+		FromError(c, err)
 		return
 	}
 

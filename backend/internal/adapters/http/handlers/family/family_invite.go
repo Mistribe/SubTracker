@@ -12,7 +12,6 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/family/command"
-	"github.com/mistribe/subtracker/pkg/ginx"
 )
 
 type InviteEndpoint struct {
@@ -61,9 +60,7 @@ func (e InviteEndpoint) Handle(c *gin.Context) {
 		var mt family.MemberType
 		mt, err = family.ParseMemberType(*model.Type)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, ginx.HttpErrorResponse{
-				Message: err.Error(),
-			})
+			FromError(c, err)
 			return
 		}
 		memberType = &mt

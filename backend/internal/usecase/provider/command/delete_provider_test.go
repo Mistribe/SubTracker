@@ -48,6 +48,7 @@ func TestDeleteProviderCommandHandler_Handle(t *testing.T) {
 		permReq := ports.NewMockPermissionRequest(t)
 		authz.EXPECT().Can(mock.Anything, authorization.PermissionDelete).Return(permReq)
 		permReq.EXPECT().For(mock.Anything).Return(nil)
+		repo.EXPECT().IsInUsed(mock.Anything, id).Return(false, nil)
 		repo.EXPECT().Delete(mock.Anything, id).Return(true, nil)
 
 		h := command.NewDeleteProviderCommandHandler(repo, authz)
@@ -70,6 +71,7 @@ func TestDeleteProviderCommandHandler_Handle(t *testing.T) {
 		permReq := ports.NewMockPermissionRequest(t)
 		authz.EXPECT().Can(mock.Anything, authorization.PermissionDelete).Return(permReq)
 		permReq.EXPECT().For(mock.Anything).Return(nil)
+		repo.EXPECT().IsInUsed(mock.Anything, id).Return(false, nil)
 		repo.EXPECT().Delete(mock.Anything, id).Return(false, nil)
 
 		h := command.NewDeleteProviderCommandHandler(repo, authz)
@@ -150,6 +152,7 @@ func TestDeleteProviderCommandHandler_Handle(t *testing.T) {
 		permReq := ports.NewMockPermissionRequest(t)
 		authz.EXPECT().Can(mock.Anything, authorization.PermissionDelete).Return(permReq)
 		permReq.EXPECT().For(mock.Anything).Return(nil)
+		repo.EXPECT().IsInUsed(mock.Anything, id).Return(false, nil)
 		repo.EXPECT().Delete(mock.Anything, id).Return(false, expectedErr)
 
 		h := command.NewDeleteProviderCommandHandler(repo, authz)

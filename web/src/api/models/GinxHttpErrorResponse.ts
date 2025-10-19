@@ -14,7 +14,7 @@
 
 import { mapValues } from '../runtime';
 /**
- * 
+ * RFC7807 Problem Details error response
  * @export
  * @interface GinxHttpErrorResponse
  */
@@ -24,14 +24,37 @@ export interface GinxHttpErrorResponse {
      * @type {string}
      * @memberof GinxHttpErrorResponse
      */
-    message: string;
+    detail?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof GinxHttpErrorResponse
+     */
+    instance?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof GinxHttpErrorResponse
+     */
+    status?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof GinxHttpErrorResponse
+     */
+    title?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof GinxHttpErrorResponse
+     */
+    type?: string;
 }
 
 /**
  * Check if a given object implements the GinxHttpErrorResponse interface.
  */
 export function instanceOfGinxHttpErrorResponse(value: object): value is GinxHttpErrorResponse {
-    if (!('message' in value) || value['message'] === undefined) return false;
     return true;
 }
 
@@ -45,7 +68,11 @@ export function GinxHttpErrorResponseFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
-        'message': json['message'],
+        'detail': json['detail'] == null ? undefined : json['detail'],
+        'instance': json['instance'] == null ? undefined : json['instance'],
+        'status': json['status'] == null ? undefined : json['status'],
+        'title': json['title'] == null ? undefined : json['title'],
+        'type': json['type'] == null ? undefined : json['type'],
     };
 }
 
@@ -60,7 +87,11 @@ export function GinxHttpErrorResponseToJSONTyped(value?: GinxHttpErrorResponse |
 
     return {
         
-        'message': value['message'],
+        'detail': value['detail'],
+        'instance': value['instance'],
+        'status': value['status'],
+        'title': value['title'],
+        'type': value['type'],
     };
 }
 

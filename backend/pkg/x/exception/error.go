@@ -66,6 +66,10 @@ func NewInvalidValue(message string, functions ...func(options *Options)) Except
 	return New(message, append(functions, WithCode(InvalidValue))...)
 }
 
+func NewInvalidOperation(message string, functions ...func(options *Options)) Exception {
+	return New(message, append(functions, WithCode(InvalidOperation))...)
+}
+
 func NewUnauthenticated(message string, functions ...func(options *Options)) Exception {
 	return New(message, append(functions, WithCode(Unauthenticated))...)
 }

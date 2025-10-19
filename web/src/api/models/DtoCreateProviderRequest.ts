@@ -56,7 +56,7 @@ export interface DtoCreateProviderRequest {
      * @type {Array<string>}
      * @memberof DtoCreateProviderRequest
      */
-    labels: Array<string>;
+    labels?: Array<string>;
     /**
      * 
      * @type {string}
@@ -68,7 +68,7 @@ export interface DtoCreateProviderRequest {
      * @type {DtoEditableOwnerModel}
      * @memberof DtoCreateProviderRequest
      */
-    owner: DtoEditableOwnerModel;
+    owner?: DtoEditableOwnerModel;
     /**
      * 
      * @type {string}
@@ -87,9 +87,7 @@ export interface DtoCreateProviderRequest {
  * Check if a given object implements the DtoCreateProviderRequest interface.
  */
 export function instanceOfDtoCreateProviderRequest(value: object): value is DtoCreateProviderRequest {
-    if (!('labels' in value) || value['labels'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
-    if (!('owner' in value) || value['owner'] === undefined) return false;
     return true;
 }
 
@@ -107,9 +105,9 @@ export function DtoCreateProviderRequestFromJSONTyped(json: any, ignoreDiscrimin
         'description': json['description'] == null ? undefined : json['description'],
         'iconUrl': json['icon_url'] == null ? undefined : json['icon_url'],
         'id': json['id'] == null ? undefined : json['id'],
-        'labels': json['labels'],
+        'labels': json['labels'] == null ? undefined : json['labels'],
         'name': json['name'],
-        'owner': DtoEditableOwnerModelFromJSON(json['owner']),
+        'owner': json['owner'] == null ? undefined : DtoEditableOwnerModelFromJSON(json['owner']),
         'pricingPageUrl': json['pricing_page_url'] == null ? undefined : json['pricing_page_url'],
         'url': json['url'] == null ? undefined : json['url'],
     };

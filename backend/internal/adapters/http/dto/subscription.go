@@ -34,11 +34,7 @@ func NewSubscriptionFreeTrial(model *SubscriptionFreeTrialModel) subscription.Fr
 	return subscription.NewFreeTrial(model.StartDate, model.EndDate)
 }
 
-func NewSubscriptionCustomPrice(model *AmountModel) (subscription.Price, error) {
-	if model == nil {
-		return nil, nil
-	}
-
+func NewSubscriptionCustomPrice(model AmountModel) (subscription.Price, error) {
 	cry, err := currency.ParseISO(model.Currency)
 	if err != nil {
 		return nil, err
