@@ -1,0 +1,53 @@
+version: 2
+updates:
+  # GitHub Actions workflow dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "03:00"
+      timezone: "Europe/London"
+    open-pull-requests-limit: 10
+    groups:
+      actions-minor-patch:
+        patterns:
+          - "*"
+
+  # Dockerfiles in the repository (root or subfolders)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "03:10"
+      timezone: "Europe/London"
+    open-pull-requests-limit: 10
+    groups:
+      docker-minor-patch:
+        patterns:
+          - "*"
+
+  # Node.js npm/yarn/pnpm dependencies (package.json)
+  - package-ecosystem: "npm"
+    directory: "/web"
+    schedule:
+      interval: "daily"
+      time: "03:20"
+      timezone: "Europe/London"
+    open-pull-requests-limit: 10
+    versioning-strategy: "auto"
+    groups:
+      npm-minor-patch:
+        patterns:
+          - "*"
+  # Go modules (go.mod)
+  - package-ecosystem: "gomod"
+    directory: "/backend"
+    schedule:
+      interval: "daily"
+      time: "03:30"
+      timezone: "Europe/London"
+    open-pull-requests-limit: 10
+    groups:
+      gomod-minor-patch:
+        patterns:
+          - "*"
