@@ -187,6 +187,23 @@ jobs:
           username: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_USR }}
           password: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_PWD }}
 
+      - name: Create and push multi-arch manifests (ACR)
+        env:
+          AMD64_DIGEST: ${{ needs.build-amd64.outputs.acr_digest }}
+          ARM64_DIGEST: ${{ needs.build-arm64.outputs.acr_digest }}
+        run: |
+          set -euo pipefail
+          VERSION='${{ needs.meta.outputs.version }}'
+          IMAGE_ACR='${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api'
+          docker manifest create "${IMAGE_ACR}:${VERSION}" \
+            --amend "${IMAGE_ACR}@${AMD64_DIGEST}" \
+            --amend "${IMAGE_ACR}@${ARM64_DIGEST}"
+          docker manifest push "${IMAGE_ACR}:${VERSION}"
+          docker manifest create "${IMAGE_ACR}:latest" \
+            --amend "${IMAGE_ACR}@${AMD64_DIGEST}" \
+            --amend "${IMAGE_ACR}@${ARM64_DIGEST}"
+          docker manifest push "${IMAGE_ACR}:latest"
+
       - name: Create and push multi-arch manifests (GHCR)
         env:
           AMD64_DIGEST: ${{ needs.build-amd64.outputs.ghcr_digest }}
@@ -204,22 +221,6 @@ jobs:
             --amend "${IMAGE_GHCR}@${ARM64_DIGEST}"
           docker manifest push "${IMAGE_GHCR}:latest"
 
-      - name: Create and push multi-arch manifests (ACR)
-        env:
-          AMD64_DIGEST: ${{ needs.build-amd64.outputs.acr_digest }}
-          ARM64_DIGEST: ${{ needs.build-arm64.outputs.acr_digest }}
-        run: |
-          set -euo pipefail
-          VERSION='${{ needs.meta.outputs.version }}'
-          IMAGE_ACR='${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api'
-          docker manifest create "${IMAGE_ACR}:${VERSION}" \
-            --amend "${IMAGE_ACR}@${AMD64_DIGEST}" \
-            --amend "${IMAGE_ACR}@${ARM64_DIGEST}"
-          docker manifest push "${IMAGE_ACR}:${VERSION}"
-          docker manifest create "${IMAGE_ACR}:latest" \
-            --amend "${IMAGE_ACR}@${AMD64_DIGEST}" \
-            --amend "${IMAGE_ACR}@${ARM64_DIGEST}"
-          docker manifest push "${IMAGE_ACR}:latest"
 
   deploy:
     name: Deploy to Azure Container Apps
