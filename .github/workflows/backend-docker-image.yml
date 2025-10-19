@@ -1,4 +1,4 @@
-name: Build backend docker image
+name: Build and Deploy Backend to Azure Container Apps
 on:
   workflow_dispatch:
   push:
@@ -11,14 +11,12 @@ on:
       - '.github/workflows/backend-docker-image.yml'
 
 jobs:
-  build-push:
+  build-amd64:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     outputs:
-      image_tag: ${{ steps.meta.outputs.image_tag }}
-      image_label: ${{ steps.meta.outputs.image_label }}
       version: ${{ steps.meta.outputs.version }}
     steps:
       - name: Checkout
@@ -26,17 +24,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Prepare image metadata outputs
+      - name: Compute VERSION
         id: meta
         shell: bash
         run: |
-          # Derive VERSION from tag 'v*' when present, else short SHA
           if git describe --tags --exact-match >/dev/null 2>&1; then
             RAW_TAG="$(git describe --tags --exact-match)"
             VERSION="${RAW_TAG#v}"
@@ -44,8 +35,9 @@ jobs:
             VERSION="$(echo "${GITHUB_SHA}" | cut -c1-12)"
           fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "image_tag=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "image_label=org.opencontainers.image.revision=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -61,12 +53,12 @@ jobs:
           username: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_USR }}
           password: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_PWD }}
 
-      - name: Build and push to registries
+      - name: Build and push linux/amd64 images
         uses: docker/build-push-action@v5
         with:
           context: ./backend
           file: ./backend/cmd/api/Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
@@ -79,14 +71,107 @@ jobs:
             com.mistribe.subtracker.version=${{ steps.meta.outputs.version }}
             com.mistribe.subtracker.git-sha=${{ github.sha }}
           tags: |
-            ghcr.io/mistribe/subtracker/backend-api:latest
-            ghcr.io/mistribe/subtracker/backend-api:${{ steps.meta.outputs.image_tag }}
-            ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api:latest
-            ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api:${{ steps.meta.outputs.image_tag }}
+            ghcr.io/mistribe/subtracker/backend-api:${{ steps.meta.outputs.version }}-amd64
+            ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api:${{ steps.meta.outputs.version }}-amd64
+
+  build-arm64:
+    # Use GitHub-hosted ARM64 runner or your self-hosted ARM64 runner label
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      packages: write
+    needs: build-amd64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Dev Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}
+          username: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_USR }}
+          password: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_PWD }}
+
+      - name: Build and push linux/arm64 images
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/cmd/api/Dockerfile
+          platforms: linux/arm64
+          push: true
+          build-args: |
+            VERSION=${{ needs.build-amd64.outputs.version }}
+          labels: |
+            org.opencontainers.image.title=subtracker-backend-api
+            org.opencontainers.image.source=${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.run_id }}
+            org.opencontainers.image.version=${{ needs.build-amd64.outputs.version }}
+            com.mistribe.subtracker.version=${{ needs.build-amd64.outputs.version }}
+            com.mistribe.subtracker.git-sha=${{ github.sha }}
+          tags: |
+            ghcr.io/mistribe/subtracker/backend-api:${{ needs.build-amd64.outputs.version }}-arm64
+            ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api:${{ needs.build-amd64.outputs.version }}-arm64
+
+  manifest:
+    runs-on: ubuntu-latest
+    needs: [build-amd64, build-arm64]
+    outputs:
+      version: ${{ needs.build-amd64.outputs.version }}
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Dev Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}
+          username: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_USR }}
+          password: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_PWD }}
+
+      - name: Create and push multi-arch manifests (GHCR)
+        run: |
+          VERSION='${{ needs.build-amd64.outputs.version }}'
+          IMAGE_GHCR='ghcr.io/mistribe/subtracker/backend-api'
+          docker manifest create "${IMAGE_GHCR}:${VERSION}" \
+            --amend "${IMAGE_GHCR}:${VERSION}-amd64" \
+            --amend "${IMAGE_GHCR}:${VERSION}-arm64"
+          docker manifest push "${IMAGE_GHCR}:${VERSION}"
+          docker manifest create "${IMAGE_GHCR}:latest" \
+            --amend "${IMAGE_GHCR}:${VERSION}-amd64" \
+            --amend "${IMAGE_GHCR}:${VERSION}-arm64"
+          docker manifest push "${IMAGE_GHCR}:latest"
+
+      - name: Create and push multi-arch manifests (ACR)
+        run: |
+          VERSION='${{ needs.build-amd64.outputs.version }}'
+          IMAGE_ACR='${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api'
+          docker manifest create "${IMAGE_ACR}:${VERSION}" \
+            --amend "${IMAGE_ACR}:${VERSION}-amd64" \
+            --amend "${IMAGE_ACR}:${VERSION}-arm64"
+          docker manifest push "${IMAGE_ACR}:${VERSION}"
+          docker manifest create "${IMAGE_ACR}:latest" \
+            --amend "${IMAGE_ACR}:${VERSION}-amd64" \
+            --amend "${IMAGE_ACR}:${VERSION}-arm64"
+          docker manifest push "${IMAGE_ACR}:latest"
 
   deploy:
     name: Deploy to Azure Container Apps
-    needs: build-push
+    needs: manifest
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -103,21 +188,19 @@ jobs:
         uses: azure/cli@v2
         env:
           ACR_LOGIN_SERVER: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}
-          IMAGE_TAG: ${{ needs.build-push.outputs.image_tag }}
-          IMAGE_REV_LABEL: ${{ needs.build-push.outputs.version }}
+          IMAGE_TAG: ${{ needs.manifest.outputs.version }}
           CONTAINER_APP_NAME: ${{ secrets.AZURE_CONTAINER_APP_NAME }}
           RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
           CONTAINER_NAME: ${{ secrets.AZURE_CONTAINER_NAME || 'backend-api' }}
         with:
           inlineScript: |
+            echo "Deploying version: ${IMAGE_TAG}"
             echo "Updating Container App $CONTAINER_APP_NAME in $RESOURCE_GROUP to image ${ACR_LOGIN_SERVER}/mistribe/subtracker/backend-api:${IMAGE_TAG}"
             az containerapp update \
               --name "$CONTAINER_APP_NAME" \
               --resource-group "$RESOURCE_GROUP" \
               --image "${ACR_LOGIN_SERVER}/mistribe/subtracker/backend-api:${IMAGE_TAG}" \
-              --container-name "$CONTAINER_NAME" \
-              --set-env-vars "VERSION=${IMAGE_TAG}" "GIT_SHA=${{ github.sha }}" \
-              --annotations "com.mistribe.subtracker.version=${IMAGE_REV_LABEL}" "org.opencontainers.image.version=${IMAGE_REV_LABEL}" "org.opencontainers.image.revision=${{ github.sha }}"
+              --container-name "$CONTAINER_NAME"
             echo "Forcing new revision activation"
             az containerapp revision copy \
               --name "$CONTAINER_APP_NAME" \
