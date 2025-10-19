@@ -34,15 +34,12 @@ jobs:
           fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
-  build-amd64:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     needs: meta
-    outputs:
-      ghcr_digest: ${{ steps.meta_ghcr.outputs.digest }}
-      acr_digest: ${{ steps.meta_acr.outputs.digest }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -66,13 +63,12 @@ jobs:
           username: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_USR }}
           password: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_PWD }}
 
-      - name: Build and push linux/amd64 images
-        id: build
+      - name: Build and push multi-arch images to GHCR and ACR
         uses: docker/build-push-action@v6
         with:
           context: ./backend
           file: ./backend/cmd/api/Dockerfile
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
             VERSION=${{ needs.meta.outputs.version }}
@@ -85,150 +81,15 @@ jobs:
             com.mistribe.subtracker.version=${{ needs.meta.outputs.version }}
             com.mistribe.subtracker.git-sha=${{ github.sha }}
           tags: |
-            ghcr.io/mistribe/subtracker/backend-api:${{ needs.meta.outputs.version }}-amd64
-            ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api:${{ needs.meta.outputs.version }}-amd64
-
-      - name: Extract GHCR digest
-        id: meta_ghcr
-        run: |
-          echo "digest=$(echo '${{ steps.build.outputs.digest }}')" >> "$GITHUB_OUTPUT"
-
-      - name: Extract ACR digest
-        id: meta_acr
-        run: |
-          echo "digest=$(echo '${{ steps.build.outputs.digest }}')" >> "$GITHUB_OUTPUT"
-
-  build-arm64:
-    # Use GitHub-hosted ARM64 runner or your self-hosted ARM64 runner label
-    runs-on: ubuntu-24.04-arm
-    permissions:
-      contents: read
-      packages: write
-    needs: meta
-    outputs:
-      ghcr_digest: ${{ steps.meta_ghcr.outputs.digest }}
-      acr_digest: ${{ steps.meta_acr.outputs.digest }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Login to Dev Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}
-          username: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_USR }}
-          password: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_PWD }}
-
-      - name: Build and push linux/arm64 images
-        id: build
-        uses: docker/build-push-action@v6
-        with:
-          context: ./backend
-          file: ./backend/cmd/api/Dockerfile
-          platforms: linux/arm64
-          push: true
-          build-args: |
-            VERSION=${{ needs.meta.outputs.version }}
-          labels: |
-            org.opencontainers.image.title=subtracker-backend-api
-            org.opencontainers.image.source=${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.created=${{ github.run_id }}
-            org.opencontainers.image.version=${{ needs.meta.outputs.version }}
-            com.mistribe.subtracker.version=${{ needs.meta.outputs.version }}
-            com.mistribe.subtracker.git-sha=${{ github.sha }}
-          tags: |
-            ghcr.io/mistribe/subtracker/backend-api:${{ needs.meta.outputs.version }}-arm64
-            ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api:${{ needs.meta.outputs.version }}-arm64
-
-      - name: Extract GHCR digest
-        id: meta_ghcr
-        run: |
-          echo "digest=$(echo '${{ steps.build.outputs.digest }}')" >> "$GITHUB_OUTPUT"
-
-      - name: Extract ACR digest
-        id: meta_acr
-        run: |
-          echo "digest=$(echo '${{ steps.build.outputs.digest }}')" >> "$GITHUB_OUTPUT"
-
-  manifest:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    needs: [meta, build-amd64, build-arm64]
-    outputs:
-      version: ${{ needs.meta.outputs.version }}
-    steps:
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Login to Dev Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}
-          username: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_USR }}
-          password: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV_PWD }}
-
-      - name: Create and push multi-arch manifests (ACR)
-        env:
-          AMD64_DIGEST: ${{ needs.build-amd64.outputs.acr_digest }}
-          ARM64_DIGEST: ${{ needs.build-arm64.outputs.acr_digest }}
-        run: |
-          set -euo pipefail
-          VERSION='${{ needs.meta.outputs.version }}'
-          IMAGE_ACR='${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api'
-          echo "Create docker manifest for version: ${VERSION}"
-          docker manifest create "${IMAGE_ACR}:${VERSION}" \
-            --amend --os linux --arch amd64 "${IMAGE_ACR}@${AMD64_DIGEST}" \
-            --amend --os linux --arch arm64 "${IMAGE_ACR}@${ARM64_DIGEST}"
-          echo "Push docker manifest for version: ${VERSION}"
-          docker manifest push "${IMAGE_ACR}:${VERSION}"
-          echo "Create docker manifest for latest tag"
-          docker manifest create "${IMAGE_ACR}:latest" \
-            --amend --os linux --arch amd64 "${IMAGE_ACR}@${AMD64_DIGEST}" \
-            --amend --os linux --arch arm64 "${IMAGE_ACR}@${ARM64_DIGEST}"
-          echo "Push docker manifest for latest tag"
-          docker manifest push "${IMAGE_ACR}:latest"
-
-      - name: Create and push multi-arch manifests (GHCR)
-        env:
-          AMD64_DIGEST: ${{ needs.build-amd64.outputs.ghcr_digest }}
-          ARM64_DIGEST: ${{ needs.build-arm64.outputs.ghcr_digest }}
-        run: |
-          set -euo pipefail
-          VERSION='${{ needs.meta.outputs.version }}'
-          IMAGE_GHCR='ghcr.io/mistribe/subtracker/backend-api'
-          docker manifest create "${IMAGE_GHCR}:${VERSION}" \
-            --amend --os linux --arch amd64 "${IMAGE_GHCR}@${AMD64_DIGEST}" \
-            --amend --os linux --arch arm64 "${IMAGE_GHCR}@${ARM64_DIGEST}"
-          docker manifest push "${IMAGE_GHCR}:${VERSION}"
-          docker manifest create "${IMAGE_GHCR}:latest" \
-            --amend --os linux --arch amd64 "${IMAGE_GHCR}@${AMD64_DIGEST}" \
-            --amend --os linux --arch arm64 "${IMAGE_GHCR}@${ARM64_DIGEST}"
-          docker manifest push "${IMAGE_GHCR}:latest"
+            ghcr.io/mistribe/subtracker/backend-api:${{ needs.meta.outputs.version }}
+            ghcr.io/mistribe/subtracker/backend-api:latest
+            ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api:${{ needs.meta.outputs.version }}
+            ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}/mistribe/subtracker/backend-api:latest
 
 
   deploy:
     name: Deploy to Azure Container Apps
-    needs: manifest
+    needs: [meta, build]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -245,7 +106,7 @@ jobs:
         uses: azure/cli@v2
         env:
           ACR_LOGIN_SERVER: ${{ secrets.AZURE_CONTAINER_REGISTRY_DEV }}
-          IMAGE_TAG: ${{ needs.manifest.outputs.version }}
+          IMAGE_TAG: ${{ needs.meta.outputs.version }}
           CONTAINER_APP_NAME: ${{ secrets.AZURE_CONTAINER_APP_NAME }}
           RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
           CONTAINER_NAME: ${{ secrets.AZURE_CONTAINER_NAME || 'backend-api' }}
