@@ -114,13 +114,17 @@ jobs:
           inlineScript: |
             echo "Deploying version: ${IMAGE_TAG}"
             echo "Updating Container App $CONTAINER_APP_NAME in $RESOURCE_GROUP to image ${ACR_LOGIN_SERVER}/mistribe/subtracker/backend-api:${IMAGE_TAG}"
-            az containerapp update \
+            # Run the update, capture all output, and show only on failure
+            OUTPUT_FILE="$(mktemp)"
+            if az containerapp update \
               --name "$CONTAINER_APP_NAME" \
               --resource-group "$RESOURCE_GROUP" \
               --image "${ACR_LOGIN_SERVER}/mistribe/subtracker/backend-api:${IMAGE_TAG}" \
-              --container-name "$CONTAINER_NAME"
-            echo "Forcing new revision activation"
-            az containerapp revision copy \
-              --name "$CONTAINER_APP_NAME" \
-              --resource-group "$RESOURCE_GROUP" \
-              --latest
+              --container-name "$CONTAINER_NAME" \
+              >"$OUTPUT_FILE" 2>&1; then
+              echo "Azure Container App updated successfully."
+            else
+              echo "Azure Container App update failed. Showing command output:"
+              cat "$OUTPUT_FILE"
+              exit 1
+            fi
