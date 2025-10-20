@@ -21,7 +21,6 @@ type Subscriptions struct {
 	FreeTrialStartDate  *time.Time
 	FreeTrialEndDate    *time.Time
 	ProviderID          uuid.UUID
-	FamilyID            *uuid.UUID
 	PayerType           *string
 	PayerMemberID       *uuid.UUID
 	StartDate           time.Time

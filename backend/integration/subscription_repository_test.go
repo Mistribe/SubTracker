@@ -15,6 +15,7 @@ import (
 
 	"github.com/mistribe/subtracker/internal/adapters/persistence/repositories"
 	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/family"
 	providerDomain "github.com/mistribe/subtracker/internal/domain/provider"
 	subdom "github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/domain/types"
@@ -25,6 +26,29 @@ func TestSubscriptionRepository_CRUD(t *testing.T) {
 	ctx := context.Background()
 	provRepo := repositories.NewProviderRepository(GetDBContext())
 	subRepo := repositories.NewSubscriptionRepository(GetDBContext())
+	famRepo := repositories.NewFamilyRepository(GetDBContext())
+	familyId := types.NewFamilyID()
+
+	// create family
+	ownerUserID := types.UserID(uuid.NewString())
+	m := family.NewMember(
+		types.NewFamilyMemberID(),
+		familyId,
+		"Owner",
+		family.OwnerMemberType,
+		nil,
+		time.Now().UTC(),
+		time.Now().UTC(),
+	)
+	fam := family.NewFamily(
+		familyId,
+		ownerUserID,
+		"Fam-"+uuid.NewString()[0:8],
+		[]family.Member{m},
+		time.Now().UTC(),
+		time.Now().UTC(),
+	)
+	require.NoError(t, famRepo.Save(ctx, fam))
 
 	// Create a provider (system owner) required by subscription FK
 	prov := providerDomain.NewProvider(
@@ -52,8 +76,8 @@ func TestSubscriptionRepository_CRUD(t *testing.T) {
 		nil, // free trial
 		prov.Id(),
 		priceWrapper,
-		types.SystemOwner, // system owned subscription
-		nil,               // payer
+		types.NewFamilyOwner(familyId), // system owned subscription
+		nil,                            // payer
 		[]types.FamilyMemberID{},
 		[]subdom.LabelRef{},
 		time.Now().Add(-24*time.Hour).UTC(), // start yesterday
@@ -113,4 +137,9 @@ func TestSubscriptionRepository_CRUD(t *testing.T) {
 	provDeleted, err := provRepo.Delete(ctx, prov.Id())
 	require.NoError(t, err)
 	assert.True(t, provDeleted)
+
+	// Cleanup family
+	famDeleted, err := famRepo.Delete(ctx, familyId)
+	require.NoError(t, err)
+	assert.True(t, famDeleted)
 }
