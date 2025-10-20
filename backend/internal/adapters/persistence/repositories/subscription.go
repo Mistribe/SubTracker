@@ -403,7 +403,6 @@ func (r SubscriptionRepository) create(ctx context.Context, subscriptions []subs
 		Subscriptions.OwnerFamilyID,
 		Subscriptions.OwnerUserID,
 		Subscriptions.PayerType,
-		Subscriptions.FamilyID,
 		Subscriptions.PayerMemberID,
 		Subscriptions.StartDate,
 		Subscriptions.EndDate,
@@ -453,10 +452,9 @@ func (r SubscriptionRepository) create(ctx context.Context, subscriptions []subs
 			ownerUserIdVal = NULL
 		}
 
-		var payerTypeVal, familyIdVal, payerMemberIdVal Expression
+		var payerTypeVal, payerMemberIdVal Expression
 		if sub.Payer() != nil {
 			payerTypeVal = String(sub.Payer().Type().String())
-			familyIdVal = UUID(sub.Payer().FamilyId())
 			if sub.Payer().Type() == subscription.FamilyMemberPayer {
 				payerMemberIdVal = UUID(sub.Payer().MemberId())
 			} else {
@@ -464,7 +462,6 @@ func (r SubscriptionRepository) create(ctx context.Context, subscriptions []subs
 			}
 		} else {
 			payerTypeVal = NULL
-			familyIdVal = NULL
 			payerMemberIdVal = NULL
 		}
 
@@ -494,7 +491,6 @@ func (r SubscriptionRepository) create(ctx context.Context, subscriptions []subs
 			ownerFamilyIdVal,
 			ownerUserIdVal,
 			payerTypeVal,
-			familyIdVal,
 			payerMemberIdVal,
 			TimestampzT(sub.StartDate()),
 			endDateVal,
@@ -595,10 +591,9 @@ func (r SubscriptionRepository) update(ctx context.Context, sub subscription.Sub
 			ownerUserIdVal = StringExp(NULL)
 		}
 
-		var payerTypeVal, familyIdVal, payerMemberIdVal StringExpression
+		var payerTypeVal, payerMemberIdVal StringExpression
 		if sub.Payer() != nil {
 			payerTypeVal = String(sub.Payer().Type().String())
-			familyIdVal = StringExp(UUID(sub.Payer().FamilyId()))
 			if sub.Payer().Type() == subscription.FamilyMemberPayer {
 				payerMemberIdVal = StringExp(UUID(sub.Payer().MemberId()))
 			} else {
@@ -606,7 +601,6 @@ func (r SubscriptionRepository) update(ctx context.Context, sub subscription.Sub
 			}
 		} else {
 			payerTypeVal = StringExp(NULL)
-			familyIdVal = StringExp(NULL)
 			payerMemberIdVal = StringExp(NULL)
 		}
 
@@ -636,7 +630,6 @@ func (r SubscriptionRepository) update(ctx context.Context, sub subscription.Sub
 				Subscriptions.OwnerFamilyID.SET(ownerFamilyIdVal),
 				Subscriptions.OwnerUserID.SET(ownerUserIdVal),
 				Subscriptions.PayerType.SET(payerTypeVal),
-				Subscriptions.FamilyID.SET(familyIdVal),
 				Subscriptions.PayerMemberID.SET(payerMemberIdVal),
 				Subscriptions.StartDate.SET(TimestampzT(sub.StartDate())),
 				Subscriptions.EndDate.SET(endDateVal),

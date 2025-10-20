@@ -43,23 +43,26 @@ func createSubscriptionFromJet(
 	}
 
 	var payer subscription.Payer
-	if jetModel.PayerType != nil && jetModel.FamilyID != nil {
+	if jetModel.PayerType != nil && jetModel.OwnerFamilyID != nil {
 		payerType := subscription.MustParsePayerType(*jetModel.PayerType)
 		var memberID *types.FamilyMemberID
 		if jetModel.PayerMemberID != nil {
 			memberID = x.P(types.FamilyMemberID(*jetModel.PayerMemberID))
 		}
-		payer = subscription.NewPayer(payerType, types.FamilyID(*jetModel.FamilyID), memberID)
+		payer = subscription.NewPayer(payerType, types.FamilyID(*jetModel.OwnerFamilyID), memberID)
 	}
 
 	ownerType := types.MustParseOwnerType(jetModel.OwnerType)
 	var ownerFamilyID *types.FamilyID
 	var ownerUserID *types.UserID
-	if jetModel.FamilyID != nil {
-		ownerFamilyID = x.P(types.FamilyID(*jetModel.FamilyID))
+	if jetModel.OwnerFamilyID != nil {
+		ownerFamilyID = x.P(types.FamilyID(*jetModel.OwnerFamilyID))
 	}
 	if jetModel.OwnerUserID != nil {
 		ownerUserID = x.P(types.UserID(*jetModel.OwnerUserID))
+	}
+	if jetModel.OwnerFamilyID == nil && jetModel.OwnerUserID == nil {
+		panic("familyID or ownerUserID must be provided")
 	}
 	owner := types.NewOwner(ownerType, ownerFamilyID, ownerUserID)
 
@@ -68,14 +71,14 @@ func createSubscriptionFromJet(
 	var labelRefs []subscription.LabelRef
 	for _, subscriptionLabel := range subscriptionLabels {
 		labelRefs = append(labelRefs, subscription.LabelRef{
-			LabelId: types.LabelID(subscriptionLabel),
+			LabelId: subscriptionLabel,
 			Source:  subscription.LabelSourceSubscription,
 		})
 	}
 
 	for _, providerLabel := range providerLabels {
 		labelRefs = append(labelRefs, subscription.LabelRef{
-			LabelId: types.LabelID(providerLabel),
+			LabelId: providerLabel,
 			Source:  subscription.LabelSourceProvider,
 		})
 	}
