@@ -18,6 +18,7 @@ import {DatesSection} from "@/components/subscriptions/form/DatesSection";
 import {OwnershipSection} from "@/components/subscriptions/form/OwnershipSection";
 import {FreeTrialSection} from "@/components/subscriptions/form/FreeTrialSection";
 import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency.ts";
+import {useProfileManagement} from "@/hooks/profile/useProfileManagement.ts";
 
 const SubscriptionFormPage = () => {
     const navigate = useNavigate();
@@ -29,6 +30,7 @@ const SubscriptionFormPage = () => {
     const {data: providersData} = useAllProvidersQuery();
     const {data: familyData} = useFamilyQuery();
     const {data: subscriptionsData} = useSubscriptionsQuery();
+    const {preferredCurrency} = useProfileManagement();
 
     const isEditMode = !!subscriptionId;
     const providers = providersData?.pages.flatMap(page => page.providers) || [];
@@ -123,8 +125,15 @@ const SubscriptionFormPage = () => {
             }
 
             setIsLoading(false);
+        } else {
+            if (preferredCurrency?.currency) {
+                form.setValue("customPrice", {
+                    amount: 10,
+                    currency: preferredCurrency.currency
+                });
+            }
         }
-    }, [isEditMode, subscriptionToEdit, form]);
+    }, [isEditMode, subscriptionToEdit, form, preferredCurrency]);
 
     const onSubmit = async (data: FormValues) => {
         try {
