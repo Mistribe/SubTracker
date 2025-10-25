@@ -17,10 +17,6 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
     const providerId = form.watch("providerId");
     const customPrice = form.watch("customPrice");
 
-    // Derive values directly
-    const selectedProvider = providers.find(provider => provider.id === providerId);
-    // customPrice is now always required, so we always show the input
-
     // Prepare values for combobox components
     const providerValue = providerId || "";
 
