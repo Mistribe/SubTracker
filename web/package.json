@@ -16,7 +16,9 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:headed": "playwright test --headed",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "shadcn": "npx shadcn-ui@latest",
+    "shadcn:update": "npx shadcn@latest add -a -y -o"
   },
   "dependencies": {
     "@clerk/clerk-react": "latest",
