@@ -88,30 +88,10 @@ export const OwnershipSection = ({ family }: OwnershipSectionProps) => {
             {selectedOwnerType === OwnerType.Family && (
                 <div className="max-w-md mx-auto mt-6 space-y-6">
                     <div>
-                        <Label htmlFor="familyId" className="text-lg mb-2 block">Which family is this for?</Label>
-                        <Select
-                            onValueChange={(value) => {
-                                form.setValue("familyId", value);
-                                // Reset service users and payer when family changes
-                                form.setValue("serviceUsers", []);
-                                form.setValue("payerType", "family");
-                                form.setValue("payerId", value);
-                            }}
-                            value={form.watch("familyId") || ""}
-                        >
-                            <SelectTrigger className="h-12">
-                                <SelectValue placeholder="Select a family"/>
-                            </SelectTrigger>
-                            <SelectContent>
-                                {family ? (
-                                    <SelectItem key={family.id} value={family.id}>
-                                        {family.name}
-                                    </SelectItem>
-                                ) : (
-                                    <div className="p-2 text-sm text-muted-foreground">No family available</div>
-                                )}
-                            </SelectContent>
-                        </Select>
+                        <Label htmlFor="familyId" className="text-lg mb-2 block">Family</Label>
+                        <div className="h-12 px-3 flex items-center rounded-md border bg-background text-foreground">
+                            {family?.name}
+                        </div>
                         {form.formState.errors.familyId && (
                             <p className="text-sm text-red-500 mt-1">{form.formState.errors.familyId.message}</p>
                         )}
