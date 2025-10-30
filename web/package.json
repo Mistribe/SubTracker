@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@clerk/clerk-react": "latest",
-    "@clerk/themes": "^2.4.29",
+    "@clerk/themes": "^2.4.30",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -67,10 +67,10 @@
     "react-day-picker": "^9.11.1",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.65.0",
-    "react-intersection-observer": "^9.16.0",
+    "react-intersection-observer": "^10.0.0",
     "react-resizable-panels": "^3.0.6",
-    "react-router-dom": "^7.9.4",
-    "recharts": "^2.15.4",
+    "react-router-dom": "^7.9.5",
+    "recharts": "^3.3.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.16",
@@ -78,14 +78,14 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@clerk/testing": "^1.13.8",
+    "@clerk/testing": "^1.13.9",
     "@eslint/js": "^9.38.0",
     "@modelcontextprotocol/sdk": "^1.20.2",
     "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
-    "@types/node": "^24.9.1",
+    "@types/node": "^24.9.2",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react-swc": "^4.2.0",
@@ -99,6 +99,6 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.2",
     "vite": "^7.1.12",
-    "vitest": "^4.0.3"
+    "vitest": "^4.0.5"
   }
 }
