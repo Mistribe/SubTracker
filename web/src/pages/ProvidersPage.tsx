@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAllProvidersQuery } from "@/hooks/providers/useAllProvidersQuery";
 import { AddProviderForm } from "@/components/providers/AddProviderForm";
 import { EditProviderForm } from "@/components/providers/EditProviderForm";
@@ -9,7 +10,7 @@ import { NoProviders } from "@/components/providers/ui/EmptyStates";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import Provider from "@/models/provider";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, Upload } from "lucide-react";
 import { useProvidersQuotaQuery } from "@/hooks/providers/useProvidersQuotaQuery.ts";
 import { QuotaButton } from "@/components/quotas/QuotaButton";
 import { FeatureId } from "@/models/billing.ts";
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/tooltip";
 
 const ProvidersPage = () => {
+    const navigate = useNavigate();
     const [isAddingProvider, setIsAddingProvider] = useState(false);
     const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
     const [searchText, setSearchText] = useState("");
@@ -80,31 +82,40 @@ const ProvidersPage = () => {
                     />
                 }
                 actionButton={
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span>
-                                    <Button
-                                        onClick={() => setIsAddingProvider(true)}
-                                        disabled={isDisabled}
-                                    >
-                                        <PlusIcon className="mr-2 h-4 w-4" />
-                                        Add Provider
-                                        {providersEnabled && providersLimit !== undefined && (
-                                            <span className="ml-2 text-xs opacity-70">
-                                                ({providersUsed}/{providersLimit})
-                                            </span>
-                                        )}
-                                    </Button>
-                                </span>
-                            </TooltipTrigger>
-                            {tooltipMessage && (
-                                <TooltipContent>
-                                    <p>{tooltipMessage}</p>
-                                </TooltipContent>
-                            )}
-                        </Tooltip>
-                    </TooltipProvider>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => navigate('/providers/import')}
+                        >
+                            <Upload className="mr-2 h-4 w-4" />
+                            Import from file
+                        </Button>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span>
+                                        <Button
+                                            onClick={() => setIsAddingProvider(true)}
+                                            disabled={isDisabled}
+                                        >
+                                            <PlusIcon className="mr-2 h-4 w-4" />
+                                            Add Provider
+                                            {providersEnabled && providersLimit !== undefined && (
+                                                <span className="ml-2 text-xs opacity-70">
+                                                    ({providersUsed}/{providersLimit})
+                                                </span>
+                                            )}
+                                        </Button>
+                                    </span>
+                                </TooltipTrigger>
+                                {tooltipMessage && (
+                                    <TooltipContent>
+                                        <p>{tooltipMessage}</p>
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
+                        </TooltipProvider>
+                    </div>
                 }
             />
 

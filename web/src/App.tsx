@@ -9,8 +9,11 @@ import DashboardPage from "@/pages/DashboardPage"
 import PreferencePage from "@/pages/PreferencePage.tsx"
 import FamilyPage from "@/pages/FamilyPage"
 import LabelsPage from "@/pages/LabelsPage"
+import ImportLabelsPage from "@/pages/ImportLabelsPage"
 import ProvidersPage from "@/pages/ProvidersPage"
+import ImportProvidersPage from "@/pages/ImportProvidersPage"
 import SubscriptionsPage from "@/pages/SubscriptionsPage"
+import ImportSubscriptionsPage from "@/pages/ImportSubscriptionsPage"
 import SubscriptionFormPage from "@/pages/SubscriptionFormPage"
 import ProviderDetailPage from "@/pages/ProviderDetailPage";
 import AcceptInvitationPage from "@/pages/AcceptInvitationPage";
@@ -65,6 +68,16 @@ function App() {
                                 }
                             />
                             <Route
+                                path="/labels/import"
+                                element={
+                                    <ProtectedRoute>
+                                        <AppLayout>
+                                            <ImportLabelsPage />
+                                        </AppLayout>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
                                 path="/profile"
                                 element={
                                     <ProtectedRoute>
@@ -85,6 +98,16 @@ function App() {
                                 }
                             />
                             <Route
+                                path="/providers/import"
+                                element={
+                                    <ProtectedRoute>
+                                        <AppLayout>
+                                            <ImportProvidersPage />
+                                        </AppLayout>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
                                 path="/providers/:providerId"
                                 element={
                                     <ProtectedRoute>
@@ -100,6 +123,16 @@ function App() {
                                     <ProtectedRoute>
                                         <AppLayout>
                                             <SubscriptionsPage />
+                                        </AppLayout>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/subscriptions/import"
+                                element={
+                                    <ProtectedRoute>
+                                        <AppLayout>
+                                            <ImportSubscriptionsPage />
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
