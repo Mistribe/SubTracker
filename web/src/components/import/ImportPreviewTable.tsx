@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AlertCircle, CheckCircle2, Loader2, XCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2, ChevronDown, Loader2, XCircle } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   Table,
@@ -34,6 +34,7 @@ export interface ImportPreviewTableProps<T> {
   progress?: ImportProgress;
   enableVirtualization?: boolean;
   virtualizationThreshold?: number;
+  onRetryRecord?: (index: number) => void;
 }
 
 export function ImportPreviewTable<T>({
@@ -48,14 +49,26 @@ export function ImportPreviewTable<T>({
   progress,
   enableVirtualization = true,
   virtualizationThreshold = 100,
+  onRetryRecord,
 }: ImportPreviewTableProps<T>) {
   const parentRef = React.useRef<HTMLDivElement>(null);
+  const [expandedRows, setExpandedRows] = React.useState<Set<number>>(new Set());
   const allRecordsSelected = records.length > 0 && selectedRecords.size === records.length;
   const someRecordsSelected = selectedRecords.size > 0 && !allRecordsSelected;
   const validRecords = records.filter((r) => r.isValid);
   const selectedValidRecords = Array.from(selectedRecords).filter(
     (index) => records[index]?.isValid
   );
+
+  const toggleRowExpansion = (index: number) => {
+    const newExpanded = new Set(expandedRows);
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index);
+    } else {
+      newExpanded.add(index);
+    }
+    setExpandedRows(newExpanded);
+  };
 
   // Enable virtualization only if records exceed threshold
   const shouldVirtualize = enableVirtualization && records.length > virtualizationThreshold;
@@ -128,17 +141,32 @@ export function ImportPreviewTable<T>({
 
     if (status?.status === 'error') {
       return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Badge variant="destructive" className="gap-1 cursor-help">
-              <XCircle className="size-3" />
-              Failed
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="max-w-xs">{status.error || 'Import failed'}</p>
-          </TooltipContent>
-        </Tooltip>
+        <div className="flex items-center gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="destructive" className="gap-1 cursor-help">
+                <XCircle className="size-3" />
+                Failed
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="max-w-xs">{status.error || 'Import failed'}</p>
+            </TooltipContent>
+          </Tooltip>
+          {onRetryRecord && !isImporting && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 px-2 text-xs"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRetryRecord(index);
+              }}
+            >
+              Retry
+            </Button>
+          )}
+        </div>
       );
     }
 
@@ -199,6 +227,22 @@ export function ImportPreviewTable<T>({
           >
             Import All Valid ({validRecords.length})
           </Button>
+          {progress && progress.failed > 0 && onRetryRecord && !isImporting && (
+            <Button
+              onClick={() => {
+                // Retry all failed records
+                const failedIndices = Array.from(importStatus.entries())
+                  .filter(([_, status]) => status.status === 'error')
+                  .map(([index]) => index);
+                failedIndices.forEach(index => onRetryRecord(index));
+              }}
+              variant="outline"
+              size="sm"
+              className="text-orange-600 hover:text-orange-700"
+            >
+              Retry All Failed ({progress.failed})
+            </Button>
+          )}
         </div>
 
         {progress && progress.inProgress && (
@@ -245,6 +289,27 @@ export function ImportPreviewTable<T>({
           </>
         )}
       </div>
+
+      {/* Validation error summary */}
+      {records.length - validRecords.length > 0 && (
+        <div className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/20 p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="size-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 space-y-2">
+              <h4 className="text-sm font-semibold text-red-900 dark:text-red-100">
+                Validation Errors Found
+              </h4>
+              <p className="text-sm text-red-800 dark:text-red-200">
+                {records.length - validRecords.length} record(s) have validation errors and cannot be imported. 
+                Hover over the "Invalid" badge in the Status column to see specific errors for each record.
+              </p>
+              <p className="text-xs text-red-700 dark:text-red-300">
+                Common issues: missing required fields, invalid formats, or incorrect data types.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Table */}
       <div className="border rounded-lg">
@@ -343,29 +408,69 @@ export function ImportPreviewTable<T>({
             </TableHeader>
             <TableBody>
               {records.map((record, index) => (
-                <TableRow
-                  key={index}
-                  className={cn(getRowClassName(record, index))}
-                  data-state={selectedRecords.has(index) ? 'selected' : undefined}
-                >
-                  <TableCell>
-                    <Checkbox
-                      checked={selectedRecords.has(index)}
-                      onCheckedChange={() => handleSelectRecord(index)}
-                      aria-label={`Select record ${index + 1}`}
-                      disabled={!record.isValid}
-                    />
-                  </TableCell>
-                  <TableCell>{renderStatusCell(record, index)}</TableCell>
-                  {columns.map((column) => {
-                    const value = record.data[column.key as keyof T];
-                    return (
-                      <TableCell key={String(column.key)}>
-                        {column.render ? column.render(value, record) : String(value ?? '')}
+                <React.Fragment key={index}>
+                  <TableRow
+                    className={cn(getRowClassName(record, index))}
+                    data-state={selectedRecords.has(index) ? 'selected' : undefined}
+                  >
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          checked={selectedRecords.has(index)}
+                          onCheckedChange={() => handleSelectRecord(index)}
+                          aria-label={`Select record ${index + 1}`}
+                          disabled={!record.isValid}
+                        />
+                        {!record.isValid && record.validationErrors.length > 0 && (
+                          <button
+                            onClick={() => toggleRowExpansion(index)}
+                            className="p-1 hover:bg-accent rounded transition-colors"
+                            aria-label={expandedRows.has(index) ? 'Collapse errors' : 'Expand errors'}
+                          >
+                            <ChevronDown
+                              className={cn(
+                                'size-4 text-muted-foreground transition-transform',
+                                expandedRows.has(index) && 'rotate-180'
+                              )}
+                            />
+                          </button>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>{renderStatusCell(record, index)}</TableCell>
+                    {columns.map((column) => {
+                      const value = record.data[column.key as keyof T];
+                      return (
+                        <TableCell key={String(column.key)}>
+                          {column.render ? column.render(value, record) : String(value ?? '')}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                  {/* Expandable error details row */}
+                  {!record.isValid && expandedRows.has(index) && (
+                    <TableRow className={cn(getRowClassName(record, index))}>
+                      <TableCell colSpan={columns.length + 2} className="p-0">
+                        <div className="px-4 py-3 bg-red-50/50 dark:bg-red-950/10 border-t border-red-200 dark:border-red-900">
+                          <div className="space-y-2">
+                            <h5 className="text-xs font-semibold text-red-900 dark:text-red-100 flex items-center gap-2">
+                              <AlertCircle className="size-3" />
+                              Validation Errors
+                            </h5>
+                            <ul className="space-y-1 text-xs text-red-800 dark:text-red-200">
+                              {record.validationErrors.map((error, errorIdx) => (
+                                <li key={errorIdx} className="flex items-start gap-2">
+                                  <span className="font-medium min-w-[100px]">{error.field}:</span>
+                                  <span>{error.message}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
                       </TableCell>
-                    );
-                  })}
-                </TableRow>
+                    </TableRow>
+                  )}
+                </React.Fragment>
               ))}
             </TableBody>
           </Table>

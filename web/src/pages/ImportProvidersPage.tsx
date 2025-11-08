@@ -101,6 +101,7 @@ export default function ImportProvidersPage() {
 
   const {
     importRecords,
+    retryRecord,
     importStatus,
     progress,
     isImporting,
@@ -157,11 +158,24 @@ export default function ImportProvidersPage() {
       }
     } catch (error) {
       if (error instanceof FileParseError) {
-        const errorMsg = error.errors.length > 0
-          ? `${error.message}: ${error.errors[0].message}`
-          : error.message;
+        // Format error message with line numbers if available
+        let errorMsg = error.message;
+        if (error.errors.length > 0) {
+          const errorDetails = error.errors
+            .slice(0, 3) // Show first 3 errors
+            .map(err => err.line ? `Line ${err.line}: ${err.message}` : err.message)
+            .join('\n');
+          errorMsg = `${error.message}\n\n${errorDetails}`;
+          if (error.errors.length > 3) {
+            errorMsg += `\n... and ${error.errors.length - 3} more errors`;
+          }
+        }
         setParseError(errorMsg);
-        toast.error('Failed to parse file', { description: errorMsg });
+        toast.error('Failed to parse file', { 
+          description: error.errors.length > 0 
+            ? `${error.errors.length} error(s) found. Check the upload zone for details.`
+            : error.message 
+        });
       } else {
         const errorMsg = error instanceof Error ? error.message : 'Unknown error';
         setParseError(errorMsg);
@@ -364,6 +378,7 @@ export default function ImportProvidersPage() {
             importStatus={importStatus}
             isImporting={isImporting}
             progress={progress}
+            onRetryRecord={retryRecord}
           />
 
           {/* Action buttons at bottom */}

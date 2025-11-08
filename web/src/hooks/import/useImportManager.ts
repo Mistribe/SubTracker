@@ -29,6 +29,7 @@ interface UseImportManagerProps<T> {
 
 interface UseImportManagerReturn {
   importRecords: (indices: number[]) => Promise<void>;
+  retryRecord: (index: number) => Promise<void>;
   importStatus: Map<number, ImportStatus>;
   progress: ImportProgress;
   isImporting: boolean;
@@ -99,10 +100,47 @@ export function useImportManager<T>({
       updateStatus(index, { status: 'success' });
       return true;
     } catch (error: any) {
-      const errorMessage = error?.message || 'Failed to import record';
+      // Determine error type and create appropriate message
+      let errorMessage = 'Failed to import record';
+      
+      if (error?.response) {
+        // HTTP error response
+        const status = error.response.status;
+        const data = error.response.data;
+        
+        if (status === 400) {
+          errorMessage = `Validation error: ${data?.message || 'Invalid data'}`;
+        } else if (status === 401 || status === 403) {
+          errorMessage = 'Authentication error: Please check your permissions';
+        } else if (status === 404) {
+          errorMessage = 'Resource not found';
+        } else if (status === 409) {
+          errorMessage = `Conflict: ${data?.message || 'Record already exists'}`;
+        } else if (status === 429) {
+          errorMessage = 'Rate limit exceeded: Too many requests';
+        } else if (status >= 500) {
+          errorMessage = `Server error (${status}): Please try again later`;
+        } else {
+          errorMessage = data?.message || `HTTP error ${status}`;
+        }
+      } else if (error?.request) {
+        // Network error (request made but no response)
+        errorMessage = 'Network error: Unable to reach server';
+      } else if (error?.message) {
+        // Other errors
+        errorMessage = error.message;
+      }
       
       // Retry with exponential backoff if we haven't exceeded max retries
-      if (retryCount < maxRetries) {
+      // Don't retry on client errors (4xx) except rate limiting
+      const shouldRetry = retryCount < maxRetries && (
+        !error?.response || 
+        error.response.status >= 500 || 
+        error.response.status === 429 ||
+        !error.response.status
+      );
+      
+      if (shouldRetry) {
         const backoffDelay = calculateBackoffDelay(retryCount, delayBetweenCalls);
         await sleep(backoffDelay);
         return importSingleRecord(index, record, retryCount + 1);
@@ -180,8 +218,40 @@ export function useImportManager<T>({
     cancelledRef.current = true;
   }, []);
 
+  const retryRecord = useCallback(
+    async (index: number) => {
+      if (isImporting) {
+        return;
+      }
+
+      const record = records[index];
+      if (!record) {
+        return;
+      }
+
+      // Reset the status to pending before retrying
+      updateStatus(index, { status: 'pending' });
+
+      // Import the single record
+      const success = await importSingleRecord(index, record);
+
+      // Update progress counts
+      const currentStatus = importStatus.get(index);
+      if (currentStatus?.status === 'error') {
+        // If it was previously failed, decrement failed count
+        setProgress(prev => ({
+          ...prev,
+          failed: Math.max(0, prev.failed - 1),
+          completed: success ? prev.completed + 1 : prev.completed,
+        }));
+      }
+    },
+    [isImporting, records, importStatus, updateStatus]
+  );
+
   return {
     importRecords,
+    retryRecord,
     importStatus,
     progress,
     isImporting,

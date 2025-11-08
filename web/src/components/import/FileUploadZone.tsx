@@ -166,8 +166,11 @@ export function FileUploadZone({
             </>
           ) : error ? (
             <>
-              <p className="text-sm font-medium text-destructive">Error</p>
-              <p className="text-xs text-destructive/80">{error}</p>
+              <p className="text-sm font-medium text-destructive">Failed to parse file</p>
+              <p className="text-xs text-destructive/80 max-w-md mx-auto whitespace-pre-wrap">{error}</p>
+              <p className="text-xs text-muted-foreground mt-3">
+                Click or drag another file to try again
+              </p>
             </>
           ) : selectedFile ? (
             <>
