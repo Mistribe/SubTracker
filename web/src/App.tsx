@@ -11,6 +11,7 @@ import FamilyPage from "@/pages/FamilyPage"
 import LabelsPage from "@/pages/LabelsPage"
 import ImportLabelsPage from "@/pages/ImportLabelsPage"
 import ProvidersPage from "@/pages/ProvidersPage"
+import ImportProvidersPage from "@/pages/ImportProvidersPage"
 import SubscriptionsPage from "@/pages/SubscriptionsPage"
 import SubscriptionFormPage from "@/pages/SubscriptionFormPage"
 import ProviderDetailPage from "@/pages/ProviderDetailPage";
@@ -91,6 +92,16 @@ function App() {
                                     <ProtectedRoute>
                                         <AppLayout>
                                             <ProvidersPage />
+                                        </AppLayout>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/providers/import"
+                                element={
+                                    <ProtectedRoute>
+                                        <AppLayout>
+                                            <ImportProvidersPage />
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
