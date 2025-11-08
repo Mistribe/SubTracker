@@ -13,6 +13,7 @@ import ImportLabelsPage from "@/pages/ImportLabelsPage"
 import ProvidersPage from "@/pages/ProvidersPage"
 import ImportProvidersPage from "@/pages/ImportProvidersPage"
 import SubscriptionsPage from "@/pages/SubscriptionsPage"
+import ImportSubscriptionsPage from "@/pages/ImportSubscriptionsPage"
 import SubscriptionFormPage from "@/pages/SubscriptionFormPage"
 import ProviderDetailPage from "@/pages/ProviderDetailPage";
 import AcceptInvitationPage from "@/pages/AcceptInvitationPage";
@@ -122,6 +123,16 @@ function App() {
                                     <ProtectedRoute>
                                         <AppLayout>
                                             <SubscriptionsPage />
+                                        </AppLayout>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/subscriptions/import"
+                                element={
+                                    <ProtectedRoute>
+                                        <AppLayout>
+                                            <ImportSubscriptionsPage />
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }
