@@ -113,13 +113,13 @@ export function FileUploadZone({
         className={cn(
           "relative flex flex-col items-center justify-center w-full min-h-[300px] px-6 py-10",
           "border-2 border-dashed rounded-lg transition-all duration-200",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          "focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-background",
           isDragOver && !isLoading
-            ? "border-primary bg-primary/5 scale-[1.02]"
+            ? "border-primary bg-primary/10 scale-[1.02]"
             : "border-border bg-background",
-          !isLoading && !isDragOver && "hover:border-primary/50 hover:bg-accent/50 cursor-pointer",
+          !isLoading && !isDragOver && "hover:border-primary/60 hover:bg-accent/60 cursor-pointer",
           isLoading && "opacity-60 cursor-not-allowed",
-          error && "border-destructive bg-destructive/5"
+          error && "border-destructive bg-destructive/10"
         )}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
@@ -139,9 +139,14 @@ export function FileUploadZone({
         />
 
         {/* Icon */}
-        <div className="mb-4">
+        <div className="mb-4" role="img" aria-label={
+          isLoading ? "Loading spinner" :
+          error ? "Error icon" :
+          selectedFile ? "File selected icon" :
+          "Upload icon"
+        }>
           {isLoading ? (
-            <Loader2 className="h-12 w-12 text-muted-foreground animate-spin" aria-hidden="true" />
+            <Loader2 className="h-12 w-12 text-primary animate-spin" aria-hidden="true" />
           ) : error ? (
             <AlertCircle className="h-12 w-12 text-destructive" aria-hidden="true" />
           ) : selectedFile ? (
@@ -166,9 +171,9 @@ export function FileUploadZone({
             </>
           ) : error ? (
             <>
-              <p className="text-sm font-medium text-destructive">Failed to parse file</p>
-              <p className="text-xs text-destructive/80 max-w-md mx-auto whitespace-pre-wrap">{error}</p>
-              <p className="text-xs text-muted-foreground mt-3">
+              <p className="text-sm font-semibold text-destructive">Failed to parse file</p>
+              <p className="text-xs text-destructive font-medium max-w-md mx-auto whitespace-pre-wrap">{error}</p>
+              <p className="text-xs text-foreground mt-3 font-medium">
                 Click or drag another file to try again
               </p>
             </>
