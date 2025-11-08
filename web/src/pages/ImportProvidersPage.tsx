@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download } from 'lucide-react';
 import { FileUploadZone } from '@/components/import/FileUploadZone';
 import { ImportPreviewTable } from '@/components/import/ImportPreviewTable';
+import { ImportHelp } from '@/components/import/ImportHelp';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
 import { fileParser, FileParseError, FileSizeError } from '@/services/fileParser';
@@ -321,56 +322,8 @@ export default function ImportProvidersPage() {
             parseProgress={parseProgress}
           />
 
-          {/* Help text and template download */}
-          <div className="rounded-lg border bg-muted/50 p-4 space-y-3">
-            <h3 className="font-semibold text-sm">File Format Requirements</h3>
-            <div className="text-sm text-muted-foreground space-y-2">
-              <p>Your file must include the following fields:</p>
-              <ul className="list-disc list-inside space-y-1 ml-2">
-                <li><span className="font-medium">name</span> (required) - Provider name</li>
-                <li><span className="font-medium">description</span> (optional) - Provider description</li>
-                <li><span className="font-medium">url</span> (optional) - Provider website URL</li>
-                <li><span className="font-medium">iconUrl</span> (optional) - Provider icon URL</li>
-                <li><span className="font-medium">pricingPageUrl</span> (optional) - Pricing page URL</li>
-                <li><span className="font-medium">labels</span> (optional) - Comma-separated label names</li>
-                <li><span className="font-medium">ownerType</span> (optional) - Owner type: personal, family, or system</li>
-                <li><span className="font-medium">ownerFamilyId</span> (optional) - Family ID if ownerType is family</li>
-              </ul>
-              <p className="mt-3">
-                <Button
-                  variant="link"
-                  size="sm"
-                  className="h-auto p-0"
-                  onClick={() => {
-                    const jsonContent = JSON.stringify([
-                      {
-                        name: 'Netflix',
-                        description: 'Streaming service',
-                        url: 'https://netflix.com',
-                        labels: 'entertainment,streaming'
-                      },
-                      {
-                        name: 'AWS',
-                        description: 'Cloud services',
-                        url: 'https://aws.amazon.com',
-                        labels: 'cloud,infrastructure'
-                      }
-                    ], null, 2);
-                    const blob = new Blob([jsonContent], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'providers-template.json';
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  }}
-                >
-                  <Download className="size-3 mr-1" />
-                  Download JSON template
-                </Button>
-              </p>
-            </div>
-          </div>
+          {/* Help documentation */}
+          <ImportHelp entityType="providers" />
         </div>
       )}
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download } from 'lucide-react';
 import { FileUploadZone } from '@/components/import/FileUploadZone';
 import { ImportPreviewTable } from '@/components/import/ImportPreviewTable';
+import { ImportHelp } from '@/components/import/ImportHelp';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
 import { fileParser, FileParseError, FileSizeError } from '@/services/fileParser';
@@ -344,65 +345,8 @@ export default function ImportSubscriptionsPage() {
             parseProgress={parseProgress}
           />
 
-          {/* Help text and template download */}
-          <div className="rounded-lg border bg-muted/50 p-4 space-y-3">
-            <h3 className="font-semibold text-sm">File Format Requirements</h3>
-            <div className="text-sm text-muted-foreground space-y-2">
-              <p>Your file must include the following fields:</p>
-              <ul className="list-disc list-inside space-y-1 ml-2">
-                <li><span className="font-medium">providerId</span> (required) - Provider UUID</li>
-                <li><span className="font-medium">startDate</span> (required) - Start date (YYYY-MM-DD)</li>
-                <li><span className="font-medium">recurrency</span> (required) - Billing cycle: daily, weekly, monthly, quarterly, yearly, custom</li>
-                <li><span className="font-medium">friendlyName</span> (optional) - Subscription name</li>
-                <li><span className="font-medium">endDate</span> (optional) - End date (YYYY-MM-DD)</li>
-                <li><span className="font-medium">customRecurrency</span> (optional) - Custom recurrency in days (if recurrency is custom)</li>
-                <li><span className="font-medium">customPriceAmount</span> (optional) - Price amount</li>
-                <li><span className="font-medium">customPriceCurrency</span> (optional) - Currency code (e.g., USD, EUR)</li>
-                <li><span className="font-medium">labels</span> (optional) - Comma-separated label names</li>
-                <li><span className="font-medium">ownerType</span> (optional) - Owner type: personal, family, or system</li>
-                <li><span className="font-medium">ownerFamilyId</span> (optional) - Family ID if ownerType is family</li>
-                <li><span className="font-medium">payerType</span> (optional) - Payer type: family or family_member</li>
-                <li><span className="font-medium">payerFamilyId</span> (optional) - Payer family ID</li>
-                <li><span className="font-medium">payerMemberId</span> (optional) - Payer member ID (if payerType is family_member)</li>
-                <li><span className="font-medium">freeTrialStartDate</span> (optional) - Free trial start date</li>
-                <li><span className="font-medium">freeTrialEndDate</span> (optional) - Free trial end date</li>
-                <li><span className="font-medium">familyUsers</span> (optional) - Comma-separated family user IDs</li>
-              </ul>
-              <p className="mt-3">
-                <Button
-                  variant="link"
-                  size="sm"
-                  className="h-auto p-0"
-                  onClick={() => {
-                    const yamlContent = `- providerId: "00000000-0000-0000-0000-000000000000"
-  friendlyName: "Netflix Premium"
-  startDate: "2024-01-01"
-  recurrency: "monthly"
-  customPriceAmount: 15.99
-  customPriceCurrency: "USD"
-  ownerType: "personal"
-- providerId: "00000000-0000-0000-0000-000000000001"
-  friendlyName: "AWS Cloud Services"
-  startDate: "2024-02-01"
-  recurrency: "monthly"
-  customPriceAmount: 50.00
-  customPriceCurrency: "USD"
-  ownerType: "personal"`;
-                    const blob = new Blob([yamlContent], { type: 'text/yaml' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'subscriptions-template.yaml';
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  }}
-                >
-                  <Download className="size-3 mr-1" />
-                  Download YAML template
-                </Button>
-              </p>
-            </div>
-          </div>
+          {/* Help documentation */}
+          <ImportHelp entityType="subscriptions" />
         </div>
       )}
 

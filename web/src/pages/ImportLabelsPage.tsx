@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download } from 'lucide-react';
 import { FileUploadZone } from '@/components/import/FileUploadZone';
 import { ImportPreviewTable } from '@/components/import/ImportPreviewTable';
+import { ImportHelp } from '@/components/import/ImportHelp';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
 import { fileParser, FileParseError, FileSizeError } from '@/services/fileParser';
@@ -293,39 +294,8 @@ export default function ImportLabelsPage() {
             parseProgress={parseProgress}
           />
 
-          {/* Help text and template download */}
-          <div className="rounded-lg border bg-muted/50 p-4 space-y-3">
-            <h3 className="font-semibold text-sm">File Format Requirements</h3>
-            <div className="text-sm text-muted-foreground space-y-2">
-              <p>Your file must include the following fields:</p>
-              <ul className="list-disc list-inside space-y-1 ml-2">
-                <li><span className="font-medium">name</span> (required) - Label name</li>
-                <li><span className="font-medium">color</span> (required) - Hex color code (e.g., #FF5733)</li>
-                <li><span className="font-medium">ownerType</span> (optional) - Owner type: personal, family, or system</li>
-                <li><span className="font-medium">ownerFamilyId</span> (optional) - Family ID if ownerType is family</li>
-              </ul>
-              <p className="mt-3">
-                <Button
-                  variant="link"
-                  size="sm"
-                  className="h-auto p-0"
-                  onClick={() => {
-                    const csvContent = 'name,color\nEntertainment,#FF5733\nUtilities,#33FF57\nSubscriptions,#3357FF';
-                    const blob = new Blob([csvContent], { type: 'text/csv' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'labels-template.csv';
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  }}
-                >
-                  <Download className="size-3 mr-1" />
-                  Download CSV template
-                </Button>
-              </p>
-            </div>
-          </div>
+          {/* Help documentation */}
+          <ImportHelp entityType="labels" />
         </div>
       )}
 
