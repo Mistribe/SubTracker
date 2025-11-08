@@ -24,7 +24,7 @@ export class FileParser {
    */
   detectFormat(file: File): ImportFileFormat {
     const extension = file.name.split('.').pop()?.toLowerCase();
-    
+
     switch (extension) {
       case 'csv':
         return 'csv';
@@ -44,7 +44,7 @@ export class FileParser {
   private readFileAsText(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      
+
       reader.onload = (event) => {
         const result = event.target?.result;
         if (typeof result === 'string') {
@@ -53,11 +53,11 @@ export class FileParser {
           reject(new Error('Failed to read file as text'));
         }
       };
-      
+
       reader.onerror = () => {
         reject(new Error(`File reading failed: ${reader.error?.message || 'Unknown error'}`));
       };
-      
+
       reader.readAsText(file);
     });
   }
@@ -68,7 +68,7 @@ export class FileParser {
   async parseCSV(file: File): Promise<Record<string, any>[]> {
     try {
       const content = await this.readFileAsText(file);
-      
+
       return new Promise((resolve, reject) => {
         Papa.parse(content, {
           header: true,
@@ -80,14 +80,14 @@ export class FileParser {
                 line: error.row !== undefined ? error.row + 1 : undefined,
                 message: error.message,
               }));
-              
+
               reject(new FileParseError('CSV parsing failed', parseErrors));
               return;
             }
-            
+
             resolve(results.data as Record<string, any>[]);
           },
-          error: (error) => {
+          error: (error: Error) => {
             reject(new FileParseError(`CSV parsing error: ${error.message}`));
           },
         });
@@ -109,27 +109,27 @@ export class FileParser {
     try {
       const content = await this.readFileAsText(file);
       const parsed = JSON.parse(content);
-      
+
       // Ensure the result is an array
       if (!Array.isArray(parsed)) {
         throw new FileParseError('JSON file must contain an array of records');
       }
-      
+
       // Ensure all items are objects
       if (!parsed.every((item) => typeof item === 'object' && item !== null)) {
         throw new FileParseError('All items in JSON array must be objects');
       }
-      
+
       return parsed;
     } catch (error) {
       if (error instanceof FileParseError) {
         throw error;
       }
-      
+
       if (error instanceof SyntaxError) {
         throw new FileParseError(`Invalid JSON format: ${error.message}`);
       }
-      
+
       throw new FileParseError(
         `Failed to parse JSON file: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -143,23 +143,23 @@ export class FileParser {
     try {
       const content = await this.readFileAsText(file);
       const parsed = yaml.load(content);
-      
+
       // Ensure the result is an array
       if (!Array.isArray(parsed)) {
         throw new FileParseError('YAML file must contain an array of records');
       }
-      
+
       // Ensure all items are objects
       if (!parsed.every((item) => typeof item === 'object' && item !== null)) {
         throw new FileParseError('All items in YAML array must be objects');
       }
-      
+
       return parsed;
     } catch (error) {
       if (error instanceof FileParseError) {
         throw error;
       }
-      
+
       if (error instanceof yaml.YAMLException) {
         const parseError: ParseError = {
           line: error.mark?.line !== undefined ? error.mark.line + 1 : undefined,
@@ -167,7 +167,7 @@ export class FileParser {
         };
         throw new FileParseError('YAML parsing failed', [parseError]);
       }
-      
+
       throw new FileParseError(
         `Failed to parse YAML file: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -179,7 +179,7 @@ export class FileParser {
    */
   async parse(file: File): Promise<Record<string, any>[]> {
     const format = this.detectFormat(file);
-    
+
     switch (format) {
       case 'csv':
         return this.parseCSV(file);
