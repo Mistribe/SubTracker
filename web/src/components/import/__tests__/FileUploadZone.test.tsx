@@ -41,7 +41,7 @@ describe("FileUploadZone", () => {
       />
     );
 
-    expect(screen.getByText(/error/i)).toBeInTheDocument();
+    expect(screen.getByText(/failed to parse file/i)).toBeInTheDocument();
     expect(screen.getByText(errorMessage)).toBeInTheDocument();
   });
 
