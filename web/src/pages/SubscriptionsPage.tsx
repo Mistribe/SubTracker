@@ -5,7 +5,7 @@ import { useProvidersByIds } from "@/hooks/providers/useProvidersByIds";
 import { useSubscriptionsMutations } from "@/hooks/subscriptions/useSubscriptionsMutations";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, Upload } from "lucide-react";
 import Subscription from "@/models/subscription";
 import { DeleteSubscriptionDialog } from "@/components/subscriptions/DeleteSubscriptionDialog";
 import { SubscriptionsTable } from "@/components/subscriptions/ui/SubscriptionsTable";
@@ -210,31 +210,40 @@ const SubscriptionsPage = () => {
                     />
                 }
                 actionButton={
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span>
-                                    <Button
-                                        onClick={() => navigate("/subscriptions/create")}
-                                        disabled={isAddDisabled}
-                                    >
-                                        <PlusIcon className="mr-2 h-4 w-4" />
-                                        Add Subscription
-                                        {subsEnabled && subsLimit !== undefined && (
-                                            <span className="ml-2 text-xs opacity-70">
-                                                ({subsUsed}/{subsLimit})
-                                            </span>
-                                        )}
-                                    </Button>
-                                </span>
-                            </TooltipTrigger>
-                            {addSubTooltip && (
-                                <TooltipContent>
-                                    <p>{addSubTooltip}</p>
-                                </TooltipContent>
-                            )}
-                        </Tooltip>
-                    </TooltipProvider>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => navigate('/subscriptions/import')}
+                        >
+                            <Upload className="mr-2 h-4 w-4" />
+                            Import from file
+                        </Button>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span>
+                                        <Button
+                                            onClick={() => navigate("/subscriptions/create")}
+                                            disabled={isAddDisabled}
+                                        >
+                                            <PlusIcon className="mr-2 h-4 w-4" />
+                                            Add Subscription
+                                            {subsEnabled && subsLimit !== undefined && (
+                                                <span className="ml-2 text-xs opacity-70">
+                                                    ({subsUsed}/{subsLimit})
+                                                </span>
+                                            )}
+                                        </Button>
+                                    </span>
+                                </TooltipTrigger>
+                                {addSubTooltip && (
+                                    <TooltipContent>
+                                        <p>{addSubTooltip}</p>
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
+                        </TooltipProvider>
+                    </div>
                 }
                 onFilter={openFilter}
             />
