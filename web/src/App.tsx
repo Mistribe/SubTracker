@@ -9,6 +9,7 @@ import DashboardPage from "@/pages/DashboardPage"
 import PreferencePage from "@/pages/PreferencePage.tsx"
 import FamilyPage from "@/pages/FamilyPage"
 import LabelsPage from "@/pages/LabelsPage"
+import ImportLabelsPage from "@/pages/ImportLabelsPage"
 import ProvidersPage from "@/pages/ProvidersPage"
 import SubscriptionsPage from "@/pages/SubscriptionsPage"
 import SubscriptionFormPage from "@/pages/SubscriptionFormPage"
@@ -60,6 +61,16 @@ function App() {
                                     <ProtectedRoute>
                                         <AppLayout>
                                             <LabelsPage />
+                                        </AppLayout>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/labels/import"
+                                element={
+                                    <ProtectedRoute>
+                                        <AppLayout>
+                                            <ImportLabelsPage />
                                         </AppLayout>
                                     </ProtectedRoute>
                                 }

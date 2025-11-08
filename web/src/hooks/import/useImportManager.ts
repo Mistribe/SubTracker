@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { UseMutationResult } from '@tanstack/react-query';
+import type { UseMutationResult } from '@tanstack/react-query';
 
 export interface ImportStatus {
   status: 'pending' | 'importing' | 'success' | 'error';

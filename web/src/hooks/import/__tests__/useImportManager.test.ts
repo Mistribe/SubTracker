@@ -1,7 +1,8 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useImportManager, ParsedImportRecord } from '../useImportManager';
-import { UseMutationResult } from '@tanstack/react-query';
+import { useImportManager } from '../useImportManager';
+import type { ParsedImportRecord } from '../useImportManager';
+import type { UseMutationResult } from '@tanstack/react-query';
 
 describe('useImportManager', () => {
   const createMockMutation = (
@@ -23,6 +24,7 @@ describe('useImportManager', () => {
       failureReason: null,
       isPaused: false,
       submittedAt: 0,
+      context: undefined,
     } as UseMutationResult<any, any, any, any>;
   };
 
