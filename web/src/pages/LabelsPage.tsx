@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { hexToArgb } from "@/components/ui/utils/color-utils";
 import { useLabelMutations } from "@/hooks/labels/useLabelMutations";
 import { useFamiliesMutations } from "@/hooks/families/useFamiliesMutations";
@@ -11,12 +12,14 @@ import { AddLabelDialog } from "@/components/labels/AddLabelDialog";
 import { DeleteLabelDialog } from "@/components/labels/DeleteLabelDialog";
 import Label from "@/models/label";
 import { OwnerType } from "@/models/ownerType";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 import { useLabelsQuotaQuery } from "@/hooks/labels/useLabelsQuotaQuery.ts";
 import { QuotaButton } from "@/components/quotas/QuotaButton";
 import { FeatureId } from "@/models/billing.ts";
+import { Button } from "@/components/ui/button";
 
 const LabelsPage = () => {
+    const navigate = useNavigate();
 
     const {
         createLabelMutation,
@@ -180,11 +183,20 @@ const LabelsPage = () => {
                         />
                     }
                     actionButton={
-                        <AddLabelDialog
-                            onAddLabel={handleAddLabel}
-                            isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
-                            families={families}
-                        />
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => navigate('/labels/import')}
+                            >
+                                <Upload className="mr-2 h-4 w-4" />
+                                Import from file
+                            </Button>
+                            <AddLabelDialog
+                                onAddLabel={handleAddLabel}
+                                isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
+                                families={families}
+                            />
+                        </div>
                     }
                 />
                 <div className="flex flex-col items-center justify-center h-64">
@@ -213,11 +225,20 @@ const LabelsPage = () => {
                         />
                     }
                     actionButton={
-                        <AddLabelDialog
-                            onAddLabel={handleAddLabel}
-                            isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
-                            families={families}
-                        />
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => navigate('/labels/import')}
+                            >
+                                <Upload className="mr-2 h-4 w-4" />
+                                Import from file
+                            </Button>
+                            <AddLabelDialog
+                                onAddLabel={handleAddLabel}
+                                isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
+                                families={families}
+                            />
+                        </div>
                     }
                 />
                 <div className="p-6 border rounded-md bg-destructive/10 mt-8">
@@ -244,11 +265,20 @@ const LabelsPage = () => {
                     />
                 }
                 actionButton={
-                    <AddLabelDialog
-                        onAddLabel={handleAddLabel}
-                        isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
-                        families={families}
-                    />
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => navigate('/labels/import')}
+                        >
+                            <Upload className="mr-2 h-4 w-4" />
+                            Import from file
+                        </Button>
+                        <AddLabelDialog
+                            onAddLabel={handleAddLabel}
+                            isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
+                            families={families}
+                        />
+                    </div>
                 }
             />
             <div className="mt-8">
