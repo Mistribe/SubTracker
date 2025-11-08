@@ -5,7 +5,7 @@ import { FileUploadZone } from '@/components/import/FileUploadZone';
 import { ImportPreviewTable } from '@/components/import/ImportPreviewTable';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
-import { fileParser, FileParseError } from '@/services/fileParser';
+import { fileParser, FileParseError, FileSizeError } from '@/services/fileParser';
 import { ProviderFieldMapper } from '@/services/importMapper';
 import { useImportManager } from '@/hooks/import/useImportManager';
 import { useProvidersMutations } from '@/hooks/providers/useProvidersMutations';
@@ -77,6 +77,7 @@ export default function ImportProvidersPage() {
   const { createProviderMutation } = useProvidersMutations();
 
   const [isParsingFile, setIsParsingFile] = useState(false);
+  const [parseProgress, setParseProgress] = useState(0);
   const [parseError, setParseError] = useState<string | undefined>();
   const [parsedRecords, setParsedRecords] = useState<ParsedImportRecord<DtoCreateProviderRequest>[]>([]);
   const [selectedRecords, setSelectedRecords] = useState<Set<number>>(new Set());
@@ -114,14 +115,17 @@ export default function ImportProvidersPage() {
   // Handle file selection and parsing
   const handleFileSelected = useCallback(async (file: File) => {
     setIsParsingFile(true);
+    setParseProgress(0);
     setParseError(undefined);
     setParsedRecords([]);
     setSelectedRecords(new Set());
     setHasUnsavedChanges(false);
 
     try {
-      // Parse the file
-      const rawRecords = await fileParser.parse(file);
+      // Parse the file with progress tracking
+      const rawRecords = await fileParser.parse(file, (progress) => {
+        setParseProgress(progress);
+      });
 
       if (rawRecords.length === 0) {
         setParseError('The file contains no records');
@@ -157,7 +161,10 @@ export default function ImportProvidersPage() {
         toast.success(`Parsed ${mapped.length} valid records`);
       }
     } catch (error) {
-      if (error instanceof FileParseError) {
+      if (error instanceof FileSizeError) {
+        setParseError(error.message);
+        toast.error('File too large', { description: error.message });
+      } else if (error instanceof FileParseError) {
         // Format error message with line numbers if available
         let errorMsg = error.message;
         if (error.errors.length > 0) {
@@ -183,6 +190,7 @@ export default function ImportProvidersPage() {
       }
     } finally {
       setIsParsingFile(false);
+      setParseProgress(0);
     }
   }, []);
 
@@ -310,6 +318,7 @@ export default function ImportProvidersPage() {
             acceptedFormats={ACCEPTED_FORMATS}
             isLoading={isParsingFile}
             error={parseError}
+            parseProgress={parseProgress}
           />
 
           {/* Help text and template download */}

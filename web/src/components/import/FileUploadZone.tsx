@@ -7,6 +7,7 @@ interface FileUploadZoneProps {
   acceptedFormats: string[]; // ['.csv', '.json', '.yaml', '.yml']
   isLoading?: boolean;
   error?: string;
+  parseProgress?: number; // 0-100
 }
 
 export function FileUploadZone({
@@ -14,6 +15,7 @@ export function FileUploadZone({
   acceptedFormats,
   isLoading = false,
   error,
+  parseProgress = 0,
 }: FileUploadZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -168,6 +170,24 @@ export function FileUploadZone({
             <>
               <p className="text-sm font-medium text-foreground">Processing file...</p>
               <p className="text-xs text-muted-foreground">Please wait while we parse your file</p>
+              {parseProgress > 0 && (
+                <div className="mt-4 w-full max-w-xs mx-auto">
+                  <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-primary h-full transition-all duration-300 ease-out"
+                      style={{ width: `${parseProgress}%` }}
+                      role="progressbar"
+                      aria-valuenow={parseProgress}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={`Parsing progress: ${Math.round(parseProgress)}%`}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {Math.round(parseProgress)}% complete
+                  </p>
+                </div>
+              )}
             </>
           ) : error ? (
             <>

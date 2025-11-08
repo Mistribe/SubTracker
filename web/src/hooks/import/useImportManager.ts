@@ -25,6 +25,9 @@ interface UseImportManagerProps<T> {
   createMutation: UseMutationResult<any, any, T, any>;
   delayBetweenCalls?: number; // milliseconds
   maxRetries?: number;
+  enableAdaptiveDelay?: boolean; // Adjust delay based on response times
+  minDelay?: number; // Minimum delay between calls
+  maxDelay?: number; // Maximum delay between calls
 }
 
 interface UseImportManagerReturn {
@@ -39,7 +42,37 @@ interface UseImportManagerReturn {
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const calculateBackoffDelay = (retryCount: number, baseDelay: number): number => {
-  return Math.min(baseDelay * Math.pow(2, retryCount), 10000); // Max 10 seconds
+  // Exponential backoff with jitter to avoid thundering herd
+  const exponentialDelay = baseDelay * Math.pow(2, retryCount);
+  const jitter = Math.random() * 0.3 * exponentialDelay; // Add up to 30% jitter
+  return Math.min(exponentialDelay + jitter, 10000); // Max 10 seconds
+};
+
+// Calculate adaptive delay based on recent response times
+const calculateAdaptiveDelay = (
+  recentResponseTimes: number[],
+  baseDelay: number,
+  minDelay: number,
+  maxDelay: number
+): number => {
+  if (recentResponseTimes.length === 0) {
+    return baseDelay;
+  }
+
+  // Calculate average response time from recent requests
+  const avgResponseTime = recentResponseTimes.reduce((a, b) => a + b, 0) / recentResponseTimes.length;
+
+  // If responses are fast (< 200ms), we can reduce delay
+  // If responses are slow (> 1000ms), we should increase delay
+  let adaptiveDelay = baseDelay;
+  
+  if (avgResponseTime < 200) {
+    adaptiveDelay = Math.max(minDelay, baseDelay * 0.7);
+  } else if (avgResponseTime > 1000) {
+    adaptiveDelay = Math.min(maxDelay, baseDelay * 1.5);
+  }
+
+  return Math.round(adaptiveDelay);
 };
 
 export function useImportManager<T>({
@@ -47,6 +80,9 @@ export function useImportManager<T>({
   createMutation,
   delayBetweenCalls = 150,
   maxRetries = 3,
+  enableAdaptiveDelay = true,
+  minDelay = 50,
+  maxDelay = 1000,
 }: UseImportManagerProps<T>): UseImportManagerReturn {
   const [importStatus, setImportStatus] = useState<Map<number, ImportStatus>>(new Map());
   const [progress, setProgress] = useState<ImportProgress>({
@@ -57,6 +93,9 @@ export function useImportManager<T>({
   });
   const [isImporting, setIsImporting] = useState(false);
   const cancelledRef = useRef(false);
+  const responseTimesRef = useRef<number[]>([]);
+  const currentDelayRef = useRef(delayBetweenCalls);
+  const rateLimitResetRef = useRef<number | null>(null);
 
   const updateStatus = useCallback((index: number, status: ImportStatus) => {
     setImportStatus(prev => {
@@ -93,20 +132,50 @@ export function useImportManager<T>({
       return false;
     }
 
+    // Check if we need to wait for rate limit reset
+    if (rateLimitResetRef.current && Date.now() < rateLimitResetRef.current) {
+      const waitTime = rateLimitResetRef.current - Date.now();
+      await sleep(waitTime);
+      rateLimitResetRef.current = null;
+    }
+
     updateStatus(index, { status: 'importing' });
 
+    const startTime = Date.now();
+    
     try {
       await createMutation.mutateAsync(record.data as T);
+      
+      // Track response time for adaptive delay
+      const responseTime = Date.now() - startTime;
+      if (enableAdaptiveDelay) {
+        responseTimesRef.current.push(responseTime);
+        // Keep only last 10 response times
+        if (responseTimesRef.current.length > 10) {
+          responseTimesRef.current.shift();
+        }
+        
+        // Update current delay based on response times
+        currentDelayRef.current = calculateAdaptiveDelay(
+          responseTimesRef.current,
+          delayBetweenCalls,
+          minDelay,
+          maxDelay
+        );
+      }
+      
       updateStatus(index, { status: 'success' });
       return true;
     } catch (error: any) {
       // Determine error type and create appropriate message
       let errorMessage = 'Failed to import record';
+      let isRateLimitError = false;
       
       if (error?.response) {
         // HTTP error response
         const status = error.response.status;
         const data = error.response.data;
+        const headers = error.response.headers;
         
         if (status === 400) {
           errorMessage = `Validation error: ${data?.message || 'Invalid data'}`;
@@ -117,7 +186,20 @@ export function useImportManager<T>({
         } else if (status === 409) {
           errorMessage = `Conflict: ${data?.message || 'Record already exists'}`;
         } else if (status === 429) {
+          isRateLimitError = true;
           errorMessage = 'Rate limit exceeded: Too many requests';
+          
+          // Check for Retry-After header
+          const retryAfter = headers?.['retry-after'] || headers?.['x-ratelimit-reset'];
+          if (retryAfter) {
+            const resetTime = parseInt(retryAfter, 10);
+            if (!isNaN(resetTime)) {
+              // If it's a timestamp, use it directly; otherwise treat as seconds
+              rateLimitResetRef.current = resetTime > 1000000000 
+                ? resetTime * 1000 
+                : Date.now() + (resetTime * 1000);
+            }
+          }
         } else if (status >= 500) {
           errorMessage = `Server error (${status}): Please try again later`;
         } else {
@@ -136,12 +218,15 @@ export function useImportManager<T>({
       const shouldRetry = retryCount < maxRetries && (
         !error?.response || 
         error.response.status >= 500 || 
-        error.response.status === 429 ||
+        isRateLimitError ||
         !error.response.status
       );
       
       if (shouldRetry) {
-        const backoffDelay = calculateBackoffDelay(retryCount, delayBetweenCalls);
+        const backoffDelay = isRateLimitError && rateLimitResetRef.current
+          ? Math.max(0, rateLimitResetRef.current - Date.now())
+          : calculateBackoffDelay(retryCount, currentDelayRef.current);
+        
         await sleep(backoffDelay);
         return importSingleRecord(index, record, retryCount + 1);
       }
@@ -203,15 +288,34 @@ export function useImportManager<T>({
         updateProgress(completed, failed, total);
 
         // Add delay between calls (except for the last one)
+        // Use adaptive delay if enabled
         if (index !== indices[indices.length - 1] && !cancelledRef.current) {
-          await sleep(delayBetweenCalls);
+          const delay = enableAdaptiveDelay ? currentDelayRef.current : delayBetweenCalls;
+          await sleep(delay);
         }
       }
 
       setIsImporting(false);
       updateProgress(completed, failed, total);
+      
+      // Reset adaptive delay tracking after import completes
+      if (enableAdaptiveDelay) {
+        responseTimesRef.current = [];
+        currentDelayRef.current = delayBetweenCalls;
+      }
     },
-    [isImporting, records, delayBetweenCalls, maxRetries, createMutation, updateProgress, updateStatus]
+    [
+      isImporting,
+      records,
+      delayBetweenCalls,
+      maxRetries,
+      enableAdaptiveDelay,
+      minDelay,
+      maxDelay,
+      createMutation,
+      updateProgress,
+      updateStatus,
+    ]
   );
 
   const cancelImport = useCallback(() => {

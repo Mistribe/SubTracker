@@ -37,7 +37,110 @@ export interface ImportPreviewTableProps<T> {
   onRetryRecord?: (index: number) => void;
 }
 
-export function ImportPreviewTable<T>({
+// Memoized table row component for better performance
+interface TableRowMemoProps<T> {
+  record: ParsedImportRecord<T>;
+  index: number;
+  columns: ImportColumnDef<T>[];
+  isSelected: boolean;
+  onSelect: (index: number) => void;
+  onKeyDown: (e: React.KeyboardEvent, index: number) => void;
+  getRowClassName: (record: ParsedImportRecord<T>, index: number) => string;
+  renderStatusCell: (record: ParsedImportRecord<T>, index: number) => React.ReactNode;
+  expandedRows: Set<number>;
+  toggleRowExpansion: (index: number) => void;
+}
+
+const TableRowMemo = React.memo(function TableRowMemo<T>({
+  record,
+  index,
+  columns,
+  isSelected,
+  onSelect,
+  onKeyDown,
+  getRowClassName,
+  renderStatusCell,
+  expandedRows,
+  toggleRowExpansion,
+}: TableRowMemoProps<T>) {
+  return (
+    <>
+      <TableRow
+        className={cn(getRowClassName(record, index))}
+        data-state={isSelected ? 'selected' : undefined}
+        data-row-index={index}
+      >
+        <TableCell>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={() => onSelect(index)}
+              onKeyDown={(e) => onKeyDown(e, index)}
+              aria-label={`Select record ${index + 1}${!record.isValid ? ' (invalid)' : ''}`}
+              disabled={!record.isValid}
+            />
+            {!record.isValid && record.validationErrors.length > 0 && (
+              <button
+                onClick={() => toggleRowExpansion(index)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleRowExpansion(index);
+                  }
+                }}
+                className="p-1 hover:bg-accent rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                aria-label={expandedRows.has(index) ? 'Collapse errors' : 'Expand errors'}
+                aria-expanded={expandedRows.has(index)}
+              >
+                <ChevronDown
+                  className={cn(
+                    'size-4 text-muted-foreground transition-transform',
+                    expandedRows.has(index) && 'rotate-180'
+                  )}
+                  aria-hidden="true"
+                />
+              </button>
+            )}
+          </div>
+        </TableCell>
+        <TableCell>{renderStatusCell(record, index)}</TableCell>
+        {columns.map((column) => {
+          const value = record.data[column.key as keyof T];
+          return (
+            <TableCell key={String(column.key)}>
+              {column.render ? column.render(value, record) : String(value ?? '')}
+            </TableCell>
+          );
+        })}
+      </TableRow>
+      {/* Expandable error details row */}
+      {!record.isValid && expandedRows.has(index) && (
+        <TableRow className={cn(getRowClassName(record, index))}>
+          <TableCell colSpan={columns.length + 2} className="p-0">
+            <div className="px-4 py-3 bg-red-100 dark:bg-red-950/30 border-t-2 border-red-300 dark:border-red-800">
+              <div className="space-y-2">
+                <h5 className="text-xs font-bold text-red-900 dark:text-red-100 flex items-center gap-2">
+                  <AlertCircle className="size-3" aria-hidden="true" />
+                  Validation Errors
+                </h5>
+                <ul className="space-y-1 text-xs text-red-900 dark:text-red-100" role="list">
+                  {record.validationErrors.map((error, errorIdx) => (
+                    <li key={errorIdx} className="flex items-start gap-2" role="listitem">
+                      <span className="font-bold min-w-[100px]">{error.field}:</span>
+                      <span className="font-medium">{error.message}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </TableCell>
+        </TableRow>
+      )}
+    </>
+  );
+}) as <T>(props: TableRowMemoProps<T>) => React.ReactElement;
+
+export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
   records,
   columns,
   selectedRecords,
@@ -54,25 +157,45 @@ export function ImportPreviewTable<T>({
   const parentRef = React.useRef<HTMLDivElement>(null);
   const [expandedRows, setExpandedRows] = React.useState<Set<number>>(new Set());
   const [focusedRowIndex, setFocusedRowIndex] = React.useState<number>(-1);
-  const allRecordsSelected = records.length > 0 && selectedRecords.size === records.length;
-  const someRecordsSelected = selectedRecords.size > 0 && !allRecordsSelected;
-  const validRecords = records.filter((r) => r.isValid);
-  const selectedValidRecords = Array.from(selectedRecords).filter(
-    (index) => records[index]?.isValid
+  
+  // Memoize computed values to avoid recalculation on every render
+  const allRecordsSelected = React.useMemo(
+    () => records.length > 0 && selectedRecords.size === records.length,
+    [records.length, selectedRecords.size]
+  );
+  
+  const someRecordsSelected = React.useMemo(
+    () => selectedRecords.size > 0 && !allRecordsSelected,
+    [selectedRecords.size, allRecordsSelected]
+  );
+  
+  const validRecords = React.useMemo(
+    () => records.filter((r) => r.isValid),
+    [records]
+  );
+  
+  const selectedValidRecords = React.useMemo(
+    () => Array.from(selectedRecords).filter((index) => records[index]?.isValid),
+    [selectedRecords, records]
   );
 
-  const toggleRowExpansion = (index: number) => {
-    const newExpanded = new Set(expandedRows);
-    if (newExpanded.has(index)) {
-      newExpanded.delete(index);
-    } else {
-      newExpanded.add(index);
-    }
-    setExpandedRows(newExpanded);
-  };
+  const toggleRowExpansion = React.useCallback((index: number) => {
+    setExpandedRows((prev) => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(index)) {
+        newExpanded.delete(index);
+      } else {
+        newExpanded.add(index);
+      }
+      return newExpanded;
+    });
+  }, []);
 
   // Enable virtualization only if records exceed threshold
-  const shouldVirtualize = enableVirtualization && records.length > virtualizationThreshold;
+  const shouldVirtualize = React.useMemo(
+    () => enableVirtualization && records.length > virtualizationThreshold,
+    [enableVirtualization, records.length, virtualizationThreshold]
+  );
 
   const rowVirtualizer = useVirtualizer({
     count: records.length,
@@ -82,15 +205,15 @@ export function ImportPreviewTable<T>({
     enabled: shouldVirtualize,
   });
 
-  const handleSelectAll = () => {
+  const handleSelectAll = React.useCallback(() => {
     if (allRecordsSelected) {
       onSelectionChange(new Set());
     } else {
       onSelectionChange(new Set(records.map((_, index) => index)));
     }
-  };
+  }, [allRecordsSelected, onSelectionChange, records]);
 
-  const handleSelectRecord = (index: number) => {
+  const handleSelectRecord = React.useCallback((index: number) => {
     const newSelection = new Set(selectedRecords);
     if (newSelection.has(index)) {
       newSelection.delete(index);
@@ -98,10 +221,10 @@ export function ImportPreviewTable<T>({
       newSelection.add(index);
     }
     onSelectionChange(newSelection);
-  };
+  }, [selectedRecords, onSelectionChange]);
 
   // Keyboard navigation handler
-  const handleTableKeyDown = (e: React.KeyboardEvent, rowIndex: number) => {
+  const handleTableKeyDown = React.useCallback((e: React.KeyboardEvent, rowIndex: number) => {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
@@ -144,9 +267,9 @@ export function ImportPreviewTable<T>({
         }
         break;
     }
-  };
+  }, [records, handleSelectRecord, toggleRowExpansion]);
 
-  const getRowClassName = (record: ParsedImportRecord<T>, index: number) => {
+  const getRowClassName = React.useCallback((record: ParsedImportRecord<T>, index: number) => {
     const status = importStatus.get(index);
     
     if (status?.status === 'success') {
@@ -163,9 +286,9 @@ export function ImportPreviewTable<T>({
     }
     
     return 'hover:bg-accent/50';
-  };
+  }, [importStatus]);
 
-  const renderStatusCell = (record: ParsedImportRecord<T>, index: number) => {
+  const renderStatusCell = React.useCallback((record: ParsedImportRecord<T>, index: number) => {
     const status = importStatus.get(index);
 
     if (status?.status === 'importing') {
@@ -245,7 +368,7 @@ export function ImportPreviewTable<T>({
         Pending
       </Badge>
     );
-  };
+  }, [importStatus, isImporting, onRetryRecord]);
 
   if (records.length === 0) {
     return (
@@ -517,79 +640,19 @@ export function ImportPreviewTable<T>({
             </TableHeader>
             <TableBody>
               {records.map((record, index) => (
-                <React.Fragment key={index}>
-                  <TableRow
-                    className={cn(getRowClassName(record, index))}
-                    data-state={selectedRecords.has(index) ? 'selected' : undefined}
-                    data-row-index={index}
-                  >
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          checked={selectedRecords.has(index)}
-                          onCheckedChange={() => handleSelectRecord(index)}
-                          onKeyDown={(e) => handleTableKeyDown(e, index)}
-                          aria-label={`Select record ${index + 1}${!record.isValid ? ' (invalid)' : ''}`}
-                          disabled={!record.isValid}
-                        />
-                        {!record.isValid && record.validationErrors.length > 0 && (
-                          <button
-                            onClick={() => toggleRowExpansion(index)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                toggleRowExpansion(index);
-                              }
-                            }}
-                            className="p-1 hover:bg-accent rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                            aria-label={expandedRows.has(index) ? 'Collapse errors' : 'Expand errors'}
-                            aria-expanded={expandedRows.has(index)}
-                          >
-                            <ChevronDown
-                              className={cn(
-                                'size-4 text-muted-foreground transition-transform',
-                                expandedRows.has(index) && 'rotate-180'
-                              )}
-                              aria-hidden="true"
-                            />
-                          </button>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{renderStatusCell(record, index)}</TableCell>
-                    {columns.map((column) => {
-                      const value = record.data[column.key as keyof T];
-                      return (
-                        <TableCell key={String(column.key)}>
-                          {column.render ? column.render(value, record) : String(value ?? '')}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                  {/* Expandable error details row */}
-                  {!record.isValid && expandedRows.has(index) && (
-                    <TableRow className={cn(getRowClassName(record, index))}>
-                      <TableCell colSpan={columns.length + 2} className="p-0">
-                        <div className="px-4 py-3 bg-red-100 dark:bg-red-950/30 border-t-2 border-red-300 dark:border-red-800">
-                          <div className="space-y-2">
-                            <h5 className="text-xs font-bold text-red-900 dark:text-red-100 flex items-center gap-2">
-                              <AlertCircle className="size-3" aria-hidden="true" />
-                              Validation Errors
-                            </h5>
-                            <ul className="space-y-1 text-xs text-red-900 dark:text-red-100" role="list">
-                              {record.validationErrors.map((error, errorIdx) => (
-                                <li key={errorIdx} className="flex items-start gap-2" role="listitem">
-                                  <span className="font-bold min-w-[100px]">{error.field}:</span>
-                                  <span className="font-medium">{error.message}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </React.Fragment>
+                <TableRowMemo
+                  key={index}
+                  record={record}
+                  index={index}
+                  columns={columns}
+                  isSelected={selectedRecords.has(index)}
+                  onSelect={handleSelectRecord}
+                  onKeyDown={handleTableKeyDown}
+                  getRowClassName={getRowClassName}
+                  renderStatusCell={renderStatusCell}
+                  expandedRows={expandedRows}
+                  toggleRowExpansion={toggleRowExpansion}
+                />
               ))}
             </TableBody>
           </Table>
@@ -597,4 +660,4 @@ export function ImportPreviewTable<T>({
       </div>
     </div>
   );
-}
+}) as <T>(props: ImportPreviewTableProps<T>) => React.ReactElement;
