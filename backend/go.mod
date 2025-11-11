@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/Oleexo/config-go v1.0.0
-	github.com/clerk/clerk-sdk-go/v2 v2.4.2
+	github.com/clerk/clerk-sdk-go/v2 v2.5.0
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-jet/jet/v2 v2.14.0
