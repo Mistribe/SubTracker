@@ -23,6 +23,68 @@ describe('LabelFieldMapper', () => {
       expect(result.owner).toEqual({ type: 'personal' });
     });
 
+    it('should map valid UUID in id field', () => {
+      const rawRecord = {
+        id: '550e8400-e29b-41d4-a716-446655440001',
+        name: 'Entertainment',
+        color: '#FF5733',
+      };
+
+      const result = mapper.mapFields(rawRecord) as any;
+
+      expect(result.id).toBe('550e8400-e29b-41d4-a716-446655440001');
+      expect(result.name).toBe('Entertainment');
+    });
+
+    it('should trim whitespace from UUID', () => {
+      const rawRecord = {
+        id: '  550e8400-e29b-41d4-a716-446655440001  ',
+        name: 'Entertainment',
+        color: '#FF5733',
+      };
+
+      const result = mapper.mapFields(rawRecord) as any;
+
+      expect(result.id).toBe('550e8400-e29b-41d4-a716-446655440001');
+    });
+
+    it('should not map invalid UUID in id field', () => {
+      const rawRecord = {
+        id: 'invalid-uuid',
+        name: 'Entertainment',
+        color: '#FF5733',
+      };
+
+      const result = mapper.mapFields(rawRecord) as any;
+
+      expect(result.id).toBeUndefined();
+      expect(result.name).toBe('Entertainment');
+    });
+
+    it('should not map id field when empty', () => {
+      const rawRecord = {
+        id: '',
+        name: 'Entertainment',
+        color: '#FF5733',
+      };
+
+      const result = mapper.mapFields(rawRecord) as any;
+
+      expect(result.id).toBeUndefined();
+    });
+
+    it('should not map id field when null', () => {
+      const rawRecord = {
+        id: null,
+        name: 'Entertainment',
+        color: '#FF5733',
+      };
+
+      const result = mapper.mapFields(rawRecord) as any;
+
+      expect(result.id).toBeUndefined();
+    });
+
     it('should add # prefix to color if missing', () => {
       const rawRecord = {
         name: 'Test',
@@ -94,6 +156,76 @@ describe('LabelFieldMapper', () => {
 
   describe('validate', () => {
     it('should validate a valid label', () => {
+      const record: Partial<DtoCreateLabelRequest> = {
+        name: 'Entertainment',
+        color: '#FF5733',
+        owner: { type: 'personal' },
+      };
+
+      const result = mapper.validate(record);
+
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should validate a label with valid UUID', () => {
+      const record: any = {
+        id: '550e8400-e29b-41d4-a716-446655440001',
+        name: 'Entertainment',
+        color: '#FF5733',
+        owner: { type: 'personal' },
+      };
+
+      const result = mapper.validate(record);
+
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should reject invalid UUID format', () => {
+      const record: any = {
+        id: 'invalid-uuid-format',
+        name: 'Entertainment',
+        color: '#FF5733',
+        owner: { type: 'personal' },
+      };
+
+      const result = mapper.validate(record);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some(e => e.field === 'id')).toBe(true);
+      expect(result.errors.find(e => e.field === 'id')?.message).toContain('Invalid UUID format');
+    });
+
+    it('should accept empty UUID (backend will generate)', () => {
+      const record: any = {
+        id: '',
+        name: 'Entertainment',
+        color: '#FF5733',
+        owner: { type: 'personal' },
+      };
+
+      const result = mapper.validate(record);
+
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should accept null UUID (backend will generate)', () => {
+      const record: any = {
+        id: null,
+        name: 'Entertainment',
+        color: '#FF5733',
+        owner: { type: 'personal' },
+      };
+
+      const result = mapper.validate(record);
+
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should accept undefined UUID (backend will generate)', () => {
       const record: Partial<DtoCreateLabelRequest> = {
         name: 'Entertainment',
         color: '#FF5733',
@@ -238,6 +370,51 @@ describe('ProviderFieldMapper', () => {
       expect(result.url).toBe('https://netflix.com');
     });
 
+    it('should map valid UUID in id field', () => {
+      const rawRecord = {
+        id: '550e8400-e29b-41d4-a716-446655440010',
+        name: 'Netflix',
+      };
+
+      const result = mapper.mapFields(rawRecord) as any;
+
+      expect(result.id).toBe('550e8400-e29b-41d4-a716-446655440010');
+      expect(result.name).toBe('Netflix');
+    });
+
+    it('should trim whitespace from UUID', () => {
+      const rawRecord = {
+        id: '  550e8400-e29b-41d4-a716-446655440010  ',
+        name: 'Netflix',
+      };
+
+      const result = mapper.mapFields(rawRecord) as any;
+
+      expect(result.id).toBe('550e8400-e29b-41d4-a716-446655440010');
+    });
+
+    it('should not map invalid UUID in id field', () => {
+      const rawRecord = {
+        id: 'not-a-uuid',
+        name: 'Netflix',
+      };
+
+      const result = mapper.mapFields(rawRecord) as any;
+
+      expect(result.id).toBeUndefined();
+    });
+
+    it('should not map id field when empty', () => {
+      const rawRecord = {
+        id: '',
+        name: 'Netflix',
+      };
+
+      const result = mapper.mapFields(rawRecord) as any;
+
+      expect(result.id).toBeUndefined();
+    });
+
     it('should trim whitespace from fields', () => {
       const rawRecord = {
         name: '  Netflix  ',
@@ -329,6 +506,43 @@ describe('ProviderFieldMapper', () => {
   describe('validate', () => {
     it('should validate a valid provider with only required fields', () => {
       const record: Partial<DtoCreateProviderRequest> = {
+        name: 'Netflix',
+      };
+
+      const result = mapper.validate(record);
+
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should validate a provider with valid UUID', () => {
+      const record: any = {
+        id: '550e8400-e29b-41d4-a716-446655440010',
+        name: 'Netflix',
+      };
+
+      const result = mapper.validate(record);
+
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should reject invalid UUID format', () => {
+      const record: any = {
+        id: 'bad-uuid',
+        name: 'Netflix',
+      };
+
+      const result = mapper.validate(record);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some(e => e.field === 'id')).toBe(true);
+      expect(result.errors.find(e => e.field === 'id')?.message).toContain('Invalid UUID format');
+    });
+
+    it('should accept empty UUID', () => {
+      const record: any = {
+        id: '',
         name: 'Netflix',
       };
 
@@ -453,6 +667,59 @@ describe('SubscriptionFieldMapper', () => {
       expect(result.startDate).toEqual(new Date('2024-01-01'));
       expect(result.recurrency).toBe('monthly');
       expect(result.owner).toEqual({ type: 'personal' });
+    });
+
+    it('should map valid UUID in id field', () => {
+      const rawRecord = {
+        id: '550e8400-e29b-41d4-a716-446655440020',
+        providerId: 'provider-123',
+        startDate: '2024-01-01',
+        recurrency: 'monthly',
+      };
+
+      const result = mapper.mapFields(rawRecord) as any;
+
+      expect(result.id).toBe('550e8400-e29b-41d4-a716-446655440020');
+      expect(result.providerId).toBe('provider-123');
+    });
+
+    it('should trim whitespace from UUID', () => {
+      const rawRecord = {
+        id: '  550e8400-e29b-41d4-a716-446655440020  ',
+        providerId: 'provider-123',
+        startDate: '2024-01-01',
+        recurrency: 'monthly',
+      };
+
+      const result = mapper.mapFields(rawRecord) as any;
+
+      expect(result.id).toBe('550e8400-e29b-41d4-a716-446655440020');
+    });
+
+    it('should not map invalid UUID in id field', () => {
+      const rawRecord = {
+        id: 'invalid',
+        providerId: 'provider-123',
+        startDate: '2024-01-01',
+        recurrency: 'monthly',
+      };
+
+      const result = mapper.mapFields(rawRecord) as any;
+
+      expect(result.id).toBeUndefined();
+    });
+
+    it('should not map id field when empty', () => {
+      const rawRecord = {
+        id: '',
+        providerId: 'provider-123',
+        startDate: '2024-01-01',
+        recurrency: 'monthly',
+      };
+
+      const result = mapper.mapFields(rawRecord) as any;
+
+      expect(result.id).toBeUndefined();
     });
 
     it('should normalize recurrency to lowercase', () => {
@@ -650,6 +917,67 @@ describe('SubscriptionFieldMapper', () => {
   describe('validate', () => {
     it('should validate a valid subscription with required fields', () => {
       const record: Partial<DtoCreateSubscriptionRequest> = {
+        providerId: 'provider-123',
+        startDate: new Date('2024-01-01'),
+        recurrency: 'monthly',
+        owner: { type: 'personal' },
+      };
+
+      const result = mapper.validate(record);
+
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should validate a subscription with valid UUID', () => {
+      const record: any = {
+        id: '550e8400-e29b-41d4-a716-446655440020',
+        providerId: 'provider-123',
+        startDate: new Date('2024-01-01'),
+        recurrency: 'monthly',
+        owner: { type: 'personal' },
+      };
+
+      const result = mapper.validate(record);
+
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should reject invalid UUID format', () => {
+      const record: any = {
+        id: 'not-valid-uuid',
+        providerId: 'provider-123',
+        startDate: new Date('2024-01-01'),
+        recurrency: 'monthly',
+        owner: { type: 'personal' },
+      };
+
+      const result = mapper.validate(record);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some(e => e.field === 'id')).toBe(true);
+      expect(result.errors.find(e => e.field === 'id')?.message).toContain('Invalid UUID format');
+    });
+
+    it('should accept empty UUID', () => {
+      const record: any = {
+        id: '',
+        providerId: 'provider-123',
+        startDate: new Date('2024-01-01'),
+        recurrency: 'monthly',
+        owner: { type: 'personal' },
+      };
+
+      const result = mapper.validate(record);
+
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should accept null UUID', () => {
+      const record: any = {
+        id: null,
         providerId: 'provider-123',
         startDate: new Date('2024-01-01'),
         recurrency: 'monthly',
@@ -979,6 +1307,124 @@ describe('SubscriptionFieldMapper', () => {
         message: 'Free trial end date must be after start date',
         severity: 'error',
       });
+    });
+  });
+});
+
+describe('Mixed ID scenarios', () => {
+  describe('LabelFieldMapper with mixed IDs', () => {
+    const mapper = new LabelFieldMapper();
+
+    it('should handle batch with some records having IDs and some without', () => {
+      const records = [
+        {
+          id: '550e8400-e29b-41d4-a716-446655440001',
+          name: 'Label 1',
+          color: '#FF5733',
+        },
+        {
+          name: 'Label 2',
+          color: '#33FF57',
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440003',
+          name: 'Label 3',
+          color: '#3357FF',
+        },
+      ];
+
+      const results = records.map(r => mapper.mapFields(r));
+
+      expect((results[0] as any).id).toBe('550e8400-e29b-41d4-a716-446655440001');
+      expect((results[1] as any).id).toBeUndefined();
+      expect((results[2] as any).id).toBe('550e8400-e29b-41d4-a716-446655440003');
+    });
+
+    it('should validate mixed batch correctly', () => {
+      const records: any[] = [
+        {
+          id: '550e8400-e29b-41d4-a716-446655440001',
+          name: 'Label 1',
+          color: '#FF5733',
+          owner: { type: 'personal' },
+        },
+        {
+          name: 'Label 2',
+          color: '#33FF57',
+          owner: { type: 'personal' },
+        },
+        {
+          id: 'invalid-uuid',
+          name: 'Label 3',
+          color: '#3357FF',
+          owner: { type: 'personal' },
+        },
+      ];
+
+      const results = records.map(r => mapper.validate(r));
+
+      expect(results[0].isValid).toBe(true);
+      expect(results[1].isValid).toBe(true);
+      expect(results[2].isValid).toBe(false);
+      expect(results[2].errors.some(e => e.field === 'id')).toBe(true);
+    });
+  });
+
+  describe('ProviderFieldMapper with mixed IDs', () => {
+    const mapper = new ProviderFieldMapper();
+
+    it('should handle batch with some records having IDs and some without', () => {
+      const records = [
+        {
+          id: '550e8400-e29b-41d4-a716-446655440010',
+          name: 'Provider 1',
+        },
+        {
+          name: 'Provider 2',
+        },
+        {
+          id: '',
+          name: 'Provider 3',
+        },
+      ];
+
+      const results = records.map(r => mapper.mapFields(r));
+
+      expect((results[0] as any).id).toBe('550e8400-e29b-41d4-a716-446655440010');
+      expect((results[1] as any).id).toBeUndefined();
+      expect((results[2] as any).id).toBeUndefined();
+    });
+  });
+
+  describe('SubscriptionFieldMapper with mixed IDs', () => {
+    const mapper = new SubscriptionFieldMapper();
+
+    it('should handle batch with some records having IDs and some without', () => {
+      const records = [
+        {
+          id: '550e8400-e29b-41d4-a716-446655440020',
+          providerId: 'provider-123',
+          startDate: '2024-01-01',
+          recurrency: 'monthly',
+        },
+        {
+          providerId: 'provider-123',
+          startDate: '2024-01-01',
+          recurrency: 'monthly',
+        },
+        {
+          id: null,
+          providerId: 'provider-123',
+          startDate: '2024-01-01',
+          recurrency: 'monthly',
+        },
+      ];
+
+      const results = records.map(r => mapper.mapFields(r));
+
+      expect((results[0] as any).id).toBe('550e8400-e29b-41d4-a716-446655440020');
+      expect((results[1] as any).id).toBeUndefined();
+      expect((results[2] as any).id).toBeUndefined();
     });
   });
 });

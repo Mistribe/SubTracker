@@ -35,6 +35,7 @@ export interface ImportPreviewTableProps<T> {
   enableVirtualization?: boolean;
   virtualizationThreshold?: number;
   onRetryRecord?: (index: number) => void;
+  showIdColumn?: boolean; // Optional override to show/hide ID column
 }
 
 // Memoized table row component for better performance
@@ -47,6 +48,8 @@ interface TableRowMemoProps<T> {
   onKeyDown: (e: React.KeyboardEvent, index: number) => void;
   getRowClassName: (record: ParsedImportRecord<T>, index: number) => string;
   renderStatusCell: (record: ParsedImportRecord<T>, index: number) => React.ReactNode;
+  renderIdCell: (record: ParsedImportRecord<T>) => React.ReactNode;
+  hasIdColumn: boolean;
   expandedRows: Set<number>;
   toggleRowExpansion: (index: number) => void;
 }
@@ -60,6 +63,8 @@ const TableRowMemo = React.memo(function TableRowMemo<T>({
   onKeyDown,
   getRowClassName,
   renderStatusCell,
+  renderIdCell,
+  hasIdColumn,
   expandedRows,
   toggleRowExpansion,
 }: TableRowMemoProps<T>) {
@@ -104,6 +109,7 @@ const TableRowMemo = React.memo(function TableRowMemo<T>({
           </div>
         </TableCell>
         <TableCell>{renderStatusCell(record, index)}</TableCell>
+        {hasIdColumn && <TableCell>{renderIdCell(record)}</TableCell>}
         {columns.map((column) => {
           const value = record.data[column.key as keyof T];
           return (
@@ -116,20 +122,52 @@ const TableRowMemo = React.memo(function TableRowMemo<T>({
       {/* Expandable error details row */}
       {!record.isValid && expandedRows.has(index) && (
         <TableRow className={cn(getRowClassName(record, index))}>
-          <TableCell colSpan={columns.length + 2} className="p-0">
+          <TableCell colSpan={columns.length + 2 + (hasIdColumn ? 1 : 0)} className="p-0">
             <div className="px-4 py-3 bg-red-100 dark:bg-red-950/30 border-t-2 border-red-300 dark:border-red-800">
               <div className="space-y-2">
                 <h5 className="text-xs font-bold text-red-900 dark:text-red-100 flex items-center gap-2">
                   <AlertCircle className="size-3" aria-hidden="true" />
                   Validation Errors
                 </h5>
-                <ul className="space-y-1 text-xs text-red-900 dark:text-red-100" role="list">
-                  {record.validationErrors.map((error, errorIdx) => (
-                    <li key={errorIdx} className="flex items-start gap-2" role="listitem">
-                      <span className="font-bold min-w-[100px]">{error.field}:</span>
-                      <span className="font-medium">{error.message}</span>
-                    </li>
-                  ))}
+                <ul className="space-y-2 text-xs text-red-900 dark:text-red-100" role="list">
+                  {record.validationErrors.map((error, errorIdx) => {
+                    const isUuidError = error.field === 'id';
+                    const data = record.data as any;
+                    const invalidUuid = isUuidError ? data?.id : null;
+                    
+                    return (
+                      <li key={errorIdx} className="flex flex-col gap-1" role="listitem">
+                        <div className="flex items-start gap-2">
+                          <span className="font-bold min-w-[100px]">{error.field}:</span>
+                          <span className="font-medium">{error.message}</span>
+                        </div>
+                        {isUuidError && (
+                          <div className="ml-[108px] space-y-1 text-[11px] bg-red-200 dark:bg-red-900/40 p-2 rounded border border-red-400 dark:border-red-700">
+                            {invalidUuid && (
+                              <div>
+                                <span className="font-bold">Invalid value:</span>{' '}
+                                <code className="font-mono bg-red-300 dark:bg-red-800 px-1 py-0.5 rounded">
+                                  {invalidUuid}
+                                </code>
+                              </div>
+                            )}
+                            <div>
+                              <span className="font-bold">Expected format:</span>{' '}
+                              <code className="font-mono bg-red-300 dark:bg-red-800 px-1 py-0.5 rounded">
+                                xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+                              </code>
+                            </div>
+                            <div>
+                              <span className="font-bold">Example:</span>{' '}
+                              <code className="font-mono bg-red-300 dark:bg-red-800 px-1 py-0.5 rounded">
+                                550e8400-e29b-41d4-a716-446655440000
+                              </code>
+                            </div>
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             </div>
@@ -153,6 +191,7 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
   enableVirtualization = true,
   virtualizationThreshold = 100,
   onRetryRecord,
+  showIdColumn,
 }: ImportPreviewTableProps<T>) {
   const parentRef = React.useRef<HTMLDivElement>(null);
   const [expandedRows, setExpandedRows] = React.useState<Set<number>>(new Set());
@@ -178,6 +217,15 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
     () => Array.from(selectedRecords).filter((index) => records[index]?.isValid),
     [selectedRecords, records]
   );
+
+  // Check if any record has an ID field to determine if ID column should be shown
+  const hasIdColumn = React.useMemo(() => {
+    if (showIdColumn !== undefined) return showIdColumn;
+    return records.some((record) => {
+      const data = record.data as any;
+      return data?.id !== undefined && data?.id !== null && data?.id !== '';
+    });
+  }, [records, showIdColumn]);
 
   const toggleRowExpansion = React.useCallback((index: number) => {
     setExpandedRows((prev) => {
@@ -288,6 +336,57 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
     return 'hover:bg-accent/50';
   }, [importStatus]);
 
+  const renderIdCell = React.useCallback((record: ParsedImportRecord<T>) => {
+    const data = record.data as any;
+    const id = data?.id;
+
+    // Check if this record has a UUID validation error
+    const hasUuidError = record.validationErrors.some(
+      (error) => error.field === 'id'
+    );
+
+    if (!id || id === '') {
+      return (
+        <span className="text-xs text-muted-foreground italic">
+          Auto-generated
+        </span>
+      );
+    }
+
+    // If there's a UUID validation error, show the invalid value with error styling
+    if (hasUuidError) {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <code className="text-xs font-mono text-red-600 dark:text-red-400 cursor-help underline decoration-wavy">
+              {id.length > 20 ? `${id.substring(0, 20)}...` : id}
+            </code>
+          </TooltipTrigger>
+          <TooltipContent className="bg-red-900 dark:bg-red-950 text-white border-red-700 dark:border-red-800">
+            <div className="space-y-1">
+              <p className="text-xs font-bold">Invalid UUID</p>
+              <code className="text-xs font-mono block break-all">{id}</code>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    // Valid UUID - show with tooltip for full value
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <code className="text-xs font-mono cursor-help">
+            {id.length > 20 ? `${id.substring(0, 20)}...` : id}
+          </code>
+        </TooltipTrigger>
+        <TooltipContent>
+          <code className="text-xs font-mono block break-all">{id}</code>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }, []);
+
   const renderStatusCell = React.useCallback((record: ParsedImportRecord<T>, index: number) => {
     const status = importStatus.get(index);
 
@@ -342,6 +441,8 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
     }
 
     if (!record.isValid) {
+      const hasUuidError = record.validationErrors.some((error) => error.field === 'id');
+      
       return (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -352,11 +453,21 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
           </TooltipTrigger>
           <TooltipContent className="bg-red-900 dark:bg-red-950 text-white border-red-700 dark:border-red-800">
             <div className="max-w-xs space-y-1">
-              {record.validationErrors.map((error, idx) => (
-                <p key={idx} className="text-xs font-medium">
-                  <span className="font-bold">{error.field}:</span> {error.message}
-                </p>
-              ))}
+              {record.validationErrors.map((error, idx) => {
+                const isUuidError = error.field === 'id';
+                return (
+                  <div key={idx} className="space-y-0.5">
+                    <p className="text-xs font-medium">
+                      <span className="font-bold">{error.field}:</span> {error.message}
+                    </p>
+                    {isUuidError && (
+                      <p className="text-[10px] opacity-90 ml-2">
+                        Expected: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </TooltipContent>
         </Tooltip>
@@ -559,6 +670,29 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
                     />
                   </TableHead>
                   <TableHead className="w-24">Status</TableHead>
+                  {hasIdColumn && (
+                    <TableHead className="w-48">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help">ID</span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <div className="space-y-1 max-w-xs">
+                            <p className="text-xs font-bold">Entity ID (UUID)</p>
+                            <p className="text-xs">
+                              Custom UUID for the entity. If empty, a UUID will be auto-generated.
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              <strong>Format:</strong> <code className="text-[10px] font-mono">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code>
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              <strong>Example:</strong> <code className="text-[10px] font-mono">550e8400-e29b-41d4-a716-446655440000</code>
+                            </p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TableHead>
+                  )}
                   {columns.map((column) => (
                     <TableHead key={String(column.key)}>{column.label}</TableHead>
                   ))}
@@ -596,6 +730,7 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
                         />
                       </TableCell>
                       <TableCell>{renderStatusCell(record, index)}</TableCell>
+                      {hasIdColumn && <TableCell>{renderIdCell(record)}</TableCell>}
                       {columns.map((column) => {
                         const value = record.data[column.key as keyof T];
                         return (
@@ -633,6 +768,29 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
                   />
                 </TableHead>
                 <TableHead className="w-24">Status</TableHead>
+                {hasIdColumn && (
+                  <TableHead className="w-48">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-help">ID</span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="space-y-1 max-w-xs">
+                          <p className="text-xs font-bold">Entity ID (UUID)</p>
+                          <p className="text-xs">
+                            Custom UUID for the entity. If empty, a UUID will be auto-generated.
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            <strong>Format:</strong> <code className="text-[10px] font-mono">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code>
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            <strong>Example:</strong> <code className="text-[10px] font-mono">550e8400-e29b-41d4-a716-446655440000</code>
+                          </p>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TableHead>
+                )}
                 {columns.map((column) => (
                   <TableHead key={String(column.key)}>{column.label}</TableHead>
                 ))}
@@ -650,6 +808,8 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
                   onKeyDown={handleTableKeyDown}
                   getRowClassName={getRowClassName}
                   renderStatusCell={renderStatusCell}
+                  renderIdCell={renderIdCell}
+                  hasIdColumn={hasIdColumn}
                   expandedRows={expandedRows}
                   toggleRowExpansion={toggleRowExpansion}
                 />

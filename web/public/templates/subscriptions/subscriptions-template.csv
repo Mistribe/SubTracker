@@ -1,0 +1,6 @@
+id,providerId,friendlyName,startDate,endDate,recurrency,customRecurrency,customPriceAmount,customPriceCurrency,ownerType,ownerFamilyId,payerType,payerFamilyId,freeTrialStartDate,freeTrialEndDate,labels
+550e8400-e29b-41d4-a716-446655440020,your-provider-id-here,Netflix Premium,2024-01-01,,monthly,,15.99,USD,personal,,,,,,"Entertainment,Video Streaming"
+550e8400-e29b-41d4-a716-446655440021,your-provider-id-here,Spotify Family,2024-02-15,,monthly,,16.99,USD,personal,,,,,,"Entertainment,Music"
+550e8400-e29b-41d4-a716-446655440022,your-provider-id-here,Adobe Creative Cloud,2024-01-10,,monthly,,54.99,USD,personal,,,,,,"Productivity,Design"
+,your-provider-id-here,GitHub Pro,2024-03-01,,monthly,,4.00,USD,personal,,,,2024-03-01,2024-03-31,"Development,Productivity"
+,your-provider-id-here,Dropbox Plus,2024-02-20,,yearly,,119.88,USD,personal,,,,,,"Productivity,Storage"

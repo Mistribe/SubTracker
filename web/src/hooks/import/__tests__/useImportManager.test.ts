@@ -402,4 +402,283 @@ describe('useImportManager', () => {
       });
     });
   });
+
+  describe('UUID conflict handling', () => {
+    it('should handle 409 Conflict responses for duplicate UUIDs', async () => {
+      const testUuid = '550e8400-e29b-41d4-a716-446655440001';
+      const mutateAsync = vi.fn(async (data: any) => {
+        if (data.id === testUuid) {
+          const error: any = new Error('Conflict');
+          error.response = {
+            status: 409,
+            data: { message: 'Entity with this UUID already exists' },
+          };
+          throw error;
+        }
+        return { id: data.id || 'generated-id' };
+      });
+
+      const records = [
+        { index: 0, data: { name: 'Record 0', id: testUuid }, validationErrors: [], isValid: true },
+        { index: 1, data: { name: 'Record 1' }, validationErrors: [], isValid: true },
+      ];
+
+      const { result } = renderHook(() =>
+        useImportManager({
+          records,
+          createMutation: createMockMutation(mutateAsync),
+          delayBetweenCalls: 10,
+          maxRetries: 2,
+        })
+      );
+
+      await result.current.importRecords([0, 1]);
+
+      await waitFor(() => {
+        expect(result.current.progress.completed).toBe(1);
+        expect(result.current.progress.failed).toBe(1);
+      });
+
+      // Should not retry 409 errors
+      expect(mutateAsync).toHaveBeenCalledTimes(2); // One for each record, no retries
+      expect(result.current.importStatus.get(0)?.status).toBe('error');
+      expect(result.current.importStatus.get(0)?.error).toContain('UUID conflict');
+      expect(result.current.importStatus.get(0)?.error).toContain(testUuid);
+      expect(result.current.importStatus.get(1)?.status).toBe('success');
+    });
+
+    it('should handle 400 Bad Request responses for invalid UUIDs from API', async () => {
+      const invalidUuid = 'not-a-valid-uuid';
+      const mutateAsync = vi.fn(async (data: any) => {
+        if (data.id === invalidUuid) {
+          const error: any = new Error('Bad Request');
+          error.response = {
+            status: 400,
+            data: { message: 'Invalid UUID format provided' },
+          };
+          throw error;
+        }
+        return { id: data.id || 'generated-id' };
+      });
+
+      const records = [
+        { index: 0, data: { name: 'Record 0', id: invalidUuid }, validationErrors: [], isValid: true },
+        { index: 1, data: { name: 'Record 1' }, validationErrors: [], isValid: true },
+      ];
+
+      const { result } = renderHook(() =>
+        useImportManager({
+          records,
+          createMutation: createMockMutation(mutateAsync),
+          delayBetweenCalls: 10,
+          maxRetries: 2,
+        })
+      );
+
+      await result.current.importRecords([0, 1]);
+
+      await waitFor(() => {
+        expect(result.current.progress.completed).toBe(1);
+        expect(result.current.progress.failed).toBe(1);
+      });
+
+      // Should not retry 400 errors
+      expect(mutateAsync).toHaveBeenCalledTimes(2); // One for each record, no retries
+      expect(result.current.importStatus.get(0)?.status).toBe('error');
+      expect(result.current.importStatus.get(0)?.error).toContain('Invalid UUID format');
+      expect(result.current.importStatus.get(0)?.error).toContain(invalidUuid);
+      expect(result.current.importStatus.get(1)?.status).toBe('success');
+    });
+
+    it('should generate user-friendly error messages for UUID conflicts', async () => {
+      const testUuid = '550e8400-e29b-41d4-a716-446655440002';
+      const mutateAsync = vi.fn(async (data: any) => {
+        const error: any = new Error('Conflict');
+        error.response = {
+          status: 409,
+          data: { message: 'Duplicate UUID detected' },
+        };
+        throw error;
+      });
+
+      const records = [
+        { index: 0, data: { name: 'Record 0', id: testUuid }, validationErrors: [], isValid: true },
+      ];
+
+      const { result } = renderHook(() =>
+        useImportManager({
+          records,
+          createMutation: createMockMutation(mutateAsync),
+          delayBetweenCalls: 10,
+        })
+      );
+
+      await result.current.importRecords([0]);
+
+      await waitFor(() => {
+        expect(result.current.progress.failed).toBe(1);
+      });
+
+      const errorStatus = result.current.importStatus.get(0);
+      expect(errorStatus?.status).toBe('error');
+      expect(errorStatus?.error).toBe(`UUID conflict: Entity with ID ${testUuid} already exists`);
+    });
+
+    it('should continue importing remaining records after UUID conflict', async () => {
+      const conflictUuid = '550e8400-e29b-41d4-a716-446655440003';
+      const mutateAsync = vi.fn(async (data: any) => {
+        if (data.id === conflictUuid) {
+          const error: any = new Error('Conflict');
+          error.response = {
+            status: 409,
+            data: { message: 'Entity already exists' },
+          };
+          throw error;
+        }
+        return { id: data.id || 'generated-id' };
+      });
+
+      const records = [
+        { index: 0, data: { name: 'Record 0' }, validationErrors: [], isValid: true },
+        { index: 1, data: { name: 'Record 1', id: conflictUuid }, validationErrors: [], isValid: true },
+        { index: 2, data: { name: 'Record 2' }, validationErrors: [], isValid: true },
+        { index: 3, data: { name: 'Record 3' }, validationErrors: [], isValid: true },
+      ];
+
+      const { result } = renderHook(() =>
+        useImportManager({
+          records,
+          createMutation: createMockMutation(mutateAsync),
+          delayBetweenCalls: 10,
+        })
+      );
+
+      await result.current.importRecords([0, 1, 2, 3]);
+
+      await waitFor(() => {
+        expect(result.current.progress.completed).toBe(3);
+        expect(result.current.progress.failed).toBe(1);
+      });
+
+      expect(mutateAsync).toHaveBeenCalledTimes(4);
+      expect(result.current.importStatus.get(0)?.status).toBe('success');
+      expect(result.current.importStatus.get(1)?.status).toBe('error');
+      expect(result.current.importStatus.get(2)?.status).toBe('success');
+      expect(result.current.importStatus.get(3)?.status).toBe('success');
+    });
+
+    it('should allow retry functionality for failed UUID imports', async () => {
+      const testUuid = '550e8400-e29b-41d4-a716-446655440004';
+      let shouldFail = true;
+      
+      const mutateAsync = vi.fn(async (data: any) => {
+        if (data.id === testUuid && shouldFail) {
+          const error: any = new Error('Conflict');
+          error.response = {
+            status: 409,
+            data: { message: 'Entity already exists' },
+          };
+          throw error;
+        }
+        return { id: data.id || 'generated-id' };
+      });
+
+      const records = [
+        { index: 0, data: { name: 'Record 0', id: testUuid }, validationErrors: [], isValid: true },
+      ];
+
+      const { result } = renderHook(() =>
+        useImportManager({
+          records,
+          createMutation: createMockMutation(mutateAsync),
+          delayBetweenCalls: 10,
+        })
+      );
+
+      // First import attempt - should fail
+      await result.current.importRecords([0]);
+
+      await waitFor(() => {
+        expect(result.current.progress.failed).toBe(1);
+      });
+
+      expect(result.current.importStatus.get(0)?.status).toBe('error');
+
+      // User fixes the UUID conflict (simulated by changing shouldFail)
+      shouldFail = false;
+
+      // Retry the failed record
+      await result.current.retryRecord(0);
+
+      await waitFor(() => {
+        expect(result.current.importStatus.get(0)?.status).toBe('success');
+      });
+
+      expect(mutateAsync).toHaveBeenCalledTimes(2); // Initial attempt + retry
+    });
+
+    it('should handle 409 conflict without UUID in message', async () => {
+      const mutateAsync = vi.fn(async () => {
+        const error: any = new Error('Conflict');
+        error.response = {
+          status: 409,
+          data: { message: 'Resource conflict' },
+        };
+        throw error;
+      });
+
+      const records = [
+        { index: 0, data: { name: 'Record 0' }, validationErrors: [], isValid: true },
+      ];
+
+      const { result } = renderHook(() =>
+        useImportManager({
+          records,
+          createMutation: createMockMutation(mutateAsync),
+          delayBetweenCalls: 10,
+        })
+      );
+
+      await result.current.importRecords([0]);
+
+      await waitFor(() => {
+        expect(result.current.progress.failed).toBe(1);
+      });
+
+      expect(result.current.importStatus.get(0)?.status).toBe('error');
+      expect(result.current.importStatus.get(0)?.error).toBe('Conflict: Resource conflict');
+    });
+
+    it('should handle 400 validation error without UUID in message', async () => {
+      const mutateAsync = vi.fn(async () => {
+        const error: any = new Error('Bad Request');
+        error.response = {
+          status: 400,
+          data: { message: 'Name is required' },
+        };
+        throw error;
+      });
+
+      const records = [
+        { index: 0, data: { name: '' }, validationErrors: [], isValid: true },
+      ];
+
+      const { result } = renderHook(() =>
+        useImportManager({
+          records,
+          createMutation: createMockMutation(mutateAsync),
+          delayBetweenCalls: 10,
+        })
+      );
+
+      await result.current.importRecords([0]);
+
+      await waitFor(() => {
+        expect(result.current.progress.failed).toBe(1);
+      });
+
+      expect(result.current.importStatus.get(0)?.status).toBe('error');
+      expect(result.current.importStatus.get(0)?.error).toBe('Validation error: Name is required');
+    });
+  });
 });

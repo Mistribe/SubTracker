@@ -9,3 +9,6 @@
 .idea/shelf/
 .idea/dictionaries/
 coverage.*
+
+bin/
+api

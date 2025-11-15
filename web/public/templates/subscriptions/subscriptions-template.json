@@ -1,0 +1,57 @@
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440020",
+    "providerId": "your-provider-id-here",
+    "friendlyName": "Netflix Premium",
+    "startDate": "2024-01-01",
+    "recurrency": "monthly",
+    "customPriceAmount": 15.99,
+    "customPriceCurrency": "USD",
+    "ownerType": "personal",
+    "labels": ["Entertainment", "Video Streaming"]
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440021",
+    "providerId": "your-provider-id-here",
+    "friendlyName": "Spotify Family",
+    "startDate": "2024-02-15",
+    "recurrency": "monthly",
+    "customPriceAmount": 16.99,
+    "customPriceCurrency": "USD",
+    "ownerType": "personal",
+    "labels": ["Entertainment", "Music"]
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440022",
+    "providerId": "your-provider-id-here",
+    "friendlyName": "Adobe Creative Cloud",
+    "startDate": "2024-01-10",
+    "recurrency": "monthly",
+    "customPriceAmount": 54.99,
+    "customPriceCurrency": "USD",
+    "ownerType": "personal",
+    "labels": ["Productivity", "Design"]
+  },
+  {
+    "providerId": "your-provider-id-here",
+    "friendlyName": "GitHub Pro",
+    "startDate": "2024-03-01",
+    "recurrency": "monthly",
+    "customPriceAmount": 4.00,
+    "customPriceCurrency": "USD",
+    "ownerType": "personal",
+    "freeTrialStartDate": "2024-03-01",
+    "freeTrialEndDate": "2024-03-31",
+    "labels": ["Development", "Productivity"]
+  },
+  {
+    "providerId": "your-provider-id-here",
+    "friendlyName": "Dropbox Plus",
+    "startDate": "2024-02-20",
+    "recurrency": "yearly",
+    "customPriceAmount": 119.88,
+    "customPriceCurrency": "USD",
+    "ownerType": "personal",
+    "labels": ["Productivity", "Storage"]
+  }
+]

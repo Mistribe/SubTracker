@@ -1,0 +1,22 @@
+- id: "550e8400-e29b-41d4-a716-446655440001"
+  name: "Entertainment"
+  color: "#FF5733"
+  ownerType: "personal"
+
+- id: "550e8400-e29b-41d4-a716-446655440002"
+  name: "Utilities"
+  color: "#33FF57"
+  ownerType: "personal"
+
+- id: "550e8400-e29b-41d4-a716-446655440003"
+  name: "Productivity"
+  color: "#3357FF"
+  ownerType: "personal"
+
+- name: "Health & Fitness"
+  color: "#FF33A1"
+  ownerType: "personal"
+
+- name: "Education"
+  color: "#A133FF"
+  ownerType: "personal"

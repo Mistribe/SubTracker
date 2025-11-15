@@ -4,6 +4,7 @@ import { ArrowLeft, Download } from 'lucide-react';
 import { FileUploadZone } from '@/components/import/FileUploadZone';
 import { ImportPreviewTable } from '@/components/import/ImportPreviewTable';
 import { ImportHelp } from '@/components/import/ImportHelp';
+import { TemplateDownloadSection } from '@/components/import/TemplateDownloadSection';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
 import { fileParser, FileParseError, FileSizeError } from '@/services/fileParser';
@@ -310,6 +311,9 @@ export default function ImportProvidersPage() {
           </div>
         }
       />
+
+      {/* Template download section */}
+      <TemplateDownloadSection entityType="providers" />
 
       {/* File upload zone */}
       {parsedRecords.length === 0 && (

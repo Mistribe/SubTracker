@@ -40,6 +40,14 @@ export interface ValidationError {
 }
 
 /**
+ * UUID-specific validation error
+ */
+export interface UUIDValidationError extends ValidationError {
+  field: 'id';
+  providedValue?: string;
+}
+
+/**
  * Result of validation operation
  */
 export interface ValidationResult {
@@ -71,23 +79,23 @@ export interface ImportProgress {
 }
 
 /**
- * Generic import record wrapper
+ * Generic import record wrapper with optional ID field support
  */
 export interface ImportRecord<T> {
   index: number;
   rawData: Record<string, any>;
-  mappedData: Partial<T>;
+  mappedData: Partial<T> & { id?: string };
   validationErrors: ValidationError[];
   isValid: boolean;
   importStatus: ImportStatus;
 }
 
 /**
- * Parsed import record for preview table
+ * Parsed import record for preview table with optional ID field support
  */
 export interface ParsedImportRecord<T> {
   index: number;
-  data: Partial<T>;
+  data: Partial<T> & { id?: string };
   validationErrors: ValidationError[];
   isValid: boolean;
 }

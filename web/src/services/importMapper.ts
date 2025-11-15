@@ -10,6 +10,7 @@ import type {
   DtoSubscriptionFreeTrialModel,
 } from '../api';
 import type { FieldMapper, ValidationResult, ValidationError } from '../types/import';
+import { validateAndSanitizeUUID } from '../utils/uuidValidation';
 
 /**
  * Base field mapper implementation with common validation utilities
@@ -76,6 +77,14 @@ export class LabelFieldMapper extends BaseFieldMapper<DtoCreateLabelRequest> {
   mapFields(rawRecord: Record<string, any>): Partial<DtoCreateLabelRequest> {
     const mapped: Partial<DtoCreateLabelRequest> = {};
 
+    // Map ID field (optional - backend will generate if not provided)
+    if (!this.isEmpty(rawRecord.id)) {
+      const uuidResult = validateAndSanitizeUUID(rawRecord.id);
+      if (uuidResult.isValid && uuidResult.uuid) {
+        (mapped as any).id = uuidResult.uuid;
+      }
+    }
+
     // Map name
     if (!this.isEmpty(rawRecord.name)) {
       mapped.name = String(rawRecord.name).trim();
@@ -109,6 +118,15 @@ export class LabelFieldMapper extends BaseFieldMapper<DtoCreateLabelRequest> {
 
   validate(record: Partial<DtoCreateLabelRequest>): ValidationResult {
     const errors: ValidationError[] = [];
+
+    // Validate ID field if provided
+    const recordWithId = record as any;
+    if (!this.isEmpty(recordWithId.id)) {
+      const uuidResult = validateAndSanitizeUUID(recordWithId.id);
+      if (!uuidResult.isValid && uuidResult.error) {
+        errors.push(this.createError('id', uuidResult.error));
+      }
+    }
 
     // Validate required fields
     if (this.isEmpty(record.name)) {
@@ -170,6 +188,14 @@ export class ProviderFieldMapper extends BaseFieldMapper<DtoCreateProviderReques
   mapFields(rawRecord: Record<string, any>): Partial<DtoCreateProviderRequest> {
     const mapped: Partial<DtoCreateProviderRequest> = {};
 
+    // Map ID field (optional - backend will generate if not provided)
+    if (!this.isEmpty(rawRecord.id)) {
+      const uuidResult = validateAndSanitizeUUID(rawRecord.id);
+      if (uuidResult.isValid && uuidResult.uuid) {
+        (mapped as any).id = uuidResult.uuid;
+      }
+    }
+
     // Map name (required)
     if (!this.isEmpty(rawRecord.name)) {
       mapped.name = String(rawRecord.name).trim();
@@ -217,6 +243,15 @@ export class ProviderFieldMapper extends BaseFieldMapper<DtoCreateProviderReques
 
   validate(record: Partial<DtoCreateProviderRequest>): ValidationResult {
     const errors: ValidationError[] = [];
+
+    // Validate ID field if provided
+    const recordWithId = record as any;
+    if (!this.isEmpty(recordWithId.id)) {
+      const uuidResult = validateAndSanitizeUUID(recordWithId.id);
+      if (!uuidResult.isValid && uuidResult.error) {
+        errors.push(this.createError('id', uuidResult.error));
+      }
+    }
 
     // Validate required fields
     if (this.isEmpty(record.name)) {
@@ -283,6 +318,14 @@ export class ProviderFieldMapper extends BaseFieldMapper<DtoCreateProviderReques
 export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscriptionRequest> {
   mapFields(rawRecord: Record<string, any>): Partial<DtoCreateSubscriptionRequest> {
     const mapped: Partial<DtoCreateSubscriptionRequest> = {};
+
+    // Map ID field (optional - backend will generate if not provided)
+    if (!this.isEmpty(rawRecord.id)) {
+      const uuidResult = validateAndSanitizeUUID(rawRecord.id);
+      if (uuidResult.isValid && uuidResult.uuid) {
+        (mapped as any).id = uuidResult.uuid;
+      }
+    }
 
     // Map required fields
     if (!this.isEmpty(rawRecord.providerId)) {
@@ -382,6 +425,15 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
 
   validate(record: Partial<DtoCreateSubscriptionRequest>): ValidationResult {
     const errors: ValidationError[] = [];
+
+    // Validate ID field if provided
+    const recordWithId = record as any;
+    if (!this.isEmpty(recordWithId.id)) {
+      const uuidResult = validateAndSanitizeUUID(recordWithId.id);
+      if (!uuidResult.isValid && uuidResult.error) {
+        errors.push(this.createError('id', uuidResult.error));
+      }
+    }
 
     // Validate required fields
     if (this.isEmpty(record.providerId)) {

@@ -178,13 +178,34 @@ export function useImportManager<T>({
         const headers = error.response.headers;
         
         if (status === 400) {
-          errorMessage = `Validation error: ${data?.message || 'Invalid data'}`;
+          // Check if this is a UUID-related validation error
+          const message = data?.message || 'Invalid data';
+          if (message.toLowerCase().includes('uuid') || message.toLowerCase().includes('id')) {
+            // Extract UUID from record data if available
+            const recordId = record.data?.id;
+            errorMessage = recordId 
+              ? `Invalid UUID format: ${recordId}. ${message}`
+              : `Validation error: ${message}`;
+          } else {
+            errorMessage = `Validation error: ${message}`;
+          }
         } else if (status === 401 || status === 403) {
           errorMessage = 'Authentication error: Please check your permissions';
         } else if (status === 404) {
           errorMessage = 'Resource not found';
         } else if (status === 409) {
-          errorMessage = `Conflict: ${data?.message || 'Record already exists'}`;
+          // Check if this is a UUID conflict error
+          const message = data?.message || 'Record already exists';
+          const recordId = record.data?.id;
+          
+          if (recordId && (message.toLowerCase().includes('uuid') || 
+                          message.toLowerCase().includes('id') || 
+                          message.toLowerCase().includes('already exists') ||
+                          message.toLowerCase().includes('duplicate'))) {
+            errorMessage = `UUID conflict: Entity with ID ${recordId} already exists`;
+          } else {
+            errorMessage = `Conflict: ${message}`;
+          }
         } else if (status === 429) {
           isRateLimitError = true;
           errorMessage = 'Rate limit exceeded: Too many requests';
@@ -215,12 +236,14 @@ export function useImportManager<T>({
       
       // Retry with exponential backoff if we haven't exceeded max retries
       // Don't retry on client errors (4xx) except rate limiting
+      // Specifically don't retry on 400 (validation/UUID errors) or 409 (UUID conflicts)
+      const status = error?.response?.status;
       const shouldRetry = retryCount < maxRetries && (
         !error?.response || 
         error.response.status >= 500 || 
         isRateLimitError ||
         !error.response.status
-      );
+      ) && status !== 400 && status !== 409;
       
       if (shouldRetry) {
         const backoffDelay = isRateLimitError && rateLimitResetRef.current
