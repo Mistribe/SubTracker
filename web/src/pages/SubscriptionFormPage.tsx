@@ -57,19 +57,17 @@ const SubscriptionFormPage = () => {
             ownerType: OwnerType.Personal,
             friendlyName: undefined,
             hasFreeTrialPeriod: false,
-            serviceUsers: [],
+            familyUsers: [],
             customRecurrencyValue: 1,
             customRecurrencyUnit: "days",
-            customPrice: {
+            price: {
                 amount: 10,
                 currency: "USD"
-            }, // customPrice is now required
+            }, // price is now required
             endDate: undefined,
             familyId: undefined,
             freeTrialEndDate: new Date(),
             freeTrialStartDate: new Date(),
-            planId: undefined,
-            priceId: undefined,
             providerId: undefined
         },
     });
@@ -103,13 +101,13 @@ const SubscriptionFormPage = () => {
             }
 
             // Set service users
-            if (subscriptionToEdit.serviceUsers.length > 0) {
-                form.setValue("serviceUsers", subscriptionToEdit.serviceUsers);
+            if (subscriptionToEdit.familyUsers.length > 0) {
+                form.setValue("familyUsers", subscriptionToEdit.familyUsers);
             }
 
             // Set custom price if available
             if (subscriptionToEdit.price) {
-                form.setValue("customPrice", {
+                form.setValue("price", {
                     amount: subscriptionToEdit.price.value,
                     currency: subscriptionToEdit.price.currency
                 });
@@ -125,7 +123,7 @@ const SubscriptionFormPage = () => {
             setIsLoading(false);
         } else {
             if (preferredCurrency?.currency) {
-                form.setValue("customPrice", {
+                form.setValue("price", {
                     amount: 10,
                     currency: preferredCurrency.currency
                 });
@@ -146,16 +144,14 @@ const SubscriptionFormPage = () => {
             const subscriptionData = {
                 friendlyName: data.friendlyName,
                 providerId: data.providerId,
-                planId: data.planId === "" ? undefined : data.planId,
-                priceId: data.priceId === "" ? undefined : data.priceId,
                 recurrency: data.recurrency,
                 customRecurrency: customRecurrencyInDays,
                 startDate: data.startDate,
                 endDate: data.endDate,
                 ownerType: data.ownerType,
                 familyId: data.ownerType === OwnerType.Family ? data.familyId : undefined,
-                serviceUsers: data.serviceUsers,
-                customPrice: data.customPrice,
+                familyUsers: data.familyUsers,
+                price: data.price,
                 freeTrial: data.hasFreeTrialPeriod && data.freeTrialStartDate && data.freeTrialEndDate
                     ? {
                         startDate: data.freeTrialStartDate,
@@ -223,8 +219,6 @@ const SubscriptionFormPage = () => {
                         const fieldToSectionMap: Record<string, number> = {
                             // Basic Information (Section 0)
                             'providerId': 0,
-                            'planId': 0,
-                            'priceId': 0,
                             'friendlyName': 0,
 
                             // Recurrency (Section 1)
@@ -239,7 +233,7 @@ const SubscriptionFormPage = () => {
                             // Ownership (Section 3)
                             'ownerType': 3,
                             'familyId': 3,
-                            'serviceUsers': 3,
+                            'familyUsers': 3,
 
                             // Free Trial (Section 4)
                             'hasFreeTrialPeriod': 4,

@@ -116,17 +116,17 @@ export function SubscriptionsTable({
                                 </div>
                             </TableCell>
                             <TableCell>
-                                {subscription.serviceUsers.length > 0 && (
+                                {subscription.familyUsers.length > 0 && (
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <div className="flex items-center cursor-help">
                                                 <UsersIcon className="mr-2 h-4 w-4 text-muted-foreground"/>
-                                                <span>{subscription.serviceUsers.length}</span>
+                                                <span>{subscription.familyUsers.length}</span>
                                             </div>
                                         </TooltipTrigger>
                                         <TooltipContent side="top">
                                             <div className="max-w-64 text-sm">
-                                                {subscription.serviceUsers
+                                                {subscription.familyUsers
                                                     .map((id) => userNameMap?.get(id) ?? id)
                                                     .join(", ")}
                                             </div>

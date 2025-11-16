@@ -4,7 +4,7 @@ import type {FormValues} from "./SubscriptionFormSchema";
 import {Toggle} from "@/components/ui/toggle";
 import {CurrencyInput} from "@/components/ui/currency-input";
 
-export const CustomPriceSection = () => {
+export const priceSection = () => {
     const form = useFormContext<FormValues>();
 
     return (
@@ -16,30 +16,30 @@ export const CustomPriceSection = () => {
 
             <div className="max-w-md mx-auto mt-6">
                 <div>
-                    <Label htmlFor="customPrice" className="text-base mb-2 block">How much does it cost? *</Label>
+                    <Label htmlFor="price" className="text-base mb-2 block">How much does it cost? *</Label>
                     <CurrencyInput
                         value={{
-                            amount: form.watch("customPrice.amount") || 0,
-                            currency: form.watch("customPrice.currency") || "USD"
+                            amount: form.watch("price.amount") || 0,
+                            currency: form.watch("price.currency") || "USD"
                         }}
                         onChange={(value) => {
-                            form.setValue("customPrice.amount", value.amount, {shouldValidate: true});
-                            form.setValue("customPrice.currency", value.currency, {shouldValidate: true});
+                            form.setValue("price.amount", value.amount, {shouldValidate: true});
+                            form.setValue("price.currency", value.currency, {shouldValidate: true});
                         }}
                         error={{
-                            amount: form.formState.errors.customPrice?.amount?.message,
-                            currency: form.formState.errors.customPrice?.currency?.message
+                            amount: form.formState.errors.price?.amount?.message,
+                            currency: form.formState.errors.price?.currency?.message
                         }}
                         className="h-12"
                     />
                     <p className="text-xs text-muted-foreground mt-1">Enter the subscription price</p>
-                    {(form.formState.errors.customPrice?.amount || form.formState.errors.customPrice?.currency) && (
+                    {(form.formState.errors.price?.amount || form.formState.errors.price?.currency) && (
                         <div className="mt-2">
-                            {form.formState.errors.customPrice?.amount && (
-                                <p className="text-sm text-red-500">{form.formState.errors.customPrice.amount.message}</p>
+                            {form.formState.errors.price?.amount && (
+                                <p className="text-sm text-red-500">{form.formState.errors.price.amount.message}</p>
                             )}
-                            {form.formState.errors.customPrice?.currency && (
-                                <p className="text-sm text-red-500">{form.formState.errors.customPrice.currency.message}</p>
+                            {form.formState.errors.price?.currency && (
+                                <p className="text-sm text-red-500">{form.formState.errors.price.currency.message}</p>
                             )}
                         </div>
                     )}

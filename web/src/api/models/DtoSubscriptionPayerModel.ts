@@ -26,12 +26,6 @@ export interface DtoSubscriptionPayerModel {
      */
     etag: string;
     /**
-     * @Description LabelID of the family associated with this payer
-     * @type {string}
-     * @memberof DtoSubscriptionPayerModel
-     */
-    familyId: string;
-    /**
      * @Description LabelID of the specific family member who pays (required when type is family_member)
      * @type {string}
      * @memberof DtoSubscriptionPayerModel
@@ -61,7 +55,6 @@ export type DtoSubscriptionPayerModelTypeEnum = typeof DtoSubscriptionPayerModel
  */
 export function instanceOfDtoSubscriptionPayerModel(value: object): value is DtoSubscriptionPayerModel {
     if (!('etag' in value) || value['etag'] === undefined) return false;
-    if (!('familyId' in value) || value['familyId'] === undefined) return false;
     if (!('type' in value) || value['type'] === undefined) return false;
     return true;
 }
@@ -77,7 +70,6 @@ export function DtoSubscriptionPayerModelFromJSONTyped(json: any, ignoreDiscrimi
     return {
         
         'etag': json['etag'],
-        'familyId': json['family_id'],
         'memberId': json['memberId'] == null ? undefined : json['memberId'],
         'type': json['type'],
     };
@@ -95,7 +87,6 @@ export function DtoSubscriptionPayerModelToJSONTyped(value?: DtoSubscriptionPaye
     return {
         
         'etag': value['etag'],
-        'family_id': value['familyId'],
         'memberId': value['memberId'],
         'type': value['type'],
     };

@@ -181,8 +181,8 @@ export function useImportManager<T>({
           // Check if this is a UUID-related validation error
           const message = data?.message || 'Invalid data';
           if (message.toLowerCase().includes('uuid') || message.toLowerCase().includes('id')) {
-            // Extract UUID from record data if available
-            const recordId = record.data?.id;
+            // Extract UUID from record data if available (best-effort)
+            const recordId = (record.data as any)?.id;
             errorMessage = recordId 
               ? `Invalid UUID format: ${recordId}. ${message}`
               : `Validation error: ${message}`;
@@ -196,7 +196,7 @@ export function useImportManager<T>({
         } else if (status === 409) {
           // Check if this is a UUID conflict error
           const message = data?.message || 'Record already exists';
-          const recordId = record.data?.id;
+          const recordId = (record.data as any)?.id;
           
           if (recordId && (message.toLowerCase().includes('uuid') || 
                           message.toLowerCase().includes('id') || 

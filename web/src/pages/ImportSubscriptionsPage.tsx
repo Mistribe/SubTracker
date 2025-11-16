@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download } from 'lucide-react';
 import { FileUploadZone } from '@/components/import/FileUploadZone';
@@ -7,10 +7,13 @@ import { ImportHelp } from '@/components/import/ImportHelp';
 import { TemplateDownloadSection } from '@/components/import/TemplateDownloadSection';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { fileParser, FileParseError, FileSizeError } from '@/services/fileParser';
 import { SubscriptionFieldMapper } from '@/services/importMapper';
 import { useImportManager } from '@/hooks/import/useImportManager';
 import { useSubscriptionsMutations } from '@/hooks/subscriptions/useSubscriptionsMutations';
+import { useProvidersByIds } from '@/hooks/providers/useProvidersByIds';
 import { toast } from 'sonner';
 import type { ParsedImportRecord, ImportColumnDef } from '@/types/import';
 import type { DtoCreateSubscriptionRequest } from '@/api';
@@ -18,6 +21,50 @@ import type { DtoCreateSubscriptionRequest } from '@/api';
 const ACCEPTED_FORMATS = ['.csv', '.json', '.yaml', '.yml'];
 
 const subscriptionMapper = new SubscriptionFieldMapper();
+
+// Small cell component to display provider information for a given providerId
+function ProviderInfoCell({ providerId }: { providerId?: string | null }) {
+  if (!providerId) {
+    return <span className="text-sm text-muted-foreground">-</span>;
+  }
+
+  const { providerMap, isLoading } = useProvidersByIds([providerId]);
+  const provider = providerMap.get(providerId);
+
+  if (isLoading && !provider) {
+    return (
+      <div className="flex items-center gap-2">
+        <Skeleton className="size-6 rounded-full" />
+        <Skeleton className="h-4 w-28" />
+      </div>
+    );
+  }
+
+  if (!provider) {
+    // Fallback to truncated ID when provider isn't found
+    return (
+      <span className="text-sm font-mono text-muted-foreground">
+        {String(providerId).length > 11
+          ? String(providerId).substring(0, 8) + '...'
+          : String(providerId)}
+      </span>
+    );
+  }
+
+  const initial = provider.name?.charAt(0)?.toUpperCase() || '?';
+
+  return (
+    <div className="flex items-center gap-2 min-w-0">
+      <Avatar className="size-6">
+        <AvatarImage src={provider.iconUrl ?? undefined} alt={provider.name} />
+        <AvatarFallback className="text-xs">{initial}</AvatarFallback>
+      </Avatar>
+      <span className="text-sm truncate max-w-[220px]" title={provider.name}>
+        {provider.name}
+      </span>
+    </div>
+  );
+}
 
 // Define columns for the preview table
 const subscriptionColumns: ImportColumnDef<DtoCreateSubscriptionRequest>[] = [
@@ -32,12 +79,8 @@ const subscriptionColumns: ImportColumnDef<DtoCreateSubscriptionRequest>[] = [
   },
   {
     key: 'providerId',
-    label: 'Provider ID',
-    render: (value) => (
-      <span className="text-sm font-mono text-muted-foreground">
-        {value ? String(value).substring(0, 8) + '...' : '-'}
-      </span>
-    ),
+    label: 'Provider',
+    render: (value) => <ProviderInfoCell providerId={value ? String(value) : undefined} />,
   },
   {
     key: 'recurrency',
@@ -94,6 +137,53 @@ export default function ImportSubscriptionsPage() {
   const [selectedRecords, setSelectedRecords] = useState<Set<number>>(new Set());
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
+  // Validate provider existence: gather unique provider IDs from parsed records
+  const providerIds = useMemo(
+    () => Array.from(new Set(parsedRecords
+      .map(r => (r.data as any)?.providerId as string | undefined)
+      .filter((id): id is string => !!id && id.length > 0)
+    )),
+    [parsedRecords]
+  );
+
+  // Fetch providers for existence checks (cached via React Query)
+  const { providerMap: providerLookupMap, isLoading: isLoadingProviders } = useProvidersByIds(providerIds);
+
+  // Derive records adding validation error if provider does not exist
+  const computedRecords = useMemo(() => {
+    if (parsedRecords.length === 0) return parsedRecords;
+
+    return parsedRecords.map((record) => {
+      const providerId = (record.data as any)?.providerId as string | undefined;
+      let validationErrors = record.validationErrors;
+      let isValid = record.isValid;
+
+      // Only validate existence when we have providerId and loading is finished
+      if (providerId && !isLoadingProviders) {
+        const exists = providerLookupMap.get(providerId);
+        if (!exists) {
+          // Append a validation error without mutating original record
+          validationErrors = [
+            ...record.validationErrors,
+            { field: 'providerId', message: 'Provider not found', severity: 'error' },
+          ];
+          isValid = false;
+        }
+      }
+
+      if (validationErrors === record.validationErrors && isValid === record.isValid) {
+        // No change
+        return record;
+      }
+
+      return {
+        ...record,
+        validationErrors,
+        isValid,
+      } as ParsedImportRecord<DtoCreateSubscriptionRequest>;
+    });
+  }, [parsedRecords, providerLookupMap, isLoadingProviders]);
+
   // Create a wrapper mutation that accepts DtoCreateSubscriptionRequest
   const wrappedMutation = {
     ...createSubscriptionMutation,
@@ -131,7 +221,7 @@ export default function ImportSubscriptionsPage() {
     isImporting,
     cancelImport,
   } = useImportManager({
-    records: parsedRecords,
+    records: computedRecords,
     createMutation: wrappedMutation,
   });
 
@@ -219,8 +309,14 @@ export default function ImportSubscriptionsPage() {
 
   // Handle import selected records
   const handleImportSelected = useCallback(async () => {
+    if (isLoadingProviders) {
+      toast.info('Validating providers…', {
+        description: 'Please wait until provider validation finishes before importing.',
+      });
+      return;
+    }
     const validSelectedIndices = Array.from(selectedRecords).filter(
-      index => parsedRecords[index]?.isValid
+      index => computedRecords[index]?.isValid
     );
 
     if (validSelectedIndices.length === 0) {
@@ -240,11 +336,17 @@ export default function ImportSubscriptionsPage() {
       toast.success(`Successfully imported ${successCount} subscriptions`);
       setHasUnsavedChanges(false);
     }
-  }, [selectedRecords, parsedRecords, importRecords, progress]);
+  }, [selectedRecords, computedRecords, importRecords, progress, isLoadingProviders]);
 
   // Handle import all valid records
   const handleImportAll = useCallback(async () => {
-    const validIndices = parsedRecords
+    if (isLoadingProviders) {
+      toast.info('Validating providers…', {
+        description: 'Please wait until provider validation finishes before importing.',
+      });
+      return;
+    }
+    const validIndices = computedRecords
       .map((record, index) => (record.isValid ? index : -1))
       .filter(index => index !== -1);
 
@@ -265,7 +367,7 @@ export default function ImportSubscriptionsPage() {
       toast.success(`Successfully imported ${successCount} subscriptions`);
       setHasUnsavedChanges(false);
     }
-  }, [parsedRecords, importRecords, progress]);
+  }, [computedRecords, importRecords, progress, isLoadingProviders]);
 
   // Handle navigation back
   const handleBack = useCallback(() => {
@@ -356,7 +458,7 @@ export default function ImportSubscriptionsPage() {
       {parsedRecords.length > 0 && (
         <div className="space-y-4">
           <ImportPreviewTable
-            records={parsedRecords}
+            records={computedRecords}
             columns={subscriptionColumns}
             selectedRecords={selectedRecords}
             onSelectionChange={setSelectedRecords}

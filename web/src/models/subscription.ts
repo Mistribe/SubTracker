@@ -20,7 +20,7 @@ export default class Subscription {
     private readonly _endDate: Date | undefined;
     private readonly _owner: Owner;
     private readonly _payer: SubscriptionPayer | undefined;
-    private readonly _serviceUsers: string[];
+    private readonly _familyUsers: string[];
     private readonly _price: Amount | undefined;
     private readonly _freeTrial: SubscriptionFreeTrial | undefined;
     private readonly _isActive: boolean;
@@ -38,7 +38,7 @@ export default class Subscription {
         endDate: Date | undefined,
         owner: Owner,
         payer: SubscriptionPayer | undefined,
-        serviceUsers: string[],
+        familyUsers: string[],
         customPrice: Amount | undefined,
         freeTrial: SubscriptionFreeTrial | undefined,
         isActive: boolean) {
@@ -54,7 +54,7 @@ export default class Subscription {
         this._endDate = endDate;
         this._owner = owner;
         this._payer = payer;
-        this._serviceUsers = serviceUsers;
+        this._familyUsers = familyUsers;
         this._price = customPrice;
         this._freeTrial = freeTrial;
         this._isActive = isActive;
@@ -112,8 +112,8 @@ export default class Subscription {
         return this._payer;
     }
 
-    get serviceUsers(): string[] {
-        return this._serviceUsers;
+    get familyUsers(): string[] {
+        return this._familyUsers;
     }
 
     get price(): Amount | undefined {
@@ -138,7 +138,7 @@ export default class Subscription {
             model.endDate ? new Date(model.endDate) : undefined,
             Owner.fromModel(model.owner || {}),
             model.payer ? SubscriptionPayer.fromModel(model.payer) : undefined,
-            model.serviceUsers || [],
+            model.familyUsers || [],
             model.price ? fromModel(model.price) : undefined,
             model.freeTrial ? SubscriptionFreeTrial.fromModel(model.freeTrial) : undefined,
             model.isActive || false,

@@ -80,6 +80,12 @@ export interface DtoSubscriptionModel {
      */
     etag: string;
     /**
+     * @Description List of family member IDs who use this service (for shared subscriptions)
+     * @type {Array<string>}
+     * @memberof DtoSubscriptionModel
+     */
+    familyUsers?: Array<string>;
+    /**
      * 
      * @type {DtoSubscriptionFreeTrialModel}
      * @memberof DtoSubscriptionModel
@@ -122,23 +128,11 @@ export interface DtoSubscriptionModel {
      */
     payer?: DtoSubscriptionPayerModel;
     /**
-     * @Description LabelID of the specific plan being subscribed to
-     * @type {string}
-     * @memberof DtoSubscriptionModel
-     */
-    planId?: string;
-    /**
      * 
      * @type {DtoAmountModel}
      * @memberof DtoSubscriptionModel
      */
     price?: DtoAmountModel;
-    /**
-     * @Description LabelID of the pricing tier for this subscription
-     * @type {string}
-     * @memberof DtoSubscriptionModel
-     */
-    priceId?: string;
     /**
      * @Description LabelID of the service provider offering this subscription
      * @type {string}
@@ -151,12 +145,6 @@ export interface DtoSubscriptionModel {
      * @memberof DtoSubscriptionModel
      */
     recurrency: DtoSubscriptionModelRecurrencyEnum;
-    /**
-     * @Description List of family member IDs who use this service (for shared subscriptions)
-     * @type {Array<string>}
-     * @memberof DtoSubscriptionModel
-     */
-    serviceUsers?: Array<string>;
     /**
      * @Description ISO 8601 timestamp when the subscription becomes active
      * @type {Date}
@@ -217,6 +205,7 @@ export function DtoSubscriptionModelFromJSONTyped(json: any, ignoreDiscriminator
         'customRecurrency': json['custom_recurrency'] == null ? undefined : json['custom_recurrency'],
         'endDate': json['end_date'] == null ? undefined : (new Date(json['end_date'])),
         'etag': json['etag'],
+        'familyUsers': json['family_users'] == null ? undefined : json['family_users'],
         'freeTrial': json['free_trial'] == null ? undefined : DtoSubscriptionFreeTrialModelFromJSON(json['free_trial']),
         'friendlyName': json['friendly_name'] == null ? undefined : json['friendly_name'],
         'id': json['id'],
@@ -224,12 +213,9 @@ export function DtoSubscriptionModelFromJSONTyped(json: any, ignoreDiscriminator
         'labelRefs': json['label_refs'] == null ? undefined : ((json['label_refs'] as Array<any>).map(DtoLabelRefModelFromJSON)),
         'owner': DtoOwnerModelFromJSON(json['owner']),
         'payer': json['payer'] == null ? undefined : DtoSubscriptionPayerModelFromJSON(json['payer']),
-        'planId': json['plan_id'] == null ? undefined : json['plan_id'],
         'price': json['price'] == null ? undefined : DtoAmountModelFromJSON(json['price']),
-        'priceId': json['price_id'] == null ? undefined : json['price_id'],
         'providerId': json['provider_id'],
         'recurrency': json['recurrency'],
-        'serviceUsers': json['service_users'] == null ? undefined : json['service_users'],
         'startDate': (new Date(json['start_date'])),
         'updatedAt': (new Date(json['updated_at'])),
     };
@@ -250,6 +236,7 @@ export function DtoSubscriptionModelToJSONTyped(value?: DtoSubscriptionModel | n
         'custom_recurrency': value['customRecurrency'],
         'end_date': value['endDate'] == null ? value['endDate'] : value['endDate'].toISOString(),
         'etag': value['etag'],
+        'family_users': value['familyUsers'],
         'free_trial': DtoSubscriptionFreeTrialModelToJSON(value['freeTrial']),
         'friendly_name': value['friendlyName'],
         'id': value['id'],
@@ -257,12 +244,9 @@ export function DtoSubscriptionModelToJSONTyped(value?: DtoSubscriptionModel | n
         'label_refs': value['labelRefs'] == null ? undefined : ((value['labelRefs'] as Array<any>).map(DtoLabelRefModelToJSON)),
         'owner': DtoOwnerModelToJSON(value['owner']),
         'payer': DtoSubscriptionPayerModelToJSON(value['payer']),
-        'plan_id': value['planId'],
         'price': DtoAmountModelToJSON(value['price']),
-        'price_id': value['priceId'],
         'provider_id': value['providerId'],
         'recurrency': value['recurrency'],
-        'service_users': value['serviceUsers'],
         'start_date': value['startDate'].toISOString(),
         'updated_at': value['updatedAt'].toISOString(),
     };
