@@ -72,7 +72,12 @@ func (e ExportEndpoint) Handle(c *gin.Context) {
 
 	// Fetch all subscriptions using high limit and withInactive=true
 	// todo do better
-	q := query.NewFindAllQuery("", nil, nil, nil, nil, nil, true, 10000, 0)
+	q := query.FindAllQuery{
+		Limit:          10000,
+		WithInactive:   true,
+		Offset:         0,
+		SourceCurrency: true,
+	}
 	r := e.handler.Handle(c, q)
 
 	// Handle query errors

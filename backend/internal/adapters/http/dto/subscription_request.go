@@ -17,7 +17,7 @@ type CreateSubscriptionRequest struct {
 	Id               *string                         `json:"id,omitempty"`
 	FriendlyName     *string                         `json:"friendly_name,omitempty"`
 	FreeTrial        *SubscriptionFreeTrialModel     `json:"free_trial,omitempty"`
-	ProviderId       *string                         `json:"provider_id" binding:"required"`
+	ProviderId       *string                         `json:"provider_id,omitempty"`
 	ProviderKey      *string                         `json:"provider_key,omitempty"`
 	Price            AmountModel                     `json:"price"`
 	FamilyUsers      []string                        `json:"family_users,omitempty"`

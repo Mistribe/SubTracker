@@ -152,7 +152,6 @@ components:
           type: string
       required:
       - owner
-      - provider_id
       - recurrency
       - start_date
       type: object
