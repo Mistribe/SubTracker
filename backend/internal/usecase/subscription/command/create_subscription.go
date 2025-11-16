@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/mistribe/subtracker/internal/domain/authorization"
@@ -19,7 +20,8 @@ type CreateSubscriptionCommand struct {
 	SubscriptionID   option.Option[types.SubscriptionID]
 	FriendlyName     *string
 	FreeTrial        subscription.FreeTrial
-	ProviderID       types.ProviderID
+	ProviderID       *types.ProviderID
+	ProviderKey      *string
 	Price            currency.Amount
 	Owner            types.OwnerType
 	PayerType        *subscription.PayerType
@@ -40,6 +42,7 @@ type CreateSubscriptionCommandHandler struct {
 	familyRepository       ports.FamilyRepository
 	entitlement            ports.EntitlementResolver
 	ownerFactory           shared.OwnerFactory
+	providerRepository     ports.ProviderRepository
 }
 
 func NewCreateSubscriptionCommandHandler(
@@ -48,6 +51,7 @@ func NewCreateSubscriptionCommandHandler(
 	familyRepository ports.FamilyRepository,
 	authentication ports.Authentication,
 	ownerFactory shared.OwnerFactory,
+	providerRepository ports.ProviderRepository,
 	entitlement ports.EntitlementResolver) *CreateSubscriptionCommandHandler {
 	return &CreateSubscriptionCommandHandler{
 		subscriptionRepository: subscriptionRepository,
@@ -56,6 +60,7 @@ func NewCreateSubscriptionCommandHandler(
 		authentication:         authentication,
 		entitlement:            entitlement,
 		ownerFactory:           ownerFactory,
+		providerRepository:     providerRepository,
 	}
 }
 
@@ -96,12 +101,25 @@ func (h CreateSubscriptionCommandHandler) Handle(
 		}
 	}
 
+	var providerID types.ProviderID
+	if cmd.ProviderID != nil {
+		providerID = *cmd.ProviderID
+	} else if cmd.ProviderKey != nil {
+		provider, err := h.providerRepository.GetByProviderKey(ctx, *cmd.ProviderKey)
+		if err != nil {
+			return result.Fail[subscription.Subscription](err)
+		}
+		providerID = provider.Id()
+	} else {
+		return result.Fail[subscription.Subscription](errors.New("missing provider ID or provider key"))
+	}
+
 	// Build the subscription aggregate early so authorization can run before repository lookups
 	newSub := subscription.NewSubscription(
 		subscriptionID,
 		cmd.FriendlyName,
 		cmd.FreeTrial,
-		cmd.ProviderID,
+		providerID,
 		price,
 		owner,
 		payer,

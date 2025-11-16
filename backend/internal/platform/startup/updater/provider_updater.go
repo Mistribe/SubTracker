@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/Oleexo/config-go"
@@ -112,14 +113,20 @@ func (l providerUpdater) updateDatabase(ctx context.Context, sourceProviders []s
 	systemProviderMap := herd.NewDictionaryFromSlice(
 		systemProviders,
 		func(prov provider.Provider) string {
-			return *prov.Key()
+			if strings.HasPrefix(prov.Key(), "s_") {
+				return prov.Key()
+			}
+			return "s_" + prov.Key()
 		},
 		func(prov provider.Provider) provider.Provider { return prov },
 	)
 	sourceProviderMap := herd.NewDictionaryFromSlice(
 		sourceProviders,
 		func(prov systemProviderModel) string {
-			return prov.Key
+			if strings.HasPrefix(prov.Key, "s_") {
+				return prov.Key
+			}
+			return "s_" + prov.Key
 		},
 		func(prov systemProviderModel) systemProviderModel { return prov },
 	)
@@ -159,7 +166,6 @@ func (l providerUpdater) updateDatabase(ctx context.Context, sourceProviders []s
 			newProvider := provider.NewProvider(
 				types.NewProviderID(),
 				prov.Name,
-				&prov.Key,
 				prov.Description,
 				&prov.Icon,
 				&prov.Website,

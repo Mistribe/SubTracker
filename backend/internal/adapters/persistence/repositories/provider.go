@@ -55,6 +55,35 @@ func (r ProviderRepository) GetById(ctx context.Context, providerId types.Provid
 	return providers[0], nil
 }
 
+func (r ProviderRepository) GetByProviderKey(ctx context.Context, key string) (provider.Provider, error) {
+	stmt := SELECT(
+		Providers.AllColumns,
+		ProviderLabels.LabelID,
+		ProviderLabels.ProviderID,
+	).
+		FROM(
+			Providers.
+				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)),
+		).
+		WHERE(Providers.Key.EQ(String(key)))
+
+	var rows []models.ProviderRow
+
+	if err := r.dbContext.Query(ctx, stmt, &rows); err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return nil, nil
+	}
+
+	providers := models.CreateProviderFromJetRows(rows)
+	if len(providers) == 0 {
+		return nil, nil
+	}
+
+	return providers[0], nil
+}
+
 func (r ProviderRepository) GetByIdForUser(ctx context.Context, userId types.UserID, providerId types.ProviderID) (
 	provider.Provider,
 	error) {
@@ -364,13 +393,6 @@ func (r ProviderRepository) create(ctx context.Context, providers []provider.Pro
 			ownerUserID = NULL
 		}
 
-		var keyVal Expression
-		if prov.Key() != nil {
-			keyVal = String(*prov.Key())
-		} else {
-			keyVal = NULL
-		}
-
 		var descVal Expression
 		if prov.Description() != nil {
 			descVal = String(*prov.Description())
@@ -405,7 +427,7 @@ func (r ProviderRepository) create(ctx context.Context, providers []provider.Pro
 			ownerFamilyID,
 			ownerUserID,
 			String(prov.Name()),
-			keyVal,
+			String(prov.Key()),
 			descVal,
 			iconVal,
 			urlVal,
@@ -482,13 +504,6 @@ func (r ProviderRepository) update(ctx context.Context, dirtyProvider provider.P
 		ownerUserID = StringExp(NULL)
 	}
 
-	var keyVal StringExpression
-	if dirtyProvider.Key() != nil {
-		keyVal = String(*dirtyProvider.Key())
-	} else {
-		keyVal = StringExp(NULL)
-	}
-
 	var descVal StringExpression
 	if dirtyProvider.Description() != nil {
 		descVal = String(*dirtyProvider.Description())
@@ -523,7 +538,7 @@ func (r ProviderRepository) update(ctx context.Context, dirtyProvider provider.P
 			Providers.OwnerFamilyID.SET(ownerFamilyID),
 			Providers.OwnerUserID.SET(ownerUserID),
 			Providers.Name.SET(String(dirtyProvider.Name())),
-			Providers.Key.SET(keyVal),
+			Providers.Key.SET(String(dirtyProvider.Key())),
 			Providers.Description.SET(descVal),
 			Providers.IconURL.SET(iconVal),
 			Providers.URL.SET(urlVal),

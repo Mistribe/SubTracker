@@ -88,7 +88,7 @@ func (l subscriptionUpdater) getSystemProviders(ctx context.Context) (herd.Dicti
 	return herd.NewDictionaryFromSlice(
 		providers,
 		func(prov provider.Provider) string {
-			return *prov.Key()
+			return prov.Key()
 		},
 		func(prov provider.Provider) types.ProviderID {
 			return prov.Id()

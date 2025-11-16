@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/mistribe/subtracker/internal/domain/authorization"
@@ -18,7 +19,8 @@ type UpdateSubscriptionCommand struct {
 	SubscriptionID   types.SubscriptionID
 	FriendlyName     *string
 	FreeTrial        subscription.FreeTrial
-	ProviderID       types.ProviderID
+	ProviderID       *types.ProviderID
+	ProviderKey      *string
 	Price            currency.Amount
 	Owner            types.OwnerType
 	PayerType        *subscription.PayerType
@@ -37,18 +39,21 @@ type UpdateSubscriptionCommandHandler struct {
 	familyRepository       ports.FamilyRepository
 	authorization          ports.Authorization
 	ownerFactory           shared.OwnerFactory
+	providerRepository     ports.ProviderRepository
 }
 
 func NewUpdateSubscriptionCommandHandler(
 	subscriptionRepository ports.SubscriptionRepository,
 	familyRepository ports.FamilyRepository,
 	ownerFactory shared.OwnerFactory,
+	providerRepository ports.ProviderRepository,
 	authorization ports.Authorization) *UpdateSubscriptionCommandHandler {
 	return &UpdateSubscriptionCommandHandler{
 		subscriptionRepository: subscriptionRepository,
 		familyRepository:       familyRepository,
 		authorization:          authorization,
 		ownerFactory:           ownerFactory,
+		providerRepository:     providerRepository,
 	}
 }
 
@@ -75,6 +80,23 @@ func (h UpdateSubscriptionCommandHandler) updateSubscription(
 	ctx context.Context,
 	cmd UpdateSubscriptionCommand,
 	sub subscription.Subscription) result.Result[subscription.Subscription] {
+
+	var providerID types.ProviderID
+	if cmd.ProviderID != nil {
+		providerID = *cmd.ProviderID
+	} else if cmd.ProviderKey != nil {
+		provider, err := h.providerRepository.GetByProviderKey(ctx, *cmd.ProviderKey)
+		if err != nil {
+			return result.Fail[subscription.Subscription](err)
+		}
+		providerID = provider.Id()
+	} else {
+		return result.Fail[subscription.Subscription](errors.New("missing provider ID or provider key"))
+	}
+
+	if sub.ProviderId() != providerID {
+		sub.SetProviderId(providerID)
+	}
 
 	if cmd.FriendlyName != nil {
 		sub.SetFriendlyName(cmd.FriendlyName)

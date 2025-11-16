@@ -27,7 +27,6 @@ func createProviderFromJet(jetModel model.Providers, labels []types.LabelID) pro
 	p := provider.NewProvider(
 		types.ProviderID(jetModel.ID),
 		jetModel.Name,
-		jetModel.Key,
 		jetModel.Description,
 		jetModel.IconURL,
 		jetModel.URL,

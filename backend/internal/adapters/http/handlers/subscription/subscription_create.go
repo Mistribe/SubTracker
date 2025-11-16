@@ -35,7 +35,7 @@ func createSubscriptionRequestToCommand(r dto.CreateSubscriptionRequest) (comman
 	if err != nil {
 		return command.CreateSubscriptionCommand{}, err
 	}
-	providerID, err := types.ParseProviderID(r.ProviderId)
+	providerID, err := types.ParseProviderIDOrNil(r.ProviderId)
 	if err != nil {
 		return command.CreateSubscriptionCommand{}, err
 	}
@@ -87,11 +87,15 @@ func createSubscriptionRequestToCommand(r dto.CreateSubscriptionRequest) (comman
 	if err != nil {
 		return command.CreateSubscriptionCommand{}, err
 	}
+	if r.ProviderKey == nil && providerID == nil {
+		return command.CreateSubscriptionCommand{}, errors.New("provider id or provider key is required")
+	}
 	return command.CreateSubscriptionCommand{
 		SubscriptionID:   option.New(subscriptionID),
 		FriendlyName:     r.FriendlyName,
 		FreeTrial:        freeTrial,
 		ProviderID:       providerID,
+		ProviderKey:      r.ProviderKey,
 		Price:            price.Amount(),
 		Owner:            owner,
 		PayerType:        payerType,

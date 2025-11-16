@@ -9,6 +9,7 @@ func Module() fx.Option {
 		fx.Provide(
 			NewExportService,
 			NewLabelResolver,
+			NewProviderResolver,
 		),
 	)
 }

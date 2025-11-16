@@ -15,7 +15,7 @@ type Provider interface {
 	entity.ETagEntity
 
 	Name() string
-	Key() *string
+	Key() string
 	SetName(name string)
 	Description() *string
 	SetDescription(description *string)
@@ -38,7 +38,7 @@ type provider struct {
 	*entity.Base[types.ProviderID]
 
 	name           string
-	key            *string
+	key            string
 	description    *string
 	iconUrl        *string
 	url            *string
@@ -50,7 +50,6 @@ type provider struct {
 func NewProvider(
 	id types.ProviderID,
 	name string,
-	key *string,
 	description *string,
 	iconUrl *string,
 	url *string,
@@ -59,10 +58,11 @@ func NewProvider(
 	owner types.Owner,
 	createdAt time.Time,
 	updatedAt time.Time) Provider {
+
 	return &provider{
 		Base:           entity.NewBase(id, createdAt, updatedAt, true, false),
 		name:           strings.TrimSpace(name),
-		key:            key,
+		key:            generateKey(name, owner),
 		description:    description,
 		iconUrl:        iconUrl,
 		url:            url,
@@ -72,7 +72,7 @@ func NewProvider(
 	}
 }
 
-func (p *provider) Key() *string {
+func (p *provider) Key() string {
 	return p.key
 }
 
@@ -85,6 +85,7 @@ func (p *provider) SetName(name string) {
 		return
 	}
 	p.name = name
+	p.key = generateKey(name, p.owner)
 	p.SetAsDirty()
 }
 
@@ -151,6 +152,7 @@ func (p *provider) IsCustom() bool {
 
 func (p *provider) SetOwner(owner types.Owner) {
 	p.owner = owner
+	p.key = generateKey(p.name, owner)
 	p.SetAsDirty()
 }
 

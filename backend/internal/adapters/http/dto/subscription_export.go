@@ -3,7 +3,7 @@ package dto
 // SubscriptionExportModel represents a subscription for export purposes
 type SubscriptionExportModel struct {
 	Id                 string   `json:"id" csv:"id" yaml:"id"`
-	ProviderId         string   `json:"providerId" csv:"providerId" yaml:"providerId"`
+	ProviderKey        string   `json:"providerKey" csv:"providerKey" yaml:"providerKey"`
 	FriendlyName       *string  `json:"friendlyName,omitempty" csv:"friendlyName" yaml:"friendlyName,omitempty"`
 	StartDate          string   `json:"startDate" csv:"startDate" yaml:"startDate"`
 	EndDate            *string  `json:"endDate,omitempty" csv:"endDate" yaml:"endDate,omitempty"`

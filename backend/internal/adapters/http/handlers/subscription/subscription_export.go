@@ -1,6 +1,7 @@
 package subscription
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -17,22 +18,26 @@ import (
 	. "github.com/mistribe/subtracker/pkg/ginx"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 	"github.com/mistribe/subtracker/pkg/x"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type ExportEndpoint struct {
-	handler       ports.QueryHandler[query.FindAllQuery, shared.PaginatedResponse[subscription.Subscription]]
-	labelResolver export.LabelResolver
-	exportService export.ExportService
+	handler          ports.QueryHandler[query.FindAllQuery, shared.PaginatedResponse[subscription.Subscription]]
+	labelResolver    export.LabelResolver
+	providerResolver export.ProviderResolver
+	exportService    export.ExportService
 }
 
 func NewExportEndpoint(
 	handler ports.QueryHandler[query.FindAllQuery, shared.PaginatedResponse[subscription.Subscription]],
 	labelResolver export.LabelResolver,
+	providerResolver export.ProviderResolver,
 	exportService export.ExportService) *ExportEndpoint {
 	return &ExportEndpoint{
-		handler:       handler,
-		labelResolver: labelResolver,
-		exportService: exportService,
+		handler:          handler,
+		labelResolver:    labelResolver,
+		exportService:    exportService,
+		providerResolver: providerResolver,
 	}
 }
 
@@ -85,36 +90,21 @@ func (e ExportEndpoint) Handle(c *gin.Context) {
 	result.Match(r, func(paginatedResult shared.PaginatedResponse[subscription.Subscription]) any {
 		subscriptions := paginatedResult.Data()
 
-		// Extract all unique label IDs from subscriptions
-		labelIDsMap := make(map[types.LabelID]bool)
-		for _, sub := range subscriptions {
-			for labelRef := range sub.Labels().It() {
-				labelIDsMap[labelRef.LabelId] = true
-			}
+		labelIDToName, err := e.extractLabelNames(c, subscriptions)
+		if err != nil {
+			FromError(c, err)
+			return nil
 		}
-
-		// Convert map to slice
-		labelIDs := make([]types.LabelID, 0, len(labelIDsMap))
-		for labelID := range labelIDsMap {
-			labelIDs = append(labelIDs, labelID)
-		}
-
-		// Resolve label IDs to names
-		labelIDToName := make(map[types.LabelID]string)
-		if len(labelIDs) > 0 {
-			// Resolve each label ID individually to maintain the mapping
-			for _, labelID := range labelIDs {
-				names, err := e.labelResolver.ResolveLabelNames(c, []types.LabelID{labelID})
-				if err == nil && len(names) > 0 {
-					labelIDToName[labelID] = names[0]
-				}
-			}
+		providerIDToKey, err := e.extractProviderKeys(c, subscriptions)
+		if err != nil {
+			FromError(c, err)
+			return nil
 		}
 
 		// Transform domain subscriptions to export models
 		exportModels := make([]dto.SubscriptionExportModel, len(subscriptions))
 		for i, sub := range subscriptions {
-			exportModels[i] = transformSubscriptionToExportModel(sub, labelIDToName)
+			exportModels[i] = transformSubscriptionToExportModel(sub, labelIDToName, providerIDToKey)
 		}
 
 		// Set response headers
@@ -153,6 +143,44 @@ func (e ExportEndpoint) Handle(c *gin.Context) {
 	})
 }
 
+func (e ExportEndpoint) extractLabelNames(ctx context.Context,
+	subscriptions []subscription.Subscription) (map[types.LabelID]string, error) {
+	// Extract all unique label IDs from subscriptions
+	labelIDs := herd.NewSet[types.LabelID]()
+	for _, sub := range subscriptions {
+		for labelRef := range sub.Labels().It() {
+			labelIDs.Add(labelRef.LabelId)
+		}
+	}
+
+	if len(labelIDs) < 0 {
+		return nil, nil
+	}
+	names, err := e.labelResolver.ResolveLabelNames(ctx, labelIDs.ToSlice())
+	if err != nil {
+		return nil, err
+	}
+
+	return names, nil
+}
+
+func (e ExportEndpoint) extractProviderKeys(ctx context.Context,
+	subscriptions []subscription.Subscription) (map[types.ProviderID]string, error) {
+	providerIDs := herd.NewSet[types.ProviderID]()
+	for _, sub := range subscriptions {
+		providerIDs.Add(sub.ProviderId())
+	}
+
+	if len(providerIDs) < 0 {
+		return nil, nil
+	}
+	keys, err := e.providerResolver.ResolveProviderKeys(ctx, providerIDs.ToSlice())
+	if err != nil {
+		return nil, err
+	}
+	return keys, nil
+}
+
 func (e ExportEndpoint) Pattern() []string {
 	return []string{"/export"}
 }
@@ -167,7 +195,8 @@ func (e ExportEndpoint) Middlewares() []gin.HandlerFunc {
 
 // transformSubscriptionToExportModel converts a domain subscription to an export model
 func transformSubscriptionToExportModel(sub subscription.Subscription,
-	labelIDToName map[types.LabelID]string) dto.SubscriptionExportModel {
+	labelIDToName map[types.LabelID]string,
+	providerIDToKey map[types.ProviderID]string) dto.SubscriptionExportModel {
 	// Resolve label IDs to names
 	labelNames := make([]string, 0)
 	for labelRef := range sub.Labels().It() {
@@ -224,7 +253,7 @@ func transformSubscriptionToExportModel(sub subscription.Subscription,
 
 	return dto.SubscriptionExportModel{
 		Id:                 sub.Id().String(),
-		ProviderId:         sub.ProviderId().String(),
+		ProviderKey:        providerIDToKey[sub.ProviderId()],
 		FriendlyName:       sub.FriendlyName(),
 		StartDate:          startDate,
 		EndDate:            endDate,

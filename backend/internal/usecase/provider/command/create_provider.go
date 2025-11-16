@@ -83,7 +83,6 @@ func (h *CreateProviderCommandHandler) Handle(
 	prov := provider.NewProvider(
 		providerID,
 		cmd.Name,
-		nil,
 		cmd.Description,
 		cmd.IconUrl,
 		cmd.Url,

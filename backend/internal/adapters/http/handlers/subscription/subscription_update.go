@@ -27,7 +27,7 @@ func updateSubscriptionRequestToCommand(
 	r dto.UpdateSubscriptionRequest,
 	userId types.UserID,
 	subscriptionID types.SubscriptionID) (command.UpdateSubscriptionCommand, error) {
-	providerID, err := types.ParseProviderID(r.ProviderId)
+	providerID, err := types.ParseProviderIDOrNil(r.ProviderId)
 	if err != nil {
 		return command.UpdateSubscriptionCommand{}, err
 	}
@@ -79,11 +79,15 @@ func updateSubscriptionRequestToCommand(
 	if err != nil {
 		return command.UpdateSubscriptionCommand{}, err
 	}
+	if r.ProviderKey == nil && providerID == nil {
+		return command.UpdateSubscriptionCommand{}, errors.New("provider id or provider key is required")
+	}
 	return command.UpdateSubscriptionCommand{
 		SubscriptionID:   subscriptionID,
 		FriendlyName:     r.FriendlyName,
 		FreeTrial:        freeTrial,
 		ProviderID:       providerID,
+		ProviderKey:      r.ProviderKey,
 		Price:            price.Amount(),
 		Owner:            owner,
 		PayerType:        payerType,

@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -15,6 +16,7 @@ import (
 	"github.com/mistribe/subtracker/internal/shared"
 	"github.com/mistribe/subtracker/internal/usecase/provider/query"
 	. "github.com/mistribe/subtracker/pkg/ginx"
+	"github.com/mistribe/subtracker/pkg/x/herd"
 )
 
 type ExportEndpoint struct {
@@ -85,30 +87,11 @@ func (e ExportEndpoint) Handle(c *gin.Context) {
 	})
 	providers := paginatedResult.Data()
 
-	// Extract all unique label IDs from providers
-	labelIDsMap := make(map[types.LabelID]bool)
-	for _, prov := range providers {
-		for labelID := range prov.Labels().It() {
-			labelIDsMap[labelID] = true
-		}
-	}
-
-	// Convert map to slice
-	labelIDs := make([]types.LabelID, 0, len(labelIDsMap))
-	for labelID := range labelIDsMap {
-		labelIDs = append(labelIDs, labelID)
-	}
-
 	// Resolve label IDs to names
-	labelIDToName := make(map[types.LabelID]string)
-	if len(labelIDs) > 0 {
-		// We need to resolve each label ID individually to maintain the mapping
-		for _, labelID := range labelIDs {
-			names, err := e.labelResolver.ResolveLabelNames(c, []types.LabelID{labelID})
-			if err == nil && len(names) > 0 {
-				labelIDToName[labelID] = names[0]
-			}
-		}
+	labelIDToName, err := e.extractLabelNames(c, providers)
+	if err != nil {
+		c.Error(fmt.Errorf("failed to resolve label names: %w", err))
+		return
 	}
 
 	// Transform domain providers to export models
@@ -142,6 +125,27 @@ func (e ExportEndpoint) Handle(c *gin.Context) {
 	}
 }
 
+func (e ExportEndpoint) extractLabelNames(ctx context.Context,
+	providers []provider.Provider) (map[types.LabelID]string, error) {
+	// Extract all unique label IDs from providers
+	labelIDs := herd.NewSet[types.LabelID]()
+	for _, sub := range providers {
+		for labelID := range sub.Labels().It() {
+			labelIDs.Add(labelID)
+		}
+	}
+
+	if len(labelIDs) < 0 {
+		return nil, nil
+	}
+	names, err := e.labelResolver.ResolveLabelNames(ctx, labelIDs.ToSlice())
+	if err != nil {
+		return nil, err
+	}
+
+	return names, nil
+}
+
 func (e ExportEndpoint) Pattern() []string {
 	return []string{"/export"}
 }
@@ -166,8 +170,8 @@ func transformProviderToExportModel(prov provider.Provider,
 	}
 
 	return dto.ProviderExportModel{
-		Id:             prov.Id().String(),
 		Name:           prov.Name(),
+		Key:            prov.Key(),
 		Description:    prov.Description(),
 		Url:            prov.Url(),
 		IconUrl:        prov.IconUrl(),
