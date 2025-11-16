@@ -13,6 +13,5 @@
             "url": "./data/schemas/familiesSchema.json"
         }
     ],
-    "makefile.configureOnOpen": false,
-    "kiroAgent.configureMCP": "Enable"
+    "makefile.configureOnOpen": false
 }
