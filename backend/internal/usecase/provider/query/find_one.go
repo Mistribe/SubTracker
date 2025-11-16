@@ -10,13 +10,8 @@ import (
 )
 
 type FindOneQuery struct {
-	ProviderID types.ProviderID
-}
-
-func NewFindOneQuery(providerID types.ProviderID) FindOneQuery {
-	return FindOneQuery{
-		ProviderID: providerID,
-	}
+	ProviderID  *types.ProviderID
+	ProviderKey *string
 }
 
 type FindOneQueryHandler struct {
@@ -35,13 +30,27 @@ func NewFindOneQueryHandler(
 
 func (h FindOneQueryHandler) Handle(ctx context.Context, query FindOneQuery) result.Result[provider.Provider] {
 	connectedAccount := h.authService.MustGetConnectedAccount(ctx)
-	prvdr, err := h.providerRepository.GetByIdForUser(ctx, connectedAccount.UserID(), query.ProviderID)
-	if err != nil {
-		return result.Fail[provider.Provider](err)
+	if query.ProviderID != nil {
+		prvdr, err := h.providerRepository.GetByIdForUser(ctx, connectedAccount.UserID(), *query.ProviderID)
+		if err != nil {
+			return result.Fail[provider.Provider](err)
+		}
+
+		if prvdr == nil {
+			return result.Fail[provider.Provider](provider.ErrProviderNotFound)
+		}
+		return result.Success(prvdr)
+	} else if query.ProviderKey != nil {
+		prvdr, err := h.providerRepository.GetByProviderKeyForUser(ctx, connectedAccount.UserID(), *query.ProviderKey)
+		if err != nil {
+			return result.Fail[provider.Provider](err)
+		}
+
+		if prvdr == nil {
+			return result.Fail[provider.Provider](provider.ErrProviderNotFound)
+		}
+		return result.Success(prvdr)
 	}
 
-	if prvdr == nil {
-		return result.Fail[provider.Provider](provider.ErrProviderNotFound)
-	}
-	return result.Success(prvdr)
+	return result.Fail[provider.Provider](provider.ErrProviderNotFound)
 }

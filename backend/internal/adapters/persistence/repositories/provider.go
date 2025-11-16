@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/mistribe/subtracker/internal/adapters/persistence/db"
 	. "github.com/mistribe/subtracker/internal/adapters/persistence/db/jet/app/public/table"
@@ -55,17 +56,44 @@ func (r ProviderRepository) GetById(ctx context.Context, providerId types.Provid
 	return providers[0], nil
 }
 
-func (r ProviderRepository) GetByProviderKey(ctx context.Context, key string) (provider.Provider, error) {
-	stmt := SELECT(
-		Providers.AllColumns,
-		ProviderLabels.LabelID,
-		ProviderLabels.ProviderID,
-	).
-		FROM(
-			Providers.
-				LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)),
+func (r ProviderRepository) GetByProviderKeyForUser(ctx context.Context,
+	userId types.UserID,
+	key string) (provider.Provider,
+	error) {
+	var stmt SelectStatement
+
+	if strings.HasPrefix(key, "s_") {
+		stmt = SELECT(
+			Providers.AllColumns,
+			ProviderLabels.LabelID,
+			ProviderLabels.ProviderID,
 		).
-		WHERE(Providers.Key.EQ(String(key)))
+			FROM(
+				Providers.
+					LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)),
+			).
+			WHERE(Providers.Key.EQ(String(key)))
+	} else {
+		stmt = SELECT(
+			Providers.AllColumns,
+			ProviderLabels.LabelID,
+			ProviderLabels.ProviderID,
+		).
+			FROM(
+				Providers.
+					LEFT_JOIN(ProviderLabels, ProviderLabels.ProviderID.EQ(Providers.ID)).
+					LEFT_JOIN(Families, Families.ID.EQ(Providers.OwnerFamilyID)).
+					LEFT_JOIN(FamilyMembers, FamilyMembers.FamilyID.EQ(Families.ID)),
+			).
+			WHERE(
+				Providers.Key.EQ(String(key)).
+					AND(
+						Providers.OwnerType.EQ(String("system")).
+							OR(Providers.OwnerType.EQ(String("personal")).AND(Providers.OwnerUserID.EQ(String(userId.String())))).
+							OR(Providers.OwnerType.EQ(String("family")).AND(FamilyMembers.UserID.EQ(String(userId.String())))),
+					),
+			)
+	}
 
 	var rows []models.ProviderRow
 

@@ -15,6 +15,14 @@ func NewProviderID() ProviderID {
 	return ProviderID(uuid.Must(uuid.NewV7()))
 }
 
+func TryParseProviderID(id string) (ProviderID, bool) {
+	u, err := uuid.Parse(id)
+	if err != nil {
+		return ProviderID{}, false
+	}
+	return ProviderID(u), true
+}
+
 func ParseProviderID(id string) (ProviderID, error) {
 	u, err := uuid.Parse(id)
 	if err != nil {

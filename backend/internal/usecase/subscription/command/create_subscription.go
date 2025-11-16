@@ -101,11 +101,14 @@ func (h CreateSubscriptionCommandHandler) Handle(
 		}
 	}
 
+	connectedUser := h.authentication.MustGetConnectedAccount(ctx)
+	connectedUserId := connectedUser.UserID()
+
 	var providerID types.ProviderID
 	if cmd.ProviderID != nil {
 		providerID = *cmd.ProviderID
 	} else if cmd.ProviderKey != nil {
-		provider, err := h.providerRepository.GetByProviderKey(ctx, *cmd.ProviderKey)
+		provider, err := h.providerRepository.GetByProviderKeyForUser(ctx, connectedUserId, *cmd.ProviderKey)
 		if err != nil {
 			return result.Fail[subscription.Subscription](err)
 		}

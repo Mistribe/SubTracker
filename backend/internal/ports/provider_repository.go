@@ -36,5 +36,5 @@ type ProviderRepository interface {
 		error)
 	GetSystemProviders(ctx context.Context) ([]provider.Provider, int64, error)
 	IsInUsed(ctx context.Context, providerID types.ProviderID) (bool, error)
-	GetByProviderKey(ctx context.Context, key string) (provider.Provider, error)
+	GetByProviderKeyForUser(ctx context.Context, userId types.UserID, key string) (provider.Provider, error)
 }

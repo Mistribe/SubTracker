@@ -143,6 +143,8 @@ components:
           $ref: '#/components/schemas/dto.AmountModel'
         provider_id:
           type: string
+        provider_key:
+          type: string
         recurrency:
           type: string
         start_date:
@@ -556,6 +558,9 @@ components:
           example: 123e4567-e89b-12d3-a456-426614174000
           type: string
         key:
+          example: netflix
+          maxLength: 255
+          minLength: 1
           type: string
         labels:
           description: '@Description List of label IDs associated with this provider
@@ -594,6 +599,7 @@ components:
       - created_at
       - etag
       - id
+      - key
       - labels
       - name
       - owner
@@ -940,6 +946,8 @@ components:
         price:
           $ref: '#/components/schemas/dto.AmountModel'
         provider_id:
+          type: string
+        provider_key:
           type: string
         recurrency:
           type: string
@@ -2101,7 +2109,7 @@ paths:
     get:
       description: Retrieve a single provider with all its plans and prices by LabelID
       parameters:
-      - description: Provider LabelID (UUID format)
+      - description: Provider ID (UUID format) or Provider Key (string format)
         in: path
         name: providerId
         required: true

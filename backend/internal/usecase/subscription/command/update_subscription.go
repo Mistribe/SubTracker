@@ -40,12 +40,14 @@ type UpdateSubscriptionCommandHandler struct {
 	authorization          ports.Authorization
 	ownerFactory           shared.OwnerFactory
 	providerRepository     ports.ProviderRepository
+	authentication         ports.Authentication
 }
 
 func NewUpdateSubscriptionCommandHandler(
 	subscriptionRepository ports.SubscriptionRepository,
 	familyRepository ports.FamilyRepository,
 	ownerFactory shared.OwnerFactory,
+	authentication ports.Authentication,
 	providerRepository ports.ProviderRepository,
 	authorization ports.Authorization) *UpdateSubscriptionCommandHandler {
 	return &UpdateSubscriptionCommandHandler{
@@ -53,6 +55,7 @@ func NewUpdateSubscriptionCommandHandler(
 		familyRepository:       familyRepository,
 		authorization:          authorization,
 		ownerFactory:           ownerFactory,
+		authentication:         authentication,
 		providerRepository:     providerRepository,
 	}
 }
@@ -81,11 +84,14 @@ func (h UpdateSubscriptionCommandHandler) updateSubscription(
 	cmd UpdateSubscriptionCommand,
 	sub subscription.Subscription) result.Result[subscription.Subscription] {
 
+	connectedUser := h.authentication.MustGetConnectedAccount(ctx)
+	connectedUserId := connectedUser.UserID()
+
 	var providerID types.ProviderID
 	if cmd.ProviderID != nil {
 		providerID = *cmd.ProviderID
 	} else if cmd.ProviderKey != nil {
-		provider, err := h.providerRepository.GetByProviderKey(ctx, *cmd.ProviderKey)
+		provider, err := h.providerRepository.GetByProviderKeyForUser(ctx, connectedUserId, *cmd.ProviderKey)
 		if err != nil {
 			return result.Fail[subscription.Subscription](err)
 		}
