@@ -17,6 +17,7 @@ import (
 	"github.com/mistribe/subtracker/internal/platform/startup"
 	"github.com/mistribe/subtracker/internal/platform/startup/updater"
 	"github.com/mistribe/subtracker/internal/usecase"
+	"github.com/mistribe/subtracker/internal/usecase/shared"
 )
 
 var version = "dev"
@@ -51,6 +52,7 @@ func main() {
 		authentication.Module(),
 		authorization.Module(),
 		billing.Module(),
+		shared.Module(),
 		fx.Provide(
 			fx.Annotate(func() string { return version }, fx.ResultTags(`name:"appVersion"`)),
 			exchange.New,

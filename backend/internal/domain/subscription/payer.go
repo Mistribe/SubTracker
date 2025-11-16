@@ -63,6 +63,16 @@ func NewPayer(
 	}
 }
 
+func NewPayerFromOwner(owner types.Owner,
+	payerType PayerType,
+	familyMemberId *types.FamilyMemberID) (Payer, error) {
+	if owner.Type() != types.FamilyOwnerType {
+		return nil, ErrPayerNeedFamily
+	}
+
+	return NewPayer(payerType, owner.FamilyId(), familyMemberId), nil
+}
+
 type familyPayer struct {
 	familyId types.FamilyID
 }

@@ -80,7 +80,7 @@ func (h SummaryQueryHandler) convertToCurrency(
 	amount currency.Amount,
 	preferredCurrency xcur.Unit,
 	date time.Time) currency.Amount {
-	v, err := h.exchange.ToCurrencyAt(ctx, amount, preferredCurrency, date)
+	v, err := h.exchange.ToCurrencyAt(ctx, amount, preferredCurrency, time.Now())
 	if err != nil {
 		return currency.NewInvalidAmount()
 	}

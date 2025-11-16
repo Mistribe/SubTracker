@@ -9,6 +9,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/internal/usecase/shared"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -19,8 +20,9 @@ type UpdateSubscriptionCommand struct {
 	FreeTrial        subscription.FreeTrial
 	ProviderID       types.ProviderID
 	Price            currency.Amount
-	Owner            types.Owner
-	Payer            subscription.Payer
+	Owner            types.OwnerType
+	PayerType        *subscription.PayerType
+	PayerMemberId    *types.FamilyMemberID
 	FamilyUsers      []types.FamilyMemberID
 	Labels           []types.LabelID
 	StartDate        time.Time
@@ -34,16 +36,19 @@ type UpdateSubscriptionCommandHandler struct {
 	subscriptionRepository ports.SubscriptionRepository
 	familyRepository       ports.FamilyRepository
 	authorization          ports.Authorization
+	ownerFactory           shared.OwnerFactory
 }
 
 func NewUpdateSubscriptionCommandHandler(
 	subscriptionRepository ports.SubscriptionRepository,
 	familyRepository ports.FamilyRepository,
+	ownerFactory shared.OwnerFactory,
 	authorization ports.Authorization) *UpdateSubscriptionCommandHandler {
 	return &UpdateSubscriptionCommandHandler{
 		subscriptionRepository: subscriptionRepository,
 		familyRepository:       familyRepository,
 		authorization:          authorization,
+		ownerFactory:           ownerFactory,
 	}
 }
 
@@ -80,11 +85,23 @@ func (h UpdateSubscriptionCommandHandler) updateSubscription(
 	if sub.Price() != nil && cmd.Price != nil {
 		sub.SetPrice(cmd.Price)
 	}
-	if cmd.Owner != nil {
-		sub.SetOwner(cmd.Owner)
+	if cmd.Owner != sub.Owner().Type() {
+		owner, err := h.ownerFactory.Resolve(ctx, cmd.Owner)
+		if err != nil {
+			return result.Fail[subscription.Subscription](err)
+		}
+		sub.SetOwner(owner)
 	}
-	if cmd.Payer != nil {
-		sub.SetPayer(cmd.Payer)
+	if cmd.PayerType == nil && sub.Payer() != nil {
+		sub.SetPayer(nil)
+	} else if cmd.PayerType != nil &&
+		(*cmd.PayerType != sub.Payer().Type() ||
+			cmd.PayerMemberId != nil && *cmd.PayerMemberId != sub.Payer().MemberId()) {
+		payer, err := subscription.NewPayerFromOwner(sub.Owner(), *cmd.PayerType, cmd.PayerMemberId)
+		if err != nil {
+			return result.Fail[subscription.Subscription](err)
+		}
+		sub.SetPayer(payer)
 	}
 	if cmd.FamilyUsers != nil {
 		sub.SetFamilyUsers(cmd.FamilyUsers)

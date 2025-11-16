@@ -26,7 +26,7 @@ type CreateSubscriptionRequest struct {
 	Recurrency       string                          `json:"recurrency" binding:"required"`
 	CustomRecurrency *int32                          `json:"custom_recurrency,omitempty"`
 	Payer            *EditableSubscriptionPayerModel `json:"payer,omitempty"`
-	Owner            EditableOwnerModel              `json:"owner" binding:"required"`
+	Owner            string                          `json:"owner" binding:"required" example:"personal" enums:"personal,family,system"`
 	CreatedAt        *time.Time                      `json:"created_at,omitempty"`
 }
 
@@ -44,6 +44,6 @@ type UpdateSubscriptionRequest struct {
 	Recurrency       string                          `json:"recurrency" binding:"required"`
 	CustomRecurrency *int32                          `json:"custom_recurrency,omitempty"`
 	Payer            *EditableSubscriptionPayerModel `json:"payer,omitempty"`
-	Owner            EditableOwnerModel              `json:"owner" binding:"required"`
+	Owner            string                          `json:"owner" binding:"required" example:"personal" enums:"personal,family,system"`
 	UpdatedAt        *time.Time                      `json:"updated_at,omitempty" format:"date-time"`
 }

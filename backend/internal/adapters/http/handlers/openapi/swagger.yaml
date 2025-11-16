@@ -122,7 +122,12 @@ components:
           type: array
           uniqueItems: false
         owner:
-          $ref: '#/components/schemas/dto.EditableOwnerModel'
+          enum:
+          - personal
+          - family
+          - system
+          example: personal
+          type: string
         payer:
           $ref: '#/components/schemas/dto.EditableSubscriptionPayerModel'
         provider_id:
@@ -182,10 +187,6 @@ components:
     dto.EditableSubscriptionPayerModel:
       description: Subscription payer object used for updating who pays for a subscription
       properties:
-        family_id:
-          description: '@Description LabelID of the family associated with this payer'
-          example: 123e4567-e89b-12d3-a456-426614174000
-          type: string
         memberId:
           description: '@Description LabelID of the specific family member who pays
             (required when type is family_member)'
@@ -199,7 +200,6 @@ components:
           example: family_member
           type: string
       required:
-      - family_id
       - type
       type: object
     dto.FamilyAcceptInvitationRequest:
@@ -964,7 +964,12 @@ components:
           type: array
           uniqueItems: false
         owner:
-          $ref: '#/components/schemas/dto.EditableOwnerModel'
+          enum:
+          - personal
+          - family
+          - system
+          example: personal
+          type: string
         payer:
           $ref: '#/components/schemas/dto.EditableSubscriptionPayerModel'
         plan_id:
@@ -1947,6 +1952,47 @@ paths:
       summary: Update label by LabelID
       tags:
       - labels
+  /labels/export:
+    get:
+      description: Export all labels in CSV, JSON, or YAML format
+      parameters:
+      - description: Export format (csv, json, yaml)
+        in: query
+        name: format
+        schema:
+          default: json
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: file
+            application/x-yaml:
+              schema:
+                type: string
+          description: Exported labels file
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Invalid format parameter
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Export labels
+      tags:
+      - labels
   /labels/quota/usage:
     get:
       description: Retrieve the current quota usage and limits for the authenticated
@@ -2168,6 +2214,47 @@ paths:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
       summary: Update provider by LabelID
+      tags:
+      - providers
+  /providers/export:
+    get:
+      description: Export all providers in CSV, JSON, or YAML format
+      parameters:
+      - description: Export format (csv, json, yaml)
+        in: query
+        name: format
+        schema:
+          default: json
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: file
+            application/x-yaml:
+              schema:
+                type: string
+          description: Exported providers file
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Invalid format parameter
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Export providers
       tags:
       - providers
   /providers/quota/usage:
@@ -2437,6 +2524,47 @@ paths:
       summary: Update subscription by LabelID
       tags:
       - subscriptions
+  /subscriptions/export:
+    get:
+      description: Export all subscriptions in CSV, JSON, or YAML format
+      parameters:
+      - description: Export format (csv, json, yaml)
+        in: query
+        name: format
+        schema:
+          default: json
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: file
+            application/x-yaml:
+              schema:
+                type: string
+          description: Exported subscriptions file
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Invalid format parameter
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Export subscriptions
+      tags:
+      - subscriptions
   /subscriptions/quota/usage:
     get:
       description: Retrieve the current quota usage and limits for the authenticated
@@ -2516,6 +2644,21 @@ paths:
       summary: Get subscription summary
       tags:
       - subscriptions
+  /version:
+    get:
+      description: Returns the build version of the SubTracker API
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Version info
+      summary: Get API version
+      tags:
+      - version
 servers:
 - description: Production server
   url: https://api.subtracker.mistribe.com

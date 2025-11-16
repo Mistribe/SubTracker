@@ -10,6 +10,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/internal/usecase/shared"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -20,8 +21,9 @@ type CreateSubscriptionCommand struct {
 	FreeTrial        subscription.FreeTrial
 	ProviderID       types.ProviderID
 	Price            currency.Amount
-	Owner            types.Owner
-	Payer            subscription.Payer
+	Owner            types.OwnerType
+	PayerType        *subscription.PayerType
+	PayerMemberId    *types.FamilyMemberID
 	FamilyUsers      []types.FamilyMemberID
 	Labels           []types.LabelID
 	StartDate        time.Time
@@ -34,20 +36,26 @@ type CreateSubscriptionCommand struct {
 type CreateSubscriptionCommandHandler struct {
 	subscriptionRepository ports.SubscriptionRepository
 	authorization          ports.Authorization
+	authentication         ports.Authentication
 	familyRepository       ports.FamilyRepository
 	entitlement            ports.EntitlementResolver
+	ownerFactory           shared.OwnerFactory
 }
 
 func NewCreateSubscriptionCommandHandler(
 	subscriptionRepository ports.SubscriptionRepository,
 	authorization ports.Authorization,
 	familyRepository ports.FamilyRepository,
+	authentication ports.Authentication,
+	ownerFactory shared.OwnerFactory,
 	entitlement ports.EntitlementResolver) *CreateSubscriptionCommandHandler {
 	return &CreateSubscriptionCommandHandler{
 		subscriptionRepository: subscriptionRepository,
 		familyRepository:       familyRepository,
 		authorization:          authorization,
+		authentication:         authentication,
 		entitlement:            entitlement,
+		ownerFactory:           ownerFactory,
 	}
 }
 
@@ -72,8 +80,20 @@ func (h CreateSubscriptionCommandHandler) Handle(
 
 	// Guard price creation: only create Price aggregate if amount provided (avoid nil amount panic)
 	var price subscription.Price
-	if cmd.Price != nil { // interface can be nil
+	if cmd.Price != nil {
 		price = subscription.NewPrice(cmd.Price)
+	}
+
+	owner, err := h.ownerFactory.Resolve(ctx, cmd.Owner)
+	if err != nil {
+		return result.Fail[subscription.Subscription](err)
+	}
+	var payer subscription.Payer
+	if cmd.PayerType != nil {
+		payer, err = subscription.NewPayerFromOwner(owner, *cmd.PayerType, cmd.PayerMemberId)
+		if err != nil {
+			return result.Fail[subscription.Subscription](err)
+		}
 	}
 
 	// Build the subscription aggregate early so authorization can run before repository lookups
@@ -83,8 +103,8 @@ func (h CreateSubscriptionCommandHandler) Handle(
 		cmd.FreeTrial,
 		cmd.ProviderID,
 		price,
-		cmd.Owner,
-		cmd.Payer,
+		owner,
+		payer,
 		cmd.FamilyUsers,
 		subscription.NewSubscriptionLabelRefs(cmd.Labels),
 		cmd.StartDate,

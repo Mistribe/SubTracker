@@ -3,6 +3,7 @@ package router
 import (
 	"go.uber.org/fx"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/export"
 	. "github.com/mistribe/subtracker/internal/adapters/http/handlers"
 	"github.com/mistribe/subtracker/internal/adapters/http/handlers/account"
 	"github.com/mistribe/subtracker/internal/adapters/http/handlers/currency"
@@ -16,6 +17,7 @@ import (
 
 func BuildRoutesModule() fx.Option {
 	return fx.Module("routes",
+		export.Module(),
 		fx.Provide(
 			middlewares.NewAuthenticationMiddleware,
 			middlewares.NewLanguageMiddleware,
@@ -28,6 +30,7 @@ func BuildRoutesModule() fx.Option {
 			subscription.NewDeleteEndpoint,
 			subscription.NewSummaryEndpoint,
 			subscription.NewGetQuotaUsageEndpoint,
+			subscription.NewExportEndpoint,
 			ginfx.AsEndpointGroup(subscription.NewEndpointGroup),
 
 			label.NewGetAllEndpoint,
@@ -36,6 +39,7 @@ func BuildRoutesModule() fx.Option {
 			label.NewUpdateEndpoint,
 			label.NewDeleteEndpoint,
 			label.NewGetQuotaUsageEndpoint,
+			label.NewExportEndpoint,
 			ginfx.AsEndpointGroup(label.NewEndpointGroup),
 
 			family.NewCreateEndpoint,
@@ -59,6 +63,7 @@ func BuildRoutesModule() fx.Option {
 			provider.NewUpdateEndpoint,
 			provider.NewDeleteEndpoint,
 			provider.NewGetQuotaUsageEndpoint,
+			provider.NewExportEndpoint,
 			ginfx.AsEndpointGroup(provider.NewEndpointGroup),
 
 			currency.NewSupportedEndpoint,

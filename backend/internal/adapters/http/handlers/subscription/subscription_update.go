@@ -31,24 +31,27 @@ func updateSubscriptionRequestToCommand(
 	if err != nil {
 		return command.UpdateSubscriptionCommand{}, err
 	}
-	owner, err := r.Owner.Owner(userId)
+	owner, err := types.TryParseOwnerType(r.Owner)
 	if err != nil {
 		return command.UpdateSubscriptionCommand{}, err
 	}
-	var payer subscription.Payer
+	var payerType *subscription.PayerType
+	var payerMemberId *types.FamilyMemberID
 	if r.Payer != nil {
-		if owner.Type() != types.FamilyOwnerType {
-			return command.UpdateSubscriptionCommand{}, errors.New("missing family_id for adding a payer")
+		if owner != types.FamilyOwnerType {
+			return command.UpdateSubscriptionCommand{}, errors.New("payer must be set for a family")
 		}
-		payerType, err := subscription.ParsePayerType(r.Payer.Type)
+		parsedPayerType, err := subscription.ParsePayerType(r.Payer.Type)
 		if err != nil {
 			return command.UpdateSubscriptionCommand{}, err
 		}
+		payerType = &parsedPayerType
+
 		memberId, err := types.ParseFamilyMemberIDOrNil(r.Payer.MemberId)
 		if err != nil {
 			return command.UpdateSubscriptionCommand{}, err
 		}
-		payer = subscription.NewPayer(payerType, owner.FamilyId(), memberId)
+		payerMemberId = memberId
 	}
 	var freeTrial subscription.FreeTrial
 	if r.FreeTrial != nil {
@@ -83,7 +86,8 @@ func updateSubscriptionRequestToCommand(
 		ProviderID:       providerID,
 		Price:            price.Amount(),
 		Owner:            owner,
-		Payer:            payer,
+		PayerType:        payerType,
+		PayerMemberId:    payerMemberId,
 		FamilyUsers:      familyUsers,
 		Labels:           labels,
 		StartDate:        r.StartDate,
@@ -150,7 +154,8 @@ func (s UpdateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewUpdateEndpoint(handler ports.CommandHandler[command.UpdateSubscriptionCommand, subscription.Subscription], authentication ports.Authentication) *UpdateEndpoint {
+func NewUpdateEndpoint(handler ports.CommandHandler[command.UpdateSubscriptionCommand, subscription.Subscription],
+	authentication ports.Authentication) *UpdateEndpoint {
 	return &UpdateEndpoint{
 		handler:        handler,
 		authentication: authentication,

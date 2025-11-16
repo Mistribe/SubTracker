@@ -62,8 +62,6 @@ type SubscriptionPayerModel struct {
 type EditableSubscriptionPayerModel struct {
 	// @Description Type of payer (family or family member)
 	Type string `json:"type" binding:"required" example:"family_member" enums:"family,family_member"`
-	// @Description LabelID of the family associated with this payer
-	FamilyId string `json:"family_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
 	// @Description LabelID of the specific family member who pays (required when type is family_member)
 	MemberId *string `json:"memberId,omitempty" example:"123e4567-e89b-12d3-a456-426614174001"`
 }
