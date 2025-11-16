@@ -96,7 +96,7 @@ export const useSubscriptionsMutations = () => {
                     currency: subscriptionData.price.currency
                 };
 
-                payload.customPrice = customPrice;
+                payload.price = customPrice;
             }
 
             // Add free trial if specified
@@ -153,7 +153,7 @@ export const useSubscriptionsMutations = () => {
                     memberId?: string
                 },
                 serviceUsers?: string[],
-                customPrice?: {
+                price?: {
                     amount: number,
                     currency: string
                 },
@@ -182,8 +182,6 @@ export const useSubscriptionsMutations = () => {
             const payload: UpdateSubscriptionModel = {
                 friendlyName: subscriptionData.friendlyName,
                 providerId: subscriptionData.providerId,
-                planId: subscriptionData.planId,
-                priceId: subscriptionData.priceId,
                 recurrency: subscriptionData.recurrency as unknown as string,
                 customRecurrency: subscriptionData.customRecurrency,
                 startDate: subscriptionData.startDate,
@@ -213,13 +211,13 @@ export const useSubscriptionsMutations = () => {
             }
 
             // Add custom price if specified
-            if (subscriptionData.customPrice) {
+            if (subscriptionData.price) {
                 const customPrice: AmountModel = {
-                    value: subscriptionData.customPrice.amount,
-                    currency: subscriptionData.customPrice.currency
+                    value: subscriptionData.price.amount,
+                    currency: subscriptionData.price.currency
                 };
 
-                payload.customPrice = customPrice;
+                payload.price = customPrice;
             }
 
             // Add free trial if specified

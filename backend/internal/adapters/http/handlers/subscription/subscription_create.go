@@ -83,7 +83,7 @@ func createSubscriptionRequestToCommand(r dto.CreateSubscriptionRequest) (comman
 	if err != nil {
 		return command.CreateSubscriptionCommand{}, err
 	}
-	price, err := dto.NewSubscriptionCustomPrice(r.CustomPrice)
+	price, err := dto.NewSubscriptionCustomPrice(r.Price)
 	if err != nil {
 		return command.CreateSubscriptionCommand{}, err
 	}

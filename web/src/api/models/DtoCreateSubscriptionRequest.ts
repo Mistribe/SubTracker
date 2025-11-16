@@ -49,12 +49,6 @@ export interface DtoCreateSubscriptionRequest {
     createdAt?: string;
     /**
      * 
-     * @type {DtoAmountModel}
-     * @memberof DtoCreateSubscriptionRequest
-     */
-    customPrice?: DtoAmountModel;
-    /**
-     * 
      * @type {number}
      * @memberof DtoCreateSubscriptionRequest
      */
@@ -109,6 +103,12 @@ export interface DtoCreateSubscriptionRequest {
     payer?: DtoEditableSubscriptionPayerModel;
     /**
      * 
+     * @type {DtoAmountModel}
+     * @memberof DtoCreateSubscriptionRequest
+     */
+    price?: DtoAmountModel;
+    /**
+     * 
      * @type {string}
      * @memberof DtoCreateSubscriptionRequest
      */
@@ -161,7 +161,6 @@ export function DtoCreateSubscriptionRequestFromJSONTyped(json: any, ignoreDiscr
     return {
         
         'createdAt': json['created_at'] == null ? undefined : json['created_at'],
-        'customPrice': json['custom_price'] == null ? undefined : DtoAmountModelFromJSON(json['custom_price']),
         'customRecurrency': json['custom_recurrency'] == null ? undefined : json['custom_recurrency'],
         'endDate': json['end_date'] == null ? undefined : (new Date(json['end_date'])),
         'familyUsers': json['family_users'] == null ? undefined : json['family_users'],
@@ -171,6 +170,7 @@ export function DtoCreateSubscriptionRequestFromJSONTyped(json: any, ignoreDiscr
         'labels': json['labels'] == null ? undefined : json['labels'],
         'owner': json['owner'],
         'payer': json['payer'] == null ? undefined : DtoEditableSubscriptionPayerModelFromJSON(json['payer']),
+        'price': json['price'] == null ? undefined : DtoAmountModelFromJSON(json['price']),
         'providerId': json['provider_id'],
         'recurrency': json['recurrency'],
         'startDate': (new Date(json['start_date'])),
@@ -189,7 +189,6 @@ export function DtoCreateSubscriptionRequestToJSONTyped(value?: DtoCreateSubscri
     return {
         
         'created_at': value['createdAt'],
-        'custom_price': DtoAmountModelToJSON(value['customPrice']),
         'custom_recurrency': value['customRecurrency'],
         'end_date': value['endDate'] == null ? value['endDate'] : value['endDate'].toISOString(),
         'family_users': value['familyUsers'],
@@ -199,6 +198,7 @@ export function DtoCreateSubscriptionRequestToJSONTyped(value?: DtoCreateSubscri
         'labels': value['labels'],
         'owner': value['owner'],
         'payer': DtoEditableSubscriptionPayerModelToJSON(value['payer']),
+        'price': DtoAmountModelToJSON(value['price']),
         'provider_id': value['providerId'],
         'recurrency': value['recurrency'],
         'start_date': value['startDate'].toISOString(),

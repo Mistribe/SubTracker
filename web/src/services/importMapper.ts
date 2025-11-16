@@ -334,10 +334,10 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
     }
 
     // Map custom price
-    if (rawRecord.customPrice && typeof rawRecord.customPrice === 'object') {
-      mapped.customPrice = this.mapCustomPrice(rawRecord.customPrice);
+    if (rawRecord.price && typeof rawRecord.price === 'object') {
+      mapped.price = this.mapCustomPrice(rawRecord.price);
     } else if (!this.isEmpty(rawRecord.amount) && !this.isEmpty(rawRecord.currency)) {
-      mapped.customPrice = this.mapCustomPrice({
+      mapped.price = this.mapCustomPrice({
         value: rawRecord.amount,
         currency: rawRecord.currency,
       });
@@ -446,9 +446,11 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
       }
     }
 
-    // Validate custom price
-    if (record.customPrice) {
-      const priceErrors = this.validateCustomPrice(record.customPrice);
+    // Validate custom price (required)
+    if (!record.price) {
+      errors.push(this.createError('customPrice', 'Price is required'));
+    } else {
+      const priceErrors = this.validateCustomPrice(record.price);
       errors.push(...priceErrors);
     }
 

@@ -109,8 +109,6 @@ components:
       properties:
         created_at:
           type: string
-        custom_price:
-          $ref: '#/components/schemas/dto.AmountModel'
         custom_recurrency:
           type: integer
         end_date:
@@ -141,6 +139,8 @@ components:
           type: string
         payer:
           $ref: '#/components/schemas/dto.EditableSubscriptionPayerModel'
+        price:
+          $ref: '#/components/schemas/dto.AmountModel'
         provider_id:
           type: string
         recurrency:
@@ -928,8 +928,6 @@ components:
       type: object
     dto.UpdateSubscriptionRequest:
       properties:
-        custom_price:
-          $ref: '#/components/schemas/dto.AmountModel'
         custom_recurrency:
           type: integer
         end_date:
@@ -953,10 +951,8 @@ components:
           type: string
         payer:
           $ref: '#/components/schemas/dto.EditableSubscriptionPayerModel'
-        plan_id:
-          type: string
-        price_id:
-          type: string
+        price:
+          $ref: '#/components/schemas/dto.AmountModel'
         provider_id:
           type: string
         recurrency:

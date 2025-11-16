@@ -62,7 +62,7 @@ const subscriptionColumns: ImportColumnDef<DtoCreateSubscriptionRequest>[] = [
     },
   },
   {
-    key: 'customPrice',
+    key: 'price',
     label: 'Price',
     render: (value: any) => {
       if (!value || typeof value !== 'object') return '-';
@@ -78,7 +78,7 @@ const subscriptionColumns: ImportColumnDef<DtoCreateSubscriptionRequest>[] = [
     label: 'Owner',
     render: (value: any) => {
       if (!value) return 'Personal';
-      return value.type === 'family' ? `Family (${value.familyId || 'N/A'})` : 'Personal';
+      return value === 'family' ? 'Family' : 'Personal';
     },
   },
 ];
@@ -111,9 +111,9 @@ export default function ImportSubscriptionsPage() {
           memberId: data.payer.memberId,
         } : undefined,
         familyUsers: data.familyUsers,
-        price: data.customPrice ? {
-          amount: data.customPrice.value,
-          currency: data.customPrice.currency,
+        price: data.price ? {
+          amount: data.price.value,
+          currency: data.price.currency,
         } : undefined,
         freeTrial: data.freeTrial ? {
           startDate: data.freeTrial.startDate,

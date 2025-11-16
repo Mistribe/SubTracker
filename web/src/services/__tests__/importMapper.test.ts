@@ -752,7 +752,7 @@ describe('SubscriptionFieldMapper', () => {
                 providerId: 'provider-123',
                 startDate: '2024-01-01',
                 recurrency: 'monthly',
-                customPrice: {
+                price: {
                     value: 15.99,
                     currency: 'usd',
                 },
@@ -760,7 +760,7 @@ describe('SubscriptionFieldMapper', () => {
 
             const result = mapper.mapFields(rawRecord);
 
-            expect(result.customPrice).toEqual({
+            expect(result.price).toEqual({
                 value: 15.99,
                 currency: 'USD',
             });
@@ -771,13 +771,13 @@ describe('SubscriptionFieldMapper', () => {
                 providerId: 'provider-123',
                 startDate: '2024-01-01',
                 recurrency: 'monthly',
-                customPriceAmount: 15.99,
-                customPriceCurrency: 'eur',
+                priceAmount: 15.99,
+                priceCurrency: 'eur',
             };
 
             const result = mapper.mapFields(rawRecord);
 
-            expect(result.customPrice).toEqual({
+            expect(result.price).toEqual({
                 value: 15.99,
                 currency: 'EUR',
             });
@@ -1147,7 +1147,7 @@ describe('SubscriptionFieldMapper', () => {
                 startDate: new Date('2024-01-01'),
                 recurrency: 'monthly',
                 owner: 'personal',
-                customPrice: {
+                price: {
                     value: 15.99,
                     currency: 'USD',
                 },
@@ -1165,7 +1165,7 @@ describe('SubscriptionFieldMapper', () => {
                 startDate: new Date('2024-01-01'),
                 recurrency: 'monthly',
                 owner: 'personal',
-                customPrice: {
+                price: {
                     value: -10,
                     currency: 'USD',
                 },
@@ -1175,7 +1175,7 @@ describe('SubscriptionFieldMapper', () => {
 
             expect(result.isValid).toBe(false);
             expect(result.errors).toContainEqual({
-                field: 'customPrice.value',
+                field: 'price.value',
                 message: 'Price value must be a non-negative number',
                 severity: 'error',
             });
@@ -1187,7 +1187,7 @@ describe('SubscriptionFieldMapper', () => {
                 startDate: new Date('2024-01-01'),
                 recurrency: 'monthly',
                 owner: 'personal',
-                customPrice: {
+                price: {
                     value: 15.99,
                     currency: 'US',
                 },
@@ -1197,7 +1197,7 @@ describe('SubscriptionFieldMapper', () => {
 
             expect(result.isValid).toBe(false);
             expect(result.errors).toContainEqual({
-                field: 'customPrice.currency',
+                field: 'price.currency',
                 message: 'Currency must be a 3-letter ISO code (e.g., USD, EUR)',
                 severity: 'error',
             });

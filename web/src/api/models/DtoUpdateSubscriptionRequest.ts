@@ -43,12 +43,6 @@ import {
 export interface DtoUpdateSubscriptionRequest {
     /**
      * 
-     * @type {DtoAmountModel}
-     * @memberof DtoUpdateSubscriptionRequest
-     */
-    customPrice?: DtoAmountModel;
-    /**
-     * 
      * @type {number}
      * @memberof DtoUpdateSubscriptionRequest
      */
@@ -91,16 +85,10 @@ export interface DtoUpdateSubscriptionRequest {
     payer?: DtoEditableSubscriptionPayerModel;
     /**
      * 
-     * @type {string}
+     * @type {DtoAmountModel}
      * @memberof DtoUpdateSubscriptionRequest
      */
-    planId?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DtoUpdateSubscriptionRequest
-     */
-    priceId?: string;
+    price?: DtoAmountModel;
     /**
      * 
      * @type {string}
@@ -166,7 +154,6 @@ export function DtoUpdateSubscriptionRequestFromJSONTyped(json: any, ignoreDiscr
     }
     return {
         
-        'customPrice': json['custom_price'] == null ? undefined : DtoAmountModelFromJSON(json['custom_price']),
         'customRecurrency': json['custom_recurrency'] == null ? undefined : json['custom_recurrency'],
         'endDate': json['end_date'] == null ? undefined : (new Date(json['end_date'])),
         'freeTrial': json['free_trial'] == null ? undefined : DtoSubscriptionFreeTrialModelFromJSON(json['free_trial']),
@@ -174,8 +161,7 @@ export function DtoUpdateSubscriptionRequestFromJSONTyped(json: any, ignoreDiscr
         'labels': json['labels'] == null ? undefined : json['labels'],
         'owner': json['owner'],
         'payer': json['payer'] == null ? undefined : DtoEditableSubscriptionPayerModelFromJSON(json['payer']),
-        'planId': json['plan_id'] == null ? undefined : json['plan_id'],
-        'priceId': json['price_id'] == null ? undefined : json['price_id'],
+        'price': json['price'] == null ? undefined : DtoAmountModelFromJSON(json['price']),
         'providerId': json['provider_id'],
         'recurrency': json['recurrency'],
         'serviceUsers': json['service_users'] == null ? undefined : json['service_users'],
@@ -195,7 +181,6 @@ export function DtoUpdateSubscriptionRequestToJSONTyped(value?: DtoUpdateSubscri
 
     return {
         
-        'custom_price': DtoAmountModelToJSON(value['customPrice']),
         'custom_recurrency': value['customRecurrency'],
         'end_date': value['endDate'] == null ? value['endDate'] : value['endDate'].toISOString(),
         'free_trial': DtoSubscriptionFreeTrialModelToJSON(value['freeTrial']),
@@ -203,8 +188,7 @@ export function DtoUpdateSubscriptionRequestToJSONTyped(value?: DtoUpdateSubscri
         'labels': value['labels'],
         'owner': value['owner'],
         'payer': DtoEditableSubscriptionPayerModelToJSON(value['payer']),
-        'plan_id': value['planId'],
-        'price_id': value['priceId'],
+        'price': DtoAmountModelToJSON(value['price']),
         'provider_id': value['providerId'],
         'recurrency': value['recurrency'],
         'service_users': value['serviceUsers'],

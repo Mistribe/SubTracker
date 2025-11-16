@@ -75,7 +75,7 @@ func updateSubscriptionRequestToCommand(
 	if err != nil {
 		return command.UpdateSubscriptionCommand{}, err
 	}
-	price, err := dto.NewSubscriptionCustomPrice(r.CustomPrice)
+	price, err := dto.NewSubscriptionCustomPrice(r.Price)
 	if err != nil {
 		return command.UpdateSubscriptionCommand{}, err
 	}
