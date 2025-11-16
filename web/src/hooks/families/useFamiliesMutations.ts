@@ -6,7 +6,7 @@ import type {
     DtoCreateFamilyRequest as CreateFamilyModel,
     DtoUpdateFamilyMemberRequest as UpdateFamilyMemberModel
 } from "@/api/models";
-import {DtoEditableOwnerModelTypeEnum} from "@/api/models/DtoEditableOwnerModel";
+import {DtoCreateLabelRequestOwnerEnum} from "@/api/models";
 import {useFamilyQuery} from "@/hooks/families/useFamilyQuery.ts";
 
 export const useFamiliesMutations = () => {
@@ -67,14 +67,11 @@ export const useFamiliesMutations = () => {
 
     // Create label for family mutation
     const createFamilyLabelMutation = useMutation({
-        mutationFn: async ({familyId, name, color}: { familyId: string, name: string, color: string }) => {
+        mutationFn: async ({name, color}: { familyId: string, name: string, color: string }) => {
             const payload = {
                 name,
                 color,
-                owner: {
-                    type: DtoEditableOwnerModelTypeEnum.Family,
-                    familyId: familyId,
-                },
+                owner: DtoCreateLabelRequestOwnerEnum.Family
             };
             return apiClient?.labels.labelsPost({dtoCreateLabelRequest: payload});
         },

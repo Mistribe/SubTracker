@@ -13,13 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { DtoEditableOwnerModel } from './DtoEditableOwnerModel';
-import {
-    DtoEditableOwnerModelFromJSON,
-    DtoEditableOwnerModelFromJSONTyped,
-    DtoEditableOwnerModelToJSON,
-    DtoEditableOwnerModelToJSONTyped,
-} from './DtoEditableOwnerModel';
 import type { DtoSubscriptionFreeTrialModel } from './DtoSubscriptionFreeTrialModel';
 import {
     DtoSubscriptionFreeTrialModelFromJSON,
@@ -86,10 +79,10 @@ export interface DtoUpdateSubscriptionRequest {
     labels?: Array<string>;
     /**
      * 
-     * @type {DtoEditableOwnerModel}
+     * @type {string}
      * @memberof DtoUpdateSubscriptionRequest
      */
-    owner: DtoEditableOwnerModel;
+    owner: DtoUpdateSubscriptionRequestOwnerEnum;
     /**
      * 
      * @type {DtoEditableSubscriptionPayerModel}
@@ -140,6 +133,18 @@ export interface DtoUpdateSubscriptionRequest {
     updatedAt?: Date;
 }
 
+
+/**
+ * @export
+ */
+export const DtoUpdateSubscriptionRequestOwnerEnum = {
+    Personal: 'personal',
+    Family: 'family',
+    System: 'system'
+} as const;
+export type DtoUpdateSubscriptionRequestOwnerEnum = typeof DtoUpdateSubscriptionRequestOwnerEnum[keyof typeof DtoUpdateSubscriptionRequestOwnerEnum];
+
+
 /**
  * Check if a given object implements the DtoUpdateSubscriptionRequest interface.
  */
@@ -167,7 +172,7 @@ export function DtoUpdateSubscriptionRequestFromJSONTyped(json: any, ignoreDiscr
         'freeTrial': json['free_trial'] == null ? undefined : DtoSubscriptionFreeTrialModelFromJSON(json['free_trial']),
         'friendlyName': json['friendly_name'] == null ? undefined : json['friendly_name'],
         'labels': json['labels'] == null ? undefined : json['labels'],
-        'owner': DtoEditableOwnerModelFromJSON(json['owner']),
+        'owner': json['owner'],
         'payer': json['payer'] == null ? undefined : DtoEditableSubscriptionPayerModelFromJSON(json['payer']),
         'planId': json['plan_id'] == null ? undefined : json['plan_id'],
         'priceId': json['price_id'] == null ? undefined : json['price_id'],
@@ -196,7 +201,7 @@ export function DtoUpdateSubscriptionRequestToJSONTyped(value?: DtoUpdateSubscri
         'free_trial': DtoSubscriptionFreeTrialModelToJSON(value['freeTrial']),
         'friendly_name': value['friendlyName'],
         'labels': value['labels'],
-        'owner': DtoEditableOwnerModelToJSON(value['owner']),
+        'owner': value['owner'],
         'payer': DtoEditableSubscriptionPayerModelToJSON(value['payer']),
         'plan_id': value['planId'],
         'price_id': value['priceId'],

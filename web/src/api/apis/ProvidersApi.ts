@@ -37,6 +37,10 @@ import {
     GinxHttpErrorResponseToJSON,
 } from '../models/index';
 
+export interface ProvidersExportGetRequest {
+    format?: string;
+}
+
 export interface ProvidersGetRequest {
     search?: string;
     offset?: number;
@@ -64,6 +68,45 @@ export interface ProvidersProviderIdPutRequest {
  * 
  */
 export class ProvidersApi extends runtime.BaseAPI {
+
+    /**
+     * Export all providers in CSV, JSON, or YAML format
+     * Export providers
+     */
+    async providersExportGetRaw(requestParameters: ProvidersExportGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['format'] != null) {
+            queryParameters['format'] = requestParameters['format'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/providers/export`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Export all providers in CSV, JSON, or YAML format
+     * Export providers
+     */
+    async providersExportGet(requestParameters: ProvidersExportGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.providersExportGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Retrieve a paginated list of all providers with their plans and prices

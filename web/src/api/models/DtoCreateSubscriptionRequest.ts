@@ -13,13 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { DtoEditableOwnerModel } from './DtoEditableOwnerModel';
-import {
-    DtoEditableOwnerModelFromJSON,
-    DtoEditableOwnerModelFromJSONTyped,
-    DtoEditableOwnerModelToJSON,
-    DtoEditableOwnerModelToJSONTyped,
-} from './DtoEditableOwnerModel';
 import type { DtoSubscriptionFreeTrialModel } from './DtoSubscriptionFreeTrialModel';
 import {
     DtoSubscriptionFreeTrialModelFromJSON,
@@ -104,10 +97,10 @@ export interface DtoCreateSubscriptionRequest {
     labels?: Array<string>;
     /**
      * 
-     * @type {DtoEditableOwnerModel}
+     * @type {string}
      * @memberof DtoCreateSubscriptionRequest
      */
-    owner: DtoEditableOwnerModel;
+    owner: DtoCreateSubscriptionRequestOwnerEnum;
     /**
      * 
      * @type {DtoEditableSubscriptionPayerModel}
@@ -133,6 +126,18 @@ export interface DtoCreateSubscriptionRequest {
      */
     startDate: Date;
 }
+
+
+/**
+ * @export
+ */
+export const DtoCreateSubscriptionRequestOwnerEnum = {
+    Personal: 'personal',
+    Family: 'family',
+    System: 'system'
+} as const;
+export type DtoCreateSubscriptionRequestOwnerEnum = typeof DtoCreateSubscriptionRequestOwnerEnum[keyof typeof DtoCreateSubscriptionRequestOwnerEnum];
+
 
 /**
  * Check if a given object implements the DtoCreateSubscriptionRequest interface.
@@ -164,7 +169,7 @@ export function DtoCreateSubscriptionRequestFromJSONTyped(json: any, ignoreDiscr
         'friendlyName': json['friendly_name'] == null ? undefined : json['friendly_name'],
         'id': json['id'] == null ? undefined : json['id'],
         'labels': json['labels'] == null ? undefined : json['labels'],
-        'owner': DtoEditableOwnerModelFromJSON(json['owner']),
+        'owner': json['owner'],
         'payer': json['payer'] == null ? undefined : DtoEditableSubscriptionPayerModelFromJSON(json['payer']),
         'providerId': json['provider_id'],
         'recurrency': json['recurrency'],
@@ -192,7 +197,7 @@ export function DtoCreateSubscriptionRequestToJSONTyped(value?: DtoCreateSubscri
         'friendly_name': value['friendlyName'],
         'id': value['id'],
         'labels': value['labels'],
-        'owner': DtoEditableOwnerModelToJSON(value['owner']),
+        'owner': value['owner'],
         'payer': DtoEditableSubscriptionPayerModelToJSON(value['payer']),
         'provider_id': value['providerId'],
         'recurrency': value['recurrency'],

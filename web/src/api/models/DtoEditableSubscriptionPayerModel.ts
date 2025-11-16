@@ -20,12 +20,6 @@ import { mapValues } from '../runtime';
  */
 export interface DtoEditableSubscriptionPayerModel {
     /**
-     * @Description LabelID of the family associated with this payer
-     * @type {string}
-     * @memberof DtoEditableSubscriptionPayerModel
-     */
-    familyId: string;
-    /**
      * @Description LabelID of the specific family member who pays (required when type is family_member)
      * @type {string}
      * @memberof DtoEditableSubscriptionPayerModel
@@ -54,7 +48,6 @@ export type DtoEditableSubscriptionPayerModelTypeEnum = typeof DtoEditableSubscr
  * Check if a given object implements the DtoEditableSubscriptionPayerModel interface.
  */
 export function instanceOfDtoEditableSubscriptionPayerModel(value: object): value is DtoEditableSubscriptionPayerModel {
-    if (!('familyId' in value) || value['familyId'] === undefined) return false;
     if (!('type' in value) || value['type'] === undefined) return false;
     return true;
 }
@@ -69,7 +62,6 @@ export function DtoEditableSubscriptionPayerModelFromJSONTyped(json: any, ignore
     }
     return {
         
-        'familyId': json['family_id'],
         'memberId': json['memberId'] == null ? undefined : json['memberId'],
         'type': json['type'],
     };
@@ -86,7 +78,6 @@ export function DtoEditableSubscriptionPayerModelToJSONTyped(value?: DtoEditable
 
     return {
         
-        'family_id': value['familyId'],
         'memberId': value['memberId'],
         'type': value['type'],
     };

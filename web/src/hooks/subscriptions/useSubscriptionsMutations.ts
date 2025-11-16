@@ -4,8 +4,9 @@ import {OwnerType} from "@/models/ownerType";
 import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency";
 import {PayerType} from "@/models/payerType.ts";
 import type { DtoCreateSubscriptionRequest as CreateSubscriptionModel } from "@/api/models/DtoCreateSubscriptionRequest";
+import { DtoCreateSubscriptionRequestOwnerEnum } from "@/api/models/DtoCreateSubscriptionRequest";
 import type { DtoUpdateSubscriptionRequest as UpdateSubscriptionModel } from "@/api/models/DtoUpdateSubscriptionRequest";
-import type { DtoEditableOwnerModel as EditableOwnerModel } from "@/api/models/DtoEditableOwnerModel";
+import { DtoUpdateSubscriptionRequestOwnerEnum } from "@/api/models/DtoUpdateSubscriptionRequest";
 import type { DtoEditableSubscriptionPayerModel as EditableSubscriptionPayerModel } from "@/api/models/DtoEditableSubscriptionPayerModel";
 import { DtoEditableSubscriptionPayerModelTypeEnum } from "@/api/models/DtoEditableSubscriptionPayerModel";
 import type { DtoSubscriptionFreeTrialModel as SubscriptionFreeTrialModel } from "@/api/models/DtoSubscriptionFreeTrialModel";
@@ -27,14 +28,12 @@ export const useSubscriptionsMutations = () => {
             startDate: Date,
             endDate?: Date,
             ownerType?: OwnerType,
-            familyId?: string,
             payer?: {
                 type: PayerType,
-                familyId?: string,
                 memberId?: string
             },
             familyUsers?: string[],
-            customPrice?: {
+            price?: {
                 amount: number,
                 currency: string
             },
@@ -45,11 +44,18 @@ export const useSubscriptionsMutations = () => {
         }) => {
             if (!apiClient) throw new Error("API client not initialized");
 
-            const owner: EditableOwnerModel = {
-                type: subscriptionData.ownerType ?? OwnerType.Personal,
-            };
-            if ((subscriptionData.ownerType ?? OwnerType.Personal) === OwnerType.Family && subscriptionData.familyId) {
-                owner.familyId = subscriptionData.familyId;
+            let owner: DtoCreateSubscriptionRequestOwnerEnum;
+            switch (subscriptionData.ownerType ?? OwnerType.Personal) {
+                case OwnerType.Family:
+                    owner = DtoCreateSubscriptionRequestOwnerEnum.Family;
+                    break;
+                case OwnerType.System:
+                    owner = DtoCreateSubscriptionRequestOwnerEnum.System;
+                    break;
+                case OwnerType.Personal:
+                default:
+                    owner = DtoCreateSubscriptionRequestOwnerEnum.Personal;
+                    break;
             }
 
             const payload: CreateSubscriptionModel = {
@@ -75,13 +81,8 @@ export const useSubscriptionsMutations = () => {
                         payerType = DtoEditableSubscriptionPayerModelTypeEnum.Family;
                         break;
                 }
-                const familyId = subscriptionData.payer.familyId ?? subscriptionData.familyId;
-                if (!familyId) {
-                    throw new Error("Payer requires a familyId");
-                }
                 const payer: EditableSubscriptionPayerModel = {
                     type: payerType,
-                    familyId,
                     ...(subscriptionData.payer.memberId ? { memberId: subscriptionData.payer.memberId } : {}),
                 };
 
@@ -89,10 +90,10 @@ export const useSubscriptionsMutations = () => {
             }
 
             // Add custom price if specified
-            if (subscriptionData.customPrice) {
+            if (subscriptionData.price) {
                 const customPrice: AmountModel = {
-                    value: subscriptionData.customPrice.amount,
-                    currency: subscriptionData.customPrice.currency
+                    value: subscriptionData.price.amount,
+                    currency: subscriptionData.price.currency
                 };
 
                 payload.customPrice = customPrice;
@@ -164,11 +165,18 @@ export const useSubscriptionsMutations = () => {
         }) => {
             if (!apiClient) throw new Error("API client not initialized");
 
-            const owner: EditableOwnerModel = {
-                type: subscriptionData.ownerType ?? OwnerType.Personal,
-            };
-            if ((subscriptionData.ownerType ?? OwnerType.Personal) === OwnerType.Family && subscriptionData.familyId) {
-                owner.familyId = subscriptionData.familyId;
+            let owner: DtoUpdateSubscriptionRequestOwnerEnum;
+            switch (subscriptionData.ownerType ?? OwnerType.Personal) {
+                case OwnerType.Family:
+                    owner = DtoUpdateSubscriptionRequestOwnerEnum.Family;
+                    break;
+                case OwnerType.System:
+                    owner = DtoUpdateSubscriptionRequestOwnerEnum.System;
+                    break;
+                case OwnerType.Personal:
+                default:
+                    owner = DtoUpdateSubscriptionRequestOwnerEnum.Personal;
+                    break;
             }
 
             const payload: UpdateSubscriptionModel = {
@@ -196,13 +204,8 @@ export const useSubscriptionsMutations = () => {
                         payerType = DtoEditableSubscriptionPayerModelTypeEnum.Family;
                         break;
                 }
-                const familyId = subscriptionData.payer.familyId ?? subscriptionData.familyId;
-                if (!familyId) {
-                    throw new Error("Payer requires a familyId");
-                }
                 const payer: EditableSubscriptionPayerModel = {
                     type: payerType,
-                    familyId,
                     ...(subscriptionData.payer.memberId ? { memberId: subscriptionData.payer.memberId } : {}),
                 };
 

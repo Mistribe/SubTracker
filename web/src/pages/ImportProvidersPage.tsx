@@ -96,8 +96,7 @@ export default function ImportProvidersPage() {
         iconUrl: data.iconUrl,
         pricingPageUrl: data.pricingPageUrl,
         labels: data.labels,
-        ownerType: data.owner?.type as any,
-        familyId: data.owner?.familyId,
+        ownerType: data.owner,
       });
     },
   } as any;

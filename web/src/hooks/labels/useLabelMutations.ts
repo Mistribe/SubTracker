@@ -9,15 +9,12 @@ export const useLabelMutations = () => {
 
   // Create label mutation
   const createLabelMutation = useMutation({
-    mutationFn: async (labelData: { name: string, color: string, ownerType?: OwnerType, familyId?: string }) => {
+    mutationFn: async (labelData: { name: string, color: string, ownerType?: OwnerType }) => {
       const ownerType = labelData.ownerType ?? OwnerType.Personal;
       const payload = {
         name: labelData.name,
         color: labelData.color,
-        owner: {
-          type: ownerType,
-          ...(ownerType === OwnerType.Family && labelData.familyId ? { familyId: labelData.familyId } : {}),
-        },
+        owner: ownerType,
       };
       
       return apiClient?.labels.labelsPost({ dtoCreateLabelRequest: payload });

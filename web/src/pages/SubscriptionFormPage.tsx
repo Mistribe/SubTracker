@@ -82,8 +82,6 @@ const SubscriptionFormPage = () => {
             // Set basic information
             form.setValue("friendlyName", subscriptionToEdit.friendlyName || undefined);
             form.setValue("providerId", subscriptionToEdit.providerId);
-            form.setValue("planId", subscriptionToEdit.planId);
-            form.setValue("priceId", subscriptionToEdit.priceId);
 
             // Set recurrency
             form.setValue("recurrency", subscriptionToEdit.recurrency);
@@ -110,10 +108,10 @@ const SubscriptionFormPage = () => {
             }
 
             // Set custom price if available
-            if (subscriptionToEdit.customPrice) {
+            if (subscriptionToEdit.price) {
                 form.setValue("customPrice", {
-                    amount: subscriptionToEdit.customPrice.value,
-                    currency: subscriptionToEdit.customPrice.currency
+                    amount: subscriptionToEdit.price.value,
+                    currency: subscriptionToEdit.price.currency
                 });
             }
 
@@ -342,13 +340,11 @@ const SubscriptionFormPage = () => {
 
                                         // Step 0: Basic Information
                                         if (currentStep === 0) {
-                                            const result = await form.trigger(['providerId']);
-                                            isValid = result;
+                                            isValid = await form.trigger(['providerId']);
                                         }
                                         // Step 1: Recurrency
                                         else if (currentStep === 1) {
-                                            const result = await form.trigger(['recurrency']);
-                                            isValid = result;
+                                            isValid = await form.trigger(['recurrency']);
 
                                             // If custom recurrency, validate custom fields
                                             if (form.getValues('recurrency') === 'custom') {
@@ -358,13 +354,11 @@ const SubscriptionFormPage = () => {
                                         }
                                         // Step 2: Dates
                                         else if (currentStep === 2) {
-                                            const result = await form.trigger(['startDate']);
-                                            isValid = result;
+                                            isValid = await form.trigger(['startDate']);
                                         }
                                         // Step 3: Ownership
                                         else if (currentStep === 3) {
-                                            const result = await form.trigger(['ownerType']);
-                                            isValid = result;
+                                            isValid = await form.trigger(['ownerType']);
 
                                             // If family ownership, validate family ID
                                             if (form.getValues('ownerType') === 'family') {
@@ -374,8 +368,7 @@ const SubscriptionFormPage = () => {
                                         }
                                         // Step 4: Free Trial
                                         else if (currentStep === 4) {
-                                            const result = await form.trigger(['hasFreeTrialPeriod']);
-                                            isValid = result;
+                                            isValid = await form.trigger(['hasFreeTrialPeriod']);
 
                                             // If has free trial period, validate start and end dates
                                             if (form.getValues('hasFreeTrialPeriod')) {

@@ -3,8 +3,8 @@
   friendlyName: "Netflix Premium"
   startDate: "2024-01-01"
   recurrency: "monthly"
-  customPriceAmount: 15.99
-  customPriceCurrency: "USD"
+  amount: 15.99
+  currency: "USD"
   ownerType: "personal"
   labels:
     - "Entertainment"
@@ -15,8 +15,8 @@
   friendlyName: "Spotify Family"
   startDate: "2024-02-15"
   recurrency: "monthly"
-  customPriceAmount: 16.99
-  customPriceCurrency: "USD"
+  amount: 16.99
+  currency: "USD"
   ownerType: "personal"
   labels:
     - "Entertainment"
@@ -27,8 +27,8 @@
   friendlyName: "Adobe Creative Cloud"
   startDate: "2024-01-10"
   recurrency: "monthly"
-  customPriceAmount: 54.99
-  customPriceCurrency: "USD"
+  amount: 54.99
+  currency: "USD"
   ownerType: "personal"
   labels:
     - "Productivity"
@@ -38,8 +38,8 @@
   friendlyName: "GitHub Pro"
   startDate: "2024-03-01"
   recurrency: "monthly"
-  customPriceAmount: 4.00
-  customPriceCurrency: "USD"
+  amount: 4.00
+  currency: "USD"
   ownerType: "personal"
   freeTrialStartDate: "2024-03-01"
   freeTrialEndDate: "2024-03-31"
@@ -51,8 +51,8 @@
   friendlyName: "Dropbox Plus"
   startDate: "2024-02-20"
   recurrency: "yearly"
-  customPriceAmount: 119.88
-  customPriceCurrency: "USD"
+  amount: 119.88
+  currency: "USD"
   ownerType: "personal"
   labels:
     - "Productivity"

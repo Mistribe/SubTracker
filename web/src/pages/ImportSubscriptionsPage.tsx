@@ -105,15 +105,13 @@ export default function ImportSubscriptionsPage() {
         customRecurrency: data.customRecurrency,
         startDate: data.startDate!,
         endDate: data.endDate,
-        ownerType: data.owner?.type as any,
-        familyId: data.owner?.familyId,
+        ownerType: data.owner,
         payer: data.payer ? {
           type: data.payer.type as any,
-          familyId: data.payer.familyId,
           memberId: data.payer.memberId,
         } : undefined,
         familyUsers: data.familyUsers,
-        customPrice: data.customPrice ? {
+        price: data.customPrice ? {
           amount: data.customPrice.value,
           currency: data.customPrice.currency,
         } : undefined,

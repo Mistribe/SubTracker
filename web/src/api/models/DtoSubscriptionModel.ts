@@ -48,13 +48,6 @@ import {
     DtoLabelRefModelToJSON,
     DtoLabelRefModelToJSONTyped,
 } from './DtoLabelRefModel';
-import type { DtoSubscriptionPriceModel } from './DtoSubscriptionPriceModel';
-import {
-    DtoSubscriptionPriceModelFromJSON,
-    DtoSubscriptionPriceModelFromJSONTyped,
-    DtoSubscriptionPriceModelToJSON,
-    DtoSubscriptionPriceModelToJSONTyped,
-} from './DtoSubscriptionPriceModel';
 
 /**
  * Subscription object containing all information about an active subscription including billing and usage details
@@ -68,12 +61,6 @@ export interface DtoSubscriptionModel {
      * @memberof DtoSubscriptionModel
      */
     createdAt: Date;
-    /**
-     * 
-     * @type {DtoAmountModel}
-     * @memberof DtoSubscriptionModel
-     */
-    customPrice?: DtoAmountModel;
     /**
      * @Description CustomRecurrency recurrency interval in days (required when recurrency is custom)
      * @type {number}
@@ -142,10 +129,10 @@ export interface DtoSubscriptionModel {
     planId?: string;
     /**
      * 
-     * @type {DtoSubscriptionPriceModel}
+     * @type {DtoAmountModel}
      * @memberof DtoSubscriptionModel
      */
-    price?: DtoSubscriptionPriceModel;
+    price?: DtoAmountModel;
     /**
      * @Description LabelID of the pricing tier for this subscription
      * @type {string}
@@ -227,7 +214,6 @@ export function DtoSubscriptionModelFromJSONTyped(json: any, ignoreDiscriminator
     return {
         
         'createdAt': (new Date(json['created_at'])),
-        'customPrice': json['custom_price'] == null ? undefined : DtoAmountModelFromJSON(json['custom_price']),
         'customRecurrency': json['custom_recurrency'] == null ? undefined : json['custom_recurrency'],
         'endDate': json['end_date'] == null ? undefined : (new Date(json['end_date'])),
         'etag': json['etag'],
@@ -239,7 +225,7 @@ export function DtoSubscriptionModelFromJSONTyped(json: any, ignoreDiscriminator
         'owner': DtoOwnerModelFromJSON(json['owner']),
         'payer': json['payer'] == null ? undefined : DtoSubscriptionPayerModelFromJSON(json['payer']),
         'planId': json['plan_id'] == null ? undefined : json['plan_id'],
-        'price': json['price'] == null ? undefined : DtoSubscriptionPriceModelFromJSON(json['price']),
+        'price': json['price'] == null ? undefined : DtoAmountModelFromJSON(json['price']),
         'priceId': json['price_id'] == null ? undefined : json['price_id'],
         'providerId': json['provider_id'],
         'recurrency': json['recurrency'],
@@ -261,7 +247,6 @@ export function DtoSubscriptionModelToJSONTyped(value?: DtoSubscriptionModel | n
     return {
         
         'created_at': value['createdAt'].toISOString(),
-        'custom_price': DtoAmountModelToJSON(value['customPrice']),
         'custom_recurrency': value['customRecurrency'],
         'end_date': value['endDate'] == null ? value['endDate'] : value['endDate'].toISOString(),
         'etag': value['etag'],
@@ -273,7 +258,7 @@ export function DtoSubscriptionModelToJSONTyped(value?: DtoSubscriptionModel | n
         'owner': DtoOwnerModelToJSON(value['owner']),
         'payer': DtoSubscriptionPayerModelToJSON(value['payer']),
         'plan_id': value['planId'],
-        'price': DtoSubscriptionPriceModelToJSON(value['price']),
+        'price': DtoAmountModelToJSON(value['price']),
         'price_id': value['priceId'],
         'provider_id': value['providerId'],
         'recurrency': value['recurrency'],

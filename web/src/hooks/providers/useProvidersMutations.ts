@@ -3,6 +3,7 @@ import {useApiClient} from "@/hooks/use-api-client";
 import Provider from "@/models/provider";
 import {OwnerType} from "@/models/ownerType";
 import type { DtoCreateProviderRequest as CreateProviderModel } from "@/api/models/DtoCreateProviderRequest";
+import { DtoCreateProviderRequestOwnerEnum } from "@/api/models/DtoCreateProviderRequest";
 import type { DtoUpdateProviderRequest as UpdateProviderModel } from "@/api/models/DtoUpdateProviderRequest";
 
 export const useProvidersMutations = () => {
@@ -18,8 +19,21 @@ export const useProvidersMutations = () => {
             pricingPageUrl?: string,
             labels?: string[],
             ownerType?: OwnerType,
-            familyId?: string
         }) => {
+            let owner: DtoCreateProviderRequestOwnerEnum;
+            switch (providerData.ownerType ?? OwnerType.Personal) {
+                case OwnerType.Family:
+                    owner = DtoCreateProviderRequestOwnerEnum.Family;
+                    break;
+                case OwnerType.System:
+                    owner = DtoCreateProviderRequestOwnerEnum.System;
+                    break;
+                case OwnerType.Personal:
+                default:
+                    owner = DtoCreateProviderRequestOwnerEnum.Personal;
+                    break;
+            }
+
             const payload: CreateProviderModel = {
                 name: providerData.name,
                 description: providerData.description,
@@ -27,10 +41,7 @@ export const useProvidersMutations = () => {
                 url: providerData.url,
                 pricingPageUrl: providerData.pricingPageUrl,
                 labels: providerData.labels || [],
-                owner: {
-                    type: providerData.ownerType ?? OwnerType.Personal,
-                    ...(providerData.ownerType === OwnerType.Family && providerData.familyId ? { familyId: providerData.familyId } : {}),
-                },
+                owner,
             };
 
             return apiClient?.providers.providersPost({ dtoCreateProviderRequest: payload });

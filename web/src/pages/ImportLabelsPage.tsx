@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { FileUploadZone } from '@/components/import/FileUploadZone';
 import { ImportPreviewTable } from '@/components/import/ImportPreviewTable';
 import { ImportHelp } from '@/components/import/ImportHelp';
@@ -68,8 +68,7 @@ export default function ImportLabelsPage() {
       return createLabelMutation.mutateAsync({
         name: data.name!,
         color: data.color!,
-        ownerType: data.owner?.type as any,
-        familyId: data.owner?.familyId,
+        ownerType: data.owner,
       });
     },
   } as any;

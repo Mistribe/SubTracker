@@ -1,9 +1,10 @@
 import type {
   DtoCreateLabelRequest,
+  DtoCreateLabelRequestOwnerEnum,
   DtoCreateProviderRequest,
+  DtoCreateProviderRequestOwnerEnum,
   DtoCreateSubscriptionRequest,
-  DtoEditableOwnerModel,
-  DtoEditableOwnerModelTypeEnum,
+  DtoCreateSubscriptionRequestOwnerEnum,
   DtoAmountModel,
   DtoEditableSubscriptionPayerModel,
   DtoEditableSubscriptionPayerModelTypeEnum,
@@ -11,6 +12,7 @@ import type {
 } from '../api';
 import type { FieldMapper, ValidationResult, ValidationError } from '../types/import';
 import { validateAndSanitizeUUID } from '../utils/uuidValidation';
+import { SubscriptionRecurrency } from '../models/subscriptionRecurrency';
 
 /**
  * Base field mapper implementation with common validation utilities
@@ -101,16 +103,13 @@ export class LabelFieldMapper extends BaseFieldMapper<DtoCreateLabelRequest> {
     }
 
     // Map owner (default to personal if not provided)
-    if (rawRecord.owner && typeof rawRecord.owner === 'object') {
-      mapped.owner = this.mapOwner(rawRecord.owner);
+    if (!this.isEmpty(rawRecord.owner)) {
+      mapped.owner = String(rawRecord.owner).trim().toLowerCase() as DtoCreateLabelRequestOwnerEnum;
     } else if (!this.isEmpty(rawRecord.ownerType)) {
-      mapped.owner = this.mapOwner({
-        type: rawRecord.ownerType,
-        familyId: rawRecord.ownerFamilyId,
-      });
+      mapped.owner = String(rawRecord.ownerType).trim().toLowerCase() as DtoCreateLabelRequestOwnerEnum;
     } else {
       // Default to personal ownership
-      mapped.owner = { type: 'personal' as DtoEditableOwnerModelTypeEnum };
+      mapped.owner = 'personal' as DtoCreateLabelRequestOwnerEnum;
     }
 
     return mapped;
@@ -142,7 +141,7 @@ export class LabelFieldMapper extends BaseFieldMapper<DtoCreateLabelRequest> {
     if (!record.owner) {
       errors.push(this.createError('owner', 'Owner is required'));
     } else {
-      const ownerErrors = this.validateOwner(record.owner);
+      const ownerErrors = this.validateLabelOwner(record.owner as any);
       errors.push(...ownerErrors);
     }
 
@@ -152,29 +151,13 @@ export class LabelFieldMapper extends BaseFieldMapper<DtoCreateLabelRequest> {
     };
   }
 
-  private mapOwner(rawOwner: Record<string, any>): DtoEditableOwnerModel {
-    const owner: DtoEditableOwnerModel = {
-      type: (rawOwner.type || 'personal') as DtoEditableOwnerModelTypeEnum,
-    };
-
-    if (rawOwner.familyId) {
-      owner.familyId = String(rawOwner.familyId);
-    }
-
-    return owner;
-  }
-
-  private validateOwner(owner: DtoEditableOwnerModel): ValidationError[] {
+  private validateLabelOwner(owner: string): ValidationError[] {
     const errors: ValidationError[] = [];
 
-    if (!owner.type) {
-      errors.push(this.createError('owner.type', 'Owner type is required'));
-    } else if (!['personal', 'family', 'system'].includes(owner.type)) {
-      errors.push(this.createError('owner.type', 'Owner type must be one of: personal, family, system'));
-    }
-
-    if (owner.type === 'family' && this.isEmpty(owner.familyId)) {
-      errors.push(this.createError('owner.familyId', 'Family ID is required when owner type is family'));
+    if (!owner) {
+      errors.push(this.createError('owner', 'Owner is required'));
+    } else if (!['personal', 'family', 'system'].includes(owner)) {
+      errors.push(this.createError('owner', 'Owner must be one of: personal, family, system'));
     }
 
     return errors;
@@ -229,13 +212,13 @@ export class ProviderFieldMapper extends BaseFieldMapper<DtoCreateProviderReques
     }
 
     // Map owner (optional, defaults to personal if not provided)
-    if (rawRecord.owner && typeof rawRecord.owner === 'object') {
-      mapped.owner = this.mapOwner(rawRecord.owner);
+    if (!this.isEmpty(rawRecord.owner)) {
+      mapped.owner = String(rawRecord.owner).trim().toLowerCase() as DtoCreateProviderRequestOwnerEnum;
     } else if (!this.isEmpty(rawRecord.ownerType)) {
-      mapped.owner = this.mapOwner({
-        type: rawRecord.ownerType,
-        familyId: rawRecord.ownerFamilyId,
-      });
+      mapped.owner = String(rawRecord.ownerType).trim().toLowerCase() as DtoCreateProviderRequestOwnerEnum;
+    } else {
+      // Default to personal ownership
+      mapped.owner = 'personal' as DtoCreateProviderRequestOwnerEnum;
     }
 
     return mapped;
@@ -273,7 +256,7 @@ export class ProviderFieldMapper extends BaseFieldMapper<DtoCreateProviderReques
 
     // Validate owner if provided
     if (record.owner) {
-      const ownerErrors = this.validateOwner(record.owner);
+      const ownerErrors = this.validateProviderOwner(record.owner as any);
       errors.push(...ownerErrors);
     }
 
@@ -283,29 +266,13 @@ export class ProviderFieldMapper extends BaseFieldMapper<DtoCreateProviderReques
     };
   }
 
-  private mapOwner(rawOwner: Record<string, any>): DtoEditableOwnerModel {
-    const owner: DtoEditableOwnerModel = {
-      type: (rawOwner.type || 'personal') as DtoEditableOwnerModelTypeEnum,
-    };
-
-    if (rawOwner.familyId) {
-      owner.familyId = String(rawOwner.familyId);
-    }
-
-    return owner;
-  }
-
-  private validateOwner(owner: DtoEditableOwnerModel): ValidationError[] {
+  private validateProviderOwner(owner: string): ValidationError[] {
     const errors: ValidationError[] = [];
 
-    if (!owner.type) {
-      errors.push(this.createError('owner.type', 'Owner type is required'));
-    } else if (!['personal', 'family', 'system'].includes(owner.type)) {
-      errors.push(this.createError('owner.type', 'Owner type must be one of: personal, family, system'));
-    }
-
-    if (owner.type === 'family' && this.isEmpty(owner.familyId)) {
-      errors.push(this.createError('owner.familyId', 'Family ID is required when owner type is family'));
+    if (!owner) {
+      errors.push(this.createError('owner', 'Owner is required'));
+    } else if (!['personal', 'family', 'system'].includes(owner)) {
+      errors.push(this.createError('owner', 'Owner must be one of: personal, family, system'));
     }
 
     return errors;
@@ -341,16 +308,13 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
     }
 
     // Map owner (required)
-    if (rawRecord.owner && typeof rawRecord.owner === 'object') {
-      mapped.owner = this.mapOwner(rawRecord.owner);
+    if (!this.isEmpty(rawRecord.owner)) {
+      mapped.owner = String(rawRecord.owner).trim().toLowerCase() as DtoCreateSubscriptionRequestOwnerEnum;
     } else if (!this.isEmpty(rawRecord.ownerType)) {
-      mapped.owner = this.mapOwner({
-        type: rawRecord.ownerType,
-        familyId: rawRecord.ownerFamilyId,
-      });
+      mapped.owner = String(rawRecord.ownerType).trim().toLowerCase() as DtoCreateSubscriptionRequestOwnerEnum;
     } else {
       // Default to personal ownership
-      mapped.owner = { type: 'personal' as DtoEditableOwnerModelTypeEnum };
+      mapped.owner = 'personal' as DtoCreateSubscriptionRequestOwnerEnum;
     }
 
     // Map optional fields
@@ -372,10 +336,10 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
     // Map custom price
     if (rawRecord.customPrice && typeof rawRecord.customPrice === 'object') {
       mapped.customPrice = this.mapCustomPrice(rawRecord.customPrice);
-    } else if (!this.isEmpty(rawRecord.customPriceAmount) && !this.isEmpty(rawRecord.customPriceCurrency)) {
+    } else if (!this.isEmpty(rawRecord.amount) && !this.isEmpty(rawRecord.currency)) {
       mapped.customPrice = this.mapCustomPrice({
-        value: rawRecord.customPriceAmount,
-        currency: rawRecord.customPriceCurrency,
+        value: rawRecord.amount,
+        currency: rawRecord.currency,
       });
     }
 
@@ -449,8 +413,8 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
     if (this.isEmpty(record.recurrency)) {
       errors.push(this.createError('recurrency', 'Recurrency is required'));
     } else {
-      const validRecurrencies = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly', 'custom'];
-      if (!validRecurrencies.includes(record.recurrency!.toLowerCase())) {
+      const validRecurrencies = Object.values(SubscriptionRecurrency) as readonly string[];
+      if (!validRecurrencies.includes(record.recurrency as string)) {
         errors.push(
           this.createError(
             'recurrency',
@@ -463,7 +427,7 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
     if (!record.owner) {
       errors.push(this.createError('owner', 'Owner is required'));
     } else {
-      const ownerErrors = this.validateOwner(record.owner);
+      const ownerErrors = this.validateSubscriptionOwner(record.owner as any);
       errors.push(...ownerErrors);
     }
 
@@ -506,18 +470,6 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
     };
   }
 
-  private mapOwner(rawOwner: Record<string, any>): DtoEditableOwnerModel {
-    const owner: DtoEditableOwnerModel = {
-      type: (rawOwner.type || 'personal') as DtoEditableOwnerModelTypeEnum,
-    };
-
-    if (rawOwner.familyId) {
-      owner.familyId = String(rawOwner.familyId);
-    }
-
-    return owner;
-  }
-
   private mapCustomPrice(rawPrice: Record<string, any>): DtoAmountModel | undefined {
     if (this.isEmpty(rawPrice.value) || this.isEmpty(rawPrice.currency)) {
       return undefined;
@@ -535,16 +487,15 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
   }
 
   private mapPayer(rawPayer: Record<string, any>): DtoEditableSubscriptionPayerModel | undefined {
-    if (this.isEmpty(rawPayer.type) || this.isEmpty(rawPayer.familyId)) {
+    if (this.isEmpty(rawPayer.type)) {
       return undefined;
     }
 
     const payer: DtoEditableSubscriptionPayerModel = {
       type: rawPayer.type as DtoEditableSubscriptionPayerModelTypeEnum,
-      familyId: String(rawPayer.familyId),
     };
 
-    if (rawPayer.memberId) {
+    if (!this.isEmpty(rawPayer.memberId)) {
       payer.memberId = String(rawPayer.memberId);
     }
 
@@ -565,17 +516,13 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
     };
   }
 
-  private validateOwner(owner: DtoEditableOwnerModel): ValidationError[] {
+  private validateSubscriptionOwner(owner: string): ValidationError[] {
     const errors: ValidationError[] = [];
 
-    if (!owner.type) {
-      errors.push(this.createError('owner.type', 'Owner type is required'));
-    } else if (!['personal', 'family', 'system'].includes(owner.type)) {
-      errors.push(this.createError('owner.type', 'Owner type must be one of: personal, family, system'));
-    }
-
-    if (owner.type === 'family' && this.isEmpty(owner.familyId)) {
-      errors.push(this.createError('owner.familyId', 'Family ID is required when owner type is family'));
+    if (!owner) {
+      errors.push(this.createError('owner', 'Owner is required'));
+    } else if (!['personal', 'family', 'system'].includes(owner)) {
+      errors.push(this.createError('owner', 'Owner must be one of: personal, family, system'));
     }
 
     return errors;
@@ -606,10 +553,6 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
       errors.push(this.createError('payer.type', 'Payer type is required'));
     } else if (!['family', 'family_member'].includes(payer.type)) {
       errors.push(this.createError('payer.type', 'Payer type must be one of: family, family_member'));
-    }
-
-    if (this.isEmpty(payer.familyId)) {
-      errors.push(this.createError('payer.familyId', 'Payer family ID is required'));
     }
 
     if (payer.type === 'family_member' && this.isEmpty(payer.memberId)) {

@@ -7,3 +7,4 @@ export * from './HealthApi';
 export * from './LabelsApi';
 export * from './ProvidersApi';
 export * from './SubscriptionsApi';
+export * from './VersionApi';

@@ -6,6 +6,7 @@ apis/HealthApi.ts
 apis/LabelsApi.ts
 apis/ProvidersApi.ts
 apis/SubscriptionsApi.ts
+apis/VersionApi.ts
 apis/index.ts
 index.ts
 models/DtoAmountModel.ts
@@ -16,7 +17,6 @@ models/DtoCreateProviderRequest.ts
 models/DtoCreateSubscriptionRequest.ts
 models/DtoCurrencyRateModel.ts
 models/DtoCurrencyRatesModel.ts
-models/DtoEditableOwnerModel.ts
 models/DtoEditableSubscriptionPayerModel.ts
 models/DtoFamilyAcceptInvitationRequest.ts
 models/DtoFamilyDeclineInvitationRequest.ts
@@ -36,7 +36,6 @@ models/DtoQuotaUsageModel.ts
 models/DtoSubscriptionFreeTrialModel.ts
 models/DtoSubscriptionModel.ts
 models/DtoSubscriptionPayerModel.ts
-models/DtoSubscriptionPriceModel.ts
 models/DtoSubscriptionSummaryResponse.ts
 models/DtoSubscriptionSummaryTopLabelResponse.ts
 models/DtoSubscriptionSummaryTopProviderResponse.ts

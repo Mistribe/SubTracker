@@ -13,14 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { DtoEditableOwnerModel } from './DtoEditableOwnerModel';
-import {
-    DtoEditableOwnerModelFromJSON,
-    DtoEditableOwnerModelFromJSONTyped,
-    DtoEditableOwnerModelToJSON,
-    DtoEditableOwnerModelToJSONTyped,
-} from './DtoEditableOwnerModel';
-
 /**
  * 
  * @export
@@ -53,11 +45,23 @@ export interface DtoCreateLabelRequest {
     name: string;
     /**
      * 
-     * @type {DtoEditableOwnerModel}
+     * @type {string}
      * @memberof DtoCreateLabelRequest
      */
-    owner: DtoEditableOwnerModel;
+    owner: DtoCreateLabelRequestOwnerEnum;
 }
+
+
+/**
+ * @export
+ */
+export const DtoCreateLabelRequestOwnerEnum = {
+    Personal: 'personal',
+    Family: 'family',
+    System: 'system'
+} as const;
+export type DtoCreateLabelRequestOwnerEnum = typeof DtoCreateLabelRequestOwnerEnum[keyof typeof DtoCreateLabelRequestOwnerEnum];
+
 
 /**
  * Check if a given object implements the DtoCreateLabelRequest interface.
@@ -83,7 +87,7 @@ export function DtoCreateLabelRequestFromJSONTyped(json: any, ignoreDiscriminato
         'createdAt': json['created_at'] == null ? undefined : (new Date(json['created_at'])),
         'id': json['id'] == null ? undefined : json['id'],
         'name': json['name'],
-        'owner': DtoEditableOwnerModelFromJSON(json['owner']),
+        'owner': json['owner'],
     };
 }
 
@@ -102,7 +106,7 @@ export function DtoCreateLabelRequestToJSONTyped(value?: DtoCreateLabelRequest |
         'created_at': value['createdAt'] == null ? value['createdAt'] : value['createdAt'].toISOString(),
         'id': value['id'],
         'name': value['name'],
-        'owner': DtoEditableOwnerModelToJSON(value['owner']),
+        'owner': value['owner'],
     };
 }
 

@@ -12,11 +12,14 @@ import { AddLabelDialog } from "@/components/labels/AddLabelDialog";
 import { DeleteLabelDialog } from "@/components/labels/DeleteLabelDialog";
 import Label from "@/models/label";
 import { OwnerType } from "@/models/ownerType";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useLabelsQuotaQuery } from "@/hooks/labels/useLabelsQuotaQuery.ts";
 import { QuotaButton } from "@/components/quotas/QuotaButton";
 import { FeatureId } from "@/models/billing.ts";
-import { Button } from "@/components/ui/button";
+import { ImportExportDropdown } from "@/components/import-export/ImportExportDropdown";
+import { ExportConfirmationDialog } from "@/components/import-export/ExportConfirmationDialog";
+import { useExportService } from "@/services/exportService";
+import { toast } from "sonner";
 
 const LabelsPage = () => {
     const navigate = useNavigate();
@@ -39,6 +42,10 @@ const LabelsPage = () => {
     const [editingColor, setEditingColor] = useState("");
     const [labelToDelete, setLabelToDelete] = useState<Label | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
+
+    const { exportLabels } = useExportService();
 
     // Fetch the single family and adapt to an array for UI components expecting arrays
     const { data: familyData } = useFamilyQuery();
@@ -155,9 +162,25 @@ const LabelsPage = () => {
             createLabelMutation.mutate({
                 name,
                 color,
-                ownerType,
-                familyId
+                ownerType
             });
+        }
+    };
+
+    const handleExport = async (format: "csv" | "json" | "yaml") => {
+        setIsExporting(true);
+        try {
+            await exportLabels(format);
+            toast.success(`Labels exported successfully as ${format.toUpperCase()}`);
+            // Close dialog after a short delay to show the last funny message
+            setTimeout(() => {
+                setIsExportDialogOpen(false);
+                setIsExporting(false);
+            }, 500);
+        } catch (error) {
+            toast.error("Failed to export labels");
+            console.error("Export error:", error);
+            setIsExporting(false);
         }
     };
 
@@ -184,13 +207,10 @@ const LabelsPage = () => {
                     }
                     actionButton={
                         <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                onClick={() => navigate('/labels/import')}
-                            >
-                                <Upload className="mr-2 h-4 w-4" />
-                                Import from file
-                            </Button>
+                            <ImportExportDropdown
+                                onImport={() => navigate('/labels/import')}
+                                onExport={() => setIsExportDialogOpen(true)}
+                            />
                             <AddLabelDialog
                                 onAddLabel={handleAddLabel}
                                 isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
@@ -226,13 +246,10 @@ const LabelsPage = () => {
                     }
                     actionButton={
                         <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                onClick={() => navigate('/labels/import')}
-                            >
-                                <Upload className="mr-2 h-4 w-4" />
-                                Import from file
-                            </Button>
+                            <ImportExportDropdown
+                                onImport={() => navigate('/labels/import')}
+                                onExport={() => setIsExportDialogOpen(true)}
+                            />
                             <AddLabelDialog
                                 onAddLabel={handleAddLabel}
                                 isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
@@ -266,13 +283,10 @@ const LabelsPage = () => {
                 }
                 actionButton={
                     <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={() => navigate('/labels/import')}
-                        >
-                            <Upload className="mr-2 h-4 w-4" />
-                            Import from file
-                        </Button>
+                        <ImportExportDropdown
+                            onImport={() => navigate('/labels/import')}
+                            onExport={() => setIsExportDialogOpen(true)}
+                        />
                         <AddLabelDialog
                             onAddLabel={handleAddLabel}
                             isAdding={createLabelMutation.isPending || createFamilyLabelMutation.isPending}
@@ -333,6 +347,14 @@ const LabelsPage = () => {
                 onOpenChange={setIsDeleteDialogOpen}
                 onConfirm={handleConfirmDelete}
                 isDeleting={deleteLabelMutation.isPending}
+            />
+
+            <ExportConfirmationDialog
+                open={isExportDialogOpen}
+                onOpenChange={setIsExportDialogOpen}
+                onConfirm={handleExport}
+                entityType="labels"
+                isExporting={isExporting}
             />
         </div>
     );

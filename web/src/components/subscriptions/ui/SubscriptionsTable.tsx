@@ -88,9 +88,9 @@ export function SubscriptionsTable({
                                         subscription.providerId)}
                             </TableCell>
                             <TableCell>
-                                {subscription.customPrice && (
+                                {subscription.price && (
                                     <div className="flex flex-col gap-1">
-                                        <Money amount={subscription.customPrice} />
+                                        <Money amount={subscription.price} />
                                         <span className="text-xs text-muted-foreground">
                                             Monthly: <Money amount={{ value: subscription.getMonthlyPrice(), currency: subscription.getCurrency() }} /> / month
                                         </span>

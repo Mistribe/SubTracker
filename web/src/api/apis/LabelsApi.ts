@@ -37,6 +37,10 @@ import {
     GinxHttpErrorResponseToJSON,
 } from '../models/index';
 
+export interface LabelsExportGetRequest {
+    format?: string;
+}
+
 export interface LabelsGetRequest {
     search?: string;
     limit?: number;
@@ -64,6 +68,45 @@ export interface LabelsPostRequest {
  * 
  */
 export class LabelsApi extends runtime.BaseAPI {
+
+    /**
+     * Export all labels in CSV, JSON, or YAML format
+     * Export labels
+     */
+    async labelsExportGetRaw(requestParameters: LabelsExportGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['format'] != null) {
+            queryParameters['format'] = requestParameters['format'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/labels/export`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Export all labels in CSV, JSON, or YAML format
+     * Export labels
+     */
+    async labelsExportGet(requestParameters: LabelsExportGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.labelsExportGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Retrieve a paginated list of labels with optional filtering by owner type and search text
