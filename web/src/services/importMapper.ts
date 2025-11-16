@@ -9,7 +9,7 @@ import type {
   DtoEditableSubscriptionPayerModel,
   DtoEditableSubscriptionPayerModelTypeEnum,
   DtoSubscriptionFreeTrialModel,
-} from '../api';
+} from '@/api';
 import type { FieldMapper, ValidationResult, ValidationError } from '../types/import';
 import { validateAndSanitizeUUID } from '../utils/uuidValidation';
 import { SubscriptionRecurrency } from '../models/subscriptionRecurrency';
@@ -294,9 +294,16 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
       }
     }
 
-    // Map required fields
-    if (!this.isEmpty(rawRecord.providerId)) {
-      mapped.providerId = String(rawRecord.providerId).trim();
+    // Map required provider field: providerKey (backward compatible with providerId)
+    // Prefer `providerKey` if present, otherwise fall back to `providerId` from legacy templates
+    const rawProviderKey = this.isEmpty(rawRecord.providerKey)
+      ? (this.isEmpty(rawRecord.provider_id) ? rawRecord.providerId : rawRecord.provider_id)
+      : rawRecord.providerKey;
+    if (!this.isEmpty(rawProviderKey)) {
+      const key = String(rawProviderKey).trim();
+      // Set both fields for compatibility with API types and backend transition
+      (mapped as any).providerKey = key as any;
+      (mapped as any).providerId = key as any;
     }
 
     if (!this.isEmpty(rawRecord.startDate)) {
@@ -399,9 +406,10 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
       }
     }
 
-    // Validate required fields
-    if (this.isEmpty(record.providerId)) {
-      errors.push(this.createError('providerId', 'Provider ID is required'));
+    // Validate required provider field (providerKey)
+    const hasProviderKey = !(this.isEmpty((record as any).providerKey) && this.isEmpty((record as any).providerId));
+    if (!hasProviderKey) {
+      errors.push(this.createError('providerKey', 'Provider key is required'));
     }
 
     if (!record.startDate) {

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import {
     AlertDialog,
-    AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
@@ -9,6 +8,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { ExportFormat } from "@/services/exportService";
@@ -155,9 +155,10 @@ export function ExportConfirmationDialog({
 
                 <AlertDialogFooter>
                     <AlertDialogCancel disabled={isExporting}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleConfirm} disabled={isExporting}>
+                    {/* Use a regular Button to avoid auto-closing the dialog while exporting */}
+                    <Button onClick={handleConfirm} disabled={isExporting}>
                         {isExporting ? "Exporting..." : "Export"}
-                    </AlertDialogAction>
+                    </Button>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

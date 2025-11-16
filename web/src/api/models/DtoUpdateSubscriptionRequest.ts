@@ -100,6 +100,12 @@ export interface DtoUpdateSubscriptionRequest {
      * @type {string}
      * @memberof DtoUpdateSubscriptionRequest
      */
+    providerKey?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtoUpdateSubscriptionRequest
+     */
     recurrency: string;
     /**
      * 
@@ -163,6 +169,7 @@ export function DtoUpdateSubscriptionRequestFromJSONTyped(json: any, ignoreDiscr
         'payer': json['payer'] == null ? undefined : DtoEditableSubscriptionPayerModelFromJSON(json['payer']),
         'price': json['price'] == null ? undefined : DtoAmountModelFromJSON(json['price']),
         'providerId': json['provider_id'],
+        'providerKey': json['provider_key'] == null ? undefined : json['provider_key'],
         'recurrency': json['recurrency'],
         'serviceUsers': json['service_users'] == null ? undefined : json['service_users'],
         'startDate': (new Date(json['start_date'])),
@@ -190,6 +197,7 @@ export function DtoUpdateSubscriptionRequestToJSONTyped(value?: DtoUpdateSubscri
         'payer': DtoEditableSubscriptionPayerModelToJSON(value['payer']),
         'price': DtoAmountModelToJSON(value['price']),
         'provider_id': value['providerId'],
+        'provider_key': value['providerKey'],
         'recurrency': value['recurrency'],
         'service_users': value['serviceUsers'],
         'start_date': value['startDate'].toISOString(),

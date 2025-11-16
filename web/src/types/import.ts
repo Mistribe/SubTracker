@@ -57,8 +57,9 @@ export interface ValidationResult {
 
 /**
  * Import status for individual records
+ * - 'skipped' is used when the backend returns HTTP 409 (already exists)
  */
-export type ImportStatusType = 'pending' | 'importing' | 'success' | 'error';
+export type ImportStatusType = 'pending' | 'importing' | 'success' | 'error' | 'skipped';
 
 /**
  * Import status with optional error message
@@ -76,6 +77,8 @@ export interface ImportProgress {
   completed: number;
   failed: number;
   inProgress: boolean;
+  /** Number of records that were skipped because they already exist (HTTP 409) */
+  skipped?: number;
 }
 
 /**

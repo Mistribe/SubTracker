@@ -112,7 +112,13 @@ export interface DtoCreateSubscriptionRequest {
      * @type {string}
      * @memberof DtoCreateSubscriptionRequest
      */
-    providerId: string;
+    providerId?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DtoCreateSubscriptionRequest
+     */
+    providerKey?: string;
     /**
      * 
      * @type {string}
@@ -144,7 +150,6 @@ export type DtoCreateSubscriptionRequestOwnerEnum = typeof DtoCreateSubscription
  */
 export function instanceOfDtoCreateSubscriptionRequest(value: object): value is DtoCreateSubscriptionRequest {
     if (!('owner' in value) || value['owner'] === undefined) return false;
-    if (!('providerId' in value) || value['providerId'] === undefined) return false;
     if (!('recurrency' in value) || value['recurrency'] === undefined) return false;
     if (!('startDate' in value) || value['startDate'] === undefined) return false;
     return true;
@@ -171,7 +176,8 @@ export function DtoCreateSubscriptionRequestFromJSONTyped(json: any, ignoreDiscr
         'owner': json['owner'],
         'payer': json['payer'] == null ? undefined : DtoEditableSubscriptionPayerModelFromJSON(json['payer']),
         'price': json['price'] == null ? undefined : DtoAmountModelFromJSON(json['price']),
-        'providerId': json['provider_id'],
+        'providerId': json['provider_id'] == null ? undefined : json['provider_id'],
+        'providerKey': json['provider_key'] == null ? undefined : json['provider_key'],
         'recurrency': json['recurrency'],
         'startDate': (new Date(json['start_date'])),
     };
@@ -200,6 +206,7 @@ export function DtoCreateSubscriptionRequestToJSONTyped(value?: DtoCreateSubscri
         'payer': DtoEditableSubscriptionPayerModelToJSON(value['payer']),
         'price': DtoAmountModelToJSON(value['price']),
         'provider_id': value['providerId'],
+        'provider_key': value['providerKey'],
         'recurrency': value['recurrency'],
         'start_date': value['startDate'].toISOString(),
     };

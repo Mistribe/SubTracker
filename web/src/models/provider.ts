@@ -3,6 +3,7 @@ import type { DtoProviderModel as ProviderModel } from "@/api/models/DtoProvider
 
 export default class Provider {
     private readonly _id: string;
+    private readonly _key: string | undefined;
     private readonly _createdAt: Date;
     private readonly _updatedAt: Date;
     private readonly _etag: string;
@@ -16,6 +17,7 @@ export default class Provider {
 
 
     constructor(id: string,
+                key: string | undefined,
                 name: string,
                 description: string | null,
                 iconUrl: string | null,
@@ -27,6 +29,7 @@ export default class Provider {
                 updatedAt: Date,
                 etag: string) {
         this._id = id;
+        this._key = key;
         this._createdAt = createdAt;
         this._updatedAt = updatedAt;
         this._etag = etag;
@@ -41,6 +44,10 @@ export default class Provider {
 
     get id(): string {
         return this._id;
+    }
+
+    get key(): string | undefined {
+        return this._key;
     }
 
     get createdAt(): Date {
@@ -86,6 +93,7 @@ export default class Provider {
     static fromModel(model: ProviderModel): Provider {
         return new Provider(
             model.id || '',
+            model.key,
             model.name || '',
             model.description || null,
             model.iconUrl || null,

@@ -13,6 +13,17 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import type {
@@ -36,6 +47,7 @@ export interface ImportPreviewTableProps<T> {
   virtualizationThreshold?: number;
   onRetryRecord?: (index: number) => void;
   showIdColumn?: boolean; // Optional override to show/hide ID column
+  onRemoveSelected?: (indices: number[]) => void; // Remove selected rows from preview
 }
 
 // Memoized table row component for better performance
@@ -71,7 +83,7 @@ const TableRowMemo = React.memo(function TableRowMemo<T>({
   return (
     <>
       <TableRow
-        className={cn(getRowClassName(record, index))}
+        className={cn(getRowClassName(record, index), "bg-white", "dark:bg-black")}
         data-state={isSelected ? 'selected' : undefined}
         data-row-index={index}
       >
@@ -82,7 +94,6 @@ const TableRowMemo = React.memo(function TableRowMemo<T>({
               onCheckedChange={() => onSelect(index)}
               onKeyDown={(e) => onKeyDown(e, index)}
               aria-label={`Select record ${index + 1}${!record.isValid ? ' (invalid)' : ''}`}
-              disabled={!record.isValid}
             />
             {!record.isValid && record.validationErrors.length > 0 && (
               <button
@@ -192,10 +203,12 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
   virtualizationThreshold = 100,
   onRetryRecord,
   showIdColumn,
+  onRemoveSelected,
 }: ImportPreviewTableProps<T>) {
   const parentRef = React.useRef<HTMLDivElement>(null);
   const [expandedRows, setExpandedRows] = React.useState<Set<number>>(new Set());
   const [focusedRowIndex, setFocusedRowIndex] = React.useState<number>(-1);
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = React.useState(false);
   
   // Memoize computed values to avoid recalculation on every render
   const allRecordsSelected = React.useMemo(
@@ -301,11 +314,9 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
         }
         break;
       case ' ':
-        // Space bar toggles selection
-        if (records[rowIndex]?.isValid) {
-          e.preventDefault();
-          handleSelectRecord(rowIndex);
-        }
+        // Space bar toggles selection (allow for both valid and invalid rows)
+        e.preventDefault();
+        handleSelectRecord(rowIndex);
         break;
       case 'Enter':
         // Enter expands error details if invalid
@@ -322,6 +333,9 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
     
     if (status?.status === 'success') {
       return 'bg-green-100 dark:bg-green-950/30 hover:bg-green-200 dark:hover:bg-green-950/40 border-l-4 border-l-green-600 dark:border-l-green-400';
+    }
+    if (status?.status === 'skipped') {
+      return 'bg-slate-100 dark:bg-slate-900/30 hover:bg-slate-200 dark:hover:bg-slate-900/40 border-l-4 border-l-slate-500 dark:border-l-slate-400';
     }
     if (status?.status === 'error') {
       return 'bg-red-100 dark:bg-red-950/30 hover:bg-red-200 dark:hover:bg-red-950/40 border-l-4 border-l-red-600 dark:border-l-red-400';
@@ -395,6 +409,18 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
         <Badge variant="outline" className="gap-1 border-yellow-600 dark:border-yellow-400 bg-yellow-50 dark:bg-yellow-950/30 text-yellow-900 dark:text-yellow-100 font-semibold">
           <Loader2 className="size-3 animate-spin" aria-hidden="true" />
           Importing
+        </Badge>
+      );
+    }
+
+    if (status?.status === 'skipped') {
+      return (
+        <Badge
+          variant="outline"
+          className="gap-1 border-slate-400 dark:border-slate-600 bg-slate-50 dark:bg-slate-950/30 text-slate-700 dark:text-slate-200 font-semibold"
+        >
+          <CheckCircle2 className="size-3" aria-hidden="true" />
+          Exists
         </Badge>
       );
     }
@@ -496,12 +522,14 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
         {progress && progress.inProgress && (
           <span>
             Importing records: {progress.completed} of {progress.total} completed
+            {typeof progress.skipped === 'number' && progress.skipped > 0 && `, ${progress.skipped} skipped`}
             {progress.failed > 0 && `, ${progress.failed} failed`}
           </span>
         )}
         {progress && !progress.inProgress && progress.completed > 0 && (
           <span>
-            Import complete: {progress.completed - progress.failed} successful, {progress.failed} failed
+            Import complete: {Math.max(0, (progress.completed - (progress.failed + (progress.skipped ?? 0))))} successful
+            {typeof progress.skipped === 'number' && `, ${progress.skipped} skipped`} , {progress.failed} failed
           </span>
         )}
       </div>
@@ -530,6 +558,44 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
             {isImporting && <Loader2 className="size-4 mr-2 animate-spin" aria-hidden="true" />}
             Import All Valid ({validRecords.length})
           </Button>
+          {/* Remove selected records */}
+          {onRemoveSelected && (
+            <AlertDialog open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  disabled={selectedRecords.size === 0 || isImporting}
+                  className="focus-visible:ring-4 focus-visible:ring-destructive focus-visible:ring-offset-2"
+                  aria-label={`Remove ${selectedRecords.size} selected record${selectedRecords.size !== 1 ? 's' : ''} from preview`}
+                >
+                  Remove Selected ({selectedRecords.size})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remove selected {selectedRecords.size === 1 ? 'record' : 'records'}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will remove the selected {selectedRecords.size === 1 ? 'record' : 'records'} from the import preview. This action does not modify your original file.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => {
+                      const indices = Array.from(selectedRecords).sort((a, b) => a - b);
+                      if (indices.length > 0) {
+                        onRemoveSelected(indices);
+                      }
+                      setIsRemoveDialogOpen(false);
+                    }}
+                  >
+                    Remove
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           {progress && progress.failed > 0 && onRetryRecord && !isImporting && (
             <Button
               onClick={() => {
@@ -639,7 +705,7 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
       )}
 
       {/* Table */}
-      <div className="border rounded-lg">
+      <div className="overflow-hidden border rounded-lg">
         {shouldVirtualize ? (
           <div
             ref={parentRef}
@@ -746,8 +812,8 @@ export const ImportPreviewTable = React.memo(function ImportPreviewTable<T>({
             </Table>
           </div>
         ) : (
-          <Table aria-label="Records to import">
-            <TableHeader>
+          <Table aria-label="Records to import" >
+            <TableHeader className="bg-muted sticky">
               <TableRow>
                 <TableHead className="w-12">
                   <Checkbox

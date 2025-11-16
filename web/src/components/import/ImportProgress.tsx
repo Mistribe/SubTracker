@@ -29,7 +29,8 @@ export function ImportProgress({ progress, startTime, className }: ImportProgres
   }, [startTime, progress.completed, progress.total, progress.inProgress]);
 
   const percentage = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
-  const successCount = progress.completed - progress.failed;
+  const skippedCount = progress.skipped ?? 0;
+  const successCount = Math.max(0, progress.completed - progress.failed - skippedCount);
 
   const formatTime = (seconds: number): string => {
     if (seconds < 60) {
@@ -46,8 +47,8 @@ export function ImportProgress({ progress, startTime, className }: ImportProgres
         {/* Screen reader announcement */}
         <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
           {progress.inProgress 
-            ? `Importing: ${progress.completed} of ${progress.total} records completed, ${progress.failed} failed`
-            : `Import complete: ${successCount} successful, ${progress.failed} failed`
+            ? `Importing: ${progress.completed} of ${progress.total} records completed, ${skippedCount} skipped, ${progress.failed} failed`
+            : `Import complete: ${successCount} successful, ${skippedCount} skipped, ${progress.failed} failed`
           }
         </div>
 
@@ -69,7 +70,7 @@ export function ImportProgress({ progress, startTime, className }: ImportProgres
         </div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4" role="group" aria-label="Import statistics">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5" role="group" aria-label="Import statistics">
           {/* Total */}
           <div className="flex items-center gap-2" role="group" aria-label={`Total records: ${progress.total}`}>
             <div className="flex size-8 items-center justify-center rounded-full bg-muted">
@@ -108,6 +109,19 @@ export function ImportProgress({ progress, startTime, className }: ImportProgres
                 {successCount}
               </span>
               <span className="text-xs text-muted-foreground">Success</span>
+            </div>
+          </div>
+
+          {/* Skipped */}
+          <div className="flex items-center gap-2" role="group" aria-label={`Skipped (already existed): ${skippedCount}`}>
+            <div className="flex size-8 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-900">
+              <CheckCircle2 className="size-4 text-slate-600 dark:text-slate-300" aria-hidden="true" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-2xl font-bold text-slate-700 dark:text-slate-200" aria-label={`${skippedCount}`}>
+                {skippedCount}
+              </span>
+              <span className="text-xs text-muted-foreground">Skipped</span>
             </div>
           </div>
 

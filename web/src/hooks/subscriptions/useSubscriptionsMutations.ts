@@ -19,10 +19,10 @@ export const useSubscriptionsMutations = () => {
     // Create subscription mutation
     const createSubscriptionMutation = useMutation({
         mutationFn: async (subscriptionData: {
+            subscriptionId?: string
             friendlyName?: string,
-            providerId: string,
-            planId?: string,
-            priceId?: string,
+            providerId?: string,
+            providerKey?: string,
             recurrency: SubscriptionRecurrency,
             customRecurrency?: number,
             startDate: Date,
@@ -59,8 +59,8 @@ export const useSubscriptionsMutations = () => {
             }
 
             const payload: CreateSubscriptionModel = {
+                id: subscriptionData.subscriptionId,
                 friendlyName: subscriptionData.friendlyName,
-                providerId: subscriptionData.providerId,
                 recurrency: subscriptionData.recurrency as unknown as string,
                 customRecurrency: subscriptionData.customRecurrency,
                 startDate: subscriptionData.startDate,
@@ -68,6 +68,11 @@ export const useSubscriptionsMutations = () => {
                 familyUsers: subscriptionData.familyUsers,
                 owner,
             };
+            if (subscriptionData.providerKey) {
+                payload.providerKey = subscriptionData.providerKey;
+            } else {
+                payload.providerId = subscriptionData.providerId;
+            }
 
             // Add payer information if specified
             if (subscriptionData.payer) {
@@ -139,6 +144,7 @@ export const useSubscriptionsMutations = () => {
             subscriptionData: {
                 friendlyName?: string,
                 providerId: string,
+                providerKey?: string,
                 planId?: string,
                 priceId?: string,
                 recurrency: SubscriptionRecurrency,
@@ -181,7 +187,9 @@ export const useSubscriptionsMutations = () => {
 
             const payload: UpdateSubscriptionModel = {
                 friendlyName: subscriptionData.friendlyName,
+                // Keep providerId for transitional API typing. Prefer providerKey when provided by caller.
                 providerId: subscriptionData.providerId,
+                ...(subscriptionData.providerKey ? { providerKey: subscriptionData.providerKey } : {}),
                 recurrency: subscriptionData.recurrency as unknown as string,
                 customRecurrency: subscriptionData.customRecurrency,
                 startDate: subscriptionData.startDate,

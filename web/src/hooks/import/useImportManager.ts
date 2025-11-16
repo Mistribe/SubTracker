@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import type { UseMutationResult } from '@tanstack/react-query';
 
 export interface ImportStatus {
-  status: 'pending' | 'importing' | 'success' | 'error';
+  status: 'pending' | 'importing' | 'success' | 'error' | 'skipped';
   error?: string;
 }
 
@@ -11,6 +11,7 @@ export interface ImportProgress {
   completed: number;
   failed: number;
   inProgress: boolean;
+  skipped?: number;
 }
 
 export interface ParsedImportRecord<T> {
@@ -37,6 +38,7 @@ interface UseImportManagerReturn {
   progress: ImportProgress;
   isImporting: boolean;
   cancelImport: () => void;
+  resetImport: () => void;
 }
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -90,6 +92,7 @@ export function useImportManager<T>({
     completed: 0,
     failed: 0,
     inProgress: false,
+    skipped: 0,
   });
   const [isImporting, setIsImporting] = useState(false);
   const cancelledRef = useRef(false);
@@ -105,12 +108,13 @@ export function useImportManager<T>({
     });
   }, []);
 
-  const updateProgress = useCallback((completed: number, failed: number, total: number) => {
+  const updateProgress = useCallback((completed: number, failed: number, total: number, skipped: number = 0) => {
     setProgress({
       total,
       completed,
       failed,
       inProgress: completed + failed < total,
+      skipped,
     });
   }, []);
 
@@ -118,9 +122,9 @@ export function useImportManager<T>({
     index: number,
     record: ParsedImportRecord<T>,
     retryCount = 0
-  ): Promise<boolean> => {
+  ): Promise<'success' | 'skipped' | 'error'> => {
     if (cancelledRef.current) {
-      return false;
+      return 'error';
     }
 
     // Skip invalid records
@@ -129,7 +133,7 @@ export function useImportManager<T>({
         status: 'error',
         error: 'Record has validation errors',
       });
-      return false;
+      return 'error';
     }
 
     // Check if we need to wait for rate limit reset
@@ -165,7 +169,7 @@ export function useImportManager<T>({
       }
       
       updateStatus(index, { status: 'success' });
-      return true;
+      return 'success';
     } catch (error: any) {
       // Determine error type and create appropriate message
       let errorMessage = 'Failed to import record';
@@ -206,6 +210,9 @@ export function useImportManager<T>({
           } else {
             errorMessage = `Conflict: ${message}`;
           }
+          // Mark as skipped (already exists) and do not retry
+          updateStatus(index, { status: 'skipped', error: errorMessage });
+          return 'skipped';
         } else if (status === 429) {
           isRateLimitError = true;
           errorMessage = 'Rate limit exceeded: Too many requests';
@@ -258,7 +265,7 @@ export function useImportManager<T>({
         status: 'error',
         error: errorMessage,
       });
-      return false;
+      return 'error';
     }
   };
 
@@ -283,8 +290,9 @@ export function useImportManager<T>({
       const total = indices.length;
       let completed = 0;
       let failed = 0;
+      let skipped = 0;
 
-      updateProgress(completed, failed, total);
+      updateProgress(completed, failed, total, skipped);
 
       // Process records sequentially
       for (const index of indices) {
@@ -296,19 +304,22 @@ export function useImportManager<T>({
         const record = records[index];
         if (!record) {
           failed++;
-          updateProgress(completed, failed, total);
+          updateProgress(completed, failed, total, skipped);
           continue;
         }
 
-        const success = await importSingleRecord(index, record);
+        const result = await importSingleRecord(index, record);
 
-        if (success) {
+        if (result === 'success') {
           completed++;
+        } else if (result === 'skipped') {
+          completed++;
+          skipped++;
         } else {
           failed++;
         }
 
-        updateProgress(completed, failed, total);
+        updateProgress(completed, failed, total, skipped);
 
         // Add delay between calls (except for the last one)
         // Use adaptive delay if enabled
@@ -319,7 +330,7 @@ export function useImportManager<T>({
       }
 
       setIsImporting(false);
-      updateProgress(completed, failed, total);
+      updateProgress(completed, failed, total, skipped);
       
       // Reset adaptive delay tracking after import completes
       if (enableAdaptiveDelay) {
@@ -344,6 +355,17 @@ export function useImportManager<T>({
   const cancelImport = useCallback(() => {
     cancelledRef.current = true;
   }, []);
+
+  // Reset all import-related state (useful when the records list changes)
+  const resetImport = useCallback(() => {
+    cancelledRef.current = false;
+    setImportStatus(new Map());
+    setProgress({ total: 0, completed: 0, failed: 0, inProgress: false, skipped: 0 });
+    setIsImporting(false);
+    responseTimesRef.current = [];
+    currentDelayRef.current = delayBetweenCalls;
+    rateLimitResetRef.current = null;
+  }, [delayBetweenCalls]);
 
   const retryRecord = useCallback(
     async (index: number) => {
@@ -383,5 +405,6 @@ export function useImportManager<T>({
     progress,
     isImporting,
     cancelImport,
+    resetImport,
   };
 }

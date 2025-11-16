@@ -108,6 +108,7 @@ export default function ImportProvidersPage() {
     progress,
     isImporting,
     cancelImport,
+    resetImport,
   } = useImportManager({
     records: parsedRecords,
     createMutation: wrappedMutation,
@@ -209,13 +210,17 @@ export default function ImportProvidersPage() {
     await importRecords(validSelectedIndices);
 
     // Show completion message
-    const successCount = progress.completed - progress.failed;
+    const skipped = progress.skipped ?? 0;
+    const successCount = Math.max(0, progress.completed - progress.failed - skipped);
     if (progress.failed > 0) {
-      toast.warning('Import completed with errors', {
-        description: `${successCount} succeeded, ${progress.failed} failed`,
+      toast.warning('Import completed with issues', {
+        description: `${successCount} created, ${skipped} already existed, ${progress.failed} failed`,
       });
     } else {
-      toast.success(`Successfully imported ${successCount} providers`);
+      const baseMsg = skipped > 0
+        ? `${successCount} created, ${skipped} already existed`
+        : `${successCount} providers imported`;
+      toast.success(`Import completed: ${baseMsg}`);
       setHasUnsavedChanges(false);
     }
   }, [selectedRecords, parsedRecords, importRecords, progress]);
@@ -234,13 +239,17 @@ export default function ImportProvidersPage() {
     await importRecords(validIndices);
 
     // Show completion message
-    const successCount = progress.completed - progress.failed;
+    const skipped = progress.skipped ?? 0;
+    const successCount = Math.max(0, progress.completed - progress.failed - skipped);
     if (progress.failed > 0) {
-      toast.warning('Import completed with errors', {
-        description: `${successCount} succeeded, ${progress.failed} failed`,
+      toast.warning('Import completed with issues', {
+        description: `${successCount} created, ${skipped} already existed, ${progress.failed} failed`,
       });
     } else {
-      toast.success(`Successfully imported ${successCount} providers`);
+      const baseMsg = skipped > 0
+        ? `${successCount} created, ${skipped} already existed`
+        : `${successCount} providers imported`;
+      toast.success(`Import completed: ${baseMsg}`);
       setHasUnsavedChanges(false);
     }
   }, [parsedRecords, importRecords, progress]);
@@ -344,6 +353,14 @@ export default function ImportProvidersPage() {
             isImporting={isImporting}
             progress={progress}
             onRetryRecord={retryRecord}
+            onRemoveSelected={(indices) => {
+              if (isImporting) return;
+              const removeSet = new Set(indices);
+              resetImport();
+              setParsedRecords(prev => prev.filter((_, idx) => !removeSet.has(idx)));
+              setSelectedRecords(new Set());
+              setHasUnsavedChanges(true);
+            }}
           />
 
           {/* Action buttons at bottom */}
