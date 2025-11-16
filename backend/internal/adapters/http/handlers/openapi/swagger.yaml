@@ -653,8 +653,6 @@ components:
           example: "2023-01-15T10:30:00Z"
           format: date-time
           type: string
-        custom_price:
-          $ref: '#/components/schemas/dto.AmountModel'
         custom_recurrency:
           description: '@Description CustomRecurrency recurrency interval in days
             (required when recurrency is custom)'
@@ -707,7 +705,7 @@ components:
           example: 123e4567-e89b-12d3-a456-426614174003
           type: string
         price:
-          $ref: '#/components/schemas/dto.SubscriptionPriceModel'
+          $ref: '#/components/schemas/dto.AmountModel'
         price_id:
           description: '@Description LabelID of the pricing tier for this subscription'
           example: 123e4567-e89b-12d3-a456-426614174004
@@ -792,17 +790,6 @@ components:
       - etag
       - family_id
       - type
-      type: object
-    dto.SubscriptionPriceModel:
-      description: '@Description Price details for this subscription'
-      properties:
-        monthly:
-          $ref: '#/components/schemas/dto.AmountModel'
-        yearly:
-          $ref: '#/components/schemas/dto.AmountModel'
-      required:
-      - monthly
-      - yearly
       type: object
     dto.SubscriptionSummaryResponse:
       properties:
