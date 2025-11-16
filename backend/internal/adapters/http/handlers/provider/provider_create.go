@@ -30,9 +30,7 @@ func NewCreateEndpoint(
 	}
 }
 
-func createProviderRequestToCommand(
-	r dto.CreateProviderRequest,
-	userId types.UserID) (command.CreateProviderCommand, error) {
+func createProviderRequestToCommand(r dto.CreateProviderRequest) (command.CreateProviderCommand, error) {
 	providerID, err := types.ParseProviderIDOrNil(r.Id)
 	if err != nil {
 		return command.CreateProviderCommand{}, err
@@ -42,15 +40,9 @@ func createProviderRequestToCommand(
 		return command.CreateProviderCommand{}, err
 	}
 
-	var owner types.Owner
-	if r.Owner == nil {
-		owner = types.NewPersonalOwner(userId)
-	} else {
-		owner, err = r.Owner.Owner(userId)
-		if err != nil {
-			return command.CreateProviderCommand{}, err
-		}
-
+	owner, err := types.TryParseOwnerType(r.Owner)
+	if err != nil {
+		return command.CreateProviderCommand{}, err
 	}
 
 	return command.CreateProviderCommand{
@@ -86,9 +78,7 @@ func (e CreateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	connectedAccount := e.authentication.MustGetConnectedAccount(c)
-
-	cmd, err := createProviderRequestToCommand(model, connectedAccount.UserID())
+	cmd, err := createProviderRequestToCommand(model)
 	if err != nil {
 		FromError(c, err)
 		return

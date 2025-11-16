@@ -9,6 +9,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/internal/usecase/shared"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -21,7 +22,7 @@ type CreateProviderCommand struct {
 	Url            *string
 	PricingPageUrl *string
 	Labels         []types.LabelID
-	Owner          types.Owner
+	Owner          types.OwnerType
 	CreatedAt      option.Option[time.Time]
 }
 
@@ -30,18 +31,21 @@ type CreateProviderCommandHandler struct {
 	labelRepository    ports.LabelRepository
 	authorization      ports.Authorization
 	entitlement        ports.EntitlementResolver
+	ownerFactory       shared.OwnerFactory
 }
 
 func NewCreateProviderCommandHandler(
 	providerRepository ports.ProviderRepository,
 	labelRepository ports.LabelRepository,
 	authorization ports.Authorization,
+	ownerFactory shared.OwnerFactory,
 	entitlement ports.EntitlementResolver) *CreateProviderCommandHandler {
 	return &CreateProviderCommandHandler{
 		providerRepository: providerRepository,
 		labelRepository:    labelRepository,
 		authorization:      authorization,
 		entitlement:        entitlement,
+		ownerFactory:       ownerFactory,
 	}
 }
 
@@ -71,6 +75,10 @@ func (h *CreateProviderCommandHandler) Handle(
 	if err := ensureLabelExists(ctx, h.labelRepository, cmd.Labels); err != nil {
 		return result.Fail[provider.Provider](err)
 	}
+	owner, err := h.ownerFactory.Resolve(ctx, cmd.Owner)
+	if err != nil {
+		return result.Fail[provider.Provider](err)
+	}
 
 	prov := provider.NewProvider(
 		providerID,
@@ -81,7 +89,7 @@ func (h *CreateProviderCommandHandler) Handle(
 		cmd.Url,
 		cmd.PricingPageUrl,
 		cmd.Labels,
-		cmd.Owner,
+		owner,
 		createdAt,
 		createdAt,
 	)

@@ -9,6 +9,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/internal/usecase/shared"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -17,7 +18,7 @@ type CreateLabelCommand struct {
 	LabelID   option.Option[types.LabelID]
 	Name      string
 	Color     string
-	Owner     types.Owner
+	Owner     types.OwnerType
 	CreatedAt option.Option[time.Time]
 }
 
@@ -26,18 +27,21 @@ type CreateLabelCommandHandler struct {
 	familyRepository ports.FamilyRepository
 	authorization    ports.Authorization
 	entitlement      ports.EntitlementResolver
+	ownerFactory     shared.OwnerFactory
 }
 
 func NewCreateLabelCommandHandler(
 	labelRepository ports.LabelRepository,
 	familyRepository ports.FamilyRepository,
 	authorization ports.Authorization,
+	ownerFactory shared.OwnerFactory,
 	entitlement ports.EntitlementResolver) *CreateLabelCommandHandler {
 	return &CreateLabelCommandHandler{
 		labelRepository:  labelRepository,
 		familyRepository: familyRepository,
 		authorization:    authorization,
 		entitlement:      entitlement,
+		ownerFactory:     ownerFactory,
 	}
 }
 
@@ -62,8 +66,13 @@ func (h CreateLabelCommandHandler) Handle(ctx context.Context, command CreateLab
 		createdAt = time.Now()
 	}
 
+	owner, err := h.ownerFactory.Resolve(ctx, command.Owner)
+	if err != nil {
+		return result.Fail[label.Label](err)
+	}
+
 	newLabel := label.NewLabel(labelID,
-		command.Owner,
+		owner,
 		command.Name,
 		nil,
 		command.Color,
