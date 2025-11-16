@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/adapters/http/export"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/domain/types"
@@ -15,6 +16,7 @@ import (
 	"github.com/mistribe/subtracker/internal/usecase/subscription/query"
 	. "github.com/mistribe/subtracker/pkg/ginx"
 	"github.com/mistribe/subtracker/pkg/langext/result"
+	"github.com/mistribe/subtracker/pkg/x"
 )
 
 type ExportEndpoint struct {
@@ -110,7 +112,7 @@ func (e ExportEndpoint) Handle(c *gin.Context) {
 		}
 
 		// Transform domain subscriptions to export models
-		exportModels := make([]export.SubscriptionExportModel, len(subscriptions))
+		exportModels := make([]dto.SubscriptionExportModel, len(subscriptions))
 		for i, sub := range subscriptions {
 			exportModels[i] = transformSubscriptionToExportModel(sub, labelIDToName)
 		}
@@ -165,7 +167,7 @@ func (e ExportEndpoint) Middlewares() []gin.HandlerFunc {
 
 // transformSubscriptionToExportModel converts a domain subscription to an export model
 func transformSubscriptionToExportModel(sub subscription.Subscription,
-	labelIDToName map[types.LabelID]string) export.SubscriptionExportModel {
+	labelIDToName map[types.LabelID]string) dto.SubscriptionExportModel {
 	// Resolve label IDs to names
 	labelNames := make([]string, 0)
 	for labelRef := range sub.Labels().It() {
@@ -206,7 +208,21 @@ func transformSubscriptionToExportModel(sub subscription.Subscription,
 		freeTrialEndDate = &endFormatted
 	}
 
-	return export.SubscriptionExportModel{
+	var payer *string
+	var payerMemberId *string
+	if sub.Payer() != nil {
+		payer = x.P(sub.Payer().Type().String())
+		if sub.Payer().Type() == subscription.FamilyMemberPayer {
+			payerMemberId = x.P(sub.Payer().MemberId().String())
+		}
+	}
+
+	var familyUsers []string
+	for user := range sub.FamilyUsers().It() {
+		familyUsers = append(familyUsers, user.String())
+	}
+
+	return dto.SubscriptionExportModel{
 		Id:                 sub.Id().String(),
 		ProviderId:         sub.ProviderId().String(),
 		FriendlyName:       sub.FriendlyName(),
@@ -219,6 +235,9 @@ func transformSubscriptionToExportModel(sub subscription.Subscription,
 		OwnerType:          ownerType,
 		FreeTrialStartDate: freeTrialStartDate,
 		FreeTrialEndDate:   freeTrialEndDate,
+		Payer:              payer,
+		PayerMemberId:      payerMemberId,
+		FamilyUsers:        familyUsers,
 		Labels:             labelNames,
 	}
 }

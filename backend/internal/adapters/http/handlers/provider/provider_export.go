@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/adapters/http/export"
 	"github.com/mistribe/subtracker/internal/domain/provider"
 	"github.com/mistribe/subtracker/internal/domain/types"
@@ -111,7 +112,7 @@ func (e ExportEndpoint) Handle(c *gin.Context) {
 	}
 
 	// Transform domain providers to export models
-	exportModels := make([]export.ProviderExportModel, len(providers))
+	exportModels := make([]dto.ProviderExportModel, len(providers))
 	for i, prov := range providers {
 		exportModels[i] = transformProviderToExportModel(prov, labelIDToName)
 	}
@@ -154,7 +155,8 @@ func (e ExportEndpoint) Middlewares() []gin.HandlerFunc {
 }
 
 // transformProviderToExportModel converts a domain provider to an export model
-func transformProviderToExportModel(prov provider.Provider, labelIDToName map[types.LabelID]string) export.ProviderExportModel {
+func transformProviderToExportModel(prov provider.Provider,
+	labelIDToName map[types.LabelID]string) dto.ProviderExportModel {
 	// Resolve label IDs to names
 	labelNames := make([]string, 0)
 	for labelID := range prov.Labels().It() {
@@ -163,7 +165,7 @@ func transformProviderToExportModel(prov provider.Provider, labelIDToName map[ty
 		}
 	}
 
-	return export.ProviderExportModel{
+	return dto.ProviderExportModel{
 		Id:             prov.Id().String(),
 		Name:           prov.Name(),
 		Description:    prov.Description(),

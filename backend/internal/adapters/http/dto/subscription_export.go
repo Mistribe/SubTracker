@@ -1,24 +1,4 @@
-package export
-
-// LabelExportModel represents a label for export purposes
-type LabelExportModel struct {
-	Id            string  `json:"id" csv:"id" yaml:"id"`
-	Name          string  `json:"name" csv:"name" yaml:"name"`
-	Color         string  `json:"color" csv:"color" yaml:"color"`
-	OwnerType     string  `json:"ownerType" csv:"ownerType" yaml:"ownerType"`
-	OwnerFamilyId *string `json:"ownerFamilyId,omitempty" csv:"ownerFamilyId" yaml:"ownerFamilyId,omitempty"`
-}
-
-// ProviderExportModel represents a provider for export purposes
-type ProviderExportModel struct {
-	Id             string   `json:"id" csv:"id" yaml:"id"`
-	Name           string   `json:"name" csv:"name" yaml:"name"`
-	Description    *string  `json:"description,omitempty" csv:"description" yaml:"description,omitempty"`
-	Url            *string  `json:"url,omitempty" csv:"url" yaml:"url,omitempty"`
-	IconUrl        *string  `json:"iconUrl,omitempty" csv:"iconUrl" yaml:"iconUrl,omitempty"`
-	PricingPageUrl *string  `json:"pricingPageUrl,omitempty" csv:"pricingPageUrl" yaml:"pricingPageUrl,omitempty"`
-	Labels         []string `json:"labels" csv:"labels" yaml:"labels"`
-}
+package dto
 
 // SubscriptionExportModel represents a subscription for export purposes
 type SubscriptionExportModel struct {
@@ -34,5 +14,8 @@ type SubscriptionExportModel struct {
 	OwnerType          string   `json:"ownerType" csv:"ownerType" yaml:"ownerType"`
 	FreeTrialStartDate *string  `json:"freeTrialStartDate,omitempty" csv:"freeTrialStartDate" yaml:"freeTrialStartDate,omitempty"`
 	FreeTrialEndDate   *string  `json:"freeTrialEndDate,omitempty" csv:"freeTrialEndDate" yaml:"freeTrialEndDate,omitempty"`
+	Payer              *string  `json:"payer,omitempty" csv:"payer" yaml:"payer,omitempty" enums:"family,family_member"`
+	PayerMemberId      *string  `json:"payerMemberId,omitempty" csv:"payerMemberId" yaml:"payerMemberId,omitempty"`
+	FamilyUsers        []string `json:"familyUsers" csv:"familyUsers" yaml:"familyUsers"`
 	Labels             []string `json:"labels" csv:"labels" yaml:"labels"`
 }

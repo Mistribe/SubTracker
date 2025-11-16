@@ -671,6 +671,16 @@ components:
             to prevent conflicting updates'
           example: W/"123456789"
           type: string
+        family_users:
+          description: '@Description List of family member IDs who use this service
+            (for shared subscriptions)'
+          example:
+          - 123e4567-e89b-12d3-a456-426614174005
+          - 123e4567-e89b-12d3-a456-426614174006
+          items:
+            type: string
+          type: array
+          uniqueItems: false
         free_trial:
           $ref: '#/components/schemas/dto.SubscriptionFreeTrialModel'
         friendly_name:
@@ -699,17 +709,8 @@ components:
           $ref: '#/components/schemas/dto.OwnerModel'
         payer:
           $ref: '#/components/schemas/dto.SubscriptionPayerModel'
-        plan_id:
-          description: '@Description LabelID of the specific plan being subscribed
-            to'
-          example: 123e4567-e89b-12d3-a456-426614174003
-          type: string
         price:
           $ref: '#/components/schemas/dto.AmountModel'
-        price_id:
-          description: '@Description LabelID of the pricing tier for this subscription'
-          example: 123e4567-e89b-12d3-a456-426614174004
-          type: string
         provider_id:
           description: '@Description LabelID of the service provider offering this
             subscription'
@@ -728,16 +729,6 @@ components:
           - custom
           example: monthly
           type: string
-        service_users:
-          description: '@Description List of family member IDs who use this service
-            (for shared subscriptions)'
-          example:
-          - 123e4567-e89b-12d3-a456-426614174005
-          - 123e4567-e89b-12d3-a456-426614174006
-          items:
-            type: string
-          type: array
-          uniqueItems: false
         start_date:
           description: '@Description ISO 8601 timestamp when the subscription becomes
             active'
@@ -770,10 +761,6 @@ components:
             to prevent conflicting updates'
           example: W/"123456789"
           type: string
-        family_id:
-          description: '@Description LabelID of the family associated with this payer'
-          example: 123e4567-e89b-12d3-a456-426614174000
-          type: string
         memberId:
           description: '@Description LabelID of the specific family member who pays
             (required when type is family_member)'
@@ -788,7 +775,6 @@ components:
           type: string
       required:
       - etag
-      - family_id
       - type
       type: object
     dto.SubscriptionSummaryResponse:

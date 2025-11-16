@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/adapters/http/export"
 	"github.com/mistribe/subtracker/internal/domain/label"
 	"github.com/mistribe/subtracker/internal/domain/types"
@@ -82,7 +83,7 @@ func (e ExportEndpoint) Handle(c *gin.Context) {
 	labels := paginatedResult.Data()
 
 	// Transform domain labels to export models
-	exportModels := make([]export.LabelExportModel, len(labels))
+	exportModels := make([]dto.LabelExportModel, len(labels))
 	for i, lbl := range labels {
 		exportModels[i] = transformLabelToExportModel(lbl)
 	}
@@ -125,7 +126,7 @@ func (e ExportEndpoint) Middlewares() []gin.HandlerFunc {
 }
 
 // transformLabelToExportModel converts a domain label to an export model
-func transformLabelToExportModel(lbl label.Label) export.LabelExportModel {
+func transformLabelToExportModel(lbl label.Label) dto.LabelExportModel {
 	var ownerType string
 	var ownerFamilyId *string
 
@@ -140,7 +141,7 @@ func transformLabelToExportModel(lbl label.Label) export.LabelExportModel {
 		ownerType = "unknown"
 	}
 
-	return export.LabelExportModel{
+	return dto.LabelExportModel{
 		Id:            lbl.Id().String(),
 		Name:          lbl.Name(),
 		Color:         lbl.Color(),

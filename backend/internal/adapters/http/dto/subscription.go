@@ -49,8 +49,6 @@ func NewSubscriptionCustomPrice(model AmountModel) (subscription.Price, error) {
 type SubscriptionPayerModel struct {
 	// @Description Type of payer (family or family member)
 	Type string `json:"type" binding:"required" example:"family_member" enums:"family,family_member"`
-	// @Description LabelID of the family associated with this payer
-	FamilyId string `json:"family_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
 	// @Description LabelID of the specific family member who pays (required when type is family_member)
 	MemberId *string `json:"memberId,omitempty" example:"123e4567-e89b-12d3-a456-426614174001"`
 	// @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
@@ -77,16 +75,12 @@ type SubscriptionModel struct {
 	FreeTrial *SubscriptionFreeTrialModel `json:"free_trial,omitempty"`
 	// @Description LabelID of the service provider offering this subscription
 	ProviderId string `json:"provider_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174002"`
-	// @Description LabelID of the specific plan being subscribed to
-	PlanId *string `json:"plan_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174003"`
-	// @Description LabelID of the pricing tier for this subscription
-	PriceId *string `json:"price_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174004"`
 	// @Description Custom price for this subscription
 	Price *AmountModel `json:"price,omitempty"`
 	// @Description Ownership information specifying whether this subscription belongs to a user or family
 	Owner OwnerModel `json:"owner" binding:"required"`
 	// @Description List of family member IDs who use this service (for shared subscriptions)
-	ServiceUsers []string `json:"service_users,omitempty" example:"123e4567-e89b-12d3-a456-426614174005,123e4567-e89b-12d3-a456-426614174006"`
+	FamilyUsers []string `json:"family_users,omitempty" example:"123e4567-e89b-12d3-a456-426614174005,123e4567-e89b-12d3-a456-426614174006"`
 	// @Description ISO 8601 timestamp when the subscription becomes active
 	StartDate time.Time `json:"start_date" binding:"required" format:"date-time" example:"2023-01-01T00:00:00Z"`
 	// @Description ISO 8601 timestamp when the subscription expires (null for ongoing subscriptions)
@@ -111,9 +105,8 @@ type SubscriptionModel struct {
 
 func newSubscriptionPayerModel(source subscription.Payer) SubscriptionPayerModel {
 	model := SubscriptionPayerModel{
-		Type:     source.Type().String(),
-		FamilyId: source.FamilyId().String(),
-		Etag:     source.ETag(),
+		Type: source.Type().String(),
+		Etag: source.ETag(),
 	}
 
 	if source.Type() == subscription.FamilyMemberPayer {
@@ -149,7 +142,7 @@ func NewSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 		FriendlyName:     source.FriendlyName(),
 		FreeTrial:        newSubscriptionFreeTrialModel(source.FreeTrial()),
 		ProviderId:       source.ProviderId().String(),
-		ServiceUsers:     serviceUsers,
+		FamilyUsers:      serviceUsers,
 		LabelRefs:        labelRefs,
 		Owner:            NewOwnerModel(source.Owner()),
 		StartDate:        source.StartDate(),
