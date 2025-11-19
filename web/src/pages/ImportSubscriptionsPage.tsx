@@ -17,6 +17,8 @@ import {useAllProvidersQuery} from '@/hooks/providers/useAllProvidersQuery';
 import {toast} from 'sonner';
 import type {ImportColumnDef, ParsedImportRecord} from '@/types/import';
 import type {DtoCreateSubscriptionRequest} from '@/api';
+import {useProvidersByIds} from "@/hooks/providers/useProvidersByIds.ts";
+import {useProviderQuery} from "@/hooks/providers/useProviderQuery.ts";
 
 const ACCEPTED_FORMATS = ['.csv', '.json', '.yaml', '.yml'];
 
@@ -28,9 +30,8 @@ function ProviderInfoCell({providerKey}: { providerKey?: string | null }) {
         return <span className="text-sm text-muted-foreground">-</span>;
     }
 
-    const { data, isLoading } = useAllProvidersQuery({ search: providerKey });
-    const providers = data?.pages.flatMap(p => p.providers) ?? [];
-    const provider = providers.find(p => p.key === providerKey);
+    const {data, isLoading} = useProviderQuery(providerKey)
+    const provider = data;
 
     if (isLoading && !provider) {
         return (
