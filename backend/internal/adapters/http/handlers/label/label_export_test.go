@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/adapters/http/export"
 	"github.com/mistribe/subtracker/internal/adapters/http/handlers/label"
 	domainLabel "github.com/mistribe/subtracker/internal/domain/label"
@@ -27,10 +28,12 @@ import (
 
 // mockQueryHandler is a mock implementation of the query handler
 type mockQueryHandler struct {
-	handleFunc func(ctx context.Context, q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]]
+	handleFunc func(ctx context.Context,
+		q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]]
 }
 
-func (m *mockQueryHandler) Handle(ctx context.Context, q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
+func (m *mockQueryHandler) Handle(ctx context.Context,
+	q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
 	return m.handleFunc(ctx, q)
 }
 
@@ -40,7 +43,8 @@ func TestExportEndpoint_CSV_Format(t *testing.T) {
 
 	// Create mock handler
 	mockHandler := &mockQueryHandler{
-		handleFunc: func(ctx context.Context, q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
+		handleFunc: func(ctx context.Context,
+			q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
 			return result.Success(shared.NewPaginatedResponse(labels, int64(len(labels))))
 		},
 	}
@@ -94,7 +98,8 @@ func TestExportEndpoint_JSON_Format(t *testing.T) {
 
 	// Create mock handler
 	mockHandler := &mockQueryHandler{
-		handleFunc: func(ctx context.Context, q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
+		handleFunc: func(ctx context.Context,
+			q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
 			return result.Success(shared.NewPaginatedResponse(labels, int64(len(labels))))
 		},
 	}
@@ -119,7 +124,7 @@ func TestExportEndpoint_JSON_Format(t *testing.T) {
 	assert.Contains(t, w.Header().Get("Content-Disposition"), ".json")
 
 	// Verify JSON is valid
-	var exportModels []export.LabelExportModel
+	var exportModels []dto.LabelExportModel
 	err := json.Unmarshal(w.Body.Bytes(), &exportModels)
 	require.NoError(t, err)
 	require.Len(t, exportModels, 2)
@@ -146,7 +151,8 @@ func TestExportEndpoint_YAML_Format(t *testing.T) {
 
 	// Create mock handler
 	mockHandler := &mockQueryHandler{
-		handleFunc: func(ctx context.Context, q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
+		handleFunc: func(ctx context.Context,
+			q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
 			return result.Success(shared.NewPaginatedResponse(labels, int64(len(labels))))
 		},
 	}
@@ -171,7 +177,7 @@ func TestExportEndpoint_YAML_Format(t *testing.T) {
 	assert.Contains(t, w.Header().Get("Content-Disposition"), ".yaml")
 
 	// Verify YAML is valid
-	var exportModels []export.LabelExportModel
+	var exportModels []dto.LabelExportModel
 	err := yaml.Unmarshal(w.Body.Bytes(), &exportModels)
 	require.NoError(t, err)
 	require.Len(t, exportModels, 2)
@@ -190,7 +196,8 @@ func TestExportEndpoint_YAML_Format(t *testing.T) {
 func TestExportEndpoint_InvalidFormat(t *testing.T) {
 	// Create mock handler (won't be called)
 	mockHandler := &mockQueryHandler{
-		handleFunc: func(ctx context.Context, q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
+		handleFunc: func(ctx context.Context,
+			q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
 			t.Fatal("handler should not be called for invalid format")
 			return result.Fail[shared.PaginatedResponse[domainLabel.Label]](nil)
 		},
@@ -217,7 +224,8 @@ func TestExportEndpoint_InvalidFormat(t *testing.T) {
 func TestExportEndpoint_EmptyResultSet(t *testing.T) {
 	// Create mock handler returning empty results
 	mockHandler := &mockQueryHandler{
-		handleFunc: func(ctx context.Context, q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
+		handleFunc: func(ctx context.Context,
+			q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
 			return result.Success(shared.NewPaginatedResponse([]domainLabel.Label{}, 0))
 		},
 	}
@@ -251,7 +259,7 @@ func TestExportEndpoint_EmptyResultSet(t *testing.T) {
 		endpoint.Handle(c)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		var exportModels []export.LabelExportModel
+		var exportModels []dto.LabelExportModel
 		err := json.Unmarshal(w.Body.Bytes(), &exportModels)
 		require.NoError(t, err)
 		assert.Len(t, exportModels, 0)
@@ -266,7 +274,7 @@ func TestExportEndpoint_EmptyResultSet(t *testing.T) {
 		endpoint.Handle(c)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		var exportModels []export.LabelExportModel
+		var exportModels []dto.LabelExportModel
 		err := yaml.Unmarshal(w.Body.Bytes(), &exportModels)
 		require.NoError(t, err)
 		assert.Len(t, exportModels, 0)
@@ -279,7 +287,8 @@ func TestExportEndpoint_ContentDispositionTimestamp(t *testing.T) {
 
 	// Create mock handler
 	mockHandler := &mockQueryHandler{
-		handleFunc: func(ctx context.Context, q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
+		handleFunc: func(ctx context.Context,
+			q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
 			return result.Success(shared.NewPaginatedResponse(labels, int64(len(labels))))
 		},
 	}
@@ -317,7 +326,8 @@ func TestExportEndpoint_DefaultFormat(t *testing.T) {
 
 	// Create mock handler
 	mockHandler := &mockQueryHandler{
-		handleFunc: func(ctx context.Context, q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
+		handleFunc: func(ctx context.Context,
+			q query.FindAllQuery) result.Result[shared.PaginatedResponse[domainLabel.Label]] {
 			return result.Success(shared.NewPaginatedResponse(labels, int64(len(labels))))
 		},
 	}
@@ -341,7 +351,7 @@ func TestExportEndpoint_DefaultFormat(t *testing.T) {
 	assert.Contains(t, w.Header().Get("Content-Disposition"), ".json")
 
 	// Verify JSON is valid
-	var exportModels []export.LabelExportModel
+	var exportModels []dto.LabelExportModel
 	err := json.Unmarshal(w.Body.Bytes(), &exportModels)
 	require.NoError(t, err)
 	require.Len(t, exportModels, 2)

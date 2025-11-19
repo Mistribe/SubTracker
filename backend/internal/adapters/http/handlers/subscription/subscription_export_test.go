@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
+	"github.com/mistribe/subtracker/internal/adapters/http/dto"
 	"github.com/mistribe/subtracker/internal/adapters/http/export"
 	"github.com/mistribe/subtracker/internal/adapters/http/handlers/subscription"
 	"github.com/mistribe/subtracker/internal/domain/currency"
@@ -59,7 +60,7 @@ func TestExportEndpoint_CSV_Format(t *testing.T) {
 	}
 
 	// Create mock label resolver
-	mockResolver := &mockLabelResolver{
+	labelResolverMock := &mockLabelResolver{
 		resolveFunc: func(ctx context.Context, labelIds []types.LabelID) ([]string, error) {
 			names := make([]string, len(labelIds))
 			for i, id := range labelIds {
@@ -75,7 +76,7 @@ func TestExportEndpoint_CSV_Format(t *testing.T) {
 
 	// Create endpoint
 	exportService := export.NewExportService()
-	endpoint := subscription.NewExportEndpoint(mockHandler, mockResolver, exportService)
+	endpoint := subscription.NewExportEndpoint(mockHandler, labelResolverMock, exportService)
 
 	// Create test request
 	gin.SetMode(gin.TestMode)
@@ -316,7 +317,7 @@ func TestExportEndpoint_EmptyResultSet(t *testing.T) {
 		endpoint.Handle(c)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		var exportModels []export.SubscriptionExportModel
+		var exportModels []dto.SubscriptionExportModel
 		err := json.Unmarshal(w.Body.Bytes(), &exportModels)
 		require.NoError(t, err)
 		assert.Len(t, exportModels, 0)
@@ -331,7 +332,7 @@ func TestExportEndpoint_EmptyResultSet(t *testing.T) {
 		endpoint.Handle(c)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		var exportModels []export.SubscriptionExportModel
+		var exportModels []dto.SubscriptionExportModel
 		err := yaml.Unmarshal(w.Body.Bytes(), &exportModels)
 		require.NoError(t, err)
 		assert.Len(t, exportModels, 0)
@@ -425,7 +426,7 @@ func TestExportEndpoint_FreeTrialDates(t *testing.T) {
 	// Verify response
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	var exportModels []export.SubscriptionExportModel
+	var exportModels []dto.SubscriptionExportModel
 	err := json.Unmarshal(w.Body.Bytes(), &exportModels)
 	require.NoError(t, err)
 	require.Len(t, exportModels, 2)
@@ -485,7 +486,7 @@ func TestExportEndpoint_LabelsAreNames(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	// Verify JSON contains label names, not IDs
-	var exportModels []export.SubscriptionExportModel
+	var exportModels []dto.SubscriptionExportModel
 	err := json.Unmarshal(w.Body.Bytes(), &exportModels)
 	require.NoError(t, err)
 	require.Len(t, exportModels, 2)

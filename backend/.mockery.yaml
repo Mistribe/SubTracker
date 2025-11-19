@@ -9,6 +9,12 @@ pkgname: "{{.SrcPackageName}}"
 recursive: false
 template: testify
 packages:
+  github.com/mistribe/subtracker/internal/adapters/http/export:
+    config:
+      dir: ./internal/adapters/http/export
+    interfaces:
+      LabelResolver:
+      ProviderResolver:
   github.com/mistribe/subtracker/internal/domain/account:
     config:
       dir: ./internal/domain/account
