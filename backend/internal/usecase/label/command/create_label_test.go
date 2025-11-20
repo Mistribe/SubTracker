@@ -14,6 +14,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/label/command"
+	"github.com/mistribe/subtracker/internal/usecase/shared"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 )
 
@@ -29,23 +30,26 @@ func TestCreateLabel(t *testing.T) {
 		entitlementResolver := ports.NewMockEntitlementResolver(t)
 
 		labelID := types.NewLabelID()
+		owner := types.NewPersonalOwner(userId)
+		ownerFactory := shared.NewMockOwnerFactory(t)
+		ownerFactory.EXPECT().Resolve(mock.Anything, types.PersonalOwnerType).Return(owner, nil)
 
 		authorization.EXPECT().Can(mock.Anything, auth.PermissionWrite).Return(permissionRequest)
 		permissionRequest.EXPECT().For(mock.Anything).Return(nil)
 		labelRepository.EXPECT().GetById(mock.Anything, labelID).Return(nil, nil)
-		entitlementResolver.EXPECT().CheckQuota(mock.Anything, billing.FeatureIdCustomLabelsCount, int64(1)).Return(true,
+		entitlementResolver.EXPECT().CheckQuota(mock.Anything, billing.FeatureIdCustomLabelsCount,
+			int64(1)).Return(true,
 			billing.EffectiveEntitlement{}, nil)
 		labelRepository.EXPECT().Save(mock.Anything, mock.Anything).Return(nil)
 
 		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization,
-			entitlementResolver)
+			ownerFactory, entitlementResolver)
 
-		owner := types.NewPersonalOwner(userId)
 		cmd := command.CreateLabelCommand{
 			LabelID:   option.Some(labelID),
 			Name:      "label test",
 			Color:     "#FFFFFF",
-			Owner:     owner,
+			Owner:     types.PersonalOwnerType,
 			CreatedAt: option.Some(time.Now()),
 		}
 
@@ -60,18 +64,20 @@ func TestCreateLabel(t *testing.T) {
 		authorization := ports.NewMockAuthorization(t)
 		permissionRequest := ports.NewMockPermissionRequest(t)
 		entitlementResolver := ports.NewMockEntitlementResolver(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
 
+		owner := types.NewPersonalOwner(userId)
+		ownerFactory.EXPECT().Resolve(mock.Anything, types.PersonalOwnerType).Return(owner, nil)
 		authorization.EXPECT().Can(mock.Anything, auth.PermissionWrite).Return(permissionRequest)
 		permissionRequest.EXPECT().For(mock.Anything).Return(auth.ErrUnauthorized)
 
 		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization,
-			entitlementResolver)
+			ownerFactory, entitlementResolver)
 
-		owner := types.NewPersonalOwner(userId)
 		cmd := command.CreateLabelCommand{
 			Name:      "family label test",
 			Color:     "#000000",
-			Owner:     owner,
+			Owner:     types.PersonalOwnerType,
 			CreatedAt: option.Some(time.Now()),
 		}
 
@@ -87,6 +93,8 @@ func TestCreateLabel(t *testing.T) {
 		entitlementResolver := ports.NewMockEntitlementResolver(t)
 
 		owner := types.NewPersonalOwner(userId)
+		ownerFactory := shared.NewMockOwnerFactory(t)
+		ownerFactory.EXPECT().Resolve(mock.Anything, owner.Type()).Return(owner, nil).Maybe()
 		labelID := types.NewLabelID()
 		existing := label.NewLabel(
 			labelID,
@@ -101,13 +109,13 @@ func TestCreateLabel(t *testing.T) {
 		labelRepository.EXPECT().GetById(mock.Anything, labelID).Return(existing, nil)
 
 		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization,
-			entitlementResolver)
+			ownerFactory, entitlementResolver)
 
 		cmd := command.CreateLabelCommand{
 			LabelID:   option.Some(labelID),
 			Name:      "label test 2",
 			Color:     "#FFFFFF",
-			Owner:     owner,
+			Owner:     types.PersonalOwnerType,
 			CreatedAt: option.Some(time.Now()),
 		}
 
@@ -121,6 +129,7 @@ func TestCreateLabel(t *testing.T) {
 		familyRepository := ports.NewMockFamilyRepository(t)
 		authorization := ports.NewMockAuthorization(t)
 		entitlementResolver := ports.NewMockEntitlementResolver(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
 
 		owner := types.NewPersonalOwner(userId)
 		labelID := types.NewLabelID()
@@ -137,13 +146,13 @@ func TestCreateLabel(t *testing.T) {
 		labelRepository.EXPECT().GetById(mock.Anything, labelID).Return(existing, nil)
 
 		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization,
-			entitlementResolver)
+			ownerFactory, entitlementResolver)
 
 		cmd := command.CreateLabelCommand{
 			LabelID:   option.Some(labelID),
 			Name:      existing.Name(),
 			Color:     existing.Color(),
-			Owner:     owner,
+			Owner:     types.PersonalOwnerType,
 			CreatedAt: option.Some(time.Now()),
 		}
 
@@ -158,17 +167,20 @@ func TestCreateLabel(t *testing.T) {
 		authorization := ports.NewMockAuthorization(t)
 		permissionRequest := ports.NewMockPermissionRequest(t)
 		entitlementResolver := ports.NewMockEntitlementResolver(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
 
+		owner := types.NewPersonalOwner(userId)
+		ownerFactory.EXPECT().Resolve(mock.Anything, types.PersonalOwnerType).Return(owner, nil)
 		authorization.EXPECT().Can(mock.Anything, auth.PermissionWrite).Return(permissionRequest)
 		permissionRequest.EXPECT().For(mock.Anything).Return(nil)
-		entitlementResolver.EXPECT().CheckQuota(mock.Anything, billing.FeatureIdCustomLabelsCount, int64(1)).Return(false,
+		entitlementResolver.EXPECT().CheckQuota(mock.Anything, billing.FeatureIdCustomLabelsCount,
+			int64(1)).Return(false,
 			billing.EffectiveEntitlement{}, nil)
 
 		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization,
-			entitlementResolver)
-		owner := types.NewPersonalOwner(userId)
+			ownerFactory, entitlementResolver)
 		cmd := command.CreateLabelCommand{
-			Name: "label test", Color: "#123456", Owner: owner, CreatedAt: option.Some(time.Now()),
+			Name: "label test", Color: "#123456", Owner: types.PersonalOwnerType, CreatedAt: option.Some(time.Now()),
 		}
 		res := handler.Handle(ctx, cmd)
 		assert.True(t, res.IsFaulted())
@@ -181,17 +193,20 @@ func TestCreateLabel(t *testing.T) {
 		authorization := ports.NewMockAuthorization(t)
 		permissionRequest := ports.NewMockPermissionRequest(t)
 		entitlementResolver := ports.NewMockEntitlementResolver(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
 
+		owner := types.NewPersonalOwner(userId)
+		ownerFactory.EXPECT().Resolve(mock.Anything, types.PersonalOwnerType).Return(owner, nil)
 		authorization.EXPECT().Can(mock.Anything, auth.PermissionWrite).Return(permissionRequest)
 		permissionRequest.EXPECT().For(mock.Anything).Return(nil)
-		entitlementResolver.EXPECT().CheckQuota(mock.Anything, billing.FeatureIdCustomLabelsCount, int64(1)).Return(false,
+		entitlementResolver.EXPECT().CheckQuota(mock.Anything, billing.FeatureIdCustomLabelsCount,
+			int64(1)).Return(false,
 			billing.EffectiveEntitlement{}, errors.New("entitlement error"))
 
 		handler := command.NewCreateLabelCommandHandler(labelRepository, familyRepository, authorization,
-			entitlementResolver)
-		owner := types.NewPersonalOwner(userId)
+			ownerFactory, entitlementResolver)
 		cmd := command.CreateLabelCommand{
-			Name: "label test", Color: "#123456", Owner: owner, CreatedAt: option.Some(time.Now()),
+			Name: "label test", Color: "#123456", Owner: types.PersonalOwnerType, CreatedAt: option.Some(time.Now()),
 		}
 		res := handler.Handle(ctx, cmd)
 		assert.True(t, res.IsFaulted())

@@ -15,6 +15,11 @@ packages:
     interfaces:
       LabelResolver:
       ProviderResolver:
+  github.com/mistribe/subtracker/internal/usecase/shared:
+    config:
+      dir: ./internal/usecase/shared
+    interfaces:
+      OwnerFactory:
   github.com/mistribe/subtracker/internal/domain/account:
     config:
       dir: ./internal/domain/account

@@ -13,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
@@ -38,15 +39,6 @@ func (m *mockQueryHandler) Handle(ctx context.Context,
 	return m.handleFunc(ctx, q)
 }
 
-// mockLabelResolver is a mock implementation of the label resolver
-type mockLabelResolver struct {
-	resolveFunc func(ctx context.Context, labelIds []types.LabelID) ([]string, error)
-}
-
-func (m *mockLabelResolver) ResolveLabelNames(ctx context.Context, labelIds []types.LabelID) ([]string, error) {
-	return m.resolveFunc(ctx, labelIds)
-}
-
 func TestExportEndpoint_CSV_Format(t *testing.T) {
 	// Create test subscriptions
 	subscriptions := createTestSubscriptions()
@@ -60,23 +52,28 @@ func TestExportEndpoint_CSV_Format(t *testing.T) {
 	}
 
 	// Create mock label resolver
-	labelResolverMock := &mockLabelResolver{
-		resolveFunc: func(ctx context.Context, labelIds []types.LabelID) ([]string, error) {
-			names := make([]string, len(labelIds))
-			for i, id := range labelIds {
-				if id.String() == "00000000-0000-0000-0000-000000000011" {
-					names[i] = "Label 1"
-				} else if id.String() == "00000000-0000-0000-0000-000000000012" {
-					names[i] = "Label 2"
-				}
-			}
-			return names, nil
-		},
-	}
+	labelResolverMock := export.NewMockLabelResolver(t)
+	labelID1, _ := types.ParseLabelID("00000000-0000-0000-0000-000000000011")
+	labelID2, _ := types.ParseLabelID("00000000-0000-0000-0000-000000000012")
+	labelResolverMock.EXPECT().ResolveLabelNames(mock.Anything, mock.Anything).
+		Return(map[types.LabelID]string{
+			labelID1: "Label 1",
+			labelID2: "Label 2",
+		}, nil).Maybe()
+
+	// Create mock provider resolver
+	providerResolverMock := export.NewMockProviderResolver(t)
+	providerID3, _ := types.ParseProviderID("00000000-0000-0000-0000-000000000101")
+	providerID4, _ := types.ParseProviderID("00000000-0000-0000-0000-000000000102")
+	providerResolverMock.EXPECT().ResolveProviderKeys(mock.Anything, mock.Anything).
+		Return(map[types.ProviderID]string{
+			providerID3: "provider-1",
+			providerID4: "provider-2",
+		}, nil).Maybe()
 
 	// Create endpoint
 	exportService := export.NewExportService()
-	endpoint := subscription.NewExportEndpoint(mockHandler, labelResolverMock, exportService)
+	endpoint := subscription.NewExportEndpoint(mockHandler, labelResolverMock, providerResolverMock, exportService)
 
 	// Create test request
 	gin.SetMode(gin.TestMode)
@@ -100,14 +97,14 @@ func TestExportEndpoint_CSV_Format(t *testing.T) {
 	require.Len(t, records, 3) // header + 2 data rows
 
 	// Verify headers
-	expectedHeaders := []string{"id", "providerId", "friendlyName", "startDate", "endDate", "recurrency",
-		"customRecurrency", "customPriceAmount", "customPriceCurrency", "ownerType", "freeTrialStartDate",
-		"freeTrialEndDate", "labels"}
+	expectedHeaders := []string{"id", "providerKey", "friendlyName", "startDate", "endDate", "recurrency",
+		"customRecurrency", "amount", "currency", "ownerType", "freeTrialStartDate",
+		"freeTrialEndDate", "payer", "payerMemberId", "familyUsers", "labels"}
 	assert.Equal(t, expectedHeaders, records[0])
 
 	// Verify first row
 	assert.Equal(t, "00000000-0000-0000-0000-000000000001", records[1][0])
-	assert.Equal(t, "00000000-0000-0000-0000-000000000101", records[1][1])
+	assert.Equal(t, "provider-1", records[1][1])
 	assert.Equal(t, "My Subscription", records[1][2])
 	// Date should be in ISO 8601 format (YYYY-MM-DD)
 	assert.Regexp(t, `^\d{4}-\d{2}-\d{2}$`, records[1][3])
@@ -130,23 +127,32 @@ func TestExportEndpoint_JSON_Format(t *testing.T) {
 	}
 
 	// Create mock label resolver
-	mockResolver := &mockLabelResolver{
-		resolveFunc: func(ctx context.Context, labelIds []types.LabelID) ([]string, error) {
-			names := make([]string, len(labelIds))
-			for i, id := range labelIds {
-				if id.String() == "00000000-0000-0000-0000-000000000011" {
-					names[i] = "Label 1"
-				} else if id.String() == "00000000-0000-0000-0000-000000000012" {
-					names[i] = "Label 2"
-				}
-			}
-			return names, nil
-		},
-	}
+	labelResolverMock := export.NewMockLabelResolver(t)
+	labelID1, _ := types.ParseLabelID("00000000-0000-0000-0000-000000000011")
+	labelID2, _ := types.ParseLabelID("00000000-0000-0000-0000-000000000012")
+	labelResolverMock.EXPECT().ResolveLabelNames(mock.Anything, mock.Anything).
+		Return(map[types.LabelID]string{
+			labelID1: "Label 1",
+			labelID2: "Label 2",
+		}, nil).Maybe()
+	labelResolverMock.EXPECT().ResolveLabelNames(mock.Anything, mock.Anything).
+		Return(map[types.LabelID]string{
+			labelID1: "Label 1",
+		}, nil).Maybe()
+
+	// Create mock provider resolver
+	providerResolverMock := export.NewMockProviderResolver(t)
+	providerID1, _ := types.ParseProviderID("00000000-0000-0000-0000-000000000101")
+	providerID2, _ := types.ParseProviderID("00000000-0000-0000-0000-000000000102")
+	providerResolverMock.EXPECT().ResolveProviderKeys(mock.Anything, mock.Anything).
+		Return(map[types.ProviderID]string{
+			providerID1: "provider-1",
+			providerID2: "provider-2",
+		}, nil).Maybe()
 
 	// Create endpoint
 	exportService := export.NewExportService()
-	endpoint := subscription.NewExportEndpoint(mockHandler, mockResolver, exportService)
+	endpoint := subscription.NewExportEndpoint(mockHandler, labelResolverMock, providerResolverMock, exportService)
 
 	// Create test request
 	gin.SetMode(gin.TestMode)
@@ -164,14 +170,14 @@ func TestExportEndpoint_JSON_Format(t *testing.T) {
 	assert.Contains(t, w.Header().Get("Content-Disposition"), ".json")
 
 	// Verify JSON is valid
-	var exportModels []export.SubscriptionExportModel
+	var exportModels []dto.SubscriptionExportModel
 	err := json.Unmarshal(w.Body.Bytes(), &exportModels)
 	require.NoError(t, err)
 	require.Len(t, exportModels, 2)
 
 	// Verify first subscription
 	assert.Equal(t, "00000000-0000-0000-0000-000000000001", exportModels[0].Id)
-	assert.Equal(t, "00000000-0000-0000-0000-000000000101", exportModels[0].ProviderId)
+	assert.Equal(t, "provider-1", exportModels[0].ProviderKey)
 	require.NotNil(t, exportModels[0].FriendlyName)
 	assert.Equal(t, "My Subscription", *exportModels[0].FriendlyName)
 	// Date should be in ISO 8601 format (YYYY-MM-DD)
@@ -197,23 +203,32 @@ func TestExportEndpoint_YAML_Format(t *testing.T) {
 	}
 
 	// Create mock label resolver
-	mockResolver := &mockLabelResolver{
-		resolveFunc: func(ctx context.Context, labelIds []types.LabelID) ([]string, error) {
-			names := make([]string, len(labelIds))
-			for i, id := range labelIds {
-				if id.String() == "00000000-0000-0000-0000-000000000011" {
-					names[i] = "Label 1"
-				} else if id.String() == "00000000-0000-0000-0000-000000000012" {
-					names[i] = "Label 2"
-				}
-			}
-			return names, nil
-		},
-	}
+	labelResolverMock := export.NewMockLabelResolver(t)
+	labelID1, _ := types.ParseLabelID("00000000-0000-0000-0000-000000000011")
+	labelID2, _ := types.ParseLabelID("00000000-0000-0000-0000-000000000012")
+	labelResolverMock.EXPECT().ResolveLabelNames(mock.Anything, mock.Anything).
+		Return(map[types.LabelID]string{
+			labelID1: "Label 1",
+			labelID2: "Label 2",
+		}, nil).Maybe()
+	labelResolverMock.EXPECT().ResolveLabelNames(mock.Anything, mock.Anything).
+		Return(map[types.LabelID]string{
+			labelID1: "Label 1",
+		}, nil).Maybe()
+
+	// Create mock provider resolver
+	providerResolverMock := export.NewMockProviderResolver(t)
+	providerID1, _ := types.ParseProviderID("00000000-0000-0000-0000-000000000101")
+	providerID2, _ := types.ParseProviderID("00000000-0000-0000-0000-000000000102")
+	providerResolverMock.EXPECT().ResolveProviderKeys(mock.Anything, mock.Anything).
+		Return(map[types.ProviderID]string{
+			providerID1: "provider-1",
+			providerID2: "provider-2",
+		}, nil).Maybe()
 
 	// Create endpoint
 	exportService := export.NewExportService()
-	endpoint := subscription.NewExportEndpoint(mockHandler, mockResolver, exportService)
+	endpoint := subscription.NewExportEndpoint(mockHandler, labelResolverMock, providerResolverMock, exportService)
 
 	// Create test request
 	gin.SetMode(gin.TestMode)
@@ -231,14 +246,14 @@ func TestExportEndpoint_YAML_Format(t *testing.T) {
 	assert.Contains(t, w.Header().Get("Content-Disposition"), ".yaml")
 
 	// Verify YAML is valid
-	var exportModels []export.SubscriptionExportModel
+	var exportModels []dto.SubscriptionExportModel
 	err := yaml.Unmarshal(w.Body.Bytes(), &exportModels)
 	require.NoError(t, err)
 	require.Len(t, exportModels, 2)
 
 	// Verify first subscription
 	assert.Equal(t, "00000000-0000-0000-0000-000000000001", exportModels[0].Id)
-	assert.Equal(t, "00000000-0000-0000-0000-000000000101", exportModels[0].ProviderId)
+	assert.Equal(t, "provider-1", exportModels[0].ProviderKey)
 }
 
 func TestExportEndpoint_InvalidFormat(t *testing.T) {
@@ -251,11 +266,14 @@ func TestExportEndpoint_InvalidFormat(t *testing.T) {
 		},
 	}
 
-	mockResolver := &mockLabelResolver{}
+	labelResolverMock := export.NewMockLabelResolver(t)
+
+	// Create mock provider resolver
+	providerResolverMock := export.NewMockProviderResolver(t)
 
 	// Create endpoint
 	exportService := export.NewExportService()
-	endpoint := subscription.NewExportEndpoint(mockHandler, mockResolver, exportService)
+	endpoint := subscription.NewExportEndpoint(mockHandler, labelResolverMock, providerResolverMock, exportService)
 
 	// Create test request with invalid format
 	gin.SetMode(gin.TestMode)
@@ -280,15 +298,16 @@ func TestExportEndpoint_EmptyResultSet(t *testing.T) {
 		},
 	}
 
-	mockResolver := &mockLabelResolver{
-		resolveFunc: func(ctx context.Context, labelIds []types.LabelID) ([]string, error) {
-			return []string{}, nil
-		},
-	}
+	labelResolverMock := export.NewMockLabelResolver(t)
+	labelResolverMock.EXPECT().ResolveLabelNames(mock.Anything, mock.Anything).Return(map[types.LabelID]string{}, nil).Maybe()
+
+	// Create mock provider resolver
+	providerResolverMock := export.NewMockProviderResolver(t)
+	providerResolverMock.EXPECT().ResolveProviderKeys(mock.Anything, mock.Anything).Return(map[types.ProviderID]string{}, nil).Maybe()
 
 	// Create endpoint
 	exportService := export.NewExportService()
-	endpoint := subscription.NewExportEndpoint(mockHandler, mockResolver, exportService)
+	endpoint := subscription.NewExportEndpoint(mockHandler, labelResolverMock, providerResolverMock, exportService)
 
 	t.Run("CSV with empty data", func(t *testing.T) {
 		gin.SetMode(gin.TestMode)
@@ -304,7 +323,7 @@ func TestExportEndpoint_EmptyResultSet(t *testing.T) {
 		lines := strings.Split(strings.TrimSpace(output), "\n")
 		require.Len(t, lines, 1)
 		assert.Equal(t,
-			"id,providerId,friendlyName,startDate,endDate,recurrency,customRecurrency,customPriceAmount,customPriceCurrency,ownerType,freeTrialStartDate,freeTrialEndDate,labels",
+			"id,providerKey,friendlyName,startDate,endDate,recurrency,customRecurrency,amount,currency,ownerType,freeTrialStartDate,freeTrialEndDate,payer,payerMemberId,familyUsers,labels",
 			lines[0])
 	})
 
@@ -404,15 +423,22 @@ func TestExportEndpoint_FreeTrialDates(t *testing.T) {
 		},
 	}
 
-	mockResolver := &mockLabelResolver{
-		resolveFunc: func(ctx context.Context, labelIds []types.LabelID) ([]string, error) {
-			return []string{}, nil
-		},
-	}
+	labelResolverMock := export.NewMockLabelResolver(t)
+	labelResolverMock.EXPECT().ResolveLabelNames(mock.Anything, mock.Anything).Return(map[types.LabelID]string{}, nil).Maybe()
+
+	// Create mock provider resolver
+	providerResolverMock := export.NewMockProviderResolver(t)
+	providerID3, _ := types.ParseProviderID("00000000-0000-0000-0000-000000000101")
+	providerID4, _ := types.ParseProviderID("00000000-0000-0000-0000-000000000102")
+	providerResolverMock.EXPECT().ResolveProviderKeys(mock.Anything, mock.Anything).
+		Return(map[types.ProviderID]string{
+			providerID3: "provider-1",
+			providerID4: "provider-2",
+		}, nil).Maybe()
 
 	// Create endpoint
 	exportService := export.NewExportService()
-	endpoint := subscription.NewExportEndpoint(mockHandler, mockResolver, exportService)
+	endpoint := subscription.NewExportEndpoint(mockHandler, labelResolverMock, providerResolverMock, exportService)
 
 	// Create test request
 	gin.SetMode(gin.TestMode)
@@ -455,23 +481,32 @@ func TestExportEndpoint_LabelsAreNames(t *testing.T) {
 	}
 
 	// Create mock label resolver that returns specific names
-	mockResolver := &mockLabelResolver{
-		resolveFunc: func(ctx context.Context, labelIds []types.LabelID) ([]string, error) {
-			names := make([]string, len(labelIds))
-			for i, id := range labelIds {
-				if id.String() == "00000000-0000-0000-0000-000000000011" {
-					names[i] = "Work"
-				} else if id.String() == "00000000-0000-0000-0000-000000000012" {
-					names[i] = "Personal"
-				}
-			}
-			return names, nil
-		},
-	}
+	labelResolverMock := export.NewMockLabelResolver(t)
+	labelID1, _ := types.ParseLabelID("00000000-0000-0000-0000-000000000011")
+	labelID2, _ := types.ParseLabelID("00000000-0000-0000-0000-000000000012")
+	labelResolverMock.EXPECT().ResolveLabelNames(mock.Anything, mock.Anything).
+		Return(map[types.LabelID]string{
+			labelID1: "Work",
+			labelID2: "Personal",
+		}, nil).Maybe()
+	labelResolverMock.EXPECT().ResolveLabelNames(mock.Anything, mock.Anything).
+		Return(map[types.LabelID]string{
+			labelID1: "Work",
+		}, nil).Maybe()
+
+	// Create mock provider resolver
+	providerResolverMock := export.NewMockProviderResolver(t)
+	providerID5, _ := types.ParseProviderID("00000000-0000-0000-0000-000000000101")
+	providerID6, _ := types.ParseProviderID("00000000-0000-0000-0000-000000000102")
+	providerResolverMock.EXPECT().ResolveProviderKeys(mock.Anything, mock.Anything).
+		Return(map[types.ProviderID]string{
+			providerID5: "provider-1",
+			providerID6: "provider-2",
+		}, nil).Maybe()
 
 	// Create endpoint
 	exportService := export.NewExportService()
-	endpoint := subscription.NewExportEndpoint(mockHandler, mockResolver, exportService)
+	endpoint := subscription.NewExportEndpoint(mockHandler, labelResolverMock, providerResolverMock, exportService)
 
 	// Create test request
 	gin.SetMode(gin.TestMode)

@@ -9,11 +9,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/mistribe/subtracker/internal/domain/account"
 	"github.com/mistribe/subtracker/internal/domain/authorization"
 	"github.com/mistribe/subtracker/internal/domain/billing"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/internal/usecase/shared"
 	"github.com/mistribe/subtracker/internal/usecase/subscription/command"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 )
@@ -71,14 +73,23 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 		subRepo := ports.NewMockSubscriptionRepository(t)
 		familyRepo := ports.NewMockFamilyRepository(t)
 		authz := ports.NewMockAuthorization(t)
+		auth := ports.NewMockAuthentication(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
+		providerRepo := ports.NewMockProviderRepository(t)
 		entitlement := ports.NewMockEntitlementResolver(t)
 		perm := ports.NewMockPermissionRequest(t)
+
+		sub := newPersonalSubscription()
+		ownerFactory.EXPECT().Resolve(mock.Anything, sub.Owner().Type()).Return(sub.Owner(), nil)
+		connectedAccount := account.NewMockConnectedAccount(t)
+		connectedAccount.EXPECT().UserID().Return(types.UserID(userId))
+		auth.EXPECT().MustGetConnectedAccount(mock.Anything).Return(connectedAccount)
 		authz.EXPECT().Can(t.Context(), authorization.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(authorization.ErrUnauthorized)
 
-		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, entitlement)
-		sub := newPersonalSubscription()
-		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(sub.Id()), FriendlyName: sub.FriendlyName(), ProviderID: sub.ProviderId(), Owner: sub.Owner(), StartDate: sub.StartDate(), Recurrency: sub.Recurrency(), CreatedAt: option.Some(time.Now())}
+		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, auth, ownerFactory, providerRepo, entitlement)
+		providerID := sub.ProviderId()
+		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(sub.Id()), FriendlyName: sub.FriendlyName(), ProviderID: &providerID, Owner: sub.Owner().Type(), StartDate: sub.StartDate(), Recurrency: sub.Recurrency(), CreatedAt: option.Some(time.Now())}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -88,16 +99,25 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 		subRepo := ports.NewMockSubscriptionRepository(t)
 		familyRepo := ports.NewMockFamilyRepository(t)
 		authz := ports.NewMockAuthorization(t)
+		auth := ports.NewMockAuthentication(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
+		providerRepo := ports.NewMockProviderRepository(t)
 		entitlement := ports.NewMockEntitlementResolver(t)
 		perm := ports.NewMockPermissionRequest(t)
+
+		sub := newPersonalSubscription()
+		ownerFactory.EXPECT().Resolve(mock.Anything, sub.Owner().Type()).Return(sub.Owner(), nil)
+		connectedAccount := account.NewMockConnectedAccount(t)
+		connectedAccount.EXPECT().UserID().Return(types.UserID(userId))
+		auth.EXPECT().MustGetConnectedAccount(mock.Anything).Return(connectedAccount)
 		authz.EXPECT().Can(t.Context(), authorization.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
 		// Expect duplication check after authorization
 		subRepo.EXPECT().GetById(t.Context(), mock.Anything).Return(nil, errors.New("db error"))
 
-		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, entitlement)
-		sub := newPersonalSubscription()
-		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(sub.Id()), FriendlyName: sub.FriendlyName(), ProviderID: sub.ProviderId(), Owner: sub.Owner(), StartDate: sub.StartDate(), Recurrency: sub.Recurrency(), CreatedAt: option.Some(time.Now())}
+		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, auth, ownerFactory, providerRepo, entitlement)
+		providerID := sub.ProviderId()
+		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(sub.Id()), FriendlyName: sub.FriendlyName(), ProviderID: &providerID, Owner: sub.Owner().Type(), StartDate: sub.StartDate(), Recurrency: sub.Recurrency(), CreatedAt: option.Some(time.Now())}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -107,16 +127,24 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 		subRepo := ports.NewMockSubscriptionRepository(t)
 		familyRepo := ports.NewMockFamilyRepository(t)
 		authz := ports.NewMockAuthorization(t)
+		auth := ports.NewMockAuthentication(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
+		providerRepo := ports.NewMockProviderRepository(t)
 		entitlement := ports.NewMockEntitlementResolver(t)
 		perm := ports.NewMockPermissionRequest(t)
-		authz.EXPECT().Can(t.Context(), authorization.PermissionWrite).Return(perm)
-		perm.EXPECT().For(mock.Anything).Return(nil)
 
 		existing := newPersonalSubscription()
+		ownerFactory.EXPECT().Resolve(mock.Anything, existing.Owner().Type()).Return(existing.Owner(), nil)
+		connectedAccount := account.NewMockConnectedAccount(t)
+		connectedAccount.EXPECT().UserID().Return(types.UserID(userId))
+		auth.EXPECT().MustGetConnectedAccount(mock.Anything).Return(connectedAccount)
+		authz.EXPECT().Can(t.Context(), authorization.PermissionWrite).Return(perm)
+		perm.EXPECT().For(mock.Anything).Return(nil)
 		subRepo.EXPECT().GetById(t.Context(), existing.Id()).Return(existing, nil)
 
-		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, entitlement)
-		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(existing.Id()), FriendlyName: existing.FriendlyName(), ProviderID: existing.ProviderId(), Owner: existing.Owner(), StartDate: existing.StartDate(), Recurrency: existing.Recurrency(), CreatedAt: option.Some(time.Now())}
+		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, auth, ownerFactory, providerRepo, entitlement)
+		providerID := existing.ProviderId()
+		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(existing.Id()), FriendlyName: existing.FriendlyName(), ProviderID: &providerID, Owner: existing.Owner().Type(), StartDate: existing.StartDate(), Recurrency: existing.Recurrency(), CreatedAt: option.Some(time.Now())}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -128,17 +156,26 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 		subRepo := ports.NewMockSubscriptionRepository(t)
 		familyRepo := ports.NewMockFamilyRepository(t)
 		authz := ports.NewMockAuthorization(t)
+		auth := ports.NewMockAuthentication(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
+		providerRepo := ports.NewMockProviderRepository(t)
 		entitlement := ports.NewMockEntitlementResolver(t)
 		perm := ports.NewMockPermissionRequest(t)
+
+		sub := newPersonalSubscription()
+		ownerFactory.EXPECT().Resolve(mock.Anything, sub.Owner().Type()).Return(sub.Owner(), nil)
+		connectedAccount := account.NewMockConnectedAccount(t)
+		connectedAccount.EXPECT().UserID().Return(types.UserID(userId))
+		auth.EXPECT().MustGetConnectedAccount(mock.Anything).Return(connectedAccount)
 		authz.EXPECT().Can(t.Context(), authorization.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
 		// duplication check (ID provided)
 		subRepo.EXPECT().GetById(t.Context(), mock.Anything).Return(nil, nil)
 		entitlement.EXPECT().CheckQuota(t.Context(), billing.FeatureIdActiveSubscriptionsCount, int64(1)).Return(false, billing.EffectiveEntitlement{}, errors.New("limit"))
 
-		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, entitlement)
-		sub := newPersonalSubscription()
-		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(sub.Id()), FriendlyName: sub.FriendlyName(), ProviderID: sub.ProviderId(), Owner: sub.Owner(), StartDate: sub.StartDate(), Recurrency: sub.Recurrency(), CreatedAt: option.Some(time.Now())}
+		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, auth, ownerFactory, providerRepo, entitlement)
+		providerID := sub.ProviderId()
+		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(sub.Id()), FriendlyName: sub.FriendlyName(), ProviderID: &providerID, Owner: sub.Owner().Type(), StartDate: sub.StartDate(), Recurrency: sub.Recurrency(), CreatedAt: option.Some(time.Now())}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -148,8 +185,14 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 		subRepo := ports.NewMockSubscriptionRepository(t)
 		familyRepo := ports.NewMockFamilyRepository(t)
 		authz := ports.NewMockAuthorization(t)
+		auth := ports.NewMockAuthentication(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
+		providerRepo := ports.NewMockProviderRepository(t)
 		entitlement := ports.NewMockEntitlementResolver(t)
 		perm := ports.NewMockPermissionRequest(t)
+		connectedAccount := account.NewMockConnectedAccount(t)
+		connectedAccount.EXPECT().UserID().Return(types.UserID(userId))
+		auth.EXPECT().MustGetConnectedAccount(mock.Anything).Return(connectedAccount)
 		authz.EXPECT().Can(t.Context(), authorization.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
 		subRepo.EXPECT().GetById(t.Context(), mock.Anything).Return(nil, nil)
@@ -157,12 +200,14 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 
 		famID := uuid.Must(uuid.NewV7())
 		member := uuid.Must(uuid.NewV7())
+		sub := newFamilySubscriptionWithMembers(famID, []uuid.UUID{member})
+		ownerFactory.EXPECT().Resolve(mock.Anything, mock.Anything).Return(sub.Owner(), nil).Maybe()
 		// expect MemberExists check and return false
 		familyRepo.EXPECT().MemberExists(t.Context(), types.FamilyID(famID), []types.FamilyMemberID{types.FamilyMemberID(member)}).Return(false, nil)
 
-		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, entitlement)
-		sub := newFamilySubscriptionWithMembers(famID, []uuid.UUID{member})
-		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(sub.Id()), FriendlyName: sub.FriendlyName(), ProviderID: sub.ProviderId(), Owner: sub.Owner(), StartDate: sub.StartDate(), Recurrency: sub.Recurrency(), CreatedAt: option.Some(time.Now()), FamilyUsers: sub.FamilyUsers().Values()}
+		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, auth, ownerFactory, providerRepo, entitlement)
+		providerID := sub.ProviderId()
+		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(sub.Id()), FriendlyName: sub.FriendlyName(), ProviderID: &providerID, Owner: sub.Owner().Type(), StartDate: sub.StartDate(), Recurrency: sub.Recurrency(), CreatedAt: option.Some(time.Now()), FamilyUsers: sub.FamilyUsers().Values()}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -172,8 +217,14 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 		subRepo := ports.NewMockSubscriptionRepository(t)
 		familyRepo := ports.NewMockFamilyRepository(t)
 		authz := ports.NewMockAuthorization(t)
+		auth := ports.NewMockAuthentication(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
+		providerRepo := ports.NewMockProviderRepository(t)
 		entitlement := ports.NewMockEntitlementResolver(t)
 		perm := ports.NewMockPermissionRequest(t)
+		connectedAccount := account.NewMockConnectedAccount(t)
+		connectedAccount.EXPECT().UserID().Return(types.UserID(userId))
+		auth.EXPECT().MustGetConnectedAccount(mock.Anything).Return(connectedAccount)
 		authz.EXPECT().Can(t.Context(), authorization.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
 		subRepo.EXPECT().GetById(t.Context(), mock.Anything).Return(nil, nil)
@@ -181,11 +232,13 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 
 		famID := uuid.Must(uuid.NewV7())
 		member := uuid.Must(uuid.NewV7())
+		sub := newFamilySubscriptionWithMembers(famID, []uuid.UUID{member})
+		ownerFactory.EXPECT().Resolve(mock.Anything, mock.Anything).Return(sub.Owner(), nil).Maybe()
 		familyRepo.EXPECT().MemberExists(t.Context(), types.FamilyID(famID), mock.Anything).Return(false, errors.New("repo error"))
 
-		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, entitlement)
-		sub := newFamilySubscriptionWithMembers(famID, []uuid.UUID{member})
-		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(sub.Id()), FriendlyName: sub.FriendlyName(), ProviderID: sub.ProviderId(), Owner: sub.Owner(), StartDate: sub.StartDate(), Recurrency: sub.Recurrency(), CreatedAt: option.Some(time.Now()), FamilyUsers: sub.FamilyUsers().Values()}
+		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, auth, ownerFactory, providerRepo, entitlement)
+		providerID := sub.ProviderId()
+		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(sub.Id()), FriendlyName: sub.FriendlyName(), ProviderID: &providerID, Owner: sub.Owner().Type(), StartDate: sub.StartDate(), Recurrency: sub.Recurrency(), CreatedAt: option.Some(time.Now()), FamilyUsers: sub.FamilyUsers().Values()}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -195,8 +248,14 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 		subRepo := ports.NewMockSubscriptionRepository(t)
 		familyRepo := ports.NewMockFamilyRepository(t)
 		authz := ports.NewMockAuthorization(t)
+		auth := ports.NewMockAuthentication(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
+		providerRepo := ports.NewMockProviderRepository(t)
 		entitlement := ports.NewMockEntitlementResolver(t)
 		perm := ports.NewMockPermissionRequest(t)
+		connectedAccount := account.NewMockConnectedAccount(t)
+		connectedAccount.EXPECT().UserID().Return(types.UserID(userId))
+		auth.EXPECT().MustGetConnectedAccount(mock.Anything).Return(connectedAccount)
 		authz.EXPECT().Can(t.Context(), authorization.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
 		// No SubscriptionID provided so no GetById expectation
@@ -204,8 +263,11 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 
 		// invalid: Custom recurrency without amount
 		name := "Invalid"
-		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, entitlement)
-		cmd := command.CreateSubscriptionCommand{FriendlyName: &name, ProviderID: types.ProviderID(uuid.Must(uuid.NewV7())), Owner: types.NewPersonalOwner(types.UserID(userId)), StartDate: time.Now().Add(-time.Hour), Recurrency: subscription.CustomRecurrency}
+		providerID := types.ProviderID(uuid.Must(uuid.NewV7()))
+		owner := types.NewPersonalOwner(types.UserID(userId))
+		ownerFactory.EXPECT().Resolve(mock.Anything, mock.Anything).Return(owner, nil).Maybe()
+		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, auth, ownerFactory, providerRepo, entitlement)
+		cmd := command.CreateSubscriptionCommand{FriendlyName: &name, ProviderID: &providerID, Owner: types.PersonalOwnerType, StartDate: time.Now().Add(-time.Hour), Recurrency: subscription.CustomRecurrency}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -215,8 +277,14 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 		subRepo := ports.NewMockSubscriptionRepository(t)
 		familyRepo := ports.NewMockFamilyRepository(t)
 		authz := ports.NewMockAuthorization(t)
+		auth := ports.NewMockAuthentication(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
+		providerRepo := ports.NewMockProviderRepository(t)
 		entitlement := ports.NewMockEntitlementResolver(t)
 		perm := ports.NewMockPermissionRequest(t)
+		connectedAccount := account.NewMockConnectedAccount(t)
+		connectedAccount.EXPECT().UserID().Return(types.UserID(userId))
+		auth.EXPECT().MustGetConnectedAccount(mock.Anything).Return(connectedAccount)
 		authz.EXPECT().Can(t.Context(), authorization.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
 		// duplication check (ID provided)
@@ -224,11 +292,13 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 		entitlement.EXPECT().CheckQuota(t.Context(), billing.FeatureIdActiveSubscriptionsCount, int64(1)).Return(true, billing.EffectiveEntitlement{}, nil)
 
 		sub := newPersonalSubscription()
+		ownerFactory.EXPECT().Resolve(mock.Anything, mock.Anything).Return(sub.Owner(), nil).Maybe()
 		subRepo.EXPECT().Save(t.Context(),
 			mock.MatchedBy(func(entities []subscription.Subscription) bool { return len(entities) == 1 })).Return(errors.New("save failed"))
 
-		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, entitlement)
-		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(sub.Id()), FriendlyName: sub.FriendlyName(), ProviderID: sub.ProviderId(), Owner: sub.Owner(), StartDate: sub.StartDate(), Recurrency: sub.Recurrency(), CreatedAt: option.Some(time.Now())}
+		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, auth, ownerFactory, providerRepo, entitlement)
+		providerID := sub.ProviderId()
+		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(sub.Id()), FriendlyName: sub.FriendlyName(), ProviderID: &providerID, Owner: sub.Owner().Type(), StartDate: sub.StartDate(), Recurrency: sub.Recurrency(), CreatedAt: option.Some(time.Now())}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsFaulted())
@@ -238,8 +308,14 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 		subRepo := ports.NewMockSubscriptionRepository(t)
 		familyRepo := ports.NewMockFamilyRepository(t)
 		authz := ports.NewMockAuthorization(t)
+		auth := ports.NewMockAuthentication(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
+		providerRepo := ports.NewMockProviderRepository(t)
 		entitlement := ports.NewMockEntitlementResolver(t)
 		perm := ports.NewMockPermissionRequest(t)
+		connectedAccount := account.NewMockConnectedAccount(t)
+		connectedAccount.EXPECT().UserID().Return(types.UserID(userId))
+		auth.EXPECT().MustGetConnectedAccount(mock.Anything).Return(connectedAccount)
 		authz.EXPECT().Can(t.Context(), authorization.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
 		// duplication check (ID provided)
@@ -247,11 +323,13 @@ func TestCreateSubscriptionCommandHandler_Handle(t *testing.T) {
 		entitlement.EXPECT().CheckQuota(t.Context(), billing.FeatureIdActiveSubscriptionsCount, int64(1)).Return(true, billing.EffectiveEntitlement{}, nil)
 
 		sub := newPersonalSubscription()
+		ownerFactory.EXPECT().Resolve(mock.Anything, mock.Anything).Return(sub.Owner(), nil).Maybe()
 		subRepo.EXPECT().Save(t.Context(),
 			mock.MatchedBy(func(entities []subscription.Subscription) bool { return len(entities) == 1 })).Return(nil)
 
-		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, entitlement)
-		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(sub.Id()), FriendlyName: sub.FriendlyName(), ProviderID: sub.ProviderId(), Owner: sub.Owner(), StartDate: sub.StartDate(), Recurrency: sub.Recurrency(), CreatedAt: option.Some(time.Now())}
+		h := command.NewCreateSubscriptionCommandHandler(subRepo, authz, familyRepo, auth, ownerFactory, providerRepo, entitlement)
+		providerID := sub.ProviderId()
+		cmd := command.CreateSubscriptionCommand{SubscriptionID: option.Some(sub.Id()), FriendlyName: sub.FriendlyName(), ProviderID: &providerID, Owner: sub.Owner().Type(), StartDate: sub.StartDate(), Recurrency: sub.Recurrency(), CreatedAt: option.Some(time.Now())}
 		res := h.Handle(t.Context(), cmd)
 
 		assert.True(t, res.IsSuccess())

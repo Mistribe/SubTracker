@@ -16,6 +16,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
 	"github.com/mistribe/subtracker/internal/usecase/provider/command"
+	"github.com/mistribe/subtracker/internal/usecase/shared"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 )
 
@@ -28,6 +29,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo := ports.NewMockLabelRepository(t)
 		authz := ports.NewMockAuthorization(t)
 		perm := ports.NewMockPermissionRequest(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
 		ent := ports.NewMockEntitlementResolver(t)
 
 		id := types.ProviderID(uuid.Must(uuid.NewV7()))
@@ -38,15 +40,16 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Exists(mock.Anything, mock.Anything).Return(true, nil)
 		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
+		ownerFactory.EXPECT().Resolve(mock.Anything, owner.Type()).Return(owner, nil).Maybe()
 		ent.EXPECT().CheckQuota(mock.Anything, billing.FeatureIdCustomProvidersCount, int64(1)).Return(true, billing.EffectiveEntitlement{}, nil)
 		provRepo.EXPECT().Save(mock.Anything, mock.Anything).Return(nil)
 
-		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ent)
+		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ownerFactory, ent)
 		cmd := command.CreateProviderCommand{
 			ProviderID:  option.Some(id),
 			Name:        "Test Provider",
 			Labels:      labels,
-			Owner:       owner,
+			Owner:       owner.Type(),
 			CreatedAt:   option.Some(createdAt),
 			Description: nil,
 		}
@@ -59,14 +62,16 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		provRepo := ports.NewMockProviderRepository(t)
 		labelRepo := ports.NewMockLabelRepository(t)
 		authz := ports.NewMockAuthorization(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
 		ent := ports.NewMockEntitlementResolver(t)
 
 		id := types.ProviderID(uuid.Must(uuid.NewV7()))
 
 		provRepo.EXPECT().Exists(mock.Anything, mock.Anything).Return(true, nil)
+		ownerFactory.EXPECT().Resolve(mock.Anything, owner.Type()).Return(owner, nil).Maybe()
 
-		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ent)
-		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "X", Owner: owner}
+		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ownerFactory, ent)
+		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "X", Owner: owner.Type()}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -79,15 +84,17 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		provRepo := ports.NewMockProviderRepository(t)
 		labelRepo := ports.NewMockLabelRepository(t)
 		authz := ports.NewMockAuthorization(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
 		ent := ports.NewMockEntitlementResolver(t)
 
 		id := types.ProviderID(uuid.Must(uuid.NewV7()))
 		existsErr := errors.New("exists error")
 
 		provRepo.EXPECT().Exists(mock.Anything, mock.Anything).Return(false, existsErr)
+		ownerFactory.EXPECT().Resolve(mock.Anything, owner.Type()).Return(owner, nil).Maybe()
 
-		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ent)
-		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "X", Owner: owner}
+		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ownerFactory, ent)
+		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "X", Owner: owner.Type()}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -101,6 +108,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo := ports.NewMockLabelRepository(t)
 		authz := ports.NewMockAuthorization(t)
 		perm := ports.NewMockPermissionRequest(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
 		ent := ports.NewMockEntitlementResolver(t)
 
 		labels := []types.LabelID{types.LabelID(uuid.Must(uuid.NewV7()))}
@@ -108,6 +116,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Exists(mock.Anything, mock.Anything).Return(true, nil)
 		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
+		ownerFactory.EXPECT().Resolve(mock.Anything, owner.Type()).Return(owner, nil).Maybe()
 		ent.EXPECT().CheckQuota(mock.Anything, billing.FeatureIdCustomProvidersCount, int64(1)).Return(true, billing.EffectiveEntitlement{}, nil)
 		provRepo.EXPECT().Save(mock.Anything, mock.Anything).Run(func(_ context.Context, entities ...provider.Provider) {
 			if len(entities) > 0 {
@@ -115,12 +124,12 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 			}
 		}).Return(nil)
 
-		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ent)
+		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ownerFactory, ent)
 		cmd := command.CreateProviderCommand{
 			ProviderID: option.None[types.ProviderID](),
 			Name:       "Auto LabelID",
 			Labels:     labels,
-			Owner:      owner,
+			Owner:      owner.Type(),
 		}
 
 		res := h.Handle(t.Context(), cmd)
@@ -132,6 +141,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		provRepo := ports.NewMockProviderRepository(t)
 		labelRepo := ports.NewMockLabelRepository(t)
 		authz := ports.NewMockAuthorization(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
 		ent := ports.NewMockEntitlementResolver(t)
 
 		id := types.ProviderID(uuid.Must(uuid.NewV7()))
@@ -139,9 +149,10 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 
 		provRepo.EXPECT().Exists(mock.Anything, mock.Anything).Return(false, nil)
 		labelRepo.EXPECT().Exists(mock.Anything, mock.Anything).Return(false, nil)
+		ownerFactory.EXPECT().Resolve(mock.Anything, owner.Type()).Return(owner, nil).Maybe()
 
-		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ent)
-		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "X", Labels: labels, Owner: owner}
+		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ownerFactory, ent)
+		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "X", Labels: labels, Owner: owner.Type()}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -151,6 +162,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		provRepo := ports.NewMockProviderRepository(t)
 		labelRepo := ports.NewMockLabelRepository(t)
 		authz := ports.NewMockAuthorization(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
 		ent := ports.NewMockEntitlementResolver(t)
 
 		id := types.ProviderID(uuid.Must(uuid.NewV7()))
@@ -159,9 +171,10 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 
 		provRepo.EXPECT().Exists(mock.Anything, mock.Anything).Return(false, nil)
 		labelRepo.EXPECT().Exists(mock.Anything, mock.Anything).Return(false, existsErr)
+		ownerFactory.EXPECT().Resolve(mock.Anything, owner.Type()).Return(owner, nil).Maybe()
 
-		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ent)
-		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "X", Labels: labels, Owner: owner}
+		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ownerFactory, ent)
+		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "X", Labels: labels, Owner: owner.Type()}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -172,6 +185,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo := ports.NewMockLabelRepository(t)
 		authz := ports.NewMockAuthorization(t)
 		perm := ports.NewMockPermissionRequest(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
 		ent := ports.NewMockEntitlementResolver(t)
 
 		id := types.ProviderID(uuid.Must(uuid.NewV7()))
@@ -181,9 +195,10 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Exists(mock.Anything, mock.Anything).Return(true, nil)
 		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(authorization.ErrUnauthorized)
+		ownerFactory.EXPECT().Resolve(mock.Anything, owner.Type()).Return(owner, nil).Maybe()
 
-		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ent)
-		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "X", Labels: labels, Owner: owner}
+		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ownerFactory, ent)
+		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "X", Labels: labels, Owner: owner.Type()}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -194,6 +209,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo := ports.NewMockLabelRepository(t)
 		authz := ports.NewMockAuthorization(t)
 		perm := ports.NewMockPermissionRequest(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
 		ent := ports.NewMockEntitlementResolver(t)
 
 		id := types.ProviderID(uuid.Must(uuid.NewV7()))
@@ -203,10 +219,11 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Exists(mock.Anything, mock.Anything).Return(true, nil)
 		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
+		ownerFactory.EXPECT().Resolve(mock.Anything, owner.Type()).Return(owner, nil).Maybe()
 		ent.EXPECT().CheckQuota(mock.Anything, billing.FeatureIdCustomProvidersCount, int64(1)).Return(false, billing.EffectiveEntitlement{}, nil)
 
-		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ent)
-		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "X", Labels: labels, Owner: owner}
+		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ownerFactory, ent)
+		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "X", Labels: labels, Owner: owner.Type()}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -217,6 +234,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo := ports.NewMockLabelRepository(t)
 		authz := ports.NewMockAuthorization(t)
 		perm := ports.NewMockPermissionRequest(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
 		ent := ports.NewMockEntitlementResolver(t)
 
 		id := types.ProviderID(uuid.Must(uuid.NewV7()))
@@ -226,10 +244,11 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Exists(mock.Anything, mock.Anything).Return(true, nil)
 		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
+		ownerFactory.EXPECT().Resolve(mock.Anything, owner.Type()).Return(owner, nil).Maybe()
 		ent.EXPECT().CheckQuota(mock.Anything, billing.FeatureIdCustomProvidersCount, int64(1)).Return(true, billing.EffectiveEntitlement{}, nil)
 
-		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ent)
-		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "   ", Labels: labels, Owner: owner}
+		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ownerFactory, ent)
+		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "   ", Labels: labels, Owner: owner.Type()}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
@@ -240,6 +259,7 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo := ports.NewMockLabelRepository(t)
 		authz := ports.NewMockAuthorization(t)
 		perm := ports.NewMockPermissionRequest(t)
+		ownerFactory := shared.NewMockOwnerFactory(t)
 		ent := ports.NewMockEntitlementResolver(t)
 
 		id := types.ProviderID(uuid.Must(uuid.NewV7()))
@@ -250,11 +270,12 @@ func TestCreateProviderCommandHandler_Handle(t *testing.T) {
 		labelRepo.EXPECT().Exists(mock.Anything, mock.Anything).Return(true, nil)
 		authz.EXPECT().Can(mock.Anything, authorization.PermissionWrite).Return(perm)
 		perm.EXPECT().For(mock.Anything).Return(nil)
+		ownerFactory.EXPECT().Resolve(mock.Anything, owner.Type()).Return(owner, nil).Maybe()
 		ent.EXPECT().CheckQuota(mock.Anything, billing.FeatureIdCustomProvidersCount, int64(1)).Return(true, billing.EffectiveEntitlement{}, nil)
 		provRepo.EXPECT().Save(mock.Anything, mock.Anything).Return(saveErr)
 
-		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ent)
-		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "X", Labels: labels, Owner: owner}
+		h := command.NewCreateProviderCommandHandler(provRepo, labelRepo, authz, ownerFactory, ent)
+		cmd := command.CreateProviderCommand{ProviderID: option.Some(id), Name: "X", Labels: labels, Owner: owner.Type()}
 
 		res := h.Handle(t.Context(), cmd)
 		assert.True(t, res.IsFaulted())
