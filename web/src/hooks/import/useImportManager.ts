@@ -210,9 +210,9 @@ export function useImportManager<T>({
           } else {
             errorMessage = `Conflict: ${message}`;
           }
-          // Mark as skipped (already exists) and do not retry
-          updateStatus(index, { status: 'skipped', error: errorMessage });
-          return 'skipped';
+          // Mark as error (conflict) and do not retry
+          updateStatus(index, { status: 'error', error: errorMessage });
+          return 'error';
         } else if (status === 429) {
           isRateLimitError = true;
           errorMessage = 'Rate limit exceeded: Too many requests';

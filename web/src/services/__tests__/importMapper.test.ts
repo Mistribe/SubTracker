@@ -16,7 +16,7 @@ describe('LabelFieldMapper', () => {
 
             expect(result.name).toBe('Entertainment');
             expect(result.color).toBe('#FF5733');
-            expect(result.owner).toEqual({type: 'personal'});
+            expect(result.owner).toBe('personal');
         });
 
         it('should map valid UUID in id field', () => {
@@ -108,18 +108,12 @@ describe('LabelFieldMapper', () => {
             const rawRecord = {
                 name: 'Test',
                 color: '#FF5733',
-                owner: {
-                    type: 'family',
-                    familyId: 'family-123',
-                },
+                owner: 'family',
             };
 
             const result = mapper.mapFields(rawRecord);
 
-            expect(result.owner).toEqual({
-                type: 'family',
-                familyId: 'family-123',
-            });
+            expect(result.owner).toBe('family');
         });
 
         it('should map owner from separate fields', () => {
@@ -127,15 +121,11 @@ describe('LabelFieldMapper', () => {
                 name: 'Test',
                 color: '#FF5733',
                 ownerType: 'family',
-                ownerFamilyId: 'family-456',
             };
 
             const result = mapper.mapFields(rawRecord);
 
-            expect(result.owner).toEqual({
-                type: 'family',
-                familyId: 'family-456',
-            });
+            expect(result.owner).toBe('family');
         });
 
         it('should default to personal owner if not provided', () => {
@@ -146,7 +136,7 @@ describe('LabelFieldMapper', () => {
 
             const result = mapper.mapFields(rawRecord);
 
-            expect(result.owner).toEqual({type: 'personal'});
+            expect(result.owner).toBe('personal');
         });
     });
 
@@ -323,13 +313,13 @@ describe('LabelFieldMapper', () => {
 
             expect(result.isValid).toBe(false);
             expect(result.errors).toContainEqual({
-                field: 'owner.type',
-                message: 'Owner type must be one of: personal, family, system',
+                field: 'owner',
+                message: 'Owner must be one of: personal, family, system',
                 severity: 'error',
             });
         });
 
-        it('should reject family owner without familyId', () => {
+        it('should accept family owner', () => {
             const record: Partial<DtoCreateLabelRequest> = {
                 name: 'Test',
                 color: '#FF5733',
@@ -338,12 +328,8 @@ describe('LabelFieldMapper', () => {
 
             const result = mapper.validate(record);
 
-            expect(result.isValid).toBe(false);
-            expect(result.errors).toContainEqual({
-                field: 'owner.familyId',
-                message: 'Family ID is required when owner type is family',
-                severity: 'error',
-            });
+            expect(result.isValid).toBe(true);
+            expect(result.errors).toHaveLength(0);
         });
     });
 });
@@ -474,28 +460,22 @@ describe('ProviderFieldMapper', () => {
         it('should map owner if provided', () => {
             const rawRecord = {
                 name: 'Netflix',
-                owner: {
-                    type: 'family',
-                    familyId: 'family-123',
-                },
+                owner: 'family',
             };
 
             const result = mapper.mapFields(rawRecord);
 
-            expect(result.owner).toEqual({
-                type: 'family',
-                familyId: 'family-123',
-            });
+            expect(result.owner).toBe('family');
         });
 
-        it('should not set owner if not provided', () => {
+        it('should default to personal owner if not provided', () => {
             const rawRecord = {
                 name: 'Netflix',
             };
 
             const result = mapper.mapFields(rawRecord);
 
-            expect(result.owner).toBeUndefined();
+            expect(result.owner).toBe('personal');
         });
     });
 
@@ -636,12 +616,8 @@ describe('ProviderFieldMapper', () => {
 
             const result = mapper.validate(record);
 
-            expect(result.isValid).toBe(false);
-            expect(result.errors).toContainEqual({
-                field: 'owner.familyId',
-                message: 'Family ID is required when owner type is family',
-                severity: 'error',
-            });
+            expect(result.isValid).toBe(true);
+            expect(result.errors).toHaveLength(0);
         });
     });
 });
@@ -662,7 +638,7 @@ describe('SubscriptionFieldMapper', () => {
             expect(result.providerId).toBe('provider-123');
             expect(result.startDate).toEqual(new Date('2024-01-01'));
             expect(result.recurrency).toBe('monthly');
-            expect(result.owner).toEqual({type: 'personal'});
+            expect(result.owner).toBe('personal');
         });
 
         it('should map valid UUID in id field', () => {
@@ -816,7 +792,6 @@ describe('SubscriptionFieldMapper', () => {
                 recurrency: 'monthly',
                 payer: {
                     type: 'family',
-                    familyId: 'family-123',
                 },
             };
 
@@ -824,7 +799,6 @@ describe('SubscriptionFieldMapper', () => {
 
             expect(result.payer).toEqual({
                 type: 'family',
-                familyId: 'family-123',
             });
         });
 
@@ -834,7 +808,6 @@ describe('SubscriptionFieldMapper', () => {
                 startDate: '2024-01-01',
                 recurrency: 'monthly',
                 payerType: 'family_member',
-                payerFamilyId: 'family-123',
                 payerMemberId: 'member-456',
             };
 
@@ -842,7 +815,6 @@ describe('SubscriptionFieldMapper', () => {
 
             expect(result.payer).toEqual({
                 type: 'family_member',
-                familyId: 'family-123',
                 memberId: 'member-456',
             });
         });
@@ -917,6 +889,7 @@ describe('SubscriptionFieldMapper', () => {
                 startDate: new Date('2024-01-01'),
                 recurrency: 'monthly',
                 owner: 'personal',
+                price: { value: 9.99, currency: 'USD' },
             };
 
             const result = mapper.validate(record);
@@ -932,6 +905,7 @@ describe('SubscriptionFieldMapper', () => {
                 startDate: new Date('2024-01-01'),
                 recurrency: 'monthly',
                 owner: 'personal',
+                price: { value: 9.99, currency: 'USD' },
             };
 
             const result = mapper.validate(record);
@@ -963,6 +937,7 @@ describe('SubscriptionFieldMapper', () => {
                 startDate: new Date('2024-01-01'),
                 recurrency: 'monthly',
                 owner: 'personal',
+                price: { value: 9.99, currency: 'USD' },
             };
 
             const result = mapper.validate(record);
@@ -978,6 +953,7 @@ describe('SubscriptionFieldMapper', () => {
                 startDate: new Date('2024-01-01'),
                 recurrency: 'monthly',
                 owner: 'personal',
+                price: { value: 9.99, currency: 'USD' },
             };
 
             const result = mapper.validate(record);
@@ -995,6 +971,7 @@ describe('SubscriptionFieldMapper', () => {
                     startDate: new Date('2024-01-01'),
                     recurrency,
                     owner: 'personal',
+                    price: { value: 9.99, currency: 'USD' },
                 };
 
                 const result = mapper.validate(record);
@@ -1209,6 +1186,7 @@ describe('SubscriptionFieldMapper', () => {
                 startDate: new Date('2024-01-01'),
                 recurrency: 'monthly',
                 owner: 'personal',
+                price: { value: 9.99, currency: 'USD' },
                 payer: {
                     type: 'family',
                 },
@@ -1220,12 +1198,13 @@ describe('SubscriptionFieldMapper', () => {
             expect(result.errors).toHaveLength(0);
         });
 
-        it('should reject payer without familyId', () => {
+        it('should accept payer without memberId for family type', () => {
             const record: Partial<DtoCreateSubscriptionRequest> = {
                 providerId: 'provider-123',
                 startDate: new Date('2024-01-01'),
                 recurrency: 'monthly',
                 owner: 'personal',
+                price: { value: 9.99, currency: 'USD' },
                 payer: {
                     type: 'family',
                 },
@@ -1233,12 +1212,8 @@ describe('SubscriptionFieldMapper', () => {
 
             const result = mapper.validate(record);
 
-            expect(result.isValid).toBe(false);
-            expect(result.errors).toContainEqual({
-                field: 'payer.familyId',
-                message: 'Payer family ID is required',
-                severity: 'error',
-            });
+            expect(result.isValid).toBe(true);
+            expect(result.errors).toHaveLength(0);
         });
 
         it('should reject family_member payer without memberId', () => {
@@ -1247,6 +1222,7 @@ describe('SubscriptionFieldMapper', () => {
                 startDate: new Date('2024-01-01'),
                 recurrency: 'monthly',
                 owner: 'personal',
+                price: { value: 9.99, currency: 'USD' },
                 payer: {
                     type: 'family_member',
                 },
@@ -1268,6 +1244,7 @@ describe('SubscriptionFieldMapper', () => {
                 startDate: new Date('2024-01-01'),
                 recurrency: 'monthly',
                 owner: 'personal',
+                price: { value: 9.99, currency: 'USD' },
                 freeTrial: {
                     startDate: new Date('2024-01-01'),
                     endDate: new Date('2024-01-31'),

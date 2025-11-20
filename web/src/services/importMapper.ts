@@ -343,10 +343,22 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
     // Map custom price
     if (rawRecord.price && typeof rawRecord.price === 'object') {
       mapped.price = this.mapCustomPrice(rawRecord.price);
+    } else if (!this.isEmpty(rawRecord.customPrice) && typeof rawRecord.customPrice === 'object') {
+      mapped.price = this.mapCustomPrice(rawRecord.customPrice);
     } else if (!this.isEmpty(rawRecord.amount) && !this.isEmpty(rawRecord.currency)) {
       mapped.price = this.mapCustomPrice({
         value: rawRecord.amount,
         currency: rawRecord.currency,
+      });
+    } else if (!this.isEmpty(rawRecord.priceAmount) && !this.isEmpty(rawRecord.priceCurrency)) {
+      mapped.price = this.mapCustomPrice({
+        value: rawRecord.priceAmount,
+        currency: rawRecord.priceCurrency,
+      });
+    } else if (!this.isEmpty(rawRecord.customPriceAmount) && !this.isEmpty(rawRecord.customPriceCurrency)) {
+      mapped.price = this.mapCustomPrice({
+        value: rawRecord.customPriceAmount,
+        currency: rawRecord.customPriceCurrency,
       });
     }
 
@@ -363,10 +375,9 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
     // Map payer
     if (rawRecord.payer && typeof rawRecord.payer === 'object') {
       mapped.payer = this.mapPayer(rawRecord.payer);
-    } else if (!this.isEmpty(rawRecord.payerType) && !this.isEmpty(rawRecord.payerFamilyId)) {
+    } else if (!this.isEmpty(rawRecord.payerType)) {
       mapped.payer = this.mapPayer({
         type: rawRecord.payerType,
-        familyId: rawRecord.payerFamilyId,
         memberId: rawRecord.payerMemberId,
       });
     }
@@ -456,7 +467,7 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
 
     // Validate custom price (required)
     if (!record.price) {
-      errors.push(this.createError('customPrice', 'Price is required'));
+      errors.push(this.createError('price', 'Price is required'));
     } else {
       const priceErrors = this.validateCustomPrice(record.price);
       errors.push(...priceErrors);
@@ -542,15 +553,15 @@ export class SubscriptionFieldMapper extends BaseFieldMapper<DtoCreateSubscripti
     const errors: ValidationError[] = [];
 
     if (this.isEmpty(price.value)) {
-      errors.push(this.createError('customPrice.value', 'Price value is required'));
+      errors.push(this.createError('price.value', 'Price value is required'));
     } else if (typeof price.value !== 'number' || price.value < 0) {
-      errors.push(this.createError('customPrice.value', 'Price value must be a non-negative number'));
+      errors.push(this.createError('price.value', 'Price value must be a non-negative number'));
     }
 
     if (this.isEmpty(price.currency)) {
-      errors.push(this.createError('customPrice.currency', 'Price currency is required'));
+      errors.push(this.createError('price.currency', 'Price currency is required'));
     } else if (price.currency.length !== 3) {
-      errors.push(this.createError('customPrice.currency', 'Currency must be a 3-letter ISO code (e.g., USD, EUR)'));
+      errors.push(this.createError('price.currency', 'Currency must be a 3-letter ISO code (e.g., USD, EUR)'));
     }
 
     return errors;
