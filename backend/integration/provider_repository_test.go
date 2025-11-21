@@ -27,7 +27,6 @@ func TestProviderRepository_CRUD(t *testing.T) {
 		nil, // description
 		nil, // icon
 		nil, // url
-		nil, // pricing url
 		[]types.LabelID{},
 		types.SystemOwner,
 		time.Now().UTC(),
