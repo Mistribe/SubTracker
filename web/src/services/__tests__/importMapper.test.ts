@@ -962,8 +962,9 @@ describe('SubscriptionFieldMapper', () => {
             expect(result.errors).toHaveLength(0);
         });
 
-        it('should validate all recurrency types', () => {
-            const recurrencies = ['daily', 'weekly', 'monthly', 'quarterly', 'yearly', 'custom'];
+        it('should validate all supported recurrency types', () => {
+            // SubscriptionFieldMapper.validate accepts only the recurrencies defined in the model
+            const recurrencies = ['one_time', 'monthly', 'quarterly', 'half_yearly', 'yearly', 'custom'];
 
             recurrencies.forEach((recurrency) => {
                 const record: Partial<DtoCreateSubscriptionRequest> = {
@@ -980,7 +981,7 @@ describe('SubscriptionFieldMapper', () => {
             });
         });
 
-        it('should reject missing providerId', () => {
+        it('should reject missing provider (providerKey)', () => {
             const record: Partial<DtoCreateSubscriptionRequest> = {
                 startDate: new Date('2024-01-01'),
                 recurrency: 'monthly',
@@ -991,8 +992,8 @@ describe('SubscriptionFieldMapper', () => {
 
             expect(result.isValid).toBe(false);
             expect(result.errors).toContainEqual({
-                field: 'providerId',
-                message: 'Provider ID is required',
+                field: 'providerKey',
+                message: 'Provider key is required',
                 severity: 'error',
             });
         });

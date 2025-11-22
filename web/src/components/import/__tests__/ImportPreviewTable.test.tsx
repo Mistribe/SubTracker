@@ -148,8 +148,8 @@ describe('ImportPreviewTable - ID Column Display', () => {
       />
     );
 
-    // Find the code element containing the UUID (may be truncated)
-    const codeElement = container.querySelector('code.font-mono');
+    // Find the code element containing the UUID (scoped to the first data row)
+    const codeElement = container.querySelector('tr[data-row-index="0"] code.font-mono');
     expect(codeElement).toBeInTheDocument();
     // Check that it starts with the UUID prefix (it may be truncated with ...)
     expect(codeElement?.textContent).toMatch(/^550e8400-e29b-41d4-a/);
