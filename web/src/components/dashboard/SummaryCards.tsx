@@ -3,7 +3,7 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Calendar, CreditCard, TrendingUp, ArrowUpRight, ArrowDownRight, User, Users} from "lucide-react";
 import Money from "@/components/ui/money";
 import type {Amount} from "@/models/amount.ts";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 
 interface SummaryCardsProps {
     totalMonthly: Amount;
