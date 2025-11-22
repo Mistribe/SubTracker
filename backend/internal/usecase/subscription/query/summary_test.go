@@ -11,6 +11,7 @@ import (
 
 	"github.com/mistribe/subtracker/internal/domain/account"
 	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
@@ -40,6 +41,31 @@ func buildSub(
 	)
 }
 
+// build test family with a member linked to the given user
+func buildTestFamily(userID types.UserID) family.Family {
+	familyID := types.NewFamilyID()
+	memberID := types.NewFamilyMemberID()
+	member := family.NewMember(
+		memberID,
+		familyID,
+		"Test User",
+		family.OwnerMemberType,
+		nil,
+		time.Now(),
+		time.Now(),
+	)
+	member.SetUserId(&userID)
+
+	return family.NewFamily(
+		familyID,
+		userID,
+		"Test Family",
+		[]family.Member{member},
+		time.Now(),
+		time.Now(),
+	)
+}
+
 func TestSummaryQueryHandler_Handle(t *testing.T) {
 	ctx := context.Background()
 	userID := types.UserID("user-1")
@@ -53,6 +79,7 @@ func TestSummaryQueryHandler_Handle(t *testing.T) {
 	t.Run("returns fault when currency repository errors", func(t *testing.T) {
 		subRepo := ports.NewMockSubscriptionRepository(t)
 		curRepo := ports.NewMockCurrencyRepository(t)
+		famRepo := ports.NewMockFamilyRepository(t)
 		acctService := ports.NewMockAccountService(t)
 		auth := ports.NewMockAuthentication(t)
 		exch := ports.NewMockExchange(t)
@@ -62,7 +89,7 @@ func TestSummaryQueryHandler_Handle(t *testing.T) {
 		acctService.EXPECT().GetPreferredCurrency(mock.Anything, userID).Return(currency.USD)
 		curRepo.EXPECT().GetRatesByDate(mock.Anything, mock.Anything).Return(currency.Rates{}, assert.AnError)
 
-		h := query.NewSummaryQueryHandler(subRepo, curRepo, acctService, auth, exch)
+		h := query.NewSummaryQueryHandler(subRepo, curRepo, famRepo, acctService, auth, exch)
 		res := h.Handle(ctx, query.SummaryQuery{})
 		assert.True(t, res.IsFaulted())
 	})
@@ -71,6 +98,7 @@ func TestSummaryQueryHandler_Handle(t *testing.T) {
 	t.Run("computes totals and rankings", func(t *testing.T) {
 		subRepo := ports.NewMockSubscriptionRepository(t)
 		curRepo := ports.NewMockCurrencyRepository(t)
+		famRepo := ports.NewMockFamilyRepository(t)
 		acctService := ports.NewMockAccountService(t)
 		auth := ports.NewMockAuthentication(t)
 		exch := ports.NewMockExchange(t)
@@ -80,6 +108,9 @@ func TestSummaryQueryHandler_Handle(t *testing.T) {
 		acctService.EXPECT().GetPreferredCurrency(mock.Anything, userID).Return(currency.USD)
 		// rates
 		curRepo.EXPECT().GetRatesByDate(mock.Anything, mock.Anything).Return(currency.Rates{}, nil)
+		// family - return a simple family for classification (subscriptions have no payer, so will be personal)
+		testFamily := buildTestFamily(userID)
+		famRepo.EXPECT().GetAccountFamily(mock.Anything, userID).Return(testFamily, nil)
 
 		// Build subscriptions
 		start := time.Now().AddDate(0, -2, 0)
@@ -102,7 +133,7 @@ func TestSummaryQueryHandler_Handle(t *testing.T) {
 				return initial, nil
 			}).Maybe()
 
-		h := query.NewSummaryQueryHandler(subRepo, curRepo, acctService, auth, exch)
+		h := query.NewSummaryQueryHandler(subRepo, curRepo, famRepo, acctService, auth, exch)
 		res := h.Handle(ctx, query.SummaryQuery{
 			TopProviders:     2,
 			TopLabels:        2,

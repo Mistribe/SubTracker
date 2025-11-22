@@ -55,11 +55,21 @@ func (e SummaryEndpoint) Handle(c *gin.Context) {
 		r,
 		WithMapping[query.SummaryQueryResponse](func(res query.SummaryQueryResponse) any {
 			return dto.SubscriptionSummaryResponse{
-				Active:         res.Active,
-				TotalMonthly:   dto.NewAmount(res.TotalMonthly),
-				TotalYearly:    dto.NewAmount(res.TotalYearly),
-				TotalLastMonth: dto.NewAmount(res.TotalLastMonth),
-				TotalLastYear:  dto.NewAmount(res.TotalLastYear),
+				Active:            res.Active,
+				ActivePersonal:    res.ActivePersonal,
+				ActiveFamily:      res.ActiveFamily,
+				TotalMonthly:      dto.NewAmount(res.TotalMonthly),
+				TotalYearly:       dto.NewAmount(res.TotalYearly),
+				TotalLastMonth:    dto.NewAmount(res.TotalLastMonth),
+				TotalLastYear:     dto.NewAmount(res.TotalLastYear),
+				PersonalMonthly:   dto.NewAmount(res.PersonalMonthly),
+				PersonalYearly:    dto.NewAmount(res.PersonalYearly),
+				PersonalLastMonth: dto.NewAmount(res.PersonalLastMonth),
+				PersonalLastYear:  dto.NewAmount(res.PersonalLastYear),
+				FamilyMonthly:     dto.NewAmount(res.FamilyMonthly),
+				FamilyYearly:      dto.NewAmount(res.FamilyYearly),
+				FamilyLastMonth:   dto.NewAmount(res.FamilyLastMonth),
+				FamilyLastYear:    dto.NewAmount(res.FamilyLastYear),
 				TopProviders: herd.Select(res.TopProviders,
 					func(topProvider query.SummaryQueryTopProvidersResponse) dto.SubscriptionSummaryTopProviderResponse {
 						return dto.SubscriptionSummaryTopProviderResponse{
