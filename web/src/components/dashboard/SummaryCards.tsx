@@ -1,6 +1,6 @@
 import {Skeleton} from "@/components/ui/skeleton";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {Calendar, CreditCard, TrendingUp, ArrowUpRight, ArrowDownRight} from "lucide-react";
+import {Calendar, CreditCard, TrendingUp, ArrowUpRight, ArrowDownRight, User, Users} from "lucide-react";
 import Money from "@/components/ui/money";
 import type {Amount} from "@/models/amount.ts";
 import { useMemo } from "react";
@@ -10,7 +10,17 @@ interface SummaryCardsProps {
     totalYearly: Amount;
     totalLastMonth: Amount;
     totalLastYear: Amount;
+    personalMonthly?: Amount;
+    personalYearly?: Amount;
+    personalLastMonth?: Amount;
+    personalLastYear?: Amount;
+    familyMonthly?: Amount;
+    familyYearly?: Amount;
+    familyLastMonth?: Amount;
+    familyLastYear?: Amount;
     activeSubscriptionsCount: number;
+    activePersonal: number;
+    activeFamily: number;
     isLoading: boolean;
 }
 
@@ -19,10 +29,20 @@ const SummaryCards = ({
                           totalYearly,
                           totalLastMonth,
                           totalLastYear,
+                          personalMonthly,
+                          personalYearly,
+                          personalLastMonth,
+                          personalLastYear,
+                          familyMonthly,
+                          familyYearly,
+                          familyLastMonth,
+                          familyLastYear,
                           activeSubscriptionsCount,
+                          activePersonal,
+                          activeFamily,
                           isLoading,
                       }: SummaryCardsProps) => {
-    const computeChange = (current: Amount, previous: Amount): number | null => {
+    const computeChange = (current: Amount | undefined, previous: Amount | undefined): number | null => {
         const prevVal = previous?.value;
         const currVal = current?.value;
         if (prevVal == null || currVal == null || prevVal === 0) return null;
@@ -32,6 +52,73 @@ const SummaryCards = ({
 
     const monthlyChange = useMemo(() => computeChange(totalMonthly, totalLastMonth), [totalMonthly, totalLastMonth]);
     const yearlyChange = useMemo(() => computeChange(totalYearly, totalLastYear), [totalYearly, totalLastYear]);
+    const personalMonthlyChange = useMemo(() => computeChange(personalMonthly, personalLastMonth), [personalMonthly, personalLastMonth]);
+    const personalYearlyChange = useMemo(() => computeChange(personalYearly, personalLastYear), [personalYearly, personalLastYear]);
+    const familyMonthlyChange = useMemo(() => computeChange(familyMonthly, familyLastMonth), [familyMonthly, familyLastMonth]);
+    const familyYearlyChange = useMemo(() => computeChange(familyYearly, familyLastYear), [familyYearly, familyLastYear]);
+
+    const renderTrendIndicator = (change: number | null) => {
+        if (change === null) {
+            return <span className="ml-1 text-sm text-muted-foreground">—</span>;
+        }
+        return (
+            <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                    change > 0
+                        ? "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                        : change < 0
+                            ? "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400"
+                            : "bg-muted text-muted-foreground"
+                }`}
+            >
+                {change > 0 ? (
+                    <ArrowUpRight className="h-3 w-3 mr-1" />
+                ) : change < 0 ? (
+                    <ArrowDownRight className="h-3 w-3 mr-1" />
+                ) : null}
+                {Math.abs(change).toFixed(1)}%
+            </span>
+        );
+    };
+
+    const renderBreakdownRow = (
+        label: string,
+        amount: Amount | undefined,
+        change: number | null,
+        icon: React.ReactNode,
+        testId: string
+    ) => {
+        if (!amount) return null;
+        return (
+            <div className="flex items-center justify-between py-2 border-b last:border-b-0" data-testid={testId}>
+                <div className="flex items-center gap-2">
+                    {icon}
+                    <span className="text-sm font-medium text-muted-foreground">{label}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Money amount={amount} className="text-lg font-semibold" />
+                    {renderTrendIndicator(change)}
+                </div>
+            </div>
+        );
+    };
+
+    const renderCountBreakdownRow = (
+        label: string,
+        count: number,
+        icon: React.ReactNode,
+        testId: string
+    ) => {
+        return (
+            <div className="flex items-center justify-between py-2 border-b last:border-b-0" data-testid={testId}>
+                <div className="flex items-center gap-2">
+                    {icon}
+                    <span className="text-sm font-medium text-muted-foreground">{label}</span>
+                </div>
+                <span className="text-lg font-semibold">{count}</span>
+            </div>
+        );
+    };
 
     return (
         <div className="mb-8">
@@ -45,31 +132,33 @@ const SummaryCards = ({
                     </CardHeader>
                     <CardContent>
                         {isLoading ? (
-                            <Skeleton className="h-10 w-28"/>
+                            <div className="space-y-2">
+                                <Skeleton className="h-10 w-full"/>
+                                <Skeleton className="h-10 w-full"/>
+                                <Skeleton className="h-10 w-full"/>
+                            </div>
                         ) : (
-                            <div className="flex items-center gap-3">
-                                <Money
-                                    amount={totalMonthly}
-                                    className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent"
-                                />
-                                {monthlyChange === null ? (
-                                    <span className="ml-1 text-sm text-muted-foreground">—</span>
-                                ) : (
-                                    <span
-                                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${monthlyChange > 0
-                                            ? "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400"
-                                            : monthlyChange < 0
-                                                ? "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400"
-                                                : "bg-muted text-muted-foreground"}
-                                        `}
-                                    >
-                                        {monthlyChange > 0 ? (
-                                            <ArrowUpRight className="h-3 w-3 mr-1" />
-                                        ) : monthlyChange < 0 ? (
-                                            <ArrowDownRight className="h-3 w-3 mr-1" />
-                                        ) : null}
-                                        {Math.abs(monthlyChange).toFixed(1)}%
-                                    </span>
+                            <div className="space-y-1">
+                                {renderBreakdownRow(
+                                    "Personal",
+                                    personalMonthly,
+                                    personalMonthlyChange,
+                                    <User className="h-4 w-4 text-blue-500" />,
+                                    "monthly-personal"
+                                )}
+                                {renderBreakdownRow(
+                                    "Family",
+                                    familyMonthly,
+                                    familyMonthlyChange,
+                                    <Users className="h-4 w-4 text-purple-500" />,
+                                    "monthly-family"
+                                )}
+                                {renderBreakdownRow(
+                                    "Total",
+                                    totalMonthly,
+                                    monthlyChange,
+                                    <CreditCard className="h-4 w-4 text-blue-700" />,
+                                    "monthly-total"
                                 )}
                             </div>
                         )}
@@ -85,31 +174,33 @@ const SummaryCards = ({
                     </CardHeader>
                     <CardContent>
                         {isLoading ? (
-                            <Skeleton className="h-10 w-28"/>
+                            <div className="space-y-2">
+                                <Skeleton className="h-10 w-full"/>
+                                <Skeleton className="h-10 w-full"/>
+                                <Skeleton className="h-10 w-full"/>
+                            </div>
                         ) : (
-                            <div className="flex items-center gap-3">
-                                <Money
-                                    amount={totalYearly}
-                                    className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-purple-700 bg-clip-text text-transparent"
-                                />
-                                {yearlyChange === null ? (
-                                    <span className="ml-1 text-sm text-muted-foreground">—</span>
-                                ) : (
-                                    <span
-                                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${yearlyChange > 0
-                                            ? "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400"
-                                            : yearlyChange < 0
-                                                ? "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400"
-                                                : "bg-muted text-muted-foreground"}
-                                        `}
-                                    >
-                                        {yearlyChange > 0 ? (
-                                            <ArrowUpRight className="h-3 w-3 mr-1" />
-                                        ) : yearlyChange < 0 ? (
-                                            <ArrowDownRight className="h-3 w-3 mr-1" />
-                                        ) : null}
-                                        {Math.abs(yearlyChange).toFixed(1)}%
-                                    </span>
+                            <div className="space-y-1">
+                                {renderBreakdownRow(
+                                    "Personal",
+                                    personalYearly,
+                                    personalYearlyChange,
+                                    <User className="h-4 w-4 text-blue-500" />,
+                                    "yearly-personal"
+                                )}
+                                {renderBreakdownRow(
+                                    "Family",
+                                    familyYearly,
+                                    familyYearlyChange,
+                                    <Users className="h-4 w-4 text-purple-500" />,
+                                    "yearly-family"
+                                )}
+                                {renderBreakdownRow(
+                                    "Total",
+                                    totalYearly,
+                                    yearlyChange,
+                                    <TrendingUp className="h-4 w-4 text-purple-700" />,
+                                    "yearly-total"
                                 )}
                             </div>
                         )}
@@ -125,12 +216,31 @@ const SummaryCards = ({
                     </CardHeader>
                     <CardContent>
                         {isLoading ? (
-                            <Skeleton className="h-10 w-28"/>
+                            <div className="space-y-2">
+                                <Skeleton className="h-10 w-full"/>
+                                <Skeleton className="h-10 w-full"/>
+                                <Skeleton className="h-10 w-full"/>
+                            </div>
                         ) : (
-                            <div className="flex items-center">
-                                <p className="text-3xl font-bold bg-gradient-to-r from-green-500 to-green-700 bg-clip-text text-transparent">
-                                    {activeSubscriptionsCount}
-                                </p>
+                            <div className="space-y-1">
+                                {renderCountBreakdownRow(
+                                    "Personal",
+                                    activePersonal,
+                                    <User className="h-4 w-4 text-blue-500" />,
+                                    "active-personal"
+                                )}
+                                {renderCountBreakdownRow(
+                                    "Family",
+                                    activeFamily,
+                                    <Users className="h-4 w-4 text-purple-500" />,
+                                    "active-family"
+                                )}
+                                {renderCountBreakdownRow(
+                                    "Total",
+                                    activeSubscriptionsCount,
+                                    <Calendar className="h-4 w-4 text-green-700" />,
+                                    "active-total"
+                                )}
                             </div>
                         )}
                     </CardContent>

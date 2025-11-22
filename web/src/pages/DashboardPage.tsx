@@ -11,11 +11,21 @@ import {useSubscriptionSummaryQuery} from "@/hooks/subscriptions/useSubscription
 const DashboardPage = () => {
     const {
         activeSubscriptions: summaryActiveSubscriptions,
+        activePersonal: summaryActivePersonal,
+        activeFamily: summaryActiveFamily,
         upcomingRenewals: summaryUpcomingRenewals,
         totalMonthly: summaryMonthly,
         totalYearly: summaryYearly,
         totalLastMonth: summaryLastMonth,
         totalLastYear: summaryLastYear,
+        personalMonthly: summaryPersonalMonthly,
+        personalYearly: summaryPersonalYearly,
+        personalLastMonth: summaryPersonalLastMonth,
+        personalLastYear: summaryPersonalLastYear,
+        familyMonthly: summaryFamilyMonthly,
+        familyYearly: summaryFamilyYearly,
+        familyLastMonth: summaryFamilyLastMonth,
+        familyLastYear: summaryFamilyLastYear,
         topProviders: summaryTopProviders,
         topLabels: summaryTopLabels,
         isLoading: isLoadingSummary,
@@ -45,7 +55,17 @@ const DashboardPage = () => {
                 totalYearly={summaryYearly}
                 totalLastMonth={summaryLastMonth}
                 totalLastYear={summaryLastYear}
+                personalMonthly={summaryPersonalMonthly}
+                personalYearly={summaryPersonalYearly}
+                personalLastMonth={summaryPersonalLastMonth}
+                personalLastYear={summaryPersonalLastYear}
+                familyMonthly={summaryFamilyMonthly}
+                familyYearly={summaryFamilyYearly}
+                familyLastMonth={summaryFamilyLastMonth}
+                familyLastYear={summaryFamilyLastYear}
                 activeSubscriptionsCount={summaryActiveSubscriptions}
+                activePersonal={summaryActivePersonal}
+                activeFamily={summaryActiveFamily}
                 isLoading={ isLoadingSummary}
             />
 
