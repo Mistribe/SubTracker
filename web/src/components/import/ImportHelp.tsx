@@ -58,7 +58,17 @@ export function ImportHelp({ entityType }: ImportHelpProps) {
         <Alert>
           <FileText className="h-4 w-4" />
           <AlertDescription>
-            Download the template file to see the correct format and field names for importing {entityType}.
+            Download the template file to see the correct format and field names for importing {entityType}. 
+            Templates include examples with and without custom UUIDs. 
+            For more details, see the{' '}
+            <a 
+              href="/templates/README.md" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="underline hover:text-primary font-medium"
+            >
+              template documentation
+            </a>.
           </AlertDescription>
         </Alert>
 
@@ -98,6 +108,13 @@ export function ImportHelp({ entityType }: ImportHelpProps) {
               <p className="text-muted-foreground mt-2">
                 Maximum file size: 10MB
               </p>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="uuid">
+            <AccordionTrigger>Custom UUIDs (Optional)</AccordionTrigger>
+            <AccordionContent className="space-y-3 text-sm">
+              <UuidImportHelp />
             </AccordionContent>
           </AccordionItem>
 
@@ -144,6 +161,7 @@ function LabelsFieldMapping() {
       <div>
         <h4 className="font-semibold mb-1">Optional Fields</h4>
         <ul className="list-disc list-inside space-y-1 ml-2">
+          <li><code className="text-xs bg-muted px-1 py-0.5 rounded">id</code> - Custom UUID for the label (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). If omitted, a UUID will be auto-generated.</li>
           <li><code className="text-xs bg-muted px-1 py-0.5 rounded">ownerType</code> - Owner type: personal, family, or system (defaults to personal)</li>
           <li><code className="text-xs bg-muted px-1 py-0.5 rounded">ownerFamilyId</code> - Family ID (required if ownerType is family)</li>
         </ul>
@@ -164,6 +182,7 @@ function ProvidersFieldMapping() {
       <div>
         <h4 className="font-semibold mb-1">Optional Fields</h4>
         <ul className="list-disc list-inside space-y-1 ml-2">
+          <li><code className="text-xs bg-muted px-1 py-0.5 rounded">id</code> - Custom UUID for the provider (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). If omitted, a UUID will be auto-generated.</li>
           <li><code className="text-xs bg-muted px-1 py-0.5 rounded">description</code> - Provider description (string)</li>
           <li><code className="text-xs bg-muted px-1 py-0.5 rounded">url</code> - Provider website URL (valid URL)</li>
           <li><code className="text-xs bg-muted px-1 py-0.5 rounded">iconUrl</code> - Provider icon URL (valid URL)</li>
@@ -192,6 +211,7 @@ function SubscriptionsFieldMapping() {
       <div>
         <h4 className="font-semibold mb-1">Optional Fields</h4>
         <ul className="list-disc list-inside space-y-1 ml-2">
+          <li><code className="text-xs bg-muted px-1 py-0.5 rounded">id</code> - Custom UUID for the subscription (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). If omitted, a UUID will be auto-generated.</li>
           <li><code className="text-xs bg-muted px-1 py-0.5 rounded">friendlyName</code> - Custom subscription name (string)</li>
           <li><code className="text-xs bg-muted px-1 py-0.5 rounded">endDate</code> - End date (ISO 8601 format: YYYY-MM-DD)</li>
           <li><code className="text-xs bg-muted px-1 py-0.5 rounded">customRecurrency</code> - Custom recurrency period (number, required if recurrency is custom)</li>
@@ -214,6 +234,12 @@ function SubscriptionsFieldMapping() {
 function LabelsValidation() {
   return (
     <div className="space-y-2">
+      <Alert variant="default">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          <strong>ID:</strong> If provided, must be a valid UUID format (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). Leave empty for auto-generation.
+        </AlertDescription>
+      </Alert>
       <Alert variant="default">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
@@ -248,6 +274,12 @@ function ProvidersValidation() {
       <Alert variant="default">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
+          <strong>ID:</strong> If provided, must be a valid UUID format (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). Leave empty for auto-generation.
+        </AlertDescription>
+      </Alert>
+      <Alert variant="default">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
           <strong>Name:</strong> Cannot be empty
         </AlertDescription>
       </Alert>
@@ -276,6 +308,12 @@ function ProvidersValidation() {
 function SubscriptionsValidation() {
   return (
     <div className="space-y-2">
+      <Alert variant="default">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          <strong>ID:</strong> If provided, must be a valid UUID format (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx). Leave empty for auto-generation.
+        </AlertDescription>
+      </Alert>
       <Alert variant="default">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
@@ -334,6 +372,69 @@ function SubscriptionsValidation() {
   );
 }
 
+function UuidImportHelp() {
+  return (
+    <div className="space-y-3">
+      <div>
+        <h4 className="font-semibold mb-2">What are Custom UUIDs?</h4>
+        <p className="text-muted-foreground">
+          You can optionally specify custom UUIDs (Universally Unique Identifiers) for your entities during import. 
+          This is useful when migrating data from another system and you want to maintain consistent identifiers.
+        </p>
+      </div>
+      
+      <div>
+        <h4 className="font-semibold mb-2">When to Use Custom UUIDs</h4>
+        <ul className="list-disc list-inside space-y-1 ml-2 text-muted-foreground">
+          <li>Migrating data from another system</li>
+          <li>Maintaining identifier consistency across environments</li>
+          <li>Importing data with existing relationships that reference specific IDs</li>
+          <li>Re-importing data after a system restore</li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 className="font-semibold mb-2">UUID Format Requirements</h4>
+        <div className="bg-muted p-3 rounded-md space-y-2">
+          <p className="text-xs">
+            <strong>Format:</strong> <code className="text-xs bg-background px-1 py-0.5 rounded">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code>
+          </p>
+          <p className="text-xs">
+            <strong>Example:</strong> <code className="text-xs bg-background px-1 py-0.5 rounded">550e8400-e29b-41d4-a716-446655440000</code>
+          </p>
+          <p className="text-xs text-muted-foreground">
+            UUIDs must be 36 characters long with hyphens in specific positions. Each 'x' represents a hexadecimal digit (0-9, a-f).
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <h4 className="font-semibold mb-2">Auto-Generation</h4>
+        <p className="text-muted-foreground">
+          If you don't provide an ID field (or leave it empty), the system will automatically generate a unique UUID for each entity. 
+          This is the recommended approach for most imports.
+        </p>
+      </div>
+
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          <strong>Important:</strong> If you specify a UUID that already exists in the system, the import will fail for that record with a conflict error. 
+          Each UUID must be unique across all entities of the same type.
+        </AlertDescription>
+      </Alert>
+
+      <div>
+        <h4 className="font-semibold mb-2">Template Examples</h4>
+        <p className="text-muted-foreground text-xs">
+          Download the template files to see examples of records with and without custom UUIDs. 
+          The templates demonstrate both use cases to help you understand when and how to use this feature.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function CommonErrors() {
   return (
     <div className="space-y-2">
@@ -353,6 +454,18 @@ function CommonErrors() {
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
           <strong>Required field missing:</strong> Check that all required fields are present in your file and not empty
+        </AlertDescription>
+      </Alert>
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          <strong>Invalid UUID format:</strong> If providing custom IDs, ensure they follow the UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+        </AlertDescription>
+      </Alert>
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          <strong>Duplicate UUID:</strong> The specified UUID already exists in the system. Each UUID must be unique, or leave the ID field empty for auto-generation.
         </AlertDescription>
       </Alert>
       <Alert variant="destructive">

@@ -10,7 +10,11 @@ import { NoProviders } from "@/components/providers/ui/EmptyStates";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import Provider from "@/models/provider";
-import { PlusIcon, Upload } from "lucide-react";
+import { PlusIcon } from "lucide-react";
+import { ImportExportDropdown } from "@/components/import-export/ImportExportDropdown";
+import { ExportConfirmationDialog } from "@/components/import-export/ExportConfirmationDialog";
+import { useExportService } from "@/services/exportService";
+import { toast } from "sonner";
 import { useProvidersQuotaQuery } from "@/hooks/providers/useProvidersQuotaQuery.ts";
 import { QuotaButton } from "@/components/quotas/QuotaButton";
 import { FeatureId } from "@/models/billing.ts";
@@ -27,6 +31,10 @@ const ProvidersPage = () => {
     const [isAddingProvider, setIsAddingProvider] = useState(false);
     const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
     const [searchText, setSearchText] = useState("");
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
+
+    const { exportProviders } = useExportService();
 
     // Check providers quota
     const { data: providersQuota } = useProvidersQuotaQuery();
@@ -65,6 +73,23 @@ const ProvidersPage = () => {
         return () => observer.disconnect();
     }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
+    const handleExport = async (format: "csv" | "json" | "yaml") => {
+        setIsExporting(true);
+        try {
+            await exportProviders(format);
+            toast.success(`Providers exported successfully as ${format.toUpperCase()}`);
+            // Close dialog after a short delay to show the last funny message
+            setTimeout(() => {
+                setIsExportDialogOpen(false);
+                setIsExporting(false);
+            }, 500);
+        } catch (error) {
+            toast.error("Failed to export providers");
+            console.error("Export error:", error);
+            setIsExporting(false);
+        }
+    };
+
     return (
         <div className="container mx-auto py-6">
             <PageHeader
@@ -83,13 +108,10 @@ const ProvidersPage = () => {
                 }
                 actionButton={
                     <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={() => navigate('/providers/import')}
-                        >
-                            <Upload className="mr-2 h-4 w-4" />
-                            Import from file
-                        </Button>
+                        <ImportExportDropdown
+                            onImport={() => navigate('/providers/import')}
+                            onExport={() => setIsExportDialogOpen(true)}
+                        />
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -179,6 +201,14 @@ const ProvidersPage = () => {
                     provider={editingProvider}
                 />
             )}
+
+            <ExportConfirmationDialog
+                open={isExportDialogOpen}
+                onOpenChange={setIsExportDialogOpen}
+                onConfirm={handleExport}
+                entityType="providers"
+                isExporting={isExporting}
+            />
         </div>
     );
 };

@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/mistribe/subtracker/internal/domain/authorization"
@@ -9,6 +10,7 @@ import (
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
+	"github.com/mistribe/subtracker/internal/usecase/shared"
 	"github.com/mistribe/subtracker/pkg/langext/option"
 	"github.com/mistribe/subtracker/pkg/langext/result"
 )
@@ -17,10 +19,12 @@ type UpdateSubscriptionCommand struct {
 	SubscriptionID   types.SubscriptionID
 	FriendlyName     *string
 	FreeTrial        subscription.FreeTrial
-	ProviderID       types.ProviderID
+	ProviderID       *types.ProviderID
+	ProviderKey      *string
 	Price            currency.Amount
-	Owner            types.Owner
-	Payer            subscription.Payer
+	Owner            types.OwnerType
+	PayerType        *subscription.PayerType
+	PayerMemberId    *types.FamilyMemberID
 	FamilyUsers      []types.FamilyMemberID
 	Labels           []types.LabelID
 	StartDate        time.Time
@@ -34,16 +38,25 @@ type UpdateSubscriptionCommandHandler struct {
 	subscriptionRepository ports.SubscriptionRepository
 	familyRepository       ports.FamilyRepository
 	authorization          ports.Authorization
+	ownerFactory           shared.OwnerFactory
+	providerRepository     ports.ProviderRepository
+	authentication         ports.Authentication
 }
 
 func NewUpdateSubscriptionCommandHandler(
 	subscriptionRepository ports.SubscriptionRepository,
 	familyRepository ports.FamilyRepository,
+	ownerFactory shared.OwnerFactory,
+	authentication ports.Authentication,
+	providerRepository ports.ProviderRepository,
 	authorization ports.Authorization) *UpdateSubscriptionCommandHandler {
 	return &UpdateSubscriptionCommandHandler{
 		subscriptionRepository: subscriptionRepository,
 		familyRepository:       familyRepository,
 		authorization:          authorization,
+		ownerFactory:           ownerFactory,
+		authentication:         authentication,
+		providerRepository:     providerRepository,
 	}
 }
 
@@ -71,6 +84,26 @@ func (h UpdateSubscriptionCommandHandler) updateSubscription(
 	cmd UpdateSubscriptionCommand,
 	sub subscription.Subscription) result.Result[subscription.Subscription] {
 
+	connectedUser := h.authentication.MustGetConnectedAccount(ctx)
+	connectedUserId := connectedUser.UserID()
+
+	var providerID types.ProviderID
+	if cmd.ProviderID != nil {
+		providerID = *cmd.ProviderID
+	} else if cmd.ProviderKey != nil {
+		provider, err := h.providerRepository.GetByProviderKeyForUser(ctx, connectedUserId, *cmd.ProviderKey)
+		if err != nil {
+			return result.Fail[subscription.Subscription](err)
+		}
+		providerID = provider.Id()
+	} else {
+		return result.Fail[subscription.Subscription](errors.New("missing provider ID or provider key"))
+	}
+
+	if sub.ProviderId() != providerID {
+		sub.SetProviderId(providerID)
+	}
+
 	if cmd.FriendlyName != nil {
 		sub.SetFriendlyName(cmd.FriendlyName)
 	}
@@ -80,11 +113,23 @@ func (h UpdateSubscriptionCommandHandler) updateSubscription(
 	if sub.Price() != nil && cmd.Price != nil {
 		sub.SetPrice(cmd.Price)
 	}
-	if cmd.Owner != nil {
-		sub.SetOwner(cmd.Owner)
+	if cmd.Owner != sub.Owner().Type() {
+		owner, err := h.ownerFactory.Resolve(ctx, cmd.Owner)
+		if err != nil {
+			return result.Fail[subscription.Subscription](err)
+		}
+		sub.SetOwner(owner)
 	}
-	if cmd.Payer != nil {
-		sub.SetPayer(cmd.Payer)
+	if cmd.PayerType == nil && sub.Payer() != nil {
+		sub.SetPayer(nil)
+	} else if cmd.PayerType != nil &&
+		(*cmd.PayerType != sub.Payer().Type() ||
+			cmd.PayerMemberId != nil && *cmd.PayerMemberId != sub.Payer().MemberId()) {
+		payer, err := subscription.NewPayerFromOwner(sub.Owner(), *cmd.PayerType, cmd.PayerMemberId)
+		if err != nil {
+			return result.Fail[subscription.Subscription](err)
+		}
+		sub.SetPayer(payer)
 	}
 	if cmd.FamilyUsers != nil {
 		sub.SetFamilyUsers(cmd.FamilyUsers)

@@ -18,7 +18,7 @@ import (
 func buildProvider(name string, owner types.Owner) provider.Provider {
 	id := types.ProviderID(uuid.Must(uuid.NewV7()))
 	created := time.Now()
-	return provider.NewProvider(id, name, nil, nil, nil, nil, nil, nil, owner, created, created)
+	return provider.NewProvider(id, name, nil, nil, nil, nil, nil, owner, created, created)
 }
 
 func TestProviderFindOneQueryHandler_Handle(t *testing.T) {
@@ -38,7 +38,7 @@ func TestProviderFindOneQueryHandler_Handle(t *testing.T) {
 		provRepo.EXPECT().GetByIdForUser(t.Context(), userID, id).Return(nil, errors.New("db"))
 
 		h := query.NewFindOneQueryHandler(provRepo, auth)
-		res := h.Handle(t.Context(), query.NewFindOneQuery(id))
+		res := h.Handle(t.Context(), query.FindOneQuery{ProviderID: &id})
 		assert.True(t, res.IsFaulted())
 	})
 
@@ -51,7 +51,7 @@ func TestProviderFindOneQueryHandler_Handle(t *testing.T) {
 		provRepo.EXPECT().GetByIdForUser(t.Context(), userID, id).Return(nil, nil)
 
 		h := query.NewFindOneQueryHandler(provRepo, auth)
-		res := h.Handle(t.Context(), query.NewFindOneQuery(id))
+		res := h.Handle(t.Context(), query.FindOneQuery{ProviderID: &id})
 		assert.True(t, res.IsFaulted())
 	})
 
@@ -64,7 +64,8 @@ func TestProviderFindOneQueryHandler_Handle(t *testing.T) {
 		provRepo.EXPECT().GetByIdForUser(t.Context(), userID, prov.Id()).Return(prov, nil)
 
 		h := query.NewFindOneQueryHandler(provRepo, auth)
-		res := h.Handle(t.Context(), query.NewFindOneQuery(prov.Id()))
+		provID := prov.Id()
+		res := h.Handle(t.Context(), query.FindOneQuery{ProviderID: &provID})
 		assert.True(t, res.IsSuccess())
 		var got provider.Provider
 		res.IfSuccess(func(p provider.Provider) { got = p })

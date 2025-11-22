@@ -15,15 +15,15 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
 
     // Get form values directly
     const providerId = form.watch("providerId");
-    const customPrice = form.watch("customPrice");
+    const price = form.watch("price");
 
     // Prepare values for combobox components
     const providerValue = providerId || "";
 
     // Prepare currency input value
     const currencyInputValue = {
-        amount: customPrice?.amount || 0,
-        currency: customPrice?.currency || "USD"
+        amount: price?.amount || 0,
+        currency: price?.currency || "USD"
     };
 
     // Define handlers for form value changes
@@ -31,19 +31,15 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
         // Update the provider ID
         form.setValue("providerId", value, {shouldValidate: true});
 
-        // Reset dependent fields when provider changes
-        form.setValue("planId", "", {shouldValidate: true});
-        form.setValue("priceId", "", {shouldValidate: true});
-
-        // Ensure customPrice has a valid default value since it's now required
-        if (!form.getValues("customPrice") || form.getValues("customPrice.amount") <= 0) {
-            form.setValue("customPrice", {amount: 10, currency: "USD"}, {shouldValidate: true});
+        // Ensure price has a valid default value since it's now required
+        if (!form.getValues("price") || form.getValues("price.amount") <= 0) {
+            form.setValue("price", {amount: 10, currency: "USD"}, {shouldValidate: true});
         }
     };
 
     const handleCurrencyInputChange = (value: { amount: number, currency: string }) => {
-        // Update the entire customPrice object at once
-        form.setValue("customPrice", {
+        // Update the entire price object at once
+        form.setValue("price", {
             amount: value.amount,
             currency: value.currency
         }, {shouldValidate: true});
@@ -91,13 +87,13 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
 
                     {/* Custom price input - now always required */}
                     <div className="mt-4">
-                        <Label htmlFor="customPrice" className="text-base mb-2 block">How much does it cost? *</Label>
+                        <Label htmlFor="price" className="text-base mb-2 block">How much does it cost? *</Label>
                         <CurrencyInput
                             value={currencyInputValue}
                             onChange={handleCurrencyInputChange}
                             error={{
-                                amount: form.formState.errors.customPrice?.amount?.message,
-                                currency: form.formState.errors.customPrice?.currency?.message
+                                amount: form.formState.errors.price?.amount?.message,
+                                currency: form.formState.errors.price?.currency?.message
                             }}
                             className="h-12"
                         />

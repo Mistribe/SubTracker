@@ -13,14 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { DtoEditableOwnerModel } from './DtoEditableOwnerModel';
-import {
-    DtoEditableOwnerModelFromJSON,
-    DtoEditableOwnerModelFromJSONTyped,
-    DtoEditableOwnerModelToJSON,
-    DtoEditableOwnerModelToJSONTyped,
-} from './DtoEditableOwnerModel';
-
 /**
  * 
  * @export
@@ -65,10 +57,10 @@ export interface DtoCreateProviderRequest {
     name: string;
     /**
      * 
-     * @type {DtoEditableOwnerModel}
+     * @type {string}
      * @memberof DtoCreateProviderRequest
      */
-    owner?: DtoEditableOwnerModel;
+    owner: DtoCreateProviderRequestOwnerEnum;
     /**
      * 
      * @type {string}
@@ -83,11 +75,24 @@ export interface DtoCreateProviderRequest {
     url?: string;
 }
 
+
+/**
+ * @export
+ */
+export const DtoCreateProviderRequestOwnerEnum = {
+    Personal: 'personal',
+    Family: 'family',
+    System: 'system'
+} as const;
+export type DtoCreateProviderRequestOwnerEnum = typeof DtoCreateProviderRequestOwnerEnum[keyof typeof DtoCreateProviderRequestOwnerEnum];
+
+
 /**
  * Check if a given object implements the DtoCreateProviderRequest interface.
  */
 export function instanceOfDtoCreateProviderRequest(value: object): value is DtoCreateProviderRequest {
     if (!('name' in value) || value['name'] === undefined) return false;
+    if (!('owner' in value) || value['owner'] === undefined) return false;
     return true;
 }
 
@@ -107,7 +112,7 @@ export function DtoCreateProviderRequestFromJSONTyped(json: any, ignoreDiscrimin
         'id': json['id'] == null ? undefined : json['id'],
         'labels': json['labels'] == null ? undefined : json['labels'],
         'name': json['name'],
-        'owner': json['owner'] == null ? undefined : DtoEditableOwnerModelFromJSON(json['owner']),
+        'owner': json['owner'],
         'pricingPageUrl': json['pricing_page_url'] == null ? undefined : json['pricing_page_url'],
         'url': json['url'] == null ? undefined : json['url'],
     };
@@ -130,7 +135,7 @@ export function DtoCreateProviderRequestToJSONTyped(value?: DtoCreateProviderReq
         'id': value['id'],
         'labels': value['labels'],
         'name': value['name'],
-        'owner': DtoEditableOwnerModelToJSON(value['owner']),
+        'owner': value['owner'],
         'pricing_page_url': value['pricingPageUrl'],
         'url': value['url'],
     };

@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { FileUploadZone } from '@/components/import/FileUploadZone';
 import { ImportPreviewTable } from '@/components/import/ImportPreviewTable';
 import { ImportHelp } from '@/components/import/ImportHelp';
+import { TemplateDownloadSection } from '@/components/import/TemplateDownloadSection';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
 import { fileParser, FileParseError, FileSizeError } from '@/services/fileParser';
@@ -67,8 +68,7 @@ export default function ImportLabelsPage() {
       return createLabelMutation.mutateAsync({
         name: data.name!,
         color: data.color!,
-        ownerType: data.owner?.type as any,
-        familyId: data.owner?.familyId,
+        ownerType: data.owner,
       });
     },
   } as any;
@@ -80,6 +80,7 @@ export default function ImportLabelsPage() {
     progress,
     isImporting,
     cancelImport,
+    resetImport,
   } = useImportManager({
     records: parsedRecords,
     createMutation: wrappedMutation,
@@ -181,13 +182,17 @@ export default function ImportLabelsPage() {
     await importRecords(validSelectedIndices);
 
     // Show completion message
-    const successCount = progress.completed - progress.failed;
+    const skipped = progress.skipped ?? 0;
+    const successCount = Math.max(0, progress.completed - progress.failed - skipped);
     if (progress.failed > 0) {
-      toast.warning('Import completed with errors', {
-        description: `${successCount} succeeded, ${progress.failed} failed`,
+      toast.warning('Import completed with issues', {
+        description: `${successCount} created, ${skipped} already existed, ${progress.failed} failed`,
       });
     } else {
-      toast.success(`Successfully imported ${successCount} labels`);
+      const baseMsg = skipped > 0
+        ? `${successCount} created, ${skipped} already existed`
+        : `${successCount} labels imported`;
+      toast.success(`Import completed: ${baseMsg}`);
       setHasUnsavedChanges(false);
     }
   }, [selectedRecords, parsedRecords, importRecords, progress]);
@@ -206,13 +211,17 @@ export default function ImportLabelsPage() {
     await importRecords(validIndices);
 
     // Show completion message
-    const successCount = progress.completed - progress.failed;
+    const skipped = progress.skipped ?? 0;
+    const successCount = Math.max(0, progress.completed - progress.failed - skipped);
     if (progress.failed > 0) {
-      toast.warning('Import completed with errors', {
-        description: `${successCount} succeeded, ${progress.failed} failed`,
+      toast.warning('Import completed with issues', {
+        description: `${successCount} created, ${skipped} already existed, ${progress.failed} failed`,
       });
     } else {
-      toast.success(`Successfully imported ${successCount} labels`);
+      const baseMsg = skipped > 0
+        ? `${successCount} created, ${skipped} already existed`
+        : `${successCount} labels imported`;
+      toast.success(`Import completed: ${baseMsg}`);
       setHasUnsavedChanges(false);
     }
   }, [parsedRecords, importRecords, progress]);
@@ -283,6 +292,9 @@ export default function ImportLabelsPage() {
         }
       />
 
+      {/* Template download section */}
+      <TemplateDownloadSection entityType="labels" />
+
       {/* File upload zone */}
       {parsedRecords.length === 0 && (
         <div className="space-y-4">
@@ -313,6 +325,14 @@ export default function ImportLabelsPage() {
             isImporting={isImporting}
             progress={progress}
             onRetryRecord={retryRecord}
+            onRemoveSelected={(indices) => {
+              if (isImporting) return;
+              const removeSet = new Set(indices);
+              resetImport();
+              setParsedRecords(prev => prev.filter((_, idx) => !removeSet.has(idx)));
+              setSelectedRecords(new Set());
+              setHasUnsavedChanges(true);
+            }}
           />
 
           {/* Action buttons at bottom */}

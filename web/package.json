@@ -17,6 +17,7 @@
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:report": "playwright show-report",
+    "validate:templates": "ts-node scripts/validate-templates.ts",
     "shadcn": "npx shadcn-ui@latest",
     "shadcn:update": "npx shadcn@latest add -a -y -o"
   },

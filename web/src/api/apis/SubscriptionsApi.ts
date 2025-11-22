@@ -40,6 +40,10 @@ import {
     GinxHttpErrorResponseToJSON,
 } from '../models/index';
 
+export interface SubscriptionsExportGetRequest {
+    format?: string;
+}
+
 export interface SubscriptionsGetRequest {
     search?: string;
     recurrencies?: Array<string>;
@@ -81,6 +85,45 @@ export interface SubscriptionsSummaryGetRequest {
  * 
  */
 export class SubscriptionsApi extends runtime.BaseAPI {
+
+    /**
+     * Export all subscriptions in CSV, JSON, or YAML format
+     * Export subscriptions
+     */
+    async subscriptionsExportGetRaw(requestParameters: SubscriptionsExportGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['format'] != null) {
+            queryParameters['format'] = requestParameters['format'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/subscriptions/export`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Export all subscriptions in CSV, JSON, or YAML format
+     * Export subscriptions
+     */
+    async subscriptionsExportGet(requestParameters: SubscriptionsExportGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.subscriptionsExportGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Retrieve a paginated list of all subscriptions for the authenticated user

@@ -1,5 +1,6 @@
 [
   {
+    "id": "550e8400-e29b-41d4-a716-446655440010",
     "name": "Netflix",
     "description": "Streaming service for movies and TV shows",
     "url": "https://www.netflix.com",
@@ -8,6 +9,7 @@
     "labels": ["Entertainment", "Video Streaming"]
   },
   {
+    "id": "550e8400-e29b-41d4-a716-446655440011",
     "name": "Spotify",
     "description": "Music streaming service",
     "url": "https://www.spotify.com",
@@ -16,15 +18,9 @@
     "labels": ["Entertainment", "Music"]
   },
   {
-    "name": "Amazon Web Services",
-    "description": "Cloud computing platform",
-    "url": "https://aws.amazon.com",
-    "pricingPageUrl": "https://aws.amazon.com/pricing",
-    "labels": ["Cloud Services", "Infrastructure"]
-  },
-  {
+    "id": "550e8400-e29b-41d4-a716-446655440012",
     "name": "Adobe Creative Cloud",
-    "description": "Suite of creative software applications",
+    "description": "Creative software suite",
     "url": "https://www.adobe.com",
     "iconUrl": "https://www.adobe.com/favicon.ico",
     "pricingPageUrl": "https://www.adobe.com/creativecloud/plans.html",
@@ -32,10 +28,18 @@
   },
   {
     "name": "GitHub",
-    "description": "Code hosting platform for version control and collaboration",
+    "description": "Code hosting platform",
     "url": "https://github.com",
     "iconUrl": "https://github.com/favicon.ico",
     "pricingPageUrl": "https://github.com/pricing",
     "labels": ["Development", "Productivity"]
+  },
+  {
+    "name": "Dropbox",
+    "description": "Cloud storage service",
+    "url": "https://www.dropbox.com",
+    "iconUrl": "https://www.dropbox.com/favicon.ico",
+    "pricingPageUrl": "https://www.dropbox.com/plans",
+    "labels": ["Productivity", "Storage"]
   }
 ]

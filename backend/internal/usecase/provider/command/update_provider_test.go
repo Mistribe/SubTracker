@@ -33,7 +33,6 @@ func TestUpdateProviderCommandHandler_Handle(t *testing.T) {
 			nil,
 			nil,
 			nil,
-			nil,
 			[]types.LabelID{},
 			owner,
 			createdAt,

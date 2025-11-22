@@ -58,7 +58,6 @@ func TestSubscriptionRepository_CRUD(t *testing.T) {
 		nil,
 		nil,
 		nil,
-		nil,
 		[]types.LabelID{},
 		types.SystemOwner,
 		time.Now().UTC(),

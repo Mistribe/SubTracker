@@ -19,8 +19,8 @@ type CreateEndpoint struct {
 	authentication ports.Authentication
 }
 
-func createLabelRequestToCommand(m dto.CreateLabelRequest, userId types.UserID) (command.CreateLabelCommand, error) {
-	owner, err := m.Owner.Owner(userId)
+func createLabelRequestToCommand(m dto.CreateLabelRequest) (command.CreateLabelCommand, error) {
+	owner, err := types.TryParseOwnerType(m.Owner)
 	if err != nil {
 		return command.CreateLabelCommand{}, err
 	}
@@ -57,9 +57,7 @@ func (l CreateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	connectedAccount := l.authentication.MustGetConnectedAccount(c)
-
-	cmd, err := createLabelRequestToCommand(model, connectedAccount.UserID())
+	cmd, err := createLabelRequestToCommand(model)
 	if err != nil {
 		FromError(c, err)
 		return

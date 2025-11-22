@@ -13,15 +13,16 @@ import (
 )
 
 type FindAllQuery struct {
-	SearchText   string
-	Recurrencies []subscription.RecurrencyType
-	FromDate     *time.Time
-	ToDate       *time.Time
-	Users        []types.UserID
-	Providers    []types.ProviderID
-	WithInactive bool
-	Limit        int64
-	Offset       int64
+	SearchText     string
+	Recurrencies   []subscription.RecurrencyType
+	FromDate       *time.Time
+	ToDate         *time.Time
+	Users          []types.UserID
+	Providers      []types.ProviderID
+	WithInactive   bool
+	SourceCurrency bool
+	Limit          int64
+	Offset         int64
 }
 
 func NewFindAllQuery(
@@ -91,7 +92,7 @@ func (h FindAllQueryHandler) Handle(
 	preferredCurrency := h.userService.GetPreferredCurrency(ctx, userId)
 
 	for _, sub := range subs {
-		if sub.Price() != nil {
+		if sub.Price() != nil && !query.SourceCurrency {
 			var convertedPrice currency.Amount
 			convertedPrice, err = h.exchange.ToCurrencyAt(ctx,
 				sub.Price().Amount(),

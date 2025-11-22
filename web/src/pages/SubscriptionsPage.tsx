@@ -5,7 +5,11 @@ import { useProvidersByIds } from "@/hooks/providers/useProvidersByIds";
 import { useSubscriptionsMutations } from "@/hooks/subscriptions/useSubscriptionsMutations";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, Upload } from "lucide-react";
+import { PlusIcon } from "lucide-react";
+import { ImportExportDropdown } from "@/components/import-export/ImportExportDropdown";
+import { ExportConfirmationDialog } from "@/components/import-export/ExportConfirmationDialog";
+import { useExportService } from "@/services/exportService";
+import { toast } from "sonner";
 import Subscription from "@/models/subscription";
 import { DeleteSubscriptionDialog } from "@/components/subscriptions/DeleteSubscriptionDialog";
 import { SubscriptionsTable } from "@/components/subscriptions/ui/SubscriptionsTable";
@@ -35,6 +39,10 @@ const SubscriptionsPage = () => {
     const [subscriptionToDelete, setSubscriptionToDelete] = useState<Subscription | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
+
+    const { exportSubscriptions } = useExportService();
 
     // Filters state for drawer (draft values)
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -193,6 +201,23 @@ const SubscriptionsPage = () => {
         setIsFilterOpen(true);
     };
 
+    const handleExport = async (format: "csv" | "json" | "yaml") => {
+        setIsExporting(true);
+        try {
+            await exportSubscriptions(format);
+            toast.success(`Subscriptions exported successfully as ${format.toUpperCase()}`);
+            // Close dialog after a short delay to show the last funny message
+            setTimeout(() => {
+                setIsExportDialogOpen(false);
+                setIsExporting(false);
+            }, 500);
+        } catch (error) {
+            toast.error("Failed to export subscriptions");
+            console.error("Export error:", error);
+            setIsExporting(false);
+        }
+    };
+
     return (
         <div className="container mx-auto py-6">
             <PageHeader
@@ -211,13 +236,10 @@ const SubscriptionsPage = () => {
                 }
                 actionButton={
                     <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={() => navigate('/subscriptions/import')}
-                        >
-                            <Upload className="mr-2 h-4 w-4" />
-                            Import from file
-                        </Button>
+                        <ImportExportDropdown
+                            onImport={() => navigate('/subscriptions/import')}
+                            onExport={() => setIsExportDialogOpen(true)}
+                        />
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -302,6 +324,14 @@ const SubscriptionsPage = () => {
                     onConfirm={handleDeleteConfirm}
                 />
             )}
+
+            <ExportConfirmationDialog
+                open={isExportDialogOpen}
+                onOpenChange={setIsExportDialogOpen}
+                onConfirm={handleExport}
+                entityType="subscriptions"
+                isExporting={isExporting}
+            />
         </div>
     );
 };

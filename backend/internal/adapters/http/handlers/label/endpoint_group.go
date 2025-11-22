@@ -19,6 +19,7 @@ func NewEndpointGroup(
 	getEndpoint *GetEndpoint,
 	getAllEndpoint *GetAllEndpoint,
 	labelQuotaUsageEndpoint *GetQuotaUsageEndpoint,
+	exportEndpoint *ExportEndpoint,
 	authenticationMiddleware *middlewares.AuthenticationMiddleware) *EndpointGroup {
 	return &EndpointGroup{
 		routes: []ginfx.Endpoint{
@@ -28,6 +29,7 @@ func NewEndpointGroup(
 			getEndpoint,
 			getAllEndpoint,
 			labelQuotaUsageEndpoint,
+			exportEndpoint,
 		},
 		middlewares: []gin.HandlerFunc{
 			authenticationMiddleware.Middleware(),

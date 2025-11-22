@@ -54,7 +54,7 @@ export function subscriptionMonthlyPriceInCurrency(
     rates: Map<string, number>
 ): number {
     const monthly = subscription.getMonthlyPrice();
-    const fromCurrency = subscription.customPrice?.currency;
+    const fromCurrency = subscription.price?.currency;
     if (!fromCurrency) return 0;
     if (fromCurrency === targetCurrency) return monthly;
     const converted = convertAmount(monthly, fromCurrency, targetCurrency, rates);
@@ -72,7 +72,7 @@ export function subscriptionYearlyPriceInCurrency(
     rates: Map<string, number>
 ): number {
     const yearly = subscription.getYearlyPrice();
-    const fromCurrency = subscription.customPrice?.currency;
+    const fromCurrency = subscription.price?.currency;
     if (!fromCurrency) return 0;
     if (fromCurrency === targetCurrency) return yearly;
     const converted = convertAmount(yearly, fromCurrency, targetCurrency, rates);

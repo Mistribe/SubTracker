@@ -20,7 +20,7 @@ func newProvider(name string) provider.Provider {
 	id := types.ProviderID(uuid.Must(uuid.NewV7()))
 	created := time.Now()
 	updated := created
-	return provider.NewProvider(id, name, nil, nil, nil, nil, nil, nil, types.NewPersonalOwner(types.UserID("user-1")), created, updated)
+	return provider.NewProvider(id, name, nil, nil, nil, nil, nil, types.NewPersonalOwner(types.UserID("user-1")), created, updated)
 }
 
 func TestProviderFindAllQueryHandler_Handle(t *testing.T) {

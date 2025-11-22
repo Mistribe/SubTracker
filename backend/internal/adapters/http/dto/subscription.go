@@ -49,8 +49,6 @@ func NewSubscriptionCustomPrice(model AmountModel) (subscription.Price, error) {
 type SubscriptionPayerModel struct {
 	// @Description Type of payer (family or family member)
 	Type string `json:"type" binding:"required" example:"family_member" enums:"family,family_member"`
-	// @Description LabelID of the family associated with this payer
-	FamilyId string `json:"family_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
 	// @Description LabelID of the specific family member who pays (required when type is family_member)
 	MemberId *string `json:"memberId,omitempty" example:"123e4567-e89b-12d3-a456-426614174001"`
 	// @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
@@ -62,15 +60,8 @@ type SubscriptionPayerModel struct {
 type EditableSubscriptionPayerModel struct {
 	// @Description Type of payer (family or family member)
 	Type string `json:"type" binding:"required" example:"family_member" enums:"family,family_member"`
-	// @Description LabelID of the family associated with this payer
-	FamilyId string `json:"family_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
 	// @Description LabelID of the specific family member who pays (required when type is family_member)
 	MemberId *string `json:"memberId,omitempty" example:"123e4567-e89b-12d3-a456-426614174001"`
-}
-
-type SubscriptionPriceModel struct {
-	Monthly AmountModel `json:"monthly" binding:"required"`
-	Yearly  AmountModel `json:"yearly" binding:"required"`
 }
 
 // SubscriptionModel represents an active subscription to a service provider's plan
@@ -84,16 +75,12 @@ type SubscriptionModel struct {
 	FreeTrial *SubscriptionFreeTrialModel `json:"free_trial,omitempty"`
 	// @Description LabelID of the service provider offering this subscription
 	ProviderId string `json:"provider_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174002"`
-	// @Description LabelID of the specific plan being subscribed to
-	PlanId *string `json:"plan_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174003"`
-	// @Description LabelID of the pricing tier for this subscription
-	PriceId *string `json:"price_id,omitempty" example:"123e4567-e89b-12d3-a456-426614174004"`
 	// @Description Custom price for this subscription
-	CustomPrice *AmountModel `json:"custom_price,omitempty"`
+	Price *AmountModel `json:"price,omitempty"`
 	// @Description Ownership information specifying whether this subscription belongs to a user or family
 	Owner OwnerModel `json:"owner" binding:"required"`
 	// @Description List of family member IDs who use this service (for shared subscriptions)
-	ServiceUsers []string `json:"service_users,omitempty" example:"123e4567-e89b-12d3-a456-426614174005,123e4567-e89b-12d3-a456-426614174006"`
+	FamilyUsers []string `json:"family_users,omitempty" example:"123e4567-e89b-12d3-a456-426614174005,123e4567-e89b-12d3-a456-426614174006"`
 	// @Description ISO 8601 timestamp when the subscription becomes active
 	StartDate time.Time `json:"start_date" binding:"required" format:"date-time" example:"2023-01-01T00:00:00Z"`
 	// @Description ISO 8601 timestamp when the subscription expires (null for ongoing subscriptions)
@@ -114,15 +101,12 @@ type SubscriptionModel struct {
 	IsActive bool `json:"is_active" binding:"required" example:"true"`
 	// @Description List of labels associated with this subscription
 	LabelRefs []LabelRefModel `json:"label_refs,omitempty"`
-	// @Description Price details for this subscription
-	Price SubscriptionPriceModel `json:"price,omitempty"`
 }
 
 func newSubscriptionPayerModel(source subscription.Payer) SubscriptionPayerModel {
 	model := SubscriptionPayerModel{
-		Type:     source.Type().String(),
-		FamilyId: source.FamilyId().String(),
-		Etag:     source.ETag(),
+		Type: source.Type().String(),
+		Etag: source.ETag(),
 	}
 
 	if source.Type() == subscription.FamilyMemberPayer {
@@ -130,13 +114,6 @@ func newSubscriptionPayerModel(source subscription.Payer) SubscriptionPayerModel
 		model.MemberId = &memberId
 	}
 	return model
-}
-
-func newSubscriptionPrice(sub subscription.Subscription) SubscriptionPriceModel {
-	return SubscriptionPriceModel{
-		Monthly: NewAmount(sub.GetRecurrencyAmount(subscription.MonthlyRecurrency)),
-		Yearly:  NewAmount(sub.GetRecurrencyAmount(subscription.YearlyRecurrency)),
-	}
 }
 
 type LabelRefModel struct {
@@ -165,7 +142,7 @@ func NewSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 		FriendlyName:     source.FriendlyName(),
 		FreeTrial:        newSubscriptionFreeTrialModel(source.FreeTrial()),
 		ProviderId:       source.ProviderId().String(),
-		ServiceUsers:     serviceUsers,
+		FamilyUsers:      serviceUsers,
 		LabelRefs:        labelRefs,
 		Owner:            NewOwnerModel(source.Owner()),
 		StartDate:        source.StartDate(),
@@ -177,8 +154,7 @@ func NewSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 		CreatedAt:        source.CreatedAt(),
 		UpdatedAt:        source.UpdatedAt(),
 		Etag:             source.ETag(),
-		CustomPrice:      x.P(NewAmount(source.Price().Amount())),
-		Price:            newSubscriptionPrice(source),
+		Price:            x.P(NewAmount(source.Price().Amount())),
 	}
 
 	return model

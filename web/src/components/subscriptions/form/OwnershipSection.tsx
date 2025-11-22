@@ -23,7 +23,7 @@ export const OwnershipSection = ({ family }: OwnershipSectionProps) => {
             const currentFamilyId = form.getValues("familyId");
             if (!currentFamilyId) {
                 form.setValue("familyId", family.id);
-                form.setValue("serviceUsers", []);
+                form.setValue("familyUsers", []);
                 form.setValue("payerType", "family");
                 form.setValue("payerId", family.id);
             }
@@ -106,13 +106,13 @@ export const OwnershipSection = ({ family }: OwnershipSectionProps) => {
                                         <div key={member.id} className="flex items-center space-x-2">
                                             <Checkbox 
                                                 id={`member-${member.id}`}
-                                                checked={form.watch("serviceUsers")?.includes(member.id) || false}
+                                                checked={form.watch("familyUsers")?.includes(member.id) || false}
                                                 onCheckedChange={(checked) => {
-                                                    const currentUsers = form.watch("serviceUsers") || [];
+                                                    const currentUsers = form.watch("familyUsers") || [];
                                                     if (checked) {
-                                                        form.setValue("serviceUsers", [...currentUsers, member.id]);
+                                                        form.setValue("familyUsers", [...currentUsers, member.id]);
                                                     } else {
-                                                        form.setValue("serviceUsers", currentUsers.filter(id => id !== member.id));
+                                                        form.setValue("familyUsers", currentUsers.filter(id => id !== member.id));
                                                     }
                                                 }}
                                             />

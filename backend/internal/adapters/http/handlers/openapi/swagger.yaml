@@ -61,7 +61,12 @@ components:
         name:
           type: string
         owner:
-          $ref: '#/components/schemas/dto.EditableOwnerModel'
+          enum:
+          - personal
+          - family
+          - system
+          example: personal
+          type: string
       required:
       - color
       - name
@@ -86,20 +91,24 @@ components:
         name:
           type: string
         owner:
-          $ref: '#/components/schemas/dto.EditableOwnerModel'
+          enum:
+          - personal
+          - family
+          - system
+          example: personal
+          type: string
         pricing_page_url:
           type: string
         url:
           type: string
       required:
       - name
+      - owner
       type: object
     dto.CreateSubscriptionRequest:
       properties:
         created_at:
           type: string
-        custom_price:
-          $ref: '#/components/schemas/dto.AmountModel'
         custom_recurrency:
           type: integer
         end_date:
@@ -122,10 +131,19 @@ components:
           type: array
           uniqueItems: false
         owner:
-          $ref: '#/components/schemas/dto.EditableOwnerModel'
+          enum:
+          - personal
+          - family
+          - system
+          example: personal
+          type: string
         payer:
           $ref: '#/components/schemas/dto.EditableSubscriptionPayerModel'
+        price:
+          $ref: '#/components/schemas/dto.AmountModel'
         provider_id:
+          type: string
+        provider_key:
           type: string
         recurrency:
           type: string
@@ -134,7 +152,6 @@ components:
           type: string
       required:
       - owner
-      - provider_id
       - recurrency
       - start_date
       type: object
@@ -162,30 +179,9 @@ components:
       - rates
       - timestamp
       type: object
-    dto.EditableOwnerModel:
-      properties:
-        family_id:
-          description: '@Description Family LabelID when an ownership type is family
-            (required for family ownership)'
-          type: string
-        type:
-          description: '@Description Type of ownership (personal, family or system)'
-          enum:
-          - personal
-          - family
-          - system
-          example: personal
-          type: string
-      required:
-      - type
-      type: object
     dto.EditableSubscriptionPayerModel:
       description: Subscription payer object used for updating who pays for a subscription
       properties:
-        family_id:
-          description: '@Description LabelID of the family associated with this payer'
-          example: 123e4567-e89b-12d3-a456-426614174000
-          type: string
         memberId:
           description: '@Description LabelID of the specific family member who pays
             (required when type is family_member)'
@@ -199,7 +195,6 @@ components:
           example: family_member
           type: string
       required:
-      - family_id
       - type
       type: object
     dto.FamilyAcceptInvitationRequest:
@@ -562,6 +557,9 @@ components:
           example: 123e4567-e89b-12d3-a456-426614174000
           type: string
         key:
+          example: netflix
+          maxLength: 255
+          minLength: 1
           type: string
         labels:
           description: '@Description List of label IDs associated with this provider
@@ -600,6 +598,7 @@ components:
       - created_at
       - etag
       - id
+      - key
       - labels
       - name
       - owner
@@ -659,8 +658,6 @@ components:
           example: "2023-01-15T10:30:00Z"
           format: date-time
           type: string
-        custom_price:
-          $ref: '#/components/schemas/dto.AmountModel'
         custom_recurrency:
           description: '@Description CustomRecurrency recurrency interval in days
             (required when recurrency is custom)'
@@ -679,6 +676,16 @@ components:
             to prevent conflicting updates'
           example: W/"123456789"
           type: string
+        family_users:
+          description: '@Description List of family member IDs who use this service
+            (for shared subscriptions)'
+          example:
+          - 123e4567-e89b-12d3-a456-426614174005
+          - 123e4567-e89b-12d3-a456-426614174006
+          items:
+            type: string
+          type: array
+          uniqueItems: false
         free_trial:
           $ref: '#/components/schemas/dto.SubscriptionFreeTrialModel'
         friendly_name:
@@ -707,17 +714,8 @@ components:
           $ref: '#/components/schemas/dto.OwnerModel'
         payer:
           $ref: '#/components/schemas/dto.SubscriptionPayerModel'
-        plan_id:
-          description: '@Description LabelID of the specific plan being subscribed
-            to'
-          example: 123e4567-e89b-12d3-a456-426614174003
-          type: string
         price:
-          $ref: '#/components/schemas/dto.SubscriptionPriceModel'
-        price_id:
-          description: '@Description LabelID of the pricing tier for this subscription'
-          example: 123e4567-e89b-12d3-a456-426614174004
-          type: string
+          $ref: '#/components/schemas/dto.AmountModel'
         provider_id:
           description: '@Description LabelID of the service provider offering this
             subscription'
@@ -736,16 +734,6 @@ components:
           - custom
           example: monthly
           type: string
-        service_users:
-          description: '@Description List of family member IDs who use this service
-            (for shared subscriptions)'
-          example:
-          - 123e4567-e89b-12d3-a456-426614174005
-          - 123e4567-e89b-12d3-a456-426614174006
-          items:
-            type: string
-          type: array
-          uniqueItems: false
         start_date:
           description: '@Description ISO 8601 timestamp when the subscription becomes
             active'
@@ -778,10 +766,6 @@ components:
             to prevent conflicting updates'
           example: W/"123456789"
           type: string
-        family_id:
-          description: '@Description LabelID of the family associated with this payer'
-          example: 123e4567-e89b-12d3-a456-426614174000
-          type: string
         memberId:
           description: '@Description LabelID of the specific family member who pays
             (required when type is family_member)'
@@ -796,19 +780,7 @@ components:
           type: string
       required:
       - etag
-      - family_id
       - type
-      type: object
-    dto.SubscriptionPriceModel:
-      description: '@Description Price details for this subscription'
-      properties:
-        monthly:
-          $ref: '#/components/schemas/dto.AmountModel'
-        yearly:
-          $ref: '#/components/schemas/dto.AmountModel'
-      required:
-      - monthly
-      - yearly
       type: object
     dto.SubscriptionSummaryResponse:
       properties:
@@ -947,8 +919,6 @@ components:
       type: object
     dto.UpdateSubscriptionRequest:
       properties:
-        custom_price:
-          $ref: '#/components/schemas/dto.AmountModel'
         custom_recurrency:
           type: integer
         end_date:
@@ -964,14 +934,19 @@ components:
           type: array
           uniqueItems: false
         owner:
-          $ref: '#/components/schemas/dto.EditableOwnerModel'
+          enum:
+          - personal
+          - family
+          - system
+          example: personal
+          type: string
         payer:
           $ref: '#/components/schemas/dto.EditableSubscriptionPayerModel'
-        plan_id:
-          type: string
-        price_id:
-          type: string
+        price:
+          $ref: '#/components/schemas/dto.AmountModel'
         provider_id:
+          type: string
+        provider_key:
           type: string
         recurrency:
           type: string
@@ -1947,6 +1922,47 @@ paths:
       summary: Update label by LabelID
       tags:
       - labels
+  /labels/export:
+    get:
+      description: Export all labels in CSV, JSON, or YAML format
+      parameters:
+      - description: Export format (csv, json, yaml)
+        in: query
+        name: format
+        schema:
+          default: json
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: file
+            application/x-yaml:
+              schema:
+                type: string
+          description: Exported labels file
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Invalid format parameter
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Export labels
+      tags:
+      - labels
   /labels/quota/usage:
     get:
       description: Retrieve the current quota usage and limits for the authenticated
@@ -2092,7 +2108,7 @@ paths:
     get:
       description: Retrieve a single provider with all its plans and prices by LabelID
       parameters:
-      - description: Provider LabelID (UUID format)
+      - description: Provider ID (UUID format) or Provider Key (string format)
         in: path
         name: providerId
         required: true
@@ -2168,6 +2184,47 @@ paths:
                 $ref: '#/components/schemas/ginx.HttpErrorResponse'
           description: Internal Server Error
       summary: Update provider by LabelID
+      tags:
+      - providers
+  /providers/export:
+    get:
+      description: Export all providers in CSV, JSON, or YAML format
+      parameters:
+      - description: Export format (csv, json, yaml)
+        in: query
+        name: format
+        schema:
+          default: json
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: file
+            application/x-yaml:
+              schema:
+                type: string
+          description: Exported providers file
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Invalid format parameter
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Export providers
       tags:
       - providers
   /providers/quota/usage:
@@ -2437,6 +2494,47 @@ paths:
       summary: Update subscription by LabelID
       tags:
       - subscriptions
+  /subscriptions/export:
+    get:
+      description: Export all subscriptions in CSV, JSON, or YAML format
+      parameters:
+      - description: Export format (csv, json, yaml)
+        in: query
+        name: format
+        schema:
+          default: json
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: file
+            application/x-yaml:
+              schema:
+                type: string
+          description: Exported subscriptions file
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Invalid format parameter
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Unauthorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ginx.HttpErrorResponse'
+          description: Internal Server Error
+      summary: Export subscriptions
+      tags:
+      - subscriptions
   /subscriptions/quota/usage:
     get:
       description: Retrieve the current quota usage and limits for the authenticated
@@ -2516,6 +2614,21 @@ paths:
       summary: Get subscription summary
       tags:
       - subscriptions
+  /version:
+    get:
+      description: Returns the build version of the SubTracker API
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Version info
+      summary: Get API version
+      tags:
+      - version
 servers:
 - description: Production server
   url: https://api.subtracker.mistribe.com

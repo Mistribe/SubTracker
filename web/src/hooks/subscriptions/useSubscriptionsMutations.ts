@@ -4,8 +4,9 @@ import {OwnerType} from "@/models/ownerType";
 import {SubscriptionRecurrency} from "@/models/subscriptionRecurrency";
 import {PayerType} from "@/models/payerType.ts";
 import type { DtoCreateSubscriptionRequest as CreateSubscriptionModel } from "@/api/models/DtoCreateSubscriptionRequest";
+import { DtoCreateSubscriptionRequestOwnerEnum } from "@/api/models/DtoCreateSubscriptionRequest";
 import type { DtoUpdateSubscriptionRequest as UpdateSubscriptionModel } from "@/api/models/DtoUpdateSubscriptionRequest";
-import type { DtoEditableOwnerModel as EditableOwnerModel } from "@/api/models/DtoEditableOwnerModel";
+import { DtoUpdateSubscriptionRequestOwnerEnum } from "@/api/models/DtoUpdateSubscriptionRequest";
 import type { DtoEditableSubscriptionPayerModel as EditableSubscriptionPayerModel } from "@/api/models/DtoEditableSubscriptionPayerModel";
 import { DtoEditableSubscriptionPayerModelTypeEnum } from "@/api/models/DtoEditableSubscriptionPayerModel";
 import type { DtoSubscriptionFreeTrialModel as SubscriptionFreeTrialModel } from "@/api/models/DtoSubscriptionFreeTrialModel";
@@ -18,23 +19,21 @@ export const useSubscriptionsMutations = () => {
     // Create subscription mutation
     const createSubscriptionMutation = useMutation({
         mutationFn: async (subscriptionData: {
+            subscriptionId?: string
             friendlyName?: string,
-            providerId: string,
-            planId?: string,
-            priceId?: string,
+            providerId?: string,
+            providerKey?: string,
             recurrency: SubscriptionRecurrency,
             customRecurrency?: number,
             startDate: Date,
             endDate?: Date,
             ownerType?: OwnerType,
-            familyId?: string,
             payer?: {
                 type: PayerType,
-                familyId?: string,
                 memberId?: string
             },
             familyUsers?: string[],
-            customPrice?: {
+            price?: {
                 amount: number,
                 currency: string
             },
@@ -45,16 +44,23 @@ export const useSubscriptionsMutations = () => {
         }) => {
             if (!apiClient) throw new Error("API client not initialized");
 
-            const owner: EditableOwnerModel = {
-                type: subscriptionData.ownerType ?? OwnerType.Personal,
-            };
-            if ((subscriptionData.ownerType ?? OwnerType.Personal) === OwnerType.Family && subscriptionData.familyId) {
-                owner.familyId = subscriptionData.familyId;
+            let owner: DtoCreateSubscriptionRequestOwnerEnum;
+            switch (subscriptionData.ownerType ?? OwnerType.Personal) {
+                case OwnerType.Family:
+                    owner = DtoCreateSubscriptionRequestOwnerEnum.Family;
+                    break;
+                case OwnerType.System:
+                    owner = DtoCreateSubscriptionRequestOwnerEnum.System;
+                    break;
+                case OwnerType.Personal:
+                default:
+                    owner = DtoCreateSubscriptionRequestOwnerEnum.Personal;
+                    break;
             }
 
             const payload: CreateSubscriptionModel = {
+                id: subscriptionData.subscriptionId,
                 friendlyName: subscriptionData.friendlyName,
-                providerId: subscriptionData.providerId,
                 recurrency: subscriptionData.recurrency as unknown as string,
                 customRecurrency: subscriptionData.customRecurrency,
                 startDate: subscriptionData.startDate,
@@ -62,6 +68,11 @@ export const useSubscriptionsMutations = () => {
                 familyUsers: subscriptionData.familyUsers,
                 owner,
             };
+            if (subscriptionData.providerKey) {
+                payload.providerKey = subscriptionData.providerKey;
+            } else {
+                payload.providerId = subscriptionData.providerId;
+            }
 
             // Add payer information if specified
             if (subscriptionData.payer) {
@@ -75,13 +86,8 @@ export const useSubscriptionsMutations = () => {
                         payerType = DtoEditableSubscriptionPayerModelTypeEnum.Family;
                         break;
                 }
-                const familyId = subscriptionData.payer.familyId ?? subscriptionData.familyId;
-                if (!familyId) {
-                    throw new Error("Payer requires a familyId");
-                }
                 const payer: EditableSubscriptionPayerModel = {
                     type: payerType,
-                    familyId,
                     ...(subscriptionData.payer.memberId ? { memberId: subscriptionData.payer.memberId } : {}),
                 };
 
@@ -89,13 +95,13 @@ export const useSubscriptionsMutations = () => {
             }
 
             // Add custom price if specified
-            if (subscriptionData.customPrice) {
+            if (subscriptionData.price) {
                 const customPrice: AmountModel = {
-                    value: subscriptionData.customPrice.amount,
-                    currency: subscriptionData.customPrice.currency
+                    value: subscriptionData.price.amount,
+                    currency: subscriptionData.price.currency
                 };
 
-                payload.customPrice = customPrice;
+                payload.price = customPrice;
             }
 
             // Add free trial if specified
@@ -138,6 +144,7 @@ export const useSubscriptionsMutations = () => {
             subscriptionData: {
                 friendlyName?: string,
                 providerId: string,
+                providerKey?: string,
                 planId?: string,
                 priceId?: string,
                 recurrency: SubscriptionRecurrency,
@@ -152,7 +159,7 @@ export const useSubscriptionsMutations = () => {
                     memberId?: string
                 },
                 serviceUsers?: string[],
-                customPrice?: {
+                price?: {
                     amount: number,
                     currency: string
                 },
@@ -164,18 +171,25 @@ export const useSubscriptionsMutations = () => {
         }) => {
             if (!apiClient) throw new Error("API client not initialized");
 
-            const owner: EditableOwnerModel = {
-                type: subscriptionData.ownerType ?? OwnerType.Personal,
-            };
-            if ((subscriptionData.ownerType ?? OwnerType.Personal) === OwnerType.Family && subscriptionData.familyId) {
-                owner.familyId = subscriptionData.familyId;
+            let owner: DtoUpdateSubscriptionRequestOwnerEnum;
+            switch (subscriptionData.ownerType ?? OwnerType.Personal) {
+                case OwnerType.Family:
+                    owner = DtoUpdateSubscriptionRequestOwnerEnum.Family;
+                    break;
+                case OwnerType.System:
+                    owner = DtoUpdateSubscriptionRequestOwnerEnum.System;
+                    break;
+                case OwnerType.Personal:
+                default:
+                    owner = DtoUpdateSubscriptionRequestOwnerEnum.Personal;
+                    break;
             }
 
             const payload: UpdateSubscriptionModel = {
                 friendlyName: subscriptionData.friendlyName,
+                // Keep providerId for transitional API typing. Prefer providerKey when provided by caller.
                 providerId: subscriptionData.providerId,
-                planId: subscriptionData.planId,
-                priceId: subscriptionData.priceId,
+                ...(subscriptionData.providerKey ? { providerKey: subscriptionData.providerKey } : {}),
                 recurrency: subscriptionData.recurrency as unknown as string,
                 customRecurrency: subscriptionData.customRecurrency,
                 startDate: subscriptionData.startDate,
@@ -196,13 +210,8 @@ export const useSubscriptionsMutations = () => {
                         payerType = DtoEditableSubscriptionPayerModelTypeEnum.Family;
                         break;
                 }
-                const familyId = subscriptionData.payer.familyId ?? subscriptionData.familyId;
-                if (!familyId) {
-                    throw new Error("Payer requires a familyId");
-                }
                 const payer: EditableSubscriptionPayerModel = {
                     type: payerType,
-                    familyId,
                     ...(subscriptionData.payer.memberId ? { memberId: subscriptionData.payer.memberId } : {}),
                 };
 
@@ -210,13 +219,13 @@ export const useSubscriptionsMutations = () => {
             }
 
             // Add custom price if specified
-            if (subscriptionData.customPrice) {
+            if (subscriptionData.price) {
                 const customPrice: AmountModel = {
-                    value: subscriptionData.customPrice.amount,
-                    currency: subscriptionData.customPrice.currency
+                    value: subscriptionData.price.amount,
+                    currency: subscriptionData.price.currency
                 };
 
-                payload.customPrice = customPrice;
+                payload.price = customPrice;
             }
 
             // Add free trial if specified

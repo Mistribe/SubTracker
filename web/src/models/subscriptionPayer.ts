@@ -3,25 +3,18 @@ import { DtoSubscriptionPayerModelTypeEnum } from "@/api/models/DtoSubscriptionP
 import {PayerType} from "@/models/payerType.ts";
 
 export class SubscriptionPayer {
-    private readonly _familyId: string | undefined;
     private readonly _memberId: string | undefined;
     private readonly _type: PayerType;
     private readonly _etag: string | undefined;
 
     constructor(
-        familyId: string | undefined,
         memberId: string | undefined,
         type: PayerType,
         etag: string | undefined
     ) {
-        this._familyId = familyId;
         this._memberId = memberId;
         this._type = type;
         this._etag = etag;
-    }
-
-    get familyId(): string | undefined {
-        return this._familyId;
     }
 
     get memberId(): string | undefined {
@@ -49,7 +42,6 @@ export class SubscriptionPayer {
                 payerType = PayerType.Family;
         }
         return new SubscriptionPayer(
-            model.familyId || undefined,
             model.memberId || undefined,
             payerType,
             model.etag || undefined

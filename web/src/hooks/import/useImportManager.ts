@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import type { UseMutationResult } from '@tanstack/react-query';
 
 export interface ImportStatus {
-  status: 'pending' | 'importing' | 'success' | 'error';
+  status: 'pending' | 'importing' | 'success' | 'error' | 'skipped';
   error?: string;
 }
 
@@ -11,6 +11,7 @@ export interface ImportProgress {
   completed: number;
   failed: number;
   inProgress: boolean;
+  skipped?: number;
 }
 
 export interface ParsedImportRecord<T> {
@@ -37,6 +38,7 @@ interface UseImportManagerReturn {
   progress: ImportProgress;
   isImporting: boolean;
   cancelImport: () => void;
+  resetImport: () => void;
 }
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -90,6 +92,7 @@ export function useImportManager<T>({
     completed: 0,
     failed: 0,
     inProgress: false,
+    skipped: 0,
   });
   const [isImporting, setIsImporting] = useState(false);
   const cancelledRef = useRef(false);
@@ -105,12 +108,13 @@ export function useImportManager<T>({
     });
   }, []);
 
-  const updateProgress = useCallback((completed: number, failed: number, total: number) => {
+  const updateProgress = useCallback((completed: number, failed: number, total: number, skipped: number = 0) => {
     setProgress({
       total,
       completed,
       failed,
       inProgress: completed + failed < total,
+      skipped,
     });
   }, []);
 
@@ -118,9 +122,9 @@ export function useImportManager<T>({
     index: number,
     record: ParsedImportRecord<T>,
     retryCount = 0
-  ): Promise<boolean> => {
+  ): Promise<'success' | 'skipped' | 'error'> => {
     if (cancelledRef.current) {
-      return false;
+      return 'error';
     }
 
     // Skip invalid records
@@ -129,7 +133,7 @@ export function useImportManager<T>({
         status: 'error',
         error: 'Record has validation errors',
       });
-      return false;
+      return 'error';
     }
 
     // Check if we need to wait for rate limit reset
@@ -165,7 +169,7 @@ export function useImportManager<T>({
       }
       
       updateStatus(index, { status: 'success' });
-      return true;
+      return 'success';
     } catch (error: any) {
       // Determine error type and create appropriate message
       let errorMessage = 'Failed to import record';
@@ -178,13 +182,37 @@ export function useImportManager<T>({
         const headers = error.response.headers;
         
         if (status === 400) {
-          errorMessage = `Validation error: ${data?.message || 'Invalid data'}`;
+          // Check if this is a UUID-related validation error
+          const message = data?.message || 'Invalid data';
+          if (message.toLowerCase().includes('uuid') || message.toLowerCase().includes('id')) {
+            // Extract UUID from record data if available (best-effort)
+            const recordId = (record.data as any)?.id;
+            errorMessage = recordId 
+              ? `Invalid UUID format: ${recordId}. ${message}`
+              : `Validation error: ${message}`;
+          } else {
+            errorMessage = `Validation error: ${message}`;
+          }
         } else if (status === 401 || status === 403) {
           errorMessage = 'Authentication error: Please check your permissions';
         } else if (status === 404) {
           errorMessage = 'Resource not found';
         } else if (status === 409) {
-          errorMessage = `Conflict: ${data?.message || 'Record already exists'}`;
+          // Check if this is a UUID conflict error
+          const message = data?.message || 'Record already exists';
+          const recordId = (record.data as any)?.id;
+          
+          if (recordId && (message.toLowerCase().includes('uuid') || 
+                          message.toLowerCase().includes('id') || 
+                          message.toLowerCase().includes('already exists') ||
+                          message.toLowerCase().includes('duplicate'))) {
+            errorMessage = `UUID conflict: Entity with ID ${recordId} already exists`;
+          } else {
+            errorMessage = `Conflict: ${message}`;
+          }
+          // Mark as error (conflict) and do not retry
+          updateStatus(index, { status: 'error', error: errorMessage });
+          return 'error';
         } else if (status === 429) {
           isRateLimitError = true;
           errorMessage = 'Rate limit exceeded: Too many requests';
@@ -215,12 +243,14 @@ export function useImportManager<T>({
       
       // Retry with exponential backoff if we haven't exceeded max retries
       // Don't retry on client errors (4xx) except rate limiting
+      // Specifically don't retry on 400 (validation/UUID errors) or 409 (UUID conflicts)
+      const status = error?.response?.status;
       const shouldRetry = retryCount < maxRetries && (
         !error?.response || 
         error.response.status >= 500 || 
         isRateLimitError ||
         !error.response.status
-      );
+      ) && status !== 400 && status !== 409;
       
       if (shouldRetry) {
         const backoffDelay = isRateLimitError && rateLimitResetRef.current
@@ -235,7 +265,7 @@ export function useImportManager<T>({
         status: 'error',
         error: errorMessage,
       });
-      return false;
+      return 'error';
     }
   };
 
@@ -260,8 +290,9 @@ export function useImportManager<T>({
       const total = indices.length;
       let completed = 0;
       let failed = 0;
+      let skipped = 0;
 
-      updateProgress(completed, failed, total);
+      updateProgress(completed, failed, total, skipped);
 
       // Process records sequentially
       for (const index of indices) {
@@ -273,19 +304,22 @@ export function useImportManager<T>({
         const record = records[index];
         if (!record) {
           failed++;
-          updateProgress(completed, failed, total);
+          updateProgress(completed, failed, total, skipped);
           continue;
         }
 
-        const success = await importSingleRecord(index, record);
+        const result = await importSingleRecord(index, record);
 
-        if (success) {
+        if (result === 'success') {
           completed++;
+        } else if (result === 'skipped') {
+          completed++;
+          skipped++;
         } else {
           failed++;
         }
 
-        updateProgress(completed, failed, total);
+        updateProgress(completed, failed, total, skipped);
 
         // Add delay between calls (except for the last one)
         // Use adaptive delay if enabled
@@ -296,7 +330,7 @@ export function useImportManager<T>({
       }
 
       setIsImporting(false);
-      updateProgress(completed, failed, total);
+      updateProgress(completed, failed, total, skipped);
       
       // Reset adaptive delay tracking after import completes
       if (enableAdaptiveDelay) {
@@ -321,6 +355,17 @@ export function useImportManager<T>({
   const cancelImport = useCallback(() => {
     cancelledRef.current = true;
   }, []);
+
+  // Reset all import-related state (useful when the records list changes)
+  const resetImport = useCallback(() => {
+    cancelledRef.current = false;
+    setImportStatus(new Map());
+    setProgress({ total: 0, completed: 0, failed: 0, inProgress: false, skipped: 0 });
+    setIsImporting(false);
+    responseTimesRef.current = [];
+    currentDelayRef.current = delayBetweenCalls;
+    rateLimitResetRef.current = null;
+  }, [delayBetweenCalls]);
 
   const retryRecord = useCallback(
     async (index: number) => {
@@ -360,5 +405,6 @@ export function useImportManager<T>({
     progress,
     isImporting,
     cancelImport,
+    resetImport,
   };
 }

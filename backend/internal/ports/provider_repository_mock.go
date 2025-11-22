@@ -476,6 +476,80 @@ func (_c *MockProviderRepository_GetByIdForUser_Call) RunAndReturn(run func(ctx 
 	return _c
 }
 
+// GetByProviderKeyForUser provides a mock function for the type MockProviderRepository
+func (_mock *MockProviderRepository) GetByProviderKeyForUser(ctx context.Context, userId types.UserID, key string) (provider.Provider, error) {
+	ret := _mock.Called(ctx, userId, key)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByProviderKeyForUser")
+	}
+
+	var r0 provider.Provider
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, string) (provider.Provider, error)); ok {
+		return returnFunc(ctx, userId, key)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, types.UserID, string) provider.Provider); ok {
+		r0 = returnFunc(ctx, userId, key)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(provider.Provider)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, types.UserID, string) error); ok {
+		r1 = returnFunc(ctx, userId, key)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockProviderRepository_GetByProviderKeyForUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByProviderKeyForUser'
+type MockProviderRepository_GetByProviderKeyForUser_Call struct {
+	*mock.Call
+}
+
+// GetByProviderKeyForUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userId types.UserID
+//   - key string
+func (_e *MockProviderRepository_Expecter) GetByProviderKeyForUser(ctx interface{}, userId interface{}, key interface{}) *MockProviderRepository_GetByProviderKeyForUser_Call {
+	return &MockProviderRepository_GetByProviderKeyForUser_Call{Call: _e.mock.On("GetByProviderKeyForUser", ctx, userId, key)}
+}
+
+func (_c *MockProviderRepository_GetByProviderKeyForUser_Call) Run(run func(ctx context.Context, userId types.UserID, key string)) *MockProviderRepository_GetByProviderKeyForUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 types.UserID
+		if args[1] != nil {
+			arg1 = args[1].(types.UserID)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockProviderRepository_GetByProviderKeyForUser_Call) Return(provider1 provider.Provider, err error) *MockProviderRepository_GetByProviderKeyForUser_Call {
+	_c.Call.Return(provider1, err)
+	return _c
+}
+
+func (_c *MockProviderRepository_GetByProviderKeyForUser_Call) RunAndReturn(run func(ctx context.Context, userId types.UserID, key string) (provider.Provider, error)) *MockProviderRepository_GetByProviderKeyForUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetSystemProviders provides a mock function for the type MockProviderRepository
 func (_mock *MockProviderRepository) GetSystemProviders(ctx context.Context) ([]provider.Provider, int64, error) {
 	ret := _mock.Called(ctx)

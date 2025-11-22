@@ -40,6 +40,14 @@ export interface ValidationError {
 }
 
 /**
+ * UUID-specific validation error
+ */
+export interface UUIDValidationError extends ValidationError {
+  field: 'id';
+  providedValue?: string;
+}
+
+/**
  * Result of validation operation
  */
 export interface ValidationResult {
@@ -49,8 +57,9 @@ export interface ValidationResult {
 
 /**
  * Import status for individual records
+ * - 'skipped' is used when the backend returns HTTP 409 (already exists)
  */
-export type ImportStatusType = 'pending' | 'importing' | 'success' | 'error';
+export type ImportStatusType = 'pending' | 'importing' | 'success' | 'error' | 'skipped';
 
 /**
  * Import status with optional error message
@@ -68,26 +77,28 @@ export interface ImportProgress {
   completed: number;
   failed: number;
   inProgress: boolean;
+  /** Number of records that were skipped because they already exist (HTTP 409) */
+  skipped?: number;
 }
 
 /**
- * Generic import record wrapper
+ * Generic import record wrapper with optional ID field support
  */
 export interface ImportRecord<T> {
   index: number;
   rawData: Record<string, any>;
-  mappedData: Partial<T>;
+  mappedData: Partial<T> & { id?: string };
   validationErrors: ValidationError[];
   isValid: boolean;
   importStatus: ImportStatus;
 }
 
 /**
- * Parsed import record for preview table
+ * Parsed import record for preview table with optional ID field support
  */
 export interface ParsedImportRecord<T> {
   index: number;
-  data: Partial<T>;
+  data: Partial<T> & { id?: string };
   validationErrors: ValidationError[];
   isValid: boolean;
 }

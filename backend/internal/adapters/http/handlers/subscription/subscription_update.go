@@ -27,28 +27,31 @@ func updateSubscriptionRequestToCommand(
 	r dto.UpdateSubscriptionRequest,
 	userId types.UserID,
 	subscriptionID types.SubscriptionID) (command.UpdateSubscriptionCommand, error) {
-	providerID, err := types.ParseProviderID(r.ProviderId)
+	providerID, err := types.ParseProviderIDOrNil(r.ProviderId)
 	if err != nil {
 		return command.UpdateSubscriptionCommand{}, err
 	}
-	owner, err := r.Owner.Owner(userId)
+	owner, err := types.TryParseOwnerType(r.Owner)
 	if err != nil {
 		return command.UpdateSubscriptionCommand{}, err
 	}
-	var payer subscription.Payer
+	var payerType *subscription.PayerType
+	var payerMemberId *types.FamilyMemberID
 	if r.Payer != nil {
-		if owner.Type() != types.FamilyOwnerType {
-			return command.UpdateSubscriptionCommand{}, errors.New("missing family_id for adding a payer")
+		if owner != types.FamilyOwnerType {
+			return command.UpdateSubscriptionCommand{}, errors.New("payer must be set for a family")
 		}
-		payerType, err := subscription.ParsePayerType(r.Payer.Type)
+		parsedPayerType, err := subscription.ParsePayerType(r.Payer.Type)
 		if err != nil {
 			return command.UpdateSubscriptionCommand{}, err
 		}
+		payerType = &parsedPayerType
+
 		memberId, err := types.ParseFamilyMemberIDOrNil(r.Payer.MemberId)
 		if err != nil {
 			return command.UpdateSubscriptionCommand{}, err
 		}
-		payer = subscription.NewPayer(payerType, owner.FamilyId(), memberId)
+		payerMemberId = memberId
 	}
 	var freeTrial subscription.FreeTrial
 	if r.FreeTrial != nil {
@@ -72,18 +75,23 @@ func updateSubscriptionRequestToCommand(
 	if err != nil {
 		return command.UpdateSubscriptionCommand{}, err
 	}
-	price, err := dto.NewSubscriptionCustomPrice(r.CustomPrice)
+	price, err := dto.NewSubscriptionCustomPrice(r.Price)
 	if err != nil {
 		return command.UpdateSubscriptionCommand{}, err
+	}
+	if r.ProviderKey == nil && providerID == nil {
+		return command.UpdateSubscriptionCommand{}, errors.New("provider id or provider key is required")
 	}
 	return command.UpdateSubscriptionCommand{
 		SubscriptionID:   subscriptionID,
 		FriendlyName:     r.FriendlyName,
 		FreeTrial:        freeTrial,
 		ProviderID:       providerID,
+		ProviderKey:      r.ProviderKey,
 		Price:            price.Amount(),
 		Owner:            owner,
-		Payer:            payer,
+		PayerType:        payerType,
+		PayerMemberId:    payerMemberId,
 		FamilyUsers:      familyUsers,
 		Labels:           labels,
 		StartDate:        r.StartDate,
@@ -150,7 +158,8 @@ func (s UpdateEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewUpdateEndpoint(handler ports.CommandHandler[command.UpdateSubscriptionCommand, subscription.Subscription], authentication ports.Authentication) *UpdateEndpoint {
+func NewUpdateEndpoint(handler ports.CommandHandler[command.UpdateSubscriptionCommand, subscription.Subscription],
+	authentication ports.Authentication) *UpdateEndpoint {
 	return &UpdateEndpoint{
 		handler:        handler,
 		authentication: authentication,

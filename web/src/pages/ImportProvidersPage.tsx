@@ -4,6 +4,7 @@ import { ArrowLeft, Download } from 'lucide-react';
 import { FileUploadZone } from '@/components/import/FileUploadZone';
 import { ImportPreviewTable } from '@/components/import/ImportPreviewTable';
 import { ImportHelp } from '@/components/import/ImportHelp';
+import { TemplateDownloadSection } from '@/components/import/TemplateDownloadSection';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
 import { fileParser, FileParseError, FileSizeError } from '@/services/fileParser';
@@ -95,8 +96,7 @@ export default function ImportProvidersPage() {
         iconUrl: data.iconUrl,
         pricingPageUrl: data.pricingPageUrl,
         labels: data.labels,
-        ownerType: data.owner?.type as any,
-        familyId: data.owner?.familyId,
+        ownerType: data.owner,
       });
     },
   } as any;
@@ -108,6 +108,7 @@ export default function ImportProvidersPage() {
     progress,
     isImporting,
     cancelImport,
+    resetImport,
   } = useImportManager({
     records: parsedRecords,
     createMutation: wrappedMutation,
@@ -209,13 +210,17 @@ export default function ImportProvidersPage() {
     await importRecords(validSelectedIndices);
 
     // Show completion message
-    const successCount = progress.completed - progress.failed;
+    const skipped = progress.skipped ?? 0;
+    const successCount = Math.max(0, progress.completed - progress.failed - skipped);
     if (progress.failed > 0) {
-      toast.warning('Import completed with errors', {
-        description: `${successCount} succeeded, ${progress.failed} failed`,
+      toast.warning('Import completed with issues', {
+        description: `${successCount} created, ${skipped} already existed, ${progress.failed} failed`,
       });
     } else {
-      toast.success(`Successfully imported ${successCount} providers`);
+      const baseMsg = skipped > 0
+        ? `${successCount} created, ${skipped} already existed`
+        : `${successCount} providers imported`;
+      toast.success(`Import completed: ${baseMsg}`);
       setHasUnsavedChanges(false);
     }
   }, [selectedRecords, parsedRecords, importRecords, progress]);
@@ -234,13 +239,17 @@ export default function ImportProvidersPage() {
     await importRecords(validIndices);
 
     // Show completion message
-    const successCount = progress.completed - progress.failed;
+    const skipped = progress.skipped ?? 0;
+    const successCount = Math.max(0, progress.completed - progress.failed - skipped);
     if (progress.failed > 0) {
-      toast.warning('Import completed with errors', {
-        description: `${successCount} succeeded, ${progress.failed} failed`,
+      toast.warning('Import completed with issues', {
+        description: `${successCount} created, ${skipped} already existed, ${progress.failed} failed`,
       });
     } else {
-      toast.success(`Successfully imported ${successCount} providers`);
+      const baseMsg = skipped > 0
+        ? `${successCount} created, ${skipped} already existed`
+        : `${successCount} providers imported`;
+      toast.success(`Import completed: ${baseMsg}`);
       setHasUnsavedChanges(false);
     }
   }, [parsedRecords, importRecords, progress]);
@@ -311,6 +320,9 @@ export default function ImportProvidersPage() {
         }
       />
 
+      {/* Template download section */}
+      <TemplateDownloadSection entityType="providers" />
+
       {/* File upload zone */}
       {parsedRecords.length === 0 && (
         <div className="space-y-4">
@@ -341,6 +353,14 @@ export default function ImportProvidersPage() {
             isImporting={isImporting}
             progress={progress}
             onRetryRecord={retryRecord}
+            onRemoveSelected={(indices) => {
+              if (isImporting) return;
+              const removeSet = new Set(indices);
+              resetImport();
+              setParsedRecords(prev => prev.filter((_, idx) => !removeSet.has(idx)));
+              setSelectedRecords(new Set());
+              setHasUnsavedChanges(true);
+            }}
           />
 
           {/* Action buttons at bottom */}

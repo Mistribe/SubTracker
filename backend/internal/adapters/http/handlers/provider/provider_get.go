@@ -28,19 +28,25 @@ func NewGetEndpoint(handler ports.QueryHandler[query.FindOneQuery, provider.Prov
 //	@Description	Retrieve a single provider with all its plans and prices by LabelID
 //	@Tags			providers
 //	@Produce		json
-//	@Param			providerId	path		string				true	"Provider LabelID (UUID format)"
+//	@Param			providerId	path		string				true	"Provider ID (UUID format) or Provider Key (string format)"
 //	@Success		200			{object}	dto.ProviderModel	"Successfully retrieved provider"
 //	@Failure		400			{object}	HttpErrorResponse	"Bad Request - Invalid provider LabelID format"
 //	@Failure		404			{object}	HttpErrorResponse	"Provider not found"
 //	@Failure		500			{object}	HttpErrorResponse	"Internal Server Error"
 //	@Router			/providers/{providerId} [get]
 func (e GetEndpoint) Handle(c *gin.Context) {
-	providerID, err := types.ParseProviderID(c.Param("providerId"))
-	if err != nil {
-		FromError(c, err)
-		return
+	providerIdParam := c.Param("providerId")
+	providerID, ok := types.TryParseProviderID(providerIdParam)
+	var q query.FindOneQuery
+	if ok {
+		q = query.FindOneQuery{
+			ProviderID: &providerID,
+		}
+	} else {
+		q = query.FindOneQuery{
+			ProviderKey: &providerIdParam,
+		}
 	}
-	q := query.NewFindOneQuery(providerID)
 	r := e.handler.Handle(c, q)
 	FromResult(c,
 		r,

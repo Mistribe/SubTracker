@@ -17,8 +17,9 @@ type CreateSubscriptionRequest struct {
 	Id               *string                         `json:"id,omitempty"`
 	FriendlyName     *string                         `json:"friendly_name,omitempty"`
 	FreeTrial        *SubscriptionFreeTrialModel     `json:"free_trial,omitempty"`
-	ProviderId       string                          `json:"provider_id" binding:"required"`
-	CustomPrice      AmountModel                     `json:"custom_price"`
+	ProviderId       *string                         `json:"provider_id,omitempty"`
+	ProviderKey      *string                         `json:"provider_key,omitempty"`
+	Price            AmountModel                     `json:"price"`
 	FamilyUsers      []string                        `json:"family_users,omitempty"`
 	Labels           []string                        `json:"labels,omitempty"`
 	StartDate        time.Time                       `json:"start_date" binding:"required" format:"date-time"`
@@ -26,17 +27,16 @@ type CreateSubscriptionRequest struct {
 	Recurrency       string                          `json:"recurrency" binding:"required"`
 	CustomRecurrency *int32                          `json:"custom_recurrency,omitempty"`
 	Payer            *EditableSubscriptionPayerModel `json:"payer,omitempty"`
-	Owner            EditableOwnerModel              `json:"owner" binding:"required"`
+	Owner            string                          `json:"owner" binding:"required" example:"personal" enums:"personal,family,system"`
 	CreatedAt        *time.Time                      `json:"created_at,omitempty"`
 }
 
 type UpdateSubscriptionRequest struct {
 	FriendlyName     *string                         `json:"friendly_name,omitempty"`
 	FreeTrial        *SubscriptionFreeTrialModel     `json:"free_trial,omitempty"`
-	ProviderId       string                          `json:"provider_id" binding:"required"`
-	PlanId           *string                         `json:"plan_id,omitempty"`
-	PriceId          *string                         `json:"price_id,omitempty"`
-	CustomPrice      AmountModel                     `json:"custom_price"`
+	ProviderId       *string                         `json:"provider_id" binding:"required"`
+	ProviderKey      *string                         `json:"provider_key,omitempty"`
+	Price            AmountModel                     `json:"price"`
 	ServiceUsers     []string                        `json:"service_users,omitempty"`
 	Labels           []string                        `json:"labels,omitempty"`
 	StartDate        time.Time                       `json:"start_date" binding:"required" format:"date-time"`
@@ -44,6 +44,6 @@ type UpdateSubscriptionRequest struct {
 	Recurrency       string                          `json:"recurrency" binding:"required"`
 	CustomRecurrency *int32                          `json:"custom_recurrency,omitempty"`
 	Payer            *EditableSubscriptionPayerModel `json:"payer,omitempty"`
-	Owner            EditableOwnerModel              `json:"owner" binding:"required"`
+	Owner            string                          `json:"owner" binding:"required" example:"personal" enums:"personal,family,system"`
 	UpdatedAt        *time.Time                      `json:"updated_at,omitempty" format:"date-time"`
 }

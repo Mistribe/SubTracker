@@ -69,6 +69,7 @@ type Subscription interface {
 	SetEndDate(endDate *time.Time)
 	SetRecurrency(recurrency RecurrencyType)
 	SetCustomRecurrency(customRecurrency *int32)
+	SetProviderId(providerID types.ProviderID)
 
 	Equal(other Subscription) bool
 	GetValidationErrors() validation.Errors
@@ -368,6 +369,11 @@ func (s *subscription) CustomRecurrency() *int32 {
 
 func (s *subscription) SetFriendlyName(name *string) {
 	s.friendlyName = name
+	s.SetAsDirty()
+}
+
+func (s *subscription) SetProviderId(providerID types.ProviderID) {
+	s.providerId = providerID
 	s.SetAsDirty()
 }
 

@@ -1,0 +1,6 @@
+id,name,description,url,iconUrl,pricingPageUrl,labels
+550e8400-e29b-41d4-a716-446655440010,Netflix,Streaming service for movies and TV shows,https://www.netflix.com,https://www.netflix.com/favicon.ico,https://www.netflix.com/signup/planform,"Entertainment,Video Streaming"
+550e8400-e29b-41d4-a716-446655440011,Spotify,Music streaming service,https://www.spotify.com,https://www.spotify.com/favicon.ico,https://www.spotify.com/premium,"Entertainment,Music"
+550e8400-e29b-41d4-a716-446655440012,Adobe Creative Cloud,Creative software suite,https://www.adobe.com,https://www.adobe.com/favicon.ico,https://www.adobe.com/creativecloud/plans.html,"Productivity,Design"
+,GitHub,Code hosting platform,https://github.com,https://github.com/favicon.ico,https://github.com/pricing,"Development,Productivity"
+,Dropbox,Cloud storage service,https://www.dropbox.com,https://www.dropbox.com/favicon.ico,https://www.dropbox.com/plans,"Productivity,Storage"

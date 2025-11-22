@@ -30,35 +30,36 @@ func NewCreateEndpoint(handler ports.CommandHandler[command.CreateSubscriptionCo
 	}
 }
 
-func createSubscriptionRequestToCommand(r dto.CreateSubscriptionRequest,
-	userId types.UserID) (command.CreateSubscriptionCommand, error) {
+func createSubscriptionRequestToCommand(r dto.CreateSubscriptionRequest) (command.CreateSubscriptionCommand, error) {
 	subscriptionID, err := types.ParseSubscriptionIDOrNil(r.Id)
 	if err != nil {
 		return command.CreateSubscriptionCommand{}, err
 	}
-	providerID, err := types.ParseProviderID(r.ProviderId)
+	providerID, err := types.ParseProviderIDOrNil(r.ProviderId)
 	if err != nil {
 		return command.CreateSubscriptionCommand{}, err
 	}
-	owner, err := r.Owner.Owner(userId)
+	owner, err := types.TryParseOwnerType(r.Owner)
 	if err != nil {
 		return command.CreateSubscriptionCommand{}, err
 	}
-	var payer subscription.Payer
+	var payerType *subscription.PayerType
+	var payerMemberId *types.FamilyMemberID
 	if r.Payer != nil {
-		if owner.Type() != types.FamilyOwnerType {
-			return command.CreateSubscriptionCommand{}, errors.New("missing family_id for adding a payer")
+		if owner != types.FamilyOwnerType {
+			return command.CreateSubscriptionCommand{}, errors.New("payer must be set for a family")
 		}
-		payerType, err := subscription.ParsePayerType(r.Payer.Type)
+		parsedPayerType, err := subscription.ParsePayerType(r.Payer.Type)
 		if err != nil {
 			return command.CreateSubscriptionCommand{}, err
 		}
+		payerType = &parsedPayerType
 
 		memberId, err := types.ParseFamilyMemberIDOrNil(r.Payer.MemberId)
 		if err != nil {
 			return command.CreateSubscriptionCommand{}, err
 		}
-		payer = subscription.NewPayer(payerType, owner.FamilyId(), memberId)
+		payerMemberId = memberId
 	}
 	var freeTrial subscription.FreeTrial
 	if r.FreeTrial != nil {
@@ -82,18 +83,23 @@ func createSubscriptionRequestToCommand(r dto.CreateSubscriptionRequest,
 	if err != nil {
 		return command.CreateSubscriptionCommand{}, err
 	}
-	price, err := dto.NewSubscriptionCustomPrice(r.CustomPrice)
+	price, err := dto.NewSubscriptionCustomPrice(r.Price)
 	if err != nil {
 		return command.CreateSubscriptionCommand{}, err
+	}
+	if r.ProviderKey == nil && providerID == nil {
+		return command.CreateSubscriptionCommand{}, errors.New("provider id or provider key is required")
 	}
 	return command.CreateSubscriptionCommand{
 		SubscriptionID:   option.New(subscriptionID),
 		FriendlyName:     r.FriendlyName,
 		FreeTrial:        freeTrial,
 		ProviderID:       providerID,
+		ProviderKey:      r.ProviderKey,
 		Price:            price.Amount(),
 		Owner:            owner,
-		Payer:            payer,
+		PayerType:        payerType,
+		PayerMemberId:    payerMemberId,
 		FamilyUsers:      familyUsers,
 		Labels:           labels,
 		StartDate:        r.StartDate,
@@ -124,9 +130,7 @@ func (s CreateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	connectedAccount := s.authentication.MustGetConnectedAccount(c)
-
-	cmd, err := createSubscriptionRequestToCommand(model, connectedAccount.UserID())
+	cmd, err := createSubscriptionRequestToCommand(model)
 	if err != nil {
 		FromError(c, err)
 		return

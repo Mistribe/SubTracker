@@ -62,7 +62,7 @@ export interface DtoProviderModel {
      * @type {string}
      * @memberof DtoProviderModel
      */
-    key?: string;
+    key: string;
     /**
      * @Description List of label IDs associated with this provider for categorization
      * @type {Array<string>}
@@ -108,6 +108,7 @@ export function instanceOfDtoProviderModel(value: object): value is DtoProviderM
     if (!('createdAt' in value) || value['createdAt'] === undefined) return false;
     if (!('etag' in value) || value['etag'] === undefined) return false;
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('key' in value) || value['key'] === undefined) return false;
     if (!('labels' in value) || value['labels'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('owner' in value) || value['owner'] === undefined) return false;
@@ -130,7 +131,7 @@ export function DtoProviderModelFromJSONTyped(json: any, ignoreDiscriminator: bo
         'etag': json['etag'],
         'iconUrl': json['icon_url'] == null ? undefined : json['icon_url'],
         'id': json['id'],
-        'key': json['key'] == null ? undefined : json['key'],
+        'key': json['key'],
         'labels': json['labels'],
         'name': json['name'],
         'owner': DtoOwnerModelFromJSON(json['owner']),

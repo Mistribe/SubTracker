@@ -86,7 +86,6 @@ export function AddProviderForm({isOpen, onClose, familyId}: AddProviderFormProp
                 iconUrl: data.iconUrl || undefined,
                 pricingPageUrl: data.pricingPageUrl || undefined,
                 ownerType: data.ownerType,
-                familyId: data.ownerType === OwnerType.Family ? data.familyId : undefined,
             });
             reset();
             onClose();
