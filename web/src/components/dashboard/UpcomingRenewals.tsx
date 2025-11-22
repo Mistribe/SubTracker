@@ -22,6 +22,12 @@ const UpcomingRenewals = ({
                                isLoading
                            }: UpcomingRenewalsProps) => {
     const navigate = useNavigate();
+
+    const providerToName = (providerId: string | undefined) =>  {
+        let provider = providerMap.get(providerId ?? "");
+        return provider?.name ?? providerId ?? "";
+    }
+
     return (
         <div>
             <div>
@@ -49,7 +55,7 @@ const UpcomingRenewals = ({
                                 >
                                     <div className="flex justify-between items-start">
                                         <h4 className="flex items-center font-medium">
-                                            {providerMap.get(item.providerId ?? "")?.name || item.providerId}
+                                            {providerToName(item.providerId)}
                                         </h4>
                                         <span
                                             className="font-semibold bg-gradient-to-r from-cyan-500 to-cyan-700 bg-clip-text text-transparent">

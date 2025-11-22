@@ -47,6 +47,12 @@ export interface DtoSubscriptionSummaryUpcomingRenewalResponse {
     source?: DtoAmountModel;
     /**
      * 
+     * @type {string}
+     * @memberof DtoSubscriptionSummaryUpcomingRenewalResponse
+     */
+    subscriptionId: string;
+    /**
+     * 
      * @type {DtoAmountModel}
      * @memberof DtoSubscriptionSummaryUpcomingRenewalResponse
      */
@@ -59,6 +65,7 @@ export interface DtoSubscriptionSummaryUpcomingRenewalResponse {
 export function instanceOfDtoSubscriptionSummaryUpcomingRenewalResponse(value: object): value is DtoSubscriptionSummaryUpcomingRenewalResponse {
     if (!('at' in value) || value['at'] === undefined) return false;
     if (!('providerId' in value) || value['providerId'] === undefined) return false;
+    if (!('subscriptionId' in value) || value['subscriptionId'] === undefined) return false;
     return true;
 }
 
@@ -75,6 +82,7 @@ export function DtoSubscriptionSummaryUpcomingRenewalResponseFromJSONTyped(json:
         'at': (new Date(json['at'])),
         'providerId': json['provider_id'],
         'source': json['source'] == null ? undefined : DtoAmountModelFromJSON(json['source']),
+        'subscriptionId': json['subscription_id'],
         'total': json['total'] == null ? undefined : DtoAmountModelFromJSON(json['total']),
     };
 }
@@ -93,6 +101,7 @@ export function DtoSubscriptionSummaryUpcomingRenewalResponseToJSONTyped(value?:
         'at': value['at'].toISOString(),
         'provider_id': value['providerId'],
         'source': DtoAmountModelToJSON(value['source']),
+        'subscription_id': value['subscriptionId'],
         'total': DtoAmountModelToJSON(value['total']),
     };
 }

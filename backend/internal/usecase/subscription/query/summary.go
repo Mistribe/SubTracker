@@ -25,10 +25,11 @@ type SummaryQuery struct {
 }
 
 type SummaryQueryUpcomingRenewalsResponse struct {
-	ProviderId types.ProviderID
-	At         time.Time
-	Total      currency.Amount
-	Source     *currency.Amount
+	ProviderId     types.ProviderID
+	SubscriptionId types.SubscriptionID
+	At             time.Time
+	Total          currency.Amount
+	Source         *currency.Amount
 }
 
 type SummaryQueryTopProvidersResponse struct {
@@ -103,7 +104,8 @@ func (h SummaryQueryHandler) convertToCurrency(
 
 // classifySubscription determines if a subscription is personal, family, or should be excluded
 // Returns: "personal", "family", or "exclude"
-func (h SummaryQueryHandler) classifySubscription(sub subscription.Subscription, currentUserID types.UserID, fam family.Family) string {
+func (h SummaryQueryHandler) classifySubscription(sub subscription.Subscription, currentUserID types.UserID,
+	fam family.Family) string {
 	payer := sub.Payer()
 
 	// If no payer, default to personal
@@ -265,10 +267,11 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 					sub.StartDate())
 				if renewalDate != nil && price.IsValid() {
 					upcomingRenewals = append(upcomingRenewals, SummaryQueryUpcomingRenewalsResponse{
-						ProviderId: sub.ProviderId(),
-						At:         *renewalDate,
-						Total:      price,
-						Source:     &price,
+						ProviderId:     sub.ProviderId(),
+						SubscriptionId: sub.Id(),
+						At:             *renewalDate,
+						Total:          price,
+						Source:         &price,
 					})
 				}
 			}

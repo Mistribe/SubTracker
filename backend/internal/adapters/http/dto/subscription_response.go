@@ -19,10 +19,11 @@ type SubscriptionSummaryTopLabelResponse struct {
 
 // SubscriptionSummaryUpcomingRenewalResponse represents the structure for upcoming subscription renewal details.
 type SubscriptionSummaryUpcomingRenewalResponse struct {
-	ProviderId string       `json:"provider_id" binding:"required"`
-	At         time.Time    `json:"at" binding:"required" format:"date-time"`
-	Total      AmountModel  `json:"total"`
-	Source     *AmountModel `json:"source"`
+	ProviderId     string       `json:"provider_id" binding:"required"`
+	SubscriptionId string       `json:"subscription_id" binding:"required"`
+	At             time.Time    `json:"at" binding:"required" format:"date-time"`
+	Total          AmountModel  `json:"total"`
+	Source         *AmountModel `json:"source"`
 }
 
 // SubscriptionSummaryResponse represents a summary of subscription details including costs, providers, labels, and renewals.

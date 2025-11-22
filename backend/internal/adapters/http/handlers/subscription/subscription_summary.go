@@ -88,9 +88,10 @@ func (e SummaryEndpoint) Handle(c *gin.Context) {
 				UpcomingRenewals: herd.Select(res.UpcomingRenewals,
 					func(upcomingRenewal query.SummaryQueryUpcomingRenewalsResponse) dto.SubscriptionSummaryUpcomingRenewalResponse {
 						m := dto.SubscriptionSummaryUpcomingRenewalResponse{
-							ProviderId: upcomingRenewal.ProviderId.String(),
-							At:         upcomingRenewal.At,
-							Total:      dto.NewAmount(upcomingRenewal.Total),
+							ProviderId:     upcomingRenewal.ProviderId.String(),
+							SubscriptionId: upcomingRenewal.SubscriptionId.String(),
+							At:             upcomingRenewal.At,
+							Total:          dto.NewAmount(upcomingRenewal.Total),
 						}
 						if upcomingRenewal.Source != nil {
 							s := dto.NewAmount(*upcomingRenewal.Source)

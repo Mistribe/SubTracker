@@ -862,11 +862,14 @@ components:
           type: string
         source:
           $ref: '#/components/schemas/dto.AmountModel'
+        subscription_id:
+          type: string
         total:
           $ref: '#/components/schemas/dto.AmountModel'
       required:
       - at
       - provider_id
+      - subscription_id
       type: object
     dto.UpdateFamilyMemberRequest:
       properties:
