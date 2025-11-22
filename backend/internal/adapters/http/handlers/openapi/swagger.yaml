@@ -787,6 +787,28 @@ components:
         active:
           example: 10
           type: integer
+        active_family:
+          example: 5
+          type: integer
+        active_personal:
+          example: 5
+          type: integer
+        family_last_month:
+          $ref: '#/components/schemas/dto.AmountModel'
+        family_last_year:
+          $ref: '#/components/schemas/dto.AmountModel'
+        family_monthly:
+          $ref: '#/components/schemas/dto.AmountModel'
+        family_yearly:
+          $ref: '#/components/schemas/dto.AmountModel'
+        personal_last_month:
+          $ref: '#/components/schemas/dto.AmountModel'
+        personal_last_year:
+          $ref: '#/components/schemas/dto.AmountModel'
+        personal_monthly:
+          $ref: '#/components/schemas/dto.AmountModel'
+        personal_yearly:
+          $ref: '#/components/schemas/dto.AmountModel'
         top_labels:
           items:
             $ref: '#/components/schemas/dto.SubscriptionSummaryTopLabelResponse'
