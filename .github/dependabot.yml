@@ -26,19 +26,6 @@ updates:
         patterns:
           - "*"
 
-  # Node.js npm/yarn/pnpm dependencies (package.json)
-  - package-ecosystem: "npm"
-    directory: "/web"
-    schedule:
-      interval: "daily"
-      time: "03:20"
-      timezone: "Europe/London"
-    open-pull-requests-limit: 10
-    versioning-strategy: "auto"
-    groups:
-      npm-minor-patch:
-        patterns:
-          - "*"
   # Go modules (go.mod)
   - package-ecosystem: "gomod"
     directory: "/backend"
