@@ -19,7 +19,8 @@
     "test:e2e:report": "playwright show-report",
     "validate:templates": "ts-node scripts/validate-templates.ts",
     "shadcn": "npx shadcn-ui@latest",
-    "shadcn:update": "npx shadcn@latest add -a -y -o"
+    "shadcn:update": "npx shadcn@latest add -a -y -o",
+    "update-packages": "npx npm-check-updates -u && npm install"
   },
   "dependencies": {
     "@clerk/clerk-react": "latest",

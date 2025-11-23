@@ -72,13 +72,22 @@ func (r SubscriptionRepository) GetByIdForUser(ctx context.Context, userId types
 	).
 		FROM(
 			Subscriptions.
-				LEFT_JOIN(SubscriptionFamilyUsers, SubscriptionFamilyUsers.SubscriptionID.EQ(Subscriptions.ID)).
-				LEFT_JOIN(FamilyMembers, FamilyMembers.ID.EQ(SubscriptionFamilyUsers.FamilyMemberID)),
+				LEFT_JOIN(SubscriptionFamilyUsers, SubscriptionFamilyUsers.SubscriptionID.EQ(Subscriptions.ID)),
 		).
 		WHERE(
 			Subscriptions.ID.EQ(UUID(id)).
 				AND(
-					Subscriptions.OwnerType.EQ(String("family")).AND(FamilyMembers.UserID.EQ(String(userId.String()))).
+					Subscriptions.OwnerType.EQ(String("family")).AND(EXISTS(
+						SELECT(Families.ID).
+							FROM(
+								Families.
+									INNER_JOIN(FamilyMembers, FamilyMembers.FamilyID.EQ(Families.ID)),
+							).
+							WHERE(
+								Families.ID.EQ(Subscriptions.OwnerFamilyID).
+									AND(FamilyMembers.UserID.EQ(String(userId.String()))),
+							),
+					)).
 						OR(Subscriptions.OwnerType.EQ(String("personal")).AND(Subscriptions.OwnerUserID.EQ(String(userId.String())))),
 				),
 		)

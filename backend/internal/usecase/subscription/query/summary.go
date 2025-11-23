@@ -8,6 +8,7 @@ import (
 	xcur "golang.org/x/text/currency"
 
 	"github.com/mistribe/subtracker/internal/domain/currency"
+	"github.com/mistribe/subtracker/internal/domain/family"
 	"github.com/mistribe/subtracker/internal/domain/subscription"
 	"github.com/mistribe/subtracker/internal/domain/types"
 	"github.com/mistribe/subtracker/internal/ports"
@@ -24,10 +25,11 @@ type SummaryQuery struct {
 }
 
 type SummaryQueryUpcomingRenewalsResponse struct {
-	ProviderId types.ProviderID
-	At         time.Time
-	Total      currency.Amount
-	Source     *currency.Amount
+	ProviderId     types.ProviderID
+	SubscriptionId types.SubscriptionID
+	At             time.Time
+	Total          currency.Amount
+	Source         *currency.Amount
 }
 
 type SummaryQueryTopProvidersResponse struct {
@@ -42,19 +44,30 @@ type SummaryQueryLabelResponse struct {
 }
 
 type SummaryQueryResponse struct {
-	Active           uint16
-	TotalMonthly     currency.Amount
-	TotalLastMonth   currency.Amount
-	TotalYearly      currency.Amount
-	TotalLastYear    currency.Amount
-	UpcomingRenewals []SummaryQueryUpcomingRenewalsResponse
-	TopProviders     []SummaryQueryTopProvidersResponse
-	TopLabels        []SummaryQueryLabelResponse
+	Active            uint16
+	ActivePersonal    uint16
+	ActiveFamily      uint16
+	TotalMonthly      currency.Amount
+	TotalLastMonth    currency.Amount
+	TotalYearly       currency.Amount
+	TotalLastYear     currency.Amount
+	PersonalMonthly   currency.Amount
+	PersonalLastMonth currency.Amount
+	PersonalYearly    currency.Amount
+	PersonalLastYear  currency.Amount
+	FamilyMonthly     currency.Amount
+	FamilyLastMonth   currency.Amount
+	FamilyYearly      currency.Amount
+	FamilyLastYear    currency.Amount
+	UpcomingRenewals  []SummaryQueryUpcomingRenewalsResponse
+	TopProviders      []SummaryQueryTopProvidersResponse
+	TopLabels         []SummaryQueryLabelResponse
 }
 
 type SummaryQueryHandler struct {
 	subscriptionRepository ports.SubscriptionRepository
 	currencyRepository     ports.CurrencyRepository
+	familyRepository       ports.FamilyRepository
 	accountService         ports.AccountService
 	authService            ports.Authentication
 	exchange               ports.Exchange
@@ -63,12 +76,14 @@ type SummaryQueryHandler struct {
 func NewSummaryQueryHandler(
 	subscriptionRepository ports.SubscriptionRepository,
 	currencyRepository ports.CurrencyRepository,
+	familyRepository ports.FamilyRepository,
 	accountService ports.AccountService,
 	authService ports.Authentication,
 	exchange ports.Exchange) *SummaryQueryHandler {
 	return &SummaryQueryHandler{
 		subscriptionRepository: subscriptionRepository,
 		currencyRepository:     currencyRepository,
+		familyRepository:       familyRepository,
 		accountService:         accountService,
 		authService:            authService,
 		exchange:               exchange,
@@ -87,9 +102,37 @@ func (h SummaryQueryHandler) convertToCurrency(
 	return v
 }
 
+// classifySubscription determines if a subscription is personal, family, or should be excluded
+// Returns: "personal", "family", or "exclude"
+func (h SummaryQueryHandler) classifySubscription(sub subscription.Subscription, currentUserID types.UserID,
+	fam family.Family) string {
+	payer := sub.Payer()
+
+	// If no payer, default to personal
+	if payer == nil {
+		return "personal"
+	}
+
+	switch payer.Type() {
+	case subscription.FamilyPayer:
+		return "family"
+	case subscription.FamilyMemberPayer:
+		// Find the family member with this member ID and check if their user ID matches
+		member := fam.GetMember(payer.MemberId())
+		if member != nil && member.UserId() != nil && *member.UserId() == currentUserID {
+			return "personal"
+		}
+		// Another family member is paying, exclude from both
+		return "exclude"
+	default:
+		return "personal"
+	}
+}
+
 func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) result.Result[SummaryQueryResponse] {
 	connectedAccount := h.authService.MustGetConnectedAccount(ctx)
-	preferredCurrency := h.accountService.GetPreferredCurrency(ctx, connectedAccount.UserID())
+	currentUserID := connectedAccount.UserID()
+	preferredCurrency := h.accountService.GetPreferredCurrency(ctx, currentUserID)
 	currencyRates, err := h.currencyRepository.GetRatesByDate(ctx, time.Now())
 	if err != nil {
 		return result.Fail[SummaryQueryResponse](err)
@@ -97,63 +140,126 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 
 	currencyRates = currencyRates.WithReverse()
 
+	// Get family for payer classification
+	family, err := h.familyRepository.GetAccountFamily(ctx, currentUserID)
+	if err != nil {
+		return result.Fail[SummaryQueryResponse](err)
+	}
+
 	topProviders := make(map[types.ProviderID]SummaryQueryTopProvidersResponse)
 	topLabels := make(map[types.LabelID]currency.Amount)
 	var upcomingRenewals []SummaryQueryUpcomingRenewalsResponse
+
+	// Separate accumulators for personal, family, and total
 	totalMonthly := 0.0
 	totalYearly := 0.0
 	totalLastMonth := 0.0
 	totalLastYear := 0.0
+	personalMonthly := 0.0
+	personalYearly := 0.0
+	personalLastMonth := 0.0
+	personalLastYear := 0.0
+	familyMonthly := 0.0
+	familyYearly := 0.0
+	familyLastMonth := 0.0
+	familyLastYear := 0.0
+
 	lastMonth := time.Now().AddDate(0, -1, 0)
 	lastYear := time.Now().AddDate(-1, 0, 0)
+
 	var active uint16
-	for sub := range h.subscriptionRepository.GetAllIt(ctx, connectedAccount.UserID(), "") {
-		if sub.IsActive() {
-			active++
+	var activePersonal uint16
+	var activeFamily uint16
+
+	for sub := range h.subscriptionRepository.GetAllIt(ctx, currentUserID, "") {
+		// Classify subscription
+		classification := h.classifySubscription(sub, currentUserID, family)
+
+		// Skip subscriptions paid by other family members
+		if classification == "exclude" {
+			continue
 		}
+
+		isActive := sub.IsActive()
+		isActiveLastMonth := sub.IsActiveAt(lastMonth)
+		isActiveLastYear := sub.IsActiveAt(lastYear)
+
+		// Count active subscriptions
+		if isActive {
+			active++
+			if classification == "personal" {
+				activePersonal++
+			} else if classification == "family" {
+				activeFamily++
+			}
+		}
+
+		// Calculate monthly amounts
 		if query.TotalMonthly {
-			if sub.IsActive() {
+			if isActive {
 				monthlyAmount := h.convertToCurrency(ctx,
 					sub.GetRecurrencyAmount(subscription.MonthlyRecurrency),
 					preferredCurrency,
 					sub.StartDate())
 				if monthlyAmount.IsValid() {
 					totalMonthly += monthlyAmount.Value()
+					if classification == "personal" {
+						personalMonthly += monthlyAmount.Value()
+					} else if classification == "family" {
+						familyMonthly += monthlyAmount.Value()
+					}
 				}
 			}
-			if sub.IsActiveAt(lastMonth) {
+			if isActiveLastMonth {
 				lastMonthAmount := h.convertToCurrency(ctx,
 					sub.GetRecurrencyAmount(subscription.MonthlyRecurrency),
 					preferredCurrency,
 					sub.StartDate())
 				if lastMonthAmount.IsValid() {
 					totalLastMonth += lastMonthAmount.Value()
+					if classification == "personal" {
+						personalLastMonth += lastMonthAmount.Value()
+					} else if classification == "family" {
+						familyLastMonth += lastMonthAmount.Value()
+					}
 				}
 			}
 		}
+
+		// Calculate yearly amounts
 		if query.TotalYearly {
-			if sub.IsActive() {
+			if isActive {
 				yearlyAmount := h.convertToCurrency(ctx,
 					sub.GetRecurrencyAmount(subscription.YearlyRecurrency),
 					preferredCurrency,
 					sub.StartDate())
 				if yearlyAmount.IsValid() {
 					totalYearly += yearlyAmount.Value()
+					if classification == "personal" {
+						personalYearly += yearlyAmount.Value()
+					} else if classification == "family" {
+						familyYearly += yearlyAmount.Value()
+					}
 				}
 			}
-			if sub.IsActiveAt(lastYear) {
+			if isActiveLastYear {
 				lastYearAmount := h.convertToCurrency(ctx,
 					sub.GetRecurrencyAmount(subscription.YearlyRecurrency),
 					preferredCurrency,
 					sub.StartDate())
 				if lastYearAmount.IsValid() {
 					totalLastYear += lastYearAmount.Value()
+					if classification == "personal" {
+						personalLastYear += lastYearAmount.Value()
+					} else if classification == "family" {
+						familyLastYear += lastYearAmount.Value()
+					}
 				}
 			}
 		}
 
 		if query.UpcomingRenewals > 0 {
-			if sub.IsActive() {
+			if isActive {
 				renewalDate := sub.GetNextRenewalDate()
 				price := h.convertToCurrency(ctx,
 					sub.GetPrice(),
@@ -161,10 +267,11 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 					sub.StartDate())
 				if renewalDate != nil && price.IsValid() {
 					upcomingRenewals = append(upcomingRenewals, SummaryQueryUpcomingRenewalsResponse{
-						ProviderId: sub.ProviderId(),
-						At:         *renewalDate,
-						Total:      price,
-						Source:     &price,
+						ProviderId:     sub.ProviderId(),
+						SubscriptionId: sub.Id(),
+						At:             *renewalDate,
+						Total:          price,
+						Source:         &price,
 					})
 				}
 			}
@@ -205,16 +312,25 @@ func (h SummaryQueryHandler) Handle(ctx context.Context, query SummaryQuery) res
 				}
 			}
 		}
-
 	}
 
 	response := SummaryQueryResponse{
-		Active:           active,
-		TotalMonthly:     currency.NewAmount(totalMonthly, preferredCurrency),
-		TotalYearly:      currency.NewAmount(totalYearly, preferredCurrency),
-		TotalLastMonth:   currency.NewAmount(totalLastMonth, preferredCurrency),
-		TotalLastYear:    currency.NewAmount(totalLastYear, preferredCurrency),
-		UpcomingRenewals: upcomingRenewals,
+		Active:            active,
+		ActivePersonal:    activePersonal,
+		ActiveFamily:      activeFamily,
+		TotalMonthly:      currency.NewAmount(totalMonthly, preferredCurrency),
+		TotalYearly:       currency.NewAmount(totalYearly, preferredCurrency),
+		TotalLastMonth:    currency.NewAmount(totalLastMonth, preferredCurrency),
+		TotalLastYear:     currency.NewAmount(totalLastYear, preferredCurrency),
+		PersonalMonthly:   currency.NewAmount(personalMonthly, preferredCurrency),
+		PersonalYearly:    currency.NewAmount(personalYearly, preferredCurrency),
+		PersonalLastMonth: currency.NewAmount(personalLastMonth, preferredCurrency),
+		PersonalLastYear:  currency.NewAmount(personalLastYear, preferredCurrency),
+		FamilyMonthly:     currency.NewAmount(familyMonthly, preferredCurrency),
+		FamilyYearly:      currency.NewAmount(familyYearly, preferredCurrency),
+		FamilyLastMonth:   currency.NewAmount(familyLastMonth, preferredCurrency),
+		FamilyLastYear:    currency.NewAmount(familyLastYear, preferredCurrency),
+		UpcomingRenewals:  upcomingRenewals,
 		TopProviders: herd.MapToArr(topProviders,
 			func(providerId types.ProviderID, res SummaryQueryTopProvidersResponse) SummaryQueryTopProvidersResponse {
 				return res

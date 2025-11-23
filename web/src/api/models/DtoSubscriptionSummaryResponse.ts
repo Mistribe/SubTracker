@@ -56,6 +56,66 @@ export interface DtoSubscriptionSummaryResponse {
     active?: number;
     /**
      * 
+     * @type {number}
+     * @memberof DtoSubscriptionSummaryResponse
+     */
+    activeFamily?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof DtoSubscriptionSummaryResponse
+     */
+    activePersonal?: number;
+    /**
+     * 
+     * @type {DtoAmountModel}
+     * @memberof DtoSubscriptionSummaryResponse
+     */
+    familyLastMonth?: DtoAmountModel;
+    /**
+     * 
+     * @type {DtoAmountModel}
+     * @memberof DtoSubscriptionSummaryResponse
+     */
+    familyLastYear?: DtoAmountModel;
+    /**
+     * 
+     * @type {DtoAmountModel}
+     * @memberof DtoSubscriptionSummaryResponse
+     */
+    familyMonthly?: DtoAmountModel;
+    /**
+     * 
+     * @type {DtoAmountModel}
+     * @memberof DtoSubscriptionSummaryResponse
+     */
+    familyYearly?: DtoAmountModel;
+    /**
+     * 
+     * @type {DtoAmountModel}
+     * @memberof DtoSubscriptionSummaryResponse
+     */
+    personalLastMonth?: DtoAmountModel;
+    /**
+     * 
+     * @type {DtoAmountModel}
+     * @memberof DtoSubscriptionSummaryResponse
+     */
+    personalLastYear?: DtoAmountModel;
+    /**
+     * 
+     * @type {DtoAmountModel}
+     * @memberof DtoSubscriptionSummaryResponse
+     */
+    personalMonthly?: DtoAmountModel;
+    /**
+     * 
+     * @type {DtoAmountModel}
+     * @memberof DtoSubscriptionSummaryResponse
+     */
+    personalYearly?: DtoAmountModel;
+    /**
+     * 
      * @type {Array<DtoSubscriptionSummaryTopLabelResponse>}
      * @memberof DtoSubscriptionSummaryResponse
      */
@@ -116,6 +176,16 @@ export function DtoSubscriptionSummaryResponseFromJSONTyped(json: any, ignoreDis
     return {
         
         'active': json['active'] == null ? undefined : json['active'],
+        'activeFamily': json['active_family'] == null ? undefined : json['active_family'],
+        'activePersonal': json['active_personal'] == null ? undefined : json['active_personal'],
+        'familyLastMonth': json['family_last_month'] == null ? undefined : DtoAmountModelFromJSON(json['family_last_month']),
+        'familyLastYear': json['family_last_year'] == null ? undefined : DtoAmountModelFromJSON(json['family_last_year']),
+        'familyMonthly': json['family_monthly'] == null ? undefined : DtoAmountModelFromJSON(json['family_monthly']),
+        'familyYearly': json['family_yearly'] == null ? undefined : DtoAmountModelFromJSON(json['family_yearly']),
+        'personalLastMonth': json['personal_last_month'] == null ? undefined : DtoAmountModelFromJSON(json['personal_last_month']),
+        'personalLastYear': json['personal_last_year'] == null ? undefined : DtoAmountModelFromJSON(json['personal_last_year']),
+        'personalMonthly': json['personal_monthly'] == null ? undefined : DtoAmountModelFromJSON(json['personal_monthly']),
+        'personalYearly': json['personal_yearly'] == null ? undefined : DtoAmountModelFromJSON(json['personal_yearly']),
         'topLabels': json['top_labels'] == null ? undefined : ((json['top_labels'] as Array<any>).map(DtoSubscriptionSummaryTopLabelResponseFromJSON)),
         'topProviders': json['top_providers'] == null ? undefined : ((json['top_providers'] as Array<any>).map(DtoSubscriptionSummaryTopProviderResponseFromJSON)),
         'totalLastMonth': json['total_last_month'] == null ? undefined : DtoAmountModelFromJSON(json['total_last_month']),
@@ -138,6 +208,16 @@ export function DtoSubscriptionSummaryResponseToJSONTyped(value?: DtoSubscriptio
     return {
         
         'active': value['active'],
+        'active_family': value['activeFamily'],
+        'active_personal': value['activePersonal'],
+        'family_last_month': DtoAmountModelToJSON(value['familyLastMonth']),
+        'family_last_year': DtoAmountModelToJSON(value['familyLastYear']),
+        'family_monthly': DtoAmountModelToJSON(value['familyMonthly']),
+        'family_yearly': DtoAmountModelToJSON(value['familyYearly']),
+        'personal_last_month': DtoAmountModelToJSON(value['personalLastMonth']),
+        'personal_last_year': DtoAmountModelToJSON(value['personalLastYear']),
+        'personal_monthly': DtoAmountModelToJSON(value['personalMonthly']),
+        'personal_yearly': DtoAmountModelToJSON(value['personalYearly']),
         'top_labels': value['topLabels'] == null ? undefined : ((value['topLabels'] as Array<any>).map(DtoSubscriptionSummaryTopLabelResponseToJSON)),
         'top_providers': value['topProviders'] == null ? undefined : ((value['topProviders'] as Array<any>).map(DtoSubscriptionSummaryTopProviderResponseToJSON)),
         'total_last_month': DtoAmountModelToJSON(value['totalLastMonth']),

@@ -5,14 +5,14 @@ import type TopProvider from "@/models/topProvider.ts";
 import type Provider from "@/models/provider.ts";
 import {formatProviderDuration} from "@/components/dashboard/utils";
 import { useNavigate } from "react-router-dom";
+import TopProviderCard from "@/components/dashboard/TopProviderCard.tsx";
 
 interface TopProvidersProps {
     providers: TopProvider[];
-    providerMap: Map<string, Provider>;
     isLoading: boolean;
 }
 
-const TopProviders = ({providers, providerMap, isLoading}: TopProvidersProps) => {
+const TopProviders = ({providers, isLoading}: TopProvidersProps) => {
     const navigate = useNavigate();
     return (
         <div>
@@ -33,23 +33,7 @@ const TopProviders = ({providers, providerMap, isLoading}: TopProvidersProps) =>
                 ) : providers.length > 0 ? (
                     <div className="space-y-3">
                         {providers.map((provider) => (
-                            <div key={provider.providerId}
-                                 className="p-3 border rounded-lg bg-card transition-all duration-300 hover:shadow-lg hover:bg-accent/50 cursor-pointer"
-                                 onClick={() => provider.providerId && navigate(`/providers/${provider.providerId}`)}>
-                                <div className="flex justify-between items-start">
-                                    <div className="flex items-center">
-                                        <h4 className="font-medium">{providerMap.get(provider.providerId ?? "")?.name || provider.providerId}</h4>
-                                    </div>
-                                    <span
-                                        className="font-semibold bg-gradient-to-r from-purple-500 to-purple-700 bg-clip-text text-transparent">
-                                            <Money amount={provider.total}/>
-                                        </span>
-                                </div>
-                                <p className="text-sm text-muted-foreground mt-1 flex items-center">
-                                    <Clock className="h-3 w-3 mr-1 text-purple-500"/>
-                                    {formatProviderDuration(provider.duration)}
-                                </p>
-                            </div>
+                            <TopProviderCard item={provider} />
                         ))}
                     </div>
                 ) : (

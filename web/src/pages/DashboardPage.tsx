@@ -1,5 +1,4 @@
 import {useMemo} from "react";
-import {useProvidersByIds} from "@/hooks/providers/useProvidersByIds";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import UpcomingRenewals from "@/components/dashboard/UpcomingRenewals";
 import TopProviders from "@/components/dashboard/TopProviders";
@@ -11,11 +10,21 @@ import {useSubscriptionSummaryQuery} from "@/hooks/subscriptions/useSubscription
 const DashboardPage = () => {
     const {
         activeSubscriptions: summaryActiveSubscriptions,
+        activePersonal: summaryActivePersonal,
+        activeFamily: summaryActiveFamily,
         upcomingRenewals: summaryUpcomingRenewals,
         totalMonthly: summaryMonthly,
         totalYearly: summaryYearly,
         totalLastMonth: summaryLastMonth,
         totalLastYear: summaryLastYear,
+        personalMonthly: summaryPersonalMonthly,
+        personalYearly: summaryPersonalYearly,
+        personalLastMonth: summaryPersonalLastMonth,
+        personalLastYear: summaryPersonalLastYear,
+        familyMonthly: summaryFamilyMonthly,
+        familyYearly: summaryFamilyYearly,
+        familyLastMonth: summaryFamilyLastMonth,
+        familyLastYear: summaryFamilyLastYear,
         topProviders: summaryTopProviders,
         topLabels: summaryTopLabels,
         isLoading: isLoadingSummary,
@@ -32,7 +41,6 @@ const DashboardPage = () => {
         return Array.from(ids);
     }, [summaryTopProviders, summaryUpcomingRenewals]);
 
-    const {providerMap, isLoading: isLoadingProvidersByIds} = useProvidersByIds(providerIds);
 
     return (
         <div className="container mx-auto py-6">
@@ -45,7 +53,17 @@ const DashboardPage = () => {
                 totalYearly={summaryYearly}
                 totalLastMonth={summaryLastMonth}
                 totalLastYear={summaryLastYear}
+                personalMonthly={summaryPersonalMonthly}
+                personalYearly={summaryPersonalYearly}
+                personalLastMonth={summaryPersonalLastMonth}
+                personalLastYear={summaryPersonalLastYear}
+                familyMonthly={summaryFamilyMonthly}
+                familyYearly={summaryFamilyYearly}
+                familyLastMonth={summaryFamilyLastMonth}
+                familyLastYear={summaryFamilyLastYear}
                 activeSubscriptionsCount={summaryActiveSubscriptions}
+                activePersonal={summaryActivePersonal}
+                activeFamily={summaryActiveFamily}
                 isLoading={ isLoadingSummary}
             />
 
@@ -55,14 +73,12 @@ const DashboardPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     <UpcomingRenewals
                         summaryUpcomingRenewals={summaryUpcomingRenewals}
-                        providerMap={providerMap}
                         isLoading={isLoadingSummary}
                     />
 
                     <TopProviders
                         providers={summaryTopProviders}
-                        providerMap={providerMap}
-                        isLoading={isLoadingProvidersByIds || isLoadingSummary}
+                        isLoading={isLoadingSummary}
                     />
 
                     <TopLabels
