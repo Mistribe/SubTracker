@@ -59,6 +59,8 @@ func (e GetEndpoint) Middlewares() []gin.HandlerFunc {
 	return nil
 }
 
-func NewGetEndpoint() *GetEndpoint {
-	return &GetEndpoint{}
+func NewGetEndpoint(handler ports.QueryHandler[query.FindOneQuery, subscription.Subscription]) *GetEndpoint {
+	return &GetEndpoint{
+		handler: handler,
+	}
 }
