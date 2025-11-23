@@ -1,5 +1,4 @@
 import {useMemo} from "react";
-import {useProvidersByIds} from "@/hooks/providers/useProvidersByIds";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import UpcomingRenewals from "@/components/dashboard/UpcomingRenewals";
 import TopProviders from "@/components/dashboard/TopProviders";
@@ -42,7 +41,6 @@ const DashboardPage = () => {
         return Array.from(ids);
     }, [summaryTopProviders, summaryUpcomingRenewals]);
 
-    const {providerMap, isLoading: isLoadingProvidersByIds} = useProvidersByIds(providerIds);
 
     return (
         <div className="container mx-auto py-6">
@@ -75,14 +73,12 @@ const DashboardPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     <UpcomingRenewals
                         summaryUpcomingRenewals={summaryUpcomingRenewals}
-                        providerMap={providerMap}
                         isLoading={isLoadingSummary}
                     />
 
                     <TopProviders
                         providers={summaryTopProviders}
-                        providerMap={providerMap}
-                        isLoading={isLoadingProvidersByIds || isLoadingSummary}
+                        isLoading={isLoadingSummary}
                     />
 
                     <TopLabels

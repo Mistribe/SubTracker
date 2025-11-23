@@ -7,11 +7,11 @@ import type UpcomingRenewal from "@/models/upcomingRenewals.ts";
 import {useSubscription} from "@/hooks/subscriptions/useSubscriptionQuery.ts";
 import {useProviderQuery} from "@/hooks/providers/useProviderQuery.ts";
 
-interface RenewalCardProps {
+interface UpcomingRenewalCardProps {
     item: UpcomingRenewal;
 }
 
-const UpcomingRenewalCard = ({item}: RenewalCardProps) => {
+const UpcomingRenewalCard = ({item}: UpcomingRenewalCardProps) => {
     const navigate = useNavigate();
 
     const {data: subscription, isLoading: isLoadingSubscription} = useSubscription(item.subscriptionId);
