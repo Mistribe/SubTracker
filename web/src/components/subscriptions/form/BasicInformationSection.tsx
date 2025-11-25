@@ -55,6 +55,20 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
             <div className="max-w-md mx-auto mt-6">
                 <div className="grid grid-cols-1 gap-6">
                     <div>
+                        <Label htmlFor="providerId" className="text-base mb-2 block">Which service provider is this
+                            for?</Label>
+                        <ProviderCombobox
+                            providers={providers}
+                            value={providerValue}
+                            onChange={handleProviderChange}
+                            placeholder="Select a provider"
+                            emptyMessage="No provider found. Try a different search."
+                        />
+                        {form.formState.errors.providerId && (
+                            <p className="text-sm text-red-500 mt-1">{form.formState.errors.providerId.message}</p>
+                        )}
+                    </div>
+                    <div>
                         <Label htmlFor="friendlyName" className="text-base mb-2 block">What would you like to call this
                             subscription?</Label>
                         <Input
@@ -70,20 +84,7 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
                         )}
                     </div>
 
-                    <div>
-                        <Label htmlFor="providerId" className="text-base mb-2 block">Which service provider is this
-                            for?</Label>
-                        <ProviderCombobox
-                            providers={providers}
-                            value={providerValue}
-                            onChange={handleProviderChange}
-                            placeholder="Select a provider"
-                            emptyMessage="No provider found. Try a different search."
-                        />
-                        {form.formState.errors.providerId && (
-                            <p className="text-sm text-red-500 mt-1">{form.formState.errors.providerId.message}</p>
-                        )}
-                    </div>
+                   
 
                     {/* Custom price input - now always required */}
                     <div className="mt-4">
