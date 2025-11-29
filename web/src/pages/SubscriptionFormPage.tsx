@@ -3,7 +3,6 @@ import {FormProvider, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useNavigate, useParams} from "react-router-dom";
 import {useSubscriptionsMutations} from "@/hooks/subscriptions/useSubscriptionsMutations";
-import {useAllProvidersQuery} from "@/hooks/providers/useAllProvidersQuery";
 import {useFamilyQuery} from "@/hooks/families/useFamilyQuery.ts";
 import {useSubscriptionsQuery} from "@/hooks/subscriptions/useSubscriptionsQuery.ts";
 import {PageHeader} from "@/components/ui/page-header";
@@ -27,13 +26,11 @@ const SubscriptionFormPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
     const {createSubscriptionMutation, updateSubscriptionMutation} = useSubscriptionsMutations();
-    const {data: providersData} = useAllProvidersQuery();
     const {data: familyData} = useFamilyQuery();
     const {data: subscriptionsData} = useSubscriptionsQuery();
     const {preferredCurrency} = useProfileManagement();
 
     const isEditMode = !!subscriptionId;
-    const providers = providersData?.pages.flatMap(page => page.providers) || [];
 
     // Find the subscription to edit if in edit mode
     const subscriptionToEdit = isEditMode
@@ -306,7 +303,7 @@ const SubscriptionFormPage = () => {
 
                         {/* Current Step Component */}
                         <div className="py-4">
-                            {currentStep === 0 && <BasicInformationSection providers={providers}/>}
+                            {currentStep === 0 && <BasicInformationSection />}
                             {currentStep === 1 && <RecurrencySection/>}
                             {currentStep === 2 && <DatesSection/>}
                             {currentStep === 3 && <OwnershipSection family={familyData}/>}
