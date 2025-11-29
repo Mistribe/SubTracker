@@ -39,7 +39,7 @@ func createSubscriptionRequestToCommand(r dto.CreateSubscriptionRequest) (comman
 	if err != nil {
 		return command.CreateSubscriptionCommand{}, err
 	}
-	owner, err := types.TryParseOwnerType(r.Owner)
+	owner, err := types.ParseOwnerType(r.Owner)
 	if err != nil {
 		return command.CreateSubscriptionCommand{}, err
 	}

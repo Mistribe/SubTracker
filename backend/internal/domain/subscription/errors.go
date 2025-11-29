@@ -11,4 +11,5 @@ var (
 	ErrUnknownRecurrencyType          = ex.NewInvalidValue("unknown recurrency type")
 	ErrActiveSubscriptionLimitReached = ex.NewInvalidValue("active subscription limit reached")
 	ErrPayerNeedFamily                = ex.NewInvalidValue("subscription need to be owned by a family to set a payer")
+	ErrUnknownStatus                  = ex.NewInvalidValue("unknown status")
 )

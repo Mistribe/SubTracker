@@ -51,12 +51,12 @@ func ParseOwnerType(input string) (OwnerType, error) {
 	}
 }
 
-func TryParseOwnerType(input string) (OwnerType, error) {
+func TryParseOwnerType(input string) (OwnerType, bool) {
 	t, err := ParseOwnerType(input)
 	if err != nil {
-		return UnknownOwnerType, err
+		return UnknownOwnerType, false
 	}
-	return t, nil
+	return t, true
 }
 
 func MustParseOwnerType(input string) OwnerType {

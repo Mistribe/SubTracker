@@ -23,15 +23,13 @@ type UpdateEndpoint struct {
 	authentication ports.Authentication
 }
 
-func updateSubscriptionRequestToCommand(
-	r dto.UpdateSubscriptionRequest,
-	userId types.UserID,
+func updateSubscriptionRequestToCommand(r dto.UpdateSubscriptionRequest,
 	subscriptionID types.SubscriptionID) (command.UpdateSubscriptionCommand, error) {
 	providerID, err := types.ParseProviderIDOrNil(r.ProviderId)
 	if err != nil {
 		return command.UpdateSubscriptionCommand{}, err
 	}
-	owner, err := types.TryParseOwnerType(r.Owner)
+	owner, err := types.ParseOwnerType(r.Owner)
 	if err != nil {
 		return command.UpdateSubscriptionCommand{}, err
 	}
@@ -130,8 +128,7 @@ func (s UpdateEndpoint) Handle(c *gin.Context) {
 		return
 	}
 
-	connectedAccount := s.authentication.MustGetConnectedAccount(c)
-	cmd, err := updateSubscriptionRequestToCommand(model, connectedAccount.UserID(), subscriptionID)
+	cmd, err := updateSubscriptionRequestToCommand(model, subscriptionID)
 	if err != nil {
 		FromError(c, err)
 		return

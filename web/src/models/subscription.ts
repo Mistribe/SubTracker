@@ -6,6 +6,7 @@ import {addMonths, addYears} from "date-fns";
 import {daysBetween, monthsBetween} from "@/utils/date.ts";
 import {type Amount, fromModel} from "@/models/amount.ts";
 import type {DtoSubscriptionModel as SubscriptionModel} from "@/api/models/DtoSubscriptionModel";
+import {SubscriptionStatus, subscriptionStatusFromHttpApi} from "@/models/subscriptionStatus.ts";
 
 export default class Subscription {
     private readonly _id: string;
@@ -23,7 +24,7 @@ export default class Subscription {
     private readonly _familyUsers: string[];
     private readonly _price: Amount | undefined;
     private readonly _freeTrial: SubscriptionFreeTrial | undefined;
-    private readonly _isActive: boolean;
+    private readonly _status: SubscriptionStatus;
 
     constructor(
         id: string,
@@ -41,7 +42,7 @@ export default class Subscription {
         familyUsers: string[],
         customPrice: Amount | undefined,
         freeTrial: SubscriptionFreeTrial | undefined,
-        isActive: boolean) {
+        status: SubscriptionStatus) {
         this._id = id;
         this._createdAt = createdAt;
         this._updatedAt = updatedAt;
@@ -57,7 +58,7 @@ export default class Subscription {
         this._familyUsers = familyUsers;
         this._price = customPrice;
         this._freeTrial = freeTrial;
-        this._isActive = isActive;
+        this._status = status;
     }
 
     get id(): string {
@@ -73,7 +74,11 @@ export default class Subscription {
     }
 
     get isActive(): boolean {
-        return this._isActive;
+        return this._status === SubscriptionStatus.Active;
+    }
+
+    get status(): SubscriptionStatus {
+        return this._status;
     }
 
     get etag(): string {
@@ -141,7 +146,7 @@ export default class Subscription {
             model.familyUsers || [],
             model.price ? fromModel(model.price) : undefined,
             model.freeTrial ? SubscriptionFreeTrial.fromModel(model.freeTrial) : undefined,
-            model.isActive || false,
+            subscriptionStatusFromHttpApi(model.status),
         );
     }
 

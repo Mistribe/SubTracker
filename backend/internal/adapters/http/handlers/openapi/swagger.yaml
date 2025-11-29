@@ -699,11 +699,6 @@ components:
             format)'
           example: 123e4567-e89b-12d3-a456-426614174000
           type: string
-        is_active:
-          description: '@Description Indicates whether the subscription is currently
-            active or not'
-          example: true
-          type: boolean
         label_refs:
           description: '@Description List of labels associated with this subscription'
           items:
@@ -740,6 +735,14 @@ components:
           example: "2023-01-01T00:00:00Z"
           format: date-time
           type: string
+        status:
+          description: '@Description Indicates the current status of the subscription'
+          enum:
+          - active
+          - ended
+          - not_started
+          - unknown
+          type: string
         updated_at:
           description: '@Description ISO 8601 timestamp when the subscription was
             last modified'
@@ -750,11 +753,11 @@ components:
       - created_at
       - etag
       - id
-      - is_active
       - owner
       - provider_id
       - recurrency
       - start_date
+      - status
       - updated_at
       type: object
     dto.SubscriptionPayerModel:

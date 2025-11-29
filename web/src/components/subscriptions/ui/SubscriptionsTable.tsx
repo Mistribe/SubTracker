@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import {OwnerType} from "@/models/ownerType.ts";
+import {SubscriptionStatus} from "@/models/subscriptionStatus.ts";
 
 export type SubscriptionsTableProps = {
     subscriptions: Subscription[];
@@ -142,14 +143,25 @@ export function SubscriptionsTable({
                             </TableCell>
                             <TableCell>
                                 {subscription.freeTrial ? "Free Trial" : ""}
-                                {subscription.freeTrial && subscription.isActive ? " - " : ""}
-                                {subscription.isActive ? (
+                                {subscription.freeTrial && subscription.status === SubscriptionStatus.Active ? " - " : ""}
+                                {subscription.status === SubscriptionStatus.Active && (
                                     <Badge variant="outline" className="text-muted-foreground px-1.5">
                                         <CircleCheckIcon className="fill-green-500 dark:fill-green-400"/> Active
                                     </Badge>
-                                ) : (
+                                )}
+                                {subscription.status === SubscriptionStatus.Ended && (
                                     <Badge variant="outline" className="text-muted-foreground px-1.5">
-                                        <CircleXIcon className="fill-red-500 dark:fill-red-400"/>Ended
+                                        <CircleXIcon className="fill-red-500 dark:fill-red-400"/> Ended
+                                    </Badge>
+                                )}
+                                {subscription.status === SubscriptionStatus.NotStarted && (
+                                    <Badge variant="outline" className="text-muted-foreground px-1.5">
+                                        <CalendarIcon className="fill-blue-500 dark:fill-blue-400"/> Not Started
+                                    </Badge>
+                                )}
+                                {subscription.status === SubscriptionStatus.Unknow && (
+                                    <Badge variant="outline" className="text-muted-foreground px-1.5">
+                                        <Loader2 className=""/> Unknown
                                     </Badge>
                                 )}
                             </TableCell>

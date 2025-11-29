@@ -20,7 +20,7 @@ type CreateEndpoint struct {
 }
 
 func createLabelRequestToCommand(m dto.CreateLabelRequest) (command.CreateLabelCommand, error) {
-	owner, err := types.TryParseOwnerType(m.Owner)
+	owner, err := types.ParseOwnerType(m.Owner)
 	if err != nil {
 		return command.CreateLabelCommand{}, err
 	}

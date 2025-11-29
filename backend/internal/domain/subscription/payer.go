@@ -9,6 +9,7 @@ type PayerType string
 
 const (
 	UnknownPayer      PayerType = "unknown"
+	PersonalPayer     PayerType = "personal"
 	FamilyMemberPayer PayerType = "family_member"
 	FamilyPayer       PayerType = "family"
 )
@@ -19,6 +20,8 @@ func (p PayerType) String() string {
 
 func ParsePayerType(input string) (payerType PayerType, err error) {
 	switch input {
+	case string(PersonalPayer):
+		return PersonalPayer, nil
 	case string(FamilyMemberPayer):
 		return FamilyMemberPayer, nil
 	case string(FamilyPayer):

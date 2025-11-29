@@ -104,12 +104,6 @@ export interface DtoSubscriptionModel {
      */
     id: string;
     /**
-     * @Description Indicates whether the subscription is currently active or not
-     * @type {boolean}
-     * @memberof DtoSubscriptionModel
-     */
-    isActive: boolean;
-    /**
      * @Description List of labels associated with this subscription
      * @type {Array<DtoLabelRefModel>}
      * @memberof DtoSubscriptionModel
@@ -152,6 +146,12 @@ export interface DtoSubscriptionModel {
      */
     startDate: Date;
     /**
+     * @Description Indicates the current status of the subscription
+     * @type {string}
+     * @memberof DtoSubscriptionModel
+     */
+    status: DtoSubscriptionModelStatusEnum;
+    /**
      * @Description ISO 8601 timestamp when the subscription was last modified
      * @type {Date}
      * @memberof DtoSubscriptionModel
@@ -174,6 +174,17 @@ export const DtoSubscriptionModelRecurrencyEnum = {
 } as const;
 export type DtoSubscriptionModelRecurrencyEnum = typeof DtoSubscriptionModelRecurrencyEnum[keyof typeof DtoSubscriptionModelRecurrencyEnum];
 
+/**
+ * @export
+ */
+export const DtoSubscriptionModelStatusEnum = {
+    Active: 'active',
+    Ended: 'ended',
+    NotStarted: 'not_started',
+    Unknown: 'unknown'
+} as const;
+export type DtoSubscriptionModelStatusEnum = typeof DtoSubscriptionModelStatusEnum[keyof typeof DtoSubscriptionModelStatusEnum];
+
 
 /**
  * Check if a given object implements the DtoSubscriptionModel interface.
@@ -182,11 +193,11 @@ export function instanceOfDtoSubscriptionModel(value: object): value is DtoSubsc
     if (!('createdAt' in value) || value['createdAt'] === undefined) return false;
     if (!('etag' in value) || value['etag'] === undefined) return false;
     if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('isActive' in value) || value['isActive'] === undefined) return false;
     if (!('owner' in value) || value['owner'] === undefined) return false;
     if (!('providerId' in value) || value['providerId'] === undefined) return false;
     if (!('recurrency' in value) || value['recurrency'] === undefined) return false;
     if (!('startDate' in value) || value['startDate'] === undefined) return false;
+    if (!('status' in value) || value['status'] === undefined) return false;
     if (!('updatedAt' in value) || value['updatedAt'] === undefined) return false;
     return true;
 }
@@ -209,7 +220,6 @@ export function DtoSubscriptionModelFromJSONTyped(json: any, ignoreDiscriminator
         'freeTrial': json['free_trial'] == null ? undefined : DtoSubscriptionFreeTrialModelFromJSON(json['free_trial']),
         'friendlyName': json['friendly_name'] == null ? undefined : json['friendly_name'],
         'id': json['id'],
-        'isActive': json['is_active'],
         'labelRefs': json['label_refs'] == null ? undefined : ((json['label_refs'] as Array<any>).map(DtoLabelRefModelFromJSON)),
         'owner': DtoOwnerModelFromJSON(json['owner']),
         'payer': json['payer'] == null ? undefined : DtoSubscriptionPayerModelFromJSON(json['payer']),
@@ -217,6 +227,7 @@ export function DtoSubscriptionModelFromJSONTyped(json: any, ignoreDiscriminator
         'providerId': json['provider_id'],
         'recurrency': json['recurrency'],
         'startDate': (new Date(json['start_date'])),
+        'status': json['status'],
         'updatedAt': (new Date(json['updated_at'])),
     };
 }
@@ -240,7 +251,6 @@ export function DtoSubscriptionModelToJSONTyped(value?: DtoSubscriptionModel | n
         'free_trial': DtoSubscriptionFreeTrialModelToJSON(value['freeTrial']),
         'friendly_name': value['friendlyName'],
         'id': value['id'],
-        'is_active': value['isActive'],
         'label_refs': value['labelRefs'] == null ? undefined : ((value['labelRefs'] as Array<any>).map(DtoLabelRefModelToJSON)),
         'owner': DtoOwnerModelToJSON(value['owner']),
         'payer': DtoSubscriptionPayerModelToJSON(value['payer']),
@@ -248,6 +258,7 @@ export function DtoSubscriptionModelToJSONTyped(value?: DtoSubscriptionModel | n
         'provider_id': value['providerId'],
         'recurrency': value['recurrency'],
         'start_date': value['startDate'].toISOString(),
+        'status': value['status'],
         'updated_at': value['updatedAt'].toISOString(),
     };
 }

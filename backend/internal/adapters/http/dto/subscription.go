@@ -97,8 +97,8 @@ type SubscriptionModel struct {
 	UpdatedAt time.Time `json:"updated_at" binding:"required" format:"date-time" example:"2023-01-20T14:45:30Z"`
 	// @Description Entity tag used for optimistic concurrency control to prevent conflicting updates
 	Etag string `json:"etag" binding:"required" example:"W/\"123456789\""`
-	// @Description Indicates whether the subscription is currently active or not
-	IsActive bool `json:"is_active" binding:"required" example:"true"`
+	// @Description Indicates the current status of the subscription
+	Status string `json:"status" binding:"required" enums:"active,ended,not_started,unknown"`
 	// @Description List of labels associated with this subscription
 	LabelRefs []LabelRefModel `json:"label_refs,omitempty"`
 }
@@ -150,7 +150,7 @@ func NewSubscriptionModel(source subscription.Subscription) SubscriptionModel {
 		Recurrency:       source.Recurrency().String(),
 		CustomRecurrency: source.CustomRecurrency(),
 		Payer:            payerModel,
-		IsActive:         source.IsActive(),
+		Status:           source.Status().String(),
 		CreatedAt:        source.CreatedAt(),
 		UpdatedAt:        source.UpdatedAt(),
 		Etag:             source.ETag(),

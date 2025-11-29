@@ -40,7 +40,7 @@ func createProviderRequestToCommand(r dto.CreateProviderRequest) (command.Create
 		return command.CreateProviderCommand{}, err
 	}
 
-	owner, err := types.TryParseOwnerType(r.Owner)
+	owner, err := types.ParseOwnerType(r.Owner)
 	if err != nil {
 		return command.CreateProviderCommand{}, err
 	}

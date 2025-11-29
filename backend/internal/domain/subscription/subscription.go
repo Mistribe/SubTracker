@@ -56,6 +56,8 @@ type Subscription interface {
 	IsStarted() bool
 	// IsActiveAt determines whether the subscription is active at the given time t.
 	IsActiveAt(t time.Time) bool
+	// Status returns the status of the subscription
+	Status() Status
 	// GetTotalDuration returns the total duration of the subscription
 	GetTotalDuration() time.Duration
 
@@ -167,6 +169,23 @@ func (s *subscription) IsActive() bool {
 	}
 
 	return true
+}
+
+func (s *subscription) Status() Status {
+	currentTime := time.Now()
+	if s.startDate.After(currentTime) {
+		return StatusNotStarted
+	}
+	if s.endDate != nil && s.endDate.Before(currentTime) {
+		return StatusEnded
+	}
+	if s.startDate.Before(currentTime) && s.endDate == nil {
+		return StatusActive
+	}
+	if s.startDate.Before(currentTime) && s.endDate != nil && s.endDate.After(currentTime) {
+		return StatusActive
+	}
+	return StatusUnknown
 }
 
 func (s *subscription) GetTotalSpent() currency.Amount {
@@ -344,7 +363,18 @@ func (s *subscription) Owner() types.Owner {
 }
 
 func (s *subscription) Payer() Payer {
-	return s.payer
+	if s.payer != nil {
+		return s.payer
+	}
+	if s.owner != nil {
+		switch s.owner.Type() {
+		case types.FamilyOwnerType:
+			return NewPayer(FamilyPayer, s.owner.FamilyId(), nil)
+		case types.PersonalOwnerType:
+			return nil
+		}
+	}
+	return nil
 }
 
 func (s *subscription) FamilyUsers() *slicesx.Tracked[types.FamilyMemberID] {
