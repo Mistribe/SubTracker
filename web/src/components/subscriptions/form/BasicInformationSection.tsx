@@ -4,14 +4,11 @@ import {Input} from "@/components/ui/input";
 import {ProviderCombobox} from "@/components/providers/ProviderCombobox";
 import {CurrencyInput} from "@/components/ui/currency-input";
 import type {FormValues} from "./SubscriptionFormSchema";
-import Provider from "@/models/provider";
+import {useProfileManagement} from "@/hooks/profile/useProfileManagement.ts";
 
-interface BasicInformationSectionProps {
-    providers: Provider[];
-}
-
-export const BasicInformationSection = ({providers}: BasicInformationSectionProps) => {
+export const BasicInformationSection = () => {
     const form = useFormContext<FormValues>();
+    const {preferredCurrency} = useProfileManagement();
 
     // Get form values directly
     const providerId = form.watch("providerId");
@@ -23,7 +20,7 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
     // Prepare currency input value
     const currencyInputValue = {
         amount: price?.amount || 0,
-        currency: price?.currency || "USD"
+        currency: price?.currency || preferredCurrency?.currency || "USD"
     };
 
     // Define handlers for form value changes
@@ -33,7 +30,7 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
 
         // Ensure price has a valid default value since it's now required
         if (!form.getValues("price") || form.getValues("price.amount") <= 0) {
-            form.setValue("price", {amount: 10, currency: "USD"}, {shouldValidate: true});
+            form.setValue("price", {amount: 10, currency: preferredCurrency?.currency || "USD"}, {shouldValidate: true});
         }
     };
 
@@ -42,8 +39,14 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
         form.setValue("price", {
             amount: value.amount,
             currency: value.currency
-        }, {shouldValidate: true});
+        }, {shouldValidate: true, shouldTouch: true, shouldDirty: true});
     };
+
+    // Only show price errors after the user has interacted with the field or after a submit attempt
+    const showPriceErrors =
+        form.formState.submitCount > 0 ||
+        !!form.formState.touchedFields.price?.amount ||
+        !!form.formState.touchedFields.price?.currency; 
 
     return (
         <div className="space-y-6">
@@ -58,7 +61,6 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
                         <Label htmlFor="providerId" className="text-base mb-2 block">Which service provider is this
                             for?</Label>
                         <ProviderCombobox
-                            providers={providers}
                             value={providerValue}
                             onChange={handleProviderChange}
                             placeholder="Select a provider"
@@ -92,10 +94,10 @@ export const BasicInformationSection = ({providers}: BasicInformationSectionProp
                         <CurrencyInput
                             value={currencyInputValue}
                             onChange={handleCurrencyInputChange}
-                            error={{
+                            error={showPriceErrors ? {
                                 amount: form.formState.errors.price?.amount?.message,
                                 currency: form.formState.errors.price?.currency?.message
-                            }}
+                            } : undefined}
                             className="h-12"
                         />
                         <p className="text-xs text-muted-foreground mt-1">Enter the subscription price</p>

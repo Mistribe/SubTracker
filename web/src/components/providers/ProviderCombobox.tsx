@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import Provider from "@/models/provider";
+import { useAllProvidersQuery } from "@/hooks/providers/useAllProvidersQuery";
+import { useProviderQuery } from "@/hooks/providers/useProviderQuery";
 
 interface ProviderComboboxProps {
-  providers: Provider[];
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -26,7 +27,6 @@ interface ProviderComboboxProps {
 }
 
 export function ProviderCombobox({
-  providers,
   value,
   onChange,
   placeholder = "Select a provider",
@@ -35,14 +35,30 @@ export function ProviderCombobox({
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
-  // Find the selected provider name
-  const selectedProvider = providers.find((provider) => provider.id === value);
+  // Fetch providers from backend with search and infinite scroll support
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+  } = useAllProvidersQuery({ search: searchQuery });
 
-  // Filter providers based on search query
-  const filteredProviders = providers.filter((provider) =>
-    provider.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const fetchedProviders: Provider[] = useMemo(
+    () => data?.pages.flatMap((p) => p.providers) ?? [],
+    [data]
   );
+
+  // Resolve selected provider: from current pages or fetch by id if missing
+  const providerFromPages = useMemo(
+    () => fetchedProviders.find((p) => p.id === value),
+    [fetchedProviders, value]
+  );
+  const { data: providerById } = useProviderQuery(providerFromPages ? undefined : value);
+  const selectedProvider = providerFromPages ?? providerById;
 
   // Close the popover when clicking outside
   useEffect(() => {
@@ -61,6 +77,15 @@ export function ProviderCombobox({
     };
   }, []);
 
+  // Infinite scroll handler for the list
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 16;
+    if (nearBottom && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -76,16 +101,18 @@ export function ProviderCombobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search provider..."
             value={searchQuery}
             onValueChange={setSearchQuery}
           />
-          <CommandList>
-            <CommandEmpty>{emptyMessage}</CommandEmpty>
+          <CommandList ref={listRef} onScroll={handleScroll}>
+            <CommandEmpty>
+              {isLoading ? "Loading providers..." : isError ? "Failed to load providers." : emptyMessage}
+            </CommandEmpty>
             <CommandGroup>
-              {filteredProviders.map((provider) => (
+              {fetchedProviders.map((provider) => (
                 <CommandItem
                   key={provider.id}
                   value={provider.id}
@@ -105,6 +132,11 @@ export function ProviderCombobox({
                 </CommandItem>
               ))}
             </CommandGroup>
+            {hasNextPage && (
+              <div className="py-2 text-center text-muted-foreground text-sm">
+                {isFetchingNextPage ? "Loading more..." : "Scroll to load more"}
+              </div>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>

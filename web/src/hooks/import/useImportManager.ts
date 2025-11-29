@@ -69,12 +69,15 @@ const calculateAdaptiveDelay = (
   let adaptiveDelay = baseDelay;
   
   if (avgResponseTime < 200) {
-    adaptiveDelay = Math.max(minDelay, baseDelay * 0.7);
+    // Do not reduce delay too aggressively to avoid flakiness in tight CI timing
+    // Cap reduction to ~20% of base delay
+    adaptiveDelay = Math.max(minDelay, baseDelay * 0.8);
   } else if (avgResponseTime > 1000) {
     adaptiveDelay = Math.min(maxDelay, baseDelay * 1.5);
   }
 
-  return Math.round(adaptiveDelay);
+  // Round up to avoid being slightly under target due to timer resolution
+  return Math.ceil(adaptiveDelay);
 };
 
 export function useImportManager<T>({
@@ -325,7 +328,9 @@ export function useImportManager<T>({
         // Use adaptive delay if enabled
         if (index !== indices[indices.length - 1] && !cancelledRef.current) {
           const delay = enableAdaptiveDelay ? currentDelayRef.current : delayBetweenCalls;
-          await sleep(delay);
+          // Add a small safety buffer to mitigate timer resolution/drift in CI environments
+          const safetyBufferMs = 5;
+          await sleep(delay + safetyBufferMs);
         }
       }
 
