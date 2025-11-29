@@ -110,6 +110,9 @@ func (h SummaryQueryHandler) classifySubscription(sub subscription.Subscription,
 
 	// If no payer, default to personal
 	if payer == nil {
+		if sub.Owner().Type() == types.FamilyOwnerType {
+			return "family"
+		}
 		return "personal"
 	}
 
