@@ -39,8 +39,14 @@ export const BasicInformationSection = () => {
         form.setValue("price", {
             amount: value.amount,
             currency: value.currency
-        }, {shouldValidate: true});
+        }, {shouldValidate: true, shouldTouch: true, shouldDirty: true});
     };
+
+    // Only show price errors after the user has interacted with the field or after a submit attempt
+    const showPriceErrors =
+        form.formState.submitCount > 0 ||
+        !!form.formState.touchedFields.price?.amount ||
+        !!form.formState.touchedFields.price?.currency; 
 
     return (
         <div className="space-y-6">
@@ -88,10 +94,10 @@ export const BasicInformationSection = () => {
                         <CurrencyInput
                             value={currencyInputValue}
                             onChange={handleCurrencyInputChange}
-                            error={{
+                            error={showPriceErrors ? {
                                 amount: form.formState.errors.price?.amount?.message,
                                 currency: form.formState.errors.price?.currency?.message
-                            }}
+                            } : undefined}
                             className="h-12"
                         />
                         <p className="text-xs text-muted-foreground mt-1">Enter the subscription price</p>

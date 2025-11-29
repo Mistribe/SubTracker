@@ -28,7 +28,7 @@ const SubscriptionFormPage = () => {
     const {createSubscriptionMutation, updateSubscriptionMutation} = useSubscriptionsMutations();
     const {data: familyData} = useFamilyQuery();
     const {data: subscriptionsData} = useSubscriptionsQuery();
-    const {preferredCurrency} = useProfileManagement();
+    const {preferredCurrency, isLoadingPreferredCurrency} = useProfileManagement();
 
     const isEditMode = !!subscriptionId;
 
@@ -59,7 +59,8 @@ const SubscriptionFormPage = () => {
             customRecurrencyUnit: "days",
             price: {
                 amount: 10,
-                currency: "USD"
+                // Leave currency empty initially; we'll hydrate from preferredCurrency when available
+                currency: ""
             }, // price is now required
             endDate: undefined,
             familyId: undefined,
@@ -119,14 +120,39 @@ const SubscriptionFormPage = () => {
 
             setIsLoading(false);
         } else {
+            const currentPrice = form.getValues("price");
+
+            // Wait for preferred currency to finish loading before deciding on a fallback
+            if (isLoadingPreferredCurrency) {
+                return;
+            }
+
             if (preferredCurrency?.currency) {
-                form.setValue("price", {
-                    amount: 10,
-                    currency: preferredCurrency.currency
-                });
+                if (!currentPrice || !currentPrice.currency) {
+                    form.setValue(
+                        "price",
+                        {
+                            amount: currentPrice?.amount ?? 10,
+                            currency: preferredCurrency.currency,
+                        },
+                        {shouldValidate: false, shouldDirty: false, shouldTouch: false}
+                    );
+                }
+            } else {
+                // Only default to USD if no preferred currency exists and the form doesn't have a currency yet
+                if (!currentPrice || !currentPrice.currency) {
+                    form.setValue(
+                        "price",
+                        {
+                            amount: currentPrice?.amount ?? 10,
+                            currency: "USD",
+                        },
+                        {shouldValidate: false, shouldDirty: false, shouldTouch: false}
+                    );
+                }
             }
         }
-    }, [isEditMode, subscriptionToEdit, form, preferredCurrency]);
+    }, [isEditMode, subscriptionToEdit, form, preferredCurrency, isLoadingPreferredCurrency]);
 
     const onSubmit = async (data: FormValues) => {
         try {
@@ -217,6 +243,9 @@ const SubscriptionFormPage = () => {
                             // Basic Information (Section 0)
                             'providerId': 0,
                             'friendlyName': 0,
+                            'price': 0,
+                            'price.amount': 0,
+                            'price.currency': 0,
 
                             // Recurrency (Section 1)
                             'recurrency': 1,
@@ -331,7 +360,7 @@ const SubscriptionFormPage = () => {
 
                                         // Step 0: Basic Information
                                         if (currentStep === 0) {
-                                            isValid = await form.trigger(['providerId']);
+                                            isValid = await form.trigger(['providerId', 'price.amount', 'price.currency']);
                                         }
                                         // Step 1: Recurrency
                                         else if (currentStep === 1) {
