@@ -19,6 +19,7 @@ export const FreeTrialSection = () => {
             <div className="flex justify-center mt-4">
                 <Toggle
                     id="hasFreeTrialPeriod"
+                    type="button"
                     pressed={hasFreeTrialPeriod}
                     onPressedChange={(pressed) => form.setValue("hasFreeTrialPeriod", pressed)}
                     className="px-8 py-6 text-lg"
